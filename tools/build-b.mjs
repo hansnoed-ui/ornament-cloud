@@ -19,7 +19,7 @@ import { createHash } from "node:crypto";
 
 const ROOT = new URL("../", import.meta.url);
 const AUS_DE = new URL("b/", ROOT);
-const V = 40;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 42;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 const INHALT = { de: DE, en: EN };
@@ -84,6 +84,8 @@ const weich = (titel) => esc(titel).replace(/\S+$/, (w) => `<span class="w${w.le
 /** Das Signet in Bewegung (tools/b-app-bilder.mjs schreibt das Ruhebild; b/tafeln-leben.js lässt es leben) */
 const SIGNET_TAFEL = `<figure class="tafel-lebt signet-tafel" data-tafel="signet"><picture><source srcset="/b/bilder/signet/signet-dunkel.svg"><img src="/b/bilder/signet/signet.svg" alt="Das Signet von ornament.cloud, gezeichnet: die Re-entry-Schlaufe mit dem Punkt, der sie abläuft" width="1200" height="1200"></picture></figure>`;
 /** Das Bild einer App: die gezeichnete Tafel (tools/b-app-bilder.mjs), hell oder dunkel nach dem Modus des Geräts */
+/** Bild-Apps, deren Kachel einen Ausschnitt aus dem Beispielfilm zeigt (b/bilder/apps/filme/<slug>.mp4 und .jpg) */
+const KACHEL_FILME = new Set(["the-fictory", "phorma-i", "phorma-ii", "phorma-iii"]);
 function appBild(a, extra = "") {
   return `<picture><source srcset="/${attr(a.bildDunkel)}"><img src="/${attr(a.bild)}" alt="${attr(a.bildAlt)}" width="1200" height="1200"${extra}></picture>`;
 }
@@ -162,15 +164,18 @@ function bau(sprache) {
   const fAngebot = (a) => a && { artId: "angebot", href: `${B}angebot/${a.slug}/`, was: a.name, klein: a.kurz };
   const fOrma = (k) => k && { artId: "konstellation", href: `/portfolio/nebeneinander-nacheinander/?pair=${k.id}`, was: `${k.kuenstler} × ${k.theoretiker}${T.konstellationDeutsch}`, klein: k.frage, deutsch: true };
 
-  /** Eine App als Kachel: immer quadratisch */
+  /** Eine App als Kachel: immer quadratisch. Seit 30. Oktober 2026 lebt das Bild («diese App-Bilder etwas sehr langweilig»): die Bild-Apps zeigen
+   *  10 Sekunden aus ihrem Beispielfilm (b/bilder/apps/filme/, quadratisch, stumm; PHORMA III die Traube, Wunsch vom selben Tag, tools/phorma-beispiele.mjs), die übrigen ihre Tafel in Bewegung
+   *  (b/tafeln-leben.js spielt beides nur, solange es im Bild ist, nie bei reduzierter Bewegung) */
   function appKachel(a) {
-    return `<a class="stueck" href="${B}apps/${a.slug}/"><span class="bild quadrat">${appBild(a, ' loading="lazy"')}</span><h3>${zeichen(a.zeichen)}${esc(a.name)}</h3><p>${esc(a.kurz)}</p></a>`;
+    const bild = KACHEL_FILME.has(a.slug)
+      ? `<span class="bild quadrat"><video class="kachel-film" muted loop playsinline preload="none" poster="${attr(mitMarke(`b/bilder/apps/filme/${a.slug}.jpg`))}" width="480" height="480" aria-label="${attr(a.bildAlt)}"><source src="${attr(mitMarke(`b/bilder/apps/filme/${a.slug}.mp4`))}" type="video/mp4"></video></span>`
+      : `<span class="bild quadrat kachel-lebt" data-tafel="${attr(a.slug)}">${appBild(a, ' loading="lazy"')}</span>`;
+    return `<a class="stueck" href="${B}apps/${a.slug}/">${bild}<h3>${zeichen(a.zeichen)}${esc(a.name)}</h3><p>${esc(a.kurz)}</p></a>`;
   }
 
   /** ein Beispielvideo mit Versionsmarke an Film und Poster */
   const video = (b) => `<video controls muted loop playsinline preload="metadata" poster="${attr(mitMarke(b.bild))}" width="${b.mass?.[0] || 1080}" height="${b.mass?.[1] || 1350}">${b.webm ? `<source src="${attr(mitMarke(b.webm))}" type="video/webm">` : ""}<source src="${attr(mitMarke(b.datei))}" type="video/mp4"></video>`;
-  /** der gerechnete Film einer App (der letzte unter assets/beispiele/: bei PHORMA III der Film mit drei Effekten, nicht das Intro) */
-  const filmVon = (a) => [].concat(a.beispiele || []).filter((b) => b.art === "video" && b.datei.startsWith("assets/beispiele/")).at(-1);
 
   /** Beispiele: was aus einer App herauskommt (Bildpaar vorher/nachher, Video, Texte aus ORNA, ORMA und OMNA COLOR – auf Englisch als «texte» übersetzt im Inhalt) */
   function beispiele(a, { kurz = false } = {}) {
@@ -503,14 +508,13 @@ ${gruppen.map((g) => `<section class="abschnitt" aria-labelledby="g-${g.replace(
 </div></section>`).join("\n")}
 <section class="abschnitt" aria-labelledby="resultate-titel"><div class="spalte">
   <div class="abschnitt-kopf"><h2 id="resultate-titel">${esc(T.apps.ergebnis)}</h2><p>${esc(T.apps.ergebnisText)}</p></div>
-  <!-- die vier gerechneten Filme klein nebeneinander (21. Oktober 2026, Rückmeldung: «schlecht lesbar, weil gross», und es fehlten die neu
-       gerechneten Beispiele), die Beschreibung steht auf der Seite der App; darunter eine Konstellation und eine Übung -->
-  <div class="galerie-filme">${["the-fictory", "phorma-i", "phorma-ii", "phorma-iii"].map((sl) =>   /* wie auf «Apps» (21. Oktober 2026, Wunsch: «zuerst THE FICTORY, dann PHORMA I, PHORMA II, PHORMA III») */ { const a = appVon(sl), b = filmVon(a); return b ? `<figure class="galerie-film">${video(b)}<figcaption class="klein"><a href="${B}apps/${a.slug}/">${esc(a.name)}</a></figcaption></figure>` : ""; }).join("")}</div>
+  <!-- die vier Filme stehen hier nicht mehr (30. Oktober 2026: die Kacheln oben zeigen sie schon, «dann kann das gespart werden»);
+       die ganzen Filme stehen auf der Seite der App -->
   <div class="galerie">
     ${["orna", "omna-color"].map((sl) => { const a = appVon(sl); return `<div class="galerie-stueck"><p class="klein"><a href="${B}apps/${a.slug}/">${esc(a.name)}</a></p>${beispiele(a, { kurz: true })}</div>`; }).join("")}
   </div>
 </div></section>`;
-    veroeffentliche({ pfad: "apps/", aktiv: "apps/", titel: T.apps.seitenTitel, beschreibung: T.apps.beschreibung, body, bildAlt: T.apps.bildAlt });
+    veroeffentliche({ pfad: "apps/", aktiv: "apps/", titel: T.apps.seitenTitel, beschreibung: T.apps.beschreibung, body, bildAlt: T.apps.bildAlt, module: ["tafeln-leben.js"] });
   }
   for (const a of APPS) {
     const zs = zettelZu("app", a.slug, 3);

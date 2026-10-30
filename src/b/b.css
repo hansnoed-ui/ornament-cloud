@@ -315,6 +315,7 @@ main:has(> .kapitel:last-child) + .fuss { margin-top: 0; border-top: 0; padding-
 .stueck .bild img, .stueck .bild video { width: 100%; height: 100%; object-fit: cover; }
 .stueck .bild.quer { aspect-ratio: 1200 / 630; }
 .stueck .bild.quadrat { aspect-ratio: 1; }
+.stueck .bild.kachel-lebt svg { display: block; width: 100%; height: 100%; }   /* die Tafel in Bewegung (b/tafeln-leben.js) */
 .stueck h3 { font-weight: 500; font-size: 1.1rem; letter-spacing: -0.01em; }
 .stueck p { color: var(--grau); font-size: 0.95rem; line-height: 1.4; }
 .stueck:hover h3 { color: var(--faden); }
@@ -472,11 +473,6 @@ main:has(> .kapitel:last-child) + .fuss { margin-top: 0; border-top: 0; padding-
 .uebung ol { list-style: decimal; padding-left: 1.3em; display: grid; gap: 4px; }
 .auftraege { display: grid; gap: 8px; }
 .auftraege li { display: grid; gap: 2px; }
-/* die gerechneten Filme der Apps: vier nebeneinander, auf dem Handy zwei; darunter die Texte */
-.galerie-filme { display: grid; gap: 24px 16px; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: start; margin-bottom: 40px; }
-.galerie-film { display: grid; gap: 8px; margin: 0; }
-.galerie-film video { width: 100%; height: auto; background: #000; }
-@media (max-width: 760px) { .galerie-filme { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 12px; } }
 .galerie { display: grid; gap: 32px 24px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
 .galerie-stueck { display: grid; gap: 10px; align-content: start; }
 .galerie-stueck .paar { max-width: none; }
@@ -563,8 +559,6 @@ body.buehne-seite { height: 100dvh; display: grid; grid-template-rows: 48px minm
 .spalte > .tafel-lebt:not(.signet-tafel) figcaption { grid-column: 2; }
 /* Filme im Querformat (PHORMA III «Traube», 16 : 9): breiter, damit sie nicht winzig werden; auf dem Handy über die ganze Breite, Text darunter */
 .beispiel-video.quer { grid-template-columns: 400px minmax(0, 1fr); }
-/* in der Galerie der Apps-Seite alle im selben Hochformat, ein Querfilm auf die Mitte zugeschnitten */
-.galerie-film video { aspect-ratio: 4 / 5; object-fit: cover; }
 @media (max-width: 560px) {
   .beispiel-video, .spalte > .tafel-lebt:not(.signet-tafel) { grid-template-columns: 150px minmax(0, 1fr); column-gap: 14px; }
   .beispiel-video figcaption { font-size: 0.9rem; }
