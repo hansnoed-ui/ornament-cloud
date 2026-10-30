@@ -163,6 +163,6 @@ out = WURZEL / f"gamma/bilder/{name}-linien.webp"
 Image.fromarray(np.dstack([R, G, Bl])).save(out, lossless=True, quality=100, method=6)
 print(out, out.stat().st_size, "Bytes;", (WURZEL / f"gamma/bilder/{name}-foto.webp").stat().st_size, "Bytes Foto")
 if len(sys.argv) > 4:
-    grund = np.array([149, 7, 64], np.float32)
+    grund = np.array([79, 34, 50], np.float32)
     a = (R.astype(np.float32) / 255)[..., None] * .92
     Image.fromarray((grund * (1 - a) + 255 * a).astype(np.uint8)).save(sys.argv[4])
