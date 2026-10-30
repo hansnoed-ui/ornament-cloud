@@ -29,8 +29,10 @@ a { color: inherit; }
 a:focus-visible, button:focus-visible { outline: 2px solid var(--faden); outline-offset: 3px; }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: #000; }
 
-/* Der Raum liegt fest hinter allem und ist immer Nacht, auch im hellen Modus */
-#welt { position: fixed; left: 0; top: 0; width: 100%; height: 100vh; height: 100lvh; display: block; z-index: 0; background: #000; touch-action: pan-y; }
+/* Der Raum liegt fest hinter allem und ist immer Nacht, auch im hellen Modus.
+   Eine Spur durchscheinend: Ganz deckend gibt Edge/Chrome unter Windows die Leinwand als eigene Ebene an die Grafikkarte,
+   und unten bleibt dann ein Streifen in Kopfhöhe mit altem Bild stehen */
+#welt { position: fixed; left: 0; top: 0; width: 100%; height: 100vh; height: 100lvh; display: block; z-index: 0; background: #000; opacity: .999; touch-action: pan-y; }
 body.flach.nach-intro #welt, body.ohne-3d #welt { visibility: hidden; }
 
 /* Kopf: immer schwarz, wie beim Lab */
@@ -1556,7 +1558,7 @@ function setzeFlach(f, id) {
   bahnDom.style.top = oben + "px"; document.body.classList.add("zurueck");
   flachSetzen(false, akt);
   // Die Ränder neben der Seite gehen rasch vom Seitengrund in den Raum über, die Seite selbst etwas langsamer
-  cvRaum.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, easing: "ease-out" });
+  cvRaum.animate([{ opacity: 0 }, { opacity: .999 }], { duration: 160, easing: "ease-out" });
   setTimeout(() => kippen(0, 1100, i), 90);
   bahnDom.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 340, easing: "ease-in", fill: "forwards" }).finished.then(() => {
     document.body.classList.remove("zurueck"); bahnDom.style.top = "";
@@ -1576,7 +1578,7 @@ function flachSetzen(f, akt, effekt) {
     // Die Seite blendet über dem Bild der Bahn auf; der Raum darunter tritt erst zurück, wenn die Seite fast deckt,
     // so gehen auch die Ränder neben der Seite ruhig in ihren Grund über
     document.body.classList.add("wechsel");
-    cvRaum.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 240, delay: 220, easing: "ease-in", fill: "forwards" });
+    cvRaum.animate([{ opacity: .999 }, { opacity: 0 }], { duration: 240, delay: 220, easing: "ease-in", fill: "forwards" });
     bahnDom.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 460, easing: "ease-out" }).finished.then(() => {
       document.body.classList.remove("wechsel"); cvRaum.getAnimations().forEach(a => a.cancel());
       kipp.wert = kipp.von = kipp.nach = 0; zustand.halten = false; wechselt = false;
