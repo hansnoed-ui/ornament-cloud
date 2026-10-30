@@ -1515,11 +1515,12 @@ function figurenBauen(g) {
   };
   /* Auf der obersten Terrasse ein Baum im Raum (Christian, 30. Oktober 2026: dreidimensional, bewegt, farbig blühend; dann «nicht drehen, sondern
      wie im Wind bewegen, dunklere, wärmere Farbtöne»). Der Wind kommt in Böen von einer Seite: der ganze Baum neigt sich, je höher, desto mehr,
-     die Zweige flattern, je weiter aussen, desto mehr. An jeder Spitze zwei Blätter in warmem, dunklem Grün, daneben öffnet sich eine Blüte
-     in Himbeer bis Altrosa, welkt, und ein Blütenblatt fällt langsam auf die Terrassen */
+     die Zweige flattern, je weiter aussen, desto mehr. An jeder Spitze zwei Blätter von Tannen- über Moosgrün bis Ocker, daneben öffnet sich
+     eine Blüte in Bordeaux bis Altrosa und welkt wieder; nichts fällt herab («keine fallenden Pixel») */
   const terrasse = () => {
-    hell = .45; quader(0, 0, 0, 1.3, .1, .7); quader(.12, .1, -.06, 1, .1, .56); quader(.26, .2, -.12, .7, .1, .44);
-    const dreh = new THREE.Group(); gruppeBei([.62, .3, -.34]).add(dreh);
+    // drei flache Stufen unter dem Baum, kleiner als zuerst (Christian, 30. Oktober 2026), mittig unter dem Stamm
+    hell = .45; quader(.17, 0, -.09, .9, .07, .5); quader(.29, .07, -.15, .66, .07, .38); quader(.4, .14, -.205, .44, .07, .27);
+    const dreh = new THREE.Group(); gruppeBei([.62, .21, -.34]).add(dreh);
     const ap = [], ag = [], spitzen = [], d = new THREE.Vector3(), u = new THREE.Vector3(), w = new THREE.Vector3();
     const wachsen = (p, r, l, n, tief) => {
       const e = p.clone().addScaledVector(r, l); ap.push(p.x, p.y, p.z, e.x, e.y, e.z); ag.push(tief / 7, (tief + 1) / 7);
@@ -1545,45 +1546,42 @@ vec3 wind(vec3 p, float w) {
     const aeste = new THREE.LineSegments(ag3, new THREE.ShaderMaterial({ uniforms: uni, transparent: true, depthWrite: false,
       vertexShader: `attribute float gewicht; varying float vw; ${WIND}
 void main() { vw = gewicht; gl_Position = projectionMatrix * modelViewMatrix * vec4(wind(position, gewicht), 1.); }`,
-      fragmentShader: "uniform float a; varying float vw; void main() { gl_FragColor = vec4(mix(vec3(.5, .4, .3), vec3(.36, .27, .2), vw), a); }" }));
-    // Je Spitze eine Blüte (art.y 0), ein Blütenblatt, das fällt, wenn sie welkt (art.y 1), und zwei grüne Blätter etwas daneben (art.y 2);
-    // art.x verschiebt den Kreislauf von elf Sekunden und wählt den Farbton
-    const n = spitzen.length, bp = new Float32Array(n * 12), ba = new Float32Array(n * 8), neben = p => p.clone().add(new THREE.Vector3(zufall() - .5, zufall() - .5, zufall() - .5).multiplyScalar(.09));
+      fragmentShader: "uniform float a; varying float vw; void main() { gl_FragColor = vec4(pow(mix(vec3(.48, .37, .28), vec3(.35, .26, .2), vw), vec3(2.2)), a); }" }));
+    // Je Spitze eine Blüte (art.y 0) und zwei Blätter etwas daneben (art.y 2); art.x verschiebt den Kreislauf von elf Sekunden und wählt den Farbton
+    const n = spitzen.length, bp = new Float32Array(n * 9), ba = new Float32Array(n * 6), neben = p => p.clone().add(new THREE.Vector3(zufall() - .5, zufall() - .5, zufall() - .5).multiplyScalar(.09));
     spitzen.forEach((p, i) => {
-      const ph = zufall();
-      bp.set(p.toArray(), i * 3); bp.set(p.toArray(), (n + i) * 3); bp.set(neben(p).toArray(), (2 * n + i) * 3); bp.set(neben(p).toArray(), (3 * n + i) * 3);
-      ba.set([ph, 0], i * 2); ba.set([ph, 1], (n + i) * 2); ba.set([zufall(), 2], (2 * n + i) * 2); ba.set([zufall(), 2], (3 * n + i) * 2);
+      bp.set(p.toArray(), i * 3); bp.set(neben(p).toArray(), (n + i) * 3); bp.set(neben(p).toArray(), (2 * n + i) * 3);
+      ba.set([zufall(), 0], i * 2); ba.set([zufall(), 2], (n + i) * 2); ba.set([zufall(), 2], (2 * n + i) * 2);
     });
     const bg = new THREE.BufferGeometry(); bg.setAttribute("position", new THREE.Float32BufferAttribute(bp, 3)); bg.setAttribute("art", new THREE.Float32BufferAttribute(ba, 2));
     const blueten = new THREE.Points(bg, new THREE.ShaderMaterial({ uniforms: uni, transparent: true, depthWrite: false,
-      vertexShader: `attribute vec2 art; uniform float hoehe; varying float vu, vf, vd, vk; ${WIND}
+      vertexShader: `attribute vec2 art; uniform float hoehe; varying float vu, vf, vk; ${WIND}
 void main() {
-  float u = fract(zeit / 11. + art.x), s; vec3 p = wind(position, 1.); vu = u; vf = art.y; vd = 1.; vk = fract(art.x * 7.31);
+  float u = fract(zeit / 11. + art.x), s; vec3 p = wind(position, 1.); vu = u; vf = art.y; vk = fract(art.x * 7.31);
   if (art.y > 1.5) s = .08 * (.88 + .12 * sin(zeit * .8 + art.x * 30.));   // Blatt
-  else if (art.y < .5) s = .075 * smoothstep(.04, .3, u) * (1. - smoothstep(.6, .76, u));   // Knospe, offen, welk
-  else { float f = clamp((u - .66) / .34, 0., 1.); p.y -= (position.y + .12) * f * f; p.x += sin(f * 6. + art.x * 20.) * .08 * f; p.z += cos(f * 5. + art.x * 13.) * .06 * f;
-    s = .035 * step(.66, u); vd = 1. - smoothstep(.8, 1., f); }
+  else s = .075 * smoothstep(.04, .3, u) * (1. - smoothstep(.72, .9, u));   // Knospe, offen, welk
   vec4 mv = modelViewMatrix * vec4(p, 1.); gl_PointSize = min(s * projectionMatrix[1][1] * hoehe / -mv.z, 48.); gl_Position = projectionMatrix * mv;
 }`,
-      fragmentShader: `uniform float a; varying float vu, vf, vd, vk;
+      fragmentShader: `uniform float a; varying float vu, vf, vk;
 void main() {
   vec2 c = gl_PointCoord - .5; float r = length(c), al; vec3 col;
   if (vf > 1.5) {
-    // Blatt: eine schmale Spitzellipse, je nach vk anders gedreht, von dunklem Moos- bis Olivgrün, mit hellerer Mittelrippe
+    // Blatt: eine schmale Spitzellipse, je nach vk anders gedreht, von Tannen- über Moosgrün bis Ocker, mit hellerer Mittelrippe
     float w = vk * 6.283; vec2 q = mat2(cos(w), -sin(w), sin(w), cos(w)) * c;
     al = smoothstep(.3, .24, length(q * vec2(1., 2.3)) + .25 * abs(q.x)); if (al < .01) discard;
-    col = mix(vec3(.17, .3, .11), vec3(.44, .5, .17), vk); col = mix(col, col + .1, smoothstep(.04, 0., abs(q.y)));
+    col = mix(mix(vec3(.12, .3, .23), vec3(.29, .35, .14), smoothstep(.2, .75, vk)), vec3(.63, .48, .16), smoothstep(.8, 1., vk));
+    col = mix(col, col + .08, smoothstep(.04, 0., abs(q.y)));
   } else {
-    float rand = vf > .5 ? .3 : .3 + .16 * cos(5. * atan(c.y, c.x));   // fünf Blütenblätter, das fallende Blatt rund
-    al = smoothstep(rand, rand - .1, r) * vd; if (al < .01) discard;
-    // von dunklem Himbeer über warmes Rosa bis Altrosa, zum Rand der Blüte etwas heller, in der Mitte ein Punkt in Bernstein
-    vec3 magenta = vec3(.6, .05, .28), rosa = vec3(.8, .24, .38), hell = vec3(.88, .5, .5);
-    col = mix(mix(magenta, rosa, smoothstep(0., .6, vk)), hell, smoothstep(.75, 1., vk));
-    col = mix(col, hell, smoothstep(.12, .32, r) * .2);
-    if (vf < .5) col = mix(vec3(.88, .58, .2), col, smoothstep(.03, .09, r));
-    col = mix(col, magenta, vf < .5 ? (1. - smoothstep(.04, .3, vu)) * .6 : 0.);   // die Knospe dunkler
+    float rand = .3 + .16 * cos(5. * atan(c.y, c.x));   // fünf Blütenblätter
+    al = smoothstep(rand, rand - .1, r); if (al < .01) discard;
+    // von Bordeaux über Himbeer bis warmes Altrosa, zum Rand der Blüte etwas heller, in der Mitte ein Punkt in Bernstein
+    vec3 bordeaux = vec3(.43, .1, .17), himbeer = vec3(.61, .14, .25), alt = vec3(.76, .48, .42);
+    col = mix(mix(bordeaux, himbeer, smoothstep(0., .6, vk)), alt, smoothstep(.8, 1., vk));
+    col = mix(col, alt, smoothstep(.12, .32, r) * .18);
+    col = mix(vec3(.82, .54, .16), col, smoothstep(.03, .09, r));
+    col = mix(col, bordeaux, (1. - smoothstep(.04, .3, vu)) * .6);   // die Knospe dunkler
   }
-  gl_FragColor = vec4(col * .92, al * a);
+  gl_FragColor = vec4(pow(col, vec3(2.2)), al * a);   // Farben oben als sRGB, die Szene rechnet linear
 }` }));
     dreh.add(aeste, blueten);
     const groesse = new THREE.Vector2();
@@ -1697,7 +1695,7 @@ void main() {
     glied([[.04, .95, 0], [.05, 1.01, 0], [.062, 1.08, 0], [.068, 1.13, 0]], .018, .026);
     const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(P, 3)); geo.setAttribute("color", new THREE.Float32BufferAttribute(C, 3));
     dreh.add(new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false })));
-    bahn.flackern.push(sek => { dreh.rotation.y = sek * .12; });   // eine Umdrehung in knapp einer Minute
+    bahn.flackern.push(sek => { dreh.rotation.y = sek * .2; });   // eine Umdrehung in gut einer halben Minute
   };
   /* Angebot: ein Tisch mit Stühlen, zwei Wände, Kisten mit Massen */
   const tisch = () => {
@@ -2959,7 +2957,7 @@ if (web && "IntersectionObserver" in window) new IntersectionObserver(e => { if 
    Eine einzige weiche Fläche zeigt das Foto: in der Mitte ganz, zum Rand hin verläuft es und wird blasser, vom Rauschen leicht unregelmässig.
    Flach folgt sie dem Zeiger oder dem Finger; sonst wandert sie langsam. Im Raum wandert sie auf derselben Bahn über die Skizze auf dem Band
    und hebt das Foto als sanften Hügel an; beim Wechsel in die Fläche steht sie, wo sie im Raum war */
-const KUNST_FOTO = "../gamma/bilder/kunst-foto.webp?v=3", KUNST_LINIEN = "../gamma/bilder/kunst-linien.webp?v=3", KUNST_ZUG = 3.6;
+const KUNST_FOTO = "../gamma/bilder/kunst-foto.webp?v=4", KUNST_LINIEN = "../gamma/bilder/kunst-linien.webp?v=4", KUNST_ZUG = 3.6;
 let kunstBilder = null;
 function kunstLaden() {
   // Fehlt ein Bild (etwa weil die Seite während des Hochladens geöffnet wurde), wird es bis zu dreimal neu geholt; wer auf «load» wartet, bekommt es dann trotzdem
@@ -3009,7 +3007,7 @@ const kunst = (() => {
   return { k, bild, cv: bild.querySelector("canvas"), buehne: k.querySelector(".buehne"), hinweis: k.querySelector(".kunst-hinweis"), fokus: parseFloat(bild.dataset.fokus) || .5,
     format: parseFloat(bild.dataset.format) || 1, rahmen: (bild.dataset.rahmen || ".5 .5 .1 .1").split(" ").map(Number),
     felder: [...k.querySelectorAll(".feld")], inhalte: [...k.querySelectorAll(".fi")], gl: null, sichtbar: false, t0: null, raumZug: 0, zug: 0, licht: null, zeiger: null, tipp: null,
-    wechselAb: 0, rahmenAb: 0, rahmenSeit: 0, rm: 0 };
+    wechselAb: 0, rahmenAb: 0, rahmenSeit: 0, rm: 0, sl: 0 };
 })();
 if (kunst) {
   kunst.stopp = () => {}; felderVerbinden(kunst);
@@ -3034,13 +3032,32 @@ function kunstGL() {
   };
   // Bild: Skizze, darüber das Foto, so weit die Spur reicht; ihr Rand franst langsam ziehend aus. Die Sättigung ist frisch hoch, alt gering, und atmet
   const pr = programm(`precision highp float; varying vec2 v;
-uniform sampler2D foto, linien, maske; uniform vec4 aus; uniform vec2 seite; uniform float zeit, zug; uniform vec3 grund, tinte;
+uniform sampler2D foto, linien, maske; uniform vec4 aus; uniform vec2 seite; uniform float zeit, zug, sl; uniform vec3 grund, tinte;
 ${KUNST_GLSL}
 void main() {
   vec2 q = v * seite; vec4 m = texture2D(maske, v); float r = kRahmen(v);
   float auf = mix(smoothstep(.2, .62, m.r + (kF(q * 6. + vec2(zeit * .05, -zeit * .04)) - .47) * .5), r, rm);
   float satt = mix(clamp(.12 + 1.1 * m.g + .6 * (kF(q * 1.4 - zeit * .06) - .47), 0., 1.18), 1., rm * r);
-  gl_FragColor = vec4(kFarbe(foto, linien, aus.xy + v * aus.zw, q, auf, satt, zug, zeit, grund, tinte), 1.);
+  vec3 c = kFarbe(foto, linien, aus.xy + v * aus.zw, q, auf, satt, zug, zeit, grund, tinte);
+  if (sl > .001 && r * rm > .001) {
+    // Eben aus dem Raum: im Bildrahmen stehen noch kurz die Säulen, von oben gesehen, im selben Gitter wie im Raum (42 je Reihe, Reihen versetzt).
+    // Jeder Deckel in der Farbe des Fotos an seiner Mitte, gewölbt, mit Glanz, dazwischen Schwarz; dann wachsen die Deckel zusammen und es bleibt das Foto
+    float SP = 42., RE = max(4., floor(SP / seite.x / .866 + .5)), d = 9.; vec2 z = v;
+    for (int j = -1; j <= 1; j++) {
+      float rr = floor(v.y * RE) + float(j), off = mod(rr, 2.) > .5 ? .75 : .25;
+      vec2 mm = vec2((floor(v.x * SP - off + .5) + off) / SP, (rr + .5) / RE);
+      float dd = length((v - mm) * seite); if (dd < d) { d = dd; z = mm; }
+    }
+    vec2 o = (v - z) * seite / (seite.x / SP * mix(.62, .46, sl));
+    float scheibe = smoothstep(1., .88, length(o)), fl = smoothstep(.3, .72, kFluss(z * seite, zeit));
+    vec3 fc = texture2D(foto, aus.xy + z * aus.zw).rgb, fp = texture2D(foto, aus.xy + v * aus.zw).rgb;
+    vec3 n = normalize(vec3(o * .9, 1.)), L = normalize(vec3(-.35, -.45, 1.));
+    float dif = max(dot(n, L), 0.), glanz = pow(max(dot(reflect(vec3(0., 0., -1.), n), L), 0.), 40.) * .55;
+    vec3 s = mix(fp, fc * (.62 + .38 * dif) * (.8 + .2 * fl) + glanz, sl);
+    s = mix(vec3(.02), s, mix(1., scheibe, sl));
+    c = mix(c, s, r * rm);
+  }
+  gl_FragColor = vec4(c, 1.);
 }`);
   // Spur: r wie weit das Foto steht (verblasst in einigen Sekunden), g wie frisch (klingt rasch ab). Sie wird langsam entlang eines Wirbelfelds
   // verschoben und verläuft ein wenig: so kriecht sie. Das Licht (Zeiger, Tippen oder ruhige Bahn) legt jedes Bild neu nach; beim Wechsel aus dem Raum der Bildrahmen
@@ -3061,7 +3078,7 @@ void main() {
   gl.useProgram(pr);
   const puffer = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, puffer); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
   gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
-  const U = {}; ["foto", "linien", "maske", "aus", "seite", "zeit", "zug", "grund", "tinte", "rahmen", "rm"].forEach(n => { U[n] = gl.getUniformLocation(pr, n); });
+  const U = {}; ["foto", "linien", "maske", "aus", "seite", "zeit", "zug", "grund", "tinte", "rahmen", "rm", "sl"].forEach(n => { U[n] = gl.getUniformLocation(pr, n); });
   const US = {}; ["vor", "px", "seite", "licht", "zeit", "k", "rahmen", "rm"].forEach(n => { US[n] = gl.getUniformLocation(prS, n); });
   const textur = (einheit, roh) => {
     const t = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + einheit); gl.bindTexture(gl.TEXTURE_2D, t);
@@ -3116,16 +3133,17 @@ function kunstLaufBild(zeit, dt) {
     K.t0 = zeit - (ruhig ? KUNST_ZUG + 9 : K.raumZug * KUNST_ZUG) * 1000;
     K.licht = [...kunstLicht(zeit / 1000), K.raumZug >= 1 ? 1 : 0];
   }
-  // Eben aus dem Raum gewechselt: das Foto steht zuerst genau im Bildrahmen, nach einer halben Sekunde löst sich der Rahmen in die weiche Fläche auf, die weiterwandert
+  // Eben aus dem Raum gewechselt: im Bildrahmen stehen zuerst noch die Säulen (Christian, 30. Oktober 2026: den Effekt in der Fläche kurz fortsetzen),
+  // nach 1,2 s wachsen sie zum Foto zusammen, ab 2,3 s löst sich der Rahmen in die weiche Fläche auf, die weiterwandert
   if (K.rahmenAb) { K.rahmenAb = 0; K.rahmenSeit = zeit; K.rm = 1; K.licht = kunstRahmenLicht(kunstRahmen(kunstAusschnitt(r.width / r.height, K.fokus, K.format)), r.width / r.height); }
   const seitRahmen = K.rahmenSeit ? (zeit - K.rahmenSeit) / 1000 : 99;
-  K.rm = 1 - eio(klemm((seitRahmen - .5) / 1.4));
+  K.sl = 1 - eio(klemm((seitRahmen - 1.2) / .9)); K.rm = 1 - eio(klemm((seitRahmen - 2.3) / 1.4));
   const T = (zeit - K.t0) / 1000, L = K.licht, tippt = K.tipp && zeit - K.tipp.t < 4500;
   // Ziel der Fläche: der Zeiger, sonst die Stelle, die getippt wurde, sonst ihre ruhige Bahn. Solange die Skizze entsteht, ist sie aus
   const ziel = K.zeiger ? [K.zeiger.x, K.zeiger.y, .24] : tippt ? [K.tipp.x, K.tipp.y, .32] : kunstLicht(zeit / 1000);
-  const an = ruhig ? (K.zeiger || tippt ? 1 : 0) : Math.max(weich(KUNST_ZUG - .6, KUNST_ZUG + 1.2, T), seitRahmen < 3 ? 1 : 0);
+  const an = ruhig ? (K.zeiger || tippt ? 1 : 0) : Math.max(weich(KUNST_ZUG - .6, KUNST_ZUG + 1.2, T), seitRahmen < 3.8 ? 1 : 0);
   // kriechend: die Fläche folgt dem Zeiger mit Verzug, die Spur dahinter bleibt einige Sekunden
-  const k = 1 - Math.exp(-dt * (K.zeiger ? 2.6 : tippt ? 1.6 : seitRahmen < .5 ? 0 : .9));
+  const k = 1 - Math.exp(-dt * (K.zeiger ? 2.6 : tippt ? 1.6 : seitRahmen < 2.3 ? 0 : .9));
   for (let i = 0; i < 3; i++) L[i] += (ziel[i] - L[i]) * k;
   L[3] += (an - L[3]) * (1 - Math.exp(-dt * 2.5));
   K.zug = ruhig ? 1.02 : 1.02 * eio(klemm(T / KUNST_ZUG));
@@ -3146,7 +3164,7 @@ function kunstZeichnen(zeit, dt = 1 / 60) {
   gl.uniform4f(U.aus, a[0], a[1], a[2], a[3]); gl.uniform2f(U.seite, w / h, 1);
   gl.uniform1f(U.zeit, z); gl.uniform1f(U.zug, K.zug || 0);
   gl.uniform3fv(U.grund, K.gl.grund); gl.uniform3f(U.tinte, 1, 1, 1);
-  gl.uniform4f(U.rahmen, R[0], R[1], R[2], R[3]); gl.uniform1f(U.rm, K.rm || 0);
+  gl.uniform4f(U.rahmen, R[0], R[1], R[2], R[3]); gl.uniform1f(U.rm, K.rm || 0); gl.uniform1f(U.sl, K.sl || 0);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 }
 if ("IntersectionObserver" in window) {

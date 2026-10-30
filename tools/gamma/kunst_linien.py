@@ -74,8 +74,11 @@ def bearbeiten(bild):
     gelb = np.clip(1 - np.abs(hue - 40) / 28, 0, 1) * np.clip(1 - (s - .45) / .3, 0, 1)
     Y = a @ np.array([.299, .587, .114], np.float32)
     a = Y[..., None] + (a - Y[..., None]) * (1 - .14 * gelb)[..., None]
-    # Wärmer (Christian, 30. Oktober 2026): Rot und etwas Grün hinauf, Blau hinunter, also golden statt rosa; die Helligkeit bleibt
-    w = a * np.array([1.04, 1.015, .89], np.float32); a = w * (Y / np.maximum(w @ np.array([.299, .587, .114], np.float32), 1e-4))[..., None]
+    # Wärmer und satter (Christian, 30. Oktober 2026, zweimal gewünscht): Rot hinauf, Blau hinunter, also warm wie Abendlicht statt grünlich;
+    # dann die Farben kräftiger, kräftige etwas weniger als blasse; die Helligkeit bleibt
+    w = a * np.array([1.09, 1., .85], np.float32); a = w * (Y / np.maximum(w @ np.array([.299, .587, .114], np.float32), 1e-4))[..., None]
+    mx, mn = a.max(2), a.min(2); s = (mx - mn) / (mx + 1e-4)
+    a = Y[..., None] + (a - Y[..., None]) * (1 + .22 * (1 - s))[..., None]
     return np.clip(a, 0, 1)
 
 name = sys.argv[2] if len(sys.argv) > 2 else "kunst"
