@@ -104,7 +104,8 @@ body.flach .bahn { display: block; pointer-events: auto; width: min(980px, 100%)
 .kapitel a { color: inherit; text-decoration: none; }
 .kapitel img { display: block; }
 .kapitel h2 { margin: 0; font-size: clamp(58px, 15.5cqi, 132px); font-weight: 500; letter-spacing: -.045em; line-height: .86; }
-.kapitel h2 .bst { display: inline-block; white-space: pre; }
+.kapitel h2 .wort, .kapitel h2 .bst { display: inline-block; }
+.kapitel h2 .wort { white-space: nowrap; }
 .marke-k, .kapitel .label { font: 500 11px/1.25 var(--sans); letter-spacing: .1em; text-transform: uppercase; color: var(--kg); }
 .marke-k { display: block; margin-bottom: clamp(16px, 3cqi, 26px); text-align: right; }   /* rechts: im Raum steht der Titel davor auf */
 .kapitel .leit { margin: clamp(18px, 3cqi, 28px) 0 clamp(30px, 6cqi, 52px); font-family: var(--serif); font-style: italic; font-size: clamp(20px, 3.4cqi, 30px); line-height: 1.2; max-width: 24ch; text-wrap: balance; }
@@ -129,53 +130,83 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 .k-art { --k: #f2b2c0; --kt: #000000; --kg: rgba(0, 0, 0, .66); --kl: rgba(0, 0, 0, .2); --ka: #ffffff; }
 .k-angebot { --k: #1f4d3a; --kt: #ffffff; --kg: rgba(255, 255, 255, .74); --kl: rgba(255, 255, 255, .26); --ka: #9fd4b4; }
 
-/* 01 Webseiten: ein Bauplan im Browser und am Telefon, drei Nullen und eine Sekunde, drei Schritte */
-.plan { display: grid; grid-template-columns: minmax(0, 1fr) clamp(78px, 17cqi, 132px); gap: clamp(14px, 3cqi, 26px); align-items: end; }
-.geraet { display: grid; gap: 10px; }
-.rahmen { position: relative; border: 1px solid var(--kt); overflow: hidden; }
-.telefon .rahmen { border-radius: clamp(10px, 2.2cqi, 16px); }
-.rahmen .leiste { position: relative; display: flex; align-items: center; gap: 5px; height: clamp(18px, 3.4cqi, 26px); padding: 0 clamp(7px, 1.4cqi, 10px); border-bottom: 1px solid var(--kl);
-  font: 500 clamp(8px, 1.4cqi, 10.5px)/1 var(--sans); letter-spacing: .04em; color: var(--kg); white-space: nowrap; }
-.rahmen .leiste i { flex: none; width: 6px; height: 6px; border-radius: 50%; border: 1px solid var(--kg); }
-.rahmen .leiste span { margin-left: 6px; }
-.telefon .leiste { justify-content: center; }
-.flaeche > i, .rahmen .laden { transform-origin: 0 50%; }
-.rahmen .laden { position: absolute; left: 0; right: 0; top: clamp(18px, 3.4cqi, 26px); height: 1px; background: var(--ka); opacity: 0; }
-.flaeche { position: relative; display: grid; align-content: start; gap: clamp(6px, 1.3cqi, 10px); padding: clamp(12px, 2.6cqi, 22px) clamp(10px, 2.2cqi, 18px); }
-.browser .flaeche { aspect-ratio: 16 / 9.4; }
-.telefon .flaeche { aspect-ratio: 9 / 15.5; }
-.spalten { position: absolute; inset: 0 clamp(10px, 2.2cqi, 18px); display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: clamp(4px, .9cqi, 8px); }
-.telefon .spalten { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-.spalten i { background: rgba(159, 212, 180, .1); }
-.flaeche > i { position: relative; display: block; height: clamp(4px, .8cqi, 6px); background: var(--kl); }
-.flaeche > i.kopf { height: 2px; margin-bottom: clamp(4px, 1cqi, 8px); background: var(--kg); }
-.flaeche > i.titel { width: 64%; height: clamp(12px, 2.8cqi, 22px); background: var(--kt); }
-.flaeche > i.satz { width: 46%; background: var(--kg); margin-bottom: clamp(2px, .6cqi, 6px); }
-.flaeche > i.bild { height: auto; aspect-ratio: 16 / 6; background: rgba(159, 212, 180, .3); border: 1px solid var(--ka); }
-.flaeche > i.z1 { width: 100%; } .flaeche > i.z2 { width: 92%; } .flaeche > i.z3 { width: 70%; }
-.telefon .flaeche > i.titel { width: 86%; } .telefon .flaeche > i.bild { aspect-ratio: 1; }
-.mass { display: flex; align-items: center; gap: 8px; height: 9px; border-left: 1px solid var(--kg); border-right: 1px solid var(--kg); font: 500 10.5px/1 var(--sans); letter-spacing: .08em; color: var(--kg); }
-.mass i { flex: 1; height: 1px; background: var(--kl); }
-.nullen { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: clamp(30px, 6cqi, 48px) 0 0; border-top: 1px solid var(--kt); }
-.nullen div { padding: 12px 0 14px; border-bottom: 1px solid var(--kl); }
-.nullen div:nth-child(even) { padding-left: clamp(12px, 2.4cqi, 18px); border-left: 1px solid var(--kl); }
-.nullen dt { font-size: clamp(44px, 8cqi, 64px); font-weight: 400; letter-spacing: -.05em; line-height: .9; white-space: nowrap; }
-.nullen dd { margin: 8px 0 0; font-size: 13.5px; line-height: 1.35; color: var(--kg); }
-.schritte { list-style: none; margin: clamp(34px, 7cqi, 56px) 0 0; padding: 0; display: grid; gap: 22px; }
-.schritte li { position: relative; display: grid; gap: 4px; padding-top: 16px; border-top: 1px solid var(--kl); }
-.schritte .punkt { position: absolute; left: 0; top: -4px; width: 7px; height: 7px; background: var(--ka); }
-.schritte .nr { font: 500 11px/1.4 var(--sans); letter-spacing: .08em; color: var(--ka); }
-.schritte b { font-weight: 500; font-size: clamp(18px, 2.8cqi, 22px); letter-spacing: -.015em; line-height: 1.2; }
-.schritte li > span:last-child { font-size: 13.5px; line-height: 1.4; color: var(--kg); }
-.web-fuss { display: grid; gap: 20px; margin-top: clamp(34px, 7cqi, 56px); padding-top: 16px; border-top: 1px solid var(--kt); }
-.fuer { margin: 0; font-size: clamp(18px, 3cqi, 23px); font-weight: 500; letter-spacing: -.015em; line-height: 1.3; }
-.fuer .label { display: block; margin-bottom: 8px; }
-.beispiel { margin: 0; font-family: var(--serif); font-style: italic; font-size: clamp(20px, 3.4cqi, 28px); line-height: 1.22; color: var(--ka); text-wrap: balance; }
+/* 01 Webseiten: oben drei Begriffe, mittig das Signet auf einer Bühne mit feiner Konstruktion, im unteren Drittel drei Flächen.
+   Flach wird das Signet zur Punktkugel, zum Würfel und zum Raster der neun Themen; eine Fläche zeigt ihren Inhalt auf der Bühne. */
+.k-web .k-innen { padding-top: clamp(40px, 5.6cqi, 54px); }
+.k-web .marke-k { position: absolute; top: clamp(40px, 5.6cqi, 54px); right: max(clamp(22px, 5.4cqi, 48px), env(safe-area-inset-right, 0px)); margin: 0; }
+.web-kopf { display: grid; gap: clamp(14px, 2.6cqi, 22px); }
+.k-web h2 { font-size: clamp(40px, 8.2cqi, 72px); font-weight: 400; letter-spacing: -.035em; line-height: 1; }
+.k-web h2 .zl { display: block; }
+.k-web .web-kopf .leit { margin: 0; font-family: var(--sans); font-style: normal; font-size: clamp(16px, 2.3cqi, 19px); line-height: 1.38; color: var(--kg); max-width: 30ch; }
+/* Die Bühne hat das Seitenverhältnis --ar; Kreise, Signet und Raster bleiben quadratisch, weil ihre Breite durch --ar geteilt wird */
+.buehne { --ar: 1; position: relative; margin: clamp(18px, 3cqi, 28px) 0 clamp(22px, 4cqi, 34px); aspect-ratio: var(--ar); }
+.buehne > * { position: absolute; }
+.konstruktion { inset: 0; transition: opacity .6s; }
+.konstruktion i { position: absolute; display: block; background: var(--kl); }
+.konstruktion .waag { left: 0; right: 0; top: 50%; height: 1px; }
+.konstruktion .senk { top: 0; bottom: 0; left: 50%; width: 1px; }
+.konstruktion .kreis { top: 6%; height: 88%; width: calc(88% / var(--ar)); left: calc(50% - 44% / var(--ar)); background: none; border: 1px solid var(--kl); border-radius: 50%; }
+.konstruktion .kreis.innen { top: 27%; height: 46%; width: calc(46% / var(--ar)); left: calc(50% - 23% / var(--ar)); }
+.konstruktion .formel { position: absolute; right: 0; bottom: 0; font: italic 400 15px/1.2 var(--serif); color: var(--kg); }
+.konstruktion .masz { position: absolute; left: 0; top: 0; font: 500 10.5px/1.2 var(--sans); letter-spacing: .08em; color: var(--kg); }
+.logo { top: 8%; height: 84%; width: calc(84% / var(--ar)); left: calc(50% - 42% / var(--ar)); transition: opacity .5s; }
+.logo canvas { display: block; width: 100%; height: 100%; }
+.verwandlung { inset: 0; width: 100%; height: 100%; pointer-events: none; }
+/* Das Raster der neun Themen: Kopfzeile mit den drei Begriffen, darunter 3 × 3 Felder mit Haarlinien */
+.themen { top: 0; bottom: 0; width: min(100%, 93% / var(--ar)); left: calc(50% - min(50%, 46.5% / var(--ar))); display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 8px; visibility: hidden; opacity: 0; transition: opacity .5s, visibility 0s .5s; }
+.themen .spalten-kopf { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.themen .spalten-kopf span { font: 500 10.5px/1.2 var(--sans); letter-spacing: .1em; text-transform: uppercase; color: var(--kg); padding-left: 1px; }
+.themen.offen .spalten-kopf span:not(:first-child) { visibility: hidden; }
+.zellen { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 1px; padding: 1px; background: var(--kl); }
+.zellen > * { min-width: 0; min-height: 0; background: var(--k); }
+.thema { position: relative; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; padding: clamp(8px, 1.6cqi, 12px); border: 0; border-radius: 0; color: var(--kt); font: inherit; text-align: left; cursor: pointer; }
+.thema:hover { background: #2a5c47; }
+.thema .nr { font: 500 10.5px/1.2 var(--sans); letter-spacing: .08em; color: var(--kg); }
+.thema b { font-weight: 500; font-size: clamp(14px, 2cqi, 17px); letter-spacing: -.01em; line-height: 1.15; hyphens: auto; overflow-wrap: anywhere; }
+.thema[hidden], .erkl[hidden] { display: none; }
+.thema[aria-expanded="true"] { background: var(--ka); color: var(--k); cursor: default; }
+.thema[aria-expanded="true"] .nr { color: var(--k); }
+.erkl { padding: clamp(8px, 1.6cqi, 12px); hyphens: auto; display: flex; flex-direction: column; justify-content: flex-end; gap: 4px; overflow: hidden; }
+.erkl.leitsatz { grid-column: span 2; justify-content: center; font-family: var(--serif); font-style: italic; font-size: clamp(15px, 2.2cqi, 19px); line-height: 1.22; text-wrap: balance; }
+.erkl .gross { font-size: clamp(20px, 3.4cqi, 28px); font-weight: 400; letter-spacing: -.035em; line-height: 1; overflow-wrap: anywhere; }
+.erkl .klein { font-size: clamp(11.5px, 1.6cqi, 13px); line-height: 1.3; color: var(--kg); }
+.erkl.leer { background: var(--k) linear-gradient(var(--kl), var(--kl)) center / 1px 22% no-repeat; }
+.erkl.leer::after { content: ""; display: block; margin: auto; width: 22%; height: 1px; background: var(--kl); }
+.erkl.schalter { border: 0; border-radius: 0; color: var(--kt); font: inherit; text-align: left; cursor: pointer; justify-content: space-between; }
+.erkl.schalter:hover { background: #2a5c47; }
+.erkl.schalter .klein { color: var(--ka); }
+.erkl.schalter b { font-weight: 500; font-size: clamp(13px, 1.8cqi, 15px); line-height: 1.2; }
+/* Der Inhalt einer Fläche, oben auf der Bühne */
+.feld-inhalt { inset: 0; display: flex; flex-direction: column; visibility: hidden; opacity: 0; border-top: 1px solid var(--kt); padding-top: clamp(12px, 2.4cqi, 18px); }
+.fi { display: grid; align-content: start; gap: clamp(12px, 2.4cqi, 20px); }
+.fi[hidden] { display: none; }
+.fi-satz { margin: 0; font-family: var(--serif); font-style: italic; font-size: clamp(24px, 4.6cqi, 40px); line-height: 1.12; max-width: 22ch; text-wrap: balance; }
+.fi-folgt { margin: 0; font-size: 13.5px; color: var(--kg); }
+.fi-fragen, .fi-liste { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--kl); }
+.fi-fragen li, .fi-liste li { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0 10px; border-bottom: 1px solid var(--kl); font-size: clamp(15px, 2.2cqi, 18px); }
+.fi-fragen li span, .fi-liste li span { font-size: 12.5px; color: var(--kg); text-align: right; }
+.fi .weiter { margin-top: 4px; justify-self: start; }
+.fi-zu { margin-top: auto; align-self: flex-start; padding: 8px 0; border: 0; background: none; color: var(--ka); font: 500 13.5px var(--sans); cursor: pointer; }
+.k-web.raster .logo, .k-web.raster .konstruktion, .k-web.baut .logo, .k-web.zeigt-feld .logo, .k-web.zeigt-feld .konstruktion { opacity: 0; }
+.k-web.raster:not(.baut):not(.zeigt-feld) .themen { visibility: visible; opacity: 1; transition: opacity .6s; }
+.k-web.zeigt-feld .feld-inhalt { visibility: visible; opacity: 1; transition: opacity .45s; }
+/* Drei Flächen im unteren Drittel, in drei Tönen des Tannengrüns */
+.flaechen { display: grid; border-top: 1px solid var(--kt); }
+.feld { display: grid; grid-template-rows: auto 1fr auto; gap: 12px; min-height: clamp(128px, 24cqi, 196px); padding: 14px clamp(14px, 2.6cqi, 20px) 16px; border: 0; border-radius: 0; color: var(--kt); font: inherit; text-align: left; cursor: pointer; }
+.feld:nth-child(1) { background: rgba(255, 255, 255, .045); }
+.feld:nth-child(2) { background: rgba(255, 255, 255, .085); }
+.feld:nth-child(3) { background: rgba(255, 255, 255, .13); }
+.feld:hover { background: rgba(255, 255, 255, .17); }
+.feld .feld-kopf { display: flex; justify-content: space-between; gap: 10px; }
+.feld .feld-kopf span:last-child { font: 500 11px/1.25 var(--sans); letter-spacing: .04em; color: var(--ka); }
+.feld .feld-satz { font-family: var(--serif); font-style: italic; font-size: clamp(18px, 2.5cqi, 21px); line-height: 1.2; max-width: 24ch; }
+.feld .feld-pfeil { justify-self: end; font-size: 17px; line-height: 1; color: var(--ka); }
+.feld[aria-expanded="true"] { background: var(--ka); color: var(--k); }
+.feld[aria-expanded="true"] .label, .feld[aria-expanded="true"] .feld-kopf span:last-child, .feld[aria-expanded="true"] .feld-pfeil { color: var(--k); }
 @container (min-width: 640px) {
-  .nullen { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .nullen div:nth-child(n+2) { padding-left: clamp(12px, 2.4cqi, 18px); border-left: 1px solid var(--kl); }
-  .schritte { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 26px; }
-  .web-fuss { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 34px; align-items: end; }
+  .web-kopf { grid-template-columns: minmax(0, 1fr) minmax(0, 15em); align-items: end; }
+  .buehne { --ar: 1.9; }
+  .flaechen { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 /* 02 Lab: ein grosses Bild, die sechs Verfahren als Liste, darunter die übrigen Ergebnisse als Kontaktbogen */
@@ -328,44 +359,43 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
   <div class="bahn" id="bahn">
       <article class="kapitel k-web" id="k-web" data-name="Webseiten"><div class="k-innen">
         <span class="marke-k">01 · Angebot</span>
-        <h2>Webseiten</h2>
-        <p class="leit">Eine Adresse, die bleibt.</p>
-        <div class="plan">
-          <div class="geraet browser">
-            <div class="rahmen" data-rand="Entwurf im Browser">
-              <div class="leiste"><i></i><i></i><i></i><span>deine-adresse.ch</span></div>
-              <i class="laden"></i>
-              <div class="flaeche"><div class="spalten"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-                <i class="kopf"></i><i class="titel"></i><i class="satz"></i><i class="bild"></i><i class="z1"></i><i class="z2"></i><i class="z3"></i></div>
-            </div>
-            <span class="mass"><i></i>1280 px<i></i></span>
-          </div>
-          <div class="geraet telefon">
-            <div class="rahmen" data-rand="App auf dem Startbildschirm">
-              <div class="leiste"><span>App</span></div>
-              <i class="laden"></i>
-              <div class="flaeche"><div class="spalten"><i></i><i></i><i></i><i></i></div>
-                <i class="kopf"></i><i class="titel"></i><i class="bild"></i><i class="z1"></i><i class="z2"></i><i class="z3"></i></div>
-            </div>
-            <span class="mass"><i></i>390<i></i></span>
-          </div>
+        <div class="web-kopf">
+          <h2 aria-label="Entwickeln, gestalten, vernetzen."><span class="zl">Entwickeln,</span><span class="zl">gestalten,</span><span class="zl">vernetzen.</span></h2>
+          <p class="leit">Websites und Apps: schnell, eigenständig, ohne Dienste von aussen.</p>
         </div>
-        <dl class="nullen">
-          <div data-rand="Unter einer Sekunde"><dt>&lt;1 s</dt><dd>bis die Seite da ist</dd></div>
-          <div><dt>0</dt><dd>Cookies</dd></div>
-          <div><dt>0</dt><dd>Tracker und Werbung</dd></div>
-          <div><dt>0</dt><dd>Dienste von aussen: Schriften und Skripte liegen auf dem eigenen Server</dd></div>
-        </dl>
-        <ol class="schritte">
-          <li><i class="punkt"></i><span class="nr">01</span><b>Gespräch</b><span>Was die Seite oder die App tun soll, und für wen.</span></li>
-          <li><i class="punkt"></i><span class="nr">02</span><b>Entwurf im Browser</b><span>Zum Anfassen, nicht als Bild. Bei Apps ein lauffähiger Prototyp innert Tagen.</span></li>
-          <li data-rand="Eigene Adresse"><i class="punkt"></i><span class="nr">03</span><b>Bau und Veröffentlichung</b><span>Auf der eigenen Adresse. Danach bleibt alles in deiner Hand.</span></li>
-        </ol>
-        <div class="web-fuss">
-          <p class="fuer"><span class="label">Für</span>Künstler:innen, Praxen, Vereine, Galerien, Museen, Schulen und kleine Unternehmen</p>
-          <p class="beispiel">Diese Seite ist das Beispiel, die sieben Apps sind es auch.</p>
+        <div class="buehne">
+          <div class="konstruktion" aria-hidden="true"><i class="waag"></i><i class="senk"></i><i class="kreis"></i><i class="kreis innen"></i><span class="masz">ornament.cloud</span><span class="formel">r = b + cos t</span></div>
+          <div class="logo" data-signet><canvas aria-hidden="true"></canvas></div>
+          <div class="themen" aria-label="Neun Themen">
+            <div class="spalten-kopf" aria-hidden="true"><span>Entwickeln</span><span>Gestalten</span><span>Vernetzen</span></div>
+            <div class="zellen"></div>
+          </div>
+          <div class="feld-inhalt">
+            <section class="fi" data-feld="express" hidden>
+              <span class="label">Express</span>
+              <p class="fi-satz">Wenns schnell gehen muss: neue Webseite online in 72 Stunden</p>
+              <p class="fi-folgt">Ablauf, Umfang und Preis folgen.</p>
+            </section>
+            <section class="fi" data-feld="briefing" hidden>
+              <span class="label">Briefing</span>
+              <p class="fi-satz">Senden Sie eine unverbindliche Anfrage, damit wir Ihnen ein gutes Angebot machen können</p>
+              <ol class="fi-fragen"><li>Was soll entstehen?<span>Website, App, beides</span></li><li>Was gibt es schon?<span>Texte, Bilder, Logo</span></li><li>Wie gross?<span>eine Seite bis Shop</span></li></ol>
+              <a class="weiter" href="{{LINK}}b/angebot/webdesign/">Anfrage beginnen →</a>
+            </section>
+            <section class="fi" data-feld="referenzen" hidden>
+              <span class="label">Referenzen</span>
+              <p class="fi-satz">Einige Beispiele dafür, wie wir Ideen umsetzen</p>
+              <ul class="fi-liste"><li><a href="{{LINK}}b/">ornament.cloud</a><span>Website</span></li><li><a href="{{LINK}}beta/lab/">ornament.lab</a><span>Werkzeug im Browser</span></li><li><a href="{{LINK}}b/apps/">Sieben Apps</a><span>ohne App-Store</span></li></ul>
+            </section>
+            <button type="button" class="fi-zu">← Zurück zu den Themen</button>
+          </div>
+          <canvas class="verwandlung" aria-hidden="true"></canvas>
         </div>
-        <a class="weiter" href="{{LINK}}b/angebot/webdesign/">Briefing beginnen →</a>
+        <div class="flaechen">
+          <button type="button" class="feld" data-feld="express" aria-expanded="false" data-rand="Express"><span class="feld-kopf"><span class="label">Express</span><span>72 h</span></span><span class="feld-satz">Wenns schnell gehen muss: neue Webseite online in 72 Stunden</span><span class="feld-pfeil">→</span></button>
+          <button type="button" class="feld" data-feld="briefing" aria-expanded="false"><span class="feld-kopf"><span class="label">Briefing</span><span>unverbindlich</span></span><span class="feld-satz">Senden Sie eine unverbindliche Anfrage, damit wir Ihnen ein gutes Angebot machen können</span><span class="feld-pfeil">→</span></button>
+          <button type="button" class="feld" data-feld="referenzen" aria-expanded="false" data-rand="Referenzen"><span class="feld-kopf"><span class="label">Referenzen</span><span>Auswahl</span></span><span class="feld-satz">Einige Beispiele dafür, wie wir Ideen umsetzen</span><span class="feld-pfeil">→</span></button>
+        </div>
       </div></article>
 
       <article class="kapitel k-lab" id="k-lab" data-name="Lab"><div class="k-innen">
@@ -544,6 +574,32 @@ function deckeln(m, px) {
   return m;
 }
 
+/* ---------- Das Signet: die Re-entry-Schlaufe r = b + cos t wie in b/tafeln.mjs. b atmet zwischen 0,25 und 0,95, ein Punkt läuft die Schlaufe ab.
+   Raum und flache Seite rechnen mit derselben Uhr, darum geht die Bewegung beim Wechsel ohne Sprung weiter. ---------- */
+const SIGNET = (() => {
+  const xs = [], ys = []; for (let i = 0; i <= 240; i++) { const t = i / 240 * Math.PI * 2, r = .95 + Math.cos(t); xs.push(1.2 * r * Math.cos(t) - .84); ys.push(1.2 * r * Math.sin(t)); }
+  return { mx: (Math.min(...xs) + Math.max(...xs)) / 2, my: (Math.min(...ys) + Math.max(...ys)) / 2, sp: Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) };
+})();
+// Punkte in einem Quadrat von −0,5 bis 0,5, y nach unten wie im SVG der Website
+function signetForm(sek, n = 240) {
+  const t0 = ruhig ? 3 : sek, b = .6 + .35 * Math.sin((t0 - 3) * .42);
+  const p = t => { const r = b + Math.cos(t); return [(1.2 * r * Math.cos(t) - .84 - SIGNET.mx) / SIGNET.sp, (1.2 * r * Math.sin(t) - SIGNET.my) / SIGNET.sp]; };
+  const linie = []; for (let i = 0; i < n; i++) linie.push(p(i / n * Math.PI * 2));
+  const innen = [], w = Math.acos(-b); for (let i = 0; i <= 60; i++) innen.push(p(w + (Math.PI * 2 - 2 * w) * i / 60));
+  return { linie, innen, punkt: p(-Math.PI / 2 + ((t0 - 2.5) / 8) * Math.PI * 2) };
+}
+function signetMalen(cv, sek) {
+  const r = cv.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2), b = Math.round(r.width * dpr), h = Math.round(r.height * dpr);
+  if (!b || !h) return;
+  if (cv.width !== b || cv.height !== h) { cv.width = b; cv.height = h; }
+  const cx = cv.getContext("2d"), f = signetForm(sek), gr = Math.min(b, h) * .92, P = q => [b / 2 + q[0] * gr, h / 2 + q[1] * gr];
+  const pfad = (pts) => { cx.beginPath(); pts.forEach((q, i) => cx[i ? "lineTo" : "moveTo"](...P(q))); cx.closePath(); };
+  cx.clearRect(0, 0, b, h);
+  pfad(f.innen); cx.fillStyle = "rgba(255, 255, 255, .2)"; cx.fill();
+  pfad(f.linie); cx.strokeStyle = "#fff"; cx.lineWidth = Math.max(1.5 * dpr, gr * .0045); cx.lineJoin = "round"; cx.stroke();
+  cx.beginPath(); cx.arc(...P(f.punkt), Math.max(2.5 * dpr, gr * .016), 0, Math.PI * 2); cx.fillStyle = "#fff"; cx.fill();
+}
+
 const intro = document.getElementById("intro"), szene = document.getElementById("szene"), tip = document.getElementById("tip");
 const tafel = szene.querySelector(".tafel"), wort = tafel.querySelector(".wort"), spalte = tafel.querySelector(".spalte"), introText = document.getElementById("intro-text");
 const abschnitt = document.getElementById("bahn-abschnitt"), platz = document.getElementById("raum-platz"), bahnDom = document.getElementById("bahn");
@@ -619,12 +675,15 @@ async function kapitelZeichnen(k, i, LW) {
   [kl, ...kl.querySelectorAll("[id]")].forEach(e => e.removeAttribute("id"));
   kl.querySelectorAll("img").forEach(im => { im.loading = "eager"; });
   kl.querySelectorAll(".k-netz").forEach(e => e.remove());
+  // Im Raum zeigt die Seite ihren Anfang: Signet statt Raster, keine geöffnete Fläche
+  kl.classList.remove("raster", "baut", "zeigt-feld"); delete kl.dataset.feld;
+  kl.querySelectorAll('[aria-expanded="true"]').forEach(e => e.setAttribute("aria-expanded", "false"));
   huelle.append(kl); document.body.append(huelle);
   await Promise.all([...kl.querySelectorAll("img")].map(im => im.decode().catch(() => {})));
   const r0 = kl.getBoundingClientRect(), LH = Math.ceil(r0.height);
   const cv = document.createElement("canvas"); cv.width = Math.round(LW * skala); cv.height = Math.round(LH * skala);
   const cx = cv.getContext("2d"); cx.scale(skala, skala);
-  const lage = { titel: null, rand: [] }, range = document.createRange();
+  const lage = { titel: null, rand: [], signet: null }, range = document.createRange();
   const leer = c => !c || c === "transparent" || /rgba?\(.*,\s*0\)$/.test(c);
   const schrift = cs => `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
   const oberlaenge = () => { const m = cx.measureText("Hg"); return m.fontBoundingBoxAscent ?? m.actualBoundingBoxAscent * 1.12; };
@@ -654,13 +713,21 @@ async function kapitelZeichnen(k, i, LW) {
     const a = alpha * parseFloat(cs.opacity); if (a < .002) return;
     const r = el.getBoundingClientRect(), x = r.left - r0.left, y = r.top - r0.top, b = r.width, h = r.height;
     if (el.tagName === "H2") {
-      // Der Titel steht im Raum: Lage, Schrift und Grundlinie merken, nicht ins Band zeichnen
-      range.selectNodeContents(el); const rr = range.getClientRects()[0] || r;
-      cx.font = schrift(cs);
-      lage.titel = { text: el.textContent, x: rr.left - r0.left, grund: rr.top - r0.top + oberlaenge(), gr: parseFloat(cs.fontSize), font: schrift(cs), abstand: parseFloat(cs.letterSpacing) || 0, farbe: cs.color };
+      // Der Titel steht im Raum: Lage, Schrift und Grundlinie jeder Zeile merken, nicht ins Band zeichnen
+      cx.font = schrift(cs); const asc = oberlaenge(), zeilen = [], gang = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      for (let n; (n = gang.nextNode());) for (let j = 0; j < n.length; j++) {
+        range.setStart(n, j); range.setEnd(n, j + 1); const rr = range.getClientRects()[0]; if (!rr) continue;
+        let z = zeilen.find(z => Math.abs(z.top - rr.top) < rr.height / 2);
+        if (!z) { z = { top: rr.top, x: rr.left - r0.left, text: "" }; zeilen.push(z); }
+        z.text += n.data[j];
+      }
+      if (!zeilen.length) return;
+      zeilen.forEach(z => { z.text = z.text.trim(); z.grund = z.top - r0.top + asc; });
+      lage.titel = { zeilen, grund: zeilen[0].grund, gr: parseFloat(cs.fontSize), font: schrift(cs), abstand: parseFloat(cs.letterSpacing) || 0, farbe: cs.color };
       return;
     }
     if (el.dataset && el.dataset.rand) lage.rand.push({ text: el.dataset.rand, x, y, b, h });
+    if (el.dataset && "signet" in el.dataset) lage.signet = { x, y, b, h };
     cx.save(); cx.globalAlpha = a;
     if (cs.mixBlendMode && cs.mixBlendMode !== "normal") cx.globalCompositeOperation = cs.mixBlendMode;
     const rad = radius(cs, b, h);
@@ -840,6 +907,19 @@ async function bahnBauen() {
     const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
     return { tex, b, h };
   };
+  // Ein Titel über mehrere Zeilen, so gesetzt wie auf der Seite
+  const titelFlaeche = (t, farbe, sk, rand, unschaerfe = 0) => {
+    const z = t.zeilen, x0 = Math.min(...z.map(l => l.x)), g0 = z[0].grund;
+    const m = document.createElement("canvas").getContext("2d"); m.font = t.font; if ("letterSpacing" in m) m.letterSpacing = t.abstand + "px";
+    const b = Math.ceil(Math.max(...z.map(l => l.x - x0 + m.measureText(l.text).width)) + rand * 2), h = Math.ceil(z[z.length - 1].grund - g0 + t.gr * 1.16 + rand);
+    const cv = document.createElement("canvas"); cv.width = Math.ceil(b * sk); cv.height = Math.ceil(h * sk);
+    const cx = cv.getContext("2d"); cx.scale(sk, sk); cx.font = t.font; if ("letterSpacing" in cx) cx.letterSpacing = t.abstand + "px";
+    if (unschaerfe) cx.filter = `blur(${unschaerfe}px)`;
+    cx.fillStyle = farbe; cx.textBaseline = "alphabetic";
+    z.forEach(l => cx.fillText(l.text, rand + l.x - x0, t.gr * .88 + rand / 2 + l.grund - g0));
+    const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    return { tex, b, h, x0 };
+  };
   // Ein Bezugssystem auf der Bahn: x wie die Schrift nach rechts, y wie die Schrift nach oben, z aus der Bahn heraus
   const basis = (sj, quer) => {
     const T = bahnPunkt(sj + .01).sub(bahnPunkt(sj - .01)).normalize(), N = normale(sj);
@@ -852,10 +932,10 @@ async function bahnBauen() {
   bilder.forEach((b, i) => {
     const t = b.lage.titel; if (!t) return;
     const rand = Math.round(t.gr * .14);
-    const f = textFlaeche(t.text, t.font, t.farbe, t.gr, eng ? 3 : 2.5, rand, t.abstand);
-    const sch = textFlaeche(t.text, t.font, "#000", t.gr, 1, rand, t.abstand, t.gr * .05);
+    const f = titelFlaeche(t, t.farbe, eng ? 3 : 2.5, rand);
+    const sch = titelFlaeche(t, "#000", 1, rand, t.gr * .05);
     const unten = t.grund - t.gr * .88 - rand / 2 + f.h;   // Unterkante der Fläche im Kapitel
-    const sH = bahn.kapitel[i].s0 + unten * bahn.k, quer = RAUM.w / 2 - (t.x - rand) * bahn.k;
+    const sH = bahn.kapitel[i].s0 + unten * bahn.k, quer = RAUM.w / 2 - (f.x0 - rand) * bahn.k;
     const piv = basis(sH, quer);
     const geo = new THREE.PlaneGeometry(f.b * bahn.k, f.h * bahn.k).translate(f.b * bahn.k / 2, f.h * bahn.k / 2, 0);
     const mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: f.tex, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
@@ -863,6 +943,39 @@ async function bahnBauen() {
     schatten.material.userData.a = .3; schatten.position.z = .002; schatten.renderOrder = 1; mesh.renderOrder = 2;
     piv.add(schatten, mesh); g.add(piv);
     bahn.titel.push({ sH, mesh, schatten });
+  });
+  // Das Signet auf der Bühne der Webseiten: eine Linie auf dem Band, die atmet, ihre innere Schleife und der laufende Punkt
+  bahn.signete = [];
+  bilder.forEach((b, i) => {
+    const l = b.lage.signet; if (!l) return;
+    const gr = Math.min(l.b, l.h) * .92, mu = l.x + l.b / 2, mv = l.y + l.h / 2, s0 = bahn.kapitel[i].s0, d = Math.max(.75, gr * .0025) / gr, N = 240;
+    const auf = (u, v, hoch, ziel) => bahnPunkt(s0 + (mv + v * gr) * bahn.k, RAUM.w / 2 - (mu + u * gr) * bahn.k, hoch, ziel);
+    const flaeche = (n, idx) => { const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(n * 3), 3)); geo.setIndex(idx); return geo; };
+    const bi = [], fi = [], si = [];
+    for (let j = 0; j < N; j++) { const a = j * 2, c = ((j + 1) % N) * 2; bi.push(a, c, a + 1, a + 1, c, c + 1); }
+    for (let j = 0; j < 60; j++) fi.push(61, j, j + 1);
+    for (let j = 0; j < 24; j++) si.push(24, j, (j + 1) % 24);
+    const linie = flaeche(N * 2, bi), innen = flaeche(62, fi), scheibe = flaeche(25, si);
+    [[innen, .2], [linie, 1], [scheibe, 1]].forEach(([geo, a], j) => {
+      const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0xf2f6f3, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
+      m.material.userData.a = a; m.renderOrder = 3 + j; m.frustumCulled = false; g.add(m);
+    });
+    const v = new THREE.Vector3(), bp = linie.attributes.position.array, fp = innen.attributes.position.array, sp = scheibe.attributes.position.array;
+    const setzen = sek => {
+      const f = signetForm(sek, N);
+      for (let j = 0; j < N; j++) {
+        const a = f.linie[(j + N - 1) % N], c = f.linie[(j + 1) % N], q = f.linie[j];
+        let nx = a[1] - c[1], ny = c[0] - a[0]; const nl = Math.hypot(nx, ny) || 1; nx *= d / nl; ny *= d / nl;
+        auf(q[0] + nx, q[1] + ny, .008, v).toArray(bp, j * 6); auf(q[0] - nx, q[1] - ny, .008, v).toArray(bp, j * 6 + 3);
+      }
+      let su = 0, sv = 0; f.innen.forEach((q, j) => { auf(q[0], q[1], .006, v).toArray(fp, j * 3); su += q[0]; sv += q[1]; });
+      auf(su / f.innen.length, sv / f.innen.length, .006, v).toArray(fp, 61 * 3);
+      for (let j = 0; j < 24; j++) { const w = j / 24 * Math.PI * 2; auf(f.punkt[0] + Math.cos(w) * .016, f.punkt[1] + Math.sin(w) * .016, .01, v).toArray(sp, j * 3); }
+      auf(f.punkt[0], f.punkt[1], .01, v).toArray(sp, 24 * 3);
+      for (const geo of [linie, innen, scheibe]) geo.attributes.position.needsUpdate = true;
+    };
+    setzen(performance.now() / 1000);
+    bahn.signete.push(setzen);
   });
   // Metermarken: alle fünf Meter eine Zahl in Mono am linken Rand
   const marken = []; for (let m = 5; m <= bahn.L; m += 5) marken.push(m);
@@ -970,6 +1083,14 @@ function figurenBauen(g, bilder) {
     bogen(b - r, y0 + r, 0, r, "xy", -Math.PI / 2, 0, 6); bogen(b - r, y0 + h - r, 0, r, "xy", 0, Math.PI / 2, 6); bogen(r, y0 + h - r, 0, r, "xy", Math.PI / 2, Math.PI, 6); bogen(r, y0 + r, 0, r, "xy", Math.PI, Math.PI * 1.5, 6);
     hell = .4; rechteck(.06, y0 + h - .2, 0, b * .62, .06); rechteck(.06, y0 + .3, 0, b - .12, b - .12);
     hell = .3; for (let i = 0; i < 3; i++) strich([.06, y0 + .2 - i * .045, 0], [b - .06 - i * .06, y0 + .2 - i * .045, 0]);
+  };
+  /* Der Würfel mit dem Raster 3 × 3 vorn und der Kugel aus Fäden innen: so verwandelt sich das Signet auf der flachen Seite */
+  const wuerfel = () => {
+    const s = .78, y0 = .2; hell = .5; quader(0, y0, 0, s, s, s);
+    hell = .32; for (let j = 1; j < 3; j++) { strich([j * s / 3, y0, 0], [j * s / 3, y0 + s, 0]); strich([0, y0 + j * s / 3, 0], [s, y0 + j * s / 3, 0]); }
+    hell = .2; bogen(s / 2, y0 + s / 2, -s / 2, s * .4, "xy", 0, Math.PI * 2, 36); bogen(s / 2, y0 + s / 2, -s / 2, s * .4, "xz", 0, Math.PI * 2, 36);
+    hell = .3; strich([s / 2, 0, -s / 2], [s / 2, y0, -s / 2]); strich([s / 2 - .12, 0, -s / 2], [s / 2 + .12, 0, -s / 2]);
+    schild("3 × 3 Themen", [s / 2, y0 + s + .06, 0], "mass");
   };
   /* Lab: ein Kolben, ein Prisma, das Licht in Farben teilt, und sortierte Säulen */
   const kolben = () => {
@@ -1127,7 +1248,7 @@ function figurenBauen(g, bilder) {
 
   // Je Bereich: welche Figur wo steht (Anteil der Länge, Seite, Abstand vom Band)
   const PLAN = {
-    "k-web": [[browser, .22, 1, .5], [stufen, .45, -1, .6], [telefon, .7, 1, .9], ["schlaufe", .12, -1, .8], ["notation", .88, -1, 0]],
+    "k-web": [["notation", .08, -1, 0], [browser, .22, 1, .5], [wuerfel, .45, -1, .5], [telefon, .72, 1, .9]],
     "k-lab": [[kolben, .25, -1, .5], [prisma, .6, 1, .4], ["notation", .85, -1, 1]],
     "k-rad": [[raeder, .4, 1, .3], ["notation", .7, -1, 2]],
     "k-apps": [[kugel, .2, -1, .5], [tuch, .5, 1, .5], [scherben, .8, -1, .4]],
@@ -1330,6 +1451,11 @@ function bild(zeit) {
   if (!ruhig) zustand.dreh += dt * .08 * (1 - weich(.5, .6, zustand.t));
   zustand.v = misch(zustand.v, (zustand.s - sAlt) / Math.max(dt, 1e-3), .2);
   introDom(zustand.t);
+  // Webseiten flach: das Signet bewegt sich, bis es sich verwandelt
+  if (web && flach) {
+    if (!web.k.classList.contains("raster")) { const r = web.logo.getBoundingClientRect(); if (r.bottom > 0 && r.top < innerHeight) signetMalen(web.logo, zeit / 1000); }
+    webLaufBild(zeit);
+  }
   // Während des Wechsels zur flachen Seite läuft das Bild weiter, die Seite blendet darüber
   const imRaum = !flach || document.body.classList.contains("wechsel") || intro.getBoundingClientRect().bottom > 0;
   document.body.classList.toggle("nach-intro", intro.getBoundingClientRect().bottom <= innerHeight * .2);
@@ -1369,9 +1495,11 @@ function bild(zeit) {
       bahn.materialien.forEach(m => { m.opacity = auf * (m.userData.a ?? 1); });
       // Titel liegen flacher, solange sie nah sind, und richten sich auf, während sie davonziehen
       const fuss = zustand.s + (schmal() ? 2.4 : 1.7);
-      bahn.titel.forEach(x => { const a = ruhig ? 1.05 : misch(.35, 1.3, weich(-2, 16, fuss - x.sH)); x.mesh.rotation.x = a; x.schatten.scale.y = .15 + .85 * Math.cos(a); });
+      // Beim Kippen in die flache Seite legen sie sich auf das Band, genau dorthin, wo der Titel auf der Seite steht
+      bahn.titel.forEach(x => { const a = misch(ruhig ? 1.05 : misch(.35, 1.3, weich(-2, 16, fuss - x.sH)), 0, kipp.wert); x.mesh.rotation.x = a; x.schatten.scale.y = .15 + .85 * Math.cos(a); });
       // Die drei Räder drehen sich langsam gegeneinander, auf jeder Schlaufe läuft ein Punkt
       if (!ruhig) {
+        bahn.signete.forEach(f => f(zeit / 1000));
         bahn.dreher.forEach(d => { d.o.rotation.z = zeit * .00011 * d.v; });
         bahn.laeufer.forEach(l => { const n = l.punkte.length / 3 - 1, f = ((zeit * .00005 + l.phase) % 1) * n, i = Math.floor(f), u = f - i, P = l.punkte;
           l.attr.setXYZ(0, misch(P[i * 3], P[i * 3 + 3], u), misch(P[i * 3 + 1], P[i * 3 + 4], u), misch(P[i * 3 + 2], P[i * 3 + 5], u)); l.attr.needsUpdate = true; });
@@ -1414,6 +1542,7 @@ function setzeFlach(f, id) {
 }
 function flachSetzen(f, akt, effekt) {
   flach = f; document.body.classList.toggle("flach", f); flachKnopf.textContent = f ? "Zurück in den Raum" : "Flach lesen";
+  if (!f) webZurueck();
   if (f && !effekt) kipp.wert = kipp.von = kipp.nach = 0;
   const k = akt && document.getElementById(akt);
   if (k) { if (f) k.scrollIntoView({ behavior: "auto" }); else zuKapitel(akt, true); }
@@ -1430,11 +1559,23 @@ function flachSetzen(f, akt, effekt) {
 const NS = "http://www.w3.org/2000/svg";
 function titelZerlegen(h2) {
   if (!h2.dataset.zerlegt) {
-    const text = h2.textContent; h2.setAttribute("aria-label", text); h2.textContent = "";
-    for (const c of text) { const b = document.createElement("span"); b.className = "bst"; b.setAttribute("aria-hidden", "true"); b.textContent = c; h2.append(b); }
+    // Buchstaben je Wort zusammenhalten, damit ein Titel über mehrere Zeilen nur zwischen Wörtern umbricht
+    if (!h2.hasAttribute("aria-label")) h2.setAttribute("aria-label", h2.textContent);
+    const knoten = [], gang = document.createTreeWalker(h2, NodeFilter.SHOW_TEXT); for (let n; (n = gang.nextNode());) knoten.push(n);
+    for (const n of knoten) {
+      const teile = document.createDocumentFragment();
+      for (const t of n.data.split(/(\s+)/)) {
+        if (!t) continue;
+        if (!t.trim()) { teile.append(t); continue; }
+        const w = document.createElement("span"); w.className = "wort"; w.setAttribute("aria-hidden", "true");
+        for (const c of t) { const b = document.createElement("span"); b.className = "bst"; b.textContent = c; w.append(b); }
+        teile.append(w);
+      }
+      n.replaceWith(teile);
+    }
     h2.dataset.zerlegt = "1";
   }
-  return [...h2.children];
+  return [...h2.querySelectorAll(".bst")];
 }
 function kapitelEffekt(k) {
   if (ruhig || !k || !k.animate) return;
@@ -1442,8 +1583,9 @@ function kapitelEffekt(k) {
   bst.forEach((b, j) => b.animate([{ opacity: 0, transform: "translateY(.2em)", filter: "blur(8px)" }, { opacity: 1, transform: "none", filter: "blur(0px)" }],
     { duration: 560, delay: 80 + (bst.length - 1 - j) * 55, easing: "cubic-bezier(.2,.7,.2,1)", fill: "backwards" }));
   k.querySelector(".k-netz")?.remove();
+  if (k === web?.k) return;   // bei den Webseiten ist die Verwandlung auf der Bühne der Effekt
   const b = k.clientWidth, h = Math.min(k.clientHeight, 440), letzte = bst[bst.length - 1];
-  const hx = Math.min(b - 70, letzte.offsetLeft + letzte.offsetWidth + 46), hy = h2.offsetTop + h2.offsetHeight * .5;
+  const hx = Math.min(b - 70, letzte.offsetLeft + letzte.offsetWidth + 46), hy = letzte.offsetTop + letzte.offsetHeight * .5;
   const svg = document.createElementNS(NS, "svg"); svg.setAttribute("class", "k-netz"); svg.setAttribute("aria-hidden", "true");
   svg.setAttribute("viewBox", `0 0 ${b} ${h}`); svg.style.height = h + "px";
   const el = (name, attr) => { const e = document.createElementNS(NS, name); for (const n in attr) e.setAttribute(n, attr[n]); return e; };
@@ -1464,20 +1606,169 @@ function kapitelEffekt(k) {
   etikett.animate([{ opacity: 0, transform: "translateX(-6px)" }, { opacity: 1, transform: "none" }], { duration: 380, delay: 220, easing: "ease-out", fill: "both" });
   k.append(svg);
   svg.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 900, delay: 2000, easing: "ease-in", fill: "forwards" }).finished.then(() => svg.remove());
-  if (k.id === "k-web") webEffekt(k);
 }
-// Webseiten: der Entwurf baut sich auf, in weniger als einer Sekunde – Ladelinie, Raster, Blöcke, Masse, dann die Nullen
-function webEffekt(k) {
-  const an = (el, kf, o) => el.animate(kf, { fill: "backwards", easing: "cubic-bezier(.2,.7,.2,1)", ...o });
-  k.querySelectorAll(".rahmen").forEach((r, j) => {
-    const v = j * 140;
-    r.querySelector(".laden")?.animate([{ opacity: 1, transform: "scaleX(0)" }, { opacity: 1, transform: "scaleX(1)", offset: .8 }, { opacity: 0, transform: "scaleX(1)" }], { duration: 900, delay: 260 + v, easing: "ease-out" });
-    r.querySelectorAll(".spalten i").forEach((s, n) => an(s, [{ opacity: 0 }, { opacity: 1 }], { duration: 260, delay: 320 + n * 28 + v }));
-    r.querySelectorAll(".flaeche > i").forEach((b, n) => an(b, [{ transform: "scaleX(0)" }, { transform: "none" }], { duration: 440, delay: 560 + n * 70 + v }));
+/* ---------- Webseiten flach: aus dem Signet wird eine Punktkugel, daraus ein Würfel, daraus das Raster der neun Themen.
+   Ein Thema rückt nach oben links, der Rest des Rasters füllt sich mit seinen Ausführungen. Die drei Flächen zeigen ihren Inhalt auf der Bühne. ---------- */
+const SPALTEN = ["Entwickeln", "Gestalten", "Vernetzen"];
+// Vorläufig, aus dem Text der Seite Webdesign; Christian legt die neun Themen noch fest
+const THEMEN = [
+  { name: "Website", leit: "Eine Website, die in unter einer Sekunde da ist und nichts von Dritten lädt.", punkte: [["< 1 s", "bis die Seite da ist"], ["0", "Cookies, Werbung und Tracker"], ["eigen", "Schriften und Skripte auf dem eigenen Server"]] },
+  { name: "App", leit: "Apps, die im Browser laufen, sich auf den Startbildschirm legen lassen und ohne Netz weiterarbeiten.", punkte: [["Browser", "kein App-Store nötig"], ["offline", "arbeitet ohne Netz weiter"], ["7", "Apps auf ornament.cloud"]] },
+  { name: "Prototyp", leit: "Bei Apps ein lauffähiger Prototyp innert Tagen.", punkte: [["Tage", "bis zum ersten Prototyp"], ["lauffähig", "zum Ausprobieren, nicht als Bild"]] },
+  { name: "Entwurf im Browser", leit: "Ein Entwurf im Browser, zum Anfassen, nicht als Bild.", punkte: [["Handy", "und Desktop im selben Entwurf"], ["früh", "Rückmeldung am eigenen Gerät"]] },
+  { name: "Texte und Bilder", leit: "Texte und Bilder gehören zum Bau, bis zur Veröffentlichung.", punkte: [["Texte", "geschrieben und gesetzt"], ["Bilder", "ausgewählt und aufbereitet"]] },
+  { name: "Aus einer Hand", leit: "Gestaltet und gebaut aus einer Hand, vom ersten Gespräch bis zur Veröffentlichung.", punkte: [["01", "Gespräch"], ["02", "Entwurf im Browser"], ["03", "Bau und Veröffentlichung"]] },
+  { name: "Suchmaschinen und Teilen", leit: "Mit allem, was Suchmaschinen und Teilen brauchen.", punkte: [["Vorschau", "Karten für X, Facebook und Messenger"], ["Feed", "für alle, die mitlesen"]] },
+  { name: "Eigene Adresse", leit: "Eine Adresse, die bleibt.", punkte: [["eigen", "Domain und Server"], ["danach", "bleibt alles in Ihrer Hand"]] },
+  { name: "Ohne Dritte", leit: "Keine Cookies, keine Werbung, keine Tracker; Schriften und Skripte liegen auf dem eigenen Server.", punkte: [["0", "Cookies"], ["0", "Tracker"], ["0", "Dienste von aussen"]] },
+];
+const ANI = "cubic-bezier(.2,.7,.2,1)";
+const web = (() => {
+  const k = document.getElementById("k-web"); if (!k) return null;
+  return { k, buehne: k.querySelector(".buehne"), logo: k.querySelector(".logo canvas"), cv: k.querySelector(".verwandlung"), themen: k.querySelector(".themen"), zellen: k.querySelector(".zellen"),
+    kopf: k.querySelector(".spalten-kopf span"), felder: [...k.querySelectorAll(".feld")], inhalte: [...k.querySelectorAll(".fi")], knoepfe: [], offen: -1, lauf: null };
+})();
+// Die neun Themen spaltenweise: Entwickeln links, Gestalten in der Mitte, Vernetzen rechts
+const rasterPlatz = (b, i) => { b.style.gridColumn = String(Math.floor(i / 3) + 1); b.style.gridRow = String(i % 3 + 1); };
+if (web) THEMEN.forEach((th, i) => {
+  const b = document.createElement("button"); b.type = "button"; b.className = "thema"; b.setAttribute("aria-expanded", "false");
+  const nr = document.createElement("span"), name = document.createElement("b"); nr.className = "nr"; nr.textContent = "0" + (i + 1); name.textContent = th.name; b.append(nr, name);
+  b.addEventListener("click", () => (web.offen === i ? themenZu() : themaOeffnen(i)));
+  rasterPlatz(b, i); web.zellen.append(b); web.knoepfe.push(b);
+});
+function themaOeffnen(i) {
+  const th = THEMEN[i], knopf = web.knoepfe[i], vorher = knopf.hidden ? null : knopf.getBoundingClientRect(), fokus = web.zellen.contains(document.activeElement);
+  web.zellen.querySelectorAll(".erkl").forEach(e => e.remove());
+  web.knoepfe.forEach((b, j) => { b.hidden = j !== i; b.setAttribute("aria-expanded", String(j === i)); rasterPlatz(b, j); });
+  knopf.style.gridColumn = knopf.style.gridRow = "1";
+  web.themen.classList.add("offen"); web.kopf.textContent = SPALTEN[Math.floor(i / 3)];
+  const neu = [], zelle = (art, spalte, zeile) => {
+    const e = document.createElement(art === "schalter" ? "button" : "div"); e.className = "erkl " + art; if (art === "schalter") e.type = "button";
+    e.style.gridColumn = spalte; e.style.gridRow = String(zeile); web.zellen.append(e); neu.push(e); return e;
+  };
+  zelle("leitsatz", "2 / span 2", 1).textContent = th.leit;
+  [[1, 2], [2, 2], [3, 2], [1, 3]].forEach(([sp, ze], n) => {
+    const p = th.punkte[n], e = zelle(p ? "punkt" : "leer", String(sp), ze); if (!p) return;
+    const g = document.createElement("span"), kl = document.createElement("span"); g.className = "gross"; kl.className = "klein"; g.textContent = p[0]; kl.textContent = p[1]; e.append(g, kl);
   });
-  k.querySelectorAll(".mass").forEach((m, j) => an(m, [{ opacity: 0, transform: "scaleX(.15)" }, { opacity: 1, transform: "none" }], { duration: 520, delay: 980 + j * 120 }));
-  k.querySelectorAll(".nullen > div").forEach((d, j) => an(d, [{ opacity: 0, transform: "translateY(12px)" }, { opacity: 1, transform: "none" }], { duration: 520, delay: 1100 + j * 90 }));
+  const nx = (i + 1) % THEMEN.length, weiter = zelle("schalter", "2", 3), zurueck = zelle("schalter", "3", 3);
+  weiter.innerHTML = '<span class="klein">Weiter</span><b></b>'; weiter.querySelector("b").textContent = THEMEN[nx].name + " →"; weiter.addEventListener("click", () => themaOeffnen(nx));
+  zurueck.innerHTML = '<span class="klein">Übersicht</span><b>← Alle Themen</b>'; zurueck.addEventListener("click", () => themenZu());
+  if (fokus) knopf.focus({ preventScroll: true });
+  web.offen = i;
+  if (ruhig) return;
+  const nachher = knopf.getBoundingClientRect();
+  if (vorher) knopf.animate([{ transform: `translate(${vorher.left - nachher.left}px, ${vorher.top - nachher.top}px)` }, { transform: "none" }], { duration: 560, easing: ANI });
+  else knopf.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 320 });
+  neu.forEach((e, n) => e.animate([{ opacity: 0, transform: "translateY(8px)" }, { opacity: 1, transform: "none" }], { duration: 440, delay: 200 + n * 60, easing: ANI, fill: "backwards" }));
 }
+function themenZu(sofort) {
+  if (!web || web.offen < 0) return;
+  const i = web.offen, knopf = web.knoepfe[i], vorher = knopf.getBoundingClientRect(), fokus = web.zellen.contains(document.activeElement);
+  web.zellen.querySelectorAll(".erkl").forEach(e => e.remove());
+  web.knoepfe.forEach((b, j) => { b.hidden = false; b.setAttribute("aria-expanded", "false"); rasterPlatz(b, j); });
+  web.themen.classList.remove("offen"); web.kopf.textContent = SPALTEN[0];
+  web.offen = -1;
+  if (fokus) knopf.focus({ preventScroll: true });
+  if (sofort || ruhig) return;
+  const nachher = knopf.getBoundingClientRect();
+  knopf.animate([{ transform: `translate(${vorher.left - nachher.left}px, ${vorher.top - nachher.top}px)` }, { transform: "none" }], { duration: 560, easing: ANI });
+  web.knoepfe.forEach((b, j) => { if (j !== i) b.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 360, delay: 160 + j * 35, fill: "backwards" }); });
+}
+// Die Flächen: ihr Inhalt erscheint oben auf der Bühne, an der Stelle des Rasters
+function feldZeigen(name) {
+  webStopp(); web.k.classList.add("raster", "zeigt-feld"); web.k.dataset.feld = name;
+  web.inhalte.forEach(s => { s.hidden = s.dataset.feld !== name; });
+  web.felder.forEach(f => f.setAttribute("aria-expanded", String(f.dataset.feld === name)));
+  const r = web.buehne.getBoundingClientRect(); if (r.top < 56) scrollTo({ top: scrollY + r.top - 64, behavior: ruhig ? "auto" : "smooth" });
+  if (!ruhig) [...web.inhalte.find(s => !s.hidden).children].forEach((e, n) => e.animate([{ opacity: 0, transform: "translateY(10px)" }, { opacity: 1, transform: "none" }], { duration: 480, delay: 80 + n * 70, easing: ANI, fill: "backwards" }));
+}
+function feldZu() { web.k.classList.remove("zeigt-feld"); delete web.k.dataset.feld; web.felder.forEach(f => f.setAttribute("aria-expanded", "false")); }
+if (web) {
+  web.felder.forEach(f => f.addEventListener("click", () => (web.k.dataset.feld === f.dataset.feld ? feldZu() : feldZeigen(f.dataset.feld))));
+  web.k.querySelector(".fi-zu").addEventListener("click", feldZu);
+}
+
+// Die Verwandlung: 360 Punkte auf der Schlaufe, auf einer Kugel, auf den Kanten eines Würfels, auf den Rändern der neun Felder
+const PUNKTE = 360, HALT = .6;
+function webRaster(sofort) {
+  if (!web || web.k.classList.contains("raster") || web.lauf) return;
+  if (sofort || ruhig) { web.k.classList.add("raster"); return; }
+  web.lauf = { t0: performance.now() };
+}
+function webStopp() {
+  if (!web || !web.lauf) return;
+  web.lauf = null; web.k.classList.remove("baut"); web.cv.getContext("2d").clearRect(0, 0, web.cv.width, web.cv.height);
+}
+function webZurueck() {
+  if (!web) return;
+  webStopp(); themenZu(true); feldZu(); web.k.classList.remove("raster");
+}
+// Paare mit den kürzesten Wegen zuerst: so wandert jeder Punkt in seine Nähe und keiner fliegt quer über die Bühne
+function paaren(A, B) {
+  const n = A.length, d = new Float32Array(n * n), ord = new Uint32Array(n * n);
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) { const x = A[i][0] - B[j][0], y = A[i][1] - B[j][1]; d[i * n + j] = x * x + y * y; ord[i * n + j] = i * n + j; }
+  ord.sort((a, b) => d[a] - d[b]);
+  const zu = new Int32Array(n).fill(-1), frei = new Uint8Array(n).fill(1); let rest = n;
+  for (let q = 0; q < ord.length && rest; q++) { const i = Math.floor(ord[q] / n), j = ord[q] % n; if (zu[i] < 0 && frei[j]) { zu[i] = j; frei[j] = 0; rest--; } }
+  return zu;
+}
+function webVorbereiten(L) {
+  const B = web.buehne.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2);
+  web.cv.width = Math.round(B.width * dpr); web.cv.height = Math.round(B.height * dpr);
+  const lr = web.logo.getBoundingClientRect(), gr = Math.min(lr.width, lr.height) * .92, lx = lr.left - B.left + lr.width / 2, ly = lr.top - B.top + lr.height / 2;
+  const zr = web.zellen.getBoundingClientRect(), a = Math.min(zr.width, zr.height) * .375;
+  Object.assign(L, { dpr, lx, ly, zx: zr.left - B.left + zr.width / 2, zy: zr.top - B.top + zr.height / 2, a, R: a * 1.1, F: a * 4 });
+  // Kugel nach Fibonacci, Würfel aus der Kugel: jeden Punkt auf die Oberfläche schieben, dann auf die nächste Kante, dort gleichmässig verteilt
+  const kugel = [], wuerfel = [], kanten = new Map();
+  for (let i = 0; i < PUNKTE; i++) { const y = 1 - 2 * (i + .5) / PUNKTE, r = Math.sqrt(1 - y * y), w = i * 2.399963; kugel.push([r * Math.cos(w), y, r * Math.sin(w)]); }
+  kugel.forEach((p, i) => {
+    const ab = p.map(Math.abs), f = ab.indexOf(Math.max(...ab)), q = p.map(c => c / ab[f]), andere = [0, 1, 2].filter(j => j !== f);
+    const g = ab[andere[0]] >= ab[andere[1]] ? andere[0] : andere[1], frei = andere.find(j => j !== g);
+    q[f] = Math.sign(q[f]); q[g] = Math.sign(q[g]) || 1;
+    const lo = Math.min(f, g), hi = Math.max(f, g), sch = `${lo}${q[lo]}${hi}${q[hi]}`;
+    if (!kanten.has(sch)) kanten.set(sch, { frei, liste: [] }); kanten.get(sch).liste.push({ i, q });
+  });
+  kanten.forEach(({ frei, liste }) => { liste.sort((u, v) => u.q[frei] - v.q[frei]); liste.forEach((e, r) => { e.q[frei] = -1 + 2 * (r + .5) / liste.length; wuerfel[e.i] = e.q; }); });
+  // Die Schlaufe: so viele Punkte wie die Kugel hat, gepaart mit der Kugel, wie sie zu Beginn von vorn aussieht
+  const f = signetForm(performance.now() / 1000, PUNKTE), schlaufe = f.linie.map(q => [lx + q[0] * gr, ly + q[1] * gr]);
+  const proj = (o, cx, cy) => { const s = L.F / (L.F + o[2]); return [cx + o[0] * s, cy + o[1] * s]; };
+  const zuS = paaren(kugel.map(p => proj(p.map(c => c * L.R), lx, ly)), schlaufe);
+  // Die Felder: je 40 Punkte auf dem Rand, gepaart mit dem Würfel, wie er am Ende von vorn steht
+  const ziel = [];
+  web.knoepfe.forEach(b => {
+    const r = b.getBoundingClientRect(), x = r.left - B.left + .5, y = r.top - B.top + .5, w = r.width - 1, h = r.height - 1, u = 2 * (w + h);
+    for (let j = 0; j < PUNKTE / 9; j++) { let d = j / (PUNKTE / 9) * u; const p = d < w ? [x + d, y] : (d -= w) < h ? [x + w, y + d] : (d -= h) < w ? [x + w - d, y + h] : [x, y + h - (d - w)]; ziel.push(p); }
+  });
+  const zuZ = paaren(wuerfel.map(p => proj(p.map(c => c * a), L.zx, L.zy)), ziel);
+  L.p = kugel.map((k, i) => ({ k, w: wuerfel[i], s: schlaufe[zuS[i]], z: ziel[zuZ[i]] }));
+}
+const eio = x => (x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+function webLaufBild(zeit) {
+  const L = web && web.lauf; if (!L) return;
+  const T = (zeit - L.t0) / 1000 - HALT;
+  if (T < 0) return;
+  if (!L.p) { webVorbereiten(L); web.k.classList.add("raster", "baut"); }
+  const u1 = eio(klemm((T - .15) / .95)), u2 = eio(klemm((T - 1.45) / .85)), u3 = eio(klemm((T - 2.8) / .8));
+  const pr = klemm((T - .15) / 2.65), ry = Math.PI * 2 * eio(pr), rx = .42 * Math.sin(Math.PI * pr), c1 = Math.cos(ry), s1 = Math.sin(ry), c2 = Math.cos(rx), s2 = Math.sin(rx);
+  const mx = misch(L.lx, L.zx, u2), my = misch(L.ly, L.zy, u2), sz = L.dpr * 1.7;
+  const cx = web.cv.getContext("2d"); cx.setTransform(1, 0, 0, 1, 0, 0); cx.clearRect(0, 0, web.cv.width, web.cv.height); cx.fillStyle = "#fff";
+  const deck = klemm(T / .3) * (1 - klemm((T - 3.55) / .45));
+  for (const q of L.p) {
+    const ox = misch(q.k[0] * L.R, q.w[0] * L.a, u2), oy = misch(q.k[1] * L.R, q.w[1] * L.a, u2), oz = misch(q.k[2] * L.R, q.w[2] * L.a, u2);
+    const x1 = ox * c1 + oz * s1, z1 = -ox * s1 + oz * c1, y1 = oy * c2 - z1 * s2, z2 = oy * s2 + z1 * c2, s = L.F / (L.F + z2);
+    let x = mx + x1 * s, y = my + y1 * s;
+    x = misch(misch(q.s[0], x, u1), q.z[0], u3); y = misch(misch(q.s[1], y, u1), q.z[1], u3);
+    const tiefe = .3 + .7 * klemm(.5 - z2 / (2.4 * L.R));
+    cx.globalAlpha = deck * misch(misch(1, tiefe, Math.min(u1, 1 - u3)), 1, u3) * .92;
+    cx.fillRect(x * L.dpr - sz / 2, y * L.dpr - sz / 2, sz, sz);
+  }
+  if (T > 3.35 && web.k.classList.contains("baut")) web.k.classList.remove("baut");
+  if (T > 4) webStopp();
+}
+// Auf der flachen Seite beginnt die Verwandlung, sobald die Bühne zur Hälfte zu sehen ist
+if (web && ruhig) webRaster(true);
+if (web && "IntersectionObserver" in window) new IntersectionObserver(e => { if (flach && e[0].isIntersecting) webRaster(); }, { threshold: .5 }).observe(web.buehne);
 if ("IntersectionObserver" in window) {
   const beobachter = new IntersectionObserver(eintraege => {
     if (!flach || wechselt) return;
