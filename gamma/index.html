@@ -80,8 +80,11 @@ body.raum-an .intro-buehne { position: fixed; left: 0; right: 0; top: 0; height:
 .etiketten .st { font-size: 10.5px; color: rgba(255, 255, 255, .78); transition: opacity .4s; }
 .etiketten .st b { font-weight: 400; color: rgba(255, 255, 255, .45); margin-right: 6px; }
 .zeile { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(30px + env(safe-area-inset-bottom, 0px)); max-width: min(560px, calc(100% - 32px)); color: #fff; opacity: 0; transition: opacity .6s; pointer-events: none; }
+.zeile { display: grid; }
+.zeile p { grid-area: 1 / 1; margin: 0; opacity: 0; transition: opacity .9s ease; }
+.zeile p.an { opacity: 1; }
 .zeile small { display: block; font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: rgba(255, 255, 255, .55); margin-bottom: 6px; }
-.zeile q { font-family: var(--serif); font-style: italic; font-size: clamp(19px, 2.3vw, 28px); line-height: 1.25; quotes: "«" "»"; text-wrap: balance; }
+.zeile q { display: block; min-height: 3.75em; font-family: var(--serif); font-style: italic; font-size: clamp(19px, 2.3vw, 28px); line-height: 1.25; quotes: "«" "»"; text-wrap: balance; }
 .etiketten span { position: absolute; left: 0; top: 0; font-family: var(--mono); font-size: 11px; color: #fff; white-space: nowrap; will-change: transform; text-shadow: 0 0 8px #000; }
 /* Die Tafel hat ihre volle Breite und wird nur verschoben, ihr Inhalt gegenläufig: so wird beim Aufziehen nichts neu gezeichnet */
 .tafel { position: absolute; top: 48px; bottom: 0; left: 0; width: 0; background: var(--blau); color: #fff; overflow: hidden; display: flex; pointer-events: auto; }
@@ -360,7 +363,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
 <section id="intro" aria-label="Einstieg">
   <div class="intro-buehne"><div class="szene" id="szene">
     <div class="etiketten" id="etiketten" aria-hidden="true"></div>
-    <p class="zeile" id="zeile" aria-live="off"><small></small><q></q></p>
+    <div class="zeile" id="zeile" aria-live="off"><p><small></small><q></q></p><p><small></small><q></q></p></div>
     <div class="tafel">
       <p class="wort" id="zug-wort">Anschluss</p>
       <div class="spalte">
@@ -846,7 +849,7 @@ function netzBauen() {
   welt.add(g); netz.gruppe = g;
   const et = document.getElementById("etiketten");
   netz.etiketten = kn.filter(k => k.art === "zyklus").map(k => { const s = document.createElement("span"); s.textContent = k.name; et.append(s); return { k, el: s }; });
-  netz.stEt = Array.from({ length: 7 }, () => { const s = document.createElement("span"); s.className = "st"; s.style.opacity = 0; et.append(s); return s; });
+  netz.stEt = new Map();
 }
 
 async function bahnBauen() {
@@ -919,27 +922,60 @@ async function bahnBauen() {
   }
   const lg = new THREE.BufferGeometry(); lg.setAttribute("position", new THREE.Float32BufferAttribute(lp, 3)); lg.setAttribute("color", new THREE.Float32BufferAttribute(lc, 3));
   g.add(new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false })));
-  // Am Anfang ist das Band an den Raum gebunden: feine Fäden laufen über die obere Kante hinaus zurück in die Trommel, fächern auf, heben sich vom Boden ab und verklingen.
-  // Nah an der Kante sind sie zu einem lockeren Rautengeflecht verschränkt, das nach hinten lückenhaft wird. Additiv gezeichnet, so verschwindet, was dunkel wird
+  // Am Anfang ist das Band an den Raum gebunden: ein niedriger Fries über die ganze Breite, hinter der oberen Kante, flach auf dem Boden der Trommel.
+  // Zuerst ein Streifen Gewebe (Kettfäden mit Rauten), darüber verschränkte Bögen, in den Feldern abwechselnd die Re-entry-Schlaufe
+  // (r = b + cos t) und eine Rosette, oben kurze Fransen. Was weiter von der Kante weg ist, wird blasser und weht leicht (Shader, Uhr in bahn.wehen)
   {
+    const W2 = RAUM.w / 2, n = eng ? 26 : 40, m = eng ? 8 : 12, GW = .15, D = .56, hoehe = d => .004 + .1 * (d / D) ** 2;
+    const fp = [], fc = [], fw = [], quer = new THREE.Vector3(), a = new THREE.Vector3(), b = new THREE.Vector3();
+    const punkt = (q, d) => bahnPunkt(-d, q, hoehe(d));
+    // Je Punkt: wie weit er weht (entlang der Normalen und etwas quer) und seine Phase, damit eine langsame Welle über den Fries läuft
+    const wind = (q, d) => {
+      const frei = klemm(d / D) ** 1.3, nn = normale(-d); bahnPunkt(-d, q + .01, hoehe(d), a); bahnPunkt(-d, q, hoehe(d), b); quer.subVectors(a, b).normalize();
+      return [nn.x * .045 * frei + quer.x * .02 * frei, nn.y * .045 * frei + quer.y * .02 * frei, nn.z * .045 * frei + quer.z * .02 * frei, d * 7 - q * 1.1];
+    };
+    const strich = (qa, da, qb, db, ha, hb) => {
+      fp.push(...punkt(qa, da).toArray(), ...punkt(qb, db).toArray()); fc.push(ha, ha, ha * .97, hb, hb, hb * .97); fw.push(...wind(qa, da), ...wind(qb, db));
+    };
+    const hell = d => .26 * (1 - klemm(d / D)) ** 1.2;
+    const zug = pkte => { for (let i = 0; i + 1 < pkte.length; i++) { const [qa, da] = pkte[i], [qb, db] = pkte[i + 1]; strich(qa, da, qb, db, hell(da), hell(db)); } };
+    // Gewebe: Kante und Abschluss als Schussfaden, dazwischen Kettfäden und zwei Reihen Rauten
+    const kq = i => -W2 + RAUM.w * i / n;
+    zug(Array.from({ length: 2 * n + 1 }, (_, i) => [-W2 + RAUM.w * i / (2 * n), .014]));
+    zug(Array.from({ length: 2 * n + 1 }, (_, i) => [-W2 + RAUM.w * i / (2 * n), GW]));
+    for (let i = 0; i <= n; i++) zug([[kq(i), .014], [kq(i), GW]]);
+    for (let r = 0; r < 2; r++) {
+      const d0 = .014 + (GW - .014) * r / 2, d1 = .014 + (GW - .014) * (r + 1) / 2;
+      for (let i = 0; i < n; i++) { zug([[kq(i), d0], [kq(i + 1), d1]]); zug([[kq(i + 1), d0], [kq(i), d1]]); }
+    }
+    // Darüber ein Bogenfries mit verschränkten Bögen: jeder spannt über zwei Felder, so kreuzen sie sich und bilden Spitzbögen wie ein Geflecht
+    const fb = RAUM.w / m, fq = j => -W2 + fb * j, BH = .2;
+    for (let j = -1; j < m; j++) {
+      const pk = Array.from({ length: 33 }, (_, k) => { const w = Math.PI * k / 32; return [fq(j) + fb * (1 - Math.cos(w)), GW + BH * Math.sin(w)]; }).filter(([q]) => q >= -W2 - 1e-6 && q <= W2 + 1e-6);
+      zug(pk);
+    }
+    // In den Feldern unter den Kreuzungen: Schlaufe (r = b + cos t, b = .5) und eine kleine Rosette im Wechsel
+    for (let j = 0; j < m; j++) {
+      const qc = fq(j) + fb / 2, dc = GW + .085, gr = fb * .16;
+      if (j % 2 === 0) zug(Array.from({ length: 49 }, (_, k) => { const t = Math.PI * 2 * k / 48, r = .5 + Math.cos(t); return [qc + gr * r * Math.sin(t), dc - gr * (r * Math.cos(t) - .72) * .8]; }));
+      else zug(Array.from({ length: 65 }, (_, k) => { const t = Math.PI * 2 * k / 64, r = .55 * Math.abs(Math.cos(2 * t)) + .15; return [qc + gr * r * Math.cos(t), dc + gr * r * Math.sin(t) * .8]; }));
+    }
+    // Fransen über den Scheiteln der Bögen, jede mit einem kleinen Ring am Ende
     let saat = 7; const z = () => (saat = (saat * 16807) % 2147483647) / 2147483647;
-    const n = eng ? 16 : 26, M = 28, faeden = [];
-    for (let i = 0; i < n; i++) faeden.push({ q: -RAUM.w / 2 + RAUM.w * (i + .5) / n, L: .7 + 2.6 * z() ** 1.8, auf: .1 + .9 * z(), dreh: z() * 6 });
-    const ort = (f, sj) => { const t = -sj / f.L; return bahnPunkt(sj, f.q * (1 + .55 * t) + .15 * Math.sin(t * 3.2 + f.dreh) * t, .004 + f.auf * t * t); };
-    const fp = [], fc = [], strich = (a, b, ha, hb) => { fp.push(...a.toArray(), ...b.toArray()); fc.push(ha, ha, ha * .97, hb, hb, hb * .97); };
-    const hell = t => .24 * (1 - t) ** 2;
-    for (const f of faeden) for (let j = 0; j < M; j++) strich(ort(f, -j / M * f.L), ort(f, -(j + 1) / M * f.L), hell(j / M), hell((j + 1) / M));
-    for (let k = 0; k < 5; k++) {
-      const sa = -.03 - .1 * k, sb = sa - .1, h = .8 * (1 - k / 5);
-      for (let i = 0; i + 1 < n; i++) {
-        const a = faeden[i], b = faeden[i + 1];
-        if (-sb > a.L || -sb > b.L || z() < k / 6) continue;
-        strich(ort(a, sa), ort(b, sb), h * hell(-sa / a.L), h * hell(-sb / b.L));
-        strich(ort(b, sa), ort(a, sb), h * hell(-sa / b.L), h * hell(-sb / a.L));
-      }
+    for (let j = 0; j <= m; j++) {
+      const q = fq(j), d0 = GW + BH, d1 = d0 + .06 + .06 * z();
+      zug([[q, d0], [q, d1]]);
+      zug(Array.from({ length: 13 }, (_, k) => { const w = Math.PI * 2 * k / 12; return [q + .011 * Math.cos(w), d1 + .011 + .011 * Math.sin(w)]; }));
     }
     const fg = new THREE.BufferGeometry(); fg.setAttribute("position", new THREE.Float32BufferAttribute(fp, 3)); fg.setAttribute("color", new THREE.Float32BufferAttribute(fc, 3));
-    g.add(new THREE.LineSegments(fg, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })));
+    fg.setAttribute("wehen", new THREE.Float32BufferAttribute(fw, 4));
+    const uhr = { value: 0 }, fm = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
+    fm.onBeforeCompile = sh => {
+      sh.uniforms.zeit = uhr;
+      sh.vertexShader = "attribute vec4 wehen;\nuniform float zeit;\n" + sh.vertexShader.replace("#include <begin_vertex>", "#include <begin_vertex>\n  transformed += wehen.xyz * sin(zeit * 1.1 - wehen.w);");
+    };
+    fm.customProgramCacheKey = () => "fries";
+    const fries = new THREE.LineSegments(fg, fm); fries.frustumCulled = false; g.add(fries); bahn.wehen = uhr;
   }
   const mp = [], mc = [];
   bahn.kapitel.forEach((x, i) => { const c = hdr(LEUCHTFARBEN[i], .5); for (const seite of [-1, 1]) { const a = bahnPunkt(x.s0, seite * (RAUM.w / 2 + .06), .003), b = bahnPunkt(x.s0, seite * (RAUM.w / 2 + .7), .003); mp.push(...a.toArray(), ...b.toArray()); mc.push(c.r, c.g, c.b, c.r, c.g, c.b); } });
@@ -1748,17 +1784,28 @@ function stropheZeigen(t) {
   kandidaten.sort((a, b) => a.d - b.d);
   const beimZug = weich(.4, .48, t) * (1 - weich(.5, .54, t)) > .5;
   if (beimZug) { const i = kandidaten.findIndex(c => c.k.s === ZUG); if (i > 0) kandidaten.unshift(kandidaten.splice(i, 1)[0]); }
-  netz.stEt.forEach((el, i) => {
-    const c = kandidaten[i];
-    if (!c) { el.style.opacity = 0; return; }
-    if (el.dataset.nr !== String(c.k.s[0])) { el.dataset.nr = c.k.s[0]; el.innerHTML = ""; const b = document.createElement("b"); b.textContent = c.k.s[0]; el.append(b, c.k.s[2]); }
-    el.classList.toggle("gezogen", c.k.s === ZUG);
-    el.style.opacity = an * (c.k.s === ZUG ? 1 : 1 - i * .1);
-    el.style.transform = `translate(${(c.x + 8).toFixed(1)}px, ${(c.y - 6).toFixed(1)}px)`;
+  // Die sieben nächsten Strophen tragen ein Schild. Es gehört zur Strophe, nicht zum Rang: wechselt die Reihenfolge, blendet es an Ort und Stelle aus und ein anderes ein
+  const naechste = new Map(kandidaten.slice(0, 7).map((c, i) => [c.k.s, i])), alle = new Map(kandidaten.map(c => [c.k.s, c]));
+  for (const c of kandidaten.slice(0, 7)) if (!netz.stEt.has(c.k.s)) {
+    const el = document.createElement("span"), b = document.createElement("b"); el.className = "st"; el.style.opacity = 0; b.textContent = c.k.s[0]; el.append(b, c.k.s[2]);
+    document.getElementById("etiketten").append(el); netz.stEt.set(c.k.s, { el, aus: 0 });
+  }
+  netz.stEt.forEach((x, st) => {
+    const c = alle.get(st), i = naechste.get(st);
+    if (c) x.el.style.transform = `translate(${(c.x + 8).toFixed(1)}px, ${(c.y - 6).toFixed(1)}px)`;
+    x.el.classList.toggle("gezogen", st === ZUG);
+    if (i !== undefined && an > 0) { x.el.style.opacity = (an * (st === ZUG ? 1 : 1 - i * .1)).toFixed(3); x.aus = 0; }
+    else { x.el.style.opacity = 0; if (!x.aus) x.aus = performance.now(); else if (performance.now() - x.aus > 600) { x.el.remove(); netz.stEt.delete(st); } }
   });
+  // Die Zeile unten: alle gut zwei Sekunden höchstens ein Wechsel, die neue Strophe blendet über der alten ein, am selben Ort
   const erste = kandidaten[0];
   if (erste && an > .5) {
-    if (erste.k.s[0] !== zeileNr && (performance.now() - zeileZeit > 1800 || (beimZug && erste.k.s === ZUG))) { zeileZeit = performance.now(); zeileNr = erste.k.s[0]; zeile.querySelector("small").textContent = `Strophe ${erste.k.s[0]} · ${ZYKLEN[erste.k.s[1]]} · ${erste.k.s[2]}`; zeile.querySelector("q").textContent = erste.k.s[3]; }
+    if (erste.k.s[0] !== zeileNr && (performance.now() - zeileZeit > 2600 || (beimZug && erste.k.s === ZUG))) {
+      zeileZeit = performance.now(); zeileNr = erste.k.s[0];
+      const [alt, neu] = zeile.children[0].classList.contains("an") ? zeile.children : [zeile.children[1], zeile.children[0]];
+      neu.querySelector("small").textContent = `Strophe ${erste.k.s[0]} · ${ZYKLEN[erste.k.s[1]]} · ${erste.k.s[2]}`; neu.querySelector("q").textContent = erste.k.s[3];
+      alt.classList.remove("an"); neu.classList.add("an");
+    }
     zeile.style.opacity = an;
   } else zeile.style.opacity = 0;
 }
@@ -1833,6 +1880,7 @@ function bild(zeit) {
       if (!ruhig && bahn.gruppe.visible) {
         bahn.signete.forEach(f => f(zeit / 1000));
         if (bahn.satellit) bahn.satellit(zeit / 1000);
+        if (bahn.wehen) bahn.wehen.value = zeit / 1000;
         if (bahn.ascii) bahn.ascii(zeit / 1000);
         bahn.flackern.forEach(f => f(zeit / 1000));
         bahn.dreher.forEach(d => { d.o.rotation.z = zeit * .00011 * d.v; });
@@ -2393,7 +2441,8 @@ function laptopBild(farbe, sk = 3) {
     for (let i = 0; i < a.length; i += 4) { const m = Math.max(a[i], a[i + 1], a[i + 2]); if (m < 28) { a[i + 3] = 0; continue; } const f = 255 / m; a[i] *= f; a[i + 1] *= f; a[i + 2] *= f; a[i + 3] = (m - 28) * 1.45; }
     ix.putImageData(d, 0, 0); introDa = true;
   };
-  const intro = a => { if (!introDa) return; const s = Math.min(IB / SURF_IB, IH / SURF_IH), b = SURF_IB * s, h = SURF_IH * s; cx.globalAlpha = a; cx.drawImage(iv, IX + (IB - b) / 2, IY + (IH - h) / 2, b, h); };
+  // Die Figur füllt den Schirm nicht ganz: rundherum bleibt etwas Grün (Wunsch vom 30. Oktober 2026, «etwas kleiner»)
+  const intro = a => { if (!introDa) return; const s = Math.min(IB / SURF_IB, IH / SURF_IH) * .78, b = SURF_IB * s, h = SURF_IH * s; cx.globalAlpha = a; cx.drawImage(iv, IX + (IB - b) / 2, IY + (IH - h) / 2, b, h); };
   const lauf = t => .4 * eio(klemm((t - .7) / 1)) + .5 * eio(klemm((t - 2) / 1));
   let zuletzt = "";
   // Ablauf: das Intro dauert, so lange der Film läuft, und sein letztes Bild bleibt noch kurz stehen (zusammen höchstens 16 s), dann die Seiten; danach beginnt der Film von vorn. Ohne Film nur die Seiten
