@@ -2,7 +2,7 @@
 // eine Art Vorstellungs- oder Erkläranimationen, stilisiert, stilvoll»). Jede <figure class="tafel-lebt" data-tafel="slug"> trägt das Ruhebild
 // als <picture>; mit Skript wird daraus die Zeichnung aus src/b/tafeln.mjs, die sich bewegt – nur solange sie im Bild ist, nur wenn die Seite
 // sichtbar ist, nie bei reduzierter Bewegung (dann bleibt das Ruhebild). Dunkel ist der Standard (27. Oktober 2026), hell nur mit data-theme="light".
-import { TAFELN, farben, W } from "./tafeln.mjs?v=40";
+import { TAFELN, farben, W } from "./tafeln.mjs?v=41";
 
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const dunkel = () => document.documentElement.dataset.theme !== "light";
@@ -13,7 +13,15 @@ const farbenHier = (el) => {
 };
 const TAKT = { "phorma-iii": 1 / 30, "phorma-i": 1 / 30 };   // die Gewebe und der Kristall rechnen viel: 30 Bilder je Sekunde genügen
 
-if (!ruhig) for (const fig of document.querySelectorAll(".tafel-lebt[data-tafel]")) beleben(fig);
+if (!ruhig) for (const fig of document.querySelectorAll(".tafel-lebt[data-tafel], .kachel-lebt[data-tafel]")) beleben(fig);
+
+// die Kacheln der Bild-Apps (30. Oktober 2026): der Filmausschnitt läuft stumm, solange er im Bild ist; bei reduzierter Bewegung bleibt das Standbild
+if (!ruhig) {
+  const filme = document.querySelectorAll("video.kachel-film");
+  const io = new IntersectionObserver((es) => { for (const e of es) e.isIntersecting && !document.hidden ? e.target.play().catch(() => {}) : e.target.pause(); }, { threshold: 0.3 });
+  filme.forEach((v) => io.observe(v));
+  document.addEventListener("visibilitychange", () => { if (document.hidden) filme.forEach((v) => v.pause()); else filme.forEach((v) => { io.unobserve(v); io.observe(v); }); });
+}
 
 function beleben(fig) {
   const tafel = TAFELN[fig.dataset.tafel];

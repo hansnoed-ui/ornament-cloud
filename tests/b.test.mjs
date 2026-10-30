@@ -185,7 +185,12 @@ test("b/apps: die Bilder der sieben Apps sind gezeichnete Tafeln (tools/b-app-bi
     }
     assert.ok(a.bildAlt.startsWith(`${a.name}, gezeichnet:`), `${a.slug}: Alt-Text beschreibt die Zeichnung`);
     const bild = `<picture><source srcset="/${a.bildDunkel}"><img src="/${a.bild}" alt="${a.bildAlt}" width="1200" height="1200"`;
-    assert.ok(lies("b/apps/index.html").includes(bild + ' loading="lazy"></picture>'), `${a.slug}: Kachel auf b/apps/`);
+    // die Kachel lebt (30. Oktober 2026): Bild-Apps mit einem Ausschnitt aus dem Beispielfilm, die übrigen mit ihrer Tafel in Bewegung
+    const uebersicht = lies("b/apps/index.html");
+    if (["the-fictory", "phorma-i", "phorma-ii", "phorma-iii"].includes(a.slug)) {
+      assert.match(uebersicht, new RegExp(`<video class="kachel-film" muted loop playsinline preload="none" poster="/b/bilder/apps/filme/${a.slug}\\.jpg\\?v=\\w+" width="480" height="480" aria-label="[^"]+"><source src="/b/bilder/apps/filme/${a.slug}\\.mp4\\?v=\\w+" type="video/mp4"></video>`), `${a.slug}: Filmkachel auf b/apps/`);
+      assert.ok(statSync(new URL(`b/bilder/apps/filme/${a.slug}.mp4`, root)).size < 1.2 * 1024 * 1024, `${a.slug}: Filmausschnitt unter 1,2 MB`);
+    } else assert.ok(uebersicht.includes(`<span class="bild quadrat kachel-lebt" data-tafel="${a.slug}">${bild} loading="lazy"></picture></span>`), `${a.slug}: lebende Kachel auf b/apps/`);
     const seite = lies(`b/apps/${a.slug}/index.html`);
     assert.ok(seite.includes(`<figure class="stueck-bild quadrat">${bild}></picture></figure>`), `${a.slug}: Tafel auf der App-Seite`);
     assert.ok(seite.includes(`<meta property="og:image" content="https://ornament.cloud/b/kacheln/apps-${a.slug}.png">`), `${a.slug}: Teilen mit der Vorschaukarte 1200 × 630`);
@@ -211,7 +216,7 @@ test("b/apps: die Tafeln leben unter «Was dabei herauskommt» (src/b/tafeln.mjs
     assert.match(seite, /<script type="module" src="\/b\/tafeln-leben\.js\?v=\d+"><\/script>/);
     assert.ok(seite.indexOf('id="beispiele-titel"') < seite.indexOf('class="tafel-lebt"'), `${a.slug}: die Tafel steht im Abschnitt «Was dabei herauskommt»`);
   }
-  assert.ok(!lies("b/apps/index.html").includes("tafeln-leben"), "die Übersicht bleibt ohne das Modul");
+  assert.match(lies("b/apps/index.html"), /<script type="module" src="\/b\/tafeln-leben\.js\?v=\d+"><\/script>/, "die Übersicht lässt ihre Kacheln leben");
 });
 
 test("b/raster: wie die Apps – gezeichnete Tafel (lebend), die vier Felder daneben, Prompt kopieren auf der Seite, drei Schritte; die Übersicht mit Kacheln", async () => {
