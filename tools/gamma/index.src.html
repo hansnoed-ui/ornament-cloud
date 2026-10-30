@@ -32,7 +32,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 /* Der Raum liegt fest hinter allem und ist immer Nacht, auch im hellen Modus.
    Eine Spur durchscheinend: Ganz deckend gibt Edge/Chrome unter Windows die Leinwand als eigene Ebene an die Grafikkarte,
    und unten bleibt dann ein Streifen in Kopfhöhe mit altem Bild stehen */
-#welt { position: fixed; left: 0; top: 0; width: 100%; height: 100vh; height: 100lvh; display: block; z-index: 0; background: #000; opacity: .999; touch-action: pan-y; }
+#welt { position: fixed; left: 0; top: 0; width: 100%; height: 100vh; height: 100lvh; height: max(100lvh, 100%); display: block; z-index: 0; background: #000; opacity: .999; touch-action: pan-y; }
 body.flach.nach-intro #welt, body.ohne-3d #welt { visibility: hidden; }
 
 /* Kopf: immer schwarz, wie beim Lab */
@@ -51,7 +51,8 @@ body.flach.nach-intro #welt, body.ohne-3d #welt { visibility: hidden; }
 /* ---------- Intro: Text, Beschriftungen und Tafel über dem Raum ---------- */
 #intro { position: relative; z-index: 1; height: 460vh; pointer-events: none; }
 .intro-buehne { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
-body.raum-an .intro-buehne { position: fixed; left: 0; right: 0; top: 0; }
+/* Mindestens so hoch wie das Fenster: an einem Büro-PC mit Edge reichten Leinwand und Bühne unten 48 px zu wenig weit */
+body.raum-an .intro-buehne { position: fixed; left: 0; right: 0; top: 0; height: max(100svh, 100%); }
 .szene { position: absolute; inset: 0; }
 .intro-text { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(28px + env(safe-area-inset-bottom, 0px));
   display: flex; justify-content: space-between; align-items: end; gap: 20px; color: #fff; }
@@ -1950,4 +1951,31 @@ addEventListener("resize", () => {
 });
 window.gammaRaumLaeuft = true;
 requestAnimationFrame(bild);
+
+// Messhilfe für die Fehlersuche: ?mass zeigt die Masse von Fenster, Leinwand und Bühne, die Leinwand türkis umrandet, den unteren Fensterrand rosa
+if (new URLSearchParams(location.search).has("mass")) {
+  const box = document.createElement("pre"), unten = document.createElement("div"), rahmen = document.createElement("div");
+  box.style.cssText = "position:fixed;left:8px;top:56px;z-index:99;margin:0;padding:8px 10px;background:#000;color:#fff;font:12px/1.5 ui-monospace,monospace;border:1px solid #fff;pointer-events:none";
+  unten.style.cssText = "position:fixed;left:0;right:0;bottom:0;height:6px;background:#ff00aa;z-index:99;pointer-events:none";
+  rahmen.style.cssText = "position:fixed;z-index:98;outline:3px solid #00e5ff;outline-offset:-3px;pointer-events:none";
+  const sonden = ["100vh", "100svh", "100lvh", "100dvh", "100%"].map(h => {
+    const d = document.createElement("div"); d.style.cssText = `position:fixed;left:0;top:0;width:1px;height:${h};visibility:hidden;pointer-events:none`; document.body.append(d); return [h, d];
+  });
+  document.body.append(box, unten, rahmen);
+  const zeigen = () => {
+    const cv = document.getElementById("welt"), r = cv.getBoundingClientRect(), b = document.querySelector(".intro-buehne").getBoundingClientRect(), vv = window.visualViewport, gl = ok3d && renderer.getContext();
+    Object.assign(rahmen.style, { left: r.left + "px", top: r.top + "px", width: r.width + "px", height: r.height + "px" });
+    box.textContent = [
+      `Fenster ${innerWidth} × ${innerHeight}, aussen ${outerWidth} × ${outerHeight}`,
+      `Layout ${document.documentElement.clientWidth} × ${document.documentElement.clientHeight}`,
+      vv ? `Sicht ${vv.width.toFixed(1)} × ${vv.height.toFixed(1)}, oben ${vv.offsetTop.toFixed(1)}, Zoom ${vv.scale}` : "Sicht –",
+      `Bildschirm ${screen.width} × ${screen.height}, frei ${screen.availWidth} × ${screen.availHeight}, dpr ${devicePixelRatio}`,
+      sonden.map(([h, d]) => `${h} ${d.getBoundingClientRect().height.toFixed(1)}`).join(" · "),
+      `Leinwand oben ${r.top.toFixed(1)}, hoch ${r.height.toFixed(1)}, Puffer ${cv.width} × ${cv.height}` + (gl ? `, gezeichnet ${gl.drawingBufferWidth} × ${gl.drawingBufferHeight}` : ""),
+      `Bühne oben ${b.top.toFixed(1)}, hoch ${b.height.toFixed(1)}`,
+      (navigator.userAgent.match(/Edg\/[\d.]+|Chrome\/[\d.]+|Firefox\/[\d.]+/g) || [navigator.userAgent]).join(" "),
+    ].join("\n");
+  };
+  zeigen(); addEventListener("resize", zeigen); setInterval(zeigen, 1000);
+}
 </script>
