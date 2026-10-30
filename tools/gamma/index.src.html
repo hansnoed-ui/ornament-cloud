@@ -361,7 +361,7 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 
 /* Steuerung unten links und Kapitelzeiger links */
 /* Umschalten Raum / Fläche: eine liegende Acht unten in der Mitte, links Raum, rechts Fläche; eine feine Leuchtspur läuft auf ihr um */
-.steuer { position: fixed; z-index: 15; left: 50%; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); width: 148px; height: 72px; transform: translateX(-50%); opacity: 0; pointer-events: none; transition: opacity .3s; }
+.steuer { position: fixed; z-index: 15; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); width: 148px; height: 72px; transform: translateX(-50%); opacity: 0; pointer-events: none; transition: opacity .3s; }
 .steuer.da { opacity: 1; pointer-events: auto; }
 body.ohne-3d .steuer { display: none; }
 /* Glas: die Form der Acht verschwimmt den Grund dahinter leicht (clip-path aus dem Pfad, im Skript gesetzt), darüber ein zarter dunkler Ton;
@@ -372,11 +372,13 @@ body.ohne-3d .steuer { display: none; }
 .acht-feld { fill: #fff; opacity: 0; transition: opacity .5s; }
 .steuer[data-ansicht="raum"] .acht-raum, .steuer[data-ansicht="flaeche"] .acht-flaeche { opacity: .13; }
 .steuer[data-ansicht="flaeche"]:has(#zum-raum:hover) .acht-raum, .steuer[data-ansicht="raum"]:has(#zur-flaeche:hover) .acht-flaeche { opacity: .06; }
-/* Rand: ein breiter Reif wie aus Glas, oben heller als unten, innen eine feine dunkle Linie, die ihn fasst */
-.acht-rand { fill: none; stroke: url(#acht-reif); stroke-width: 3; }
+/* Rand: ein breiter Reif aus Silber, Gelb- und Rotgold, deren Glanz langsam umläuft (Christian: «in rot- und gelbgold schimmernd», für die Sichtbarkeit);
+   darauf eine feine Glaskante, oben heller als unten, innen eine feine dunkle Linie, die ihn fasst */
+.acht-rand { fill: none; stroke: url(#acht-ring); stroke-width: 3; stroke-opacity: .9; }
+.acht-kante { fill: none; stroke: url(#acht-reif); stroke-width: 1; opacity: .55; }
 .acht-fuge { fill: none; stroke: rgba(0, 0, 0, .35); stroke-width: .6; }
-/* Leuchtspur silbern: der Schweif läuft durch einen kühlen Metallverlauf, der sich langsam dreht (heller und dunkler Glanz wandern); die Spitze bleibt weiss */
-.acht-spur use { fill: none; stroke: url(#acht-silber); stroke-linecap: round; stroke-width: 2.4; }
+/* Leuchtspur: der Schweif läuft durch einen Metallverlauf aus Silber, Gelb- und Rotgold, der sich langsam dreht; die Spitze bleibt weiss */
+.acht-spur use { fill: none; stroke: url(#acht-metall); stroke-linecap: round; stroke-width: 2.6; }
 .acht-spur use:last-child { stroke: #fff; }
 @media (prefers-reduced-motion: reduce) { .acht-spur { display: none; } }
 .steuer button { position: absolute; top: 0; bottom: 0; width: 50%; display: flex; align-items: center; justify-content: center; margin: 0; padding: 0; border: 0; background: none;
@@ -391,9 +393,10 @@ body.ohne-3d .steuer { display: none; }
   font-family: var(--mono); font-size: 11px; line-height: 1.9; opacity: 0; pointer-events: none; transition: opacity .3s; }
 .zeiger.da { opacity: 1; pointer-events: auto; }
 .zeiger a { text-decoration: none; color: rgba(255, 255, 255, .6); display: flex; align-items: center; gap: 8px; }
-.zeiger a::before { content: ""; width: 6px; height: 6px; border: 1px solid currentColor; }
+/* Kästchen in der Farbe ihrer Seite (Christian, 30. Oktober 2026), mit feinem Rand, damit auch Tinte und dunkle Farben auf Schwarz zu sehen sind; das aktive mit vollem Rand und etwas grösser */
+.zeiger a::before { content: ""; width: 7px; height: 7px; background: var(--kf, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, currentColor 45%, transparent); transition: box-shadow .3s, transform .3s; }
 .zeiger a.aktiv { color: #fff; }
-.zeiger a.aktiv::before { background: currentColor; }
+.zeiger a.aktiv::before { box-shadow: 0 0 0 1px currentColor; transform: scale(1.2); }
 body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color: var(--text); }
 @media (max-width: 1100px) { .zeiger { display: none; } }
 
@@ -667,11 +670,11 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
 <div class="steuer" id="steuer" role="group" aria-label="Ansicht" data-ansicht="raum">
   <div class="acht-glas"></div>
   <svg class="acht" viewBox="0 0 148 72" aria-hidden="true">
-    <defs><path id="acht-weg" pathLength="100" d="M74.00 36.00 L72.62 34.21 L71.25 32.43 L69.86 30.65 L68.46 28.88 L67.04 27.13 L65.60 25.38 L64.14 23.66 L62.64 21.96 L61.11 20.28 L59.55 18.64 L57.94 17.04 L56.28 15.48 L54.58 13.97 L52.82 12.53 L51.01 11.15 L49.13 9.85 L47.19 8.63 L45.19 7.52 L43.13 6.53 L41.00 5.67 L38.81 4.95 L36.56 4.39 L34.26 4.02 L31.91 3.84 L29.52 3.88 L27.12 4.15 L24.70 4.68 L22.29 5.48 L19.91 6.56 L17.59 7.94 L15.35 9.61 L13.23 11.59 L11.25 13.86 L9.45 16.41 L7.86 19.23 L6.51 22.28 L5.43 25.52 L4.64 28.93 L4.16 32.44 L4.00 36.00 L4.16 39.56 L4.64 43.07 L5.43 46.48 L6.51 49.72 L7.86 52.77 L9.45 55.59 L11.25 58.14 L13.23 60.41 L15.35 62.39 L17.59 64.06 L19.91 65.44 L22.29 66.52 L24.70 67.32 L27.12 67.85 L29.52 68.12 L31.91 68.16 L34.26 67.98 L36.56 67.61 L38.81 67.05 L41.00 66.33 L43.13 65.47 L45.19 64.48 L47.19 63.37 L49.13 62.15 L51.01 60.85 L52.82 59.47 L54.58 58.03 L56.28 56.52 L57.94 54.96 L59.55 53.36 L61.11 51.72 L62.64 50.04 L64.14 48.34 L65.60 46.62 L67.04 44.87 L68.46 43.12 L69.86 41.35 L71.25 39.57 L72.62 37.79 L74.00 36.00 L75.38 34.21 L76.75 32.43 L78.14 30.65 L79.54 28.88 L80.96 27.13 L82.40 25.38 L83.86 23.66 L85.36 21.96 L86.89 20.28 L88.45 18.64 L90.06 17.04 L91.72 15.48 L93.42 13.97 L95.18 12.53 L96.99 11.15 L98.87 9.85 L100.81 8.63 L102.81 7.52 L104.87 6.53 L107.00 5.67 L109.19 4.95 L111.44 4.39 L113.74 4.02 L116.09 3.84 L118.48 3.88 L120.88 4.15 L123.30 4.68 L125.71 5.48 L128.09 6.56 L130.41 7.94 L132.65 9.61 L134.77 11.59 L136.75 13.86 L138.55 16.41 L140.14 19.23 L141.49 22.28 L142.57 25.52 L143.36 28.93 L143.84 32.44 L144.00 36.00 L143.84 39.56 L143.36 43.07 L142.57 46.48 L141.49 49.72 L140.14 52.77 L138.55 55.59 L136.75 58.14 L134.77 60.41 L132.65 62.39 L130.41 64.06 L128.09 65.44 L125.71 66.52 L123.30 67.32 L120.88 67.85 L118.48 68.12 L116.09 68.16 L113.74 67.98 L111.44 67.61 L109.19 67.05 L107.00 66.33 L104.87 65.47 L102.81 64.48 L100.81 63.37 L98.87 62.15 L96.99 60.85 L95.18 59.47 L93.42 58.03 L91.72 56.52 L90.06 54.96 L88.45 53.36 L86.89 51.72 L85.36 50.04 L83.86 48.34 L82.40 46.62 L80.96 44.87 L79.54 43.12 L78.14 41.35 L76.75 39.57 L75.38 37.79Z"/><clipPath id="acht-form"><use href="#acht-weg"/></clipPath><linearGradient id="acht-reif" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset=".55" stop-color="#fff" stop-opacity=".32"/><stop offset="1" stop-color="#fff" stop-opacity=".62"/></linearGradient><linearGradient id="acht-silber" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="148" y2="72"><stop offset="0" stop-color="#eef2f6"/><stop offset=".17" stop-color="#8e99a6"/><stop offset=".33" stop-color="#ffffff"/><stop offset=".5" stop-color="#7d8893"/><stop offset=".67" stop-color="#e4e9ef"/><stop offset=".83" stop-color="#a3adb8"/><stop offset="1" stop-color="#f7f9fb"/><animateTransform attributeName="gradientTransform" type="rotate" values="0 74 36;360 74 36" dur="9s" repeatCount="indefinite"/></linearGradient><filter id="acht-glanz" x="-20%" y="-30%" width="140%" height="160%"><feGaussianBlur stdDeviation="2.4"/><feColorMatrix values=".82 0 0 0 0  0 .88 0 0 0  0 0 1 0 0  0 0 0 1 0" result="w"/><feMerge><feMergeNode in="w"/><feMergeNode in="w"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+    <defs><path id="acht-weg" pathLength="100" d="M74.00 36.00 L72.62 34.21 L71.25 32.43 L69.86 30.65 L68.46 28.88 L67.04 27.13 L65.60 25.38 L64.14 23.66 L62.64 21.96 L61.11 20.28 L59.55 18.64 L57.94 17.04 L56.28 15.48 L54.58 13.97 L52.82 12.53 L51.01 11.15 L49.13 9.85 L47.19 8.63 L45.19 7.52 L43.13 6.53 L41.00 5.67 L38.81 4.95 L36.56 4.39 L34.26 4.02 L31.91 3.84 L29.52 3.88 L27.12 4.15 L24.70 4.68 L22.29 5.48 L19.91 6.56 L17.59 7.94 L15.35 9.61 L13.23 11.59 L11.25 13.86 L9.45 16.41 L7.86 19.23 L6.51 22.28 L5.43 25.52 L4.64 28.93 L4.16 32.44 L4.00 36.00 L4.16 39.56 L4.64 43.07 L5.43 46.48 L6.51 49.72 L7.86 52.77 L9.45 55.59 L11.25 58.14 L13.23 60.41 L15.35 62.39 L17.59 64.06 L19.91 65.44 L22.29 66.52 L24.70 67.32 L27.12 67.85 L29.52 68.12 L31.91 68.16 L34.26 67.98 L36.56 67.61 L38.81 67.05 L41.00 66.33 L43.13 65.47 L45.19 64.48 L47.19 63.37 L49.13 62.15 L51.01 60.85 L52.82 59.47 L54.58 58.03 L56.28 56.52 L57.94 54.96 L59.55 53.36 L61.11 51.72 L62.64 50.04 L64.14 48.34 L65.60 46.62 L67.04 44.87 L68.46 43.12 L69.86 41.35 L71.25 39.57 L72.62 37.79 L74.00 36.00 L75.38 34.21 L76.75 32.43 L78.14 30.65 L79.54 28.88 L80.96 27.13 L82.40 25.38 L83.86 23.66 L85.36 21.96 L86.89 20.28 L88.45 18.64 L90.06 17.04 L91.72 15.48 L93.42 13.97 L95.18 12.53 L96.99 11.15 L98.87 9.85 L100.81 8.63 L102.81 7.52 L104.87 6.53 L107.00 5.67 L109.19 4.95 L111.44 4.39 L113.74 4.02 L116.09 3.84 L118.48 3.88 L120.88 4.15 L123.30 4.68 L125.71 5.48 L128.09 6.56 L130.41 7.94 L132.65 9.61 L134.77 11.59 L136.75 13.86 L138.55 16.41 L140.14 19.23 L141.49 22.28 L142.57 25.52 L143.36 28.93 L143.84 32.44 L144.00 36.00 L143.84 39.56 L143.36 43.07 L142.57 46.48 L141.49 49.72 L140.14 52.77 L138.55 55.59 L136.75 58.14 L134.77 60.41 L132.65 62.39 L130.41 64.06 L128.09 65.44 L125.71 66.52 L123.30 67.32 L120.88 67.85 L118.48 68.12 L116.09 68.16 L113.74 67.98 L111.44 67.61 L109.19 67.05 L107.00 66.33 L104.87 65.47 L102.81 64.48 L100.81 63.37 L98.87 62.15 L96.99 60.85 L95.18 59.47 L93.42 58.03 L91.72 56.52 L90.06 54.96 L88.45 53.36 L86.89 51.72 L85.36 50.04 L83.86 48.34 L82.40 46.62 L80.96 44.87 L79.54 43.12 L78.14 41.35 L76.75 39.57 L75.38 37.79Z"/><clipPath id="acht-form"><use href="#acht-weg"/></clipPath><linearGradient id="acht-reif" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset=".55" stop-color="#fff" stop-opacity=".32"/><stop offset="1" stop-color="#fff" stop-opacity=".62"/></linearGradient><linearGradient id="acht-metall" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="148" y2="72"><stop offset="0" stop-color="#f1f4f7"/><stop offset=".14" stop-color="#e3b75a"/><stop offset=".28" stop-color="#fffaf0"/><stop offset=".42" stop-color="#d27e60"/><stop offset=".56" stop-color="#c3cbd3"/><stop offset=".7" stop-color="#f0cf78"/><stop offset=".84" stop-color="#c8785c"/><stop offset="1" stop-color="#f4f6f8"/><animateTransform attributeName="gradientTransform" type="rotate" values="0 74 36;360 74 36" dur="9s" repeatCount="indefinite"/></linearGradient><linearGradient id="acht-ring" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="148" y2="0"><stop offset="0" stop-color="#cfd5dc"/><stop offset=".16" stop-color="#e6bf68"/><stop offset=".32" stop-color="#f6f7f9"/><stop offset=".5" stop-color="#cf8466"/><stop offset=".68" stop-color="#eef1f4"/><stop offset=".84" stop-color="#ebc874"/><stop offset="1" stop-color="#cfd5dc"/><animateTransform attributeName="gradientTransform" type="rotate" values="360 74 36;0 74 36" dur="16s" repeatCount="indefinite"/></linearGradient><filter id="acht-glanz" x="-20%" y="-30%" width="140%" height="160%"><feGaussianBlur stdDeviation="2.4"/><feColorMatrix values="1 0 0 0 0  0 .93 0 0 0  0 0 .84 0 0  0 0 0 1 0" result="w"/><feMerge><feMergeNode in="w"/><feMergeNode in="w"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
     <use href="#acht-weg" class="acht-grund"/>
     <g clip-path="url(#acht-form)"><rect class="acht-feld acht-raum" x="0" y="0" width="74" height="72"/><rect class="acht-feld acht-flaeche" x="74" y="0" width="74" height="72"/></g>
-    <use href="#acht-weg" class="acht-rand"/><use href="#acht-weg" class="acht-fuge"/>
-    <g class="acht-spur" filter="url(#acht-glanz)"><use href="#acht-weg" stroke-dasharray="34 66" stroke-opacity=".06" data-l="34"/><use href="#acht-weg" stroke-dasharray="24 76" stroke-opacity=".1" data-l="24"/><use href="#acht-weg" stroke-dasharray="16 84" stroke-opacity=".15" data-l="16"/><use href="#acht-weg" stroke-dasharray="10 90" stroke-opacity=".22" data-l="10"/><use href="#acht-weg" stroke-dasharray="6 94" stroke-opacity=".32" data-l="6"/><use href="#acht-weg" stroke-dasharray="3.4 96.6" stroke-opacity=".5" data-l="3.4"/><use href="#acht-weg" stroke-dasharray="1.8 98.2" stroke-opacity=".75" data-l="1.8"/><use href="#acht-weg" stroke-dasharray="0.7 99.3" stroke-opacity="1" data-l="0.7"/></g>
+    <use href="#acht-weg" class="acht-rand"/><use href="#acht-weg" class="acht-kante"/><use href="#acht-weg" class="acht-fuge"/>
+    <g class="acht-spur" filter="url(#acht-glanz)"><use href="#acht-weg" stroke-dasharray="34 66" stroke-opacity=".1" data-l="34"/><use href="#acht-weg" stroke-dasharray="24 76" stroke-opacity=".16" data-l="24"/><use href="#acht-weg" stroke-dasharray="16 84" stroke-opacity=".22" data-l="16"/><use href="#acht-weg" stroke-dasharray="10 90" stroke-opacity=".3" data-l="10"/><use href="#acht-weg" stroke-dasharray="6 94" stroke-opacity=".42" data-l="6"/><use href="#acht-weg" stroke-dasharray="3.4 96.6" stroke-opacity=".6" data-l="3.4"/><use href="#acht-weg" stroke-dasharray="1.8 98.2" stroke-opacity=".75" data-l="1.8"/><use href="#acht-weg" stroke-dasharray="0.7 99.3" stroke-opacity="1" data-l="0.7"/></g>
   </svg>
   <button type="button" id="zum-raum" aria-pressed="true">Raum</button><button type="button" id="zur-flaeche" aria-pressed="false">Fläche</button>
 </div>
@@ -777,7 +780,7 @@ ZYKLEN.forEach((n, i) => {
 zeigeStrophe(ZUG, [...zy.querySelectorAll("button")].find(b => b.textContent === String(ZUG[0])));
 // Social: je Zettel ein kleines Feld 7×7 wie auf den Zettelkarten der Website
 document.querySelectorAll(".feldchen").forEach((f, j) => { for (let n = 0; n < 49; n++) { const i = document.createElement("i"); if (n === [11, 30, 44][j % 3]) i.className = "an"; f.append(i); } });
-kapitel.forEach(k => { const li = document.createElement("li"), a = document.createElement("a"); a.href = "#" + k.id; a.textContent = k.dataset.name; li.append(a); zeiger.append(li); });
+kapitel.forEach(k => { const li = document.createElement("li"), a = document.createElement("a"); a.href = "#" + k.id; a.textContent = k.dataset.name; a.style.setProperty("--kf", getComputedStyle(k).getPropertyValue("--k").trim()); li.append(a); zeiger.append(li); });
 
 /* ---------- Bahn-Bilder: jedes Kapitel wird aus seinem HTML auf eine Leinwand gezeichnet ---------- */
 /* ---------- Kapitel als Bild: das Kapitel wird in fester Breite gesetzt und Element für Element auf eine Leinwand gezeichnet.
@@ -1501,9 +1504,10 @@ function figurenBauen(g) {
     strich([.45, .36, -.45], [.45, .74, -.45]); strich([.45, .96, -.45], [.45, 1.4, -.45]);
     hell = .55; quader(.34, .74, -.34, .22, .22, .22);
   };
-  /* Auf der obersten Terrasse ein Baum im Raum (Christian, 30. Oktober 2026: dreidimensional, bewegt, farbig blühend in Grün und Rosa bis Magenta).
-     Die Äste gehen in alle Richtungen und wiegen sich, je weiter aussen, desto mehr; an jeder Spitze ein Blatt in einem Grünton, daneben öffnet sich
-     eine Blüte, welkt, und ein Blütenblatt fällt langsam auf die Terrassen. Der Baum dreht sich gemächlich, so sieht man ihn rundum */
+  /* Auf der obersten Terrasse ein Baum im Raum (Christian, 30. Oktober 2026: dreidimensional, bewegt, farbig blühend; dann «nicht drehen, sondern
+     wie im Wind bewegen, dunklere, wärmere Farbtöne»). Der Wind kommt in Böen von einer Seite: der ganze Baum neigt sich, je höher, desto mehr,
+     die Zweige flattern, je weiter aussen, desto mehr. An jeder Spitze zwei Blätter in warmem, dunklem Grün, daneben öffnet sich eine Blüte
+     in Himbeer bis Altrosa, welkt, und ein Blütenblatt fällt langsam auf die Terrassen */
   const terrasse = () => {
     hell = .45; quader(0, 0, 0, 1.3, .1, .7); quader(.12, .1, -.06, 1, .1, .56); quader(.26, .2, -.12, .7, .1, .44);
     const dreh = new THREE.Group(); gruppeBei([.62, .3, -.34]).add(dreh);
@@ -1522,12 +1526,17 @@ function figurenBauen(g) {
     };
     wachsen(new THREE.Vector3(), new THREE.Vector3(0, 1, 0), .3, 6, 0);
     const uni = { zeit: { value: 0 }, a: { value: 1 }, hoehe: { value: 400 } };
-    const WIND = "uniform float zeit; vec3 wind(vec3 p, float w) { w *= w; return p + vec3(sin(zeit * .9 + p.y * 2.3) * .045, 0., cos(zeit * .7 + p.x * 2.9 + p.z) * .04) * w; }";
+    const WIND = `uniform float zeit;
+vec3 wind(vec3 p, float w) {
+  float boe = .55 + .45 * sin(zeit * .31) * sin(zeit * .53 + 1.3), h = max(p.y, 0.) * max(p.y, 0.);
+  vec3 v = vec3((.03 + .05 * boe * (.8 + .2 * sin(zeit * 1.3))) * h, -.012 * boe * h, .018 * sin(zeit * .7 + 1.) * h);
+  return p + v + vec3(sin(zeit * 2.1 + p.y * 3.1 + p.z * 2.) * .03, sin(zeit * 2.6 + p.x * 4.) * .01, cos(zeit * 1.7 + p.x * 2.9 + p.z) * .026) * w * w * (.4 + boe);
+}`;
     const ag3 = new THREE.BufferGeometry(); ag3.setAttribute("position", new THREE.Float32BufferAttribute(ap, 3)); ag3.setAttribute("gewicht", new THREE.Float32BufferAttribute(ag, 1));
     const aeste = new THREE.LineSegments(ag3, new THREE.ShaderMaterial({ uniforms: uni, transparent: true, depthWrite: false,
       vertexShader: `attribute float gewicht; varying float vw; ${WIND}
 void main() { vw = gewicht; gl_Position = projectionMatrix * modelViewMatrix * vec4(wind(position, gewicht), 1.); }`,
-      fragmentShader: "uniform float a; varying float vw; void main() { gl_FragColor = vec4(vec3(.62 - .3 * vw), a); }" }));
+      fragmentShader: "uniform float a; varying float vw; void main() { gl_FragColor = vec4(mix(vec3(.5, .4, .3), vec3(.36, .27, .2), vw), a); }" }));
     // Je Spitze eine Blüte (art.y 0), ein Blütenblatt, das fällt, wenn sie welkt (art.y 1), und zwei grüne Blätter etwas daneben (art.y 2);
     // art.x verschiebt den Kreislauf von elf Sekunden und wählt den Farbton
     const n = spitzen.length, bp = new Float32Array(n * 12), ba = new Float32Array(n * 8), neben = p => p.clone().add(new THREE.Vector3(zufall() - .5, zufall() - .5, zufall() - .5).multiplyScalar(.09));
@@ -1551,18 +1560,18 @@ void main() {
 void main() {
   vec2 c = gl_PointCoord - .5; float r = length(c), al; vec3 col;
   if (vf > 1.5) {
-    // Blatt: eine schmale Spitzellipse, je nach vk anders gedreht und von Tannen- bis Maigrün, mit heller Mittelrippe
+    // Blatt: eine schmale Spitzellipse, je nach vk anders gedreht, von dunklem Moos- bis Olivgrün, mit hellerer Mittelrippe
     float w = vk * 6.283; vec2 q = mat2(cos(w), -sin(w), sin(w), cos(w)) * c;
     al = smoothstep(.3, .24, length(q * vec2(1., 2.3)) + .25 * abs(q.x)); if (al < .01) discard;
-    col = mix(vec3(.1, .52, .26), vec3(.55, .86, .3), vk); col = mix(col, col + .16, smoothstep(.04, 0., abs(q.y)));
+    col = mix(vec3(.17, .3, .11), vec3(.44, .5, .17), vk); col = mix(col, col + .1, smoothstep(.04, 0., abs(q.y)));
   } else {
     float rand = vf > .5 ? .3 : .3 + .16 * cos(5. * atan(c.y, c.x));   // fünf Blütenblätter, das fallende Blatt rund
     al = smoothstep(rand, rand - .1, r) * vd; if (al < .01) discard;
-    // von Magenta über Rosa bis Hellrosa, zum Rand der Blüte etwas heller, in der Mitte ein gelber Punkt
-    vec3 magenta = vec3(.84, .04, .5), rosa = vec3(1., .3, .62), hell = vec3(1., .6, .8);
+    // von dunklem Himbeer über warmes Rosa bis Altrosa, zum Rand der Blüte etwas heller, in der Mitte ein Punkt in Bernstein
+    vec3 magenta = vec3(.6, .05, .28), rosa = vec3(.8, .24, .38), hell = vec3(.88, .5, .5);
     col = mix(mix(magenta, rosa, smoothstep(0., .6, vk)), hell, smoothstep(.75, 1., vk));
     col = mix(col, hell, smoothstep(.12, .32, r) * .2);
-    if (vf < .5) col = mix(vec3(1., .8, .3), col, smoothstep(.03, .09, r));
+    if (vf < .5) col = mix(vec3(.88, .58, .2), col, smoothstep(.03, .09, r));
     col = mix(col, magenta, vf < .5 ? (1. - smoothstep(.04, .3, vu)) * .6 : 0.);   // die Knospe dunkler
   }
   gl_FragColor = vec4(col * .92, al * a);
@@ -1570,7 +1579,7 @@ void main() {
     dreh.add(aeste, blueten);
     const groesse = new THREE.Vector2();
     aeste.onBeforeRender = () => { uni.a.value = aeste.material.opacity; uni.hoehe.value = renderer.getDrawingBufferSize(groesse).y / 2; };
-    bahn.flackern.push(sek => { uni.zeit.value = sek; dreh.rotation.y = sek * .12; });
+    bahn.flackern.push(sek => { uni.zeit.value = sek; });
   };
   /* Prompts: ein Feld mit zwei Achsen und ein Verteilapparat */
   const achsen = () => {
@@ -1679,7 +1688,7 @@ void main() {
     glied([[.04, .95, 0], [.05, 1.01, 0], [.062, 1.08, 0], [.068, 1.13, 0]], .018, .026);
     const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(P, 3)); geo.setAttribute("color", new THREE.Float32BufferAttribute(C, 3));
     dreh.add(new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false })));
-    bahn.flackern.push(sek => { dreh.rotation.y = sek * .3; });
+    bahn.flackern.push(sek => { dreh.rotation.y = sek * .12; });   // eine Umdrehung in knapp einer Minute
   };
   /* Angebot: ein Tisch mit Stühlen, zwei Wände, Kisten mit Massen */
   const tisch = () => {
