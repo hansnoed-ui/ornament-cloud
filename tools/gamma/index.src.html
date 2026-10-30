@@ -1077,7 +1077,9 @@ async function bahnBauen() {
     const uhr = { value: 0 }, fm = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
     fm.onBeforeCompile = sh => {
       sh.uniforms.zeit = uhr;
-      sh.vertexShader = "attribute vec4 wehen;\nuniform float zeit;\n" + sh.vertexShader.replace("#include <begin_vertex>", "#include <begin_vertex>\n  transformed += wehen.xyz * sin(zeit * 1.1 - wehen.w);");
+      // Dazu schimmert der Fries gold-silbern: der Ton wechselt langsam zwischen Gold und Silber, und ab und zu zieht ein Glanz quer darüber
+      sh.vertexShader = "attribute vec4 wehen;\nuniform float zeit;\n" + sh.vertexShader.replace("#include <begin_vertex>", "#include <begin_vertex>\n  transformed += wehen.xyz * sin(zeit * 1.1 - wehen.w);")
+        .replace("#include <color_vertex>", "#include <color_vertex>\n  float tonG = .5 + .5 * sin(zeit * .5 - wehen.w * .5), glanz = pow(max(0., sin(zeit * .7 - wehen.w * .9)), 14.);\n  vColor.rgb *= mix(vec3(1.18, .9, .52), vec3(.9, .96, 1.1), tonG) * (1. + 1.3 * glanz);");
     };
     fm.customProgramCacheKey = () => "fries";
     const fries = new THREE.LineSegments(fg, fm); fries.frustumCulled = false; g.add(fries); bahn.wehen = uhr;
@@ -2977,7 +2979,7 @@ if (web && "IntersectionObserver" in window) new IntersectionObserver(e => { if 
    Eine einzige weiche Fläche zeigt das Foto: in der Mitte ganz, zum Rand hin verläuft es und wird blasser, vom Rauschen leicht unregelmässig.
    Flach folgt sie dem Zeiger oder dem Finger; sonst wandert sie langsam. Im Raum wandert sie auf derselben Bahn über die Skizze auf dem Band
    und hebt das Foto als sanften Hügel an; beim Wechsel in die Fläche steht sie, wo sie im Raum war */
-const KUNST_FOTO = "{{BILD}}gamma/bilder/kunst-foto.webp?v=2", KUNST_LINIEN = "{{BILD}}gamma/bilder/kunst-linien.webp?v=2", KUNST_ZUG = 3.6;
+const KUNST_FOTO = "{{BILD}}gamma/bilder/kunst-foto.webp?v=3", KUNST_LINIEN = "{{BILD}}gamma/bilder/kunst-linien.webp?v=3", KUNST_ZUG = 3.6;
 let kunstBilder = null;
 function kunstLaden() {
   // Fehlt ein Bild (etwa weil die Seite während des Hochladens geöffnet wurde), wird es bis zu dreimal neu geholt; wer auf «load» wartet, bekommt es dann trotzdem
