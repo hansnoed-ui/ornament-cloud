@@ -152,14 +152,14 @@ body.zurueck .bahn { position: fixed; left: 0; right: 0; pointer-events: none; }
 body.flach.nach-intro.wechsel #welt { visibility: visible; }
 
 /* Farben: Webseiten Tannengrün, Apps Senf, Kunst Umbra (getöntes Papier, auf dem die Zeichnung in weisser Kreide steht), Lab Karmin, 3. Rad Blaupause, Prompts Rot, Zettel Papier, Social Tinte, Angebot Tannengrün */
-.k-web { --k: #05386b; --kt: #ffffff; --kg: #ffffff; --kl: rgba(255, 255, 255, .26); --ka: #9cc8f0; }
+.k-web { --k: #254e58; --kt: #ffffff; --kg: #ffffff; --kl: rgba(255, 255, 255, .26); --ka: #a6d8d2; }
 .k-lab { --k: #7a1235; --kt: #ffffff; --kg: rgba(255, 255, 255, .72); --kl: rgba(255, 255, 255, .26); --ka: #ffa3d1; }
 .k-rad { --k: #1d3fd6; --kt: #ffffff; --kg: rgba(255, 255, 255, .76); --kl: rgba(255, 255, 255, .3); --ka: #ecb98f; }
-.k-apps { --k: #faed26; --kt: #000000; --kg: rgba(0, 0, 0, .68); --kl: rgba(0, 0, 0, .22); --ka: #ffffff; }
+.k-apps { --k: #fadd26; --kt: #000000; --kg: rgba(0, 0, 0, .68); --kl: rgba(0, 0, 0, .22); --ka: #ffffff; }
 .k-prompts { --k: #e0503c; --kt: #000000; --kg: rgba(0, 0, 0, .7); --kl: rgba(0, 0, 0, .24); --ka: #ffffff; }
 .k-zettel { --k: #ffffff; --kt: #000000; --kg: #5f5f5f; --kl: #d6d6d6; --ka: #1d3fd6; }
 .k-social { --k: #101010; --kt: #ffffff; --kg: rgba(255, 255, 255, .62); --kl: rgba(255, 255, 255, .22); --ka: #8fb0ff; }
-.k-kunst { --k: #254e58; --kt: #ffffff; --kg: rgba(255, 255, 255, .76); --kl: rgba(255, 255, 255, .26); --ka: #f1d6b8; }
+.k-kunst { --k: #950740; --kt: #ffffff; --kg: rgba(255, 255, 255, .76); --kl: rgba(255, 255, 255, .26); --ka: #f1d6b8; }
 .k-angebot { --k: #1f4d3a; --kt: #ffffff; --kg: rgba(255, 255, 255, .74); --kl: rgba(255, 255, 255, .26); --ka: #9fd4b4; }
 
 /* 01 Webseiten: oben der Titel und rechts die drei Begriffe, mittig das Signet auf einer ruhigen, einfarbigen Bühne, darunter drei Flächen mit ihrem Titel.
@@ -387,11 +387,11 @@ body.ohne-3d .steuer { display: none; }
 .acht-spur use { fill: none; stroke: #fff; stroke-linecap: round; stroke-width: 2.4; }
 @media (prefers-reduced-motion: reduce) { .acht-spur { display: none; } }
 .steuer button { position: absolute; top: 0; bottom: 0; width: 50%; display: flex; align-items: center; justify-content: center; margin: 0; padding: 0; border: 0; background: none;
-  font: italic 400 16px/1 var(--serif); letter-spacing: .005em; color: rgba(255, 255, 255, .62); cursor: pointer; transition: color .4s; -webkit-tap-highlight-color: transparent; }
+  font: 500 10px/1 var(--sans); letter-spacing: .18em; text-transform: uppercase; text-indent: .18em; color: rgba(255, 255, 255, .66); cursor: pointer; transition: color .4s; -webkit-tap-highlight-color: transparent; }
 .steuer button:hover { color: rgba(255, 255, 255, .85); }
 .steuer button[aria-pressed="true"] { color: #fff; cursor: default; }
 .steuer button:focus-visible { outline: 1px solid #fff; outline-offset: -12px; border-radius: 99px; }
-/* Wörter in der Mitte ihrer Schlaufe (Schwerpunkt bei x 32 und 116) */
+/* Wörter in Grossbuchstaben, gesperrt, in der Mitte ihrer Schlaufe (Schwerpunkt bei x 32 und 116); text-indent gleicht die Sperrung nach dem letzten Buchstaben aus */
 #zum-raum { left: 0; padding-right: 10px; } #zur-flaeche { right: 0; padding-left: 10px; }
 .zeiger { position: fixed; z-index: 15; left: max(16px, calc(env(safe-area-inset-left, 0px) + 12px)); top: 50%; transform: translateY(-50%); list-style: none; margin: 0; padding: 0;
   font-family: var(--mono); font-size: 11px; line-height: 1.9; opacity: 0; pointer-events: none; transition: opacity .3s; }
@@ -485,9 +485,9 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
           <canvas class="verwandlung" aria-hidden="true"></canvas>
         </div>
         <div class="flaechen">
-          <button type="button" class="feld" data-feld="express" aria-expanded="false" data-rand="Express"><span class="feld-titel">Express</span><span class="feld-pfeil">→</span></button>
+          <button type="button" class="feld" data-feld="express" aria-expanded="false"><span class="feld-titel">Express</span><span class="feld-pfeil">→</span></button>
           <button type="button" class="feld" data-feld="briefing" aria-expanded="false"><span class="feld-titel">Briefing</span><span class="feld-pfeil">→</span></button>
-          <button type="button" class="feld" data-feld="referenzen" aria-expanded="false" data-rand="Referenzen"><span class="feld-titel">Referenzen</span><span class="feld-pfeil">→</span></button>
+          <button type="button" class="feld" data-feld="referenzen" aria-expanded="false"><span class="feld-titel">Referenzen</span><span class="feld-pfeil">→</span></button>
         </div>
       </div></article>
 
@@ -524,9 +524,9 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
           <canvas class="verwandlung" aria-hidden="true"></canvas>
         </div>
         <div class="flaechen">
-          <button type="button" class="feld" data-feld="installieren" aria-expanded="false" data-rand="Installieren"><span class="feld-titel">Installieren</span><span class="feld-pfeil">→</span></button>
+          <button type="button" class="feld" data-feld="installieren" aria-expanded="false"><span class="feld-titel">Installieren</span><span class="feld-pfeil">→</span></button>
           <button type="button" class="feld" data-feld="geraet" aria-expanded="false"><span class="feld-titel">Auf dem Gerät</span><span class="feld-pfeil">→</span></button>
-          <button type="button" class="feld" data-feld="eigene" aria-expanded="false" data-rand="Eigene App"><span class="feld-titel">Eigene App</span><span class="feld-pfeil">→</span></button>
+          <button type="button" class="feld" data-feld="eigene" aria-expanded="false"><span class="feld-titel">Eigene App</span><span class="feld-pfeil">→</span></button>
         </div>
       </div></article>
 
@@ -536,7 +536,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
         <p class="leit">Bilder, Gespräche, Räume</p>
         <div class="buehne">
           <div class="kunst-bild" data-kunst data-fokus=".48" data-format="1.5" data-rahmen=".35 .435 .094 .138" role="img" aria-label="Ausstellung in einem Raum mit rauen Steinwänden und hellem Holzboden: an der linken Wand ein blaues und ein gelb-schwarzes Bild, an der rechten ein hohes dunkelblaues Bild, zwei Winterbilder und ein grosses Bild mit Mond über Wolken; zuerst als Zeichnung, unter dem Zeiger erscheint das Foto"><canvas aria-hidden="true"></canvas></div>
-          <p class="kunst-hinweis" aria-hidden="true">Darüberfahren zeigt das Foto</p>
+          <p class="kunst-hinweis" aria-hidden="true" data-nur-flach>Darüberfahren zeigt das Foto</p>
           <div class="feld-inhalt">
             <section class="fi" data-feld="vermittlung" hidden>
               <span class="label">Vermittlung</span>
@@ -560,9 +560,9 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
           </div>
         </div>
         <div class="flaechen">
-          <button type="button" class="feld" data-feld="vermittlung" aria-expanded="false" data-rand="Vermittlung"><span class="feld-titel">Vermittlung</span><span class="feld-pfeil">→</span></button>
+          <button type="button" class="feld" data-feld="vermittlung" aria-expanded="false"><span class="feld-titel">Vermittlung</span><span class="feld-pfeil">→</span></button>
           <button type="button" class="feld" data-feld="kuration" aria-expanded="false"><span class="feld-titel">Kuration</span><span class="feld-pfeil">→</span></button>
-          <button type="button" class="feld" data-feld="verkauf" aria-expanded="false" data-rand="Verkauf"><span class="feld-titel">Verkauf</span><span class="feld-pfeil">→</span></button>
+          <button type="button" class="feld" data-feld="verkauf" aria-expanded="false"><span class="feld-titel">Verkauf</span><span class="feld-pfeil">→</span></button>
         </div>
       </div></article>
 
@@ -573,12 +573,12 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
         <div class="lab-werk">
           <a class="lab-gross" href="../beta/lab/"><img src="../beta/lab/bilder/v-glitch.jpg" alt="Porträt, Zeilen und Farbkanäle verschoben" loading="lazy"></a>
           <ol class="liste">
-            <li data-rand="Glitch"><span class="nr">01</span><b>Glitch</b><span>Zeilen verrutschen, Kanäle trennen sich.</span></li>
+            <li><span class="nr">01</span><b>Glitch</b><span>Zeilen verrutschen, Kanäle trennen sich.</span></li>
             <li><span class="nr">02</span><b>Pixelsortierung</b><span>Helligkeit ordnet die Pixel neu.</span></li>
             <li><span class="nr">03</span><b>Teilung</b><span>Linienbilder nach Makelangelo, in den Farben des Bildes.</span></li>
             <li><span class="nr">04</span><b>Raster</b><span>Das Bild als gedrucktes Raster.</span></li>
             <li><span class="nr">05</span><b>Punkte</b><span>Punktieren statt zeichnen.</span></li>
-            <li data-rand="Neusetzen"><span class="nr">06</span><b>Neusetzen</b><span>Teile ordnen sich zu einem neuen Bild.</span></li>
+            <li><span class="nr">06</span><b>Neusetzen</b><span>Teile ordnen sich zu einem neuen Bild.</span></li>
           </ol>
         </div>
         <div class="kontakt">
@@ -596,9 +596,9 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
         <h2>Das 3. Rad</h2>
         <p class="leit">Zeit, Form und Farbe drehen gegeneinander.</p>
         <div class="raeder">
-          <a class="rad" href="../beta/drittes-rad/" data-rand="Strophe"><span class="scheibe ausschnitt"><img src="../beta/drittes-rad/og-drittes-rad.jpg" alt="" loading="lazy"></span><span class="label">Zettelkasten</span><b>Strophe</b><span>Jede Drehung zieht eine Strophe aus «Zu seiner Zeit».</span></a>
+          <a class="rad" href="../beta/drittes-rad/"><span class="scheibe ausschnitt"><img src="../beta/drittes-rad/og-drittes-rad.jpg" alt="" loading="lazy"></span><span class="label">Zettelkasten</span><b>Strophe</b><span>Jede Drehung zieht eine Strophe aus «Zu seiner Zeit».</span></a>
           <a class="rad" href="../beta/drittes-rad/"><span class="scheibe"><img src="../b/bilder/apps/orna.svg" alt="" loading="lazy"></span><span class="label">ORNA</span><b>Begegnung</b><span>Künstler:innen treffen Theoretiker:innen.</span></a>
-          <a class="rad" href="../beta/drittes-rad/" data-rand="Übung"><span class="scheibe"><img src="../b/bilder/apps/omna-color.svg" alt="" loading="lazy"></span><span class="label">OMNA COLOR</span><b>Übung</b><span>Eine Gestaltungsübung, und von jedem Treffer geht es weiter.</span></a>
+          <a class="rad" href="../beta/drittes-rad/"><span class="scheibe"><img src="../b/bilder/apps/omna-color.svg" alt="" loading="lazy"></span><span class="label">OMNA COLOR</span><b>Übung</b><span>Eine Gestaltungsübung, und von jedem Treffer geht es weiter.</span></a>
         </div>
         <a class="weiter" href="../beta/drittes-rad/">Rad drehen →</a>
       </div></article>
@@ -608,8 +608,8 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
         <h2>Prompts</h2>
         <p class="leit">Vier Prüfraster zum genaueren Hinsehen, je mit Grundlagenpapier und Anwendungsprompt.</p>
         <div class="matrix">
-          <a href="../b/raster/nebeneinander-nacheinander/" data-rand="Nebeneinander und Nacheinander"><span class="label">I</span><img src="../b/bilder/raster/nebeneinander-nacheinander.svg" alt="" loading="lazy"><b>Nebeneinander und Nacheinander</b><span>Verräumlichung und Verzeitlichung als Achsen für Theorien und Kunstpraxen.</span></a>
-          <a href="../b/raster/verteilapparat/" data-rand="Verteilapparat"><span class="label">II</span><img src="../b/bilder/raster/verteilapparat.svg" alt="" loading="lazy"><b>Der Verteilapparat des Körpers</b><span>Wessen Körperereignis kommt wie weit, unter welcher Beschreibung?</span></a>
+          <a href="../b/raster/nebeneinander-nacheinander/"><span class="label">I</span><img src="../b/bilder/raster/nebeneinander-nacheinander.svg" alt="" loading="lazy"><b>Nebeneinander und Nacheinander</b><span>Verräumlichung und Verzeitlichung als Achsen für Theorien und Kunstpraxen.</span></a>
+          <a href="../b/raster/verteilapparat/"><span class="label">II</span><img src="../b/bilder/raster/verteilapparat.svg" alt="" loading="lazy"><b>Der Verteilapparat des Körpers</b><span>Wessen Körperereignis kommt wie weit, unter welcher Beschreibung?</span></a>
           <a href="../b/raster/gesellschaftskonzepte/"><span class="label">III</span><img src="../b/bilder/raster/gesellschaftskonzepte.svg" alt="" loading="lazy"><b>Gesellschaftskonzepte</b><span>Einheit · Operation · Vermittlung. Vorprüfung von Gesellschaftsdiagnosen.</span></a>
           <a href="../b/raster/journalistische-texte/"><span class="label">IV</span><img src="../b/bilder/raster/journalistische-texte.svg" alt="" loading="lazy"><b>Journalistische Texte</b><span>Ereignis · Kontext · Übergang · Gegenprobe · Systembezüge.</span></a>
         </div>
@@ -632,9 +632,9 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
         <h2>Social</h2>
         <p class="leit">Ausgewählte Beiträge aus X, Facebook und Instagram, wöchentlich als Zettel gesammelt.</p>
         <div class="kanaele">
-          <a class="kanal" href="../b/zuletzt/" data-rand="X"><span class="label">Zettel · Kanal</span><b>X</b><span class="satz">Beiträge, als Zettel abgelegt.</span><span class="feldchen" aria-hidden="true"></span></a>
+          <a class="kanal" href="../b/zuletzt/"><span class="label">Zettel · Kanal</span><b>X</b><span class="satz">Beiträge, als Zettel abgelegt.</span><span class="feldchen" aria-hidden="true"></span></a>
           <a class="kanal" href="../b/zuletzt/"><span class="label">Zettel · Kanal</span><b>Facebook</b><span class="satz">Beiträge, als Zettel abgelegt.</span><span class="feldchen" aria-hidden="true"></span></a>
-          <a class="kanal" href="../b/zuletzt/" data-rand="Instagram"><span class="label">Zettel · Kanal</span><b>Instagram</b><span class="satz">Beiträge, als Zettel abgelegt.</span><span class="feldchen" aria-hidden="true"></span></a>
+          <a class="kanal" href="../b/zuletzt/"><span class="label">Zettel · Kanal</span><b>Instagram</b><span class="satz">Beiträge, als Zettel abgelegt.</span><span class="feldchen" aria-hidden="true"></span></a>
         </div>
         <a class="weiter" href="../b/zuletzt/">Zu den Beiträgen →</a>
       </div></article>
@@ -644,7 +644,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
         <h2>Angebot</h2>
         <p class="leit">Vermittlung, Kuration und Produkte; die Webseiten stehen am Anfang. Jede Leistung beginnt mit einem Gespräch.</p>
         <ol class="angebot-liste">
-          <li><a href="../b/angebot/vermittlung/" data-rand="Vermittlung"><span class="nr">02</span><b>Vermittlung und Beratung</b><span>Seminare, Workshops, Projekte mit Schulen und Teams; Beratung für Institutionen.</span></a></li>
+          <li><a href="../b/angebot/vermittlung/"><span class="nr">02</span><b>Vermittlung und Beratung</b><span>Seminare, Workshops, Projekte mit Schulen und Teams; Beratung für Institutionen.</span></a></li>
           <li><a href="../b/angebot/kuration/"><span class="nr">03</span><b>Kuratorische Projekte</b><span>Ausstellungen denken, ordnen, hängen.</span></a></li>
           <li><a href="../b/angebot/produkte/"><span class="nr">04</span><b>Produkte</b><span>Werke, Prints, Editionen und Auftragsarbeiten, klassisch und digital.</span></a></li>
         </ol>
@@ -706,8 +706,8 @@ const ZUG = (() => {
 })();
 const ZYKLEN = ["Operation", "Rekursion", "Adresse", "Koppelung", "Kunst", "Plattform", "Zukunft"];
 const ROEM = ["I", "II", "III", "IV", "V", "VI", "VII"];
-const KAPITELFARBEN = ["#2f6db0", "#faed26", "#4f8e9c", "#c2185b", "#1d3fd6", "#e0503c", "#ffffff", "#8fb0ff", "#2f7a58"];   // Quadrate im Intro: auf Schwarz sichtbar
-const LEUCHTFARBEN = ["#5aa8ec", "#faed26", "#7cc4cc", "#ff5c95", "#6f8cff", "#ff5a3c", "#d6dbe4", "#9aa6bd", "#5fcf95"];   // Kanten und Marken im Raum
+const KAPITELFARBEN = ["#4f8e9c", "#fadd26", "#d11a5e", "#c2185b", "#1d3fd6", "#e0503c", "#ffffff", "#8fb0ff", "#2f7a58"];   // Quadrate im Intro: auf Schwarz sichtbar
+const LEUCHTFARBEN = ["#7cc4cc", "#fadd26", "#ff4a78", "#ff5c95", "#6f8cff", "#ff5a3c", "#d6dbe4", "#9aa6bd", "#5fcf95"];   // Kanten und Marken im Raum
 const ZYKLUSFARBEN = ["#ff5c9a", "#ffc21a", "#ff5a3c", "#ffffff", "#8fb0ff", "#3fd08e", "#ffa3d1"];
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const klemm = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
@@ -806,7 +806,7 @@ async function kapitelZeichnen(k, i, LW) {
   const r0 = kl.getBoundingClientRect(), LH = Math.ceil(r0.height);
   const cv = document.createElement("canvas"); cv.width = Math.round(LW * skala); cv.height = Math.round(LH * skala);
   const cx = cv.getContext("2d"); cx.scale(skala, skala);
-  const lage = { titel: null, rand: [], surfen: null, handys: null, kunst: null }, range = document.createRange();
+  const lage = { titel: null, surfen: null, handys: null, kunst: null, buehne: null }, range = document.createRange();
   const leer = c => !c || c === "transparent" || /rgba?\(.*,\s*0\)$/.test(c);
   const schrift = cs => `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
   const oberlaenge = () => { const m = cx.measureText("Hg"); return m.fontBoundingBoxAscent ?? m.actualBoundingBoxAscent * 1.12; };
@@ -832,7 +832,7 @@ async function kapitelZeichnen(k, i, LW) {
   }
   function element(el, alpha) {
     const cs = getComputedStyle(el);
-    if (cs.display === "none" || cs.visibility === "hidden") return;
+    if (cs.display === "none" || cs.visibility === "hidden" || (el.dataset && "nurFlach" in el.dataset)) return;   // data-nur-flach: nicht aufs Band
     const a = alpha * parseFloat(cs.opacity); if (a < .002) return;
     const r = el.getBoundingClientRect(), x = r.left - r0.left, y = r.top - r0.top, b = r.width, h = r.height;
     if (el.tagName === "H2") {
@@ -846,13 +846,13 @@ async function kapitelZeichnen(k, i, LW) {
       }
       if (!zeilen.length) return;
       zeilen.forEach(z => { z.text = z.text.trim(); z.grund = z.top - r0.top + asc; });
-      lage.titel = { zeilen, grund: zeilen[0].grund, gr: parseFloat(cs.fontSize), font: schrift(cs), abstand: parseFloat(cs.letterSpacing) || 0, farbe: cs.color };
+      lage.titel = { zeilen, grund: zeilen[0].grund, gr: parseFloat(cs.fontSize), font: schrift(cs), abstand: parseFloat(cs.letterSpacing) || 0, farbe: cs.color, oben: y };
       return;
     }
-    if (el.dataset && el.dataset.rand) lage.rand.push({ text: el.dataset.rand, x, y, b, h });
     if (el.dataset && "surfen" in el.dataset) lage.surfen = { x, y, b, h };
     if (el.dataset && "handys" in el.dataset) lage.handys = { x, y, b, h };
     if (el.dataset && "kunst" in el.dataset) lage.kunst = { x, y, b, h };
+    if (el.classList.contains("buehne")) lage.buehne = { y, h };
     cx.save(); cx.globalAlpha = a;
     if (cs.mixBlendMode && cs.mixBlendMode !== "normal") cx.globalCompositeOperation = cs.mixBlendMode;
     const rad = radius(cs, b, h);
@@ -991,7 +991,9 @@ async function bahnBauen() {
     s += laenge;
   });
   bahn.L = s;
-  bahn.kapitel = kapitel.map((_, i) => { const t = bahn.stuecke.filter(x => x.kapitel === i); return { s0: t[0].s0, s1: t[t.length - 1].s1 }; });
+  // fokus: von der Oberkante des Titels bis zum Ende der Bühne (in Pixeln der Lage); darauf zentriert der Wechsel in die Fläche
+  bahn.kapitel = kapitel.map((_, i) => { const t = bahn.stuecke.filter(x => x.kapitel === i), l = bilder[i].lage;
+    return { s0: t[0].s0, s1: t[t.length - 1].s1, fokus: l.titel && l.buehne ? [l.titel.oben, l.buehne.y + l.buehne.h] : null }; });
   // Der Rand: ein schmaler heller Streifen aussen am Band, als Fläche gezeichnet. So wird er geglättet wie das Band selbst
   // und flimmert nicht wie eine Linie von einem Pixel.
   {
@@ -1095,16 +1097,6 @@ async function bahnBauen() {
   g.add(new THREE.LineSegments(mg, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false, toneMapped: false })));
   // Titel: an der Unterkante auf der Bahn eingehängt und schräg in den Raum geneigt, mit weichem Schatten
   const SANS = '"Instrument Sans", system-ui, sans-serif';
-  const textFlaeche = (text, font, farbe, gr, sk, rand, abstand = 0, unschaerfe = 0) => {
-    const m = document.createElement("canvas").getContext("2d"); m.font = font; if ("letterSpacing" in m) m.letterSpacing = abstand + "px";
-    const b = Math.ceil(m.measureText(text).width + rand * 2), h = Math.ceil(gr * 1.16 + rand);
-    const cv = document.createElement("canvas"); cv.width = Math.ceil(b * sk); cv.height = Math.ceil(h * sk);
-    const cx = cv.getContext("2d"); cx.scale(sk, sk); cx.font = font; if ("letterSpacing" in cx) cx.letterSpacing = abstand + "px";
-    if (unschaerfe) cx.filter = `blur(${unschaerfe}px)`;
-    cx.fillStyle = farbe; cx.textBaseline = "alphabetic"; cx.fillText(text, rand, gr * .88 + rand / 2);
-    const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
-    return { tex, b, h };
-  };
   // Ein Titel über mehrere Zeilen, so gesetzt wie auf der Seite
   const titelFlaeche = (t, farbe, sk, rand, unschaerfe = 0) => {
     const z = t.zeilen, x0 = Math.min(...z.map(l => l.x)), g0 = z[0].grund;
@@ -1139,6 +1131,7 @@ async function bahnBauen() {
     const mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: f.tex, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
     const schatten = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: sch.tex, transparent: true, depthWrite: false }));
     schatten.material.userData.a = .3; mesh.material.userData.frueh = schatten.material.userData.frueh = true; schatten.position.z = .002; schatten.renderOrder = 1; mesh.renderOrder = 2;
+    mesh.userData.kapitel = i;   // ein Tipp auf den aufgestellten Titel gilt seinem Kapitel, nicht dem Band dahinter
     piv.add(schatten, mesh); g.add(piv);
     // Für die Grenze beim Aufstellen: Fusspunkt und Achsen der Fläche, ihre Höhe und der Anfang des Kapitels
     const e = piv.matrix.elements;
@@ -1208,11 +1201,11 @@ async function bahnBauen() {
     const grund = new THREE.MeshBasicMaterial({ color: 0x050505, transparent: true, depthWrite: false, side: THREE.DoubleSide });
     const m = new THREE.Mesh(geo, grund); grund.userData.frueh = true; m.renderOrder = 3; m.frustumCulled = false; g.add(m);
     // Säulen in versetzten Reihen; jede steht senkrecht auf dem Band (x quer, y aus dem Band, z entlang)
-    const SP = 36, teil = l.b / SP, reihen = Math.max(4, Math.round(l.h / (teil * .866))), n = SP * reihen, rad = teil * bahn.k * .46;
+    const SP = 42, teil = l.b / SP, reihen = Math.max(4, Math.round(l.h / (teil * .866))), n = SP * reihen, rad = teil * bahn.k * .46;
     const zyl = new THREE.CylinderGeometry(1, 1, 1, 20, 1).translate(0, .5, 0), iuv = new Float32Array(n * 2);
     const M = new THREE.Matrix4(), P = new THREE.Vector3(), q1 = new THREE.Vector3(), q2 = new THREE.Vector3(), X = new THREE.Vector3(), N = new THREE.Vector3(), Z = new THREE.Vector3();
     const uni = { foto: { value: textur(imF, true) }, zeit: { value: 0 }, deck: { value: 1 }, aus: { value: new THREE.Vector4(...a) }, seite: { value: new THREE.Vector2(ar, 1) },
-      rahmen: { value: new THREE.Vector4(...R) }, rm: { value: 0 }, hoch: { value: teil * bahn.k * 4 } };
+      rahmen: { value: new THREE.Vector4(...R) }, rm: { value: 0 }, hoch: { value: teil * bahn.k * 2.6 } };
     const sStoff = new THREE.ShaderMaterial({ uniforms: uni, transparent: true,
       vertexShader: `attribute vec2 iuv; uniform sampler2D foto; uniform vec4 aus; uniform vec2 seite; uniform float zeit, hoch;
 varying vec2 vf, vq; varying vec3 vn, vwn, vbn, vbx, vbz, vw; varying float vh, vton, vin; ${KUNST_GLSL.split("// Skizze und Foto")[0]}
@@ -1270,43 +1263,7 @@ void main() {
       if (beginn !== null) kunst.raumZug = 1.02 * eio(klemm((sek - beginn) / KUNST_ZUG));
     });
   });
-  // Metermarken: alle fünf Meter eine Zahl in Mono am linken Rand
-  const marken = []; for (let m = 5; m <= bahn.L; m += 5) marken.push(m);
-  if (marken.length) {
-    const zb = 64, zh = 16, sp = 8, sk = 4, reihen = Math.ceil(marken.length / sp), kl = bahn.k * 1.3;
-    const atlas = document.createElement("canvas"); atlas.width = zb * sp * sk; atlas.height = reihen * zh * sk;
-    const ax = atlas.getContext("2d"); ax.scale(sk, sk); ax.font = `500 10.5px ${SANS}`; if ("letterSpacing" in ax) ax.letterSpacing = ".8px"; ax.fillStyle = "#fff"; ax.textBaseline = "middle"; ax.textAlign = "right";
-    const ap = [], au = [], ai = [];
-    marken.forEach((m, j) => {
-      const x0 = (j % sp) * zb, y0 = Math.floor(j / sp) * zh; ax.fillText(m + " m", x0 + zb - 2, y0 + zh / 2 + 1);
-      const qR = RAUM.w / 2 + .4, qL = qR + zb * kl, hh = zh * kl / 2, o = ap.length / 3;
-      for (const [sj, q] of [[m - hh, qL], [m - hh, qR], [m + hh, qL], [m + hh, qR]]) ap.push(...bahnPunkt(sj, q, .003).toArray());
-      const u0 = x0 / (zb * sp), u1 = (x0 + zb) / (zb * sp), v0 = 1 - y0 / (reihen * zh), v1 = 1 - (y0 + zh) / (reihen * zh);
-      au.push(u0, v0, u1, v0, u0, v1, u1, v1); ai.push(o, o + 2, o + 1, o + 1, o + 2, o + 3);
-    });
-    const at = new THREE.CanvasTexture(atlas); at.colorSpace = THREE.SRGBColorSpace; at.anisotropy = renderer.capabilities.getMaxAnisotropy();
-    const ag = new THREE.BufferGeometry(); ag.setAttribute("position", new THREE.Float32BufferAttribute(ap, 3)); ag.setAttribute("uv", new THREE.Float32BufferAttribute(au, 2)); ag.setIndex(ai);
-    const am = new THREE.Mesh(ag, new THREE.MeshBasicMaterial({ map: at, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
-    am.material.userData.a = .5; g.add(am);
-  }
-  // Am Desktop: die Karten am Rand beschriftet, mit einer feinen Linie zur Karte
-  if (!eng) {
-    const hp = [], kl = .0105;
-    bilder.forEach((b, i) => b.lage.rand.forEach(c => {
-      const mitte = c.x + c.b / 2; if (Math.abs(mitte - LW / 2) < LW * .12) return;
-      const links = mitte < LW / 2, seite = links ? 1 : -1, sj = bahn.kapitel[i].s0 + (c.y + Math.min(c.h / 2, 20)) * bahn.k;
-      const A = bahnPunkt(sj, RAUM.w / 2 - (links ? c.x : c.x + c.b) * bahn.k, .004), B = bahnPunkt(sj - .25, seite * (RAUM.w / 2 + 1.05), .42);
-      hp.push(...A.toArray(), ...B.toArray());
-      const f = textFlaeche(c.text, `500 13px ${SANS}`, "#fff", 13, 4, 3);
-      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: f.tex, transparent: true, depthWrite: false }));
-      sp.center.set(links ? 1 : 0, .15); sp.scale.set(f.b * kl, f.h * kl, 1); sp.position.copy(B); g.add(sp);
-    }));
-    if (hp.length) {
-      const hg = new THREE.BufferGeometry(); hg.setAttribute("position", new THREE.Float32BufferAttribute(hp, 3));
-      const hl = new THREE.LineSegments(hg, new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, depthWrite: false })); hl.material.userData.a = .4; g.add(hl);
-    }
-  }
-  figurenBauen(g, bilder);
+  figurenBauen(g);
   bahn.materialien = []; g.traverse(o => { if (o.material) bahn.materialien.push(o.material); });
   welt.add(g); bahn.gruppe = g; bahn.nurSatellit = null;
   vorUebersetzen();
@@ -1314,12 +1271,12 @@ void main() {
   platzMessen();
 }
 
-/* ---------- Neben der Bahn: feine Drahtfiguren je Bereich, Masse, Notationen aus den «Laws of Form» und die Schlaufe des Signets.
+/* ---------- Neben der Bahn: feine Drahtfiguren je Bereich, Masslinien und die Schlaufe des Signets. Wörter stehen hier keine (Christian, 30. Oktober 2026).
    Jede Figur steht in einem eigenen Rahmen: x zeigt von der Bahn weg, y aus dem Boden der Trommel, z der Bahn entlang zur Kamera. ---------- */
-function figurenBauen(g, bilder) {
-  const eng = schmal(), SANS = '"Instrument Sans", system-ui, sans-serif', SERIF = 'Newsreader, "Times New Roman", serif';
+function figurenBauen(g) {
+  const eng = schmal();
   let lp = [], lc = [], hell = .5, ton = new THREE.Color(1, 1, 1);
-  const schilder = [], M = new THREE.Matrix4(), v1 = new THREE.Vector3(), v2 = new THREE.Vector3(), rechtsW = new THREE.Vector3(), obenW = new THREE.Vector3();
+  const M = new THREE.Matrix4(), v1 = new THREE.Vector3(), v2 = new THREE.Vector3(), rechtsW = new THREE.Vector3(), obenW = new THREE.Vector3();
   let saat = 7; const zufall = () => (saat = (saat * 16807) % 2147483647) / 2147483647;
   bahn.dreher = []; bahn.laeufer = []; bahn.ascii = null; bahn.flackern = [];
   // Rahmen an der Stelle sj, ab Meter neben dem Rand des Bandes; seite 1 = rechts im Bild
@@ -1340,11 +1297,9 @@ function figurenBauen(g, bilder) {
   const bogen = (cx, cy, cz, r, ebene = "xy", von = 0, bis = Math.PI * 2, n = 40) => {
     const p = []; for (let i = 0; i <= n; i++) { const w = von + (bis - von) * i / n, a = Math.cos(w) * r, b = Math.sin(w) * r; p.push(ebene === "xy" ? [cx + a, cy + b, cz] : [cx + a, cy, cz + b]); } zug(p);
   };
-  const schild = (inhalt, p, art = "mass", anker = .5, gr = 1) => { v1.set(p[0], p[1], p[2]).applyMatrix4(M); schilder.push({ inhalt, art, anker, gr, pos: v1.clone(), rechts: rechtsW.clone(), oben: obenW.clone() }); };
-  // Masslinie mit Endstrichen, die Zahl darüber
-  const mass = (a, b, text, quer = [0, .045, 0]) => {
+  // Masslinie mit Endstrichen, ohne Zahl: im Raum neben dem Band stehen keine Wörter
+  const mass = (a, b, quer = [0, .045, 0]) => {
     const h0 = hell; hell = .34; strich(a, b); for (const p of [a, b]) strich([p[0] - quer[0], p[1] - quer[1], p[2] - quer[2]], [p[0] + quer[0], p[1] + quer[1], p[2] + quer[2]]); hell = h0;
-    schild(text, [(a[0] + b[0]) / 2 + quer[0] * 1.6, (a[1] + b[1]) / 2 + quer[1] * 1.2, (a[2] + b[2]) / 2]);
   };
   // Was sich bewegt, bekommt eigene Linien in eigenen Koordinaten
   function eigeneLinien(zeichne, mitte, v) {
@@ -1356,6 +1311,8 @@ function figurenBauen(g, bilder) {
     halter.add(o); g.add(halter); bahn.dreher.push({ o, v });
   }
 
+  // Eine Gruppe im Rahmen der Figur mit Ursprung bei p: für Teile mit eigenem Stoff, die sich bewegen
+  const gruppeBei = p => { const h = new THREE.Group(); h.matrixAutoUpdate = false; h.matrix.copy(M).multiply(new THREE.Matrix4().makeTranslation(p[0], p[1], p[2])); g.add(h); return h; };
   // Linien, die für sich flackern sollen, in eigenen Koordinaten der Welt
   function eigeneStriche(zeichne) {
     const altP = lp, altC = lc; lp = []; lc = []; zeichne();
@@ -1363,9 +1320,9 @@ function figurenBauen(g, bilder) {
     const o = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false }));
     lp = altP; lc = altC; g.add(o); return o.material;
   }
-  // Ein Bildschirm leuchtet schwach im Hellblau der Webseiten. Über den Browser zieht langsam eine helle Zeile nach unten, über das Telefon ab und zu ein schräger Glanz
+  // Ein Bildschirm leuchtet schwach im hellen Petrol der Webseiten. Über den Browser zieht langsam eine helle Zeile nach unten, über das Telefon ab und zu ein schräger Glanz
   function schirm(x, y, b, h, glanz) {
-    const u = { t: { value: 0 }, a: { value: 1 }, hell: { value: 1 }, farbe: { value: hdr("#9cc8f0", 1) } };
+    const u = { t: { value: 0 }, a: { value: 1 }, hell: { value: 1 }, farbe: { value: hdr("#a6d8d2", 1) } };
     const m = new THREE.ShaderMaterial({ uniforms: u, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
       vertexShader: "varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }",
       fragmentShader: `uniform float t, a, hell; uniform vec3 farbe; varying vec2 vUv;
@@ -1401,8 +1358,8 @@ function figurenBauen(g, bilder) {
       hell = .5; rechteck(b / 12 * .5, y0 + h - .3, 0, b * .55, .1); rechteck(b / 12 * .5, y0 + .1, 0, b * .82, .34);
     });
     const marke = eigeneStriche(() => { hell = .8; strich([b / 12 * .5 + .05, y0 + h - .28, 0], [b / 12 * .5 + .05, y0 + h - .22, 0]); });
-    const glimmen = schirm(0, y0, b, h - .1, false), betrieb = lichtpunkt([b - .05, y0 - .045, 0], "#9cc8f0"), s0 = zufall() * 9;
-    mass([0, y0 - .1, 0], [b, y0 - .1, 0], "1280 px");
+    const glimmen = schirm(0, y0, b, h - .1, false), betrieb = lichtpunkt([b - .05, y0 - .045, 0], "#a6d8d2"), s0 = zufall() * 9;
+    mass([0, y0 - .1, 0], [b, y0 - .1, 0]);
     bahn.flackern.push(t => {
       const f = flackern(t, s0); inhalt.userData.a = f; glimmen.hell.value = f; glimmen.t.value = t;
       marke.userData.a = weich(.1, 0, Math.abs((t * .9) % 1 - .25) - .25) * f;
@@ -1410,7 +1367,7 @@ function figurenBauen(g, bilder) {
     });
   };
   const stufen = () => {
-    hell = .42; [[1.44, .9, "1440"], [.768, .9, "768"], [.39, .8, "390 px"]].forEach(([b, h, t], i) => { const z = -i * .4; rechteck(0, 0, z, b, h); schild(t, [b - .04, h + .05, z], "mass", 1); });
+    hell = .42; [[1.44, .9], [.768, .9], [.39, .8]].forEach(([b, h], i) => rechteck(0, 0, -i * .4, b, h));
     hell = .16; strich([0, 0, 0], [0, 0, -.8]); strich([0, .9, 0], [0, .9, -.4]);
   };
   const telefon = () => {
@@ -1437,8 +1394,8 @@ function figurenBauen(g, bilder) {
     const zb = Math.max(7, mz.measureText("M").width), cv = document.createElement("canvas"); cv.width = Math.ceil(SP * zb * sk); cv.height = ZE * ZH * sk;
     const cx = cv.getContext("2d"); cx.scale(sk, sk); cx.font = SCHRIFT; cx.textBaseline = "top"; cx.fillStyle = "#fff";
     const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
-    // Klein und ohne Beschriftung; am Desktop rückt die Fläche näher ans Band, damit sie neben dem Anfang ganz im Bild steht
-    const B = .62, H = B * ZE * ZH / (SP * zb), y0 = .2, xm = B / 2 - (eng ? 0 : .3);
+    // Ohne Beschriftung, etwas weiter draussen im Raum
+    const B = 1, H = B * ZE * ZH / (SP * zb), y0 = .24, xm = B / 2 + (eng ? 0 : .15);
     hell = .3; strich([xm, 0, 0], [xm, y0 - .03, 0]); strich([xm - .07, 0, 0], [xm + .07, 0, 0]);
     const mitte = new THREE.Vector3(xm, y0 + H / 2, 0).applyMatrix4(M);
     const mesh = new THREE.Mesh(new THREE.PlaneGeometry(B, H), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
@@ -1487,16 +1444,16 @@ function figurenBauen(g, bilder) {
   };
   /* Internet: ein verteiltes Netz nach Paul Baran (1964), ohne Mitte; Pakete gehen ihren Weg von Knoten zu Knoten */
   const baran = () => {
-    const K = [[.1, .42], [.46, .36], [.86, .46], [1.22, .38], [.04, .78], [.4, .74], [.78, .82], [1.18, .76], [.14, 1.12], [.52, 1.16], [.9, 1.1], [1.24, 1.18]].map(([x, y]) => [x * .4, y * .4 + .02]);
+    const K = [[.1, .42], [.46, .36], [.86, .46], [1.22, .38], [.04, .78], [.4, .74], [.78, .82], [1.18, .76], [.14, 1.12], [.52, 1.16], [.9, 1.1], [1.24, 1.18]].map(([x, y]) => [x * .62, y * .62 + .02]);
     const KANTEN = [[0, 1], [1, 2], [2, 3], [4, 5], [5, 6], [6, 7], [8, 9], [9, 10], [10, 11], [0, 4], [1, 5], [2, 6], [3, 7], [4, 8], [6, 10], [7, 11], [1, 6], [4, 9], [6, 11]];
     hell = .26; KANTEN.forEach(([a, b]) => strich([...K[a], 0], [...K[b], 0]));
-    hell = .55; K.forEach(([x, y]) => bogen(x, y, 0, .014, "xy", 0, Math.PI * 2, 8));
-    hell = .3; strich([K[1][0], 0, 0], [K[1][0], K[1][1] - .014, 0]); strich([K[1][0] - .07, 0, 0], [K[1][0] + .07, 0, 0]);
+    hell = .55; K.forEach(([x, y]) => bogen(x, y, 0, .02, "xy", 0, Math.PI * 2, 10));
+    hell = .3; strich([K[1][0], 0, 0], [K[1][0], K[1][1] - .02, 0]); strich([K[1][0] - .07, 0, 0], [K[1][0] + .07, 0, 0]);
     // Drei Pakete auf geschlossenen Wegen, je etwa eine Sekunde von Knoten zu Knoten
     [[0, 1, 5, 4], [2, 6, 7, 11, 10, 6], [8, 9, 10, 6, 1, 0, 4]].forEach(weg => {
       const wp = []; [...weg, weg[0]].forEach(k => { v1.set(K[k][0], K[k][1], 0).applyMatrix4(M); wp.push(v1.x, v1.y, v1.z); });
       const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(wp.slice(0, 3), 3));
-      const paket = new THREE.Points(geo, deckeln(new THREE.PointsMaterial({ size: .045, color: hdr("#9cc8f0", .9), transparent: true, depthWrite: false }), 5));
+      const paket = new THREE.Points(geo, deckeln(new THREE.PointsMaterial({ size: .06, color: hdr("#a6d8d2", .9), transparent: true, depthWrite: false }), 5));
       g.add(paket); bahn.laeufer.push({ punkte: wp, attr: geo.attributes.position, phase: zufall(), v: 20 / (weg.length * 1.05) });
     });
   };
@@ -1512,7 +1469,7 @@ function figurenBauen(g, bilder) {
     hell = .5; const yh = yk + R * Math.sin(oben), yt = yk + R + .36;
     bogen(cx, yh, 0, rh, "xz", 0, Math.PI * 2, 16); bogen(cx, yt, 0, rh, "xz", 0, Math.PI * 2, 16); bogen(cx, yt + .02, 0, rh + .025, "xz", 0, Math.PI * 2, 16);
     for (let i = 0; i < 4; i++) { const w = i * Math.PI / 2 + .4; strich([cx + rh * Math.cos(w), yh, rh * Math.sin(w)], [cx + rh * Math.cos(w), yt, rh * Math.sin(w)]); }
-    mass([cx - R, -.08, R + .1], [cx + R, -.08, R + .1], "Ø 0,64 m");
+    mass([cx - R, -.08, R + .1], [cx + R, -.08, R + .1]);
   };
   const prisma = () => {
     const s = .5, h = s * Math.sqrt(3) / 2, x0 = .4, y0 = .3, t = .4, ecken = [[x0, y0], [x0 + s, y0], [x0 + s / 2, y0 + h]]; hell = .5;
@@ -1522,11 +1479,10 @@ function figurenBauen(g, bilder) {
     ["#ff5c95", "#6f8cff", "#ffc21a"].forEach((f, i) => { ton = new THREE.Color(f); hell = .75; strich([x0 + s * .75, y0 + h / 2, -t / 2], [x0 + s + .55, y0 + h * .1 + i * .18, -t / 2 + .1]); });
     ton = new THREE.Color(1, 1, 1);
     for (let i = 0; i < 14; i++) { hell = .3; const hh = .12 + i * .055 + (i % 3) * .01; rechteck(x0 - .1 + i * .07, 0, -.9, .045, hh); }
-    schild("Glitch · sortiert", [x0 + .3, -.02, -.9 + .02], "mass");
   };
   /* Das 3. Rad: drei Scheiben, die sich gegeneinander drehen */
   const raeder = () => {
-    ["Zeit", "Form", "Farbe"].forEach((name, i) => {
+    [0, 1, 2].forEach(i => {
       const r = .42, mitte = [.5 + i * 1.0 * (eng ? .9 : 1), .62, -i * .25];
       eigeneLinien(() => {
         hell = .55; bogen(0, 0, 0, r, "xy", 0, Math.PI * 2, 48); hell = .35; bogen(0, 0, 0, r * .3, "xy", 0, Math.PI * 2, 20);
@@ -1534,7 +1490,6 @@ function figurenBauen(g, bilder) {
         hell = .3; for (let j = 0; j < 36; j++) { const w = j * Math.PI / 18; strich([Math.cos(w) * r, Math.sin(w) * r, 0], [Math.cos(w) * (r + .04), Math.sin(w) * (r + .04), 0]); }
       }, mitte, i % 2 ? -1 : 1);
       hell = .3; strich([mitte[0], 0, mitte[2]], [mitte[0], mitte[1] - .44, mitte[2]]); strich([mitte[0] - .14, 0, mitte[2]], [mitte[0] + .14, 0, mitte[2]]);
-      schild(name, [mitte[0], mitte[1] + .5, mitte[2]], "mass");
     });
   };
   /* Apps: neben dem Band die Konstruktion aus dem Video «Hold to enter». Auf der einen Seite ein Sockel, darüber hängt ein Stapel aus Platten,
@@ -1551,11 +1506,59 @@ function figurenBauen(g, bilder) {
     strich([.45, .36, -.45], [.45, .74, -.45]); strich([.45, .96, -.45], [.45, 1.4, -.45]);
     hell = .55; quader(.34, .74, -.34, .22, .22, .22);
   };
+  /* Auf der obersten Terrasse ein Baum im Raum (Christian, 30. Oktober 2026: dreidimensional, bewegt, blühend). Die Äste gehen in alle Richtungen
+     und wiegen sich, je weiter aussen, desto mehr; an den Spitzen öffnen sich Blüten nacheinander, welken, und ein Blatt fällt langsam
+     auf die Terrassen. Der Baum dreht sich gemächlich, so sieht man ihn rundum */
   const terrasse = () => {
     hell = .45; quader(0, 0, 0, 1.3, .1, .7); quader(.12, .1, -.06, 1, .1, .56); quader(.26, .2, -.12, .7, .1, .44);
-    hell = .4; const ast = (p, w, l, n) => { const q = [p[0] + Math.sin(w) * l, p[1] + Math.cos(w) * l, p[2]]; strich(p, q); if (n) { ast(q, w - .42, l * .74, n - 1); ast(q, w + .38, l * .7, n - 1); } };
-    ast([.62, .3, -.34], 0, .3, 5);
-    hell = .22; for (let i = 0; i < 9; i++) { const x = .08 + i * .15, z = -.1 - (i * .37) % .6, y = 1.25 + (i * .53) % .9; strich([x, y, z], [x, y - .28, z]); }
+    const dreh = new THREE.Group(); gruppeBei([.62, .3, -.34]).add(dreh);
+    const ap = [], ag = [], spitzen = [], d = new THREE.Vector3(), u = new THREE.Vector3(), w = new THREE.Vector3();
+    const wachsen = (p, r, l, n, tief) => {
+      const e = p.clone().addScaledVector(r, l); ap.push(p.x, p.y, p.z, e.x, e.y, e.z); ag.push(tief / 7, (tief + 1) / 7);
+      if (!n) { spitzen.push(e); return; }
+      const k = n > 3 ? 2 : 3, az0 = zufall() * Math.PI * 2;
+      for (let j = 0; j < k; j++) {
+        // quer zur Richtung kippen, reihum, und etwas zum Licht hinauf
+        u.set(1, 0, 0); if (Math.abs(r.x) > .9) u.set(0, 0, 1); u.cross(r).normalize(); w.crossVectors(r, u);
+        const az = az0 + j * Math.PI * 2 / k + (zufall() - .5) * .6, kipp = .42 + zufall() * .3;
+        d.copy(r).multiplyScalar(Math.cos(kipp)).addScaledVector(u, Math.sin(kipp) * Math.cos(az)).addScaledVector(w, Math.sin(kipp) * Math.sin(az));
+        d.y += .18; wachsen(e, d.clone().normalize(), l * (.68 + zufall() * .12), n - 1, tief + 1);
+      }
+    };
+    wachsen(new THREE.Vector3(), new THREE.Vector3(0, 1, 0), .3, 6, 0);
+    const uni = { zeit: { value: 0 }, a: { value: 1 }, hoehe: { value: 400 } };
+    const WIND = "uniform float zeit; vec3 wind(vec3 p, float w) { w *= w; return p + vec3(sin(zeit * .9 + p.y * 2.3) * .045, 0., cos(zeit * .7 + p.x * 2.9 + p.z) * .04) * w; }";
+    const ag3 = new THREE.BufferGeometry(); ag3.setAttribute("position", new THREE.Float32BufferAttribute(ap, 3)); ag3.setAttribute("gewicht", new THREE.Float32BufferAttribute(ag, 1));
+    const aeste = new THREE.LineSegments(ag3, new THREE.ShaderMaterial({ uniforms: uni, transparent: true, depthWrite: false,
+      vertexShader: `attribute float gewicht; varying float vw; ${WIND}
+void main() { vw = gewicht; gl_Position = projectionMatrix * modelViewMatrix * vec4(wind(position, gewicht), 1.); }`,
+      fragmentShader: "uniform float a; varying float vw; void main() { gl_FragColor = vec4(vec3(.62 - .3 * vw), a); }" }));
+    // Je Spitze eine Blüte (art.y 0) und ein Blatt, das fällt, wenn sie welkt (art.y 1); art.x verschiebt den Kreislauf von elf Sekunden
+    const n = spitzen.length, bp = new Float32Array(n * 6), ba = new Float32Array(n * 4);
+    spitzen.forEach((p, i) => { const ph = zufall(); bp.set(p.toArray(), i * 3); bp.set(p.toArray(), (n + i) * 3); ba.set([ph, 0], i * 2); ba.set([ph, 1], (n + i) * 2); });
+    const bg = new THREE.BufferGeometry(); bg.setAttribute("position", new THREE.Float32BufferAttribute(bp, 3)); bg.setAttribute("art", new THREE.Float32BufferAttribute(ba, 2));
+    const blueten = new THREE.Points(bg, new THREE.ShaderMaterial({ uniforms: uni, transparent: true, depthWrite: false,
+      vertexShader: `attribute vec2 art; uniform float hoehe; varying float vu, vf, vd; ${WIND}
+void main() {
+  float u = fract(zeit / 11. + art.x), s; vec3 p = wind(position, 1.); vu = u; vf = art.y; vd = 1.;
+  if (art.y < .5) s = .07 * smoothstep(.04, .3, u) * (1. - smoothstep(.6, .76, u));   // Knospe, offen, welk
+  else { float f = clamp((u - .66) / .34, 0., 1.); p.y -= (position.y + .12) * f * f; p.x += sin(f * 6. + art.x * 20.) * .08 * f; p.z += cos(f * 5. + art.x * 13.) * .06 * f;
+    s = .035 * step(.66, u); vd = 1. - smoothstep(.8, 1., f); }
+  vec4 mv = modelViewMatrix * vec4(p, 1.); gl_PointSize = min(s * projectionMatrix[1][1] * hoehe / -mv.z, 48.); gl_Position = projectionMatrix * mv;
+}`,
+      fragmentShader: `uniform float a; varying float vu, vf, vd;
+void main() {
+  vec2 c = gl_PointCoord - .5; float r = length(c), rand = vf > .5 ? .3 : .3 + .16 * cos(5. * atan(c.y, c.x));   // fünf Blütenblätter, das fallende Blatt rund
+  float al = smoothstep(rand, rand - .1, r) * vd; if (al < .01) discard;
+  vec3 rosa = vec3(1., .6, .72), col = mix(rosa, vec3(.97, .94, .93), smoothstep(.04, .28, r));
+  if (vf < .5) col = mix(vec3(1., .8, .38), col, smoothstep(.03, .09, r));
+  col = mix(col, rosa, vf < .5 ? 1. - smoothstep(.04, .3, vu) : .35);   // die Knospe rosiger
+  gl_FragColor = vec4(col * .92, al * a);
+}` }));
+    dreh.add(aeste, blueten);
+    const groesse = new THREE.Vector2();
+    aeste.onBeforeRender = () => { uni.a.value = aeste.material.opacity; uni.hoehe.value = renderer.getDrawingBufferSize(groesse).y / 2; };
+    bahn.flackern.push(sek => { uni.zeit.value = sek; dreh.rotation.y = sek * .12; });
   };
   /* Prompts: ein Feld mit zwei Achsen und ein Verteilapparat */
   const achsen = () => {
@@ -1563,8 +1566,6 @@ function figurenBauen(g, bilder) {
     rechteck(0, y0, 0, s, s); hell = .3; strich([s / 2, y0, 0], [s / 2, y0 + s, 0]); strich([0, y0 + s / 2, 0], [s, y0 + s / 2, 0]);
     hell = .55; strich([-.08, y0 - .06, 0], [s + .2, y0 - .06, 0]); strich([s + .2, y0 - .06, 0], [s + .15, y0 - .03, 0]); strich([s + .2, y0 - .06, 0], [s + .15, y0 - .09, 0]);
     strich([-.06, y0 - .08, 0], [-.06, y0 + s + .2, 0]); strich([-.06, y0 + s + .2, 0], [-.09, y0 + s + .15, 0]); strich([-.06, y0 + s + .2, 0], [-.03, y0 + s + .15, 0]);
-    schild("Nebeneinander", [s + .2, y0 - .02, 0], "mass", 1); schild("Nacheinander", [-.02, y0 + s + .24, 0], "mass", 0);
-    ["I", "II", "III", "IV"].forEach((t, i) => schild(t, [s * (.25 + (i % 2) * .5), y0 + s * (i < 2 ? .72 : .22), 0], "mass"));
   };
   const verteiler = () => {
     hell = .45; const ast = (x, y, w, l, n) => { const x2 = x + Math.sin(w) * l, y2 = y + Math.cos(w) * l; strich([x, y, -.3], [x2, y2, -.3]); if (n) { ast(x2, y2, w - .45, l * .72, n - 1); ast(x2, y2, w + .45, l * .72, n - 1); } else rechteck(x2 - .02, y2 - .02, -.3, .04, .04); };
@@ -1574,8 +1575,7 @@ function figurenBauen(g, bilder) {
   const kasten = () => {
     const b = .9, h = 1.05, t = .45; hell = .48; quader(0, 0, 0, b, h, t);
     hell = .34; for (let i = 0; i < 7; i++) { const y = .04 + i * (h - .08) / 7; rechteck(.05, y + .015, 0, b - .1, (h - .08) / 7 - .03); rechteck(b / 2 - .05, y + (h - .08) / 14 - .012, 0, .1, .024); }
-    mass([b + .1, 0, 0], [b + .1, h, 0], "1,05 m", [.045, 0, 0]);
-    schild("7 × 7", [b / 2, h + .06, 0], "mass");
+    mass([b + .1, 0, 0], [b + .1, h, 0], [.045, 0, 0]);
   };
   const karten = () => {
     const tops = []; hell = .45;
@@ -1585,23 +1585,146 @@ function figurenBauen(g, bilder) {
   /* Social: drei Stapel Zettel, wöchentlich gesammelt */
   const stapel = () => {
     hell = .42;
-    ["X", "Facebook", "Instagram"].forEach((name, k) => {
+    [0, 1, 2].forEach(k => {
       const cx = .3 + k * .6, cz = -k * .3;
       for (let i = 0; i < 7; i++) { const w = (zufall() - .5) * .35, y = i * .03, ca = Math.cos(w), sa = Math.sin(w), b = .28, t = .4;
         zug([[-b / 2, -t / 2], [b / 2, -t / 2], [b / 2, t / 2], [-b / 2, t / 2]].map(([u, v]) => [cx + u * ca - v * sa, y, cz + u * sa + v * ca]), true); }
-      schild(name, [cx, .3, cz], "mass");
     });
   };
-  /* Kunst: eine Wand mit drei Rahmen und ein Sockel mit einer gedrehten Säule */
-  const wand = () => {
-    const b = 1.9, h = 1.3; hell = .4; rechteck(0, 0, 0, b, h); strich([0, 0, 0], [0, 0, -.18]); strich([b, 0, 0], [b, 0, -.18]);
-    hell = .52; [[.15, .45, .5, .62], [.8, .55, .38, .48], [1.32, .38, .44, .62]].forEach(([x, y, bb, hh]) => { rechteck(x, y, .005, bb, hh); hell = .28; rechteck(x + .06, y + .06, .005, bb - .12, hh - .12); hell = .52; });
-    schild("Originale · Prints", [b / 2, h + .06, 0], "mass");
+  /* Kunst links, aussen im Raum (Christian, 30. Oktober 2026): drei Meisterwerke angedeutet, Botticellis Venus, van Goghs Sternennacht und ein Rothko.
+     Jedes Bild ist einmal auf eine Leinwand gemalt, frei nach dem Vorbild; im Shader bewegt es sich leise: das Meer glitzert, der Himmel wirbelt,
+     die Farbfelder atmen. Sie hängen hintereinander der Bahn entlang und schauen zur Kamera */
+  const meisterwerkMalen = (art, W, H) => {
+    const cv = document.createElement("canvas"); cv.width = W; cv.height = H; const c = cv.getContext("2d"); let z0 = 11 + art * 7;
+    const z = () => (z0 = (z0 * 16807) % 2147483647) / 2147483647, pfad = (pts, zu) => { c.beginPath(); pts.forEach(([x, y], i) => (i ? c.lineTo : c.moveTo).call(c, x * W, y * H)); if (zu) c.closePath(); };
+    const welle = (pts) => { c.beginPath(); c.moveTo(pts[0][0] * W, pts[0][1] * H); for (let i = 1; i < pts.length - 1; i++) { const [x, y] = pts[i], [x2, y2] = pts[i + 1]; c.quadraticCurveTo(x * W, y * H, (x + x2) / 2 * W, (y + y2) / 2 * H); } const l = pts[pts.length - 1]; c.lineTo(l[0] * W, l[1] * H); };
+    c.lineCap = "round"; c.lineJoin = "round";
+    if (art === 0) {
+      // Venus: Himmel und Meer in Grün, Wellen als kleine Winkel, rechts Ufer und Bäume, links das Wehen des Windes, Mitte die Muschel und die Gestalt
+      const gr = c.createLinearGradient(0, 0, 0, H); [[0, "#a7c5bb"], [.5, "#d5e1cf"], [.52, "#88ad9e"], [1, "#5e8d7e"]].forEach(([o, f]) => gr.addColorStop(o, f)); c.fillStyle = gr; c.fillRect(0, 0, W, H);
+      c.strokeStyle = "rgba(242, 247, 236, .55)"; c.lineWidth = 1.2;
+      for (let y = H * .56; y < H; y += 8 + (y - H * .55) * .05) for (let x = (y * 7) % 23; x < W * .88; x += 20 + (y - H * .55) * .12) { const k = 2.5 + (y - H * .55) * .03; c.beginPath(); c.moveTo(x - k, y - k * .6); c.lineTo(x, y); c.lineTo(x + k, y - k * .6); c.stroke(); }
+      c.fillStyle = "#2f4a2e"; c.fillRect(W * .87, 0, W * .13, H * .52); c.fillStyle = "#435f3c"; pfad([[.85, .52], [1, .44], [1, 1], [.9, 1]], true); c.fill();
+      c.strokeStyle = "#5e4630"; c.lineWidth = 3; [.9, .95, .985].forEach(x => { c.beginPath(); c.moveTo(x * W, 0); c.lineTo(x * W, H * .5); c.stroke(); });
+      c.fillStyle = "rgba(240, 214, 120, .8)"; for (let i = 0; i < 18; i++) { c.beginPath(); c.arc((.885 + z() * .11) * W, z() * .45 * H, 2.2, 0, 7); c.fill(); }
+      c.fillStyle = "rgba(96, 132, 146, .9)"; welle([[.02, .14], [.14, .06], [.3, .14], [.36, .3], [.22, .42], [.08, .34], [.02, .14]]); c.fill();
+      c.fillStyle = "#e3c4ad"; welle([[.12, .2], [.22, .16], [.32, .22], [.3, .3], [.18, .3], [.12, .2]]); c.fill();
+      c.fillStyle = "rgba(236, 160, 172, .9)"; for (let i = 0; i < 14; i++) { c.beginPath(); c.arc((.28 + z() * .17) * W, (.16 + z() * .3) * H, 2.6, 0, 7); c.fill(); }
+      c.fillStyle = "#c2565d"; welle([[.86, .26], [.78, .3], [.7, .4], [.68, .56], [.74, .72], [.82, .66], [.8, .5], [.86, .36], [.86, .26]]); c.fill();
+      const mx = .5, my = .95, mr = .17; c.fillStyle = "#e8d0b0"; c.beginPath(); c.ellipse(mx * W, my * H, mr * W, mr * W * .55, 0, Math.PI, 0); c.fill();
+      c.strokeStyle = "#b8977a"; c.lineWidth = 1.4; for (let i = 0; i <= 12; i++) { const w = Math.PI + i * Math.PI / 12; c.beginPath(); c.moveTo(mx * W, my * H); c.lineTo(mx * W + Math.cos(w) * mr * W, my * H + Math.sin(w) * mr * W * .55); c.stroke(); }
+      c.fillStyle = "#f2dccb"; welle([[.49, .24], [.46, .29], [.45, .38], [.47, .48], [.46, .58], [.48, .74], [.47, .88], [.51, .88], [.52, .74], [.565, .58], [.54, .47], [.53, .38], [.525, .29], [.505, .24]]); c.fill();
+      c.beginPath(); c.ellipse(.495 * W, .2 * H, .022 * W, .04 * H, .15, 0, 7); c.fill();
+      c.strokeStyle = "rgba(140, 100, 80, .45)"; c.lineWidth = 1; welle([[.49, .24], [.46, .29], [.45, .38], [.47, .48], [.46, .58], [.48, .74], [.47, .88]]); c.stroke();
+      c.strokeStyle = "#c4843f"; c.lineWidth = 2.6;
+      for (let i = 0; i < 16; i++) { const rechts = i % 2, l = .22 + z() * .28, x0 = .49 + (z() - .5) * .03; const pts = []; for (let k = 0; k <= 8; k++) { const t = k / 8; pts.push([x0 + (rechts ? 1 : -1) * t * (.05 + z() * .02) + Math.sin(t * 9 + i) * .008, .17 + t * l]); } welle(pts); c.stroke(); }
+    } else if (art === 1) {
+      // Sternennacht: Pinselstriche folgen einem Feld aus Wirbeln; Mond, Sterne mit Ringen, Hügel, das Dorf, links die Zypresse
+      c.fillStyle = "#1a2b66"; c.fillRect(0, 0, W, H);
+      const WIRBEL = [[.42, .3, 1.2], [.62, .36, .8], [.26, .2, .6]];
+      const feld = (x, y) => { let vx = 1, vy = .3 * Math.sin(x * 9); for (const [a, b, k] of WIRBEL) { const dx = x - a, dy = (y - b) * 1.3, r = Math.hypot(dx, dy) + .02, g_ = Math.exp(-r * r / .02); vx += -dy / r * k * 2.2 * g_; vy += dx / r * k * 2.2 * g_; } const l = Math.hypot(vx, vy); return [vx / l, vy / l]; };
+      const BLAU = ["#2a4d9c", "#3d64b3", "#5a7fc6", "#1e3577", "#7d9ed6"], HELL = ["#a9c4e6", "#d9e6ee", "#c8d7a9"];
+      c.lineWidth = 2.6;
+      for (let i = 0; i < 2600; i++) {
+        let x = z(), y = z() * .66; const kern = WIRBEL.some(([a, b]) => Math.hypot(x - a, (y - b) * 1.3) < .07);
+        c.strokeStyle = (kern || z() < .12 ? HELL : BLAU)[Math.floor(z() * (kern ? 3 : 5))]; c.globalAlpha = .85; c.beginPath(); c.moveTo(x * W, y * H);
+        for (let k = 0; k < 5; k++) { const [vx, vy] = feld(x, y); x += vx * .009; y += vy * .009; c.lineTo(x * W, y * H); } c.stroke();
+      }
+      c.globalAlpha = 1;
+      const stern = (x, y, r) => { for (let k = 4; k >= 1; k--) { c.strokeStyle = k % 2 ? "rgba(246, 222, 120, .8)" : "rgba(220, 232, 240, .7)"; c.lineWidth = 2.2; c.beginPath(); c.arc(x * W, y * H, r * k / 4, 0, 7); c.stroke(); } c.fillStyle = "#fff4b8"; c.beginPath(); c.arc(x * W, y * H, r * .25, 0, 7); c.fill(); };
+      [[.12, .1, 12], [.3, .07, 10], [.52, .1, 9], [.66, .18, 11], [.2, .36, 9], [.74, .08, 8], [.4, .46, 8], [.58, .5, 7], [.08, .5, 8]].forEach(([x, y, r]) => stern(x, y, r));
+      stern(.86, .13, 34); c.fillStyle = "#f3c43c"; c.beginPath(); c.arc(.86 * W, .13 * H, 15, 0, 7); c.fill(); c.fillStyle = "#e39a2c"; c.beginPath(); c.arc(.86 * W + 6, .13 * H - 4, 12, 0, 7); c.fill();
+      c.fillStyle = "#2b4a8a"; welle([[0, .7], [.2, .62], [.45, .68], [.7, .6], [1, .66], [1, 1], [0, 1]]); c.fill();
+      c.strokeStyle = "#5576b8"; c.lineWidth = 2.2; for (let i = 0; i < 40; i++) { const y = .64 + z() * .08, x = z(); c.beginPath(); c.moveTo(x * W, y * H); c.lineTo((x + .05) * W, (y - .01) * H); c.stroke(); }
+      c.fillStyle = "#1b2f5c"; c.fillRect(0, .76 * H, W, .24 * H);
+      for (let i = 0; i < 26; i++) { const x = .3 + z() * .68, y = .78 + z() * .16, b = .025 + z() * .02, h = .025 + z() * .02;
+        c.fillStyle = "#2a3f6e"; c.fillRect(x * W, y * H, b * W, h * H); c.fillStyle = "#14234a"; pfad([[x - .004, y], [x + b / 2, y - .02], [x + b + .004, y]], true); c.fill();
+        if (z() < .6) { c.fillStyle = "#f1d36b"; c.fillRect((x + b * .3) * W, (y + h * .35) * H, 2.5, 2.5); } }
+      c.fillStyle = "#14234a"; pfad([[.52, .8], [.535, .6], [.55, .8]], true); c.fill();
+      c.fillStyle = "#16231a"; welle([[.13, 1], [.12, .7], [.16, .45], [.15, .25], [.2, .03], [.23, .3], [.25, .5], [.28, .75], [.29, 1]]); c.fill();
+      c.lineWidth = 3; for (let i = 0; i < 26; i++) { c.strokeStyle = i % 3 ? "#2c3d25" : "#465639"; const x = .15 + z() * .12, pts = []; for (let k = 0; k < 6; k++) pts.push([x + Math.sin(k * 1.4 + i) * .012, .98 - k * (.12 + z() * .05)]); welle(pts); c.stroke(); }
+    } else {
+      // Rothko: Grund in Rot, oben ein Feld in Orange, unten eines in tiefem Weinrot, die Ränder weich in Lagen
+      c.fillStyle = "#7c1b14"; c.fillRect(0, 0, W, H);
+      const feld = (y0, y1, f) => { c.fillStyle = f; for (let k = 0; k < 9; k++) { const e = (8 - k) * 2.2; c.globalAlpha = .16; c.fillRect(W * .07 + e, H * y0 + e, W * .86 - 2 * e, H * (y1 - y0) - 2 * e); } c.globalAlpha = 1; };
+      feld(.06, .5, "#e1622a"); feld(.57, .94, "#3b0a10");
+      c.globalAlpha = .06; c.fillStyle = "#fff"; for (let i = 0; i < 120; i++) c.fillRect(z() * W, z() * H, 20 + z() * 60, 1 + z() * 2); c.globalAlpha = 1;
+    }
+    c.strokeStyle = "rgba(255, 255, 255, .78)"; c.lineWidth = 2; c.strokeRect(1, 1, W - 2, H - 2);
+    return cv;
   };
-  const saeule = () => {
-    const cx = .4, s = .38, hs = .78; hell = .45; quader(cx - s / 2, 0, s / 2, s, hs, s);
-    hell = .5; for (let i = 0; i < 8; i++) { const w = i * .22, y = hs + .05 + i * .085, r = .16; zug([0, 1, 2, 3].map(j => [cx + Math.cos(w + j * Math.PI / 2) * r, y, Math.sin(w + j * Math.PI / 2) * r]), true); }
-    schild("Arbeiten im Raum", [cx, hs + .85, 0], "mass");
+  const meisterwerke = () => {
+    const uni = { zeit: { value: 0 }, a: { value: 1 } };
+    // [art, Breite, Höhe, x, Unterkante, z]
+    [[0, 1.1, .69, .1, .3, 0], [1, .8, .64, .2, .34, 1.4], [2, .5, .67, .3, .3, 2.8]].forEach(([art, b, h, x, y, zz]) => {
+      const tex = new THREE.CanvasTexture(meisterwerkMalen(art, art === 2 ? 360 : 640, Math.round((art === 2 ? 360 : 640) * h / b)));
+      tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+      const stoff = new THREE.ShaderMaterial({ uniforms: { ...uni, bild: { value: tex }, art: { value: art } }, transparent: true, depthWrite: false, side: THREE.DoubleSide,
+        vertexShader: "varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }",
+        fragmentShader: `uniform sampler2D bild; uniform float zeit, a, art; varying vec2 vUv;
+vec2 drehe(vec2 p, vec2 m, float w) { vec2 d = p - m; float c = cos(w), s = sin(w); return m + vec2(c * d.x - s * d.y, s * d.x + c * d.y); }
+void main() {
+  vec2 uv = vUv; float hell = 1.;
+  if (art < .5) { float meer = 1. - smoothstep(.42, .47, uv.y); uv.x += meer * .0025 * sin(uv.y * 140. + zeit * 1.6); hell = 1. + meer * .05 * sin(uv.x * 30. - zeit + uv.y * 60.); }
+  else if (art < 1.5) {
+    // der Himmel wirbelt: um jede Mitte ein wenig hin und her, dazu ein feines Zittern der Striche
+    float himmel = smoothstep(.3, .45, uv.y);
+    uv = drehe(uv, vec2(.42, .7), himmel * .05 * sin(zeit * .5) * exp(-dot(uv - vec2(.42, .7), uv - vec2(.42, .7)) * 30.));
+    uv = drehe(uv, vec2(.62, .64), himmel * .05 * sin(zeit * .6 + 1.) * exp(-dot(uv - vec2(.62, .64), uv - vec2(.62, .64)) * 40.));
+    uv += himmel * .0018 * vec2(sin(uv.y * 70. + zeit * 1.4), cos(uv.x * 60. + zeit * 1.2));
+  } else hell = .93 + .07 * sin(zeit * .45 + uv.y * 2.4);
+  gl_FragColor = vec4(texture2D(bild, uv).rgb * hell, a * .94);
+}` });
+      // die Fläche quer zur Bahn, wie die ASCII-Fläche: Rechts und Oben wie auf dem Schirm
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(b, h), stoff), mitte = new THREE.Vector3(x + b / 2, y + h / 2, zz).applyMatrix4(M);
+      mesh.matrixAutoUpdate = false; mesh.matrix.makeBasis(rechtsW, obenW, new THREE.Vector3().crossVectors(rechtsW, obenW)).scale(new THREE.Vector3().setScalar(eng ? .75 : 1)).setPosition(mitte);
+      g.add(mesh);
+      mesh.onBeforeRender = () => { stoff.uniforms.a.value = stoff.opacity; };
+      hell = .3; strich([x + b / 2, 0, zz], [x + b / 2, y - .02, zz]);
+    });
+    bahn.flackern.push(sek => { uni.zeit.value = sek; });
+  };
+  /* Kunst rechts: eine schreitende Figur im Stil Giacomettis auf einem Sockel, schmal, gekörnt, mit grossen Füssen. Sie dreht sich langsam;
+     das Licht kommt von vorn oben, ein kühler Saum zeichnet die Kante gegen das Dunkel. Glieder sind Röhren um eine Mittellinie */
+  const giacometti = () => {
+    const cx = .45, s = .36, hs = .5; hell = .45; quader(cx - s / 2, 0, s / 2, s, hs, s);
+    const dreh = new THREE.Group(); gruppeBei([cx, hs, 0]).add(dreh); dreh.scale.setScalar(1.5);
+    const stoff = new THREE.ShaderMaterial({ uniforms: { a: { value: 1 } }, transparent: true,
+      vertexShader: "varying vec3 vn, vv; void main() { vec4 mv = modelViewMatrix * vec4(position, 1.); vn = normalize(normalMatrix * normal); vv = -mv.xyz; gl_Position = projectionMatrix * mv; }",
+      fragmentShader: `uniform float a; varying vec3 vn, vv;
+void main() {
+  vec3 N = normalize(vn), V = normalize(vv), L = normalize(vec3(-.45, .75, .55)), H = normalize(L + V);
+  float dif = max(dot(N, L), 0.), glanz = pow(max(dot(N, H), 0.), 24.), saum = pow(1. - max(dot(N, V), 0.), 2.5);
+  vec3 c = vec3(.56, .48, .39) * (.1 + .82 * dif + .08 * (.5 + .5 * N.y)) + vec3(1., .93, .82) * glanz * .25 + vec3(.72, .8, .92) * saum * .35;
+  gl_FragColor = vec4(c, a);
+}` });
+    const rau = (x, y, z) => Math.sin(x * 61 + y * 23) * Math.sin(y * 47 - z * 31 + x * 13) * .5 + Math.sin(y * 113 + z * 71) * .25;
+    const glied = (punkte, r0, r1, n = 18, seg = 10) => {
+      const kurve = new THREE.CatmullRomCurve3(punkte.map(p => new THREE.Vector3(...p))), fr = kurve.computeFrenetFrames(n, false), pos = [], idx = [];
+      for (let i = 0; i <= n; i++) {
+        const t = i / n, P = kurve.getPointAt(t), N = fr.normals[i], B = fr.binormals[i], r = misch(r0, r1, t) * Math.pow(Math.sin(Math.PI * misch(.06, .94, t)), .35);
+        for (let j = 0; j < seg; j++) {
+          const w = j / seg * Math.PI * 2, ca = Math.cos(w), sa = Math.sin(w), qx = N.x * ca + B.x * sa, qy = N.y * ca + B.y * sa, qz = N.z * ca + B.z * sa;
+          const rr = r * (1 + .38 * rau(P.x + qx * .02, P.y + i * .003, P.z + qz * .02));
+          pos.push(P.x + qx * rr, P.y + qy * rr, P.z + qz * rr);
+        }
+      }
+      for (let i = 0; i < n; i++) for (let j = 0; j < seg; j++) { const a = i * seg + j, b = a + seg, a2 = i * seg + (j + 1) % seg, b2 = a2 + seg; idx.push(a, b, a2, b, b2, a2); }
+      const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); geo.setIndex(idx); geo.computeVertexNormals();
+      const m = new THREE.Mesh(geo, stoff); dreh.add(m); return m;
+    };
+    dreh.add(new THREE.Mesh(new THREE.BoxGeometry(.42, .035, .16).translate(0, .018, 0), stoff));
+    const fuss = glied([[-.2, .05, .035], [-.14, .048, .035], [-.08, .045, .035]], .026, .022);
+    glied([[.08, .05, -.035], [.14, .048, -.035], [.2, .045, -.035]], .022, .026);
+    glied([[-.13, .06, .035], [-.08, .3, .03], [-.01, .6, .02]], .02, .016);
+    glied([[.13, .06, -.035], [.09, .3, -.03], [.02, .6, -.02]], .02, .016);
+    glied([[0, .56, 0], [.02, .75, 0], [.04, .96, 0]], .036, .03);
+    glied([[.035, .93, .065], [.04, .965, 0], [.035, .93, -.065]], .016, .016);
+    glied([[.035, .93, .068], [.02, .76, .076], [.03, .6, .07]], .011, .01);
+    glied([[.035, .93, -.068], [.05, .76, -.076], [.07, .6, -.07]], .011, .01);
+    glied([[.04, .95, 0], [.05, 1.01, 0], [.062, 1.08, 0], [.068, 1.13, 0]], .014, .022);
+    fuss.onBeforeRender = () => { stoff.uniforms.a.value = stoff.opacity; };
+    bahn.flackern.push(sek => { dreh.rotation.y = sek * .3; });
   };
   /* Angebot: ein Tisch mit Stühlen, zwei Wände, Kisten mit Massen */
   const tisch = () => {
@@ -1611,12 +1734,10 @@ function figurenBauen(g, bilder) {
       rechteck(x - .18, .45, z + .18, .36, .36, "xz"); for (const [dx, dz] of [[-.16, .16], [.16, .16], [-.16, -.16], [.16, -.16]]) strich([x + dx, 0, z + dz], [x + dx, .45, z + dz]);
       const zr = z + .18 * d; rechteck(x - .18, .45, zr, .36, .42);
     }
-    schild("Vermittlung", [x0 + b / 2, h + .5, z0 - t / 2], "mass");
   };
   const kisten = () => {
     hell = .45; quader(0, 0, 0, .5, .5, .5); quader(.56, 0, -.1, .7, .4, .5); quader(.1, .5, -.05, .4, .3, .4);
-    mass([0, -.08, .08], [.5, -.08, .08], "0,5 m"); mass([.56, -.08, -.02], [1.26, -.08, -.02], "0,7 m");
-    schild("Produkte", [.62, .95, -.2], "mass");
+    mass([0, -.08, .08], [.5, -.08, .08]); mass([.56, -.08, -.02], [1.26, -.08, -.02]);
   };
   const waende = () => {
     hell = .4; const b = 1.1, h = 1.0;
@@ -1624,7 +1745,6 @@ function figurenBauen(g, bilder) {
       const c = Math.cos(w), sn = Math.sin(w), P = (u, v) => [x + u * c, v, z + u * sn];
       zug([P(0, 0), P(b, 0), P(b, h), P(0, h)], true); hell = .5; zug([P(.25, .35), P(.6, .35), P(.6, .75), P(.25, .75)], true); hell = .4;
     }
-    schild("Kuration", [.9, 1.12, -.3], "mass");
   };
 
   /* Die Schlaufe des Signets: ein grosser Bogen mit einer inneren Schlaufe, auf dem ein Punkt läuft */
@@ -1640,40 +1760,23 @@ function figurenBauen(g, bilder) {
     g.add(punkt); bahn.laeufer.push({ punkte: wp, attr: geo.attributes.position, phase: zufall() });
   }
 
-  /* Notationen nach Spencer-Brown: Kondensation, Aufhebung, Re-entry */
-  const NOTATIONEN = [
-    { formel: ["f", "=", { m: ["f"] }], titel: "Re-entry · Laws of Form" },
-    { formel: [{ m: [] }, { m: [] }, "=", { m: [] }], titel: "Kondensation" },
-    { formel: [{ m: [{ m: [] }] }, "=", " "], titel: "Aufhebung" },
-    { formel: [{ m: [] }], titel: "Draw a distinction" },
-  ];
-
   // Je Bereich: welche Figur wo steht (Anteil der Länge, Seite, Abstand vom Band)
   const PLAN = {
-    "k-web": [[ascii, .08, -1, 0], [browser, .22, 1, .5], [baran, .45, -1, .2], [telefon, .72, 1, .9]],
-    "k-lab": [[kolben, .25, -1, .5], [prisma, .6, 1, .4], ["notation", .85, -1, 1]],
-    "k-rad": [[raeder, .4, 1, .3], ["notation", .7, -1, 2]],
+    "k-web": [[ascii, .1, -1, .5], [browser, .22, 1, .5], [baran, .45, -1, .7], [telefon, .72, 1, .9]],
+    "k-lab": [[kolben, .25, -1, .5], [prisma, .6, 1, .4]],
+    "k-rad": [[raeder, .4, 1, .3]],
     "k-apps": [[sockel, .3, -1, .4], [terrasse, .62, 1, .4]],
-    "k-prompts": [[achsen, .3, 1, .5], [verteiler, .65, -1, .4], ["notation", .85, 1, 3]],
+    "k-prompts": [[achsen, .3, 1, .5], [verteiler, .65, -1, .4]],
     "k-zettel": [[kasten, .2, -1, .5], [karten, .55, 1, .4], ["schlaufe", .8, -1, .8]],
-    "k-social": [[stapel, .35, 1, .4], ["notation", .7, -1, 0]],
-    "k-kunst": [[wand, .3, -1, .45], [saeule, .65, 1, .6]],
+    "k-social": [[stapel, .35, 1, .4]],
+    "k-kunst": [[meisterwerke, .12, -1, .6], [giacometti, .6, 1, .8]],
     "k-angebot": [[tisch, .2, 1, .4], [waende, .5, -1, .5], [kisten, .8, 1, .5], ["schlaufe", .9, -1, .8]],
   };
-  // Wo am Desktop eine Beschriftung vom Band nach aussen führt, weicht die Figur ein Stück aus
-  const LW = RAUM.w / bahn.k, belegt = [];
-  if (!eng) bilder.forEach((b, i) => b.lage.rand.forEach(c => {
-    const mitte = c.x + c.b / 2; if (Math.abs(mitte - LW / 2) < LW * .12) return;
-    belegt.push({ s: bahn.kapitel[i].s0 + (c.y + Math.min(c.h / 2, 20)) * bahn.k - .25, seite: mitte < LW / 2 ? -1 : 1 });
-  }));
-  const frei = (s0, s1, sj, seite) => { for (const d of [0, .7, -.7, 1.4, -1.4, 2.1, -2.1, 2.8, -2.8]) { const t = sj + d; if (t > s0 + .4 && t < s1 - .4 && !belegt.some(x => x.seite === seite && Math.abs(x.s - t) < 1.5)) return t; } return sj; };
   kapitel.forEach((k, i) => {
     const x = bahn.kapitel[i], L = x.s1 - x.s0;
     for (const [was, f, seite, ab] of PLAN[k.id] || []) {
-      const sj = frei(x.s0, x.s1, x.s0 + L * f, seite); ton = new THREE.Color(1, 1, 1);
-      // Die Figuren stehen weiter draussen als die Beschriftungen am Rand des Bandes
+      const sj = x.s0 + L * f; ton = new THREE.Color(1, 1, 1);
       if (was === "schlaufe") { schlaufe(sj, seite, eng ? ab * .5 : ab + .5, eng ? .75 : 1); continue; }
-      if (was === "notation") { stelle(sj, seite, eng ? .4 : 1.2); schild(NOTATIONEN[ab], [0, eng ? 1.1 : 1.3, 0], "notation", 0); continue; }
       stelle(sj, seite, eng ? ab * .5 + .1 : ab + .4); was();
     }
   });
@@ -1793,7 +1896,6 @@ function figurenBauen(g, bilder) {
     sat.add(licht); g.add(sat);
     kugel.userData.immer = umlauf.userData.immer = sat.userData.immer = true;
     M.identity(); rechtsW.copy(X); obenW.copy(Y);
-    schild(`Umlauf ${UMLAUF} s`, bp[Math.round(NB * .75)].clone().addScaledVector(Y, eng ? -.2 : -.24).toArray(), "mass", .5, .6);
     const tP = new THREE.Vector3(), tT = new THREE.Vector3(), tR = new THREE.Vector3(), tY = new THREE.Vector3(), gross = new THREE.Vector3().setScalar(eng ? 1 : .9);
     bahn.satellit = sek => {
       const w = (sek / UMLAUF + .1) % 1 * Math.PI * 2;
@@ -1813,51 +1915,6 @@ function figurenBauen(g, bilder) {
   }
   const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(lp, 3)); geo.setAttribute("color", new THREE.Float32BufferAttribute(lc, 3));
   g.add(new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false })));
-
-  /* Schilder: alle Beschriftungen auf einer Leinwand, jede als kleine Fläche im Raum */
-  if (!schilder.length) return;
-  const sk = 3, mz = document.createElement("canvas").getContext("2d");
-  const massSchrift = `500 10.5px ${SANS}`, formelSchrift = `italic 400 18px ${SERIF}`, kleinSchrift = `500 8.5px ${SANS}`;
-  function formelMessen(t) {
-    if (typeof t === "string") { mz.font = formelSchrift; return { b: Math.max(6, mz.measureText(t).width), h: 13 }; }
-    const innen = t.m.length ? t.m.map(formelMessen).reduce((a, c) => ({ b: a.b + c.b + 5, h: Math.max(a.h, c.h) }), { b: -5, h: 0 }) : { b: 9, h: 10 };
-    return { b: innen.b + 11, h: innen.h + 6, innen };
-  }
-  function formelZeichnen(cx, t, x, grund) {
-    if (typeof t === "string") { cx.font = formelSchrift; cx.fillText(t, x, grund); return formelMessen(t).b; }
-    const m = formelMessen(t); let xi = x + 3;
-    for (const u of t.m) xi += formelZeichnen(cx, u, xi, grund) + 5;
-    cx.fillRect(x, grund - m.h, m.b, 1.2); cx.fillRect(x + m.b - 1.2, grund - m.h, 1.2, m.h + 3);
-    return m.b;
-  }
-  const masse = schilder.map(s => {
-    if (s.art === "mass") { mz.font = massSchrift; if ("letterSpacing" in mz) mz.letterSpacing = ".8px"; return { b: Math.ceil(mz.measureText(s.inhalt).width + 8), h: 16 }; }
-    const teile = s.inhalt.formel.map(formelMessen), b = teile.reduce((a, c) => a + c.b + 7, -7), hoch = Math.max(...teile.map(c => c.h));
-    mz.font = kleinSchrift; if ("letterSpacing" in mz) mz.letterSpacing = "1.2px";
-    return { b: Math.ceil(Math.max(b, mz.measureText(s.inhalt.titel.toUpperCase()).width) + 10), h: Math.ceil(hoch + 30), hoch };
-  });
-  const AB = 1024; let x = 0, y = 0, zeile = 0; const lage = masse.map(m => { if (x + m.b > AB) { x = 0; y += zeile + 2; zeile = 0; } const l = { x, y }; x += m.b + 2; zeile = Math.max(zeile, m.h); return l; });
-  const AH = y + zeile, cv = document.createElement("canvas"); cv.width = AB * sk; cv.height = Math.ceil(AH * sk);
-  const cx = cv.getContext("2d"); cx.scale(sk, sk); cx.fillStyle = "#fff"; cx.textBaseline = "alphabetic";
-  const ap = [], au = [], ai = [], kl = .0108;
-  schilder.forEach((s, i) => {
-    const m = masse[i], l = lage[i];
-    if (s.art === "mass") { cx.font = massSchrift; if ("letterSpacing" in cx) cx.letterSpacing = ".8px"; cx.globalAlpha = .82; cx.fillText(s.inhalt, l.x + 4, l.y + 12); }
-    else {
-      cx.globalAlpha = .9; if ("letterSpacing" in cx) cx.letterSpacing = "0px"; let xi = l.x + 5; const grund = l.y + m.hoch + 2;
-      for (const t of s.inhalt.formel) xi += formelZeichnen(cx, t, xi, grund) + 7;
-      cx.globalAlpha = .55; cx.fillRect(l.x + 5, grund + 7, m.b - 10, .8);
-      cx.globalAlpha = .7; cx.font = kleinSchrift; if ("letterSpacing" in cx) cx.letterSpacing = "1.2px"; cx.fillText(s.inhalt.titel.toUpperCase(), l.x + 5, grund + 20);
-    }
-    const o = ap.length / 3, bw = m.b * kl * s.gr, hw = m.h * kl * s.gr;
-    for (const [u, v] of [[0, 0], [1, 0], [0, 1], [1, 1]]) { const q = s.pos.clone().addScaledVector(s.rechts, (u - s.anker) * bw).addScaledVector(s.oben, v * hw); ap.push(q.x, q.y, q.z); }
-    const u0 = l.x / AB, u1 = (l.x + m.b) / AB, v0 = 1 - (l.y + m.h) / AH, v1 = 1 - l.y / AH;
-    au.push(u0, v0, u1, v0, u0, v1, u1, v1); ai.push(o, o + 1, o + 2, o + 2, o + 1, o + 3);
-  });
-  const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
-  const sg = new THREE.BufferGeometry(); sg.setAttribute("position", new THREE.Float32BufferAttribute(ap, 3)); sg.setAttribute("uv", new THREE.Float32BufferAttribute(au, 2)); sg.setIndex(ai);
-  const sm = new THREE.Mesh(sg, new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
-  sm.material.userData.a = .85; g.add(sm);
 }
 
 function platzMessen() { if (bahn.L) platz.style.height = Math.round(bahn.L / bahn.k - innerHeight * .45) + "px"; }
@@ -1933,7 +1990,7 @@ function kameraSetzen() {
     // Senkrecht über dem Kapitel, so hoch, dass die Bahn so breit erscheint wie die flache Seite
     const x = bahn.kapitel[kipp.kap], fov = (eng ? 72 : 58) * Math.PI / 180;
     const sichtB = RAUM.w * innerWidth / Math.min(980, innerWidth), sichtH = sichtB * innerHeight / innerWidth, abst = sichtH / (2 * Math.tan(fov / 2));
-    const sC = x.s0 + sichtH * (.5 - 48 / innerHeight);
+    const kopf = sichtH * KOPF / innerHeight, sC = x.s0 + fokusOben(x.fokus && x.fokus.map(v => v * bahn.k), sichtH - kopf, sichtH * 12 / innerHeight) - kopf + sichtH / 2;
     const tBlick = bahnPunkt(sC, 0, 0, tmp.f), tPos = bahnPunkt(sC, 0, abst, tmp.e), tUp = bahnPunkt(sC - .05, 0, 0, tmp.g).sub(tBlick).normalize();
     kamera.position.lerp(tPos, kipp.wert); blick.lerp(tBlick, kipp.wert); up.lerp(tUp, kipp.wert).normalize();
   }
@@ -2091,6 +2148,15 @@ function bild(zeit) {
 }
 
 /* ---------- Wechsel zwischen Raum und flacher Ansicht ---------- */
+// Wohin die Fläche rollt (Christian, 30. Oktober 2026): Titel und Animation zusammen in die Mitte unter dem Kopf; passen sie nicht hinein,
+// steht der Titel oben. Ohne Bühne (ab Lab) beginnt das Kapitel unter dem Kopf. fokus und Ergebnis zählen ab dem Anfang des Kapitels
+const KOPF = 48;
+const fokusOben = (fokus, frei, rand) => !fokus ? 0 : fokus[1] - fokus[0] <= frei - 2 * rand ? (fokus[0] + fokus[1]) / 2 - frei / 2 : fokus[0] - rand;
+function fokusZiel(k) {
+  const r = k.getBoundingClientRect(), t = k.querySelector("h2"), b = k.querySelector(".buehne");
+  const fokus = t && b ? [t.getBoundingClientRect().top - r.top, b.getBoundingClientRect().bottom - r.top] : null;
+  return scrollY + r.top - KOPF + fokusOben(fokus, innerHeight - KOPF, 12);
+}
 function zuKapitel(id, sofort) {
   const k = document.getElementById(id); if (!k) return;
   if (flach) { k.scrollIntoView({ behavior: ruhig || sofort ? "auto" : "smooth" }); return; }
@@ -2135,7 +2201,7 @@ function flachSetzen(f, akt, effekt) {
   if (!f && !document.body.classList.contains("zurueck")) { webZurueck(); appsZurueck(); }
   if (f && !effekt) kipp.wert = kipp.von = kipp.nach = 0;
   const k = akt && document.getElementById(akt);
-  if (k) { if (f) k.scrollIntoView({ behavior: "auto" }); else zuKapitel(akt, true); }
+  if (k) { if (f) scrollTo({ top: fokusZiel(k), behavior: "auto" }); else zuKapitel(akt, true); }
   zustand.y = null;   // den Scrollwert neu fassen statt hinüberzugleiten
   if (f && effekt && k) {
     // Die Seite blendet über dem Bild der Bahn auf; der Raum darunter tritt erst zurück, wenn die Seite fast deckt,
@@ -2186,13 +2252,14 @@ function kapitelEffekt(k) {
   bst.forEach((b, j) => b.animate([{ opacity: 0, transform: "translateY(.2em)", filter: "blur(5px)" }, { opacity: 1, transform: "none", filter: "blur(0px)" }],
     { duration: 560, delay: 80 + (bst.length - 1 - j) * 55, easing: "cubic-bezier(.2,.7,.2,1)", fill: "backwards" }));
   k.querySelector(".k-netz")?.remove();
+  if (schmal()) return;   // am Handy kein Netz am Titel: es überschnitt sich mit Titel und Begriffen (Christian, 30. Oktober 2026)
   const b = k.clientWidth, h = Math.min(k.clientHeight, 440), letzte = bst[bst.length - 1];
   const hx = Math.min(b - 70, letzte.offsetLeft + letzte.offsetWidth + 46), hy = letzte.offsetTop + letzte.offsetHeight * .5;
   const svg = document.createElementNS(NS, "svg"); svg.setAttribute("class", "k-netz"); svg.setAttribute("aria-hidden", "true");
   svg.setAttribute("viewBox", `0 0 ${b} ${h}`); svg.style.height = h + "px";
   const el = (name, attr) => { const e = document.createElementNS(NS, name); for (const n in attr) e.setAttribute(n, attr[n]); return e; };
   let saat = (Date.now() % 9973) + 1; const z = () => (saat = (saat * 16807) % 2147483647) / 2147483647;
-  const n = schmal() ? 5 : 7;
+  const n = 7;
   for (let j = 0; j < n; j++) {
     const w = -2.6 + j / (n - 1) * 5.2 + (z() - .5) * .5, r = 50 + z() * Math.min(240, b * .32);
     const x = klemm(hx + Math.cos(w) * r * 1.4, 8, b - 8), y = klemm(hy + Math.sin(w) * r * .75, 8, h - 8), len = Math.hypot(x - hx, y - hy);
@@ -3025,7 +3092,7 @@ void main() {
   const US = {}; ["vor", "px", "seite", "licht", "zeit", "k", "rahmen", "rm"].forEach(n => { US[n] = gl.getUniformLocation(prS, n); });
   const textur = (einheit, roh) => {
     const t = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + einheit); gl.bindTexture(gl.TEXTURE_2D, t);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array(roh ? [0, 255, 0] : [37, 78, 88]));
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array(roh ? [0, 255, 0] : [149, 7, 64]));
     for (const [k, w] of [[gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_MIN_FILTER, gl.LINEAR]]) gl.texParameteri(gl.TEXTURE_2D, k, w);
     return t;
   };
@@ -3040,7 +3107,7 @@ void main() {
   [[tF, 0, imF, false], [tL, 1, imL, true]].forEach(([t, e, im, roh]) => { if (im.complete && im.naturalWidth) hoch(t, e, im, roh); im.addEventListener("load", () => hoch(t, e, im, roh)); });
   gl.uniform1i(U.foto, 0); gl.uniform1i(U.linien, 1); gl.uniform1i(U.maske, 2);
   gl.useProgram(prS); gl.uniform1i(US.vor, 2);
-  const hex = (getComputedStyle(K.k).getPropertyValue("--k").trim() || "#254e58").replace("#", "");
+  const hex = (getComputedStyle(K.k).getPropertyValue("--k").trim() || "#950740").replace("#", "");
   K.gl = { gl, pr, prS, U, US, spur: null, grund: [0, 2, 4].map(i => parseInt(hex.slice(i, i + 2), 16) / 255) };
 }
 // Zwei kleine Bilder für die Spur, abwechselnd gelesen und beschrieben (so breit wie nötig für die Bühne, 192 Punkte)
@@ -3129,7 +3196,7 @@ addEventListener("pointerup", e => {
   if (!druck || flach || !bahn.bereit || zustand.t < .97) return;
   if (Math.hypot(e.clientX - druck.x, e.clientY - druck.y) > 8 || e.target.closest("a, button, .tafel")) return;
   ndc.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); strahl.setFromCamera(ndc, kamera);
-  const hit = strahl.intersectObjects(bahn.stuecke.map(x => x.mesh))[0];
+  const hit = strahl.intersectObjects([...bahn.stuecke.map(x => x.mesh), ...bahn.titel.map(x => x.mesh)])[0];
   if (hit) setzeFlach(true, kapitel[hit.object.userData.kapitel].id);
 });
 addEventListener("pointermove", e => {
