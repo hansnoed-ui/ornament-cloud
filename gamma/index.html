@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="ornament.cloud im Überblick: ein Netz aus 49 Strophen und 133 Personen, dann Lab, Apps, Prompts, Zettel, Social und Art als Farbfelder auf einer Bahn im Raum.">
+<meta name="description" content="ornament.cloud im Überblick: ein Netz aus 49 Strophen und 133 Personen, dann Webseiten, Apps, Kunst, Lab, Prompts, Zettel und Social als Farbfelder auf einer Bahn im Raum.">
 <meta name="robots" content="noindex">
 <link rel="icon" href="../b/bilder/signet/signet.svg">
 <title>ornament.cloud Gamma</title>
@@ -15,7 +15,7 @@
 /* ornament.cloud/gamma – Landing-Page nach einer Videovorlage (29. Oktober 2026), Entwurf 3. Ein WebGL-Raum (three.js, vendor/three-0.185.1):
    zuerst ein leuchtendes Netz aus den 49 Strophen von «Zu seiner Zeit» und ihren 133 Personen, durch das die Kamera fliegt; eine Tafel
    mit dem Wort des gezogenen Zettels gleitet herein und kippt weg (bei jedem Besuch ein anderer Zettel, #zettel-12 zieht einen bestimmten); dann liegt die Website als Bahn in einer runden Trommel: Webseiten, Apps, Lab,
-   Das 3. Rad, Prompts, Zettel, Social, Art und Angebot als Farbfelder (Farben der Startseite /b/), die sich vor der Kamera zum Looping aufbiegen.
+   Das 3. Rad, Prompts, Zettel, Social, Kunst und Angebot als Farbfelder (Farben der Startseite /b/), die sich vor der Kamera zum Looping aufbiegen.
    Neben der Bahn stehen feine Drahtfiguren je Bereich, Notationen aus den «Laws of Form» und die Schlaufe des Signets.
    Die Bahn-Bilder zeichnet das Skript aus dem HTML der Kapitel unten; die Fläche (rechts in der liegenden Acht unten) zeigt genau dieses HTML. Schriften und Farben des Neubaus. */
 :root {
@@ -151,7 +151,7 @@ body.zurueck .bahn { position: fixed; left: 0; right: 0; pointer-events: none; }
 .k-netz .etikett text { fill: var(--k); font: 500 10px var(--sans); letter-spacing: .08em; text-transform: uppercase; }
 body.flach.nach-intro.wechsel #welt { visibility: visible; }
 
-/* Farben: Webseiten Tannengrün, Lab Karmin, 3. Rad Blaupause, Apps Senf, Prompts Rot, Zettel Papier, Social Tinte, Art Rosa, Angebot Tannengrün */
+/* Farben: Webseiten Tannengrün, Apps Senf, Kunst Umbra (getöntes Papier, auf dem die Zeichnung in weisser Kreide steht), Lab Karmin, 3. Rad Blaupause, Prompts Rot, Zettel Papier, Social Tinte, Angebot Tannengrün */
 .k-web { --k: #1f4d3a; --kt: #ffffff; --kg: #ffffff; --kl: rgba(255, 255, 255, .26); --ka: #9fd4b4; }
 .k-lab { --k: #7a1235; --kt: #ffffff; --kg: rgba(255, 255, 255, .72); --kl: rgba(255, 255, 255, .26); --ka: #ffa3d1; }
 .k-rad { --k: #1d3fd6; --kt: #ffffff; --kg: rgba(255, 255, 255, .76); --kl: rgba(255, 255, 255, .3); --ka: #ecb98f; }
@@ -159,7 +159,7 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 .k-prompts { --k: #e0503c; --kt: #000000; --kg: rgba(0, 0, 0, .7); --kl: rgba(0, 0, 0, .24); --ka: #ffffff; }
 .k-zettel { --k: #ffffff; --kt: #000000; --kg: #5f5f5f; --kl: #d6d6d6; --ka: #1d3fd6; }
 .k-social { --k: #101010; --kt: #ffffff; --kg: rgba(255, 255, 255, .62); --kl: rgba(255, 255, 255, .22); --ka: #8fb0ff; }
-.k-art { --k: #f2b2c0; --kt: #000000; --kg: rgba(0, 0, 0, .66); --kl: rgba(0, 0, 0, .2); --ka: #ffffff; }
+.k-kunst { --k: #5a4232; --kt: #ffffff; --kg: rgba(255, 255, 255, .76); --kl: rgba(255, 255, 255, .26); --ka: #f1d6b8; }
 .k-angebot { --k: #1f4d3a; --kt: #ffffff; --kg: rgba(255, 255, 255, .74); --kl: rgba(255, 255, 255, .26); --ka: #9fd4b4; }
 
 /* 01 Webseiten: oben der Titel und rechts die drei Begriffe, mittig das Signet auf einer ruhigen, einfarbigen Bühne, darunter drei Flächen mit ihrem Titel.
@@ -167,11 +167,11 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 /* Der Kopf von Webseiten und Apps: links gross der Titel, darunter der Satz; rechts die drei Begriffe, je auf einer Zeile, klein und ohne Satzzeichen,
    ohne Marke darüber: so beziehen sie sich direkt auf den Titel. Ihre Mitte steht auf der Mitte des Titels
    (Innenabstand oben + halbe Zeile des Titels − halbe Höhe der drei Zeilen) */
-:is(.k-web, .k-apps) .marke-k { position: absolute; top: calc(clamp(40px, 8cqi, 68px) + .43 * clamp(42px, 9cqi, 80px) - 1.68 * clamp(17px, 2.5cqi, 23px)); right: max(clamp(22px, 5.4cqi, 48px), env(safe-area-inset-right, 0px)); margin: 0; }
-:is(.k-web, .k-apps) .marke-k .zl { display: block; }
-:is(.k-web, .k-apps) .marke-k .begriff { font: 500 clamp(17px, 2.5cqi, 23px)/1.12 var(--sans); letter-spacing: -.01em; text-transform: none; color: var(--kt); }
-:is(.k-web, .k-apps) .leit { font-family: var(--sans); font-style: normal; font-weight: 400; font-size: clamp(19px, 3cqi, 26px); letter-spacing: -.015em; }   /* nüchtern statt kursiv */
-:is(.k-web, .k-apps) h2 { font-size: clamp(42px, 9cqi, 80px); }   /* «Webseiten» ist lang: kleiner als die kurzen Titel, sonst erdrückt er die Seite; Apps gleich gross */
+:is(.k-web, .k-apps, .k-kunst) .marke-k { position: absolute; top: calc(clamp(40px, 8cqi, 68px) + .43 * clamp(42px, 9cqi, 80px) - 1.68 * clamp(17px, 2.5cqi, 23px)); right: max(clamp(22px, 5.4cqi, 48px), env(safe-area-inset-right, 0px)); margin: 0; }
+:is(.k-web, .k-apps, .k-kunst) .marke-k .zl { display: block; }
+:is(.k-web, .k-apps, .k-kunst) .marke-k .begriff { font: 500 clamp(17px, 2.5cqi, 23px)/1.12 var(--sans); letter-spacing: -.01em; text-transform: none; color: var(--kt); }
+:is(.k-web, .k-apps, .k-kunst) .leit { font-family: var(--sans); font-style: normal; font-weight: 400; font-size: clamp(19px, 3cqi, 26px); letter-spacing: -.015em; }   /* nüchtern statt kursiv */
+:is(.k-web, .k-apps, .k-kunst) h2 { font-size: clamp(42px, 9cqi, 80px); }   /* «Webseiten» ist lang: kleiner als die kurzen Titel, sonst erdrückt er die Seite; Apps gleich gross */
 /* Die Bühne hat das Seitenverhältnis --ar; Signet und Raster bleiben quadratisch, weil ihre Breite durch --ar geteilt wird */
 .buehne { --ar: 1; position: relative; margin: clamp(18px, 3cqi, 28px) 0 clamp(22px, 4cqi, 34px); aspect-ratio: var(--ar); }
 .buehne > * { position: absolute; }
@@ -215,10 +215,10 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 .fi-zu { margin-top: auto; align-self: flex-start; padding: 8px 0; border: 0; background: none; color: var(--ka); font: 500 13.5px var(--sans); cursor: pointer; }
 .k-web.raster .logo, .k-web.baut .logo, .k-web.zeigt-feld .logo { opacity: 0; }
 .k-web.raster:not(.baut):not(.zeigt-feld) .themen { visibility: visible; opacity: 1; transition: opacity .6s; }
-:is(.k-web, .k-apps).zeigt-feld .feld-inhalt { visibility: visible; opacity: 1; transition: opacity .45s; }
+:is(.k-web, .k-apps, .k-kunst).zeigt-feld .feld-inhalt { visibility: visible; opacity: 1; transition: opacity .45s; }
 /* Ist der Inhalt höher als die Bühne (am Handy, erst recht mit grösserer Systemschrift), wächst die Bühne mit:
    der Inhalt steht dann im Fluss, statt über die Flächen darunter zu laufen */
-:is(.k-web, .k-apps).zeigt-feld .feld-inhalt { position: relative; min-height: 100%; }
+:is(.k-web, .k-apps, .k-kunst).zeigt-feld .feld-inhalt { position: relative; min-height: 100%; }
 /* Drei Flächen unter der Bühne, nur mit ihrem Titel (der Satz steht nach dem Anklicken auf der Bühne), in drei Tönen des Tannengrüns */
 .flaechen { display: grid; border-top: 1px solid var(--kt); }
 .feld { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: clamp(52px, 8cqi, 64px); padding: 0 clamp(14px, 2.6cqi, 20px); border: 0; border-radius: 0; color: var(--kt); font: inherit; text-align: left; cursor: pointer; }
@@ -308,14 +308,18 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 .feldchen i { aspect-ratio: 1; border: 1px solid var(--kl); }
 .feldchen i.an { background: var(--ka); border-color: var(--ka); }
 
-/* 08 Art: Liste und ein grosses Werk */
-.werk { display: grid; gap: 24px; }
-.werk-liste { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--kt); }
-.werk-liste li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 13px 0 15px; border-bottom: 1px solid var(--kl); font-size: clamp(22px, 4cqi, 32px); font-weight: 500; letter-spacing: -.025em; line-height: 1.1; }
-.werk figure { margin: 0; order: -1; }
-.werk img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; }
-.werk figcaption { margin-top: 10px; font-family: var(--serif); font-style: italic; font-size: 15px; color: var(--kg); }
-@container (min-width: 640px) { .werk { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 36px; align-items: end; } .werk figure { order: 0; } }
+/* 03 Kunst: auf der Bühne ein Foto aus der Praxis als Zeichnung in weisser Kreide auf Umbra; wo man darüberfährt oder tippt, taucht das Foto auf.
+   Gezeichnet mit WebGL auf einer eigenen Leinwand; im Raum liegt dieselbe Zeichnung auf dem Band, zwei Lichter wandern darüber */
+.kunst-bild { inset: 0; transition: opacity .5s; touch-action: pan-y; cursor: crosshair; }
+.kunst-bild canvas { display: block; width: 100%; height: 100%; }
+.k-kunst.zeigt-feld .kunst-bild { opacity: 0; pointer-events: none; }
+.kunst-hinweis { position: absolute; right: 0; top: calc(100% + 7px); margin: 0; font: 500 10.5px/1.2 var(--sans); letter-spacing: .08em; text-transform: uppercase; color: var(--kg); pointer-events: none; transition: opacity .6s; }
+.kunst-hinweis.weg, .k-kunst.zeigt-feld .kunst-hinweis { opacity: 0; }
+.k-kunst .feld:nth-child(1) { background: rgba(255, 255, 255, .04); }
+.k-kunst .feld:nth-child(2) { background: rgba(255, 255, 255, .075); }
+.k-kunst .feld:nth-child(3) { background: rgba(255, 255, 255, .11); }
+.k-kunst .feld:hover { background: rgba(255, 255, 255, .15); }
+.k-kunst .feld[aria-expanded="true"] { background: var(--ka); color: var(--k); }
 
 /* 09 Angebot: drei Leistungen mit grossen Ziffern */
 .angebot-liste { list-style: none; margin: 0; padding: 0; display: grid; border-top: 1px solid var(--kt); }
@@ -368,7 +372,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
 <header class="kopf">
   <a class="marke" href="../b/"><img src="../b/bilder/signet/signet-dunkel.svg" alt="">ornament.cloud <span class="ausgabe"><i>·</i>Gamma Version<i>·</i>Herbst 2026</span></a>
   <nav aria-label="Bereiche">
-    <a href="#k-web">Webseiten</a><a href="#k-apps">Apps</a><a href="#k-lab">Lab</a><a href="#k-rad">3. Rad</a><a href="#k-prompts">Prompts</a><a href="#k-zettel">Zettel</a><a href="#k-social">Social</a><a href="#k-art">Art</a><a href="#k-angebot">Angebot</a>
+    <a href="#k-web">Webseiten</a><a href="#k-apps">Apps</a><a href="#k-kunst">Kunst</a><a href="#k-lab">Lab</a><a href="#k-rad">3. Rad</a><a href="#k-prompts">Prompts</a><a href="#k-zettel">Zettel</a><a href="#k-social">Social</a><a href="#k-angebot">Angebot</a>
   </nav>
   <a class="pille" href="../b/">Zur Website</a>
 </header>
@@ -391,7 +395,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
     </div>
     <div class="intro-text" id="intro-text">
       <h1>Neun Bereiche, ein Netz.</h1>
-      <p>Webseiten · Apps · Lab · 3. Rad · Prompts · Zettel · Social · Art · Angebot<br><span id="zug-hinweis">Weiter nach unten</span></p>
+      <p>Webseiten · Apps · Kunst · Lab · 3. Rad · Prompts · Zettel · Social · Angebot<br><span id="zug-hinweis">Weiter nach unten</span></p>
     </div>
   </div></div>
 </section>
@@ -478,8 +482,44 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
         </div>
       </div></article>
 
+      <article class="kapitel k-kunst" id="k-kunst" data-name="Kunst"><div class="k-innen">
+        <span class="marke-k"><span class="zl begriff">herstellen</span><span class="zl begriff">vermitteln</span><span class="zl begriff">kuratieren</span></span>
+        <h2>Kunst</h2>
+        <p class="leit">Bilder, Gespräche, Räume</p>
+        <div class="buehne">
+          <div class="kunst-bild" data-kunst data-fokus=".5" role="img" aria-label="Ausstellungswand aus Naturstein mit einem grossen farbigen Gemälde, einem kleinen gerahmten Bild, einer Nische und einer Vitrine; zuerst als Zeichnung, unter dem Zeiger erscheint das Foto"><canvas aria-hidden="true"></canvas></div>
+          <p class="kunst-hinweis" aria-hidden="true">Darüberfahren zeigt das Foto</p>
+          <div class="feld-inhalt">
+            <section class="fi" data-feld="vermittlung" hidden>
+              <span class="label">Vermittlung</span>
+              <p class="fi-satz">Kunst verstehen, indem man sie macht und darüber spricht</p>
+              <ol class="fi-fragen"><li>Workshops<span>im Atelier und vor Ort</span></li><li>Seminare<span>Kunst und Theorie</span></li><li>Projekte<span>mit Schulen und Teams</span></li></ol>
+              <p class="fi-folgt">Texte folgen.</p>
+            </section>
+            <section class="fi" data-feld="kuration" hidden>
+              <span class="label">Kuration</span>
+              <p class="fi-satz">Ausstellungen denken, ordnen, hängen</p>
+              <ol class="fi-fragen"><li>Konzept<span>Thema und Auswahl</span></li><li>Raum<span>Hängung und Licht</span></li><li>Vermittlung<span>Texte und Führungen</span></li></ol>
+              <p class="fi-folgt">Texte folgen.</p>
+            </section>
+            <section class="fi" data-feld="verkauf" hidden>
+              <span class="label">Verkauf</span>
+              <p class="fi-satz">Originale, Prints und Editionen</p>
+              <ul class="fi-liste"><li>Originale<span>Papier · Leinwand</span></li><li>Prints<span>Editionen · Drucke</span></li><li>Aufträge<span>auf Anfrage</span></li></ul>
+              <a class="weiter" href="../b/werke/">Zu den Werken →</a>
+            </section>
+            <button type="button" class="fi-zu">← Zurück zum Bild</button>
+          </div>
+        </div>
+        <div class="flaechen">
+          <button type="button" class="feld" data-feld="vermittlung" aria-expanded="false" data-rand="Vermittlung"><span class="feld-titel">Vermittlung</span><span class="feld-pfeil">→</span></button>
+          <button type="button" class="feld" data-feld="kuration" aria-expanded="false"><span class="feld-titel">Kuration</span><span class="feld-pfeil">→</span></button>
+          <button type="button" class="feld" data-feld="verkauf" aria-expanded="false" data-rand="Verkauf"><span class="feld-titel">Verkauf</span><span class="feld-pfeil">→</span></button>
+        </div>
+      </div></article>
+
       <article class="kapitel k-lab" id="k-lab" data-name="Lab"><div class="k-innen">
-        <span class="marke-k">03 · ornament.lab</span>
+        <span class="marke-k">04 · ornament.lab</span>
         <h2>Lab</h2>
         <p class="leit">Ein Bild wird Material.</p>
         <div class="lab-werk">
@@ -504,7 +544,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
       </div></article>
 
       <article class="kapitel k-rad" id="k-rad" data-name="Das 3. Rad"><div class="k-innen">
-        <span class="marke-k">04 · Beta</span>
+        <span class="marke-k">05 · Beta</span>
         <h2>Das 3. Rad</h2>
         <p class="leit">Zeit, Form und Farbe drehen gegeneinander.</p>
         <div class="raeder">
@@ -516,7 +556,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
       </div></article>
 
       <article class="kapitel k-prompts" id="k-prompts" data-name="Prompts"><div class="k-innen">
-        <span class="marke-k">05 · vier Prüfraster</span>
+        <span class="marke-k">06 · vier Prüfraster</span>
         <h2>Prompts</h2>
         <p class="leit">Vier Prüfraster zum genaueren Hinsehen, je mit Grundlagenpapier und Anwendungsprompt.</p>
         <div class="matrix">
@@ -529,7 +569,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
       </div></article>
 
       <article class="kapitel k-zettel" id="k-zettel" data-name="Zettel"><div class="k-innen">
-        <span class="marke-k">06 · Zu seiner Zeit</span>
+        <span class="marke-k">07 · Zu seiner Zeit</span>
         <h2>Zettel</h2>
         <p class="leit">Plateaus zu Operation, Kunst, Gesellschaft und künstlicher Kommunikation.</p>
         <div class="zettel-feld">
@@ -540,7 +580,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
       </div></article>
 
       <article class="kapitel k-social" id="k-social" data-name="Social"><div class="k-innen">
-        <span class="marke-k">07 · jede Woche</span>
+        <span class="marke-k">08 · jede Woche</span>
         <h2>Social</h2>
         <p class="leit">Ausgewählte Beiträge aus X, Facebook und Instagram, wöchentlich als Zettel gesammelt.</p>
         <div class="kanaele">
@@ -549,21 +589,6 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
           <a class="kanal" href="../b/zuletzt/" data-rand="Instagram"><span class="label">Zettel · Kanal</span><b>Instagram</b><span class="satz">Beiträge, als Zettel abgelegt.</span><span class="feldchen" aria-hidden="true"></span></a>
         </div>
         <a class="weiter" href="../b/zuletzt/">Zu den Beiträgen →</a>
-      </div></article>
-
-      <article class="kapitel k-art" id="k-art" data-name="Art"><div class="k-innen">
-        <span class="marke-k">08 · Werke</span>
-        <h2>Art</h2>
-        <p class="leit">Originale, Prints und Arbeiten im Raum.</p>
-        <div class="werk">
-          <ul class="werk-liste">
-            <li data-rand="Originale">Originale<span class="label">Papier · Leinwand</span></li>
-            <li>Prints<span class="label">Editionen · Drucke</span></li>
-            <li data-rand="Arbeiten im Raum">Arbeiten im Raum<span class="label">Raum</span></li>
-          </ul>
-          <figure><a href="../b/werke/"><img src="../beta/lab/bilder/portraet.jpg" alt="Porträt als Mosaik vor Rot" loading="lazy"></a><figcaption>Porträt als Mosaik vor Rot</figcaption></figure>
-        </div>
-        <a class="weiter" href="../b/werke/">Zu den Werken →</a>
       </div></article>
 
       <article class="kapitel k-angebot" id="k-angebot" data-name="Angebot"><div class="k-innen">
@@ -586,12 +611,12 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
     <ul>
       <li class="k-web"><a href="../b/angebot/webdesign/">Webseiten <i></i></a></li>
       <li class="k-apps"><a href="../b/apps/">Apps <i></i></a></li>
+      <li class="k-kunst"><a href="../b/werke/">Kunst <i></i></a></li>
       <li class="k-lab"><a href="../beta/lab/">Lab <i></i></a></li>
       <li class="k-rad"><a href="../beta/drittes-rad/">Das 3. Rad <i></i></a></li>
       <li class="k-prompts"><a href="../b/raster/">Prompts <i></i></a></li>
       <li class="k-zettel"><a href="../b/zettel/">Zettel <i></i></a></li>
       <li class="k-social"><a href="../b/zuletzt/">Social <i></i></a></li>
-      <li class="k-art"><a href="../b/werke/">Art <i></i></a></li>
       <li class="k-angebot"><a href="../b/angebot/">Angebot <i></i></a></li>
     </ul>
     <p>ornament.cloud · Christian Strickler · Gamma, Herbst 2026</p>
@@ -630,8 +655,8 @@ const ZUG = (() => {
 })();
 const ZYKLEN = ["Operation", "Rekursion", "Adresse", "Koppelung", "Kunst", "Plattform", "Zukunft"];
 const ROEM = ["I", "II", "III", "IV", "V", "VI", "VII"];
-const KAPITELFARBEN = ["#2f7a58", "#c2185b", "#1d3fd6", "#e6b117", "#e0503c", "#ffffff", "#8fb0ff", "#f2b2c0", "#2f7a58"];   // Quadrate im Intro: auf Schwarz sichtbar
-const LEUCHTFARBEN = ["#5fcf95", "#ff5c95", "#6f8cff", "#ffc21a", "#ff5a3c", "#d6dbe4", "#9aa6bd", "#ff9fb8", "#5fcf95"];   // Kanten und Marken im Raum
+const KAPITELFARBEN = ["#2f7a58", "#e6b117", "#b48a6c", "#c2185b", "#1d3fd6", "#e0503c", "#ffffff", "#8fb0ff", "#2f7a58"];   // Quadrate im Intro: auf Schwarz sichtbar
+const LEUCHTFARBEN = ["#5fcf95", "#ffc21a", "#e8b892", "#ff5c95", "#6f8cff", "#ff5a3c", "#d6dbe4", "#9aa6bd", "#5fcf95"];   // Kanten und Marken im Raum
 const ZYKLUSFARBEN = ["#ff5c9a", "#ffc21a", "#ff5a3c", "#ffffff", "#8fb0ff", "#3fd08e", "#ffa3d1"];
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const klemm = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
@@ -726,7 +751,7 @@ async function kapitelZeichnen(k, i, LW) {
   const r0 = kl.getBoundingClientRect(), LH = Math.ceil(r0.height);
   const cv = document.createElement("canvas"); cv.width = Math.round(LW * skala); cv.height = Math.round(LH * skala);
   const cx = cv.getContext("2d"); cx.scale(skala, skala);
-  const lage = { titel: null, rand: [], surfen: null, handys: null }, range = document.createRange();
+  const lage = { titel: null, rand: [], surfen: null, handys: null, kunst: null }, range = document.createRange();
   const leer = c => !c || c === "transparent" || /rgba?\(.*,\s*0\)$/.test(c);
   const schrift = cs => `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
   const oberlaenge = () => { const m = cx.measureText("Hg"); return m.fontBoundingBoxAscent ?? m.actualBoundingBoxAscent * 1.12; };
@@ -772,6 +797,7 @@ async function kapitelZeichnen(k, i, LW) {
     if (el.dataset && el.dataset.rand) lage.rand.push({ text: el.dataset.rand, x, y, b, h });
     if (el.dataset && "surfen" in el.dataset) lage.surfen = { x, y, b, h };
     if (el.dataset && "handys" in el.dataset) lage.handys = { x, y, b, h };
+    if (el.dataset && "kunst" in el.dataset) lage.kunst = { x, y, b, h };
     cx.save(); cx.globalAlpha = a;
     if (cs.mixBlendMode && cs.mixBlendMode !== "normal") cx.globalCompositeOperation = cs.mixBlendMode;
     const rad = radius(cs, b, h);
@@ -1106,6 +1132,54 @@ async function bahnBauen() {
       bahn.signete.push(sek => { if (sek - zuletzt < 1 / 15 || kamera.position.distanceTo(mitte) > 14) return; zuletzt = sek; hb.zeichnen(sek + s1); tex.needsUpdate = true; });
     });
   });
+  // Auf der Bühne der Kunst liegt die Zeichnung auf dem Band und wächst, sobald die Kamera näher kommt. Zwei Lichter wandern darüber:
+  // wo sie hinscheinen, zeigt sich das Foto mit nassem Rand und hebt sich als leichtes Relief vom Band ab (feines Gitter, das der Krümmung folgt)
+  bilder.forEach((b, i) => {
+    const l = b.lage.kunst; if (!l || !kunst) return;
+    const s0 = bahn.kapitel[i].s0, ar = l.b / l.h, a = kunstAusschnitt(ar, kunst.fokus), [imF, imL] = kunstLaden();
+    const textur = (im, farbig) => {
+      const t = new THREE.Texture(im); t.colorSpace = farbig ? THREE.SRGBColorSpace : THREE.NoColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+      if (im.complete && im.naturalWidth) t.needsUpdate = true; else im.addEventListener("load", () => { t.needsUpdate = true; }, { once: true });
+      return t;
+    };
+    const nx = 96, ny = Math.max(24, Math.round(96 / ar)), geo = new THREE.PlaneGeometry(1, 1, nx, ny), pos = geo.attributes.position, v = new THREE.Vector3(), nv = new THREE.Vector3(), nrm = [];
+    for (let j = 0; j < pos.count; j++) {
+      const u = pos.getX(j) + .5, w = .5 - pos.getY(j), sj = s0 + (l.y + w * l.h) * bahn.k;
+      bahnPunkt(sj, RAUM.w / 2 - (l.x + u * l.b) * bahn.k, .007, v); pos.setXYZ(j, v.x, v.y, v.z); normale(sj, nv); nrm.push(nv.x, nv.y, nv.z);
+    }
+    geo.setAttribute("nrm", new THREE.Float32BufferAttribute(nrm, 3));
+    const farbe = getComputedStyle(kapitel[i]).getPropertyValue("--k").trim() || "#5a4232";
+    const uni = { foto: { value: textur(imF, true) }, linien: { value: textur(imL, false) }, zeit: { value: 0 }, zug: { value: ruhig ? 1.02 : 0 }, deck: { value: 1 },
+      aus: { value: new THREE.Vector4(...a) }, seite: { value: new THREE.Vector2(ar, 1) }, grund: { value: new THREE.Color(farbe) }, tinte: { value: new THREE.Color(.8, .8, .8) },
+      lichter: { value: kunstLichter(0).map(p => new THREE.Vector3(...p)) }, hub: { value: .045 * RAUM.w / 5 } };
+    const MASKE = `uniform vec3 lichter[2]; uniform vec2 seite;
+float kMaske(vec2 vv) { float m = 0.; for (int n = 0; n < 2; n++) { float d = length((vv - lichter[n].xy) * vec2(seite.x, 1.)) / lichter[n].z; m = max(m, 1.35 * pow(1. - clamp(d * d, 0., 1.), 2.)); } return min(m, 1.); }`;
+    const stoff = new THREE.ShaderMaterial({ uniforms: uni, transparent: true, depthWrite: false, side: THREE.DoubleSide,
+      vertexShader: `attribute vec3 nrm; uniform sampler2D foto; uniform vec4 aus; uniform float zeit, hub; varying vec2 vv; ${KUNST_GLSL.split("vec3 kFarbe")[0]} ${MASKE}
+void main() {
+  vv = vec2(uv.x, 1. - uv.y);
+  vec2 q = vv * vec2(seite.x, 1.);
+  float auf = smoothstep(.42, .58, kSchwelle(q, kMaske(vv), zeit));
+  vec3 f = texture2D(foto, aus.xy + vv * aus.zw).rgb;
+  vec3 p = position + nrm * auf * hub * (.3 + .7 * dot(f, vec3(.3, .59, .11)));
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.);
+}`,
+      fragmentShader: `uniform sampler2D foto, linien; uniform vec4 aus; uniform float zeit, zug, deck; uniform vec3 grund, tinte; varying vec2 vv; ${KUNST_GLSL} ${MASKE}
+void main() {
+  vec2 q = vv * vec2(seite.x, 1.), e = vec2(.004, 0.);
+  vec2 br = vec2(kMaske(vv + e.xy) - kMaske(vv - e.xy), kMaske(vv + e.yx) - kMaske(vv - e.yx)) * .35;
+  gl_FragColor = vec4(kFarbe(foto, linien, aus.xy + vv * aus.zw, q, kSchwelle(q, kMaske(vv), zeit), br, zug, zeit, grund, tinte), deck);
+}` });
+    const m = new THREE.Mesh(geo, stoff); stoff.userData.frueh = true; m.renderOrder = 3; m.frustumCulled = false; g.add(m);
+    m.onBeforeRender = () => { uni.deck.value = stoff.opacity; };
+    const mitte = bahnPunkt(s0 + (l.y + l.h / 2) * bahn.k, RAUM.w / 2 - (l.x + l.b / 2) * bahn.k, 0);
+    let beginn = null;
+    bahn.signete.push(sek => {
+      uni.zeit.value = sek % 1000; kunstLichter(sek).forEach((p, n) => uni.lichter.value[n].set(...p));
+      if (beginn === null && kamera.position.distanceTo(mitte) < 15) beginn = sek;
+      if (beginn !== null) kunst.raumZug = uni.zug.value = 1.02 * eio(klemm((sek - beginn) / KUNST_ZUG));
+    });
+  });
   // Metermarken: alle fünf Meter eine Zahl in Mono am linken Rand
   const marken = []; for (let m = 5; m <= bahn.L; m += 5) marken.push(m);
   if (marken.length) {
@@ -1428,7 +1502,7 @@ function figurenBauen(g, bilder) {
       schild(name, [cx, .3, cz], "mass");
     });
   };
-  /* Art: eine Wand mit drei Rahmen und ein Sockel mit einer gedrehten Säule */
+  /* Kunst: eine Wand mit drei Rahmen und ein Sockel mit einer gedrehten Säule */
   const wand = () => {
     const b = 1.9, h = 1.3; hell = .4; rechteck(0, 0, 0, b, h); strich([0, 0, 0], [0, 0, -.18]); strich([b, 0, 0], [b, 0, -.18]);
     hell = .52; [[.15, .45, .5, .62], [.8, .55, .38, .48], [1.32, .38, .44, .62]].forEach(([x, y, bb, hh]) => { rechteck(x, y, .005, bb, hh); hell = .28; rechteck(x + .06, y + .06, .005, bb - .12, hh - .12); hell = .52; });
@@ -1493,7 +1567,7 @@ function figurenBauen(g, bilder) {
     "k-prompts": [[achsen, .3, 1, .5], [verteiler, .65, -1, .4], ["notation", .85, 1, 3]],
     "k-zettel": [[kasten, .2, -1, .5], [karten, .55, 1, .4], ["schlaufe", .8, -1, .8]],
     "k-social": [[stapel, .35, 1, .4], ["notation", .7, -1, 0]],
-    "k-art": [[wand, .3, -1, .45], [saeule, .65, 1, .6]],
+    "k-kunst": [[wand, .3, -1, .45], [saeule, .65, 1, .6]],
     "k-angebot": [[tisch, .2, 1, .4], [waende, .5, -1, .5], [kisten, .8, 1, .5], ["schlaufe", .9, -1, .8]],
   };
   // Wo am Desktop eine Beschriftung vom Band nach aussen führt, weicht die Figur ein Stück aus
@@ -1858,6 +1932,7 @@ function bild(zeit) {
   // Webseiten flach: die Punkte der Verwandlung
   if (web && flach) webLaufBild(zeit);
   if (apps && flach) appsLaufBild(zeit);
+  if (kunst && flach) kunstLaufBild(zeit, dt);
   // Während des Wechsels zur flachen Seite läuft das Bild weiter, die Seite blendet darüber
   const imRaum = !flach || document.body.classList.contains("wechsel") || intro.getBoundingClientRect().bottom > 0;
   document.body.classList.toggle("nach-intro", intro.getBoundingClientRect().bottom <= innerHeight * .2);
@@ -2746,6 +2821,176 @@ function webPruefen() {
 }
 if (web && ruhig) webRaster(true);
 if (web && "IntersectionObserver" in window) new IntersectionObserver(e => { if (flach && !wechselt && e[0].isIntersecting) webRaster(); }, { threshold: .5 }).observe(web.buehne);
+/* ---------- Kunst: ein Foto aus der Praxis, erst als Zeichnung ----------
+   Vorgerechnet mit tools/gamma/kunst_linien.py: das bearbeitete Foto als WebP und die Zeichnung als verlustfreies WebP.
+   In der Zeichnung ist Rot die Kreide, Grün der Zeitpunkt, an dem der Strich an dieser Stelle gezogen wird, Blau trennt Umrisse (hell) von Schraffur.
+   Flach nimmt eine Maske auf einem groben Gitter (etwa 8 px je Zelle) auf, wo der Zeiger war; sie verläuft ein wenig und heilt in rund zwei Sekunden zu.
+   Der Shader schneidet sie mit wanderndem Rauschen: so hat das Foto einen Rand wie ein nasser Fleck auf Papier, mit einer feinen hellen Linie.
+   Im Raum liegt dieselbe Zeichnung auf dem Band; zwei Lichter wandern darüber und heben das Foto als leichtes Relief an. Flach laufen dieselben Lichter weiter, bis jemand selbst darüberfährt */
+const KUNST_FOTO = "../gamma/bilder/kunst-foto.webp", KUNST_LINIEN = "../gamma/bilder/kunst-linien.webp", KUNST_ZUG = 3.6;
+let kunstBilder = null;
+function kunstLaden() {
+  if (!kunstBilder) kunstBilder = [KUNST_FOTO, KUNST_LINIEN].map(src => { const im = new Image(); im.decoding = "async"; im.src = src; return im; });
+  return kunstBilder;
+}
+// Zwei Lichter auf ruhigen Bahnen: Lage auf der Bühne (0 bis 1) und Halbmesser im Verhältnis zur Höhe der Bühne
+const kunstLichter = sek => [[.5 + .34 * Math.sin(sek * .19 + 1.3), .5 + .26 * Math.sin(sek * .27 + .4), .27], [.5 + .3 * Math.sin(sek * .23 + 4.1), .5 + .27 * Math.sin(sek * .17 + 2.2), .22]];
+// Der Ausschnitt des quadratischen Bildes für eine Bühne mit dem Seitenverhältnis ar: am Computer ein breiter Streifen um den Fokus
+function kunstAusschnitt(ar, fokus) {
+  if (ar >= 1) { const h = 1 / ar; return [0, klemm(fokus - h / 2, 0, 1 - h), 1, h]; }
+  return [.5 - ar / 2, 0, ar, 1];
+}
+const KUNST_GLSL = `
+float kH(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
+float kR(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f);
+  return mix(mix(kH(i), kH(i + vec2(1., 0.)), f.x), mix(kH(i + vec2(0., 1.)), kH(i + vec2(1., 1.)), f.x), f.y); }
+float kF(vec2 p) { float s = 0., a = .5; for (int i = 0; i < 4; i++) { s += a * kR(p); p = p * 2.03 + 17.1; a *= .5; } return s; }
+// Die Maske m (0 bis 1) und ein verwirbeltes Rauschen ergeben den Rand; q sind gleichmässige Koordinaten der Bühne
+float kSchwelle(vec2 q, float m, float zeit) {
+  vec2 w = vec2(kF(q * 3. + zeit * .03), kF(q * 3. + 5.2 - zeit * .025));
+  return m + (kF(q * 6. + w * 1.6) - .5) * .62;
+}
+vec3 kFarbe(sampler2D foto, sampler2D linien, vec2 uv, vec2 q, float s, vec2 br, float zug, float zeit, vec3 grund, vec3 tinte) {
+  float auf = smoothstep(.47, .53, s), rand = 1. - smoothstep(0., .022, abs(s - .5));
+  vec3 l = texture2D(linien, uv).rgb;
+  float kreide = l.r * smoothstep(l.g - .012, l.g, zug);
+  kreide *= mix(.8 + .2 * kR(q * 2.5 + zeit * .15), 1., l.b);   // die Schraffur atmet leicht, die Umrisse stehen
+  vec3 c = mix(mix(grund, tinte, kreide * .9), texture2D(foto, uv - br * (1. - auf * .6)).rgb, auf);
+  return mix(c, tinte, rand * .38 * (1. - auf * .5));
+}`;
+const kunst = (() => {
+  const k = document.getElementById("k-kunst"); if (!k) return null;
+  const bild = k.querySelector(".kunst-bild");
+  return { k, bild, cv: bild.querySelector("canvas"), buehne: k.querySelector(".buehne"), hinweis: k.querySelector(".kunst-hinweis"), fokus: parseFloat(bild.dataset.fokus) || .5,
+    felder: [...k.querySelectorAll(".feld")], inhalte: [...k.querySelectorAll(".fi")], gl: null, sichtbar: false, t0: null, raumZug: 0, maske: null, zeiger: null, vorher: null, zuletzt: -1e9, bluete: null };
+})();
+if (kunst) {
+  kunst.stopp = () => {}; felderVerbinden(kunst);
+  if (matchMedia("(hover: none)").matches) kunst.hinweis.textContent = "Tippen zeigt das Foto";
+  const lage = e => { const r = kunst.bild.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+  const weg = () => kunst.hinweis.classList.add("weg");
+  kunst.bild.addEventListener("pointermove", e => { kunst.zeiger = lage(e); kunst.zuletzt = performance.now(); if (e.pointerType === "mouse") weg(); });
+  kunst.bild.addEventListener("pointerdown", e => { kunst.bluete = { ...lage(e), t: performance.now() }; kunst.zuletzt = performance.now(); weg(); });
+  for (const t of ["pointerleave", "pointercancel"]) kunst.bild.addEventListener(t, () => { kunst.zeiger = kunst.vorher = null; });
+  kunst.bild.addEventListener("pointerup", e => { if (e.pointerType !== "mouse") kunst.zeiger = kunst.vorher = null; });
+  if ("IntersectionObserver" in window) new IntersectionObserver(e => { kunst.sichtbar = e[0].isIntersecting; }, { threshold: 0 }).observe(kunst.buehne);
+}
+function kunstGL() {
+  const K = kunst, gl = K.cv.getContext("webgl2", { antialias: false, alpha: false }) || K.cv.getContext("webgl", { antialias: false, alpha: false });
+  if (!gl) { K.gl = false; return; }
+  const zwei = typeof WebGL2RenderingContext !== "undefined" && gl instanceof WebGL2RenderingContext;
+  const shader = (typ, src) => { const s = gl.createShader(typ); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
+  const pr = gl.createProgram();
+  gl.attachShader(pr, shader(gl.VERTEX_SHADER, "attribute vec2 p; varying vec2 v; void main() { v = vec2(p.x * .5 + .5, .5 - p.y * .5); gl_Position = vec4(p, 0., 1.); }"));
+  gl.attachShader(pr, shader(gl.FRAGMENT_SHADER, `precision highp float; varying vec2 v;
+uniform sampler2D foto, linien, maske; uniform vec4 aus; uniform vec2 seite, zelle; uniform float zeit, zug; uniform vec3 grund, tinte;
+${KUNST_GLSL}
+void main() {
+  vec2 q = v * vec2(seite.x / seite.y, 1.);
+  vec2 br = vec2(texture2D(maske, v + vec2(zelle.x, 0.)).r - texture2D(maske, v - vec2(zelle.x, 0.)).r, texture2D(maske, v + vec2(0., zelle.y)).r - texture2D(maske, v - vec2(0., zelle.y)).r) * .012;
+  gl_FragColor = vec4(kFarbe(foto, linien, aus.xy + v * aus.zw, q, kSchwelle(q, texture2D(maske, v).r, zeit), br, zug, zeit, grund, tinte), 1.);
+}`));
+  gl.linkProgram(pr); gl.useProgram(pr);
+  const puffer = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, puffer); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+  const ap = gl.getAttribLocation(pr, "p"); gl.enableVertexAttribArray(ap); gl.vertexAttribPointer(ap, 2, gl.FLOAT, false, 0, 0);
+  const U = {}; ["foto", "linien", "maske", "aus", "seite", "zelle", "zeit", "zug", "grund", "tinte"].forEach(n => { U[n] = gl.getUniformLocation(pr, n); });
+  const textur = (einheit, roh) => {
+    const t = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + einheit); gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array(roh ? [0, 255, 0] : [90, 66, 50]));
+    for (const [k, w] of [[gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_MIN_FILTER, gl.LINEAR]]) gl.texParameteri(gl.TEXTURE_2D, k, w);
+    return t;
+  };
+  const [imF, imL] = kunstLaden(), tF = textur(0, false), tL = textur(1, true), tM = textur(2, true);
+  // Die Zeichnung sind Daten: ohne Farbumrechnung laden. Mit WebGL 2 auch verkleinert sauber (Mipmaps), mit WebGL 1 nur linear
+  const hoch = (t, einheit, im, roh) => {
+    gl.activeTexture(gl.TEXTURE0 + einheit); gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, roh ? gl.NONE : gl.BROWSER_DEFAULT_WEBGL);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, im);
+    if (zwei) { gl.generateMipmap(gl.TEXTURE_2D); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR); }
+  };
+  [[tF, 0, imF, false], [tL, 1, imL, true]].forEach(([t, e, im, roh]) => { const los = () => hoch(t, e, im, roh); if (im.complete && im.naturalWidth) los(); else im.addEventListener("load", los, { once: true }); });
+  gl.uniform1i(U.foto, 0); gl.uniform1i(U.linien, 1); gl.uniform1i(U.maske, 2);
+  K.gl = { gl, U, tM, grund: (() => { const h = (getComputedStyle(K.k).getPropertyValue("--k").trim() || "#5a4232").replace("#", ""); return [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16) / 255); })() };
+}
+// Die Maske: Stempel weicher Kreise, dann verläuft sie ein wenig und heilt zu
+function kunstMaske(dt, w, h, jetzt) {
+  const K = kunst, gw = K.gw, gh = K.gh, M = K.maske, N = K.neu, zx = w / (gw - 1), zy = h / (gh - 1);
+  const stempel = (x, y, r, s) => {
+    const i0 = Math.max(0, Math.floor((x - r) / zx)), i1 = Math.min(gw - 1, Math.ceil((x + r) / zx)), j0 = Math.max(0, Math.floor((y - r) / zy)), j1 = Math.min(gh - 1, Math.ceil((y + r) / zy));
+    for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) { const d = ((i * zx - x) ** 2 + (j * zy - y) ** 2) / (r * r); if (d < 1) { const n = j * gw + i; M[n] += (1 - M[n]) * (1 - d) * (1 - d) * s; } }
+  };
+  const r = Math.max(30, Math.min(h * .19, 110)), s = 1 - Math.exp(-dt * 7);
+  if (K.zeiger) {
+    // vom letzten Punkt her in kleinen Schritten, damit schnelle Bewegungen keine Lücken lassen
+    const a = K.vorher || K.zeiger, b = K.zeiger, n = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / (r / 3)));
+    for (let k = 1; k <= n; k++) stempel(misch(a.x, b.x, k / n), misch(a.y, b.y, k / n), r, k === n ? s : .35);
+    K.vorher = { ...b };
+  }
+  if (K.bluete) {
+    const u = (jetzt - K.bluete.t) / 1000;
+    if (u < 1.6) stempel(K.bluete.x, K.bluete.y, r * misch(.5, K.bluete.gross || 2.2, eio(klemm(u / 1.1))), s * 1.5); else K.bluete = null;
+  }
+  // Ohne eigene Bewegung wandern die beiden Lichter wie im Raum
+  if (!ruhig && K.t0 !== null && (jetzt - K.t0) / 1000 > KUNST_ZUG + 1.2 && !K.zeiger && !K.bluete && jetzt - K.zuletzt > 2800)
+    kunstLichter(jetzt / 1000).forEach(([x, y, rr]) => stempel(x * w, y * h, rr * h * 1.05, s * .8));
+  const k = Math.min(.5, .24 * dt * 60), ab = Math.exp(-dt / 1.9);
+  for (let j = 0; j < gh; j++) for (let i = 0; i < gw; i++) {
+    const n = j * gw + i, v = M[n];
+    const um = (M[i > 0 ? n - 1 : n] + M[i < gw - 1 ? n + 1 : n] + M[j > 0 ? n - gw : n] + M[j < gh - 1 ? n + gw : n]) / 4;
+    N[n] = (v + k * (um - v)) * ab;
+  }
+  K.maske = N; K.neu = M;
+  for (let n = 0; n < N.length; n++) K.bytes[n] = N[n] * 255;
+}
+function kunstLaufBild(zeit, dt) {
+  const K = kunst;
+  if (!K || !K.sichtbar || K.k.classList.contains("zeigt-feld") || K.gl === false) return;
+  const r = K.bild.getBoundingClientRect(); if (r.width < 2 || r.height < 2) return;
+  if (!K.gl) {
+    try { kunstGL(); } catch (e) { K.gl = false; console.warn(e); }
+    // Ohne WebGL steht das Foto selbst auf der Bühne
+    if (!K.gl) { K.bild.style.background = `url("${KUNST_FOTO}") center ${K.fokus * 100}% / cover`; K.hinweis.hidden = true; return; }
+  }
+  const { gl, U } = K.gl, dpr = Math.min(devicePixelRatio || 1, 2), W = Math.round(r.width * dpr), H = Math.round(r.height * dpr);
+  if (K.cv.width !== W || K.cv.height !== H) {
+    K.cv.width = W; K.cv.height = H; K.gw = Math.ceil(r.width / 8) + 1; K.gh = Math.ceil(r.height / 8) + 1;
+    const n = K.gw * K.gh; K.maske = new Float32Array(n); K.neu = new Float32Array(n); K.bytes = new Uint8Array(n);
+  }
+  // Die Zeichnung beginnt, sobald die Bühne zur Hälfte zu sehen ist; kam man aus dem Raum, steht sie so weit wie dort, und die Lichter stehen, wo sie im Raum waren
+  if (K.t0 === null) {
+    const hh = Math.min(r.height, innerHeight) / 2; if (!(r.top < innerHeight - hh && r.bottom > hh) && !ruhig) { kunstZeichnen(); return; }
+    K.t0 = zeit - (ruhig ? KUNST_ZUG + 9 : K.raumZug * KUNST_ZUG) * 1000;
+    if (K.raumZug >= 1) kunstAusRaum(r.width, r.height, zeit);
+  }
+  const T = (zeit - K.t0) / 1000;
+  // Nach der Zeichnung öffnet sich das Foto einmal um das grosse Bild, dann heilt es zu
+  if (!ruhig && T >= 3.1 && T < 3.3 && !K.bluete && !K.geblueht) {
+    K.geblueht = true; const a = kunstAusschnitt(r.width / r.height, K.fokus);
+    K.bluete = { x: (.59 - a[0]) / a[2] * r.width, y: (.55 - a[1]) / a[3] * r.height, t: zeit, gross: 2.6 };
+  }
+  kunstMaske(dt, r.width, r.height, zeit);
+  K.zug = ruhig ? 1.02 : 1.02 * eio(klemm(T / KUNST_ZUG));
+  kunstZeichnen(zeit);
+}
+// Beim Wechsel aus dem Raum: die Maske dort öffnen, wo die Lichter gerade stehen
+function kunstAusRaum(w, h, zeit) {
+  const K = kunst, gw = K.gw, gh = K.gh, zx = w / (gw - 1), zy = h / (gh - 1);
+  kunstLichter(zeit / 1000).forEach(([x, y, rr]) => {
+    for (let j = 0; j < gh; j++) for (let i = 0; i < gw; i++) { const d = ((i * zx - x * w) ** 2 + (j * zy - y * h) ** 2) / (rr * h * rr * h); if (d < 1) K.maske[j * gw + i] = Math.max(K.maske[j * gw + i], Math.min(1, 1.35 * (1 - d) * (1 - d))); }
+  });
+  K.geblueht = true;
+}
+function kunstZeichnen(zeit = performance.now()) {
+  const K = kunst; if (!K.gl || !K.maske) return;
+  const { gl, U, tM } = K.gl, w = K.cv.width, h = K.cv.height, a = kunstAusschnitt(w / h, K.fokus);
+  gl.viewport(0, 0, w, h);
+  gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, tM); gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, K.gw, K.gh, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, K.bytes);
+  gl.uniform4f(U.aus, a[0], a[1], a[2], a[3]); gl.uniform2f(U.seite, w, h); gl.uniform2f(U.zelle, 1 / K.gw, 1 / K.gh);
+  gl.uniform1f(U.zeit, ruhig ? 0 : zeit / 1000 % 1000); gl.uniform1f(U.zug, K.zug || 0);
+  gl.uniform3fv(U.grund, K.gl.grund); gl.uniform3f(U.tinte, 1, 1, 1);
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+}
 if ("IntersectionObserver" in window) {
   const beobachter = new IntersectionObserver(eintraege => {
     if (!flach || wechselt) return;
