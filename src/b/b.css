@@ -581,3 +581,10 @@ body.buehne-seite { height: 100dvh; display: grid; grid-template-rows: 48px minm
   .app-oben > .app-oben-text { grid-column: 1; grid-row: 1; }
   .app-oben > .stueck-text { grid-column: 1 / -1; }
 }
+
+/* Kapitelköpfe der Startseite: Titel, Text und Link in festen Spalten, damit der Text in jedem Kapitel an derselben Stelle beginnt
+   (30. Oktober 2026, Christian: «layout verschiebung» zwischen Werke und Zuletzt; vorher Flex mit space-between, der Text stand je nach Länge anders). */
+@media (min-width: 761px) {
+  .kapitel .abschnitt-kopf { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr) 10rem; align-items: baseline; gap: 8px 32px; }
+  .kapitel .abschnitt-kopf a.weiter { justify-self: end; }
+}
