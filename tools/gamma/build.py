@@ -15,7 +15,7 @@ KOPF = """<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="ornament.cloud im Überblick: ein Netz aus 49 Strophen und 133 Personen, dann Lab, Apps, Prompts, Zettel, Social und Art als Farbfelder auf einer Bahn im Raum.">
+<meta name="description" content="ornament.cloud im Überblick: ein Netz aus 49 Strophen und 133 Personen, dann Webseiten, Apps, Kunst, Lab, Prompts, Zettel und Social als Farbfelder auf einer Bahn im Raum.">
 <meta name="robots" content="noindex">
 <link rel="icon" href="../b/bilder/signet/signet.svg">"""
 web = html.replace("<!--KOPF-->", KOPF).replace("<!--SCHRIFTEN-->", '<link rel="stylesheet" href="../vendor/fonts/fonts.css">\n</head>\n<body>')
@@ -29,6 +29,8 @@ if len(sys.argv) > 1:
     import base64
     eingebettet = "data:image/webp;base64," + base64.b64encode((WURZEL / "gamma/bilder/surfen.webp").read_bytes()).decode()
     film = "data:video/mp4;base64," + base64.b64encode((WURZEL / "gamma/bilder/lab-intro.mp4").read_bytes()).decode()
-    v = html.replace("{{BILD}}gamma/bilder/surfen.webp", eingebettet).replace("{{BILD}}gamma/bilder/lab-intro.mp4", film).replace("<!--KOPF-->", "").replace("<!--SCHRIFTEN-->", gf).replace("{{BILD}}", "").replace("{{LINK}}", "https://ornament.cloud/").replace('"{{VENDOR}}three-0.185.1/three.module.min.js"', '"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js"').replace('"{{VENDOR}}three-0.185.1/addons/"', '"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"')
+    v = html.replace("{{BILD}}gamma/bilder/surfen.webp", eingebettet).replace("{{BILD}}gamma/bilder/lab-intro.mp4", film)
+    for n in ("kunst-foto.webp", "kunst-linien.webp"):
+        v = v.replace("{{BILD}}gamma/bilder/" + n, "data:image/webp;base64," + base64.b64encode((WURZEL / "gamma/bilder" / n).read_bytes()).decode()).replace("<!--KOPF-->", "").replace("<!--SCHRIFTEN-->", gf).replace("{{BILD}}", "").replace("{{LINK}}", "https://ornament.cloud/").replace('"{{VENDOR}}three-0.185.1/three.module.min.js"', '"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js"').replace('"{{VENDOR}}three-0.185.1/addons/"', '"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"')
     # Die Artifact-Vorschau lädt Skripte nur von freigegebenen CDNs, nicht aus eigenen Dateien
     pathlib.Path(sys.argv[1]).write_text(v)
