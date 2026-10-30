@@ -1,7 +1,8 @@
 """Bearbeitet ein Foto aus der Praxis und rechnet daraus die Zeichnung für die Seite «Kunst» auf ornament.cloud/gamma/ vor.
 Aufruf: python3 tools/gamma/kunst_linien.py foto.jpg [name] [lage] [vorschau.png]
   name: Dateiname ohne Endung (kunst), lage: wo das Quadrat im Hochformat sitzt, 0 oben bis 1 unten (0.5).
-Schreibt gamma/bilder/<name>-foto.webp und gamma/bilder/<name>-linien.webp (verlustfrei), beide quadratisch.
+Schreibt gamma/bilder/<name>-foto.webp und gamma/bilder/<name>-linien.webp (verlustfrei). Ein Hochformat wird quadratisch,
+ein Querformat bleibt ganz (höchstens 16:9); sein Seitenverhältnis gehört dann als data-format an .kunst-bild.
 Bearbeitung (Christian, 30. Oktober 2026: jedes Foto für diese Seite zuerst sauber bearbeiten): Display P3 nach sRGB, ohne kräftige Farben
 abzuschneiden; Weissabgleich nur, wo fast farblose helle Stellen einen Stich zeigen; Farbrauschen stark, Helligkeitsrauschen leicht und vor allem in
 den Schatten mindern; das Licht grossflächig ausgleichen (dunkle Ecken heben, Lichtflecken dämpfen); gelbe, mittel gesättigte Flächen etwas ruhiger,
@@ -80,12 +81,15 @@ def bearbeiten(bild):
 name = sys.argv[2] if len(sys.argv) > 2 else "kunst"
 lage = float(sys.argv[3]) if len(sys.argv) > 3 else .5
 a = bearbeiten(ImageOps.exif_transpose(Image.open(sys.argv[1])))
-# Quadrat: die Bühne ist am Handy quadratisch, am Computer breiter (dort zeigt sie die Mitte des Quadrats)
-h, w = a.shape[:2]; q = min(h, w); y0 = round((h - q) * lage); x0 = round((w - q) / 2)
-quelle = Image.fromarray((a[y0:y0 + q, x0:x0 + q] * 255 + .5).astype(np.uint8))
-foto = quelle.resize((FOTO_B, FOTO_B), Image.LANCZOS).filter(ImageFilter.UnsharpMask(radius=.8, percent=35, threshold=1))
+# Hochformat: ein Quadrat an der Stelle lage. Querformat: das ganze Bild (breiter als 16:9 wird mittig gekürzt); die Seite schneidet passend zur Bühne zu
+h, w = a.shape[:2]
+if w > h: q = min(w, round(h * 16 / 9)); a = a[:, (w - q) // 2:(w - q) // 2 + q]
+else: q = w; y0 = round((h - q) * lage); a = a[y0:y0 + q]
+h, w = a.shape[:2]; FORMAT = w / h; print("Format", round(FORMAT, 3), "(data-format)")
+quelle = Image.fromarray((a * 255 + .5).astype(np.uint8))
+foto = quelle.resize((FOTO_B, round(FOTO_B / FORMAT)), Image.LANCZOS).filter(ImageFilter.UnsharpMask(radius=.8, percent=35, threshold=1))
 foto.save(WURZEL / f"gamma/bilder/{name}-foto.webp", quality=78, method=6)
-H = B
+H = round(B / FORMAT)
 
 # Helligkeit, auf die mittleren 96 % gestreckt
 f = np.asarray(quelle.resize((B, H), Image.LANCZOS), dtype=np.float32) / 255
@@ -93,7 +97,7 @@ L = f[..., 0] * .3 + f[..., 1] * .59 + f[..., 2] * .11
 lo, hi = np.percentile(L, [2, 98]); L = np.clip((L - lo) / max(hi - lo, 1e-3), 0, 1)
 Lg = nd.gaussian_filter(L, 2)
 
-# Umrisse: Kanten nach Helligkeit und Farbe (wie Canny, mit Farbtensor, damit auch Rot neben Orange zählt), verkettet und geglättet
+# Umrisse: Kanten nach Helligkeit und Farbe (wie Canny, mit Farbtensor, damit auch Rot neben Orange zählt), verkettet und zu geraden Stücken vereinfacht
 lab = np.dstack([L, (f[..., 0] - f[..., 1]) * .7, ((f[..., 0] + f[..., 1]) / 2 - f[..., 2]) * .7])
 gk = [nd.gaussian_filter(lab[..., c], 2.2) for c in range(3)]
 ex, ey = [nd.sobel(g, 1) for g in gk], [nd.sobel(g, 0) for g in gk]
@@ -116,27 +120,74 @@ def gehen(p):
         p = min(nx, key=lambda q: abs(q[0] - p[0]) + abs(q[1] - p[1])); besucht.add(p); k.append(p)
 ketten = [gehen(p) for p in sorted(pix) if len(nachbarn(p)) == 1 and p not in besucht]
 ketten += [gehen(p) for p in sorted(pix) if p not in besucht]
-umrisse = []
+sys.setrecursionlimit(20000)
+def rdp(p, eps):
+    # Douglas–Peucker: die Kette wird zu wenigen geraden Stücken
+    if len(p) < 3: return p
+    (ax, ay), (bx, by) = p[0], p[-1]; l = math.hypot(bx - ax, by - ay) or 1e-6
+    d = [abs((bx - ax) * (ay - y) - (ax - x) * (by - ay)) / l for x, y in p[1:-1]]
+    i = int(np.argmax(d)) + 1
+    return rdp(p[:i + 1], eps)[:-1] + rdp(p[i:], eps) if d[i - 1] > eps else [p[0], p[-1]]
+
+def gerade(p):
+    # geometrisch: gerade Stücke, fast waagrechte und senkrechte genau ausgerichtet, dann dicht nachgetastet (für Zeit und Strichende)
+    q = [list(v) for v in rdp(p, 2.4)]
+    for k in range(len(q) - 1):
+        (ax, ay), (bx, by) = q[k], q[k + 1]; w = math.degrees(math.atan2(by - ay, bx - ax)) % 180
+        if min(w, 180 - w) < 8: q[k][1] = q[k + 1][1] = (ay + by) / 2
+        elif abs(w - 90) < 8: q[k][0] = q[k + 1][0] = (ax + bx) / 2
+    aus = []
+    for (ax, ay), (bx, by) in zip(q, q[1:]):
+        n = max(1, int(math.hypot(bx - ax, by - ay) / 1.6))
+        aus += [(ax + (bx - ax) * i / n, ay + (by - ay) * i / n) for i in range(n)]
+    return aus + [tuple(q[-1])]
+
+# Lange Geraden (Raumkanten, Boden, Rahmen, Schienen) per Hough-Transformation auf den schwachen Kanten: sie tragen die Zeichnung
+# eigenes, feineres Kantenbild (nur Helligkeit), damit auch Bodenfugen und Rahmenkanten zählen
+Lf = nd.gaussian_filter(f[..., 0] * .3 + f[..., 1] * .59 + f[..., 2] * .11, 1.3); fx, fy = nd.sobel(Lf, 1), nd.sobel(Lf, 0); mf = np.hypot(fx, fy); af = np.arctan2(fy, fx)
+f1 = nd.map_coordinates(mf, [yy + np.sin(af), xx + np.cos(af)], order=1, mode="nearest"); f2 = nd.map_coordinates(mf, [yy - np.sin(af), xx - np.cos(af)], order=1, mode="nearest")
+umgebung = nd.gaussian_filter(mf, 22) + 1e-3   # im Verhältnis zur Umgebung: feine Fugen im ruhigen Boden zählen, die raue Wand kaum
+ky, kx = np.nonzero((mf >= f1) & (mf >= f2) & (mf > .06) & (mf / umgebung > 2.4)); ka = af[ky, kx] % math.pi; kx, ky = kx + .5, ky + .5
+# jede Kante stimmt nur für Geraden quer zu ihrem Gefälle (±12°): so ergibt die Pinselstruktur in den Bildern keine Zufallslinien
+def passt(th): return np.abs((ka - th + math.pi / 2) % math.pi - math.pi / 2) < math.radians(12)
+TH = np.deg2rad(np.arange(0, 180, .5)); ct, st = np.cos(TH), np.sin(TH); RMAX = int(math.hypot(B, H)) + 1
+akk = np.zeros((len(TH), 2 * RMAX), np.int32)
+for i in range(len(TH)):
+    m_ = passt(TH[i]); akk[i] += np.bincount(np.round(kx[m_] * ct[i] + ky[m_] * st[i]).astype(int) + RMAX, minlength=2 * RMAX)
+geraden = []; maske = Image.new("L", (B, H), 0); dm = ImageDraw.Draw(maske)
+for _ in range(70):
+    i, r = np.unravel_index(int(np.argmax(akk)), akk.shape)
+    if akk[i, r] < 70: break
+    # Nachbarschaft löschen (auch die zweite Kante einer dünnen Linie), Winkel am Rand zyklisch
+    for di in range(-6, 7): akk[(i + di) % len(TH), max(r - 7, 0):r + 8] = 0
+    nah = (np.abs(kx * ct[i] + ky * st[i] - (r - RMAX)) < 1.6) & passt(TH[i])
+    tt = -kx[nah] * st[i] + ky[nah] * ct[i]; tt.sort()
+    if len(tt) < 2: continue
+    lauf = np.split(tt, np.nonzero(np.diff(tt) > 9)[0] + 1)
+    for t_ in lauf:
+        lg_ = t_[-1] - t_[0]
+        if lg_ < 70 or len(t_) / lg_ < .55: continue
+        rr = r - RMAX; p0 = (rr * ct[i] - t_[0] * st[i], rr * st[i] + t_[0] * ct[i]); p1 = (rr * ct[i] - t_[-1] * st[i], rr * st[i] + t_[-1] * ct[i])
+        geraden.append(gerade([p0, p1])); dm.line([p0, p1], fill=255, width=7)
+print(len(geraden), "Geraden")
+nahe_gerade = np.asarray(maske) > 0
+
+umrisse = list(geraden)
 for k in ketten:
-    # kurze Stücke und schwache Kanten (Körnung der Wand) weglassen, lange Risse und Formen bleiben
+    # kurze Stücke und schwache Kanten (Körnung der Wand) weglassen, lange Risse und Formen bleiben; was schon eine Gerade zeigt, entfällt
     a_ = np.array(k, np.float32)
-    if len(k) < 40 or mag[a_[:, 0].astype(int), a_[:, 1].astype(int)].mean() < 1.1 * hoch: continue
+    if len(k) < 60 or mag[a_[:, 0].astype(int), a_[:, 1].astype(int)].mean() < 1.1 * hoch: continue
+    if nahe_gerade[a_[:, 0].astype(int), a_[:, 1].astype(int)].mean() > .5: continue
     ys_, xs_ = nd.gaussian_filter1d(a_[:, 0], 2.5, mode="nearest") + .5, nd.gaussian_filter1d(a_[:, 1], 2.5, mode="nearest") + .5
-    umrisse.append(list(zip(xs_[::2].tolist(), ys_[::2].tolist())))
+    umrisse.append(gerade(list(zip(xs_.tolist(), ys_.tolist()))))
 print(len(umrisse), "Umrisse")
 
-# Schraffur: schräg von links unten nach rechts oben, leicht schwankend; nahe an Umrissen legt sie sich an deren Richtung an
-Es = [nd.gaussian_filter(a, 4) for a in (Exx, Exy, Eyy)]
-tang = .5 * np.arctan2(2 * Es[1], Es[0] - Es[2]) + math.pi / 2
-phi = -.8 + .22 * nd.gaussian_filter(np.random.randn(H, B), 120) / .0024
-zug = np.zeros((H, B), np.float32)
-for u in umrisse:
-    for x, y in u: zug[min(int(y), H - 1), min(int(x), B - 1)] = 1
-nah = np.clip(nd.gaussian_filter(zug, 6) / .045, 0, 1) ** 1.5
-C2, S2 = (1 - nah) * np.cos(2 * phi) + nah * np.cos(2 * tang), (1 - nah) * np.sin(2 * phi) + nah * np.sin(2 * tang)
+# Schraffur: gerade und parallel, schräg von links unten nach rechts oben (45°), wie gestochen; an den Umrissen bricht sie ab
+phi = np.full((H, B), -math.pi / 4, np.float32)
+C2, S2 = np.cos(2 * phi), np.sin(2 * phi)
 # Dichte: hell dicht, dunkel weit, ganz dunkel leer
-dichte = np.clip((Lg - .12) / .8, 0, 1) ** .9
-ABST = 14 - 9.5 * dichte
+dichte = np.clip((Lg - .28) / .62, 0, 1) ** 1.2
+ABST = 23 - 12.5 * dichte   # weit gestellt: eine feine, einfache Skizze, die Umrisse tragen
 
 def wert(a, x, y):
     x = min(max(x, 0), B - 1.001); y = min(max(y, 0), H - 1.001); i, j = int(x), int(y); u, v = x - i, y - j
@@ -201,7 +252,7 @@ def ordnen(linien, von, bis, dauer):
     sp = np.array([min(1, math.hypot(p[len(p) // 2][0] / B - .5, p[len(p) // 2][1] / H - .5) / .62) for p in linien], np.float32)
     k = .45 * rang + .55 * sp + .06 * np.random.rand(len(linien)); k = (k - k.min()) / (np.ptp(k) or 1)
     return [(von + (bis - von) * k[i], dauer * lg[i] / lg.max(), lg[i]) for i in range(len(linien))]
-striche = [(p, *z, 255, 1.05) for p, z in zip(umrisse, ordnen(umrisse, 0, .4, .2))] + [(p, *z, 205, 0) for p, z in zip(schraffur, ordnen(schraffur, .3, .9, .08))]
+striche = [(p, *z, 255, 1.05) for p, z in zip(umrisse, ordnen(umrisse, 0, .4, .2))] + [(p, *z, 120, 0) for p, z in zip(schraffur, ordnen(schraffur, .3, .9, .08))]
 tinte = Image.new("L", (B * S, H * S), 0); zeit = Image.new("L", (B * S, H * S), 255); zufall = Image.new("L", (B * S, H * S), 0)
 dt, dz, dzu = ImageDraw.Draw(tinte), ImageDraw.Draw(zeit), ImageDraw.Draw(zufall)
 # die späteren zuerst: wo sich Linien kreuzen, gilt die frühere
@@ -211,7 +262,7 @@ for p, anfang, dauer, lg, hell, breite in sorted(striche, key=lambda s_: -s_[1])
     z = 255 if breite else 0; n = len(p) - 1
     for k in range(n):
         (ax, ay), (bx, by) = p[k], p[k + 1]; s_ = k / n
-        d = breite or .4 + .85 * wert(dichte, ax, ay)
+        d = breite or .3 + .6 * wert(dichte, ax, ay)
         w = d * min(1, (s_ * lg / 7) ** .5, ((1 - s_) * lg / 7) ** .5) + .2
         g = round(254 * min(1, anfang + s_ * dauer))
         seg = [(ax * S, ay * S), (bx * S, by * S)]; ww = max(1, round(w * S)); r = w * S / 2
