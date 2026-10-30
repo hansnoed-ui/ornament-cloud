@@ -135,8 +135,8 @@ for u in umrisse:
 nah = np.clip(nd.gaussian_filter(zug, 6) / .045, 0, 1) ** 1.5
 C2, S2 = (1 - nah) * np.cos(2 * phi) + nah * np.cos(2 * tang), (1 - nah) * np.sin(2 * phi) + nah * np.sin(2 * tang)
 # Dichte: hell dicht, dunkel weit, ganz dunkel leer
-dichte = np.clip((Lg - .12) / .8, 0, 1) ** .9
-ABST = 14 - 9.5 * dichte
+dichte = np.clip((Lg - .18) / .74, 0, 1) ** .9
+ABST = 23 - 12.5 * dichte   # weit gestellt: eine feine, einfache Skizze, die Umrisse tragen
 
 def wert(a, x, y):
     x = min(max(x, 0), B - 1.001); y = min(max(y, 0), H - 1.001); i, j = int(x), int(y); u, v = x - i, y - j
@@ -201,7 +201,7 @@ def ordnen(linien, von, bis, dauer):
     sp = np.array([min(1, math.hypot(p[len(p) // 2][0] / B - .5, p[len(p) // 2][1] / H - .5) / .62) for p in linien], np.float32)
     k = .45 * rang + .55 * sp + .06 * np.random.rand(len(linien)); k = (k - k.min()) / (np.ptp(k) or 1)
     return [(von + (bis - von) * k[i], dauer * lg[i] / lg.max(), lg[i]) for i in range(len(linien))]
-striche = [(p, *z, 255, 1.05) for p, z in zip(umrisse, ordnen(umrisse, 0, .4, .2))] + [(p, *z, 205, 0) for p, z in zip(schraffur, ordnen(schraffur, .3, .9, .08))]
+striche = [(p, *z, 255, 1.05) for p, z in zip(umrisse, ordnen(umrisse, 0, .4, .2))] + [(p, *z, 120, 0) for p, z in zip(schraffur, ordnen(schraffur, .3, .9, .08))]
 tinte = Image.new("L", (B * S, H * S), 0); zeit = Image.new("L", (B * S, H * S), 255); zufall = Image.new("L", (B * S, H * S), 0)
 dt, dz, dzu = ImageDraw.Draw(tinte), ImageDraw.Draw(zeit), ImageDraw.Draw(zufall)
 # die späteren zuerst: wo sich Linien kreuzen, gilt die frühere
@@ -211,7 +211,7 @@ for p, anfang, dauer, lg, hell, breite in sorted(striche, key=lambda s_: -s_[1])
     z = 255 if breite else 0; n = len(p) - 1
     for k in range(n):
         (ax, ay), (bx, by) = p[k], p[k + 1]; s_ = k / n
-        d = breite or .4 + .85 * wert(dichte, ax, ay)
+        d = breite or .3 + .6 * wert(dichte, ax, ay)
         w = d * min(1, (s_ * lg / 7) ** .5, ((1 - s_) * lg / 7) ** .5) + .2
         g = round(254 * min(1, anfang + s_ * dauer))
         seg = [(ax * S, ay * S), (bx * S, by * S)]; ww = max(1, round(w * S)); r = w * S / 2

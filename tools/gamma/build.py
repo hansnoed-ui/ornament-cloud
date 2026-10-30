@@ -30,7 +30,9 @@ if len(sys.argv) > 1:
     eingebettet = "data:image/webp;base64," + base64.b64encode((WURZEL / "gamma/bilder/surfen.webp").read_bytes()).decode()
     film = "data:video/mp4;base64," + base64.b64encode((WURZEL / "gamma/bilder/lab-intro.mp4").read_bytes()).decode()
     v = html.replace("{{BILD}}gamma/bilder/surfen.webp", eingebettet).replace("{{BILD}}gamma/bilder/lab-intro.mp4", film)
+    import re
     for n in ("kunst-foto.webp", "kunst-linien.webp"):
-        v = v.replace("{{BILD}}gamma/bilder/" + n, "data:image/webp;base64," + base64.b64encode((WURZEL / "gamma/bilder" / n).read_bytes()).decode()).replace("<!--KOPF-->", "").replace("<!--SCHRIFTEN-->", gf).replace("{{BILD}}", "").replace("{{LINK}}", "https://ornament.cloud/").replace('"{{VENDOR}}three-0.185.1/three.module.min.js"', '"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js"').replace('"{{VENDOR}}three-0.185.1/addons/"', '"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"')
+        v = re.sub(r"\{\{BILD\}\}gamma/bilder/" + re.escape(n) + r"(\?v=\d+)?", "data:image/webp;base64," + base64.b64encode((WURZEL / "gamma/bilder" / n).read_bytes()).decode(), v)
+    v = v.replace("<!--KOPF-->", "").replace("<!--SCHRIFTEN-->", gf).replace("{{BILD}}", "").replace("{{LINK}}", "https://ornament.cloud/").replace('"{{VENDOR}}three-0.185.1/three.module.min.js"', '"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js"').replace('"{{VENDOR}}three-0.185.1/addons/"', '"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"')
     # Die Artifact-Vorschau lädt Skripte nur von freigegebenen CDNs, nicht aus eigenen Dateien
     pathlib.Path(sys.argv[1]).write_text(v)

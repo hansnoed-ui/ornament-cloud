@@ -334,17 +334,25 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 .steuer { position: fixed; z-index: 15; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); width: 128px; height: 36px; transform: translateX(-50%); opacity: 0; pointer-events: none; transition: opacity .3s; }
 .steuer.da { opacity: 1; pointer-events: auto; }
 body.ohne-3d .steuer { display: none; }
+/* Glas: die Form der Acht verschwimmt den Grund dahinter leicht (clip-path aus dem Pfad, im Skript gesetzt), darüber ein zarter dunkler Ton;
+   die gewählte Seite füllt sich hell, ein feiner Umriss und die Leuchtspur laufen darüber */
+.acht-glas { position: absolute; inset: 0; -webkit-backdrop-filter: blur(7px) saturate(1.2); backdrop-filter: blur(7px) saturate(1.2); }
 .acht { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
-.acht-grund { fill: rgba(0, 0, 0, .84); stroke: rgba(255, 255, 255, .5); stroke-width: 1; }
-.acht-spur use { fill: none; stroke: #fff; stroke-linecap: round; stroke-width: 1.3; animation: acht-lauf 5.2s linear infinite; }
+.acht-grund { fill: rgba(16, 13, 11, .5); }
+.acht-feld { fill: #fff; opacity: 0; transition: opacity .5s; }
+.steuer[data-ansicht="raum"] .acht-raum, .steuer[data-ansicht="flaeche"] .acht-flaeche { opacity: .16; }
+.steuer[data-ansicht="flaeche"]:has(#zum-raum:hover) .acht-raum, .steuer[data-ansicht="raum"]:has(#zur-flaeche:hover) .acht-flaeche { opacity: .07; }
+.acht-rand { fill: none; stroke: rgba(255, 255, 255, .4); stroke-width: .75; }
+.acht-spur use { fill: none; stroke: #fff; stroke-linecap: round; stroke-width: 1; animation: acht-lauf 6s linear infinite; }
 @keyframes acht-lauf { from { stroke-dashoffset: var(--o); } to { stroke-dashoffset: calc(var(--o) - 100); } }
 @media (prefers-reduced-motion: reduce) { .acht-spur { display: none; } }
 .steuer button { position: absolute; top: 0; bottom: 0; width: 50%; display: flex; align-items: center; justify-content: center; margin: 0; padding: 0; border: 0; background: none;
-  font: 500 10.5px var(--sans); letter-spacing: .01em; color: rgba(255, 255, 255, .5); cursor: pointer; transition: color .3s; -webkit-tap-highlight-color: transparent; }
+  font: 400 11px/1 var(--sans); letter-spacing: .01em; color: rgba(255, 255, 255, .6); cursor: pointer; transition: color .4s; -webkit-tap-highlight-color: transparent; }
 .steuer button:hover { color: rgba(255, 255, 255, .85); }
 .steuer button[aria-pressed="true"] { color: #fff; cursor: default; }
 .steuer button:focus-visible { outline: 1px solid #fff; outline-offset: -5px; border-radius: 99px; }
-#zum-raum { left: 0; padding-right: 18px; } #zur-flaeche { right: 0; padding-left: 18px; }
+/* Wörter in der Mitte ihrer Schlaufe (die breiteste Stelle liegt aussen, bei x 22 und 106) */
+#zum-raum { left: 0; padding: 0 8px 0 6px; } #zur-flaeche { right: 0; padding: 0 6px 0 8px; }
 .zeiger { position: fixed; z-index: 15; left: max(16px, calc(env(safe-area-inset-left, 0px) + 12px)); top: 50%; transform: translateY(-50%); list-style: none; margin: 0; padding: 0;
   font-family: var(--mono); font-size: 11px; line-height: 1.9; opacity: 0; pointer-events: none; transition: opacity .3s; }
 .zeiger.da { opacity: 1; pointer-events: auto; }
@@ -623,11 +631,14 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
   </div>
 </section>
 
-<div class="steuer" id="steuer" role="group" aria-label="Ansicht">
+<div class="steuer" id="steuer" role="group" aria-label="Ansicht" data-ansicht="raum">
+  <div class="acht-glas"></div>
   <svg class="acht" viewBox="0 0 128 36" aria-hidden="true">
-    <defs><path id="acht-weg" pathLength="100" d="M64.00 18.00 L67.14 19.67 L70.27 21.33 L73.39 22.94 L76.47 24.51 L79.53 26.00 L82.54 27.40 L85.50 28.71 L88.40 29.89 L91.24 30.94 L94.00 31.86 L96.68 32.62 L99.27 33.22 L101.76 33.65 L104.15 33.91 L106.43 34.00 L108.59 33.91 L110.63 33.65 L112.54 33.22 L114.32 32.62 L115.96 31.86 L117.46 30.94 L118.81 29.89 L120.01 28.71 L121.06 27.40 L121.96 26.00 L122.69 24.51 L123.26 22.94 L123.67 21.33 L123.92 19.67 L124.00 18.00 L123.92 16.33 L123.67 14.67 L123.26 13.06 L122.69 11.49 L121.96 10.00 L121.06 8.60 L120.01 7.29 L118.81 6.11 L117.46 5.06 L115.96 4.14 L114.32 3.38 L112.54 2.78 L110.63 2.35 L108.59 2.09 L106.43 2.00 L104.15 2.09 L101.76 2.35 L99.27 2.78 L96.68 3.38 L94.00 4.14 L91.24 5.06 L88.40 6.11 L85.50 7.29 L82.54 8.60 L79.53 10.00 L76.47 11.49 L73.39 13.06 L70.27 14.67 L67.14 16.33 L64.00 18.00 L60.86 19.67 L57.73 21.33 L54.61 22.94 L51.53 24.51 L48.47 26.00 L45.46 27.40 L42.50 28.71 L39.60 29.89 L36.76 30.94 L34.00 31.86 L31.32 32.62 L28.73 33.22 L26.24 33.65 L23.85 33.91 L21.57 34.00 L19.41 33.91 L17.37 33.65 L15.46 33.22 L13.68 32.62 L12.04 31.86 L10.54 30.94 L9.19 29.89 L7.99 28.71 L6.94 27.40 L6.04 26.00 L5.31 24.51 L4.74 22.94 L4.33 21.33 L4.08 19.67 L4.00 18.00 L4.08 16.33 L4.33 14.67 L4.74 13.06 L5.31 11.49 L6.04 10.00 L6.94 8.60 L7.99 7.29 L9.19 6.11 L10.54 5.06 L12.04 4.14 L13.68 3.38 L15.46 2.78 L17.37 2.35 L19.41 2.09 L21.57 2.00 L23.85 2.09 L26.24 2.35 L28.73 2.78 L31.32 3.38 L34.00 4.14 L36.76 5.06 L39.60 6.11 L42.50 7.29 L45.46 8.60 L48.47 10.00 L51.53 11.49 L54.61 13.06 L57.73 14.67 L60.86 16.33Z"/><filter id="acht-glanz" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="1.3" result="w"/><feMerge><feMergeNode in="w"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+    <defs><path id="acht-weg" pathLength="100" d="M64.00 18.00 L67.14 19.67 L70.27 21.33 L73.39 22.94 L76.47 24.51 L79.53 26.00 L82.54 27.40 L85.50 28.71 L88.40 29.89 L91.24 30.94 L94.00 31.86 L96.68 32.62 L99.27 33.22 L101.76 33.65 L104.15 33.91 L106.43 34.00 L108.59 33.91 L110.63 33.65 L112.54 33.22 L114.32 32.62 L115.96 31.86 L117.46 30.94 L118.81 29.89 L120.01 28.71 L121.06 27.40 L121.96 26.00 L122.69 24.51 L123.26 22.94 L123.67 21.33 L123.92 19.67 L124.00 18.00 L123.92 16.33 L123.67 14.67 L123.26 13.06 L122.69 11.49 L121.96 10.00 L121.06 8.60 L120.01 7.29 L118.81 6.11 L117.46 5.06 L115.96 4.14 L114.32 3.38 L112.54 2.78 L110.63 2.35 L108.59 2.09 L106.43 2.00 L104.15 2.09 L101.76 2.35 L99.27 2.78 L96.68 3.38 L94.00 4.14 L91.24 5.06 L88.40 6.11 L85.50 7.29 L82.54 8.60 L79.53 10.00 L76.47 11.49 L73.39 13.06 L70.27 14.67 L67.14 16.33 L64.00 18.00 L60.86 19.67 L57.73 21.33 L54.61 22.94 L51.53 24.51 L48.47 26.00 L45.46 27.40 L42.50 28.71 L39.60 29.89 L36.76 30.94 L34.00 31.86 L31.32 32.62 L28.73 33.22 L26.24 33.65 L23.85 33.91 L21.57 34.00 L19.41 33.91 L17.37 33.65 L15.46 33.22 L13.68 32.62 L12.04 31.86 L10.54 30.94 L9.19 29.89 L7.99 28.71 L6.94 27.40 L6.04 26.00 L5.31 24.51 L4.74 22.94 L4.33 21.33 L4.08 19.67 L4.00 18.00 L4.08 16.33 L4.33 14.67 L4.74 13.06 L5.31 11.49 L6.04 10.00 L6.94 8.60 L7.99 7.29 L9.19 6.11 L10.54 5.06 L12.04 4.14 L13.68 3.38 L15.46 2.78 L17.37 2.35 L19.41 2.09 L21.57 2.00 L23.85 2.09 L26.24 2.35 L28.73 2.78 L31.32 3.38 L34.00 4.14 L36.76 5.06 L39.60 6.11 L42.50 7.29 L45.46 8.60 L48.47 10.00 L51.53 11.49 L54.61 13.06 L57.73 14.67 L60.86 16.33Z"/><clipPath id="acht-form"><use href="#acht-weg"/></clipPath><filter id="acht-glanz" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="1.3" result="w"/><feMerge><feMergeNode in="w"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
     <use href="#acht-weg" class="acht-grund"/>
-    <g class="acht-spur" filter="url(#acht-glanz)"><use href="#acht-weg" stroke-dasharray="16 84" stroke-opacity=".18" style="--o:16"/><use href="#acht-weg" stroke-dasharray="8 92" stroke-opacity=".4" style="--o:8"/><use href="#acht-weg" stroke-dasharray="2.5 97.5" style="--o:2.5"/></g>
+    <g clip-path="url(#acht-form)"><rect class="acht-feld acht-raum" x="0" y="0" width="64" height="36"/><rect class="acht-feld acht-flaeche" x="64" y="0" width="64" height="36"/></g>
+    <use href="#acht-weg" class="acht-rand"/>
+    <g class="acht-spur" filter="url(#acht-glanz)"><use href="#acht-weg" stroke-dasharray="18 82" stroke-opacity=".12" style="--o:18"/><use href="#acht-weg" stroke-dasharray="8 92" stroke-opacity=".3" style="--o:8"/><use href="#acht-weg" stroke-dasharray="2 98" stroke-opacity=".9" style="--o:2"/></g>
   </svg>
   <button type="button" id="zum-raum" aria-pressed="true">Raum</button><button type="button" id="zur-flaeche" aria-pressed="false">Fläche</button>
 </div>
@@ -672,6 +683,8 @@ const intro = document.getElementById("intro"), szene = document.getElementById(
 const tafel = szene.querySelector(".tafel"), wort = tafel.querySelector(".wort"), spalte = tafel.querySelector(".spalte"), introText = document.getElementById("intro-text");
 const abschnitt = document.getElementById("bahn-abschnitt"), platz = document.getElementById("raum-platz"), bahnDom = document.getElementById("bahn");
 const steuer = document.getElementById("steuer"), zumRaum = document.getElementById("zum-raum"), zurFlaeche = document.getElementById("zur-flaeche"), zeiger = document.getElementById("zeiger"), kopfLeiste = document.querySelector(".kopf");
+// Glas der Acht: der Weichzeichner hinter der Acht folgt genau ihrer Form (Pfad in px, Steuerung ist 128 × 36 wie die viewBox)
+steuer.querySelector(".acht-glas").style.clipPath = `path("${document.getElementById("acht-weg").getAttribute("d")}")`;
 const kapitel = [...bahnDom.querySelectorAll(".kapitel")];
 const schmal = () => innerWidth < 760;
 
@@ -1132,14 +1145,15 @@ async function bahnBauen() {
       bahn.signete.push(sek => { if (sek - zuletzt < 1 / 15 || kamera.position.distanceTo(mitte) > 14) return; zuletzt = sek; hb.zeichnen(sek + s1); tex.needsUpdate = true; });
     });
   });
-  // Auf der Bühne der Kunst liegt die Zeichnung auf dem Band und wächst, sobald die Kamera näher kommt. Zwei Lichter wandern darüber:
-  // wo sie hinscheinen, zeigt sich das Foto mit nassem Rand und hebt sich als leichtes Relief vom Band ab (feines Gitter, das der Krümmung folgt)
+  // Auf der Bühne der Kunst liegt die Skizze auf dem Band und wächst, sobald die Kamera näher kommt. Eine weiche Fläche wandert darüber:
+  // dort zeigt sich das Foto, zum Rand hin verlaufend, und hebt sich als sanfter Hügel vom Band ab (feines Gitter, das der Krümmung folgt)
   bilder.forEach((b, i) => {
     const l = b.lage.kunst; if (!l || !kunst) return;
     const s0 = bahn.kapitel[i].s0, ar = l.b / l.h, a = kunstAusschnitt(ar, kunst.fokus), [imF, imL] = kunstLaden();
     const textur = (im, farbig) => {
       const t = new THREE.Texture(im); t.colorSpace = farbig ? THREE.SRGBColorSpace : THREE.NoColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy();
-      if (im.complete && im.naturalWidth) t.needsUpdate = true; else im.addEventListener("load", () => { t.needsUpdate = true; }, { once: true });
+      if (im.complete && im.naturalWidth) t.needsUpdate = true;
+      im.addEventListener("load", () => { t.needsUpdate = true; });
       return t;
     };
     const nx = 96, ny = Math.max(24, Math.round(96 / ar)), geo = new THREE.PlaneGeometry(1, 1, nx, ny), pos = geo.attributes.position, v = new THREE.Vector3(), nv = new THREE.Vector3(), nrm = [];
@@ -1151,31 +1165,24 @@ async function bahnBauen() {
     const farbe = getComputedStyle(kapitel[i]).getPropertyValue("--k").trim() || "#5a4232";
     const uni = { foto: { value: textur(imF, true) }, linien: { value: textur(imL, false) }, zeit: { value: 0 }, zug: { value: ruhig ? 1.02 : 0 }, deck: { value: 1 },
       aus: { value: new THREE.Vector4(...a) }, seite: { value: new THREE.Vector2(ar, 1) }, grund: { value: new THREE.Color(farbe) }, tinte: { value: new THREE.Color(.8, .8, .8) },
-      lichter: { value: kunstLichter(0).map(p => new THREE.Vector3(...p)) }, hub: { value: .045 * RAUM.w / 5 } };
-    const MASKE = `uniform vec3 lichter[2]; uniform vec2 seite;
-float kMaske(vec2 vv) { float m = 0.; for (int n = 0; n < 2; n++) { float d = length((vv - lichter[n].xy) * vec2(seite.x, 1.)) / lichter[n].z; m = max(m, 1.35 * pow(1. - clamp(d * d, 0., 1.), 2.)); } return min(m, 1.); }`;
+      licht: { value: new THREE.Vector4(...kunstLicht(0), ruhig ? 0 : 1) }, hub: { value: .05 * RAUM.w / 5 } };
     const stoff = new THREE.ShaderMaterial({ uniforms: uni, transparent: true, depthWrite: false, side: THREE.DoubleSide,
-      vertexShader: `attribute vec3 nrm; uniform sampler2D foto; uniform vec4 aus; uniform float zeit, hub; varying vec2 vv; ${KUNST_GLSL.split("vec3 kFarbe")[0]} ${MASKE}
+      vertexShader: `attribute vec3 nrm; uniform sampler2D foto; uniform vec4 aus, licht; uniform vec2 seite; uniform float zeit, hub; varying vec2 vv; ${KUNST_GLSL.split("vec3 kFarbe")[0]}
 void main() {
   vv = vec2(uv.x, 1. - uv.y);
-  vec2 q = vv * vec2(seite.x, 1.);
-  float auf = smoothstep(.42, .58, kSchwelle(q, kMaske(vv), zeit));
   vec3 f = texture2D(foto, aus.xy + vv * aus.zw).rgb;
-  vec3 p = position + nrm * auf * hub * (.3 + .7 * dot(f, vec3(.3, .59, .11)));
+  vec3 p = position + nrm * kAuf(vv, seite, licht, zeit) * hub * (.3 + .7 * dot(f, vec3(.3, .59, .11)));
   gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.);
 }`,
-      fragmentShader: `uniform sampler2D foto, linien; uniform vec4 aus; uniform float zeit, zug, deck; uniform vec3 grund, tinte; varying vec2 vv; ${KUNST_GLSL} ${MASKE}
-void main() {
-  vec2 q = vv * vec2(seite.x, 1.), e = vec2(.004, 0.);
-  vec2 br = vec2(kMaske(vv + e.xy) - kMaske(vv - e.xy), kMaske(vv + e.yx) - kMaske(vv - e.yx)) * .35;
-  gl_FragColor = vec4(kFarbe(foto, linien, aus.xy + vv * aus.zw, q, kSchwelle(q, kMaske(vv), zeit), br, zug, zeit, grund, tinte), deck);
-}` });
+      fragmentShader: `uniform sampler2D foto, linien; uniform vec4 aus, licht; uniform vec2 seite; uniform float zeit, zug, deck; uniform vec3 grund, tinte; varying vec2 vv; ${KUNST_GLSL}
+void main() { gl_FragColor = vec4(kFarbe(foto, linien, aus.xy + vv * aus.zw, vv * seite, kAuf(vv, seite, licht, zeit), zug, zeit, grund, tinte), deck); }` });
     const m = new THREE.Mesh(geo, stoff); stoff.userData.frueh = true; m.renderOrder = 3; m.frustumCulled = false; g.add(m);
     m.onBeforeRender = () => { uni.deck.value = stoff.opacity; };
     const mitte = bahnPunkt(s0 + (l.y + l.h / 2) * bahn.k, RAUM.w / 2 - (l.x + l.b / 2) * bahn.k, 0);
     let beginn = null;
     bahn.signete.push(sek => {
-      uni.zeit.value = sek % 1000; kunstLichter(sek).forEach((p, n) => uni.lichter.value[n].set(...p));
+      uni.zeit.value = sek % 1000;
+      const [x, y, rr] = kunstLicht(sek); uni.licht.value.set(x, y, rr, weich(KUNST_ZUG - .6, KUNST_ZUG + 1.2, beginn === null ? 0 : sek - beginn));
       if (beginn === null && kamera.position.distanceTo(mitte) < 15) beginn = sek;
       if (beginn !== null) kunst.raumZug = uni.zug.value = 1.02 * eio(klemm((sek - beginn) / KUNST_ZUG));
     });
@@ -2040,7 +2047,7 @@ function setzeFlach(f, id) {
   });
 }
 function flachSetzen(f, akt, effekt) {
-  flach = f; document.body.classList.toggle("flach", f); zumRaum.setAttribute("aria-pressed", !f); zurFlaeche.setAttribute("aria-pressed", f);
+  flach = f; document.body.classList.toggle("flach", f); zumRaum.setAttribute("aria-pressed", !f); zurFlaeche.setAttribute("aria-pressed", f); steuer.dataset.ansicht = f ? "flaeche" : "raum";
   if (!f && !document.body.classList.contains("zurueck")) { webZurueck(); appsZurueck(); }
   if (f && !effekt) kipp.wert = kipp.von = kipp.nach = 0;
   const k = akt && document.getElementById(akt);
@@ -2821,20 +2828,25 @@ function webPruefen() {
 }
 if (web && ruhig) webRaster(true);
 if (web && "IntersectionObserver" in window) new IntersectionObserver(e => { if (flach && !wechselt && e[0].isIntersecting) webRaster(); }, { threshold: .5 }).observe(web.buehne);
-/* ---------- Kunst: ein Foto aus der Praxis, erst als Zeichnung ----------
-   Vorgerechnet mit tools/gamma/kunst_linien.py: das bearbeitete Foto als WebP und die Zeichnung als verlustfreies WebP.
-   In der Zeichnung ist Rot die Kreide, Grün der Zeitpunkt, an dem der Strich an dieser Stelle gezogen wird, Blau trennt Umrisse (hell) von Schraffur.
-   Flach nimmt eine Maske auf einem groben Gitter (etwa 8 px je Zelle) auf, wo der Zeiger war; sie verläuft ein wenig und heilt in rund zwei Sekunden zu.
-   Der Shader schneidet sie mit wanderndem Rauschen: so hat das Foto einen Rand wie ein nasser Fleck auf Papier, mit einer feinen hellen Linie.
-   Im Raum liegt dieselbe Zeichnung auf dem Band; zwei Lichter wandern darüber und heben das Foto als leichtes Relief an. Flach laufen dieselben Lichter weiter, bis jemand selbst darüberfährt */
-const KUNST_FOTO = "../gamma/bilder/kunst-foto.webp", KUNST_LINIEN = "../gamma/bilder/kunst-linien.webp", KUNST_ZUG = 3.6;
+/* ---------- Kunst: ein Foto aus der Praxis, erst als Skizze ----------
+   Vorgerechnet mit tools/gamma/kunst_linien.py: das bearbeitete Foto als WebP und die Skizze als verlustfreies WebP.
+   In der Skizze ist Rot die Kreide, Grün der Zeitpunkt, an dem der Strich an dieser Stelle gezogen wird, Blau trennt Umrisse (hell) von Schraffur.
+   Eine einzige weiche Fläche zeigt das Foto: in der Mitte ganz, zum Rand hin verläuft es und wird blasser, vom Rauschen leicht unregelmässig.
+   Flach folgt sie dem Zeiger oder dem Finger; sonst wandert sie langsam. Im Raum wandert sie auf derselben Bahn über die Skizze auf dem Band
+   und hebt das Foto als sanften Hügel an; beim Wechsel in die Fläche steht sie, wo sie im Raum war */
+const KUNST_FOTO = "../gamma/bilder/kunst-foto.webp?v=2", KUNST_LINIEN = "../gamma/bilder/kunst-linien.webp?v=2", KUNST_ZUG = 3.6;
 let kunstBilder = null;
 function kunstLaden() {
-  if (!kunstBilder) kunstBilder = [KUNST_FOTO, KUNST_LINIEN].map(src => { const im = new Image(); im.decoding = "async"; im.src = src; return im; });
+  // Fehlt ein Bild (etwa weil die Seite während des Hochladens geöffnet wurde), wird es bis zu dreimal neu geholt; wer auf «load» wartet, bekommt es dann trotzdem
+  if (!kunstBilder) kunstBilder = [KUNST_FOTO, KUNST_LINIEN].map(src => {
+    const im = new Image(); let n = 0; im.decoding = "async";
+    im.addEventListener("error", () => { if (++n <= 3) setTimeout(() => { im.src = src + "&neu=" + n + "-" + Date.now(); }, 1200 * n); });
+    im.src = src; return im;
+  });
   return kunstBilder;
 }
-// Zwei Lichter auf ruhigen Bahnen: Lage auf der Bühne (0 bis 1) und Halbmesser im Verhältnis zur Höhe der Bühne
-const kunstLichter = sek => [[.5 + .34 * Math.sin(sek * .19 + 1.3), .5 + .26 * Math.sin(sek * .27 + .4), .27], [.5 + .3 * Math.sin(sek * .23 + 4.1), .5 + .27 * Math.sin(sek * .17 + 2.2), .22]];
+// Die Fläche auf ruhiger Bahn: Lage auf der Bühne (0 bis 1) und Halbmesser im Verhältnis zur Höhe der Bühne
+const kunstLicht = sek => [.5 + .3 * Math.sin(sek * .17 + 1.3), .5 + .22 * Math.sin(sek * .23 + .4), .36];
 // Der Ausschnitt des quadratischen Bildes für eine Bühne mit dem Seitenverhältnis ar: am Computer ein breiter Streifen um den Fokus
 function kunstAusschnitt(ar, fokus) {
   if (ar >= 1) { const h = 1 / ar; return [0, klemm(fokus - h / 2, 0, 1 - h), 1, h]; }
@@ -2845,34 +2857,35 @@ float kH(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); 
 float kR(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f);
   return mix(mix(kH(i), kH(i + vec2(1., 0.)), f.x), mix(kH(i + vec2(0., 1.)), kH(i + vec2(1., 1.)), f.x), f.y); }
 float kF(vec2 p) { float s = 0., a = .5; for (int i = 0; i < 4; i++) { s += a * kR(p); p = p * 2.03 + 17.1; a *= .5; } return s; }
-// Die Maske m (0 bis 1) und ein verwirbeltes Rauschen ergeben den Rand; q sind gleichmässige Koordinaten der Bühne
-float kSchwelle(vec2 q, float m, float zeit) {
-  vec2 w = vec2(kF(q * 3. + zeit * .03), kF(q * 3. + 5.2 - zeit * .025));
-  return m + (kF(q * 6. + w * 1.6) - .5) * .62;
+// Wie stark das Foto an der Stelle v steht: l ist die Fläche (Mitte, Halbmesser, Stärke), seite das Seitenverhältnis der Bühne
+float kAuf(vec2 v, vec2 seite, vec4 l, float zeit) {
+  vec2 q = v * seite, w = vec2(kF(q * 2.2 + zeit * .04), kF(q * 2.2 + 5.2 - zeit * .03));
+  float d = length((v - l.xy) * seite) / l.z + (kF(q * 4. + w * 1.4) - .5) * .45;
+  return l.w * (1. - smoothstep(.12, 1., d));
 }
-vec3 kFarbe(sampler2D foto, sampler2D linien, vec2 uv, vec2 q, float s, vec2 br, float zug, float zeit, vec3 grund, vec3 tinte) {
-  float auf = smoothstep(.47, .53, s), rand = 1. - smoothstep(0., .022, abs(s - .5));
+vec3 kFarbe(sampler2D foto, sampler2D linien, vec2 uv, vec2 q, float auf, float zug, float zeit, vec3 grund, vec3 tinte) {
   vec3 l = texture2D(linien, uv).rgb;
   float kreide = l.r * smoothstep(l.g - .012, l.g, zug);
   kreide *= mix(.8 + .2 * kR(q * 2.5 + zeit * .15), 1., l.b);   // die Schraffur atmet leicht, die Umrisse stehen
-  vec3 c = mix(mix(grund, tinte, kreide * .9), texture2D(foto, uv - br * (1. - auf * .6)).rgb, auf);
-  return mix(c, tinte, rand * .38 * (1. - auf * .5));
+  vec3 f = texture2D(foto, uv).rgb;
+  f = mix(vec3(dot(f, vec3(.3, .59, .11))), f, smoothstep(.2, .85, auf));   // zum Rand hin weniger satt
+  return mix(mix(grund, tinte, kreide * .9), f, auf);
 }`;
 const kunst = (() => {
   const k = document.getElementById("k-kunst"); if (!k) return null;
   const bild = k.querySelector(".kunst-bild");
   return { k, bild, cv: bild.querySelector("canvas"), buehne: k.querySelector(".buehne"), hinweis: k.querySelector(".kunst-hinweis"), fokus: parseFloat(bild.dataset.fokus) || .5,
-    felder: [...k.querySelectorAll(".feld")], inhalte: [...k.querySelectorAll(".fi")], gl: null, sichtbar: false, t0: null, raumZug: 0, maske: null, zeiger: null, vorher: null, zuletzt: -1e9, bluete: null };
+    felder: [...k.querySelectorAll(".feld")], inhalte: [...k.querySelectorAll(".fi")], gl: null, sichtbar: false, t0: null, raumZug: 0, zug: 0, licht: null, zeiger: null, tipp: null };
 })();
 if (kunst) {
   kunst.stopp = () => {}; felderVerbinden(kunst);
   if (matchMedia("(hover: none)").matches) kunst.hinweis.textContent = "Tippen zeigt das Foto";
-  const lage = e => { const r = kunst.bild.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+  const lage = e => { const r = kunst.bild.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height }; };
   const weg = () => kunst.hinweis.classList.add("weg");
-  kunst.bild.addEventListener("pointermove", e => { kunst.zeiger = lage(e); kunst.zuletzt = performance.now(); if (e.pointerType === "mouse") weg(); });
-  kunst.bild.addEventListener("pointerdown", e => { kunst.bluete = { ...lage(e), t: performance.now() }; kunst.zuletzt = performance.now(); weg(); });
-  for (const t of ["pointerleave", "pointercancel"]) kunst.bild.addEventListener(t, () => { kunst.zeiger = kunst.vorher = null; });
-  kunst.bild.addEventListener("pointerup", e => { if (e.pointerType !== "mouse") kunst.zeiger = kunst.vorher = null; });
+  kunst.bild.addEventListener("pointermove", e => { kunst.zeiger = lage(e); if (e.pointerType === "mouse") weg(); });
+  kunst.bild.addEventListener("pointerdown", e => { kunst.tipp = { ...lage(e), t: performance.now() }; weg(); });
+  for (const t of ["pointerleave", "pointercancel"]) kunst.bild.addEventListener(t, () => { kunst.zeiger = null; });
+  kunst.bild.addEventListener("pointerup", e => { if (e.pointerType !== "mouse") kunst.zeiger = null; });
   if ("IntersectionObserver" in window) new IntersectionObserver(e => { kunst.sichtbar = e[0].isIntersecting; }, { threshold: 0 }).observe(kunst.buehne);
 }
 function kunstGL() {
@@ -2883,64 +2896,31 @@ function kunstGL() {
   const pr = gl.createProgram();
   gl.attachShader(pr, shader(gl.VERTEX_SHADER, "attribute vec2 p; varying vec2 v; void main() { v = vec2(p.x * .5 + .5, .5 - p.y * .5); gl_Position = vec4(p, 0., 1.); }"));
   gl.attachShader(pr, shader(gl.FRAGMENT_SHADER, `precision highp float; varying vec2 v;
-uniform sampler2D foto, linien, maske; uniform vec4 aus; uniform vec2 seite, zelle; uniform float zeit, zug; uniform vec3 grund, tinte;
+uniform sampler2D foto, linien; uniform vec4 aus, licht; uniform vec2 seite; uniform float zeit, zug; uniform vec3 grund, tinte;
 ${KUNST_GLSL}
-void main() {
-  vec2 q = v * vec2(seite.x / seite.y, 1.);
-  vec2 br = vec2(texture2D(maske, v + vec2(zelle.x, 0.)).r - texture2D(maske, v - vec2(zelle.x, 0.)).r, texture2D(maske, v + vec2(0., zelle.y)).r - texture2D(maske, v - vec2(0., zelle.y)).r) * .012;
-  gl_FragColor = vec4(kFarbe(foto, linien, aus.xy + v * aus.zw, q, kSchwelle(q, texture2D(maske, v).r, zeit), br, zug, zeit, grund, tinte), 1.);
-}`));
+void main() { gl_FragColor = vec4(kFarbe(foto, linien, aus.xy + v * aus.zw, v * seite, kAuf(v, seite, licht, zeit), zug, zeit, grund, tinte), 1.); }`));
   gl.linkProgram(pr); gl.useProgram(pr);
   const puffer = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, puffer); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
   const ap = gl.getAttribLocation(pr, "p"); gl.enableVertexAttribArray(ap); gl.vertexAttribPointer(ap, 2, gl.FLOAT, false, 0, 0);
-  const U = {}; ["foto", "linien", "maske", "aus", "seite", "zelle", "zeit", "zug", "grund", "tinte"].forEach(n => { U[n] = gl.getUniformLocation(pr, n); });
+  const U = {}; ["foto", "linien", "aus", "licht", "seite", "zeit", "zug", "grund", "tinte"].forEach(n => { U[n] = gl.getUniformLocation(pr, n); });
   const textur = (einheit, roh) => {
     const t = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + einheit); gl.bindTexture(gl.TEXTURE_2D, t);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array(roh ? [0, 255, 0] : [90, 66, 50]));
     for (const [k, w] of [[gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_MIN_FILTER, gl.LINEAR]]) gl.texParameteri(gl.TEXTURE_2D, k, w);
     return t;
   };
-  const [imF, imL] = kunstLaden(), tF = textur(0, false), tL = textur(1, true), tM = textur(2, true);
-  // Die Zeichnung sind Daten: ohne Farbumrechnung laden. Mit WebGL 2 auch verkleinert sauber (Mipmaps), mit WebGL 1 nur linear
+  const [imF, imL] = kunstLaden(), tF = textur(0, false), tL = textur(1, true);
+  // Die Skizze sind Daten: ohne Farbumrechnung laden. Mit WebGL 2 auch verkleinert sauber (Mipmaps), mit WebGL 1 nur linear
   const hoch = (t, einheit, im, roh) => {
     gl.activeTexture(gl.TEXTURE0 + einheit); gl.bindTexture(gl.TEXTURE_2D, t);
     gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, roh ? gl.NONE : gl.BROWSER_DEFAULT_WEBGL);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, im);
     if (zwei) { gl.generateMipmap(gl.TEXTURE_2D); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR); }
   };
-  [[tF, 0, imF, false], [tL, 1, imL, true]].forEach(([t, e, im, roh]) => { const los = () => hoch(t, e, im, roh); if (im.complete && im.naturalWidth) los(); else im.addEventListener("load", los, { once: true }); });
-  gl.uniform1i(U.foto, 0); gl.uniform1i(U.linien, 1); gl.uniform1i(U.maske, 2);
-  K.gl = { gl, U, tM, grund: (() => { const h = (getComputedStyle(K.k).getPropertyValue("--k").trim() || "#5a4232").replace("#", ""); return [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16) / 255); })() };
-}
-// Die Maske: Stempel weicher Kreise, dann verläuft sie ein wenig und heilt zu
-function kunstMaske(dt, w, h, jetzt) {
-  const K = kunst, gw = K.gw, gh = K.gh, M = K.maske, N = K.neu, zx = w / (gw - 1), zy = h / (gh - 1);
-  const stempel = (x, y, r, s) => {
-    const i0 = Math.max(0, Math.floor((x - r) / zx)), i1 = Math.min(gw - 1, Math.ceil((x + r) / zx)), j0 = Math.max(0, Math.floor((y - r) / zy)), j1 = Math.min(gh - 1, Math.ceil((y + r) / zy));
-    for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) { const d = ((i * zx - x) ** 2 + (j * zy - y) ** 2) / (r * r); if (d < 1) { const n = j * gw + i; M[n] += (1 - M[n]) * (1 - d) * (1 - d) * s; } }
-  };
-  const r = Math.max(30, Math.min(h * .19, 110)), s = 1 - Math.exp(-dt * 7);
-  if (K.zeiger) {
-    // vom letzten Punkt her in kleinen Schritten, damit schnelle Bewegungen keine Lücken lassen
-    const a = K.vorher || K.zeiger, b = K.zeiger, n = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / (r / 3)));
-    for (let k = 1; k <= n; k++) stempel(misch(a.x, b.x, k / n), misch(a.y, b.y, k / n), r, k === n ? s : .35);
-    K.vorher = { ...b };
-  }
-  if (K.bluete) {
-    const u = (jetzt - K.bluete.t) / 1000;
-    if (u < 1.6) stempel(K.bluete.x, K.bluete.y, r * misch(.5, K.bluete.gross || 2.2, eio(klemm(u / 1.1))), s * 1.5); else K.bluete = null;
-  }
-  // Ohne eigene Bewegung wandern die beiden Lichter wie im Raum
-  if (!ruhig && K.t0 !== null && (jetzt - K.t0) / 1000 > KUNST_ZUG + 1.2 && !K.zeiger && !K.bluete && jetzt - K.zuletzt > 2800)
-    kunstLichter(jetzt / 1000).forEach(([x, y, rr]) => stempel(x * w, y * h, rr * h * 1.05, s * .8));
-  const k = Math.min(.5, .24 * dt * 60), ab = Math.exp(-dt / 1.9);
-  for (let j = 0; j < gh; j++) for (let i = 0; i < gw; i++) {
-    const n = j * gw + i, v = M[n];
-    const um = (M[i > 0 ? n - 1 : n] + M[i < gw - 1 ? n + 1 : n] + M[j > 0 ? n - gw : n] + M[j < gh - 1 ? n + gw : n]) / 4;
-    N[n] = (v + k * (um - v)) * ab;
-  }
-  K.maske = N; K.neu = M;
-  for (let n = 0; n < N.length; n++) K.bytes[n] = N[n] * 255;
+  [[tF, 0, imF, false], [tL, 1, imL, true]].forEach(([t, e, im, roh]) => { if (im.complete && im.naturalWidth) hoch(t, e, im, roh); im.addEventListener("load", () => hoch(t, e, im, roh)); });
+  gl.uniform1i(U.foto, 0); gl.uniform1i(U.linien, 1);
+  const hex = (getComputedStyle(K.k).getPropertyValue("--k").trim() || "#5a4232").replace("#", "");
+  K.gl = { gl, U, grund: [0, 2, 4].map(i => parseInt(hex.slice(i, i + 2), 16) / 255) };
 }
 function kunstLaufBild(zeit, dt) {
   const K = kunst;
@@ -2951,42 +2931,29 @@ function kunstLaufBild(zeit, dt) {
     // Ohne WebGL steht das Foto selbst auf der Bühne
     if (!K.gl) { K.bild.style.background = `url("${KUNST_FOTO}") center ${K.fokus * 100}% / cover`; K.hinweis.hidden = true; return; }
   }
-  const { gl, U } = K.gl, dpr = Math.min(devicePixelRatio || 1, 2), W = Math.round(r.width * dpr), H = Math.round(r.height * dpr);
-  if (K.cv.width !== W || K.cv.height !== H) {
-    K.cv.width = W; K.cv.height = H; K.gw = Math.ceil(r.width / 8) + 1; K.gh = Math.ceil(r.height / 8) + 1;
-    const n = K.gw * K.gh; K.maske = new Float32Array(n); K.neu = new Float32Array(n); K.bytes = new Uint8Array(n);
-  }
-  // Die Zeichnung beginnt, sobald die Bühne zur Hälfte zu sehen ist; kam man aus dem Raum, steht sie so weit wie dort, und die Lichter stehen, wo sie im Raum waren
+  const dpr = Math.min(devicePixelRatio || 1, 2), W = Math.round(r.width * dpr), H = Math.round(r.height * dpr);
+  if (K.cv.width !== W || K.cv.height !== H) { K.cv.width = W; K.cv.height = H; }
+  // Die Skizze beginnt, sobald die Bühne zur Hälfte zu sehen ist; kam man aus dem Raum, steht sie so weit wie dort, und die Fläche steht, wo sie im Raum war
   if (K.t0 === null) {
-    const hh = Math.min(r.height, innerHeight) / 2; if (!(r.top < innerHeight - hh && r.bottom > hh) && !ruhig) { kunstZeichnen(); return; }
+    const hh = Math.min(r.height, innerHeight) / 2; if (!(r.top < innerHeight - hh && r.bottom > hh) && !ruhig) { kunstZeichnen(zeit); return; }
     K.t0 = zeit - (ruhig ? KUNST_ZUG + 9 : K.raumZug * KUNST_ZUG) * 1000;
-    if (K.raumZug >= 1) kunstAusRaum(r.width, r.height, zeit);
+    K.licht = [...kunstLicht(zeit / 1000), K.raumZug >= 1 ? 1 : 0];
   }
-  const T = (zeit - K.t0) / 1000;
-  // Nach der Zeichnung öffnet sich das Foto einmal um das grosse Bild, dann heilt es zu
-  if (!ruhig && T >= 3.1 && T < 3.3 && !K.bluete && !K.geblueht) {
-    K.geblueht = true; const a = kunstAusschnitt(r.width / r.height, K.fokus);
-    K.bluete = { x: (.59 - a[0]) / a[2] * r.width, y: (.55 - a[1]) / a[3] * r.height, t: zeit, gross: 2.6 };
-  }
-  kunstMaske(dt, r.width, r.height, zeit);
+  const T = (zeit - K.t0) / 1000, L = K.licht, tippt = K.tipp && zeit - K.tipp.t < 4500;
+  // Ziel der Fläche: der Zeiger, sonst die Stelle, die getippt wurde, sonst ihre ruhige Bahn. Solange die Skizze entsteht, ist sie aus
+  const ziel = K.zeiger ? [K.zeiger.x, K.zeiger.y, .3] : tippt ? [K.tipp.x, K.tipp.y, .34] : kunstLicht(zeit / 1000);
+  const an = ruhig ? (K.zeiger || tippt ? 1 : 0) : weich(KUNST_ZUG - .6, KUNST_ZUG + 1.2, T);
+  const k = 1 - Math.exp(-dt * (K.zeiger ? 8 : tippt ? 5 : 2));
+  for (let i = 0; i < 3; i++) L[i] += (ziel[i] - L[i]) * k;
+  L[3] += (an - L[3]) * (1 - Math.exp(-dt * 2.5));
   K.zug = ruhig ? 1.02 : 1.02 * eio(klemm(T / KUNST_ZUG));
   kunstZeichnen(zeit);
 }
-// Beim Wechsel aus dem Raum: die Maske dort öffnen, wo die Lichter gerade stehen
-function kunstAusRaum(w, h, zeit) {
-  const K = kunst, gw = K.gw, gh = K.gh, zx = w / (gw - 1), zy = h / (gh - 1);
-  kunstLichter(zeit / 1000).forEach(([x, y, rr]) => {
-    for (let j = 0; j < gh; j++) for (let i = 0; i < gw; i++) { const d = ((i * zx - x * w) ** 2 + (j * zy - y * h) ** 2) / (rr * h * rr * h); if (d < 1) K.maske[j * gw + i] = Math.max(K.maske[j * gw + i], Math.min(1, 1.35 * (1 - d) * (1 - d))); }
-  });
-  K.geblueht = true;
-}
-function kunstZeichnen(zeit = performance.now()) {
-  const K = kunst; if (!K.gl || !K.maske) return;
-  const { gl, U, tM } = K.gl, w = K.cv.width, h = K.cv.height, a = kunstAusschnitt(w / h, K.fokus);
+function kunstZeichnen(zeit) {
+  const K = kunst; if (!K.gl) return;
+  const { gl, U } = K.gl, w = K.cv.width, h = K.cv.height, a = kunstAusschnitt(w / h, K.fokus), L = K.licht || [.5, .5, .36, 0];
   gl.viewport(0, 0, w, h);
-  gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, tM); gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, K.gw, K.gh, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, K.bytes);
-  gl.uniform4f(U.aus, a[0], a[1], a[2], a[3]); gl.uniform2f(U.seite, w, h); gl.uniform2f(U.zelle, 1 / K.gw, 1 / K.gh);
+  gl.uniform4f(U.aus, a[0], a[1], a[2], a[3]); gl.uniform4f(U.licht, L[0], L[1], L[2], L[3]); gl.uniform2f(U.seite, w / h, 1);
   gl.uniform1f(U.zeit, ruhig ? 0 : zeit / 1000 % 1000); gl.uniform1f(U.zug, K.zug || 0);
   gl.uniform3fv(U.grund, K.gl.grund); gl.uniform3f(U.tinte, 1, 1, 1);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
