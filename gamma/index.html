@@ -79,13 +79,21 @@ body.flach.nach-intro #welt, body.ohne-3d #welt { visibility: hidden; }
 .tafel .zahl b { display: block; font-family: var(--sans); font-size: clamp(26px, 3vw, 40px); font-weight: 500; letter-spacing: -.03em; line-height: 1; }
 .tafel .satz { font-family: var(--serif); font-style: italic; font-size: 17px; line-height: 1.3; margin: 0; }
 .tafel .satz small { display: block; font-family: var(--mono); font-style: normal; font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; opacity: .75; margin-bottom: 6px; }
+.tafel .kurz { display: none; margin: 0; font-family: var(--mono); font-size: 11px; line-height: 1.5; border-top: 1px solid rgba(255, 255, 255, .4); padding-top: 8px; }
+.tafel.knapp .zahl:nth-of-type(3), .tafel.knapper .zahl { display: none; }
+.tafel.knapper .kurz { display: block; }
+.tafel .kurz b { font-family: var(--sans); font-size: 20px; font-weight: 500; letter-spacing: -.03em; margin-right: 4px; }
 .etiketten .st.gezogen { font-size: 13px; color: #fff; }
 .etiketten .st.gezogen b { color: #fff; }
 @media (max-width: 760px) {
+  /* Am Handy steht die Tafel unten; ihre Höhe richtet sich nach dem Inhalt (tafelHoehe) */
   .tafel { top: auto; height: 46svh; }
   .tafel .wort { font-size: min(calc(46svh / 6.4), 16vw); }
-  .tafel .spalte { padding-left: 20px; }
-  .tafel .zahl:nth-of-type(n+3) { display: none; }
+  .tafel .spalte { flex: none; padding: 16px 16px 16px 20px; gap: 12px; }
+  .tafel ol { line-height: 1.6; }
+  .tafel .zahl { display: none; }
+  .tafel .kurz { display: block; }
+  .tafel .satz { font-size: 15.5px; }
 }
 .tip { position: fixed; z-index: 5; max-width: 260px; padding: 8px 10px; background: #000; color: #fff; border: 1px solid rgba(255, 255, 255, .5); font-size: 13px; pointer-events: none; }
 .tip b { display: block; font-weight: 500; }
@@ -261,6 +269,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
         <div class="zahl"><b>49</b>Strophen in sieben Zyklen</div>
         <div class="zahl"><b>133</b>Personen aus Kunst, Theorie und Wissenschaft</div>
         <div class="zahl"><b>7</b>Apps, die auf dem Gerät bleiben</div>
+        <p class="kurz"><b>49</b>Strophen <b>133</b>Personen <b>7</b>Zyklen</p>
         <p class="satz"><small id="zug-kopf">Gezogen</small><span id="zug-satz">«Der Anschluss erfindet die Welt, die ihn im Nachhinein notwendig erscheinen lässt.»</span></p>
       </div>
     </div>
@@ -464,13 +473,30 @@ zugWort.textContent = ZUG[2] === "Der blinde Fleck" ? "Blinder Fleck" : ZUG[2].r
 document.getElementById("zug-kopf").textContent = `Gezogen: Strophe ${ZUG[0]} · ${ROEM[ZUG[1]]} ${ZYKLEN[ZUG[1]]}`;
 document.getElementById("zug-satz").textContent = "«" + ZUG[3] + "»";
 document.getElementById("zug-hinweis").textContent = `Gezogen: Zettel ${ZUG[0]}, ${ZUG[2]}`;
+// Am Handy steht die Tafel unten, so hoch wie ihr Inhalt (Liste, Zahlen, gezogener Satz), höchstens 64 % des Fensters.
+// Die Spalte hat dort eine feste Breite, damit beim Aufziehen der Tafel nichts neu umbricht.
+function tafelHoehe() {
+  if (!schmal()) { tafel.style.height = spalte.style.width = ""; return; }
+  tafel.classList.remove("knapp", "knapper");
+  zugWort.style.fontSize = Math.min(innerWidth * .16, 72) + "px";
+  spalte.style.width = (innerWidth - zugWort.offsetWidth) + "px";
+  const letzte = spalte.lastElementChild, noetig = letzte.offsetTop + letzte.offsetHeight + 16;
+  tafel.style.height = Math.round(Math.max(innerHeight * .46, Math.min(noetig, innerHeight * .64))) + "px";
+}
 // Das Wort füllt die Höhe der Tafel, ob kurz («Name») oder lang («Wahrscheinlichkeit»)
 function wortGroesse() {
+  tafelHoehe();
   zugWort.style.fontSize = "100px";
   const verfuegbar = tafel.clientHeight - 28, laenge = zugWort.scrollHeight - 20;
-  if (laenge > 0 && verfuegbar > 0) zugWort.style.fontSize = Math.min(schmal() ? innerWidth * .16 : 190, 100 * verfuegbar / laenge) + "px";
+  if (laenge > 0 && verfuegbar > 0) zugWort.style.fontSize = Math.min(schmal() ? Math.min(innerWidth * .16, 72) : 190, 100 * verfuegbar / laenge) + "px";
+  if (schmal()) { spalte.style.width = (innerWidth - zugWort.offsetWidth) + "px"; return; }
+  // Auf niedrigen Bildschirmen weichen erst die Apps, dann alle Zahlen einer kurzen Zeile, damit der gezogene Satz ganz bleibt
+  const breite = tafel.style.width; tafel.style.width = Math.min(innerWidth * .4, 560) + "px";
+  tafel.classList.remove("knapp", "knapper");
+  for (const k of ["knapp", "knapper"]) if (spalte.scrollHeight > spalte.clientHeight + 1) tafel.classList.add(k);
+  tafel.style.width = breite;
 }
-addEventListener("resize", wortGroesse);
+addEventListener("resize", () => { if (innerWidth !== breiteStabil) wortGroesse(); });
 wortGroesse(); if (document.fonts) document.fonts.ready.then(wortGroesse);
 const zl = document.getElementById("zyklen-liste");
 ZYKLEN.forEach((n, i) => { const li = document.createElement("li"); li.innerHTML = `<b></b><span>${String(i * 7 + 1).padStart(2, "0")}–${String(i * 7 + 7).padStart(2, "0")}</span>`; li.querySelector("b").textContent = ROEM[i] + " " + n; zl.append(li); });
@@ -859,7 +885,10 @@ function kameraSetzen() {
   }
   kamera.up.copy(up);
   kamera.lookAt(blick);
-  if (tf > 0 && !eng) { kamera.setViewOffset(innerWidth, innerHeight, -innerWidth * .18 * tf, 0, innerWidth, innerHeight); } else kamera.clearViewOffset();
+  // Am Handy steht die Tafel unten: das Netz rückt in die Mitte des freien Raums darüber
+  if (tf > 0 && !eng) kamera.setViewOffset(innerWidth, innerHeight, -innerWidth * .18 * tf, 0, innerWidth, innerHeight);
+  else if (tf > 0) kamera.setViewOffset(innerWidth, innerHeight, 0, (tafel.offsetHeight - 48) / 2 * tf, innerWidth, innerHeight);
+  else kamera.clearViewOffset();
   kamera.fov = eng ? 72 : 58;
   kamera.updateProjectionMatrix();
 }
