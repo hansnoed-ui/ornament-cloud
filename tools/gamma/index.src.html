@@ -93,7 +93,7 @@ body.raum-an .tafel, body.raum-an .tafel .wort, body.raum-an .tafel .spalte { wi
 .tafel .satz { font-family: var(--serif); font-style: italic; font-size: 17px; line-height: 1.3; margin: 0; }
 .tafel .satz small { display: block; font-family: var(--mono); font-style: normal; font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; opacity: .75; margin-bottom: 6px; }
 .tafel .kurz { display: none; margin: 0; font-family: var(--mono); font-size: 11px; line-height: 1.5; border-top: 1px solid rgba(255, 255, 255, .4); padding-top: 8px; }
-.tafel.knapp .zahl:nth-of-type(3), .tafel.knapper .zahl { display: none; }
+.tafel.knapp .zahl:nth-of-type(2), .tafel.knapper .zahl { display: none; }
 .tafel.knapper .kurz { display: block; }
 .tafel .kurz b { font-family: var(--sans); font-size: 20px; font-weight: 500; letter-spacing: -.03em; margin-right: 4px; }
 .etiketten .st.gezogen { font-size: 13px; color: #fff; }
@@ -126,7 +126,8 @@ body.zurueck .bahn { position: fixed; left: 0; right: 0; pointer-events: none; }
 .k-innen { padding: clamp(40px, 8cqi, 68px) max(clamp(22px, 5.4cqi, 48px), env(safe-area-inset-right, 0px)) clamp(52px, 9cqi, 84px) max(clamp(22px, 5.4cqi, 48px), env(safe-area-inset-left, 0px)); }
 .kapitel a { color: inherit; text-decoration: none; }
 .kapitel img { display: block; }
-.kapitel h2 { margin: 0; font-size: clamp(58px, 15.5cqi, 132px); font-weight: 500; letter-spacing: -.045em; line-height: .86; }
+/* Titel in Grossbuchstaben, etwas kleiner als zuvor in gemischter Schreibung, weniger eng gesetzt (Christian, 30. Oktober 2026) */
+.kapitel h2 { margin: 0; font-size: clamp(46px, 12cqi, 104px); font-weight: 500; letter-spacing: -.015em; line-height: .88; text-transform: uppercase; }
 .kapitel h2 .wort, .kapitel h2 .bst { display: inline-block; }
 .kapitel h2 .wort { white-space: nowrap; }
 .marke-k, .kapitel .label { font: 500 11px/1.25 var(--sans); letter-spacing: .1em; text-transform: uppercase; color: var(--kg); }
@@ -147,7 +148,7 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 .k-apps { --k: #fadd26; --kt: #000000; --kg: rgba(0, 0, 0, .68); --kl: rgba(0, 0, 0, .22); --ka: #ffffff; }
 .k-zettel { --k: #ffffff; --kt: #000000; --kg: #5f5f5f; --kl: #d6d6d6; --ka: #1d3fd6; }
 .k-social { --k: #101010; --kt: #ffffff; --kg: rgba(255, 255, 255, .62); --kl: rgba(255, 255, 255, .22); --ka: #8fb0ff; }
-.k-kunst { --k: #950740; --kt: #ffffff; --kg: rgba(255, 255, 255, .76); --kl: rgba(255, 255, 255, .26); --ka: #f1d6b8; }
+.k-kunst { --k: #4f2232; --kt: #ffffff; --kg: rgba(255, 255, 255, .76); --kl: rgba(255, 255, 255, .26); --ka: #f1d6b8; }
 .k-exp { --k: #376e6f; --kt: #ffffff; --kg: rgba(255, 255, 255, .76); --kl: rgba(255, 255, 255, .28); --ka: #f6d69a; }
 .k-angebot { --k: #1f4d3a; --kt: #ffffff; --kg: rgba(255, 255, 255, .74); --kl: rgba(255, 255, 255, .26); --ka: #9fd4b4; }
 
@@ -160,7 +161,7 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 :is(.k-web, .k-apps, .k-kunst, .k-exp) .marke-k .zl { display: block; }
 :is(.k-web, .k-apps, .k-kunst, .k-exp) .marke-k .begriff { font: 500 clamp(17px, 2.5cqi, 23px)/1.12 var(--sans); letter-spacing: -.01em; text-transform: none; color: var(--kt); }
 :is(.k-web, .k-apps, .k-kunst, .k-exp) .leit { font-family: var(--sans); font-style: normal; font-weight: 400; font-size: clamp(19px, 3cqi, 26px); letter-spacing: -.015em; }   /* nüchtern statt kursiv */
-:is(.k-web, .k-apps, .k-kunst, .k-exp) h2 { font-size: clamp(42px, 9cqi, 80px); }   /* «Webseiten» ist lang: kleiner als die kurzen Titel, sonst erdrückt er die Seite; Apps gleich gross */
+:is(.k-web, .k-apps, .k-kunst, .k-exp) h2 { font-size: clamp(34px, 7cqi, 62px); }   /* «Webseiten» ist lang: kleiner als die kurzen Titel, sonst erdrückt er die Seite; Apps gleich gross */
 /* Die Bühne hat das Seitenverhältnis --ar; Signet und Raster bleiben quadratisch, weil ihre Breite durch --ar geteilt wird */
 .buehne { --ar: 1; position: relative; margin: clamp(18px, 3cqi, 28px) 0 clamp(22px, 4cqi, 34px); aspect-ratio: var(--ar); }
 .buehne > * { position: absolute; }
@@ -334,7 +335,7 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 
 /* Steuerung unten links und Kapitelzeiger links */
 /* Umschalten Raum / Fläche: eine liegende Acht unten in der Mitte, links Raum, rechts Fläche; eine feine Leuchtspur läuft auf ihr um */
-.steuer { position: fixed; z-index: 15; left: 50%; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); width: 148px; height: 72px; transform: translateX(-50%); opacity: 0; pointer-events: none; transition: opacity .3s; }
+.steuer { position: fixed; z-index: 15; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); width: 148px; height: 72px; transform: translateX(-50%); opacity: 0; pointer-events: none; transition: opacity .3s; }
 .steuer.da { opacity: 1; pointer-events: auto; }
 body.ohne-3d .steuer { display: none; }
 /* Glas: die Form der Acht verschwimmt den Grund dahinter leicht (clip-path aus dem Pfad, im Skript gesetzt), darüber ein zarter dunkler Ton;
@@ -345,25 +346,31 @@ body.ohne-3d .steuer { display: none; }
 .acht-feld { fill: #fff; opacity: 0; transition: opacity .5s; }
 .steuer[data-ansicht="raum"] .acht-raum, .steuer[data-ansicht="flaeche"] .acht-flaeche { opacity: .13; }
 .steuer[data-ansicht="flaeche"]:has(#zum-raum:hover) .acht-raum, .steuer[data-ansicht="raum"]:has(#zur-flaeche:hover) .acht-flaeche { opacity: .06; }
-/* Rand: ein breiter Reif wie aus Glas, oben heller als unten, innen eine feine dunkle Linie, die ihn fasst */
-.acht-rand { fill: none; stroke: url(#acht-reif); stroke-width: 3; }
+/* Rand: ein breiter Reif aus Silber, Gelb- und Rotgold, deren Glanz langsam umläuft (Christian: «in rot- und gelbgold schimmernd», für die Sichtbarkeit);
+   darauf eine feine Glaskante, oben heller als unten, innen eine feine dunkle Linie, die ihn fasst */
+.acht-rand { fill: none; stroke: url(#acht-ring); stroke-width: 3; stroke-opacity: .9; }
+.acht-kante { fill: none; stroke: url(#acht-reif); stroke-width: 1; opacity: .55; }
 .acht-fuge { fill: none; stroke: rgba(0, 0, 0, .35); stroke-width: .6; }
-.acht-spur use { fill: none; stroke: #fff; stroke-linecap: round; stroke-width: 2.4; }
+/* Leuchtspur: der Schweif läuft durch einen Metallverlauf aus Silber, Gelb- und Rotgold, der sich langsam dreht; die Spitze bleibt weiss */
+.acht-spur use { fill: none; stroke: url(#acht-metall); stroke-linecap: round; stroke-width: 2.6; }
+.acht-spur use:last-child { stroke: #fff; }
 @media (prefers-reduced-motion: reduce) { .acht-spur { display: none; } }
 .steuer button { position: absolute; top: 0; bottom: 0; width: 50%; display: flex; align-items: center; justify-content: center; margin: 0; padding: 0; border: 0; background: none;
-  font: 500 10px/1 var(--sans); letter-spacing: .18em; text-transform: uppercase; text-indent: .18em; color: rgba(255, 255, 255, .66); cursor: pointer; transition: color .4s; -webkit-tap-highlight-color: transparent; }
+  font: 500 10px/1 var(--sans); letter-spacing: .13em; text-transform: uppercase; text-indent: .13em; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; color: rgba(255, 255, 255, .66); cursor: pointer; transition: color .4s; -webkit-tap-highlight-color: transparent; }
 .steuer button:hover { color: rgba(255, 255, 255, .85); }
 .steuer button[aria-pressed="true"] { color: #fff; cursor: default; }
 .steuer button:focus-visible { outline: 1px solid #fff; outline-offset: -12px; border-radius: 99px; }
-/* Wörter in Grossbuchstaben, gesperrt, in der Mitte ihrer Schlaufe (Schwerpunkt bei x 32 und 116); text-indent gleicht die Sperrung nach dem letzten Buchstaben aus */
-#zum-raum { left: 0; padding-right: 10px; } #zur-flaeche { right: 0; padding-left: 10px; }
+/* Wörter in Grossbuchstaben, leicht gesperrt, in der Mitte des freien Streifens ihrer Schlaufe auf Schrifthöhe (x 36.5 und 111.5: zwischen der Kreuzung und dem Rand,
+   so hat «Fläche» links und rechts gleich viel Luft); text-indent gleicht die Sperrung nach dem letzten Buchstaben aus */
+#zum-raum { left: 0; padding-right: 1px; } #zur-flaeche { right: 0; padding-left: 1px; }
 .zeiger { position: fixed; z-index: 15; left: max(16px, calc(env(safe-area-inset-left, 0px) + 12px)); top: 50%; transform: translateY(-50%); list-style: none; margin: 0; padding: 0;
   font-family: var(--mono); font-size: 11px; line-height: 1.9; opacity: 0; pointer-events: none; transition: opacity .3s; }
 .zeiger.da { opacity: 1; pointer-events: auto; }
 .zeiger a { text-decoration: none; color: rgba(255, 255, 255, .6); display: flex; align-items: center; gap: 8px; }
-.zeiger a::before { content: ""; width: 7px; height: 7px; border: 1px solid rgba(255, 255, 255, .45); background: var(--k); }   /* jedes Kästchen in der Farbe seiner Seite */
+/* Kästchen in der Farbe ihrer Seite (Christian, 30. Oktober 2026), mit feinem Rand, damit auch Tinte und dunkle Farben auf Schwarz zu sehen sind; das aktive mit vollem Rand und etwas grösser */
+.zeiger a::before { content: ""; width: 7px; height: 7px; background: var(--kf, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, currentColor 45%, transparent); transition: box-shadow .3s, transform .3s; }
 .zeiger a.aktiv { color: #fff; }
-.zeiger a.aktiv::before { outline: 1px solid currentColor; outline-offset: 2px; }
+.zeiger a.aktiv::before { box-shadow: 0 0 0 1px currentColor; transform: scale(1.2); }
 body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color: var(--text); }
 @media (max-width: 1100px) { .zeiger { display: none; } }
 
@@ -400,7 +407,6 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
         <ol id="zyklen-liste"></ol>
         <div class="zahl"><b>49</b>Strophen in sieben Zyklen</div>
         <div class="zahl"><b>133</b>Personen aus Kunst, Theorie und Wissenschaft</div>
-        <div class="zahl"><b>7</b>Apps, die auf dem Gerät bleiben</div>
         <p class="kurz"><b>49</b>Strophen <b>133</b>Personen <b>7</b>Zyklen</p>
         <p class="satz"><small id="zug-kopf">Gezogen</small><span id="zug-satz">«Der Anschluss erfindet die Welt, die ihn im Nachhinein notwendig erscheinen lässt.»</span></p>
       </div>
@@ -419,7 +425,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
       <article class="kapitel k-web" id="k-web" data-name="Webseiten"><div class="k-innen">
         <span class="marke-k"><span class="zl begriff">entwickeln</span><span class="zl begriff">gestalten</span><span class="zl begriff">vernetzen</span></span>
         <h2>Webseiten</h2>
-        <p class="leit">schnell &amp; praktisch</p>
+        <p class="leit">Schnell und praktisch.</p>
         <div class="buehne">
           <div class="logo"><canvas aria-hidden="true"></canvas></div>
           <div class="surfen" data-surfen></div>
@@ -458,7 +464,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
       <article class="kapitel k-apps" id="k-apps" data-name="Apps"><div class="k-innen">
         <span class="marke-k"><span class="zl begriff">fokussieren</span><span class="zl begriff">entspannen</span><span class="zl begriff">spielen</span></span>
         <h2>Apps</h2>
-        <p class="leit">Kleine Werkzeuge zum Ausprobieren. Alles bleibt auf dem Gerät.</p>
+        <p class="leit">Kleine Werkzeuge zum Ausprobieren.</p>
         <div class="buehne">
           <div class="handys" data-handys></div>
           <div class="app-zeilen" aria-label="Sieben Apps in drei Zeilen">
@@ -497,7 +503,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
       <article class="kapitel k-kunst" id="k-kunst" data-name="Kunst"><div class="k-innen">
         <span class="marke-k"><span class="zl begriff">herstellen</span><span class="zl begriff">vermitteln</span><span class="zl begriff">kuratieren</span></span>
         <h2>Kunst</h2>
-        <p class="leit">Bilder, Gespräche, Räume</p>
+        <p class="leit">Werke, Gespräche, Räume.</p>
         <div class="buehne">
           <div class="kunst-bild" data-kunst data-fokus=".48" data-format="1.5" data-rahmen=".35 .435 .094 .138" role="img" aria-label="Ausstellung in einem Raum mit rauen Steinwänden und hellem Holzboden: an der linken Wand ein blaues und ein gelb-schwarzes Bild, an der rechten ein hohes dunkelblaues Bild, zwei Winterbilder und ein grosses Bild mit Mond über Wolken; zuerst als Zeichnung, unter dem Zeiger erscheint das Foto"><canvas aria-hidden="true"></canvas></div>
           <p class="kunst-hinweis" aria-hidden="true" data-nur-flach>Darüberfahren zeigt das Foto</p>
@@ -601,11 +607,11 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
 <div class="steuer" id="steuer" role="group" aria-label="Ansicht" data-ansicht="raum">
   <div class="acht-glas"></div>
   <svg class="acht" viewBox="0 0 148 72" aria-hidden="true">
-    <defs><path id="acht-weg" pathLength="100" d="M74.00 36.00 L72.62 34.21 L71.25 32.43 L69.86 30.65 L68.46 28.88 L67.04 27.13 L65.60 25.38 L64.14 23.66 L62.64 21.96 L61.11 20.28 L59.55 18.64 L57.94 17.04 L56.28 15.48 L54.58 13.97 L52.82 12.53 L51.01 11.15 L49.13 9.85 L47.19 8.63 L45.19 7.52 L43.13 6.53 L41.00 5.67 L38.81 4.95 L36.56 4.39 L34.26 4.02 L31.91 3.84 L29.52 3.88 L27.12 4.15 L24.70 4.68 L22.29 5.48 L19.91 6.56 L17.59 7.94 L15.35 9.61 L13.23 11.59 L11.25 13.86 L9.45 16.41 L7.86 19.23 L6.51 22.28 L5.43 25.52 L4.64 28.93 L4.16 32.44 L4.00 36.00 L4.16 39.56 L4.64 43.07 L5.43 46.48 L6.51 49.72 L7.86 52.77 L9.45 55.59 L11.25 58.14 L13.23 60.41 L15.35 62.39 L17.59 64.06 L19.91 65.44 L22.29 66.52 L24.70 67.32 L27.12 67.85 L29.52 68.12 L31.91 68.16 L34.26 67.98 L36.56 67.61 L38.81 67.05 L41.00 66.33 L43.13 65.47 L45.19 64.48 L47.19 63.37 L49.13 62.15 L51.01 60.85 L52.82 59.47 L54.58 58.03 L56.28 56.52 L57.94 54.96 L59.55 53.36 L61.11 51.72 L62.64 50.04 L64.14 48.34 L65.60 46.62 L67.04 44.87 L68.46 43.12 L69.86 41.35 L71.25 39.57 L72.62 37.79 L74.00 36.00 L75.38 34.21 L76.75 32.43 L78.14 30.65 L79.54 28.88 L80.96 27.13 L82.40 25.38 L83.86 23.66 L85.36 21.96 L86.89 20.28 L88.45 18.64 L90.06 17.04 L91.72 15.48 L93.42 13.97 L95.18 12.53 L96.99 11.15 L98.87 9.85 L100.81 8.63 L102.81 7.52 L104.87 6.53 L107.00 5.67 L109.19 4.95 L111.44 4.39 L113.74 4.02 L116.09 3.84 L118.48 3.88 L120.88 4.15 L123.30 4.68 L125.71 5.48 L128.09 6.56 L130.41 7.94 L132.65 9.61 L134.77 11.59 L136.75 13.86 L138.55 16.41 L140.14 19.23 L141.49 22.28 L142.57 25.52 L143.36 28.93 L143.84 32.44 L144.00 36.00 L143.84 39.56 L143.36 43.07 L142.57 46.48 L141.49 49.72 L140.14 52.77 L138.55 55.59 L136.75 58.14 L134.77 60.41 L132.65 62.39 L130.41 64.06 L128.09 65.44 L125.71 66.52 L123.30 67.32 L120.88 67.85 L118.48 68.12 L116.09 68.16 L113.74 67.98 L111.44 67.61 L109.19 67.05 L107.00 66.33 L104.87 65.47 L102.81 64.48 L100.81 63.37 L98.87 62.15 L96.99 60.85 L95.18 59.47 L93.42 58.03 L91.72 56.52 L90.06 54.96 L88.45 53.36 L86.89 51.72 L85.36 50.04 L83.86 48.34 L82.40 46.62 L80.96 44.87 L79.54 43.12 L78.14 41.35 L76.75 39.57 L75.38 37.79Z"/><clipPath id="acht-form"><use href="#acht-weg"/></clipPath><linearGradient id="acht-reif" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset=".55" stop-color="#fff" stop-opacity=".32"/><stop offset="1" stop-color="#fff" stop-opacity=".62"/></linearGradient><filter id="acht-glanz" x="-20%" y="-30%" width="140%" height="160%"><feGaussianBlur stdDeviation="2.4" result="w"/><feMerge><feMergeNode in="w"/><feMergeNode in="w"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+    <defs><path id="acht-weg" pathLength="100" d="M74.00 36.00 L72.62 34.21 L71.25 32.43 L69.86 30.65 L68.46 28.88 L67.04 27.13 L65.60 25.38 L64.14 23.66 L62.64 21.96 L61.11 20.28 L59.55 18.64 L57.94 17.04 L56.28 15.48 L54.58 13.97 L52.82 12.53 L51.01 11.15 L49.13 9.85 L47.19 8.63 L45.19 7.52 L43.13 6.53 L41.00 5.67 L38.81 4.95 L36.56 4.39 L34.26 4.02 L31.91 3.84 L29.52 3.88 L27.12 4.15 L24.70 4.68 L22.29 5.48 L19.91 6.56 L17.59 7.94 L15.35 9.61 L13.23 11.59 L11.25 13.86 L9.45 16.41 L7.86 19.23 L6.51 22.28 L5.43 25.52 L4.64 28.93 L4.16 32.44 L4.00 36.00 L4.16 39.56 L4.64 43.07 L5.43 46.48 L6.51 49.72 L7.86 52.77 L9.45 55.59 L11.25 58.14 L13.23 60.41 L15.35 62.39 L17.59 64.06 L19.91 65.44 L22.29 66.52 L24.70 67.32 L27.12 67.85 L29.52 68.12 L31.91 68.16 L34.26 67.98 L36.56 67.61 L38.81 67.05 L41.00 66.33 L43.13 65.47 L45.19 64.48 L47.19 63.37 L49.13 62.15 L51.01 60.85 L52.82 59.47 L54.58 58.03 L56.28 56.52 L57.94 54.96 L59.55 53.36 L61.11 51.72 L62.64 50.04 L64.14 48.34 L65.60 46.62 L67.04 44.87 L68.46 43.12 L69.86 41.35 L71.25 39.57 L72.62 37.79 L74.00 36.00 L75.38 34.21 L76.75 32.43 L78.14 30.65 L79.54 28.88 L80.96 27.13 L82.40 25.38 L83.86 23.66 L85.36 21.96 L86.89 20.28 L88.45 18.64 L90.06 17.04 L91.72 15.48 L93.42 13.97 L95.18 12.53 L96.99 11.15 L98.87 9.85 L100.81 8.63 L102.81 7.52 L104.87 6.53 L107.00 5.67 L109.19 4.95 L111.44 4.39 L113.74 4.02 L116.09 3.84 L118.48 3.88 L120.88 4.15 L123.30 4.68 L125.71 5.48 L128.09 6.56 L130.41 7.94 L132.65 9.61 L134.77 11.59 L136.75 13.86 L138.55 16.41 L140.14 19.23 L141.49 22.28 L142.57 25.52 L143.36 28.93 L143.84 32.44 L144.00 36.00 L143.84 39.56 L143.36 43.07 L142.57 46.48 L141.49 49.72 L140.14 52.77 L138.55 55.59 L136.75 58.14 L134.77 60.41 L132.65 62.39 L130.41 64.06 L128.09 65.44 L125.71 66.52 L123.30 67.32 L120.88 67.85 L118.48 68.12 L116.09 68.16 L113.74 67.98 L111.44 67.61 L109.19 67.05 L107.00 66.33 L104.87 65.47 L102.81 64.48 L100.81 63.37 L98.87 62.15 L96.99 60.85 L95.18 59.47 L93.42 58.03 L91.72 56.52 L90.06 54.96 L88.45 53.36 L86.89 51.72 L85.36 50.04 L83.86 48.34 L82.40 46.62 L80.96 44.87 L79.54 43.12 L78.14 41.35 L76.75 39.57 L75.38 37.79Z"/><clipPath id="acht-form"><use href="#acht-weg"/></clipPath><linearGradient id="acht-reif" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset=".55" stop-color="#fff" stop-opacity=".32"/><stop offset="1" stop-color="#fff" stop-opacity=".62"/></linearGradient><linearGradient id="acht-metall" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="148" y2="72"><stop offset="0" stop-color="#f1f4f7"/><stop offset=".14" stop-color="#e3b75a"/><stop offset=".28" stop-color="#fffaf0"/><stop offset=".42" stop-color="#d27e60"/><stop offset=".56" stop-color="#c3cbd3"/><stop offset=".7" stop-color="#f0cf78"/><stop offset=".84" stop-color="#c8785c"/><stop offset="1" stop-color="#f4f6f8"/><animateTransform attributeName="gradientTransform" type="rotate" values="0 74 36;360 74 36" dur="9s" repeatCount="indefinite"/></linearGradient><linearGradient id="acht-ring" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="148" y2="0"><stop offset="0" stop-color="#cfd5dc"/><stop offset=".16" stop-color="#e6bf68"/><stop offset=".32" stop-color="#f6f7f9"/><stop offset=".5" stop-color="#cf8466"/><stop offset=".68" stop-color="#eef1f4"/><stop offset=".84" stop-color="#ebc874"/><stop offset="1" stop-color="#cfd5dc"/><animateTransform attributeName="gradientTransform" type="rotate" values="360 74 36;0 74 36" dur="16s" repeatCount="indefinite"/></linearGradient><filter id="acht-glanz" x="-20%" y="-30%" width="140%" height="160%"><feGaussianBlur stdDeviation="2.4"/><feColorMatrix values="1 0 0 0 0  0 .93 0 0 0  0 0 .84 0 0  0 0 0 1 0" result="w"/><feMerge><feMergeNode in="w"/><feMergeNode in="w"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
     <use href="#acht-weg" class="acht-grund"/>
     <g clip-path="url(#acht-form)"><rect class="acht-feld acht-raum" x="0" y="0" width="74" height="72"/><rect class="acht-feld acht-flaeche" x="74" y="0" width="74" height="72"/></g>
-    <use href="#acht-weg" class="acht-rand"/><use href="#acht-weg" class="acht-fuge"/>
-    <g class="acht-spur" filter="url(#acht-glanz)"><use href="#acht-weg" stroke-dasharray="34 66" stroke-opacity=".06" data-l="34"/><use href="#acht-weg" stroke-dasharray="24 76" stroke-opacity=".1" data-l="24"/><use href="#acht-weg" stroke-dasharray="16 84" stroke-opacity=".15" data-l="16"/><use href="#acht-weg" stroke-dasharray="10 90" stroke-opacity=".22" data-l="10"/><use href="#acht-weg" stroke-dasharray="6 94" stroke-opacity=".32" data-l="6"/><use href="#acht-weg" stroke-dasharray="3.4 96.6" stroke-opacity=".5" data-l="3.4"/><use href="#acht-weg" stroke-dasharray="1.8 98.2" stroke-opacity=".75" data-l="1.8"/><use href="#acht-weg" stroke-dasharray="0.7 99.3" stroke-opacity="1" data-l="0.7"/></g>
+    <use href="#acht-weg" class="acht-rand"/><use href="#acht-weg" class="acht-kante"/><use href="#acht-weg" class="acht-fuge"/>
+    <g class="acht-spur" filter="url(#acht-glanz)"><use href="#acht-weg" stroke-dasharray="34 66" stroke-opacity=".1" data-l="34"/><use href="#acht-weg" stroke-dasharray="24 76" stroke-opacity=".16" data-l="24"/><use href="#acht-weg" stroke-dasharray="16 84" stroke-opacity=".22" data-l="16"/><use href="#acht-weg" stroke-dasharray="10 90" stroke-opacity=".3" data-l="10"/><use href="#acht-weg" stroke-dasharray="6 94" stroke-opacity=".42" data-l="6"/><use href="#acht-weg" stroke-dasharray="3.4 96.6" stroke-opacity=".6" data-l="3.4"/><use href="#acht-weg" stroke-dasharray="1.8 98.2" stroke-opacity=".75" data-l="1.8"/><use href="#acht-weg" stroke-dasharray="0.7 99.3" stroke-opacity="1" data-l="0.7"/></g>
   </svg>
   <button type="button" id="zum-raum" aria-pressed="true">Raum</button><button type="button" id="zur-flaeche" aria-pressed="false">Fläche</button>
 </div>
@@ -633,8 +639,8 @@ const ZUG = (() => {
 })();
 const ZYKLEN = ["Operation", "Rekursion", "Adresse", "Koppelung", "Kunst", "Plattform", "Zukunft"];
 const ROEM = ["I", "II", "III", "IV", "V", "VI", "VII"];
-const KAPITELFARBEN = ["#4f8e9c", "#fadd26", "#d11a5e", "#5fb3b4", "#ffffff", "#8fb0ff", "#2f7a58"];   // Quadrate im Intro: auf Schwarz sichtbar
-const LEUCHTFARBEN = ["#7cc4cc", "#fadd26", "#ff4a78", "#8fe0d8", "#d6dbe4", "#9aa6bd", "#5fcf95"];   // Kanten und Marken im Raum
+const KAPITELFARBEN = ["#4f8e9c", "#fadd26", "#a3546f", "#5fb3b4", "#ffffff", "#8fb0ff", "#2f7a58"];   // Quadrate im Intro: auf Schwarz sichtbar
+const LEUCHTFARBEN = ["#7cc4cc", "#fadd26", "#e08aa6", "#8fe0d8", "#d6dbe4", "#9aa6bd", "#5fcf95"];   // Kanten und Marken im Raum
 const ZYKLUSFARBEN = ["#ff5c9a", "#ffc21a", "#ff5a3c", "#ffffff", "#8fb0ff", "#3fd08e", "#ffa3d1"];
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const klemm = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
@@ -711,8 +717,7 @@ ZYKLEN.forEach((n, i) => {
 zeigeStrophe(ZUG, [...zy.querySelectorAll("button")].find(b => b.textContent === String(ZUG[0])));
 // Social: je Zettel ein kleines Feld 7×7 wie auf den Zettelkarten der Website
 document.querySelectorAll(".feldchen").forEach((f, j) => { for (let n = 0; n < 49; n++) { const i = document.createElement("i"); if (n === [11, 30, 44][j % 3]) i.className = "an"; f.append(i); } });
-// Die Klasse des Kapitels gibt dem Kästchen im Zeiger die Farbe seiner Seite
-kapitel.forEach(k => { const li = document.createElement("li"), a = document.createElement("a"); li.className = k.classList[1]; a.href = "#" + k.id; a.textContent = k.dataset.name; li.append(a); zeiger.append(li); });
+kapitel.forEach(k => { const li = document.createElement("li"), a = document.createElement("a"); a.href = "#" + k.id; a.textContent = k.dataset.name; a.style.setProperty("--kf", getComputedStyle(k).getPropertyValue("--k").trim()); li.append(a); zeiger.append(li); });
 
 /* ---------- Bahn-Bilder: jedes Kapitel wird aus seinem HTML auf eine Leinwand gezeichnet ---------- */
 /* ---------- Kapitel als Bild: das Kapitel wird in fester Breite gesetzt und Element für Element auf eine Leinwand gezeichnet.
@@ -773,7 +778,8 @@ async function kapitelZeichnen(k, i, LW) {
         z.text += n.data[j];
       }
       if (!zeilen.length) return;
-      zeilen.forEach(z => { z.text = z.text.trim(); z.grund = z.top - r0.top + asc; });
+      const gross = cs.textTransform === "uppercase";
+      zeilen.forEach(z => { z.text = gross ? z.text.trim().toUpperCase() : z.text.trim(); z.grund = z.top - r0.top + asc; });
       lage.titel = { zeilen, grund: zeilen[0].grund, gr: parseFloat(cs.fontSize), font: schrift(cs), abstand: parseFloat(cs.letterSpacing) || 0, farbe: cs.color, oben: y };
       return;
     }
@@ -1476,12 +1482,14 @@ function figurenBauen(g) {
     strich([.45, .36, -.45], [.45, .74, -.45]); strich([.45, .96, -.45], [.45, 1.4, -.45]);
     hell = .55; quader(.34, .74, -.34, .22, .22, .22);
   };
-  /* Auf der obersten Terrasse ein Baum im Raum (Christian, 30. Oktober 2026: dreidimensional, bewegt, blühend). Die Äste gehen in alle Richtungen
-     und wiegen sich, je weiter aussen, desto mehr; an den Spitzen öffnen sich Blüten nacheinander, welken, und ein Blatt fällt langsam
-     auf die Terrassen. Der Baum dreht sich gemächlich, so sieht man ihn rundum */
+  /* Auf der obersten Terrasse ein Baum im Raum (Christian, 30. Oktober 2026: dreidimensional, bewegt, farbig blühend; dann «nicht drehen, sondern
+     wie im Wind bewegen, dunklere, wärmere Farbtöne»). Der Wind kommt in Böen von einer Seite: der ganze Baum neigt sich, je höher, desto mehr,
+     die Zweige flattern, je weiter aussen, desto mehr. An jeder Spitze zwei Blätter von Tannen- über Moosgrün bis Ocker, daneben öffnet sich
+     eine Blüte in Bordeaux bis Altrosa und welkt wieder; nichts fällt herab («keine fallenden Pixel») */
   const terrasse = () => {
-    hell = .45; quader(0, 0, 0, 1.3, .1, .7); quader(.12, .1, -.06, 1, .1, .56); quader(.26, .2, -.12, .7, .1, .44);
-    const dreh = new THREE.Group(); gruppeBei([.62, .3, -.34]).add(dreh);
+    // drei flache Stufen unter dem Baum, kleiner als zuerst (Christian, 30. Oktober 2026), mittig unter dem Stamm
+    hell = .45; quader(.17, 0, -.09, .9, .07, .5); quader(.29, .07, -.15, .66, .07, .38); quader(.4, .14, -.205, .44, .07, .27);
+    const dreh = new THREE.Group(); gruppeBei([.62, .21, -.34]).add(dreh);
     const ap = [], ag = [], spitzen = [], d = new THREE.Vector3(), u = new THREE.Vector3(), w = new THREE.Vector3();
     const wachsen = (p, r, l, n, tief) => {
       const e = p.clone().addScaledVector(r, l); ap.push(p.x, p.y, p.z, e.x, e.y, e.z); ag.push(tief / 7, (tief + 1) / 7);
@@ -1497,38 +1505,57 @@ function figurenBauen(g) {
     };
     wachsen(new THREE.Vector3(), new THREE.Vector3(0, 1, 0), .3, 6, 0);
     const uni = { zeit: { value: 0 }, a: { value: 1 }, hoehe: { value: 400 } };
-    const WIND = "uniform float zeit; vec3 wind(vec3 p, float w) { w *= w; return p + vec3(sin(zeit * .9 + p.y * 2.3) * .045, 0., cos(zeit * .7 + p.x * 2.9 + p.z) * .04) * w; }";
+    const WIND = `uniform float zeit;
+vec3 wind(vec3 p, float w) {
+  float boe = .55 + .45 * sin(zeit * .31) * sin(zeit * .53 + 1.3), h = max(p.y, 0.) * max(p.y, 0.);
+  vec3 v = vec3((.03 + .05 * boe * (.8 + .2 * sin(zeit * 1.3))) * h, -.012 * boe * h, .018 * sin(zeit * .7 + 1.) * h);
+  return p + v + vec3(sin(zeit * 2.1 + p.y * 3.1 + p.z * 2.) * .03, sin(zeit * 2.6 + p.x * 4.) * .01, cos(zeit * 1.7 + p.x * 2.9 + p.z) * .026) * w * w * (.4 + boe);
+}`;
     const ag3 = new THREE.BufferGeometry(); ag3.setAttribute("position", new THREE.Float32BufferAttribute(ap, 3)); ag3.setAttribute("gewicht", new THREE.Float32BufferAttribute(ag, 1));
     const aeste = new THREE.LineSegments(ag3, new THREE.ShaderMaterial({ uniforms: uni, transparent: true, depthWrite: false,
       vertexShader: `attribute float gewicht; varying float vw; ${WIND}
 void main() { vw = gewicht; gl_Position = projectionMatrix * modelViewMatrix * vec4(wind(position, gewicht), 1.); }`,
-      fragmentShader: "uniform float a; varying float vw; void main() { gl_FragColor = vec4(vec3(.62 - .3 * vw), a); }" }));
-    // Je Spitze eine Blüte (art.y 0) und ein Blatt, das fällt, wenn sie welkt (art.y 1); art.x verschiebt den Kreislauf von elf Sekunden
-    const n = spitzen.length, bp = new Float32Array(n * 6), ba = new Float32Array(n * 4);
-    spitzen.forEach((p, i) => { const ph = zufall(); bp.set(p.toArray(), i * 3); bp.set(p.toArray(), (n + i) * 3); ba.set([ph, 0], i * 2); ba.set([ph, 1], (n + i) * 2); });
+      fragmentShader: "uniform float a; varying float vw; void main() { gl_FragColor = vec4(pow(mix(vec3(.48, .37, .28), vec3(.35, .26, .2), vw), vec3(2.2)), a); }" }));
+    // Je Spitze eine Blüte (art.y 0) und zwei Blätter etwas daneben (art.y 2); art.x verschiebt den Kreislauf von elf Sekunden und wählt den Farbton
+    const n = spitzen.length, bp = new Float32Array(n * 9), ba = new Float32Array(n * 6), neben = p => p.clone().add(new THREE.Vector3(zufall() - .5, zufall() - .5, zufall() - .5).multiplyScalar(.09));
+    spitzen.forEach((p, i) => {
+      bp.set(p.toArray(), i * 3); bp.set(neben(p).toArray(), (n + i) * 3); bp.set(neben(p).toArray(), (2 * n + i) * 3);
+      ba.set([zufall(), 0], i * 2); ba.set([zufall(), 2], (n + i) * 2); ba.set([zufall(), 2], (2 * n + i) * 2);
+    });
     const bg = new THREE.BufferGeometry(); bg.setAttribute("position", new THREE.Float32BufferAttribute(bp, 3)); bg.setAttribute("art", new THREE.Float32BufferAttribute(ba, 2));
     const blueten = new THREE.Points(bg, new THREE.ShaderMaterial({ uniforms: uni, transparent: true, depthWrite: false,
-      vertexShader: `attribute vec2 art; uniform float hoehe; varying float vu, vf, vd; ${WIND}
+      vertexShader: `attribute vec2 art; uniform float hoehe; varying float vu, vf, vk; ${WIND}
 void main() {
-  float u = fract(zeit / 11. + art.x), s; vec3 p = wind(position, 1.); vu = u; vf = art.y; vd = 1.;
-  if (art.y < .5) s = .07 * smoothstep(.04, .3, u) * (1. - smoothstep(.6, .76, u));   // Knospe, offen, welk
-  else { float f = clamp((u - .66) / .34, 0., 1.); p.y -= (position.y + .12) * f * f; p.x += sin(f * 6. + art.x * 20.) * .08 * f; p.z += cos(f * 5. + art.x * 13.) * .06 * f;
-    s = .035 * step(.66, u); vd = 1. - smoothstep(.8, 1., f); }
+  float u = fract(zeit / 11. + art.x), s; vec3 p = wind(position, 1.); vu = u; vf = art.y; vk = fract(art.x * 7.31);
+  if (art.y > 1.5) s = .08 * (.88 + .12 * sin(zeit * .8 + art.x * 30.));   // Blatt
+  else s = .075 * smoothstep(.04, .3, u) * (1. - smoothstep(.72, .9, u));   // Knospe, offen, welk
   vec4 mv = modelViewMatrix * vec4(p, 1.); gl_PointSize = min(s * projectionMatrix[1][1] * hoehe / -mv.z, 48.); gl_Position = projectionMatrix * mv;
 }`,
-      fragmentShader: `uniform float a; varying float vu, vf, vd;
+      fragmentShader: `uniform float a; varying float vu, vf, vk;
 void main() {
-  vec2 c = gl_PointCoord - .5; float r = length(c), rand = vf > .5 ? .3 : .3 + .16 * cos(5. * atan(c.y, c.x));   // fünf Blütenblätter, das fallende Blatt rund
-  float al = smoothstep(rand, rand - .1, r) * vd; if (al < .01) discard;
-  vec3 rosa = vec3(1., .6, .72), col = mix(rosa, vec3(.97, .94, .93), smoothstep(.04, .28, r));
-  if (vf < .5) col = mix(vec3(1., .8, .38), col, smoothstep(.03, .09, r));
-  col = mix(col, rosa, vf < .5 ? 1. - smoothstep(.04, .3, vu) : .35);   // die Knospe rosiger
-  gl_FragColor = vec4(col * .92, al * a);
+  vec2 c = gl_PointCoord - .5; float r = length(c), al; vec3 col;
+  if (vf > 1.5) {
+    // Blatt: eine schmale Spitzellipse, je nach vk anders gedreht, von Tannen- über Moosgrün bis Ocker, mit hellerer Mittelrippe
+    float w = vk * 6.283; vec2 q = mat2(cos(w), -sin(w), sin(w), cos(w)) * c;
+    al = smoothstep(.3, .24, length(q * vec2(1., 2.3)) + .25 * abs(q.x)); if (al < .01) discard;
+    col = mix(mix(vec3(.12, .3, .23), vec3(.29, .35, .14), smoothstep(.2, .75, vk)), vec3(.63, .48, .16), smoothstep(.8, 1., vk));
+    col = mix(col, col + .08, smoothstep(.04, 0., abs(q.y)));
+  } else {
+    float rand = .3 + .16 * cos(5. * atan(c.y, c.x));   // fünf Blütenblätter
+    al = smoothstep(rand, rand - .1, r); if (al < .01) discard;
+    // von Bordeaux über Himbeer bis warmes Altrosa, zum Rand der Blüte etwas heller, in der Mitte ein Punkt in Bernstein
+    vec3 bordeaux = vec3(.43, .1, .17), himbeer = vec3(.61, .14, .25), alt = vec3(.76, .48, .42);
+    col = mix(mix(bordeaux, himbeer, smoothstep(0., .6, vk)), alt, smoothstep(.8, 1., vk));
+    col = mix(col, alt, smoothstep(.12, .32, r) * .18);
+    col = mix(vec3(.82, .54, .16), col, smoothstep(.03, .09, r));
+    col = mix(col, bordeaux, (1. - smoothstep(.04, .3, vu)) * .6);   // die Knospe dunkler
+  }
+  gl_FragColor = vec4(pow(col, vec3(2.2)), al * a);   // Farben oben als sRGB, die Szene rechnet linear
 }` }));
     dreh.add(aeste, blueten);
     const groesse = new THREE.Vector2();
     aeste.onBeforeRender = () => { uni.a.value = aeste.material.opacity; uni.hoehe.value = renderer.getDrawingBufferSize(groesse).y / 2; };
-    bahn.flackern.push(sek => { uni.zeit.value = sek; dreh.rotation.y = sek * .12; });
+    bahn.flackern.push(sek => { uni.zeit.value = sek; });
   };
   /* Zettel: ein Kasten mit sieben Schubladen, Zettel in einer Reihe, Fäden dazwischen */
   const kasten = () => {
@@ -1550,140 +1577,83 @@ void main() {
         zug([[-b / 2, -t / 2], [b / 2, -t / 2], [b / 2, t / 2], [-b / 2, t / 2]].map(([u, v]) => [cx + u * ca - v * sa, y, cz + u * sa + v * ca]), true); }
     });
   };
-  /* Kunst links, aussen im Raum (Christian, 30. Oktober 2026): drei Meisterwerke angedeutet, Botticellis Venus, van Goghs Sternennacht und ein Rothko.
-     Jedes Bild ist einmal auf eine Leinwand gemalt, frei nach dem Vorbild; im Shader bewegt es sich leise: das Meer glitzert, der Himmel wirbelt,
-     die Farbfelder atmen. Sie hängen hintereinander der Bahn entlang und schauen zur Kamera */
-  const meisterwerkMalen = (art, W, H) => {
-    const cv = document.createElement("canvas"); cv.width = W; cv.height = H; const c = cv.getContext("2d"); let z0 = 11 + art * 7;
-    const z = () => (z0 = (z0 * 16807) % 2147483647) / 2147483647, pfad = (pts, zu) => { c.beginPath(); pts.forEach(([x, y], i) => (i ? c.lineTo : c.moveTo).call(c, x * W, y * H)); if (zu) c.closePath(); };
-    const welle = (pts) => { c.beginPath(); c.moveTo(pts[0][0] * W, pts[0][1] * H); for (let i = 1; i < pts.length - 1; i++) { const [x, y] = pts[i], [x2, y2] = pts[i + 1]; c.quadraticCurveTo(x * W, y * H, (x + x2) / 2 * W, (y + y2) / 2 * H); } const l = pts[pts.length - 1]; c.lineTo(l[0] * W, l[1] * H); };
-    c.lineCap = "round"; c.lineJoin = "round";
-    if (art === 0) {
-      // Venus: Himmel und Meer in Grün, Wellen als kleine Winkel, rechts Ufer und Bäume, links das Wehen des Windes, Mitte die Muschel und die Gestalt
-      const gr = c.createLinearGradient(0, 0, 0, H); [[0, "#a7c5bb"], [.5, "#d5e1cf"], [.52, "#88ad9e"], [1, "#5e8d7e"]].forEach(([o, f]) => gr.addColorStop(o, f)); c.fillStyle = gr; c.fillRect(0, 0, W, H);
-      c.strokeStyle = "rgba(242, 247, 236, .55)"; c.lineWidth = 1.2;
-      for (let y = H * .56; y < H; y += 8 + (y - H * .55) * .05) for (let x = (y * 7) % 23; x < W * .88; x += 20 + (y - H * .55) * .12) { const k = 2.5 + (y - H * .55) * .03; c.beginPath(); c.moveTo(x - k, y - k * .6); c.lineTo(x, y); c.lineTo(x + k, y - k * .6); c.stroke(); }
-      c.fillStyle = "#2f4a2e"; c.fillRect(W * .87, 0, W * .13, H * .52); c.fillStyle = "#435f3c"; pfad([[.85, .52], [1, .44], [1, 1], [.9, 1]], true); c.fill();
-      c.strokeStyle = "#5e4630"; c.lineWidth = 3; [.9, .95, .985].forEach(x => { c.beginPath(); c.moveTo(x * W, 0); c.lineTo(x * W, H * .5); c.stroke(); });
-      c.fillStyle = "rgba(240, 214, 120, .8)"; for (let i = 0; i < 18; i++) { c.beginPath(); c.arc((.885 + z() * .11) * W, z() * .45 * H, 2.2, 0, 7); c.fill(); }
-      c.fillStyle = "rgba(96, 132, 146, .9)"; welle([[.02, .14], [.14, .06], [.3, .14], [.36, .3], [.22, .42], [.08, .34], [.02, .14]]); c.fill();
-      c.fillStyle = "#e3c4ad"; welle([[.12, .2], [.22, .16], [.32, .22], [.3, .3], [.18, .3], [.12, .2]]); c.fill();
-      c.fillStyle = "rgba(236, 160, 172, .9)"; for (let i = 0; i < 14; i++) { c.beginPath(); c.arc((.28 + z() * .17) * W, (.16 + z() * .3) * H, 2.6, 0, 7); c.fill(); }
-      c.fillStyle = "#c2565d"; welle([[.86, .26], [.78, .3], [.7, .4], [.68, .56], [.74, .72], [.82, .66], [.8, .5], [.86, .36], [.86, .26]]); c.fill();
-      const mx = .5, my = .95, mr = .17; c.fillStyle = "#e8d0b0"; c.beginPath(); c.ellipse(mx * W, my * H, mr * W, mr * W * .55, 0, Math.PI, 0); c.fill();
-      c.strokeStyle = "#b8977a"; c.lineWidth = 1.4; for (let i = 0; i <= 12; i++) { const w = Math.PI + i * Math.PI / 12; c.beginPath(); c.moveTo(mx * W, my * H); c.lineTo(mx * W + Math.cos(w) * mr * W, my * H + Math.sin(w) * mr * W * .55); c.stroke(); }
-      c.fillStyle = "#f2dccb"; welle([[.49, .24], [.46, .29], [.45, .38], [.47, .48], [.46, .58], [.48, .74], [.47, .88], [.51, .88], [.52, .74], [.565, .58], [.54, .47], [.53, .38], [.525, .29], [.505, .24]]); c.fill();
-      c.beginPath(); c.ellipse(.495 * W, .2 * H, .022 * W, .04 * H, .15, 0, 7); c.fill();
-      c.strokeStyle = "rgba(140, 100, 80, .45)"; c.lineWidth = 1; welle([[.49, .24], [.46, .29], [.45, .38], [.47, .48], [.46, .58], [.48, .74], [.47, .88]]); c.stroke();
-      c.strokeStyle = "#c4843f"; c.lineWidth = 2.6;
-      for (let i = 0; i < 16; i++) { const rechts = i % 2, l = .22 + z() * .28, x0 = .49 + (z() - .5) * .03; const pts = []; for (let k = 0; k <= 8; k++) { const t = k / 8; pts.push([x0 + (rechts ? 1 : -1) * t * (.05 + z() * .02) + Math.sin(t * 9 + i) * .008, .17 + t * l]); } welle(pts); c.stroke(); }
-    } else if (art === 1) {
-      // Sternennacht: Pinselstriche folgen einem Feld aus Wirbeln; Mond, Sterne mit Ringen, Hügel, das Dorf, links die Zypresse
-      c.fillStyle = "#1a2b66"; c.fillRect(0, 0, W, H);
-      const WIRBEL = [[.42, .3, 1.2], [.62, .36, .8], [.26, .2, .6]];
-      const feld = (x, y) => { let vx = 1, vy = .3 * Math.sin(x * 9); for (const [a, b, k] of WIRBEL) { const dx = x - a, dy = (y - b) * 1.3, r = Math.hypot(dx, dy) + .02, g_ = Math.exp(-r * r / .02); vx += -dy / r * k * 2.2 * g_; vy += dx / r * k * 2.2 * g_; } const l = Math.hypot(vx, vy); return [vx / l, vy / l]; };
-      const BLAU = ["#2a4d9c", "#3d64b3", "#5a7fc6", "#1e3577", "#7d9ed6"], HELL = ["#a9c4e6", "#d9e6ee", "#c8d7a9"];
-      c.lineWidth = 2.6;
-      for (let i = 0; i < 2600; i++) {
-        let x = z(), y = z() * .66; const kern = WIRBEL.some(([a, b]) => Math.hypot(x - a, (y - b) * 1.3) < .07);
-        c.strokeStyle = (kern || z() < .12 ? HELL : BLAU)[Math.floor(z() * (kern ? 3 : 5))]; c.globalAlpha = .85; c.beginPath(); c.moveTo(x * W, y * H);
-        for (let k = 0; k < 5; k++) { const [vx, vy] = feld(x, y); x += vx * .009; y += vy * .009; c.lineTo(x * W, y * H); } c.stroke();
-      }
-      c.globalAlpha = 1;
-      const stern = (x, y, r) => { for (let k = 4; k >= 1; k--) { c.strokeStyle = k % 2 ? "rgba(246, 222, 120, .8)" : "rgba(220, 232, 240, .7)"; c.lineWidth = 2.2; c.beginPath(); c.arc(x * W, y * H, r * k / 4, 0, 7); c.stroke(); } c.fillStyle = "#fff4b8"; c.beginPath(); c.arc(x * W, y * H, r * .25, 0, 7); c.fill(); };
-      [[.12, .1, 12], [.3, .07, 10], [.52, .1, 9], [.66, .18, 11], [.2, .36, 9], [.74, .08, 8], [.4, .46, 8], [.58, .5, 7], [.08, .5, 8]].forEach(([x, y, r]) => stern(x, y, r));
-      stern(.86, .13, 34); c.fillStyle = "#f3c43c"; c.beginPath(); c.arc(.86 * W, .13 * H, 15, 0, 7); c.fill(); c.fillStyle = "#e39a2c"; c.beginPath(); c.arc(.86 * W + 6, .13 * H - 4, 12, 0, 7); c.fill();
-      c.fillStyle = "#2b4a8a"; welle([[0, .7], [.2, .62], [.45, .68], [.7, .6], [1, .66], [1, 1], [0, 1]]); c.fill();
-      c.strokeStyle = "#5576b8"; c.lineWidth = 2.2; for (let i = 0; i < 40; i++) { const y = .64 + z() * .08, x = z(); c.beginPath(); c.moveTo(x * W, y * H); c.lineTo((x + .05) * W, (y - .01) * H); c.stroke(); }
-      c.fillStyle = "#1b2f5c"; c.fillRect(0, .76 * H, W, .24 * H);
-      for (let i = 0; i < 26; i++) { const x = .3 + z() * .68, y = .78 + z() * .16, b = .025 + z() * .02, h = .025 + z() * .02;
-        c.fillStyle = "#2a3f6e"; c.fillRect(x * W, y * H, b * W, h * H); c.fillStyle = "#14234a"; pfad([[x - .004, y], [x + b / 2, y - .02], [x + b + .004, y]], true); c.fill();
-        if (z() < .6) { c.fillStyle = "#f1d36b"; c.fillRect((x + b * .3) * W, (y + h * .35) * H, 2.5, 2.5); } }
-      c.fillStyle = "#14234a"; pfad([[.52, .8], [.535, .6], [.55, .8]], true); c.fill();
-      c.fillStyle = "#16231a"; welle([[.13, 1], [.12, .7], [.16, .45], [.15, .25], [.2, .03], [.23, .3], [.25, .5], [.28, .75], [.29, 1]]); c.fill();
-      c.lineWidth = 3; for (let i = 0; i < 26; i++) { c.strokeStyle = i % 3 ? "#2c3d25" : "#465639"; const x = .15 + z() * .12, pts = []; for (let k = 0; k < 6; k++) pts.push([x + Math.sin(k * 1.4 + i) * .012, .98 - k * (.12 + z() * .05)]); welle(pts); c.stroke(); }
-    } else {
-      // Rothko: Grund in Rot, oben ein Feld in Orange, unten eines in tiefem Weinrot, die Ränder weich in Lagen
-      c.fillStyle = "#7c1b14"; c.fillRect(0, 0, W, H);
-      const feld = (y0, y1, f) => { c.fillStyle = f; for (let k = 0; k < 9; k++) { const e = (8 - k) * 2.2; c.globalAlpha = .16; c.fillRect(W * .07 + e, H * y0 + e, W * .86 - 2 * e, H * (y1 - y0) - 2 * e); } c.globalAlpha = 1; };
-      feld(.06, .5, "#e1622a"); feld(.57, .94, "#3b0a10");
-      c.globalAlpha = .06; c.fillStyle = "#fff"; for (let i = 0; i < 120; i++) c.fillRect(z() * W, z() * H, 20 + z() * 60, 1 + z() * 2); c.globalAlpha = 1;
+  /* Kunst links (Christian, 30. Oktober 2026): die stilisierte Bilderwand, in ihren Rahmen drei Meisterwerke in Linien angedeutet:
+     Botticellis Venus auf der Muschel, van Goghs Sternennacht mit zwei Wirbeln, die sich langsam drehen, und die zwei Farbfelder eines Rothko */
+  const wand = () => {
+    const b = 1.72, h = 1.3; hell = .4; rechteck(0, 0, 0, b, h); strich([0, 0, 0], [0, 0, -.18]); strich([b, 0, 0], [b, 0, -.18]);
+    const farbe = (f, hl) => { ton = new THREE.Color(f); hell = hl; };
+    // Ein Rahmen mit innerer Kante; X und Y führen 0–1 im Bild auf die Wand, Z liegt knapp davor. Die Wand steht links vom Band,
+    // x zeigt dort vom Band weg, also nach links: u läuft gespiegelt, damit die Bilder nicht seitenverkehrt erscheinen
+    const rahmen = (x, y, bb, hh) => { farbe("#ffffff", .52); rechteck(x, y, .005, bb, hh); hell = .26; rechteck(x + .03, y + .03, .005, bb - .06, hh - .06);
+      return [u => x + .04 + (1 - u) * (bb - .08), v => y + .04 + v * (hh - .08), .007]; };
+    {
+      // Venus: Horizont, Wellen als kleine Winkel, die Muschel als Fächer, darauf die Gestalt im Kontrapost mit wehendem Haar
+      const [X, Y, Z] = rahmen(.08, .5, .62, .42), at = pts => pts.map(([u, v]) => [X(u), Y(v), Z]);
+      farbe("#a9d3c3", .42); strich([X(0), Y(.5), Z], [X(1), Y(.5), Z]);
+      for (let r = 0; r < 3; r++) for (let i = 0; i < 6; i++) { const u = .08 + i * .16 + (r % 2) * .08, v = .38 - r * .11, k = .035; zug(at([[u - k, v + k], [u, v], [u + k, v + k]])); }
+      farbe("#f1c9b0", .55); const mx = .5, my = .03, mr = .2;
+      for (let i = 0; i <= 8; i++) { const w = Math.PI * i / 8; strich([X(mx), Y(my), Z], [X(mx + Math.cos(w) * mr), Y(my + Math.sin(w) * mr * 1.3), Z]); }
+      zug(at(Array.from({ length: 17 }, (_, i) => { const w = Math.PI * i / 16; return [mx + Math.cos(w) * mr, my + Math.sin(w) * mr * 1.3]; })));
+      farbe("#ffffff", .62);
+      zug(at([[.49, .27], [.47, .42], [.455, .56], [.47, .7], [.47, .8]])); zug(at([[.525, .27], [.545, .42], [.565, .55], [.535, .7], [.53, .8]]));
+      bogen(X(.5), Y(.88), Z, .02, "xy", 0, Math.PI * 2, 14);
+      farbe("#e8a868", .5); for (let i = 0; i < 4; i++) zug(at(Array.from({ length: 8 }, (_, k) => [.52 + k * .014 + i * .008 + .01 * Math.sin(k * 1.3 + i), .9 - k * .065 - i * .015])));
     }
-    c.strokeStyle = "rgba(255, 255, 255, .78)"; c.lineWidth = 2; c.strokeRect(1, 1, W - 2, H - 2);
-    return cv;
+    {
+      // Sternennacht: Hügel, ein paar Häuser, links die Zypresse wie eine Flamme, rechts oben der Mond, Sterne, zwei Wirbel
+      const [X, Y, Z] = rahmen(.78, .58, .48, .4), at = pts => pts.map(([u, v]) => [X(u), Y(v), Z]);
+      farbe("#8fb0ff", .42); zug(at(Array.from({ length: 13 }, (_, i) => { const u = i / 12; return [u, .24 + .05 * Math.sin(u * 7)]; })));
+      farbe("#ffffff", .3); for (let i = 0; i < 6; i++) rechteck(X(.36 + i * .1), Y(.04), Z, .018, .022);
+      farbe("#9fd4b4", .5); zug(at([[.08, 0], [.06, .3], [.1, .6], [.13, .96], [.16, .6], [.2, .3], [.18, 0]]));
+      farbe("#ffd66b", .7); bogen(X(.88), Y(.84), Z, .022, "xy", 0, Math.PI * 2, 16); hell = .4; bogen(X(.88), Y(.84), Z, .036, "xy", 0, Math.PI * 2, 20);
+      hell = .55; [[.3, .88], [.55, .92], [.74, .66], [.24, .55]].forEach(([u, v]) => bogen(X(u), Y(v), Z, .008, "xy", 0, Math.PI * 2, 8));
+      ton = new THREE.Color("#8fb0ff");
+      [[.43, .62, .085, 1], [.64, .52, .055, -1.4]].forEach(([u, v, r, d]) => eigeneLinien(() => {
+        hell = .6; zug(Array.from({ length: 48 }, (_, i) => { const t = i / 47, w = t * Math.PI * 5; return [-Math.cos(w) * r * t, Math.sin(w) * r * t * .8, 0]; }));
+      }, [X(u), Y(v), Z], d));
+    }
+    {
+      // Rothko: zwei Farbfelder übereinander, jedes mit einer zweiten, schwächeren Kante, so wirken die Ränder weich
+      const [X, Y, Z] = rahmen(1.34, .36, .32, .5), B = .24, H = .42;
+      farbe("#ff8a4c", .55); rechteck(X(.94), Y(.52), Z, B * .88, H * .42); hell = .28; rechteck(X(.9), Y(.56), Z, B * .8, H * .34);
+      farbe("#e0408a", .5); rechteck(X(.94), Y(.06), Z, B * .88, H * .38); hell = .26; rechteck(X(.9), Y(.1), Z, B * .8, H * .3);
+    }
+    ton = new THREE.Color(1, 1, 1);
   };
-  const meisterwerke = () => {
-    const uni = { zeit: { value: 0 }, a: { value: 1 } };
-    // [art, Breite, Höhe, x, Unterkante, z]
-    [[0, 1.1, .69, .1, .3, 0], [1, .8, .64, .2, .34, 1.4], [2, .5, .67, .3, .3, 2.8]].forEach(([art, b, h, x, y, zz]) => {
-      const tex = new THREE.CanvasTexture(meisterwerkMalen(art, art === 2 ? 360 : 640, Math.round((art === 2 ? 360 : 640) * h / b)));
-      tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
-      const stoff = new THREE.ShaderMaterial({ uniforms: { ...uni, bild: { value: tex }, art: { value: art } }, transparent: true, depthWrite: false, side: THREE.DoubleSide,
-        vertexShader: "varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }",
-        fragmentShader: `uniform sampler2D bild; uniform float zeit, a, art; varying vec2 vUv;
-vec2 drehe(vec2 p, vec2 m, float w) { vec2 d = p - m; float c = cos(w), s = sin(w); return m + vec2(c * d.x - s * d.y, s * d.x + c * d.y); }
-void main() {
-  vec2 uv = vUv; float hell = 1.;
-  if (art < .5) { float meer = 1. - smoothstep(.42, .47, uv.y); uv.x += meer * .0025 * sin(uv.y * 140. + zeit * 1.6); hell = 1. + meer * .05 * sin(uv.x * 30. - zeit + uv.y * 60.); }
-  else if (art < 1.5) {
-    // der Himmel wirbelt: um jede Mitte ein wenig hin und her, dazu ein feines Zittern der Striche
-    float himmel = smoothstep(.3, .45, uv.y);
-    uv = drehe(uv, vec2(.42, .7), himmel * .05 * sin(zeit * .5) * exp(-dot(uv - vec2(.42, .7), uv - vec2(.42, .7)) * 30.));
-    uv = drehe(uv, vec2(.62, .64), himmel * .05 * sin(zeit * .6 + 1.) * exp(-dot(uv - vec2(.62, .64), uv - vec2(.62, .64)) * 40.));
-    uv += himmel * .0018 * vec2(sin(uv.y * 70. + zeit * 1.4), cos(uv.x * 60. + zeit * 1.2));
-  } else hell = .93 + .07 * sin(zeit * .45 + uv.y * 2.4);
-  gl_FragColor = vec4(texture2D(bild, uv).rgb * hell, a * .94);
-}` });
-      // die Fläche quer zur Bahn, wie die ASCII-Fläche: Rechts und Oben wie auf dem Schirm
-      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(b, h), stoff), mitte = new THREE.Vector3(x + b / 2, y + h / 2, zz).applyMatrix4(M);
-      mesh.matrixAutoUpdate = false; mesh.matrix.makeBasis(rechtsW, obenW, new THREE.Vector3().crossVectors(rechtsW, obenW)).scale(new THREE.Vector3().setScalar(eng ? .75 : 1)).setPosition(mitte);
-      g.add(mesh);
-      mesh.onBeforeRender = () => { stoff.uniforms.a.value = stoff.opacity; };
-      hell = .3; strich([x + b / 2, 0, zz], [x + b / 2, y - .02, zz]);
-    });
-    bahn.flackern.push(sek => { uni.zeit.value = sek; });
-  };
-  /* Kunst rechts: eine schreitende Figur im Stil Giacomettis auf einem Sockel, schmal, gekörnt, mit grossen Füssen. Sie dreht sich langsam;
-     das Licht kommt von vorn oben, ein kühler Saum zeichnet die Kante gegen das Dunkel. Glieder sind Röhren um eine Mittellinie */
+  /* Kunst rechts: auf dem Sockel eine schreitende Figur im Stil Giacomettis, nur in räumlichen Strichen (Christian, 30. Oktober 2026):
+     um jede Gliedmasse unregelmässige Ringe und drei Längslinien, rau wie geknetet; die Seite zum Licht heller. Sie dreht sich langsam */
   const giacometti = () => {
-    const cx = .45, s = .36, hs = .5; hell = .45; quader(cx - s / 2, 0, s / 2, s, hs, s);
-    const dreh = new THREE.Group(); gruppeBei([cx, hs, 0]).add(dreh); dreh.scale.setScalar(1.5);
-    const stoff = new THREE.ShaderMaterial({ uniforms: { a: { value: 1 } }, transparent: true,
-      vertexShader: "varying vec3 vn, vv; void main() { vec4 mv = modelViewMatrix * vec4(position, 1.); vn = normalize(normalMatrix * normal); vv = -mv.xyz; gl_Position = projectionMatrix * mv; }",
-      fragmentShader: `uniform float a; varying vec3 vn, vv;
-void main() {
-  vec3 N = normalize(vn), V = normalize(vv), L = normalize(vec3(-.45, .75, .55)), H = normalize(L + V);
-  float dif = max(dot(N, L), 0.), glanz = pow(max(dot(N, H), 0.), 24.), saum = pow(1. - max(dot(N, V), 0.), 2.5);
-  vec3 c = vec3(.56, .48, .39) * (.1 + .82 * dif + .08 * (.5 + .5 * N.y)) + vec3(1., .93, .82) * glanz * .25 + vec3(.72, .8, .92) * saum * .35;
-  gl_FragColor = vec4(c, a);
-}` });
-    const rau = (x, y, z) => Math.sin(x * 61 + y * 23) * Math.sin(y * 47 - z * 31 + x * 13) * .5 + Math.sin(y * 113 + z * 71) * .25;
-    const glied = (punkte, r0, r1, n = 18, seg = 10) => {
-      const kurve = new THREE.CatmullRomCurve3(punkte.map(p => new THREE.Vector3(...p))), fr = kurve.computeFrenetFrames(n, false), pos = [], idx = [];
+    const cx = .4, s = .22, hs = .34, k = .5; hell = .45; quader(cx - s / 2, 0, s / 2, s, hs, s);
+    const dreh = new THREE.Group(); gruppeBei([cx, hs, 0]).add(dreh);
+    const P = [], C = [], L = new THREE.Vector3(-.5, .6, .6).normalize();
+    const linie = (a, b, n) => { const h = .3 + .38 * Math.max(0, n.dot(L)); P.push(a.x, a.y, a.z, b.x, b.y, b.z); C.push(h, h * .96, h * .9, h, h * .96, h * .9); };
+    const glied = (punkte, r0, r1) => {
+      const kurve = new THREE.CatmullRomCurve3(punkte.map(p => new THREE.Vector3(...p).multiplyScalar(k))), n = Math.max(4, Math.round(kurve.getLength() / .02)), fr = kurve.computeFrenetFrames(n, false), seg = 7, ringe = [];
       for (let i = 0; i <= n; i++) {
-        const t = i / n, P = kurve.getPointAt(t), N = fr.normals[i], B = fr.binormals[i], r = misch(r0, r1, t) * Math.pow(Math.sin(Math.PI * misch(.06, .94, t)), .35);
+        const t = i / n, M0 = kurve.getPointAt(t), r = misch(r0, r1, t) * k * (.75 + .5 * zufall()), ring = [];
         for (let j = 0; j < seg; j++) {
-          const w = j / seg * Math.PI * 2, ca = Math.cos(w), sa = Math.sin(w), qx = N.x * ca + B.x * sa, qy = N.y * ca + B.y * sa, qz = N.z * ca + B.z * sa;
-          const rr = r * (1 + .38 * rau(P.x + qx * .02, P.y + i * .003, P.z + qz * .02));
-          pos.push(P.x + qx * rr, P.y + qy * rr, P.z + qz * rr);
+          const w = j / seg * Math.PI * 2 + i * .4, d = fr.normals[i].clone().multiplyScalar(Math.cos(w)).addScaledVector(fr.binormals[i], Math.sin(w));
+          ring.push({ p: M0.clone().addScaledVector(d, r * (.7 + .6 * zufall())), d });
         }
+        ringe.push(ring);
+        if (i % 2 === 0) for (let j = 0; j < seg; j++) linie(ring[j].p, ring[(j + 1) % seg].p, ring[j].d);
       }
-      for (let i = 0; i < n; i++) for (let j = 0; j < seg; j++) { const a = i * seg + j, b = a + seg, a2 = i * seg + (j + 1) % seg, b2 = a2 + seg; idx.push(a, b, a2, b, b2, a2); }
-      const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); geo.setIndex(idx); geo.computeVertexNormals();
-      const m = new THREE.Mesh(geo, stoff); dreh.add(m); return m;
+      for (const j of [0, 2, 5]) for (let i = 0; i < n; i++) linie(ringe[i][j].p, ringe[i + 1][j].p, ringe[i][j].d);
     };
-    dreh.add(new THREE.Mesh(new THREE.BoxGeometry(.42, .035, .16).translate(0, .018, 0), stoff));
-    const fuss = glied([[-.2, .05, .035], [-.14, .048, .035], [-.08, .045, .035]], .026, .022);
-    glied([[.08, .05, -.035], [.14, .048, -.035], [.2, .045, -.035]], .022, .026);
-    glied([[-.13, .06, .035], [-.08, .3, .03], [-.01, .6, .02]], .02, .016);
-    glied([[.13, .06, -.035], [.09, .3, -.03], [.02, .6, -.02]], .02, .016);
-    glied([[0, .56, 0], [.02, .75, 0], [.04, .96, 0]], .036, .03);
-    glied([[.035, .93, .065], [.04, .965, 0], [.035, .93, -.065]], .016, .016);
-    glied([[.035, .93, .068], [.02, .76, .076], [.03, .6, .07]], .011, .01);
-    glied([[.035, .93, -.068], [.05, .76, -.076], [.07, .6, -.07]], .011, .01);
-    glied([[.04, .95, 0], [.05, 1.01, 0], [.062, 1.08, 0], [.068, 1.13, 0]], .014, .022);
-    fuss.onBeforeRender = () => { stoff.uniforms.a.value = stoff.opacity; };
-    bahn.flackern.push(sek => { dreh.rotation.y = sek * .3; });
+    const ecke = [[-.21, -.08], [.21, -.08], [.21, .08], [-.21, .08]].map(([x, z]) => new THREE.Vector3(x * k, .035 * k, z * k)), oben = new THREE.Vector3(0, 1, 0);
+    for (let i = 0; i < 4; i++) linie(ecke[i], ecke[(i + 1) % 4], oben);
+    glied([[-.2, .05, .035], [-.14, .048, .035], [-.08, .045, .035]], .03, .026);
+    glied([[.08, .05, -.035], [.14, .048, -.035], [.2, .045, -.035]], .026, .03);
+    glied([[-.13, .06, .035], [-.08, .3, .03], [-.01, .6, .02]], .024, .02);
+    glied([[.13, .06, -.035], [.09, .3, -.03], [.02, .6, -.02]], .024, .02);
+    glied([[0, .56, 0], [.02, .75, 0], [.04, .96, 0]], .042, .034);
+    glied([[.035, .93, .065], [.04, .965, 0], [.035, .93, -.065]], .018, .018);
+    glied([[.035, .93, .068], [.02, .76, .076], [.03, .6, .07]], .014, .012);
+    glied([[.035, .93, -.068], [.05, .76, -.076], [.07, .6, -.07]], .014, .012);
+    glied([[.04, .95, 0], [.05, 1.01, 0], [.062, 1.08, 0], [.068, 1.13, 0]], .018, .026);
+    const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(P, 3)); geo.setAttribute("color", new THREE.Float32BufferAttribute(C, 3));
+    dreh.add(new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false })));
+    bahn.flackern.push(sek => { dreh.rotation.y = sek * .2; });   // eine Umdrehung in gut einer halben Minute
   };
   /* Angebot: ein Tisch mit Stühlen, zwei Wände, Kisten mit Massen */
   const tisch = () => {
@@ -1726,7 +1696,7 @@ void main() {
     "k-apps": [[sockel, .3, -1, .4], [terrasse, .62, 1, .4]],
     "k-zettel": [[kasten, .2, -1, .5], [karten, .55, 1, .4], ["schlaufe", .8, -1, .8]],
     "k-social": [[stapel, .35, 1, .4]],
-    "k-kunst": [[meisterwerke, .12, -1, .6], [giacometti, .6, 1, .8]],
+    "k-kunst": [[wand, .3, -1, .45], [giacometti, .65, 1, .6]],
     "k-angebot": [[tisch, .2, 1, .4], [waende, .5, -1, .5], [kisten, .8, 1, .5], ["schlaufe", .9, -1, .8]],
   };
   kapitel.forEach((k, i) => {
@@ -3120,7 +3090,7 @@ addEventListener("resize", () => { if (exp && exp.lauf && exp.lauf.fest) { exp.l
    Eine einzige weiche Fläche zeigt das Foto: in der Mitte ganz, zum Rand hin verläuft es und wird blasser, vom Rauschen leicht unregelmässig.
    Flach folgt sie dem Zeiger oder dem Finger; sonst wandert sie langsam. Im Raum wandert sie auf derselben Bahn über die Skizze auf dem Band
    und hebt das Foto als sanften Hügel an; beim Wechsel in die Fläche steht sie, wo sie im Raum war */
-const KUNST_FOTO = "{{BILD}}gamma/bilder/kunst-foto.webp?v=3", KUNST_LINIEN = "{{BILD}}gamma/bilder/kunst-linien.webp?v=3", KUNST_ZUG = 3.6;
+const KUNST_FOTO = "{{BILD}}gamma/bilder/kunst-foto.webp?v=4", KUNST_LINIEN = "{{BILD}}gamma/bilder/kunst-linien.webp?v=4", KUNST_ZUG = 3.6;
 let kunstBilder = null;
 function kunstLaden() {
   // Fehlt ein Bild (etwa weil die Seite während des Hochladens geöffnet wurde), wird es bis zu dreimal neu geholt; wer auf «load» wartet, bekommt es dann trotzdem
@@ -3170,7 +3140,7 @@ const kunst = (() => {
   return { k, bild, cv: bild.querySelector("canvas"), buehne: k.querySelector(".buehne"), hinweis: k.querySelector(".kunst-hinweis"), fokus: parseFloat(bild.dataset.fokus) || .5,
     format: parseFloat(bild.dataset.format) || 1, rahmen: (bild.dataset.rahmen || ".5 .5 .1 .1").split(" ").map(Number),
     felder: [...k.querySelectorAll(".feld")], inhalte: [...k.querySelectorAll(".fi")], gl: null, sichtbar: false, t0: null, raumZug: 0, zug: 0, licht: null, zeiger: null, tipp: null,
-    wechselAb: 0, rahmenAb: 0, rahmenSeit: 0, rm: 0 };
+    wechselAb: 0, rahmenAb: 0, rahmenSeit: 0, rm: 0, sl: 0 };
 })();
 if (kunst) {
   kunst.stopp = () => {}; felderVerbinden(kunst);
@@ -3195,13 +3165,32 @@ function kunstGL() {
   };
   // Bild: Skizze, darüber das Foto, so weit die Spur reicht; ihr Rand franst langsam ziehend aus. Die Sättigung ist frisch hoch, alt gering, und atmet
   const pr = programm(`precision highp float; varying vec2 v;
-uniform sampler2D foto, linien, maske; uniform vec4 aus; uniform vec2 seite; uniform float zeit, zug; uniform vec3 grund, tinte;
+uniform sampler2D foto, linien, maske; uniform vec4 aus; uniform vec2 seite; uniform float zeit, zug, sl; uniform vec3 grund, tinte;
 ${KUNST_GLSL}
 void main() {
   vec2 q = v * seite; vec4 m = texture2D(maske, v); float r = kRahmen(v);
   float auf = mix(smoothstep(.2, .62, m.r + (kF(q * 6. + vec2(zeit * .05, -zeit * .04)) - .47) * .5), r, rm);
   float satt = mix(clamp(.12 + 1.1 * m.g + .6 * (kF(q * 1.4 - zeit * .06) - .47), 0., 1.18), 1., rm * r);
-  gl_FragColor = vec4(kFarbe(foto, linien, aus.xy + v * aus.zw, q, auf, satt, zug, zeit, grund, tinte), 1.);
+  vec3 c = kFarbe(foto, linien, aus.xy + v * aus.zw, q, auf, satt, zug, zeit, grund, tinte);
+  if (sl > .001 && r * rm > .001) {
+    // Eben aus dem Raum: im Bildrahmen stehen noch kurz die Säulen, von oben gesehen, im selben Gitter wie im Raum (42 je Reihe, Reihen versetzt).
+    // Jeder Deckel in der Farbe des Fotos an seiner Mitte, gewölbt, mit Glanz, dazwischen Schwarz; dann wachsen die Deckel zusammen und es bleibt das Foto
+    float SP = 42., RE = max(4., floor(SP / seite.x / .866 + .5)), d = 9.; vec2 z = v;
+    for (int j = -1; j <= 1; j++) {
+      float rr = floor(v.y * RE) + float(j), off = mod(rr, 2.) > .5 ? .75 : .25;
+      vec2 mm = vec2((floor(v.x * SP - off + .5) + off) / SP, (rr + .5) / RE);
+      float dd = length((v - mm) * seite); if (dd < d) { d = dd; z = mm; }
+    }
+    vec2 o = (v - z) * seite / (seite.x / SP * mix(.62, .46, sl));
+    float scheibe = smoothstep(1., .88, length(o)), fl = smoothstep(.3, .72, kFluss(z * seite, zeit));
+    vec3 fc = texture2D(foto, aus.xy + z * aus.zw).rgb, fp = texture2D(foto, aus.xy + v * aus.zw).rgb;
+    vec3 n = normalize(vec3(o * .9, 1.)), L = normalize(vec3(-.35, -.45, 1.));
+    float dif = max(dot(n, L), 0.), glanz = pow(max(dot(reflect(vec3(0., 0., -1.), n), L), 0.), 40.) * .55;
+    vec3 s = mix(fp, fc * (.62 + .38 * dif) * (.8 + .2 * fl) + glanz, sl);
+    s = mix(vec3(.02), s, mix(1., scheibe, sl));
+    c = mix(c, s, r * rm);
+  }
+  gl_FragColor = vec4(c, 1.);
 }`);
   // Spur: r wie weit das Foto steht (verblasst in einigen Sekunden), g wie frisch (klingt rasch ab). Sie wird langsam entlang eines Wirbelfelds
   // verschoben und verläuft ein wenig: so kriecht sie. Das Licht (Zeiger, Tippen oder ruhige Bahn) legt jedes Bild neu nach; beim Wechsel aus dem Raum der Bildrahmen
@@ -3222,11 +3211,11 @@ void main() {
   gl.useProgram(pr);
   const puffer = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, puffer); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
   gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
-  const U = {}; ["foto", "linien", "maske", "aus", "seite", "zeit", "zug", "grund", "tinte", "rahmen", "rm"].forEach(n => { U[n] = gl.getUniformLocation(pr, n); });
+  const U = {}; ["foto", "linien", "maske", "aus", "seite", "zeit", "zug", "grund", "tinte", "rahmen", "rm", "sl"].forEach(n => { U[n] = gl.getUniformLocation(pr, n); });
   const US = {}; ["vor", "px", "seite", "licht", "zeit", "k", "rahmen", "rm"].forEach(n => { US[n] = gl.getUniformLocation(prS, n); });
   const textur = (einheit, roh) => {
     const t = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + einheit); gl.bindTexture(gl.TEXTURE_2D, t);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array(roh ? [0, 255, 0] : [149, 7, 64]));
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array(roh ? [0, 255, 0] : [79, 34, 50]));
     for (const [k, w] of [[gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_MIN_FILTER, gl.LINEAR]]) gl.texParameteri(gl.TEXTURE_2D, k, w);
     return t;
   };
@@ -3241,7 +3230,7 @@ void main() {
   [[tF, 0, imF, false], [tL, 1, imL, true]].forEach(([t, e, im, roh]) => { if (im.complete && im.naturalWidth) hoch(t, e, im, roh); im.addEventListener("load", () => hoch(t, e, im, roh)); });
   gl.uniform1i(U.foto, 0); gl.uniform1i(U.linien, 1); gl.uniform1i(U.maske, 2);
   gl.useProgram(prS); gl.uniform1i(US.vor, 2);
-  const hex = (getComputedStyle(K.k).getPropertyValue("--k").trim() || "#950740").replace("#", "");
+  const hex = (getComputedStyle(K.k).getPropertyValue("--k").trim() || "#4f2232").replace("#", "");
   K.gl = { gl, pr, prS, U, US, spur: null, grund: [0, 2, 4].map(i => parseInt(hex.slice(i, i + 2), 16) / 255) };
 }
 // Zwei kleine Bilder für die Spur, abwechselnd gelesen und beschrieben (so breit wie nötig für die Bühne, 192 Punkte)
@@ -3277,16 +3266,17 @@ function kunstLaufBild(zeit, dt) {
     K.t0 = zeit - (ruhig ? KUNST_ZUG + 9 : K.raumZug * KUNST_ZUG) * 1000;
     K.licht = [...kunstLicht(zeit / 1000), K.raumZug >= 1 ? 1 : 0];
   }
-  // Eben aus dem Raum gewechselt: das Foto steht zuerst genau im Bildrahmen, nach einer halben Sekunde löst sich der Rahmen in die weiche Fläche auf, die weiterwandert
+  // Eben aus dem Raum gewechselt: im Bildrahmen stehen zuerst noch die Säulen (Christian, 30. Oktober 2026: den Effekt in der Fläche kurz fortsetzen),
+  // nach 1,2 s wachsen sie zum Foto zusammen, ab 2,3 s löst sich der Rahmen in die weiche Fläche auf, die weiterwandert
   if (K.rahmenAb) { K.rahmenAb = 0; K.rahmenSeit = zeit; K.rm = 1; K.licht = kunstRahmenLicht(kunstRahmen(kunstAusschnitt(r.width / r.height, K.fokus, K.format)), r.width / r.height); }
   const seitRahmen = K.rahmenSeit ? (zeit - K.rahmenSeit) / 1000 : 99;
-  K.rm = 1 - eio(klemm((seitRahmen - .5) / 1.4));
+  K.sl = 1 - eio(klemm((seitRahmen - 1.2) / .9)); K.rm = 1 - eio(klemm((seitRahmen - 2.3) / 1.4));
   const T = (zeit - K.t0) / 1000, L = K.licht, tippt = K.tipp && zeit - K.tipp.t < 4500;
   // Ziel der Fläche: der Zeiger, sonst die Stelle, die getippt wurde, sonst ihre ruhige Bahn. Solange die Skizze entsteht, ist sie aus
   const ziel = K.zeiger ? [K.zeiger.x, K.zeiger.y, .24] : tippt ? [K.tipp.x, K.tipp.y, .32] : kunstLicht(zeit / 1000);
-  const an = ruhig ? (K.zeiger || tippt ? 1 : 0) : Math.max(weich(KUNST_ZUG - .6, KUNST_ZUG + 1.2, T), seitRahmen < 3 ? 1 : 0);
+  const an = ruhig ? (K.zeiger || tippt ? 1 : 0) : Math.max(weich(KUNST_ZUG - .6, KUNST_ZUG + 1.2, T), seitRahmen < 3.8 ? 1 : 0);
   // kriechend: die Fläche folgt dem Zeiger mit Verzug, die Spur dahinter bleibt einige Sekunden
-  const k = 1 - Math.exp(-dt * (K.zeiger ? 2.6 : tippt ? 1.6 : seitRahmen < .5 ? 0 : .9));
+  const k = 1 - Math.exp(-dt * (K.zeiger ? 2.6 : tippt ? 1.6 : seitRahmen < 2.3 ? 0 : .9));
   for (let i = 0; i < 3; i++) L[i] += (ziel[i] - L[i]) * k;
   L[3] += (an - L[3]) * (1 - Math.exp(-dt * 2.5));
   K.zug = ruhig ? 1.02 : 1.02 * eio(klemm(T / KUNST_ZUG));
@@ -3307,7 +3297,7 @@ function kunstZeichnen(zeit, dt = 1 / 60) {
   gl.uniform4f(U.aus, a[0], a[1], a[2], a[3]); gl.uniform2f(U.seite, w / h, 1);
   gl.uniform1f(U.zeit, z); gl.uniform1f(U.zug, K.zug || 0);
   gl.uniform3fv(U.grund, K.gl.grund); gl.uniform3f(U.tinte, 1, 1, 1);
-  gl.uniform4f(U.rahmen, R[0], R[1], R[2], R[3]); gl.uniform1f(U.rm, K.rm || 0);
+  gl.uniform4f(U.rahmen, R[0], R[1], R[2], R[3]); gl.uniform1f(U.rm, K.rm || 0); gl.uniform1f(U.sl, K.sl || 0);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 }
 if ("IntersectionObserver" in window) {
