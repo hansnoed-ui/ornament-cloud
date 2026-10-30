@@ -51,7 +51,7 @@ export const UI = {
     },
     apps: {
       titel: "Apps", small: "Sieben Anwendungen, die im Browser laufen, sich auf den Startbildschirm legen lassen und ohne Netz weiterarbeiten. Alles rechnet auf deinem Gerät; Bilder und Antworten verlassen es nicht.",
-      ergebnis: "Was dabei herauskommt", ergebnisText: "Vier Filme, gerechnet aus den Apps, eine Konstellation und eine Übung. Mehr auf den Seiten der Apps.",
+      ergebnis: "Was dabei herauskommt", ergebnisText: "Eine Konstellation und eine Übung. Die Filme der Bild-Apps stehen auf ihren Seiten.",
       seitenTitel: "Apps – sieben Anwendungen im Browser",
       beschreibung: "ORNA, ORMA, OMNA COLOR, PHORMA I bis III und The Fictory: Denkspiele, Farbräder und Bildmaschinen, die im Browser laufen und ohne Netz weiterarbeiten.", bildAlt: "Die sieben Apps von ornament.cloud",
       zu: (werk) => ` · zu «${werk}»`, oeffnen: (name) => `${name} öffnen`, installieren: "Als App installieren", feld: "Alle 326 im Feld", deutsch: "",
@@ -138,7 +138,7 @@ export const UI = {
     },
     apps: {
       titel: "Apps", small: "Seven applications that run in the browser, can be placed on the home screen and keep working without a network. Everything computes on your device; images and answers never leave it.",
-      ergebnis: "What comes out of it", ergebnisText: "Four films computed by the apps, a constellation and an exercise. More on the pages of the apps.",
+      ergebnis: "What comes out of it", ergebnisText: "A constellation and an exercise. The films of the image apps are on their pages.",
       seitenTitel: "Apps – seven applications in the browser",
       beschreibung: "ORNA, ORMA, OMNA COLOR, PHORMA I to III and The Fictory: thinking games, colour wheels and image machines that run in the browser and keep working without a network.", bildAlt: "The seven apps of ornament.cloud",
       zu: (werk) => ` · on «${werk}»`, oeffnen: (name) => `Open ${name}`, installieren: "Install as an app", feld: "All 326 in the field", deutsch: "The app itself is in German.",

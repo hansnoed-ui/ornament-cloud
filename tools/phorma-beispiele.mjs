@@ -166,6 +166,25 @@ if (will("phorma-iii")) {
     .catch((e) => console.error("phorma-iii:", e.message));
 }
 
+// PHORMA III, nur die Traube: der Filmausschnitt für die Kachel auf /b/apps/ (30. Oktober 2026: «beim PHORMA III hätte ich gerne die Trauben Animation»);
+// nur mit Namen, ohne Ton, die ersten 12 Sekunden;
+// daraus das Quadrat: ffmpeg -i phorma-iii-traube.mp4 -vf "crop=540:540,scale=480:480,fade=in:0:12,fade=out:st=11.6:d=0.4" -crf 30 … b/bilder/apps/filme/phorma-iii.mp4
+if (nur.includes("phorma-iii-traube")) {
+  const v = version(readFileSync(new URL("alpha/phorma-iii/app.js", ROOT), "utf8"), "film.js"), ton = beispielton({ dauer: 28 });
+  await film("phorma-iii-traube", { poster: 0.5, teile: [{
+    seite: "/alpha/phorma-iii/", von: 0, bis: 12,   // von 0: ffmpeg liest die Bilder ab 0000.jpg
+    vorbereiten: async (page) => {
+      await page.evaluate((v) => { document.documentElement.dataset.film = v; }, v);
+      await page.click('[data-quelle="ton"]'); await page.click('[data-tonart="musik"]'); await page.click('[data-wahl="traube"]');
+      await page.evaluate(() => { const k = document.getElementById("frickeln"); if (k.checked) k.click(); });
+      await page.setInputFiles("#tondatei", { name: "beispiel.wav", mimeType: "audio/wav", buffer: ton });
+    },
+    bereit: (page) => page.waitForFunction(() => { const S = window.__phorma; return S?.ton && S.sz && S.buehne && S.buehneFertig && !document.getElementById("video").disabled && S.sz.zeit.ablauf === "traube"; }, null, { timeout: 600_000 }),
+    dauerFn: () => window.__phorma.sz.zeit.dauer,
+    bildFn: phormaBild,
+  }] }).catch((e) => console.error("phorma-iii-traube:", e.message));
+}
+
 if (will("the-fictory")) {
   await film("the-fictory", { teile: [{
     seite: "/alpha/the-fictory/",
