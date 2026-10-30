@@ -39,14 +39,14 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--faden); outline
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: #000; }
 
 /* Der Raum liegt fest hinter allem und ist immer Nacht, auch im hellen Modus.
-   Eine Spur durchscheinend: Ganz deckend gibt Edge/Chrome unter Windows die Leinwand als eigene Ebene an die Grafikkarte,
-   und unten bleibt dann ein Streifen in Kopfhöhe mit altem Bild stehen */
+   Eine Spur durchscheinend, damit Edge unter Windows unten kein altes Bild stehen lässt (zum Streifen siehe .kopf) */
 #welt { position: fixed; left: 0; top: 0; width: 100%; height: 100vh; height: 100lvh; height: max(100lvh, 100%); display: block; z-index: 0; background: #000; opacity: .999; touch-action: pan-y; }
 body.flach.nach-intro #welt, body.ohne-3d #welt { visibility: hidden; }
 
-/* Kopf: immer schwarz, wie beim Lab */
+/* Kopf: immer schwarz, wie beim Lab. Nicht ganz deckend: Verdeckt ein deckender Kopf die oberen 48 px von Leinwand und Bühne,
+   schneidet Edge unter Windows beide unten um diese 48 px ab (die Tafel beginnt unter dem Kopf und reicht bis unten) */
 .kopf { position: fixed; top: env(safe-area-inset-top, 0px); left: 0; right: 0; z-index: 20; height: 48px; display: flex; align-items: center; gap: 14px;
-  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); background: #000; color: #fff; font-size: 13px; }
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); background: rgba(0, 0, 0, .99); color: #fff; font-size: 13px; }
 .kopf .marke { display: flex; align-items: center; gap: 9px; text-decoration: none; font-weight: 500; letter-spacing: -.01em; white-space: nowrap; }
 .kopf .marke img { width: 24px; height: 24px; display: block; }
 .kopf .ausgabe { color: rgba(255, 255, 255, .55); font-weight: 400; }
