@@ -147,15 +147,10 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 .k-art { --k: #f2b2c0; --kt: #000000; --kg: rgba(0, 0, 0, .66); --kl: rgba(0, 0, 0, .2); --ka: #ffffff; }
 .k-angebot { --k: #1f4d3a; --kt: #ffffff; --kg: rgba(255, 255, 255, .74); --kl: rgba(255, 255, 255, .26); --ka: #9fd4b4; }
 
-/* 01 Webseiten: oben drei Begriffe, mittig das Signet auf einer ruhigen, einfarbigen Bühne, darunter drei Flächen mit ihrem Titel.
+/* 01 Webseiten: oben der Titel und rechts die drei Begriffe, mittig das Signet auf einer ruhigen, einfarbigen Bühne, darunter drei Flächen mit ihrem Titel.
    Flach wird das Signet zur Punktkugel, zum Würfel und zum Raster der neun Themen; eine Fläche zeigt ihren Inhalt auf der Bühne. */
-/* Der Titel steht etwas tiefer und kleiner: so kann er sich im Raum aufrichten und bleibt doch ganz vor dem Grün (titelWinkel) */
-.k-web .k-innen { padding-top: clamp(76px, 11cqi, 108px); }
-.k-web .marke-k { position: absolute; top: clamp(40px, 5.6cqi, 54px); right: max(clamp(22px, 5.4cqi, 48px), env(safe-area-inset-right, 0px)); margin: 0; }
-.web-kopf { display: grid; gap: clamp(14px, 2.6cqi, 22px); }
-.k-web h2 { font-size: clamp(30px, 5.4cqi, 48px); font-weight: 400; letter-spacing: -.035em; line-height: 1; }
-.k-web h2 .zl, .k-web .leit .zl { display: block; }
-.k-web .web-kopf .leit { margin: 0; font-family: var(--sans); font-style: normal; font-size: clamp(16px, 2.3cqi, 19px); line-height: 1.38; color: var(--kg); max-width: 30ch; }
+/* Der Kopf wie bei Apps: rechts die Marke mit den drei Begriffen, links gross der Titel, darunter der Satz */
+.k-web .marke-k .zl { display: block; }
 /* Die Bühne hat das Seitenverhältnis --ar; Signet und Raster bleiben quadratisch, weil ihre Breite durch --ar geteilt wird */
 .buehne { --ar: 1; position: relative; margin: clamp(18px, 3cqi, 28px) 0 clamp(22px, 4cqi, 34px); aspect-ratio: var(--ar); }
 .buehne > * { position: absolute; }
@@ -212,7 +207,6 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 .feld[aria-expanded="true"] { background: var(--ka); color: var(--k); }
 .feld[aria-expanded="true"] .feld-pfeil { color: var(--k); }
 @container (min-width: 640px) {
-  .web-kopf { grid-template-columns: minmax(0, 1fr) minmax(0, 15em); align-items: end; }
   .buehne { --ar: 1.9; }
   .flaechen { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
@@ -366,11 +360,9 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
   <div class="raum-platz" id="raum-platz"></div>
   <div class="bahn" id="bahn">
       <article class="kapitel k-web" id="k-web" data-name="Webseiten"><div class="k-innen">
-        <span class="marke-k">01 · Angebot</span>
-        <div class="web-kopf">
-          <h2 aria-label="Entwickeln, gestalten, vernetzen."><span class="zl">Entwickeln,</span><span class="zl">gestalten,</span><span class="zl">vernetzen.</span></h2>
-          <p class="leit"><span class="zl">Webseiten:</span><span class="zl">schnell &amp; praktisch</span></p>
-        </div>
+        <span class="marke-k"><span class="zl">01 · Angebot</span><span class="zl">Entwickeln, gestalten, vernetzen</span></span>
+        <h2>Webseiten</h2>
+        <p class="leit">Schnell &amp; praktisch.</p>
         <div class="buehne">
           <div class="logo" data-signet><canvas aria-hidden="true"></canvas></div>
           <div class="themen" aria-label="Neun Themen">
@@ -1092,15 +1084,14 @@ function figurenBauen(g, bilder) {
   /* ASCII: auf einer Zeichenfläche lösen sich Kugel, Würfel und Raster 3 × 3 ab, wie bei der Verwandlung auf der flachen Seite.
      Jede Zelle tastet eine Distanzfunktion ab, das Licht kreist; die Helligkeit wählt das Zeichen */
   const ascii = () => {
-    const SP = 30, ZE = 15, ZH = 17, sk = 2, SCHRIFT = '500 15px ui-monospace, "SF Mono", Menlo, Consolas, "Roboto Mono", monospace', RAMPE = ".:-=+*#%@";
+    const SP = 22, ZE = 11, ZH = 17, sk = 2, SCHRIFT = '500 15px ui-monospace, "SF Mono", Menlo, Consolas, "Roboto Mono", monospace', RAMPE = ".:-=+*#%@";
     const mz = document.createElement("canvas").getContext("2d"); mz.font = SCHRIFT;
     const zb = Math.max(7, mz.measureText("M").width), cv = document.createElement("canvas"); cv.width = Math.ceil(SP * zb * sk); cv.height = ZE * ZH * sk;
     const cx = cv.getContext("2d"); cx.scale(sk, sk); cx.font = SCHRIFT; cx.textBaseline = "top"; cx.fillStyle = "#fff";
     const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
-    // Am Desktop rückt die Fläche näher ans Band, damit sie neben dem Anfang ganz im Bild steht
-    const B = 1.25, H = B * ZE * ZH / (SP * zb), y0 = .3, xm = B / 2 - (eng ? 0 : .3);
-    hell = .3; strich([xm, 0, 0], [xm, y0 - .04, 0]); strich([xm - .12, 0, 0], [xm + .12, 0, 0]);
-    schild("Kugel · Würfel · 3 × 3", [xm, y0 + H + .04, 0], "mass");
+    // Klein und ohne Beschriftung; am Desktop rückt die Fläche näher ans Band, damit sie neben dem Anfang ganz im Bild steht
+    const B = .62, H = B * ZE * ZH / (SP * zb), y0 = .2, xm = B / 2 - (eng ? 0 : .3);
+    hell = .3; strich([xm, 0, 0], [xm, y0 - .03, 0]); strich([xm - .07, 0, 0], [xm + .07, 0, 0]);
     const mitte = new THREE.Vector3(xm, y0 + H / 2, 0).applyMatrix4(M);
     const mesh = new THREE.Mesh(new THREE.PlaneGeometry(B, H), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
     mesh.matrixAutoUpdate = false; mesh.matrix.makeBasis(rechtsW, obenW, new THREE.Vector3().crossVectors(rechtsW, obenW)).scale(new THREE.Vector3().setScalar(eng ? .75 : 1)).setPosition(mitte);
@@ -1148,17 +1139,16 @@ function figurenBauen(g, bilder) {
   };
   /* Internet: ein verteiltes Netz nach Paul Baran (1964), ohne Mitte; Pakete gehen ihren Weg von Knoten zu Knoten */
   const baran = () => {
-    const K = [[.1, .42], [.46, .36], [.86, .46], [1.22, .38], [.04, .78], [.4, .74], [.78, .82], [1.18, .76], [.14, 1.12], [.52, 1.16], [.9, 1.1], [1.24, 1.18]].map(([x, y]) => [x * .8, y * .8 + .08]);
+    const K = [[.1, .42], [.46, .36], [.86, .46], [1.22, .38], [.04, .78], [.4, .74], [.78, .82], [1.18, .76], [.14, 1.12], [.52, 1.16], [.9, 1.1], [1.24, 1.18]].map(([x, y]) => [x * .4, y * .4 + .02]);
     const KANTEN = [[0, 1], [1, 2], [2, 3], [4, 5], [5, 6], [6, 7], [8, 9], [9, 10], [10, 11], [0, 4], [1, 5], [2, 6], [3, 7], [4, 8], [6, 10], [7, 11], [1, 6], [4, 9], [6, 11]];
     hell = .26; KANTEN.forEach(([a, b]) => strich([...K[a], 0], [...K[b], 0]));
-    hell = .55; K.forEach(([x, y]) => bogen(x, y, 0, .024, "xy", 0, Math.PI * 2, 10));
-    hell = .3; strich([K[1][0], 0, 0], [K[1][0], K[1][1] - .024, 0]); strich([K[1][0] - .12, 0, 0], [K[1][0] + .12, 0, 0]);
-    schild("Verteiltes Netz · Baran 1964", [.5, 1.11, 0], "mass");
+    hell = .55; K.forEach(([x, y]) => bogen(x, y, 0, .014, "xy", 0, Math.PI * 2, 8));
+    hell = .3; strich([K[1][0], 0, 0], [K[1][0], K[1][1] - .014, 0]); strich([K[1][0] - .07, 0, 0], [K[1][0] + .07, 0, 0]);
     // Drei Pakete auf geschlossenen Wegen, je etwa eine Sekunde von Knoten zu Knoten
     [[0, 1, 5, 4], [2, 6, 7, 11, 10, 6], [8, 9, 10, 6, 1, 0, 4]].forEach(weg => {
       const wp = []; [...weg, weg[0]].forEach(k => { v1.set(K[k][0], K[k][1], 0).applyMatrix4(M); wp.push(v1.x, v1.y, v1.z); });
       const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(wp.slice(0, 3), 3));
-      const paket = new THREE.Points(geo, deckeln(new THREE.PointsMaterial({ size: .06, color: hdr("#9fd4b4", .9), transparent: true, depthWrite: false }), 5));
+      const paket = new THREE.Points(geo, deckeln(new THREE.PointsMaterial({ size: .045, color: hdr("#9fd4b4", .9), transparent: true, depthWrite: false }), 5));
       g.add(paket); bahn.laeufer.push({ punkte: wp, attr: geo.attributes.position, phase: zufall(), v: 20 / (weg.length * 1.05) });
     });
   };
