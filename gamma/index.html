@@ -329,6 +329,42 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 .angebot-liste a > span:last-child { margin-top: 4px; font-size: 13.5px; line-height: 1.4; color: var(--kg); }
 @container (min-width: 640px) { .angebot-liste { grid-template-columns: 1fr 1fr; column-gap: 34px; } }
 
+/* ---------- Goldener Schnitt (30. Oktober 2026, Wunsch: «beim scrollen durch die webseiten … den "goldenen schnitt" wo immer möglich beachten
+   (verhältnis 62:38) … frei interpretiert … und auch skaliert»; «auf dem telefon würde ich nichts machen»).
+   Nur ab 640 px Kapitelbreite: die flache Seite am Bildschirm und das Band im Raum (gezeichnet in 820 px); am Telefon (Band 430 px) bleibt alles, wie es war.
+   Spalten 61,8 : 38,2, Abstände aus der Fibonacci-Reihe (8, 13, 21, 34, 55, 89; je zwei Nachbarn stehen im goldenen Schnitt), oben und unten 55 : 89 = 38 : 62,
+   Leitsätze höchstens 61,8 % breit, Bühnen im goldenen Rechteck 1,618 : 1. Die festen Raster (7 × 7 Strophen, 3 × 3 Themen) und die Dreierreihen bleiben. */
+@container (min-width: 640px) {
+  .k-innen { padding: 55px max(55px, env(safe-area-inset-right, 0px)) 89px max(55px, env(safe-area-inset-left, 0px)); }
+  .marke-k { margin-bottom: 21px; }
+  :is(.k-web, .k-apps, .k-kunst) .marke-k { top: calc(55px + .43 * clamp(42px, 9cqi, 80px) - 1.68 * clamp(17px, 2.5cqi, 23px)); right: max(55px, env(safe-area-inset-right, 0px)); }
+  .kapitel .leit { margin: 21px 0 55px; max-width: 61.8%; }
+  .kapitel .weiter { margin-top: 34px; }
+  .buehne { --ar: 1.618; margin: 21px 0 34px; }
+  .fi-satz { max-width: 61.8%; }
+  .fi { gap: 21px; }
+  .fi-fragen li, .fi-liste li { padding: 8px 0 13px; }
+  .feld { min-height: 55px; padding: 0 21px; }
+  /* Lab: Bild 62, Verfahren 38 */
+  .lab-werk { grid-template-columns: minmax(0, 1.618fr) minmax(0, 1fr); gap: 34px; }
+  .liste li { padding: 8px 0 13px; }
+  .kontakt { gap: 13px; margin-top: 34px; }
+  .raeder { gap: 34px; }
+  /* Prompts: die linke Spalte der Matrix 62, die rechte 38 */
+  .matrix { grid-template-columns: minmax(0, 1.618fr) minmax(0, 1fr); }
+  .matrix a { padding: 21px; }
+  /* Zettel: das Raster der 49 Strophen 38, die gezogene Strophe 62 (ihr Titel braucht die Breite) */
+  .zettel-feld { grid-template-columns: minmax(0, 1fr) minmax(0, 1.618fr); gap: 34px; }
+  .strophe { padding-top: 13px; gap: 13px; }
+  /* Social: die drei Zettel um 21 und 55 versetzt */
+  .kanaele { gap: 21px; }
+  .kanal:nth-child(2) { margin-top: 55px; }
+  .kanal:nth-child(3) { margin-top: 21px; }
+  /* Angebot: Spalten 62 : 38, je Leistung oben 13, unten 21 */
+  .angebot-liste { grid-template-columns: minmax(0, 1.618fr) minmax(0, 1fr); column-gap: 34px; }
+  .angebot-liste a { padding: 13px 0 21px; }
+}
+
 /* Steuerung unten links und Kapitelzeiger links */
 /* Umschalten Raum / Fläche: eine liegende Acht unten in der Mitte, links Raum, rechts Fläche; eine feine Leuchtspur läuft auf ihr um */
 .steuer { position: fixed; z-index: 15; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); width: 128px; height: 36px; transform: translateX(-50%); opacity: 0; pointer-events: none; transition: opacity .3s; }
