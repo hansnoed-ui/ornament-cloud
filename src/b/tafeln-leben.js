@@ -13,7 +13,15 @@ const farbenHier = (el) => {
 };
 const TAKT = { "phorma-iii": 1 / 30, "phorma-i": 1 / 30 };   // die Gewebe und der Kristall rechnen viel: 30 Bilder je Sekunde genügen
 
-if (!ruhig) for (const fig of document.querySelectorAll(".tafel-lebt[data-tafel]")) beleben(fig);
+if (!ruhig) for (const fig of document.querySelectorAll(".tafel-lebt[data-tafel], .kachel-lebt[data-tafel]")) beleben(fig);
+
+// die Kacheln der Bild-Apps (30. Oktober 2026): der Filmausschnitt läuft stumm, solange er im Bild ist; bei reduzierter Bewegung bleibt das Standbild
+if (!ruhig) {
+  const filme = document.querySelectorAll("video.kachel-film");
+  const io = new IntersectionObserver((es) => { for (const e of es) e.isIntersecting && !document.hidden ? e.target.play().catch(() => {}) : e.target.pause(); }, { threshold: 0.3 });
+  filme.forEach((v) => io.observe(v));
+  document.addEventListener("visibilitychange", () => { if (document.hidden) filme.forEach((v) => v.pause()); else filme.forEach((v) => { io.unobserve(v); io.observe(v); }); });
+}
 
 function beleben(fig) {
   const tafel = TAFELN[fig.dataset.tafel];
