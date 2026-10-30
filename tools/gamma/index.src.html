@@ -128,7 +128,7 @@ body.zurueck .bahn { position: fixed; left: 0; right: 0; pointer-events: none; }
 body.flach.nach-intro.wechsel #welt { visibility: visible; }
 
 /* Farben: Webseiten Tannengrün, Lab Karmin, 3. Rad Blaupause, Apps Senf, Prompts Rot, Zettel Papier, Social Tinte, Art Rosa, Angebot Tannengrün */
-.k-web { --k: #1f4d3a; --kt: #ffffff; --kg: rgba(255, 255, 255, .74); --kl: rgba(255, 255, 255, .26); --ka: #9fd4b4; }
+.k-web { --k: #1f4d3a; --kt: #ffffff; --kg: #ffffff; --kl: rgba(255, 255, 255, .26); --ka: #9fd4b4; }
 .k-lab { --k: #7a1235; --kt: #ffffff; --kg: rgba(255, 255, 255, .72); --kl: rgba(255, 255, 255, .26); --ka: #ffa3d1; }
 .k-rad { --k: #1d3fd6; --kt: #ffffff; --kg: rgba(255, 255, 255, .76); --kl: rgba(255, 255, 255, .3); --ka: #ecb98f; }
 .k-apps { --k: #e6b117; --kt: #000000; --kg: rgba(0, 0, 0, .68); --kl: rgba(0, 0, 0, .22); --ka: #ffffff; }
@@ -138,13 +138,14 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 .k-art { --k: #f2b2c0; --kt: #000000; --kg: rgba(0, 0, 0, .66); --kl: rgba(0, 0, 0, .2); --ka: #ffffff; }
 .k-angebot { --k: #1f4d3a; --kt: #ffffff; --kg: rgba(255, 255, 255, .74); --kl: rgba(255, 255, 255, .26); --ka: #9fd4b4; }
 
-/* 01 Webseiten: oben drei Begriffe, mittig das Signet auf einer ruhigen, einfarbigen Bühne, im unteren Drittel drei Flächen.
+/* 01 Webseiten: oben drei Begriffe, mittig das Signet auf einer ruhigen, einfarbigen Bühne, darunter drei Flächen mit ihrem Titel.
    Flach wird das Signet zur Punktkugel, zum Würfel und zum Raster der neun Themen; eine Fläche zeigt ihren Inhalt auf der Bühne. */
-.k-web .k-innen { padding-top: clamp(40px, 5.6cqi, 54px); }
+/* Der Titel steht etwas tiefer und kleiner: so kann er sich im Raum aufrichten und bleibt doch ganz vor dem Grün (titelWinkel) */
+.k-web .k-innen { padding-top: clamp(76px, 11cqi, 108px); }
 .k-web .marke-k { position: absolute; top: clamp(40px, 5.6cqi, 54px); right: max(clamp(22px, 5.4cqi, 48px), env(safe-area-inset-right, 0px)); margin: 0; }
 .web-kopf { display: grid; gap: clamp(14px, 2.6cqi, 22px); }
-.k-web h2 { font-size: clamp(32px, 6.3cqi, 56px); font-weight: 400; letter-spacing: -.035em; line-height: 1; }
-.k-web h2 .zl { display: block; }
+.k-web h2 { font-size: clamp(30px, 5.4cqi, 48px); font-weight: 400; letter-spacing: -.035em; line-height: 1; }
+.k-web h2 .zl, .k-web .leit .zl { display: block; }
 .k-web .web-kopf .leit { margin: 0; font-family: var(--sans); font-style: normal; font-size: clamp(16px, 2.3cqi, 19px); line-height: 1.38; color: var(--kg); max-width: 30ch; }
 /* Die Bühne hat das Seitenverhältnis --ar; Signet und Raster bleiben quadratisch, weil ihre Breite durch --ar geteilt wird */
 .buehne { --ar: 1; position: relative; margin: clamp(18px, 3cqi, 28px) 0 clamp(22px, 4cqi, 34px); aspect-ratio: var(--ar); }
@@ -190,19 +191,17 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 .k-web.raster .logo, .k-web.baut .logo, .k-web.zeigt-feld .logo { opacity: 0; }
 .k-web.raster:not(.baut):not(.zeigt-feld) .themen { visibility: visible; opacity: 1; transition: opacity .6s; }
 .k-web.zeigt-feld .feld-inhalt { visibility: visible; opacity: 1; transition: opacity .45s; }
-/* Drei Flächen im unteren Drittel, in drei Tönen des Tannengrüns */
+/* Drei Flächen unter der Bühne, nur mit ihrem Titel (der Satz steht nach dem Anklicken auf der Bühne), in drei Tönen des Tannengrüns */
 .flaechen { display: grid; border-top: 1px solid var(--kt); }
-.feld { display: grid; grid-template-rows: auto 1fr auto; gap: 12px; min-height: clamp(128px, 24cqi, 196px); padding: 14px clamp(14px, 2.6cqi, 20px) 16px; border: 0; border-radius: 0; color: var(--kt); font: inherit; text-align: left; cursor: pointer; }
+.feld { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: clamp(52px, 8cqi, 64px); padding: 0 clamp(14px, 2.6cqi, 20px); border: 0; border-radius: 0; color: var(--kt); font: inherit; text-align: left; cursor: pointer; }
 .feld:nth-child(1) { background: rgba(255, 255, 255, .045); }
 .feld:nth-child(2) { background: rgba(255, 255, 255, .085); }
 .feld:nth-child(3) { background: rgba(255, 255, 255, .13); }
 .feld:hover { background: rgba(255, 255, 255, .17); }
-.feld .feld-kopf { display: flex; justify-content: space-between; gap: 10px; }
-.feld .feld-kopf span:last-child { font: 500 11px/1.25 var(--sans); letter-spacing: .04em; color: var(--ka); }
-.feld .feld-satz { font-family: var(--serif); font-style: italic; font-size: clamp(18px, 2.5cqi, 21px); line-height: 1.2; max-width: 24ch; }
-.feld .feld-pfeil { justify-self: end; font-size: 17px; line-height: 1; color: var(--ka); }
+.feld .feld-titel { font-weight: 500; font-size: clamp(16px, 2.3cqi, 19px); letter-spacing: -.01em; line-height: 1.2; }
+.feld .feld-pfeil { font-size: 17px; line-height: 1; color: var(--ka); }
 .feld[aria-expanded="true"] { background: var(--ka); color: var(--k); }
-.feld[aria-expanded="true"] .label, .feld[aria-expanded="true"] .feld-kopf span:last-child, .feld[aria-expanded="true"] .feld-pfeil { color: var(--k); }
+.feld[aria-expanded="true"] .feld-pfeil { color: var(--k); }
 @container (min-width: 640px) {
   .web-kopf { grid-template-columns: minmax(0, 1fr) minmax(0, 15em); align-items: end; }
   .buehne { --ar: 1.9; }
@@ -361,7 +360,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
         <span class="marke-k">01 · Angebot</span>
         <div class="web-kopf">
           <h2 aria-label="Entwickeln, gestalten, vernetzen."><span class="zl">Entwickeln,</span><span class="zl">gestalten,</span><span class="zl">vernetzen.</span></h2>
-          <p class="leit">Websites und Apps: schnell, eigenständig, ohne Dienste von aussen.</p>
+          <p class="leit"><span class="zl">Webseiten:</span><span class="zl">schnell &amp; praktisch</span></p>
         </div>
         <div class="buehne">
           <div class="logo" data-signet><canvas aria-hidden="true"></canvas></div>
@@ -391,9 +390,9 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
           <canvas class="verwandlung" aria-hidden="true"></canvas>
         </div>
         <div class="flaechen">
-          <button type="button" class="feld" data-feld="express" aria-expanded="false" data-rand="Express"><span class="feld-kopf"><span class="label">Express</span><span>72 h</span></span><span class="feld-satz">Wenns schnell gehen muss: neue Webseite online in 72 Stunden</span><span class="feld-pfeil">→</span></button>
-          <button type="button" class="feld" data-feld="briefing" aria-expanded="false"><span class="feld-kopf"><span class="label">Briefing</span><span>unverbindlich</span></span><span class="feld-satz">Senden Sie eine unverbindliche Anfrage, damit wir Ihnen ein gutes Angebot machen können</span><span class="feld-pfeil">→</span></button>
-          <button type="button" class="feld" data-feld="referenzen" aria-expanded="false" data-rand="Referenzen"><span class="feld-kopf"><span class="label">Referenzen</span><span>Auswahl</span></span><span class="feld-satz">Einige Beispiele dafür, wie wir Ideen umsetzen</span><span class="feld-pfeil">→</span></button>
+          <button type="button" class="feld" data-feld="express" aria-expanded="false" data-rand="Express"><span class="feld-titel">Express</span><span class="feld-pfeil">→</span></button>
+          <button type="button" class="feld" data-feld="briefing" aria-expanded="false"><span class="feld-titel">Briefing</span><span class="feld-pfeil">→</span></button>
+          <button type="button" class="feld" data-feld="referenzen" aria-expanded="false" data-rand="Referenzen"><span class="feld-titel">Referenzen</span><span class="feld-pfeil">→</span></button>
         </div>
       </div></article>
 
@@ -936,7 +935,10 @@ async function bahnBauen() {
     const schatten = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: sch.tex, transparent: true, depthWrite: false }));
     schatten.material.userData.a = .3; mesh.material.userData.frueh = schatten.material.userData.frueh = true; schatten.position.z = .002; schatten.renderOrder = 1; mesh.renderOrder = 2;
     piv.add(schatten, mesh); g.add(piv);
-    bahn.titel.push({ sH, mesh, schatten });
+    // Für die Grenze beim Aufstellen: Fusspunkt und Achsen der Fläche, ihre Höhe und der Anfang des Kapitels
+    const e = piv.matrix.elements;
+    bahn.titel.push({ sH, mesh, schatten, hoch: f.h * bahn.k, B: new THREE.Vector3(e[12], e[13], e[14]), X: new THREE.Vector3(e[0], e[1], e[2]),
+      Y: new THREE.Vector3(e[4], e[5], e[6]), Z: new THREE.Vector3(e[8], e[9], e[10]), E: bahnPunkt(bahn.kapitel[i].s0 + .03) });
   });
   // Das Signet auf der Bühne der Webseiten: eine Linie auf dem Band, die atmet, ihre innere Schleife und der laufende Punkt
   bahn.signete = [];
@@ -1021,7 +1023,7 @@ function figurenBauen(g, bilder) {
   let lp = [], lc = [], hell = .5, ton = new THREE.Color(1, 1, 1);
   const schilder = [], M = new THREE.Matrix4(), v1 = new THREE.Vector3(), v2 = new THREE.Vector3(), rechtsW = new THREE.Vector3(), obenW = new THREE.Vector3();
   let saat = 7; const zufall = () => (saat = (saat * 16807) % 2147483647) / 2147483647;
-  bahn.dreher = []; bahn.laeufer = [];
+  bahn.dreher = []; bahn.laeufer = []; bahn.ascii = null;
   // Rahmen an der Stelle sj, ab Meter neben dem Rand des Bandes; seite 1 = rechts im Bild
   function stelle(sj, seite, ab) {
     const T = bahnPunkt(sj + .01).sub(bahnPunkt(sj - .01)).normalize(), N = normale(sj), S = new THREE.Vector3().crossVectors(T, N).normalize();
@@ -1056,7 +1058,7 @@ function figurenBauen(g, bilder) {
     halter.add(o); g.add(halter); bahn.dreher.push({ o, v });
   }
 
-  /* Webseiten: ein Browser auf zwei Stützen, die Stufen 1440 · 768 · 390, ein Telefon */
+  /* Webseiten: ein Browser auf zwei Stützen, die Stufen 1440 · 768 · 390, ein Telefon, eine ASCII-Fläche und das Netz nach Baran */
   const browser = () => {
     const b = 1.6, h = .98, y0 = .34; hell = .55;
     strich([.22, 0, 0], [.22, y0, 0]); strich([b - .22, 0, 0], [b - .22, y0, 0]);
@@ -1078,13 +1080,78 @@ function figurenBauen(g, bilder) {
     hell = .4; rechteck(.06, y0 + h - .2, 0, b * .62, .06); rechteck(.06, y0 + .3, 0, b - .12, b - .12);
     hell = .3; for (let i = 0; i < 3; i++) strich([.06, y0 + .2 - i * .045, 0], [b - .06 - i * .06, y0 + .2 - i * .045, 0]);
   };
-  /* Der Würfel mit dem Raster 3 × 3 vorn und der Kugel aus Fäden innen: so verwandelt sich das Signet auf der flachen Seite */
-  const wuerfel = () => {
-    const s = .78, y0 = .2; hell = .5; quader(0, y0, 0, s, s, s);
-    hell = .32; for (let j = 1; j < 3; j++) { strich([j * s / 3, y0, 0], [j * s / 3, y0 + s, 0]); strich([0, y0 + j * s / 3, 0], [s, y0 + j * s / 3, 0]); }
-    hell = .2; bogen(s / 2, y0 + s / 2, -s / 2, s * .4, "xy", 0, Math.PI * 2, 36); bogen(s / 2, y0 + s / 2, -s / 2, s * .4, "xz", 0, Math.PI * 2, 36);
-    hell = .3; strich([s / 2, 0, -s / 2], [s / 2, y0, -s / 2]); strich([s / 2 - .12, 0, -s / 2], [s / 2 + .12, 0, -s / 2]);
-    schild("3 × 3 Themen", [s / 2, y0 + s + .06, 0], "mass");
+  /* ASCII: auf einer Zeichenfläche lösen sich Kugel, Würfel und Raster 3 × 3 ab, wie bei der Verwandlung auf der flachen Seite.
+     Jede Zelle tastet eine Distanzfunktion ab, das Licht kreist; die Helligkeit wählt das Zeichen */
+  const ascii = () => {
+    const SP = 30, ZE = 15, ZH = 17, sk = 2, SCHRIFT = '500 15px ui-monospace, "SF Mono", Menlo, Consolas, "Roboto Mono", monospace', RAMPE = ".:-=+*#%@";
+    const mz = document.createElement("canvas").getContext("2d"); mz.font = SCHRIFT;
+    const zb = Math.max(7, mz.measureText("M").width), cv = document.createElement("canvas"); cv.width = Math.ceil(SP * zb * sk); cv.height = ZE * ZH * sk;
+    const cx = cv.getContext("2d"); cx.scale(sk, sk); cx.font = SCHRIFT; cx.textBaseline = "top"; cx.fillStyle = "#fff";
+    const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    // Am Desktop rückt die Fläche näher ans Band, damit sie neben dem Anfang ganz im Bild steht
+    const B = 1.25, H = B * ZE * ZH / (SP * zb), y0 = .3, xm = B / 2 - (eng ? 0 : .3);
+    hell = .3; strich([xm, 0, 0], [xm, y0 - .04, 0]); strich([xm - .12, 0, 0], [xm + .12, 0, 0]);
+    schild("Kugel · Würfel · 3 × 3", [xm, y0 + H + .04, 0], "mass");
+    const mitte = new THREE.Vector3(xm, y0 + H / 2, 0).applyMatrix4(M);
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(B, H), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
+    mesh.matrixAutoUpdate = false; mesh.matrix.makeBasis(rechtsW, obenW, new THREE.Vector3().crossVectors(rechtsW, obenW)).scale(new THREE.Vector3().setScalar(eng ? .75 : 1)).setPosition(mitte);
+    mesh.material.userData.a = .9; g.add(mesh);
+    const kiste = (x, y, z, a, b, c) => { const qx = Math.abs(x) - a, qy = Math.abs(y) - b, qz = Math.abs(z) - c; return Math.hypot(Math.max(qx, 0), Math.max(qy, 0), Math.max(qz, 0)) + Math.min(Math.max(qx, qy, qz), 0); };
+    let wK = 1, wW = 0, wR = 0, ca = 1, sa = 0, cb = 1, sb = 0, zt = 0;
+    const L = [0, 0, 1];
+    // Kugel, Würfel und die neun Felder als Distanzen; gemischt nach ihren Anteilen. Die Felder atmen leicht vor und zurück
+    const feld = (x, y, z) => {
+      const x1 = ca * x + sa * z, z1 = -sa * x + ca * z, y1 = cb * y - sb * z1, z2 = sb * y + cb * z1;
+      let d = 0;
+      if (wK) d += wK * (Math.hypot(x1, y1, z2) - .78);
+      if (wW) d += wW * (kiste(x1, y1, z2, .5, .5, .5) - .03);
+      if (wR) { const ix = Math.max(-1, Math.min(1, Math.round(x1 / .5))), iy = Math.max(-1, Math.min(1, Math.round(y1 / .5))); d += wR * kiste(x1 - ix * .5, y1 - iy * .5, z2 - .07 * Math.sin(zt * 1.7 + ix * 1.3 - iy * .9), .2, .2, .05); }
+      return d;
+    };
+    const zeichnen = sek => {
+      // 0–3 Kugel, 3–4 zum Würfel, 4–7 Würfel, 7–8 zum Raster, 8–11 Raster, 11–12 zurück zur Kugel
+      const T = sek % 12, a = weich(3, 4, T), b = weich(7, 8, T), c = weich(11, 12, T);
+      wK = 1 - a + c; wW = a * (1 - b); wR = b * (1 - c); zt = sek;
+      // Gedreht wird nur hin und her, das Raster steht frontal
+      const ay = (.65 + .55 * Math.sin(sek * .45)) * (1 - wR), ax = .42 * (1 - wR);
+      ca = Math.cos(ay); sa = Math.sin(ay); cb = Math.cos(ax); sb = Math.sin(ax);
+      const th = sek * .8; L[0] = .75 * Math.cos(th); L[1] = .45 + .3 * Math.sin(th); L[2] = .62; const ln = Math.hypot(...L); L[0] /= ln; L[1] /= ln; L[2] /= ln;
+      cx.clearRect(0, 0, SP * zb, ZE * ZH); cx.globalAlpha = .95;
+      for (let j = 0; j < ZE; j++) {
+        let zeile = "";
+        for (let i = 0; i < SP; i++) {
+          const x = (i + .5 - SP / 2) * zb / (ZE * ZH / 2), y = (ZE / 2 - j - .5) / (ZE / 2);
+          let t = 0, d = 1, z = 0;
+          for (let n = 0; n < 32 && t < 5; n++) { z = 2.5 - t; d = feld(x, y, z); if (d < .004) break; t += d * .9; }
+          if (d >= .004) { zeile += " "; continue; }
+          const e = .01, nx = feld(x + e, y, z) - feld(x - e, y, z), ny = feld(x, y + e, z) - feld(x, y - e, z), nz = feld(x, y, z + e) - feld(x, y, z - e), nl = Math.hypot(nx, ny, nz) || 1;
+          const hl = Math.max(0, (nx * L[0] + ny * L[1] + nz * L[2]) / nl);
+          zeile += RAMPE[Math.min(RAMPE.length - 1, Math.floor((.1 + .9 * hl) * RAMPE.length))];
+        }
+        cx.fillText(zeile, 0, j * ZH + 1);
+      }
+      tex.needsUpdate = true;
+    };
+    zeichnen(1.5);
+    // Etwa zwölf Bilder in der Sekunde, und nur, wenn die Kamera in der Nähe ist
+    let zuletzt = -1;
+    bahn.ascii = sek => { if (sek - zuletzt < 1 / 12 || kamera.position.distanceTo(mitte) > 16) return; zuletzt = sek; zeichnen(sek); };
+  };
+  /* Internet: ein verteiltes Netz nach Paul Baran (1964), ohne Mitte; Pakete gehen ihren Weg von Knoten zu Knoten */
+  const baran = () => {
+    const K = [[.1, .42], [.46, .36], [.86, .46], [1.22, .38], [.04, .78], [.4, .74], [.78, .82], [1.18, .76], [.14, 1.12], [.52, 1.16], [.9, 1.1], [1.24, 1.18]].map(([x, y]) => [x * .8, y * .8 + .08]);
+    const KANTEN = [[0, 1], [1, 2], [2, 3], [4, 5], [5, 6], [6, 7], [8, 9], [9, 10], [10, 11], [0, 4], [1, 5], [2, 6], [3, 7], [4, 8], [6, 10], [7, 11], [1, 6], [4, 9], [6, 11]];
+    hell = .26; KANTEN.forEach(([a, b]) => strich([...K[a], 0], [...K[b], 0]));
+    hell = .55; K.forEach(([x, y]) => bogen(x, y, 0, .024, "xy", 0, Math.PI * 2, 10));
+    hell = .3; strich([K[1][0], 0, 0], [K[1][0], K[1][1] - .024, 0]); strich([K[1][0] - .12, 0, 0], [K[1][0] + .12, 0, 0]);
+    schild("Verteiltes Netz · Baran 1964", [.5, 1.11, 0], "mass");
+    // Drei Pakete auf geschlossenen Wegen, je etwa eine Sekunde von Knoten zu Knoten
+    [[0, 1, 5, 4], [2, 6, 7, 11, 10, 6], [8, 9, 10, 6, 1, 0, 4]].forEach(weg => {
+      const wp = []; [...weg, weg[0]].forEach(k => { v1.set(K[k][0], K[k][1], 0).applyMatrix4(M); wp.push(v1.x, v1.y, v1.z); });
+      const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(wp.slice(0, 3), 3));
+      const paket = new THREE.Points(geo, deckeln(new THREE.PointsMaterial({ size: .06, color: hdr("#9fd4b4", .9), transparent: true, depthWrite: false }), 5));
+      g.add(paket); bahn.laeufer.push({ punkte: wp, attr: geo.attributes.position, phase: zufall(), v: 20 / (weg.length * 1.05) });
+    });
   };
   /* Lab: ein Kolben, ein Prisma, das Licht in Farben teilt, und sortierte Säulen */
   const kolben = () => {
@@ -1242,7 +1309,7 @@ function figurenBauen(g, bilder) {
 
   // Je Bereich: welche Figur wo steht (Anteil der Länge, Seite, Abstand vom Band)
   const PLAN = {
-    "k-web": [["notation", .08, -1, 0], [browser, .22, 1, .5], [wuerfel, .45, -1, .5], [telefon, .72, 1, .9]],
+    "k-web": [[ascii, .08, -1, 0], [browser, .22, 1, .5], [baran, .45, -1, .2], [telefon, .72, 1, .9]],
     "k-lab": [[kolben, .25, -1, .5], [prisma, .6, 1, .4], ["notation", .85, -1, 1]],
     "k-rad": [[raeder, .4, 1, .3], ["notation", .7, -1, 2]],
     "k-apps": [[kugel, .2, -1, .5], [tuch, .5, 1, .5], [scherben, .8, -1, .4]],
@@ -1271,25 +1338,28 @@ function figurenBauen(g, bilder) {
   });
 
   /* Im dunklen Raum vor dem Anfang der Bahn kreist ein Satellit um eine Kugel aus Breiten- und Längenkreisen.
-     Die Umlaufbahn liegt schräg zum Blick, mit dem das Band erscheint; hinter der Kugel verschwindet er, die letzte Strecke zieht eine feine Spur nach. */
+     Die Umlaufbahn liegt schräg zum Blick, mit dem das Band erscheint; hinter der Kugel verschwindet er, die letzte Strecke zieht eine feine Spur nach.
+     Farben aus den Bereichen: die Kugel im Himmelblau, der Satellit in Senf wie Goldfolie, seine Segel blau */
   {
     const C = bahnPunkt(eng ? -2 : -1.4, eng ? .4 : -1, eng ? 2.6 : 1.8), sK = S_START() + (eng ? 2.4 : 1.7);
     const V = C.clone().sub(bahnPunkt(sK, 0, eng ? 5.4 : 3)).normalize(), X = new THREE.Vector3().crossVectors(V, normale(sK)).normalize(), Y = new THREE.Vector3().crossVectors(X, V);
     const q = new THREE.Quaternion().setFromAxisAngle(V, -.2), A = X.clone().applyQuaternion(q), B = Y.clone().multiplyScalar(Math.sin(.27)).addScaledVector(V, Math.cos(.27)).applyQuaternion(q);
     const ro = eng ? 1.2 : 1.55, rg = eng ? .36 : .46, UMLAUF = 28;
+    const weiss = new THREE.Color(1, 1, 1), himmel = new THREE.Color("#8fb0ff"), senf = new THREE.Color("#e6b117"), segel = new THREE.Color("#5c86ff");
     const linien = zeichne => {
-      const p = [], c = []; zeichne((a, b, h) => { p.push(a[0], a[1], a[2], b[0], b[1], b[2]); c.push(h, h, h, h, h, h); });
+      const p = [], c = []; zeichne((a, b, h, f = weiss) => { p.push(a[0], a[1], a[2], b[0], b[1], b[2]); c.push(f.r * h, f.g * h, f.b * h, f.r * h, f.g * h, f.b * h); });
       const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(p, 3)); geo.setAttribute("color", new THREE.Float32BufferAttribute(c, 3));
       return new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false }));
     };
-    const ring = (s, n, h, f) => { for (let i = 0; i < n; i++) s(f(i / n * Math.PI * 2), f((i + 1) / n * Math.PI * 2), h); };
+    const ring = (s, n, h, f, farbe) => { for (let i = 0; i < n; i++) s(f(i / n * Math.PI * 2), f((i + 1) / n * Math.PI * 2), h, farbe); };
     // Die Kugel: Achse etwas geneigt, sie dreht sich langsam; ein schwarzer Kern verdeckt ihre Rückseite und was hinter ihr vorbeizieht
     const kugel = new THREE.Group(); kugel.position.copy(C); kugel.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), Y.clone().applyAxisAngle(V, .38).normalize());
     const drehteil = linien(s => {
-      for (const [b, h] of [[-.9, .2], [-.45, .28], [0, .42], [.45, .28], [.9, .2]]) { const r = rg * Math.cos(b), y = rg * Math.sin(b); ring(s, 48, h, w => [r * Math.cos(w), y, r * Math.sin(w)]); }
-      for (let k = 0; k < 6; k++) { const a = k * Math.PI / 6; ring(s, 48, .28, w => [rg * Math.cos(w) * Math.cos(a), rg * Math.sin(w), rg * Math.cos(w) * Math.sin(a)]); }
+      for (const [b, h] of [[-.9, .3], [-.45, .42], [0, .62], [.45, .42], [.9, .3]]) { const r = rg * Math.cos(b), y = rg * Math.sin(b); ring(s, 48, h, w => [r * Math.cos(w), y, r * Math.sin(w)], himmel); }
+      for (let k = 0; k < 6; k++) { const a = k * Math.PI / 6; ring(s, 48, .42, w => [rg * Math.cos(w) * Math.cos(a), rg * Math.sin(w), rg * Math.cos(w) * Math.sin(a)], himmel); }
     });
-    const kern = new THREE.Mesh(new THREE.SphereGeometry(rg * .97, 32, 16), new THREE.MeshBasicMaterial({ color: 0x000000 }));
+    // Der Kern ist nicht schwarz, sondern ein tiefes Nachtblau: so steht die Kugel als Körper im Raum
+    const kern = new THREE.Mesh(new THREE.SphereGeometry(rg * .97, 32, 16), new THREE.MeshBasicMaterial({ color: new THREE.Color("#0b1838") }));
     kugel.add(drehteil, kern); g.add(kugel);
     // Die Umlaufbahn gepunktet; hinter dem Satelliten wird sie für ein Stück zur Spur
     const NB = 180, bp = [];
@@ -1300,19 +1370,19 @@ function figurenBauen(g, bilder) {
     const sat = new THREE.Group(); sat.matrixAutoUpdate = false;
     sat.add(linien(s => {
       const k = .04, e = [[-k, -k, -k], [k, -k, -k], [k, k, -k], [-k, k, -k], [-k, -k, k], [k, -k, k], [k, k, k], [-k, k, k]];
-      for (const [a, b] of [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]]) s(e[a], e[b], .75);
+      for (const [a, b] of [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]]) s(e[a], e[b], .9, senf);
       for (const sg of [-1, 1]) {
         const x0 = sg * .065, x1 = sg * .25, hy = .045;
         s([sg * k, 0, 0], [x0, 0, 0], .5);
-        s([x0, -hy, 0], [x1, -hy, 0], .65); s([x0, hy, 0], [x1, hy, 0], .65); s([x0, -hy, 0], [x0, hy, 0], .65); s([x1, -hy, 0], [x1, hy, 0], .65);
-        for (let j = 1; j < 3; j++) { const x = x0 + (x1 - x0) * j / 3; s([x, -hy, 0], [x, hy, 0], .38); }
+        s([x0, -hy, 0], [x1, -hy, 0], .8, segel); s([x0, hy, 0], [x1, hy, 0], .8, segel); s([x0, -hy, 0], [x0, hy, 0], .8, segel); s([x1, -hy, 0], [x1, hy, 0], .8, segel);
+        for (let j = 1; j < 3; j++) { const x = x0 + (x1 - x0) * j / 3; s([x, -hy, 0], [x, hy, 0], .5, segel); }
       }
-      ring(s, 16, .55, w => [.035 * Math.cos(w), .035 * Math.sin(w), -.075]); s([0, 0, -k], [0, 0, -.075], .45);
+      ring(s, 16, .7, w => [.035 * Math.cos(w), .035 * Math.sin(w), -.075], senf); s([0, 0, -k], [0, 0, -.075], .45);
       for (let j = 0; j < 4; j++) { const w = j * Math.PI / 2 + .3; s([.035 * Math.cos(w), .035 * Math.sin(w), -.075], [0, 0, -.11], .3); }
       s([0, 0, k], [0, 0, .1], .4);
     }));
     const lg = new THREE.BufferGeometry(); lg.setAttribute("position", new THREE.Float32BufferAttribute([0, 0, .1], 3));
-    const licht = new THREE.Points(lg, deckeln(new THREE.PointsMaterial({ size: .05, color: hdr("#8fb0ff", .9), transparent: true, depthWrite: false }), 5));
+    const licht = new THREE.Points(lg, deckeln(new THREE.PointsMaterial({ size: .05, color: hdr("#ffa3d1", .9), transparent: true, depthWrite: false }), 5));
     sat.add(licht); g.add(sat);
     kugel.userData.immer = umlauf.userData.immer = sat.userData.immer = true;
     M.identity(); rechtsW.copy(X); obenW.copy(Y);
@@ -1326,8 +1396,9 @@ function figurenBauen(g, bilder) {
       drehteil.rotation.y = sek * .12;
       for (let i = 0; i < NB; i++) {
         let d = w - (i + .5) / NB * Math.PI * 2; d -= Math.floor(d / (Math.PI * 2)) * Math.PI * 2;
-        const h = d < 1.9 ? .09 + .46 * (1 - d / 1.9) ** 2 : i % 2 ? .1 : 0;
-        farben.setXYZ(2 * i, h, h, h); farben.setXYZ(2 * i + 1, h, h, h);
+        // Die Spur in Senf, die übrige Bahn gepunktet im Blau der Kugel
+        const f = d < 1.9 ? senf : himmel, h = d < 1.9 ? .1 + .6 * (1 - d / 1.9) ** 2 : i % 2 ? .16 : 0;
+        farben.setXYZ(2 * i, f.r * h, f.g * h, f.b * h); farben.setXYZ(2 * i + 1, f.r * h, f.g * h, f.b * h);
       }
       farben.needsUpdate = true;
       licht.material.userData.a = .2 + .8 * Math.max(0, 1 - (sek % 2.6) / .6);
@@ -1406,7 +1477,17 @@ function zeitachse(dt) {
 }
 addEventListener("pointermove", e => { zustand.maus.x = e.clientX / innerWidth - .5; zustand.maus.y = e.clientY / innerHeight - .5; }, { passive: true });
 
-const tmp = { a: new THREE.Vector3(), b: new THREE.Vector3(), c: new THREE.Vector3(), d: new THREE.Vector3(), e: new THREE.Vector3(), f: new THREE.Vector3(), g: new THREE.Vector3(), up: new THREE.Vector3() };
+const tmp = { a: new THREE.Vector3(), b: new THREE.Vector3(), c: new THREE.Vector3(), d: new THREE.Vector3(), e: new THREE.Vector3(), f: new THREE.Vector3(), g: new THREE.Vector3(), h: new THREE.Vector3(), n: new THREE.Vector3(), up: new THREE.Vector3() };
+// Ein Titel richtet sich höchstens so weit auf, dass er von der Kamera aus ganz vor dem Grund seines Kapitels steht:
+// seine Oberkante bleibt diesseits der Ebene durch die Kamera und den Anfang des Kapitels, sonst ragt er ins Schwarze oder ins Kapitel davor
+function titelWinkel(x, ziel) {
+  const n = tmp.n.subVectors(x.E, kamera.position).cross(x.X), c0 = n.dot(tmp.h.subVectors(x.B, kamera.position)), c1 = x.hoch * n.dot(x.Y), c2 = x.hoch * n.dot(x.Z);
+  const vor = a => (c0 + c1 * Math.cos(a) + c2 * Math.sin(a)) * Math.sign(c0 + c1) > 0;
+  if (vor(ziel)) return ziel;
+  let lo = 0, hi = ziel;
+  for (let j = 0; j < 12; j++) { const m = (lo + hi) / 2; if (vor(m)) lo = m; else hi = m; }
+  return lo;
+}
 // Beim Wechsel zur flachen Seite kippt die Kamera über das Kapitel, bis die Bahn wie eine Seite daliegt, und zurück
 const kipp = { von: 0, nach: 0, t0: 0, dauer: 1, kap: 0, wert: 0 };
 function kippen(nach, dauer, kap) { kipp.von = kipp.wert; kipp.nach = nach; kipp.t0 = performance.now(); kipp.dauer = dauer; if (kap != null) kipp.kap = kap; }
@@ -1567,13 +1648,14 @@ function bild(zeit) {
       // Titel liegen flacher, solange sie nah sind, und richten sich auf, während sie davonziehen
       const fuss = zustand.s + (schmal() ? 2.4 : 1.7);
       // Beim Kippen in die flache Seite legen sie sich auf das Band, genau dorthin, wo der Titel auf der Seite steht
-      bahn.titel.forEach(x => { const a = misch(ruhig ? 1.05 : misch(.35, 1.3, weich(-2, 16, fuss - x.sH)), 0, kipp.wert); x.mesh.rotation.x = a; x.schatten.scale.y = .15 + .85 * Math.cos(a); });
+      bahn.titel.forEach(x => { const a = misch(titelWinkel(x, ruhig ? 1.05 : misch(.35, 1.3, weich(-2, 16, fuss - x.sH))), 0, kipp.wert); x.mesh.rotation.x = a; x.schatten.scale.y = .15 + .85 * Math.cos(a); });
       // Die drei Räder drehen sich langsam gegeneinander, auf jeder Schlaufe läuft ein Punkt
       if (!ruhig) {
         bahn.signete.forEach(f => f(zeit / 1000));
         if (bahn.satellit) bahn.satellit(zeit / 1000);
+        if (bahn.ascii) bahn.ascii(zeit / 1000);
         bahn.dreher.forEach(d => { d.o.rotation.z = zeit * .00011 * d.v; });
-        bahn.laeufer.forEach(l => { const n = l.punkte.length / 3 - 1, f = ((zeit * .00005 + l.phase) % 1) * n, i = Math.floor(f), u = f - i, P = l.punkte;
+        bahn.laeufer.forEach(l => { const n = l.punkte.length / 3 - 1, f = ((zeit * .00005 * (l.v || 1) + l.phase) % 1) * n, i = Math.floor(f), u = f - i, P = l.punkte;
           l.attr.setXYZ(0, misch(P[i * 3], P[i * 3 + 3], u), misch(P[i * 3 + 1], P[i * 3 + 4], u), misch(P[i * 3 + 2], P[i * 3 + 5], u)); l.attr.needsUpdate = true; });
       }
     }
