@@ -135,8 +135,8 @@ body.zurueck .bahn { position: fixed; left: 0; right: 0; pointer-events: none; }
 .k-innen { padding: clamp(40px, 8cqi, 68px) max(clamp(22px, 5.4cqi, 48px), env(safe-area-inset-right, 0px)) clamp(52px, 9cqi, 84px) max(clamp(22px, 5.4cqi, 48px), env(safe-area-inset-left, 0px)); }
 .kapitel a { color: inherit; text-decoration: none; }
 .kapitel img { display: block; }
-/* Titel in Grossbuchstaben, etwas kleiner als zuvor in gemischter Schreibung, weniger eng gesetzt (Christian, 30. Oktober 2026) */
-.kapitel h2 { margin: 0; font-size: clamp(46px, 12cqi, 104px); font-weight: 500; letter-spacing: -.015em; line-height: .88; text-transform: uppercase; }
+/* Titel in Grossbuchstaben, alle gleich gross (so gross wie «Webseiten»), weniger eng gesetzt (Christian, 30. Oktober 2026) */
+.kapitel h2 { margin: 0; font-size: clamp(34px, 7cqi, 62px); font-weight: 500; letter-spacing: -.015em; line-height: .88; text-transform: uppercase; }
 .kapitel h2 .wort, .kapitel h2 .bst { display: inline-block; }
 .kapitel h2 .wort { white-space: nowrap; }
 .marke-k, .kapitel .label { font: 500 11px/1.25 var(--sans); letter-spacing: .1em; text-transform: uppercase; color: var(--kg); }
@@ -170,7 +170,6 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 :is(.k-web, .k-apps, .k-kunst, .k-exp) .marke-k .zl { display: block; }
 :is(.k-web, .k-apps, .k-kunst, .k-exp) .marke-k .begriff { font: 500 clamp(17px, 2.5cqi, 23px)/1.12 var(--sans); letter-spacing: -.01em; text-transform: none; color: var(--kt); }
 :is(.k-web, .k-apps, .k-kunst, .k-exp) .leit { font-family: var(--sans); font-style: normal; font-weight: 400; font-size: clamp(19px, 3cqi, 26px); letter-spacing: -.015em; }   /* nüchtern statt kursiv */
-:is(.k-web, .k-apps, .k-kunst, .k-exp) h2 { font-size: clamp(34px, 7cqi, 62px); }   /* «Webseiten» ist lang: kleiner als die kurzen Titel, sonst erdrückt er die Seite; Apps gleich gross */
 /* Die Bühne hat das Seitenverhältnis --ar; Signet und Raster bleiben quadratisch, weil ihre Breite durch --ar geteilt wird */
 .buehne { --ar: 1; position: relative; margin: clamp(18px, 3cqi, 28px) 0 clamp(22px, 4cqi, 34px); aspect-ratio: var(--ar); }
 .buehne > * { position: absolute; }
