@@ -5,8 +5,9 @@
 <style>
 /* ornament.cloud/gamma – Landing-Page nach einer Videovorlage (29. Oktober 2026), Entwurf 3. Ein WebGL-Raum (three.js, vendor/three-0.185.1):
    zuerst ein leuchtendes Netz aus den 49 Strophen von «Zu seiner Zeit» und ihren 133 Personen, durch das die Kamera fliegt; eine Tafel
-   mit dem Wort des gezogenen Zettels gleitet herein und kippt weg (bei jedem Besuch ein anderer Zettel, #zettel-12 zieht einen bestimmten); dann liegt die Website als Bahn in einer runden Trommel: Lab, Das 3. Rad,
+   mit dem Wort des gezogenen Zettels gleitet herein und kippt weg (bei jedem Besuch ein anderer Zettel, #zettel-12 zieht einen bestimmten); dann liegt die Website als Bahn in einer runden Trommel: Webseiten, Lab, Das 3. Rad,
    Apps, Prompts, Zettel, Social, Art und Angebot als Farbfelder (Farben der Startseite /b/), die sich vor der Kamera zum Looping aufbiegen.
+   Neben der Bahn stehen feine Drahtfiguren je Bereich, Notationen aus den «Laws of Form» und die Schlaufe des Signets.
    Die Bahn-Bilder zeichnet das Skript aus dem HTML der Kapitel unten; «Flach lesen» zeigt genau dieses HTML. Schriften und Farben des Neubaus. */
 :root {
   --nacht: #000000; --text: #ffffff; --leise: rgba(255, 255, 255, .62); --strich: rgba(255, 255, 255, .5); --fein: rgba(255, 255, 255, .14);
@@ -103,7 +104,8 @@ body.flach .bahn { display: block; pointer-events: auto; width: min(980px, 100%)
 .kapitel a { color: inherit; text-decoration: none; }
 .kapitel img { display: block; }
 .kapitel h2 { margin: 0; font-size: clamp(58px, 15.5cqi, 132px); font-weight: 500; letter-spacing: -.045em; line-height: .86; }
-.kapitel h2 .bst { display: inline-block; white-space: pre; }
+.kapitel h2 .wort, .kapitel h2 .bst { display: inline-block; }
+.kapitel h2 .wort { white-space: nowrap; }
 .marke-k, .kapitel .label { font: 500 11px/1.25 var(--sans); letter-spacing: .1em; text-transform: uppercase; color: var(--kg); }
 .marke-k { display: block; margin-bottom: clamp(16px, 3cqi, 26px); text-align: right; }   /* rechts: im Raum steht der Titel davor auf */
 .kapitel .leit { margin: clamp(18px, 3cqi, 28px) 0 clamp(30px, 6cqi, 52px); font-family: var(--serif); font-style: italic; font-size: clamp(20px, 3.4cqi, 30px); line-height: 1.2; max-width: 24ch; text-wrap: balance; }
@@ -117,7 +119,8 @@ body.flach .bahn { display: block; pointer-events: auto; width: min(980px, 100%)
 .k-netz .etikett text { fill: var(--k); font: 500 10px var(--sans); letter-spacing: .08em; text-transform: uppercase; }
 body.flach.nach-intro.wechsel #welt { visibility: visible; }
 
-/* Farben: Lab Karmin, 3. Rad Blaupause, Apps Senf, Prompts Rot, Zettel Papier, Social Tinte, Art Rosa, Angebot Tannengrün */
+/* Farben: Webseiten Tannengrün, Lab Karmin, 3. Rad Blaupause, Apps Senf, Prompts Rot, Zettel Papier, Social Tinte, Art Rosa, Angebot Tannengrün */
+.k-web { --k: #1f4d3a; --kt: #ffffff; --kg: rgba(255, 255, 255, .74); --kl: rgba(255, 255, 255, .26); --ka: #9fd4b4; }
 .k-lab { --k: #7a1235; --kt: #ffffff; --kg: rgba(255, 255, 255, .72); --kl: rgba(255, 255, 255, .26); --ka: #ffa3d1; }
 .k-rad { --k: #1d3fd6; --kt: #ffffff; --kg: rgba(255, 255, 255, .76); --kl: rgba(255, 255, 255, .3); --ka: #ecb98f; }
 .k-apps { --k: #e6b117; --kt: #000000; --kg: rgba(0, 0, 0, .68); --kl: rgba(0, 0, 0, .22); --ka: #ffffff; }
@@ -127,7 +130,86 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 .k-art { --k: #f2b2c0; --kt: #000000; --kg: rgba(0, 0, 0, .66); --kl: rgba(0, 0, 0, .2); --ka: #ffffff; }
 .k-angebot { --k: #1f4d3a; --kt: #ffffff; --kg: rgba(255, 255, 255, .74); --kl: rgba(255, 255, 255, .26); --ka: #9fd4b4; }
 
-/* 01 Lab: ein grosses Bild, die sechs Verfahren als Liste, darunter die übrigen Ergebnisse als Kontaktbogen */
+/* 01 Webseiten: oben drei Begriffe, mittig das Signet auf einer Bühne mit feiner Konstruktion, im unteren Drittel drei Flächen.
+   Flach wird das Signet zur Punktkugel, zum Würfel und zum Raster der neun Themen; eine Fläche zeigt ihren Inhalt auf der Bühne. */
+.k-web .k-innen { padding-top: clamp(40px, 5.6cqi, 54px); }
+.k-web .marke-k { position: absolute; top: clamp(40px, 5.6cqi, 54px); right: max(clamp(22px, 5.4cqi, 48px), env(safe-area-inset-right, 0px)); margin: 0; }
+.web-kopf { display: grid; gap: clamp(14px, 2.6cqi, 22px); }
+.k-web h2 { font-size: clamp(40px, 8.2cqi, 72px); font-weight: 400; letter-spacing: -.035em; line-height: 1; }
+.k-web h2 .zl { display: block; }
+.k-web .web-kopf .leit { margin: 0; font-family: var(--sans); font-style: normal; font-size: clamp(16px, 2.3cqi, 19px); line-height: 1.38; color: var(--kg); max-width: 30ch; }
+/* Die Bühne hat das Seitenverhältnis --ar; Kreise, Signet und Raster bleiben quadratisch, weil ihre Breite durch --ar geteilt wird */
+.buehne { --ar: 1; position: relative; margin: clamp(18px, 3cqi, 28px) 0 clamp(22px, 4cqi, 34px); aspect-ratio: var(--ar); }
+.buehne > * { position: absolute; }
+.konstruktion { inset: 0; transition: opacity .6s; }
+.konstruktion i { position: absolute; display: block; background: var(--kl); }
+.konstruktion .waag { left: 0; right: 0; top: 50%; height: 1px; }
+.konstruktion .senk { top: 0; bottom: 0; left: 50%; width: 1px; }
+.konstruktion .kreis { top: 6%; height: 88%; width: calc(88% / var(--ar)); left: calc(50% - 44% / var(--ar)); background: none; border: 1px solid var(--kl); border-radius: 50%; }
+.konstruktion .kreis.innen { top: 27%; height: 46%; width: calc(46% / var(--ar)); left: calc(50% - 23% / var(--ar)); }
+.konstruktion .formel { position: absolute; right: 0; bottom: 0; font: italic 400 15px/1.2 var(--serif); color: var(--kg); }
+.konstruktion .masz { position: absolute; left: 0; top: 0; font: 500 10.5px/1.2 var(--sans); letter-spacing: .08em; color: var(--kg); }
+.logo { top: 8%; height: 84%; width: calc(84% / var(--ar)); left: calc(50% - 42% / var(--ar)); transition: opacity .5s; }
+.logo canvas { display: block; width: 100%; height: 100%; }
+.verwandlung { inset: 0; width: 100%; height: 100%; pointer-events: none; }
+/* Das Raster der neun Themen: Kopfzeile mit den drei Begriffen, darunter 3 × 3 Felder mit Haarlinien */
+.themen { top: 0; bottom: 0; width: min(100%, 93% / var(--ar)); left: calc(50% - min(50%, 46.5% / var(--ar))); display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 8px; visibility: hidden; opacity: 0; transition: opacity .5s, visibility 0s .5s; }
+.themen .spalten-kopf { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.themen .spalten-kopf span { font: 500 10.5px/1.2 var(--sans); letter-spacing: .1em; text-transform: uppercase; color: var(--kg); padding-left: 1px; }
+.themen.offen .spalten-kopf span:not(:first-child) { visibility: hidden; }
+.zellen { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 1px; padding: 1px; background: var(--kl); }
+.zellen > * { min-width: 0; min-height: 0; background: var(--k); }
+.thema { position: relative; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; padding: clamp(8px, 1.6cqi, 12px); border: 0; border-radius: 0; color: var(--kt); font: inherit; text-align: left; cursor: pointer; }
+.thema:hover { background: #2a5c47; }
+.thema .nr { font: 500 10.5px/1.2 var(--sans); letter-spacing: .08em; color: var(--kg); }
+.thema b { font-weight: 500; font-size: clamp(14px, 2cqi, 17px); letter-spacing: -.01em; line-height: 1.15; hyphens: auto; overflow-wrap: anywhere; }
+.thema[hidden], .erkl[hidden] { display: none; }
+.thema[aria-expanded="true"] { background: var(--ka); color: var(--k); cursor: default; }
+.thema[aria-expanded="true"] .nr { color: var(--k); }
+.erkl { padding: clamp(8px, 1.6cqi, 12px); hyphens: auto; display: flex; flex-direction: column; justify-content: flex-end; gap: 4px; overflow: hidden; }
+.erkl.leitsatz { grid-column: span 2; justify-content: center; font-family: var(--serif); font-style: italic; font-size: clamp(15px, 2.2cqi, 19px); line-height: 1.22; text-wrap: balance; }
+.erkl .gross { font-size: clamp(20px, 3.4cqi, 28px); font-weight: 400; letter-spacing: -.035em; line-height: 1; overflow-wrap: anywhere; }
+.erkl .klein { font-size: clamp(11.5px, 1.6cqi, 13px); line-height: 1.3; color: var(--kg); }
+.erkl.leer { background: var(--k) linear-gradient(var(--kl), var(--kl)) center / 1px 22% no-repeat; }
+.erkl.leer::after { content: ""; display: block; margin: auto; width: 22%; height: 1px; background: var(--kl); }
+.erkl.schalter { border: 0; border-radius: 0; color: var(--kt); font: inherit; text-align: left; cursor: pointer; justify-content: space-between; }
+.erkl.schalter:hover { background: #2a5c47; }
+.erkl.schalter .klein { color: var(--ka); }
+.erkl.schalter b { font-weight: 500; font-size: clamp(13px, 1.8cqi, 15px); line-height: 1.2; }
+/* Der Inhalt einer Fläche, oben auf der Bühne */
+.feld-inhalt { inset: 0; display: flex; flex-direction: column; visibility: hidden; opacity: 0; border-top: 1px solid var(--kt); padding-top: clamp(12px, 2.4cqi, 18px); }
+.fi { display: grid; align-content: start; gap: clamp(12px, 2.4cqi, 20px); }
+.fi[hidden] { display: none; }
+.fi-satz { margin: 0; font-family: var(--serif); font-style: italic; font-size: clamp(24px, 4.6cqi, 40px); line-height: 1.12; max-width: 22ch; text-wrap: balance; }
+.fi-folgt { margin: 0; font-size: 13.5px; color: var(--kg); }
+.fi-fragen, .fi-liste { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--kl); }
+.fi-fragen li, .fi-liste li { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0 10px; border-bottom: 1px solid var(--kl); font-size: clamp(15px, 2.2cqi, 18px); }
+.fi-fragen li span, .fi-liste li span { font-size: 12.5px; color: var(--kg); text-align: right; }
+.fi .weiter { margin-top: 4px; justify-self: start; }
+.fi-zu { margin-top: auto; align-self: flex-start; padding: 8px 0; border: 0; background: none; color: var(--ka); font: 500 13.5px var(--sans); cursor: pointer; }
+.k-web.raster .logo, .k-web.raster .konstruktion, .k-web.baut .logo, .k-web.zeigt-feld .logo, .k-web.zeigt-feld .konstruktion { opacity: 0; }
+.k-web.raster:not(.baut):not(.zeigt-feld) .themen { visibility: visible; opacity: 1; transition: opacity .6s; }
+.k-web.zeigt-feld .feld-inhalt { visibility: visible; opacity: 1; transition: opacity .45s; }
+/* Drei Flächen im unteren Drittel, in drei Tönen des Tannengrüns */
+.flaechen { display: grid; border-top: 1px solid var(--kt); }
+.feld { display: grid; grid-template-rows: auto 1fr auto; gap: 12px; min-height: clamp(128px, 24cqi, 196px); padding: 14px clamp(14px, 2.6cqi, 20px) 16px; border: 0; border-radius: 0; color: var(--kt); font: inherit; text-align: left; cursor: pointer; }
+.feld:nth-child(1) { background: rgba(255, 255, 255, .045); }
+.feld:nth-child(2) { background: rgba(255, 255, 255, .085); }
+.feld:nth-child(3) { background: rgba(255, 255, 255, .13); }
+.feld:hover { background: rgba(255, 255, 255, .17); }
+.feld .feld-kopf { display: flex; justify-content: space-between; gap: 10px; }
+.feld .feld-kopf span:last-child { font: 500 11px/1.25 var(--sans); letter-spacing: .04em; color: var(--ka); }
+.feld .feld-satz { font-family: var(--serif); font-style: italic; font-size: clamp(18px, 2.5cqi, 21px); line-height: 1.2; max-width: 24ch; }
+.feld .feld-pfeil { justify-self: end; font-size: 17px; line-height: 1; color: var(--ka); }
+.feld[aria-expanded="true"] { background: var(--ka); color: var(--k); }
+.feld[aria-expanded="true"] .label, .feld[aria-expanded="true"] .feld-kopf span:last-child, .feld[aria-expanded="true"] .feld-pfeil { color: var(--k); }
+@container (min-width: 640px) {
+  .web-kopf { grid-template-columns: minmax(0, 1fr) minmax(0, 15em); align-items: end; }
+  .buehne { --ar: 1.9; }
+  .flaechen { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* 02 Lab: ein grosses Bild, die sechs Verfahren als Liste, darunter die übrigen Ergebnisse als Kontaktbogen */
 .lab-werk { display: grid; gap: 22px; }
 .lab-gross img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; }
 .liste { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--kt); }
@@ -141,7 +223,7 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 .kontakt figcaption { margin-top: 7px; font: 500 10.5px/1 var(--sans); letter-spacing: .08em; color: var(--kg); }
 @container (min-width: 640px) { .lab-werk { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 34px; align-items: start; } }
 
-/* 02 Das 3. Rad: drei Scheiben nebeneinander */
+/* 03 Das 3. Rad: drei Scheiben nebeneinander */
 .raeder { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(14px, 3.4cqi, 30px); }
 .rad { display: grid; align-content: start; gap: 6px; }
 .scheibe { position: relative; display: block; aspect-ratio: 1; border-radius: 50%; overflow: hidden; background: #ffffff; margin-bottom: 12px; }
@@ -151,7 +233,7 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 .rad b { font-weight: 500; font-size: clamp(18px, 3cqi, 24px); letter-spacing: -.015em; line-height: 1.15; }
 .rad > span:last-child { font-size: clamp(12px, 1.9cqi, 14px); line-height: 1.4; color: var(--kg); }
 
-/* 03 Apps: Index mit grosser Zahl */
+/* 04 Apps: Index mit grosser Zahl */
 .index { display: grid; gap: 18px; }
 .gross-zahl { margin: 0; font-size: clamp(130px, 32cqi, 240px); font-weight: 400; letter-spacing: -.07em; line-height: .76; }
 .gross-zahl .label { display: block; margin-top: 18px; max-width: 16ch; line-height: 1.5; color: var(--kt); }
@@ -163,14 +245,14 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 .app-liste i { font-style: normal; font-size: 18px; padding-right: 2px; }
 @container (min-width: 640px) { .index { grid-template-columns: 190px minmax(0, 1fr); gap: 34px; align-items: start; } }
 
-/* 04 Prompts: Matrix aus vier Feldern, wie die Quadranten auf der Website */
+/* 05 Prompts: Matrix aus vier Feldern, wie die Quadranten auf der Website */
 .matrix { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid var(--kt); border-left: 1px solid var(--kt); }
 .matrix a { display: grid; align-content: start; gap: 6px; padding: clamp(12px, 2.6cqi, 22px); border-right: 1px solid var(--kt); border-bottom: 1px solid var(--kt); }
 .matrix img { width: 74%; aspect-ratio: 1; margin: 2px auto 10px; mix-blend-mode: multiply; }
 .matrix b { font-weight: 500; font-size: clamp(15px, 2.5cqi, 20px); letter-spacing: -.01em; line-height: 1.2; }
 .matrix a > span:last-child { font-size: clamp(12px, 1.9cqi, 13.5px); line-height: 1.4; color: var(--kg); }
 
-/* 05 Zettel: sieben Zyklen à sieben Strophen, die gezogene in Blaupause */
+/* 06 Zettel: sieben Zyklen à sieben Strophen, die gezogene in Blaupause */
 .zettel-feld { display: grid; gap: 26px; }
 .zyklen { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: clamp(3px, .8cqi, 6px); }
 .zyklus { min-width: 0; display: grid; gap: clamp(3px, .8cqi, 6px); align-content: start; }
@@ -183,7 +265,7 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 .strophe p { margin: 0; font-family: var(--serif); font-style: italic; font-size: clamp(19px, 3.1cqi, 26px); line-height: 1.28; text-wrap: pretty; }
 @container (min-width: 640px) { .zettel-feld { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 38px; align-items: start; } }
 
-/* 06 Social: drei Zettel, leicht versetzt, je mit kleinem Feld */
+/* 07 Social: drei Zettel, leicht versetzt, je mit kleinem Feld */
 .kanaele { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(8px, 2cqi, 18px); align-items: start; }
 .kanal { display: grid; gap: 8px; padding: clamp(10px, 2.2cqi, 18px); border: 1px solid var(--kl); }
 .kanal:nth-child(2) { margin-top: clamp(18px, 5cqi, 44px); }
@@ -196,7 +278,7 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 .feldchen i { aspect-ratio: 1; border: 1px solid var(--kl); }
 .feldchen i.an { background: var(--ka); border-color: var(--ka); }
 
-/* 07 Art: Liste und ein grosses Werk */
+/* 08 Art: Liste und ein grosses Werk */
 .werk { display: grid; gap: 24px; }
 .werk-liste { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--kt); }
 .werk-liste li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 13px 0 15px; border-bottom: 1px solid var(--kl); font-size: clamp(22px, 4cqi, 32px); font-weight: 500; letter-spacing: -.025em; line-height: 1.1; }
@@ -205,7 +287,7 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 .werk figcaption { margin-top: 10px; font-family: var(--serif); font-style: italic; font-size: 15px; color: var(--kg); }
 @container (min-width: 640px) { .werk { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 36px; align-items: end; } .werk figure { order: 0; } }
 
-/* 08 Angebot: vier Leistungen mit grossen Ziffern */
+/* 09 Angebot: drei Leistungen mit grossen Ziffern */
 .angebot-liste { list-style: none; margin: 0; padding: 0; display: grid; border-top: 1px solid var(--kt); }
 .angebot-liste a { display: grid; grid-template-columns: clamp(52px, 10cqi, 84px) minmax(0, 1fr); padding: 16px 0 18px; border-bottom: 1px solid var(--kl); }
 .angebot-liste .nr { grid-row: span 2; font-size: clamp(34px, 7cqi, 58px); font-weight: 400; letter-spacing: -.05em; line-height: .9; color: var(--ka); }
@@ -244,7 +326,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
 <header class="kopf">
   <a class="marke" href="{{LINK}}b/"><img src="{{BILD}}b/bilder/signet/signet-dunkel.svg" alt="">ornament.cloud <span class="ausgabe">Gamma · Herbst 2026</span></a>
   <nav aria-label="Bereiche">
-    <a href="#k-lab">Lab</a><a href="#k-rad">3. Rad</a><a href="#k-apps">Apps</a><a href="#k-prompts">Prompts</a><a href="#k-zettel">Zettel</a><a href="#k-social">Social</a><a href="#k-art">Art</a><a href="#k-angebot">Angebot</a>
+    <a href="#k-web">Webseiten</a><a href="#k-lab">Lab</a><a href="#k-rad">3. Rad</a><a href="#k-apps">Apps</a><a href="#k-prompts">Prompts</a><a href="#k-zettel">Zettel</a><a href="#k-social">Social</a><a href="#k-art">Art</a><a href="#k-angebot">Angebot</a>
   </nav>
   <a class="pille" href="{{LINK}}b/">Zur Website</a>
 </header>
@@ -265,8 +347,8 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
       </div>
     </div>
     <div class="intro-text" id="intro-text">
-      <h1>Acht Bereiche, ein Netz.</h1>
-      <p>Lab · 3. Rad · Apps · Prompts · Zettel · Social · Art · Angebot<br><span id="zug-hinweis">Weiter nach unten</span></p>
+      <h1>Neun Bereiche, ein Netz.</h1>
+      <p>Webseiten · Lab · 3. Rad · Apps · Prompts · Zettel · Social · Art · Angebot<br><span id="zug-hinweis">Weiter nach unten</span></p>
     </div>
   </div></div>
 </section>
@@ -275,8 +357,49 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
 <section id="bahn-abschnitt" aria-label="Bereiche der Website">
   <div class="raum-platz" id="raum-platz"></div>
   <div class="bahn" id="bahn">
+      <article class="kapitel k-web" id="k-web" data-name="Webseiten"><div class="k-innen">
+        <span class="marke-k">01 · Angebot</span>
+        <div class="web-kopf">
+          <h2 aria-label="Entwickeln, gestalten, vernetzen."><span class="zl">Entwickeln,</span><span class="zl">gestalten,</span><span class="zl">vernetzen.</span></h2>
+          <p class="leit">Websites und Apps: schnell, eigenständig, ohne Dienste von aussen.</p>
+        </div>
+        <div class="buehne">
+          <div class="konstruktion" aria-hidden="true"><i class="waag"></i><i class="senk"></i><i class="kreis"></i><i class="kreis innen"></i><span class="masz">ornament.cloud</span><span class="formel">r = b + cos t</span></div>
+          <div class="logo" data-signet><canvas aria-hidden="true"></canvas></div>
+          <div class="themen" aria-label="Neun Themen">
+            <div class="spalten-kopf" aria-hidden="true"><span>Entwickeln</span><span>Gestalten</span><span>Vernetzen</span></div>
+            <div class="zellen"></div>
+          </div>
+          <div class="feld-inhalt">
+            <section class="fi" data-feld="express" hidden>
+              <span class="label">Express</span>
+              <p class="fi-satz">Wenns schnell gehen muss: neue Webseite online in 72 Stunden</p>
+              <p class="fi-folgt">Ablauf, Umfang und Preis folgen.</p>
+            </section>
+            <section class="fi" data-feld="briefing" hidden>
+              <span class="label">Briefing</span>
+              <p class="fi-satz">Senden Sie eine unverbindliche Anfrage, damit wir Ihnen ein gutes Angebot machen können</p>
+              <ol class="fi-fragen"><li>Was soll entstehen?<span>Website, App, beides</span></li><li>Was gibt es schon?<span>Texte, Bilder, Logo</span></li><li>Wie gross?<span>eine Seite bis Shop</span></li></ol>
+              <a class="weiter" href="{{LINK}}b/angebot/webdesign/">Anfrage beginnen →</a>
+            </section>
+            <section class="fi" data-feld="referenzen" hidden>
+              <span class="label">Referenzen</span>
+              <p class="fi-satz">Einige Beispiele dafür, wie wir Ideen umsetzen</p>
+              <ul class="fi-liste"><li><a href="{{LINK}}b/">ornament.cloud</a><span>Website</span></li><li><a href="{{LINK}}beta/lab/">ornament.lab</a><span>Werkzeug im Browser</span></li><li><a href="{{LINK}}b/apps/">Sieben Apps</a><span>ohne App-Store</span></li></ul>
+            </section>
+            <button type="button" class="fi-zu">← Zurück zu den Themen</button>
+          </div>
+          <canvas class="verwandlung" aria-hidden="true"></canvas>
+        </div>
+        <div class="flaechen">
+          <button type="button" class="feld" data-feld="express" aria-expanded="false" data-rand="Express"><span class="feld-kopf"><span class="label">Express</span><span>72 h</span></span><span class="feld-satz">Wenns schnell gehen muss: neue Webseite online in 72 Stunden</span><span class="feld-pfeil">→</span></button>
+          <button type="button" class="feld" data-feld="briefing" aria-expanded="false"><span class="feld-kopf"><span class="label">Briefing</span><span>unverbindlich</span></span><span class="feld-satz">Senden Sie eine unverbindliche Anfrage, damit wir Ihnen ein gutes Angebot machen können</span><span class="feld-pfeil">→</span></button>
+          <button type="button" class="feld" data-feld="referenzen" aria-expanded="false" data-rand="Referenzen"><span class="feld-kopf"><span class="label">Referenzen</span><span>Auswahl</span></span><span class="feld-satz">Einige Beispiele dafür, wie wir Ideen umsetzen</span><span class="feld-pfeil">→</span></button>
+        </div>
+      </div></article>
+
       <article class="kapitel k-lab" id="k-lab" data-name="Lab"><div class="k-innen">
-        <span class="marke-k">01 · ornament.lab</span>
+        <span class="marke-k">02 · ornament.lab</span>
         <h2>Lab</h2>
         <p class="leit">Ein Bild wird Material.</p>
         <div class="lab-werk">
@@ -301,7 +424,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
       </div></article>
 
       <article class="kapitel k-rad" id="k-rad" data-name="Das 3. Rad"><div class="k-innen">
-        <span class="marke-k">02 · Beta</span>
+        <span class="marke-k">03 · Beta</span>
         <h2>Das 3. Rad</h2>
         <p class="leit">Zeit, Form und Farbe drehen gegeneinander.</p>
         <div class="raeder">
@@ -313,7 +436,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
       </div></article>
 
       <article class="kapitel k-apps" id="k-apps" data-name="Apps"><div class="k-innen">
-        <span class="marke-k">03 · sieben Apps</span>
+        <span class="marke-k">04 · sieben Apps</span>
         <h2>Apps</h2>
         <p class="leit">Kleine Werkzeuge zum Ausprobieren. Alles bleibt auf dem Gerät.</p>
         <div class="index">
@@ -332,7 +455,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
       </div></article>
 
       <article class="kapitel k-prompts" id="k-prompts" data-name="Prompts"><div class="k-innen">
-        <span class="marke-k">04 · vier Prüfraster</span>
+        <span class="marke-k">05 · vier Prüfraster</span>
         <h2>Prompts</h2>
         <p class="leit">Vier Prüfraster zum genaueren Hinsehen, je mit Grundlagenpapier und Anwendungsprompt.</p>
         <div class="matrix">
@@ -345,7 +468,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
       </div></article>
 
       <article class="kapitel k-zettel" id="k-zettel" data-name="Zettel"><div class="k-innen">
-        <span class="marke-k">05 · Zu seiner Zeit</span>
+        <span class="marke-k">06 · Zu seiner Zeit</span>
         <h2>Zettel</h2>
         <p class="leit">Plateaus zu Operation, Kunst, Gesellschaft und künstlicher Kommunikation.</p>
         <div class="zettel-feld">
@@ -356,7 +479,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
       </div></article>
 
       <article class="kapitel k-social" id="k-social" data-name="Social"><div class="k-innen">
-        <span class="marke-k">06 · jede Woche</span>
+        <span class="marke-k">07 · jede Woche</span>
         <h2>Social</h2>
         <p class="leit">Ausgewählte Beiträge aus X, Facebook und Instagram, wöchentlich als Zettel gesammelt.</p>
         <div class="kanaele">
@@ -368,7 +491,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
       </div></article>
 
       <article class="kapitel k-art" id="k-art" data-name="Art"><div class="k-innen">
-        <span class="marke-k">07 · Werke</span>
+        <span class="marke-k">08 · Werke</span>
         <h2>Art</h2>
         <p class="leit">Originale, Prints und Arbeiten im Raum.</p>
         <div class="werk">
@@ -383,11 +506,10 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
       </div></article>
 
       <article class="kapitel k-angebot" id="k-angebot" data-name="Angebot"><div class="k-innen">
-        <span class="marke-k">08 · vier Leistungen</span>
+        <span class="marke-k">09 · drei Leistungen</span>
         <h2>Angebot</h2>
-        <p class="leit">Webdesign, Vermittlung, Kuration und Produkte. Jede Leistung beginnt mit einem Gespräch.</p>
+        <p class="leit">Vermittlung, Kuration und Produkte; die Webseiten stehen am Anfang. Jede Leistung beginnt mit einem Gespräch.</p>
         <ol class="angebot-liste">
-          <li><a href="{{LINK}}b/angebot/webdesign/" data-rand="Webdesign"><span class="nr">01</span><b>Webdesign</b><span>Websites und Apps: schnell, eigenständig, ohne Dienste von aussen.</span></a></li>
           <li><a href="{{LINK}}b/angebot/vermittlung/" data-rand="Vermittlung"><span class="nr">02</span><b>Vermittlung und Beratung</b><span>Seminare, Workshops, Projekte mit Schulen und Teams; Beratung für Institutionen.</span></a></li>
           <li><a href="{{LINK}}b/angebot/kuration/"><span class="nr">03</span><b>Kuratorische Projekte</b><span>Ausstellungen denken, ordnen, hängen.</span></a></li>
           <li><a href="{{LINK}}b/angebot/produkte/"><span class="nr">04</span><b>Produkte</b><span>Werke, Prints, Editionen und Auftragsarbeiten, klassisch und digital.</span></a></li>
@@ -401,6 +523,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
   <div class="innen">
     <h2>Wohin als Nächstes?</h2>
     <ul>
+      <li class="k-web"><a href="{{LINK}}b/angebot/webdesign/">Webseiten <i></i></a></li>
       <li class="k-lab"><a href="{{LINK}}beta/lab/">Lab <i></i></a></li>
       <li class="k-rad"><a href="{{LINK}}beta/drittes-rad/">Das 3. Rad <i></i></a></li>
       <li class="k-apps"><a href="{{LINK}}b/apps/">Apps <i></i></a></li>
@@ -438,8 +561,8 @@ const ZUG = (() => {
 })();
 const ZYKLEN = ["Operation", "Rekursion", "Adresse", "Koppelung", "Kunst", "Plattform", "Zukunft"];
 const ROEM = ["I", "II", "III", "IV", "V", "VI", "VII"];
-const KAPITELFARBEN = ["#c2185b", "#1d3fd6", "#e6b117", "#e0503c", "#ffffff", "#8fb0ff", "#f2b2c0", "#2f7a58"];   // Quadrate im Intro: auf Schwarz sichtbar
-const LEUCHTFARBEN = ["#ff5c95", "#6f8cff", "#ffc21a", "#ff5a3c", "#d6dbe4", "#9aa6bd", "#ff9fb8", "#5fcf95"];   // Kanten und Marken im Raum
+const KAPITELFARBEN = ["#2f7a58", "#c2185b", "#1d3fd6", "#e6b117", "#e0503c", "#ffffff", "#8fb0ff", "#f2b2c0", "#2f7a58"];   // Quadrate im Intro: auf Schwarz sichtbar
+const LEUCHTFARBEN = ["#5fcf95", "#ff5c95", "#6f8cff", "#ffc21a", "#ff5a3c", "#d6dbe4", "#9aa6bd", "#ff9fb8", "#5fcf95"];   // Kanten und Marken im Raum
 const ZYKLUSFARBEN = ["#ff5c9a", "#ffc21a", "#ff5a3c", "#ffffff", "#8fb0ff", "#3fd08e", "#ffa3d1"];
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const klemm = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
@@ -449,6 +572,32 @@ const hdr = (hex, f) => new THREE.Color(hex).multiplyScalar(f);
 function deckeln(m, px) {
   m.onBeforeCompile = sh => { sh.vertexShader = sh.vertexShader.replace("#include <fog_vertex>", `gl_PointSize = min(gl_PointSize, ${px.toFixed(1)} * ${Math.min(devicePixelRatio || 1, 2).toFixed(1)});\n#include <fog_vertex>`); };
   return m;
+}
+
+/* ---------- Das Signet: die Re-entry-Schlaufe r = b + cos t wie in b/tafeln.mjs. b atmet zwischen 0,25 und 0,95, ein Punkt läuft die Schlaufe ab.
+   Raum und flache Seite rechnen mit derselben Uhr, darum geht die Bewegung beim Wechsel ohne Sprung weiter. ---------- */
+const SIGNET = (() => {
+  const xs = [], ys = []; for (let i = 0; i <= 240; i++) { const t = i / 240 * Math.PI * 2, r = .95 + Math.cos(t); xs.push(1.2 * r * Math.cos(t) - .84); ys.push(1.2 * r * Math.sin(t)); }
+  return { mx: (Math.min(...xs) + Math.max(...xs)) / 2, my: (Math.min(...ys) + Math.max(...ys)) / 2, sp: Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) };
+})();
+// Punkte in einem Quadrat von −0,5 bis 0,5, y nach unten wie im SVG der Website
+function signetForm(sek, n = 240) {
+  const t0 = ruhig ? 3 : sek, b = .6 + .35 * Math.sin((t0 - 3) * .42);
+  const p = t => { const r = b + Math.cos(t); return [(1.2 * r * Math.cos(t) - .84 - SIGNET.mx) / SIGNET.sp, (1.2 * r * Math.sin(t) - SIGNET.my) / SIGNET.sp]; };
+  const linie = []; for (let i = 0; i < n; i++) linie.push(p(i / n * Math.PI * 2));
+  const innen = [], w = Math.acos(-b); for (let i = 0; i <= 60; i++) innen.push(p(w + (Math.PI * 2 - 2 * w) * i / 60));
+  return { linie, innen, punkt: p(-Math.PI / 2 + ((t0 - 2.5) / 8) * Math.PI * 2) };
+}
+function signetMalen(cv, sek) {
+  const r = cv.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2), b = Math.round(r.width * dpr), h = Math.round(r.height * dpr);
+  if (!b || !h) return;
+  if (cv.width !== b || cv.height !== h) { cv.width = b; cv.height = h; }
+  const cx = cv.getContext("2d"), f = signetForm(sek), gr = Math.min(b, h) * .92, P = q => [b / 2 + q[0] * gr, h / 2 + q[1] * gr];
+  const pfad = (pts) => { cx.beginPath(); pts.forEach((q, i) => cx[i ? "lineTo" : "moveTo"](...P(q))); cx.closePath(); };
+  cx.clearRect(0, 0, b, h);
+  pfad(f.innen); cx.fillStyle = "rgba(255, 255, 255, .2)"; cx.fill();
+  pfad(f.linie); cx.strokeStyle = "#fff"; cx.lineWidth = Math.max(1.5 * dpr, gr * .0045); cx.lineJoin = "round"; cx.stroke();
+  cx.beginPath(); cx.arc(...P(f.punkt), Math.max(2.5 * dpr, gr * .016), 0, Math.PI * 2); cx.fillStyle = "#fff"; cx.fill();
 }
 
 const intro = document.getElementById("intro"), szene = document.getElementById("szene"), tip = document.getElementById("tip");
@@ -526,12 +675,15 @@ async function kapitelZeichnen(k, i, LW) {
   [kl, ...kl.querySelectorAll("[id]")].forEach(e => e.removeAttribute("id"));
   kl.querySelectorAll("img").forEach(im => { im.loading = "eager"; });
   kl.querySelectorAll(".k-netz").forEach(e => e.remove());
+  // Im Raum zeigt die Seite ihren Anfang: Signet statt Raster, keine geöffnete Fläche
+  kl.classList.remove("raster", "baut", "zeigt-feld"); delete kl.dataset.feld;
+  kl.querySelectorAll('[aria-expanded="true"]').forEach(e => e.setAttribute("aria-expanded", "false"));
   huelle.append(kl); document.body.append(huelle);
   await Promise.all([...kl.querySelectorAll("img")].map(im => im.decode().catch(() => {})));
   const r0 = kl.getBoundingClientRect(), LH = Math.ceil(r0.height);
   const cv = document.createElement("canvas"); cv.width = Math.round(LW * skala); cv.height = Math.round(LH * skala);
   const cx = cv.getContext("2d"); cx.scale(skala, skala);
-  const lage = { titel: null, rand: [] }, range = document.createRange();
+  const lage = { titel: null, rand: [], signet: null }, range = document.createRange();
   const leer = c => !c || c === "transparent" || /rgba?\(.*,\s*0\)$/.test(c);
   const schrift = cs => `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
   const oberlaenge = () => { const m = cx.measureText("Hg"); return m.fontBoundingBoxAscent ?? m.actualBoundingBoxAscent * 1.12; };
@@ -561,13 +713,21 @@ async function kapitelZeichnen(k, i, LW) {
     const a = alpha * parseFloat(cs.opacity); if (a < .002) return;
     const r = el.getBoundingClientRect(), x = r.left - r0.left, y = r.top - r0.top, b = r.width, h = r.height;
     if (el.tagName === "H2") {
-      // Der Titel steht im Raum: Lage, Schrift und Grundlinie merken, nicht ins Band zeichnen
-      range.selectNodeContents(el); const rr = range.getClientRects()[0] || r;
-      cx.font = schrift(cs);
-      lage.titel = { text: el.textContent, x: rr.left - r0.left, grund: rr.top - r0.top + oberlaenge(), gr: parseFloat(cs.fontSize), font: schrift(cs), abstand: parseFloat(cs.letterSpacing) || 0, farbe: cs.color };
+      // Der Titel steht im Raum: Lage, Schrift und Grundlinie jeder Zeile merken, nicht ins Band zeichnen
+      cx.font = schrift(cs); const asc = oberlaenge(), zeilen = [], gang = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      for (let n; (n = gang.nextNode());) for (let j = 0; j < n.length; j++) {
+        range.setStart(n, j); range.setEnd(n, j + 1); const rr = range.getClientRects()[0]; if (!rr) continue;
+        let z = zeilen.find(z => Math.abs(z.top - rr.top) < rr.height / 2);
+        if (!z) { z = { top: rr.top, x: rr.left - r0.left, text: "" }; zeilen.push(z); }
+        z.text += n.data[j];
+      }
+      if (!zeilen.length) return;
+      zeilen.forEach(z => { z.text = z.text.trim(); z.grund = z.top - r0.top + asc; });
+      lage.titel = { zeilen, grund: zeilen[0].grund, gr: parseFloat(cs.fontSize), font: schrift(cs), abstand: parseFloat(cs.letterSpacing) || 0, farbe: cs.color };
       return;
     }
     if (el.dataset && el.dataset.rand) lage.rand.push({ text: el.dataset.rand, x, y, b, h });
+    if (el.dataset && "signet" in el.dataset) lage.signet = { x, y, b, h };
     cx.save(); cx.globalAlpha = a;
     if (cs.mixBlendMode && cs.mixBlendMode !== "normal") cx.globalCompositeOperation = cs.mixBlendMode;
     const rad = radius(cs, b, h);
@@ -604,7 +764,9 @@ document.body.classList.toggle("flach", flach);
 if (!ok3d) document.body.classList.add("ohne-3d");
 
 // Die Bahn liegt innen in einer Trommel mit Radius R und wandert pro Umlauf seitlich weiter, damit sie sich nicht selbst trifft
-const RAUM = { R: 10, w: 6, drift: 0 };
+const RAUM = { R: 10, w: 5, drift: 0 };
+// Das Band ist schmaler als die Lücke zum nächsten Umlauf: dort stehen die Figuren
+function raumMasse() { const eng = schmal(); RAUM.R = eng ? 8 : 10; RAUM.w = eng ? 3.4 : 5; RAUM.drift = 2 * RAUM.w / (2 * Math.PI * RAUM.R); }
 function bahnPunkt(s, quer = 0, hoch = 0, ziel = new THREE.Vector3()) {
   const th = s / RAUM.R, c = Math.cos(th), sn = Math.sin(th);
   // Mittellinie, Normale (zur Achse), Tangente, Seite
@@ -666,7 +828,7 @@ async function bahnBauen() {
   if (bahn.gruppe) { welt.remove(bahn.gruppe); bahn.gruppe.traverse(o => { o.geometry?.dispose(); o.material?.map?.dispose(); o.material?.dispose(); }); }
   bahn.bereit = false;
   const eng = schmal(), LW = eng ? 430 : 820;
-  RAUM.w = eng ? 4.2 : 6; RAUM.R = eng ? 8 : 10; RAUM.drift = 1.6 * RAUM.w / (2 * Math.PI * RAUM.R);
+  raumMasse();
   bahn.k = RAUM.w / LW;
   // Platzhalter, bis die Bilder gezeichnet sind: Kapitel in ihrer Farbe mit geschätzter Länge
   const bilder = [];
@@ -713,9 +875,9 @@ async function bahnBauen() {
   g.add(new THREE.LineSegments(kg, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, toneMapped: false })));
   // Zwischen den Umläufen nur wenige feine Linien: drei Längslinien, Marken jeden Meter, an jedem Bereich ein Strich in seiner Farbe.
   // Rechts liegt jede Linie genau dort, wo links vom nächsten Umlauf dieselbe Linie läge; links braucht es sie nur im ersten Umlauf.
-  const umlauf = 2 * Math.PI * RAUM.R, luecke = 1.6 * RAUM.w - RAUM.w, lp = [], lc = [];
+  const umlauf = 2 * Math.PI * RAUM.R, luecke = RAUM.drift * umlauf - RAUM.w, lp = [], lc = [];
   const linie = (a, b, hell) => { lp.push(...a.toArray(), ...b.toArray()); lc.push(hell, hell, hell * 1.06, hell, hell, hell * 1.06); };
-  for (const [f, hell] of [[.2, .2], [.5, .12], [.8, .2]]) {
+  for (const [f, hell] of [[.12, .2], [.5, .12], [.88, .2]]) {
     for (const seite of [-1, 1]) {
       const bis = seite < 0 ? Math.min(bahn.L, umlauf) : bahn.L + 4;
       for (let sj = -4; sj < bis; sj += .25) linie(bahnPunkt(sj, seite * (RAUM.w / 2 + luecke * f), .003), bahnPunkt(sj + .25, seite * (RAUM.w / 2 + luecke * f), .003), hell);
@@ -724,6 +886,8 @@ async function bahnBauen() {
   for (let m = 0; m <= bahn.L; m++) {
     const lang = m % 5 === 0, q = RAUM.w / 2 + .06;
     for (const seite of [-1, 1]) linie(bahnPunkt(m, seite * q, .003), bahnPunkt(m, seite * (q + (lang ? .28 : .12)), .003), lang ? .34 : .2);
+    // alle fünf Meter eine ganz feine Querlinie über die Lücke, wie ein Raster auf dem Boden der Trommel
+    if (lang) for (const seite of m < umlauf ? [-1, 1] : [1]) for (let j = 0; j < 8; j++) linie(bahnPunkt(m, seite * (RAUM.w / 2 + .5 + luecke * .9 * j / 8), .002), bahnPunkt(m, seite * (RAUM.w / 2 + .5 + luecke * .9 * (j + 1) / 8), .002), .07);
   }
   const lg = new THREE.BufferGeometry(); lg.setAttribute("position", new THREE.Float32BufferAttribute(lp, 3)); lg.setAttribute("color", new THREE.Float32BufferAttribute(lc, 3));
   g.add(new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false })));
@@ -743,6 +907,19 @@ async function bahnBauen() {
     const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
     return { tex, b, h };
   };
+  // Ein Titel über mehrere Zeilen, so gesetzt wie auf der Seite
+  const titelFlaeche = (t, farbe, sk, rand, unschaerfe = 0) => {
+    const z = t.zeilen, x0 = Math.min(...z.map(l => l.x)), g0 = z[0].grund;
+    const m = document.createElement("canvas").getContext("2d"); m.font = t.font; if ("letterSpacing" in m) m.letterSpacing = t.abstand + "px";
+    const b = Math.ceil(Math.max(...z.map(l => l.x - x0 + m.measureText(l.text).width)) + rand * 2), h = Math.ceil(z[z.length - 1].grund - g0 + t.gr * 1.16 + rand);
+    const cv = document.createElement("canvas"); cv.width = Math.ceil(b * sk); cv.height = Math.ceil(h * sk);
+    const cx = cv.getContext("2d"); cx.scale(sk, sk); cx.font = t.font; if ("letterSpacing" in cx) cx.letterSpacing = t.abstand + "px";
+    if (unschaerfe) cx.filter = `blur(${unschaerfe}px)`;
+    cx.fillStyle = farbe; cx.textBaseline = "alphabetic";
+    z.forEach(l => cx.fillText(l.text, rand + l.x - x0, t.gr * .88 + rand / 2 + l.grund - g0));
+    const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    return { tex, b, h, x0 };
+  };
   // Ein Bezugssystem auf der Bahn: x wie die Schrift nach rechts, y wie die Schrift nach oben, z aus der Bahn heraus
   const basis = (sj, quer) => {
     const T = bahnPunkt(sj + .01).sub(bahnPunkt(sj - .01)).normalize(), N = normale(sj);
@@ -755,10 +932,10 @@ async function bahnBauen() {
   bilder.forEach((b, i) => {
     const t = b.lage.titel; if (!t) return;
     const rand = Math.round(t.gr * .14);
-    const f = textFlaeche(t.text, t.font, t.farbe, t.gr, eng ? 3 : 2.5, rand, t.abstand);
-    const sch = textFlaeche(t.text, t.font, "#000", t.gr, 1, rand, t.abstand, t.gr * .05);
+    const f = titelFlaeche(t, t.farbe, eng ? 3 : 2.5, rand);
+    const sch = titelFlaeche(t, "#000", 1, rand, t.gr * .05);
     const unten = t.grund - t.gr * .88 - rand / 2 + f.h;   // Unterkante der Fläche im Kapitel
-    const sH = bahn.kapitel[i].s0 + unten * bahn.k, quer = RAUM.w / 2 - (t.x - rand) * bahn.k;
+    const sH = bahn.kapitel[i].s0 + unten * bahn.k, quer = RAUM.w / 2 - (f.x0 - rand) * bahn.k;
     const piv = basis(sH, quer);
     const geo = new THREE.PlaneGeometry(f.b * bahn.k, f.h * bahn.k).translate(f.b * bahn.k / 2, f.h * bahn.k / 2, 0);
     const mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: f.tex, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
@@ -766,6 +943,39 @@ async function bahnBauen() {
     schatten.material.userData.a = .3; schatten.position.z = .002; schatten.renderOrder = 1; mesh.renderOrder = 2;
     piv.add(schatten, mesh); g.add(piv);
     bahn.titel.push({ sH, mesh, schatten });
+  });
+  // Das Signet auf der Bühne der Webseiten: eine Linie auf dem Band, die atmet, ihre innere Schleife und der laufende Punkt
+  bahn.signete = [];
+  bilder.forEach((b, i) => {
+    const l = b.lage.signet; if (!l) return;
+    const gr = Math.min(l.b, l.h) * .92, mu = l.x + l.b / 2, mv = l.y + l.h / 2, s0 = bahn.kapitel[i].s0, d = Math.max(.75, gr * .0025) / gr, N = 240;
+    const auf = (u, v, hoch, ziel) => bahnPunkt(s0 + (mv + v * gr) * bahn.k, RAUM.w / 2 - (mu + u * gr) * bahn.k, hoch, ziel);
+    const flaeche = (n, idx) => { const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(n * 3), 3)); geo.setIndex(idx); return geo; };
+    const bi = [], fi = [], si = [];
+    for (let j = 0; j < N; j++) { const a = j * 2, c = ((j + 1) % N) * 2; bi.push(a, c, a + 1, a + 1, c, c + 1); }
+    for (let j = 0; j < 60; j++) fi.push(61, j, j + 1);
+    for (let j = 0; j < 24; j++) si.push(24, j, (j + 1) % 24);
+    const linie = flaeche(N * 2, bi), innen = flaeche(62, fi), scheibe = flaeche(25, si);
+    [[innen, .2], [linie, 1], [scheibe, 1]].forEach(([geo, a], j) => {
+      const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0xf2f6f3, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
+      m.material.userData.a = a; m.renderOrder = 3 + j; m.frustumCulled = false; g.add(m);
+    });
+    const v = new THREE.Vector3(), bp = linie.attributes.position.array, fp = innen.attributes.position.array, sp = scheibe.attributes.position.array;
+    const setzen = sek => {
+      const f = signetForm(sek, N);
+      for (let j = 0; j < N; j++) {
+        const a = f.linie[(j + N - 1) % N], c = f.linie[(j + 1) % N], q = f.linie[j];
+        let nx = a[1] - c[1], ny = c[0] - a[0]; const nl = Math.hypot(nx, ny) || 1; nx *= d / nl; ny *= d / nl;
+        auf(q[0] + nx, q[1] + ny, .008, v).toArray(bp, j * 6); auf(q[0] - nx, q[1] - ny, .008, v).toArray(bp, j * 6 + 3);
+      }
+      let su = 0, sv = 0; f.innen.forEach((q, j) => { auf(q[0], q[1], .006, v).toArray(fp, j * 3); su += q[0]; sv += q[1]; });
+      auf(su / f.innen.length, sv / f.innen.length, .006, v).toArray(fp, 61 * 3);
+      for (let j = 0; j < 24; j++) { const w = j / 24 * Math.PI * 2; auf(f.punkt[0] + Math.cos(w) * .016, f.punkt[1] + Math.sin(w) * .016, .01, v).toArray(sp, j * 3); }
+      auf(f.punkt[0], f.punkt[1], .01, v).toArray(sp, 24 * 3);
+      for (const geo of [linie, innen, scheibe]) geo.attributes.position.needsUpdate = true;
+    };
+    setzen(performance.now() / 1000);
+    bahn.signete.push(setzen);
   });
   // Metermarken: alle fünf Meter eine Zahl in Mono am linken Rand
   const marken = []; for (let m = 5; m <= bahn.L; m += 5) marken.push(m);
@@ -803,10 +1013,315 @@ async function bahnBauen() {
       const hl = new THREE.LineSegments(hg, new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, depthWrite: false })); hl.material.userData.a = .4; g.add(hl);
     }
   }
+  figurenBauen(g, bilder);
   bahn.materialien = []; g.traverse(o => { if (o.material) bahn.materialien.push(o.material); });
   welt.add(g); bahn.gruppe = g;
   bahn.bereit = true;
   platzMessen();
+}
+
+/* ---------- Neben der Bahn: feine Drahtfiguren je Bereich, Masse, Notationen aus den «Laws of Form» und die Schlaufe des Signets.
+   Jede Figur steht in einem eigenen Rahmen: x zeigt von der Bahn weg, y aus dem Boden der Trommel, z der Bahn entlang zur Kamera. ---------- */
+function figurenBauen(g, bilder) {
+  const eng = schmal(), SANS = '"Instrument Sans", system-ui, sans-serif', SERIF = 'Newsreader, "Times New Roman", serif';
+  let lp = [], lc = [], hell = .5, ton = new THREE.Color(1, 1, 1);
+  const schilder = [], M = new THREE.Matrix4(), v1 = new THREE.Vector3(), v2 = new THREE.Vector3(), rechtsW = new THREE.Vector3(), obenW = new THREE.Vector3();
+  let saat = 7; const zufall = () => (saat = (saat * 16807) % 2147483647) / 2147483647;
+  bahn.dreher = []; bahn.laeufer = [];
+  // Rahmen an der Stelle sj, ab Meter neben dem Rand des Bandes; seite 1 = rechts im Bild
+  function stelle(sj, seite, ab) {
+    const T = bahnPunkt(sj + .01).sub(bahnPunkt(sj - .01)).normalize(), N = normale(sj), S = new THREE.Vector3().crossVectors(T, N).normalize();
+    M.makeBasis(S.clone().multiplyScalar(-seite), N, T).setPosition(bahnPunkt(sj, -seite * (RAUM.w / 2 + ab), 0));
+    if (eng) M.scale(new THREE.Vector3(.75, .75, .75));   // am Handy ist auch die Lücke schmaler
+    rechtsW.copy(S).negate(); obenW.copy(N);
+  }
+  const strich = (a, b) => {
+    v1.set(a[0], a[1], a[2]).applyMatrix4(M); v2.set(b[0], b[1], b[2]).applyMatrix4(M);
+    lp.push(v1.x, v1.y, v1.z, v2.x, v2.y, v2.z); const r = ton.r * hell, gn = ton.g * hell, bl = ton.b * hell; lc.push(r, gn, bl, r, gn, bl);
+  };
+  const zug = (pts, zu) => { for (let i = 0; i < pts.length - 1; i++) strich(pts[i], pts[i + 1]); if (zu && pts.length > 2) strich(pts[pts.length - 1], pts[0]); };
+  // Rechteck zur Kamera hin (xy) oder auf dem Boden (xz)
+  const rechteck = (x, y, z, b, h, ebene = "xy") => zug(ebene === "xy" ? [[x, y, z], [x + b, y, z], [x + b, y + h, z], [x, y + h, z]] : [[x, y, z], [x + b, y, z], [x + b, y, z - h], [x, y, z - h]], true);
+  const quader = (x, y, z, b, h, t) => { rechteck(x, y, z, b, h); rechteck(x, y, z - t, b, h); for (const [a, c] of [[x, y], [x + b, y], [x + b, y + h], [x, y + h]]) strich([a, c, z], [a, c, z - t]); };
+  const bogen = (cx, cy, cz, r, ebene = "xy", von = 0, bis = Math.PI * 2, n = 40) => {
+    const p = []; for (let i = 0; i <= n; i++) { const w = von + (bis - von) * i / n, a = Math.cos(w) * r, b = Math.sin(w) * r; p.push(ebene === "xy" ? [cx + a, cy + b, cz] : [cx + a, cy, cz + b]); } zug(p);
+  };
+  const schild = (inhalt, p, art = "mass", anker = .5) => { v1.set(p[0], p[1], p[2]).applyMatrix4(M); schilder.push({ inhalt, art, anker, pos: v1.clone(), rechts: rechtsW.clone(), oben: obenW.clone() }); };
+  // Masslinie mit Endstrichen, die Zahl darüber
+  const mass = (a, b, text, quer = [0, .045, 0]) => {
+    const h0 = hell; hell = .34; strich(a, b); for (const p of [a, b]) strich([p[0] - quer[0], p[1] - quer[1], p[2] - quer[2]], [p[0] + quer[0], p[1] + quer[1], p[2] + quer[2]]); hell = h0;
+    schild(text, [(a[0] + b[0]) / 2 + quer[0] * 1.6, (a[1] + b[1]) / 2 + quer[1] * 1.2, (a[2] + b[2]) / 2]);
+  };
+  // Was sich bewegt, bekommt eigene Linien in eigenen Koordinaten
+  function eigeneLinien(zeichne, mitte, v) {
+    const altP = lp, altC = lc, altM = M.clone(); lp = []; lc = []; M.identity(); zeichne();
+    const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(lp, 3)); geo.setAttribute("color", new THREE.Float32BufferAttribute(lc, 3));
+    const o = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false }));
+    lp = altP; lc = altC; M.copy(altM);
+    const halter = new THREE.Group(); halter.matrixAutoUpdate = false; halter.matrix.copy(M).multiply(new THREE.Matrix4().makeTranslation(mitte[0], mitte[1], mitte[2]));
+    halter.add(o); g.add(halter); bahn.dreher.push({ o, v });
+  }
+
+  /* Webseiten: ein Browser auf zwei Stützen, die Stufen 1440 · 768 · 390, ein Telefon */
+  const browser = () => {
+    const b = 1.6, h = .98, y0 = .34; hell = .55;
+    strich([.22, 0, 0], [.22, y0, 0]); strich([b - .22, 0, 0], [b - .22, y0, 0]);
+    rechteck(0, y0, 0, b, h); strich([0, y0 + h - .1, 0], [b, y0 + h - .1, 0]);
+    for (let i = 0; i < 3; i++) bogen(.07 + i * .055, y0 + h - .05, 0, .015, "xy", 0, Math.PI * 2, 10);
+    hell = .17; for (let i = 1; i < 12; i++) strich([i * b / 12, y0, 0], [i * b / 12, y0 + h - .1, 0]);
+    hell = .5; rechteck(b / 12 * .5, y0 + h - .3, 0, b * .55, .1); rechteck(b / 12 * .5, y0 + .1, 0, b * .82, .34);
+    mass([0, y0 - .1, 0], [b, y0 - .1, 0], "1280 px");
+  };
+  const stufen = () => {
+    hell = .42; [[1.44, .9, "1440"], [.768, .9, "768"], [.39, .8, "390 px"]].forEach(([b, h, t], i) => { const z = -i * .4; rechteck(0, 0, z, b, h); schild(t, [b - .04, h + .05, z], "mass", 1); });
+    hell = .16; strich([0, 0, 0], [0, 0, -.8]); strich([0, .9, 0], [0, .9, -.4]);
+  };
+  const telefon = () => {
+    const b = .42, h = .86, r = .06, y0 = .18; hell = .55;
+    strich([b / 2, 0, 0], [b / 2, y0, 0]); strich([b / 2 - .12, 0, 0], [b / 2 + .12, 0, 0]);
+    strich([r, y0, 0], [b - r, y0, 0]); strich([b, y0 + r, 0], [b, y0 + h - r, 0]); strich([b - r, y0 + h, 0], [r, y0 + h, 0]); strich([0, y0 + h - r, 0], [0, y0 + r, 0]);
+    bogen(b - r, y0 + r, 0, r, "xy", -Math.PI / 2, 0, 6); bogen(b - r, y0 + h - r, 0, r, "xy", 0, Math.PI / 2, 6); bogen(r, y0 + h - r, 0, r, "xy", Math.PI / 2, Math.PI, 6); bogen(r, y0 + r, 0, r, "xy", Math.PI, Math.PI * 1.5, 6);
+    hell = .4; rechteck(.06, y0 + h - .2, 0, b * .62, .06); rechteck(.06, y0 + .3, 0, b - .12, b - .12);
+    hell = .3; for (let i = 0; i < 3; i++) strich([.06, y0 + .2 - i * .045, 0], [b - .06 - i * .06, y0 + .2 - i * .045, 0]);
+  };
+  /* Der Würfel mit dem Raster 3 × 3 vorn und der Kugel aus Fäden innen: so verwandelt sich das Signet auf der flachen Seite */
+  const wuerfel = () => {
+    const s = .78, y0 = .2; hell = .5; quader(0, y0, 0, s, s, s);
+    hell = .32; for (let j = 1; j < 3; j++) { strich([j * s / 3, y0, 0], [j * s / 3, y0 + s, 0]); strich([0, y0 + j * s / 3, 0], [s, y0 + j * s / 3, 0]); }
+    hell = .2; bogen(s / 2, y0 + s / 2, -s / 2, s * .4, "xy", 0, Math.PI * 2, 36); bogen(s / 2, y0 + s / 2, -s / 2, s * .4, "xz", 0, Math.PI * 2, 36);
+    hell = .3; strich([s / 2, 0, -s / 2], [s / 2, y0, -s / 2]); strich([s / 2 - .12, 0, -s / 2], [s / 2 + .12, 0, -s / 2]);
+    schild("3 × 3 Themen", [s / 2, y0 + s + .06, 0], "mass");
+  };
+  /* Lab: ein Kolben, ein Prisma, das Licht in Farben teilt, und sortierte Säulen */
+  const kolben = () => {
+    const cx = .45, R = .32, yk = .34, rh = .07, oben = Math.acos(rh / R); hell = .5;
+    for (let i = 0; i < 10; i++) {
+      const w = i * Math.PI / 5, p = [];
+      for (let j = 0; j <= 18; j++) { const f = -Math.PI / 2 + (oben + Math.PI / 2) * j / 18; p.push([cx + R * Math.cos(f) * Math.cos(w), yk + R * Math.sin(f), R * Math.cos(f) * Math.sin(w)]); }
+      zug(p);
+    }
+    hell = .3; for (const f of [-1, -.5, 0, .5]) { const rr = R * Math.cos(f), y = yk + R * Math.sin(f); bogen(cx, y, 0, rr, "xz", 0, Math.PI * 2, 32); }
+    hell = .5; const yh = yk + R * Math.sin(oben), yt = yk + R + .36;
+    bogen(cx, yh, 0, rh, "xz", 0, Math.PI * 2, 16); bogen(cx, yt, 0, rh, "xz", 0, Math.PI * 2, 16); bogen(cx, yt + .02, 0, rh + .025, "xz", 0, Math.PI * 2, 16);
+    for (let i = 0; i < 4; i++) { const w = i * Math.PI / 2 + .4; strich([cx + rh * Math.cos(w), yh, rh * Math.sin(w)], [cx + rh * Math.cos(w), yt, rh * Math.sin(w)]); }
+    mass([cx - R, -.08, R + .1], [cx + R, -.08, R + .1], "Ø 0,64 m");
+  };
+  const prisma = () => {
+    const s = .5, h = s * Math.sqrt(3) / 2, x0 = .4, y0 = .3, t = .4, ecken = [[x0, y0], [x0 + s, y0], [x0 + s / 2, y0 + h]]; hell = .5;
+    for (const z of [0, -t]) zug(ecken.map(([x, y]) => [x, y, z]), true);
+    for (const [x, y] of ecken) strich([x, y, 0], [x, y, -t]);
+    hell = .42; strich([-.1, y0 + h * .2, -t / 2], [x0 + s / 4 - .02, y0 + h / 2, -t / 2]);
+    ["#ff5c95", "#6f8cff", "#ffc21a"].forEach((f, i) => { ton = new THREE.Color(f); hell = .75; strich([x0 + s * .75, y0 + h / 2, -t / 2], [x0 + s + .55, y0 + h * .1 + i * .18, -t / 2 + .1]); });
+    ton = new THREE.Color(1, 1, 1);
+    for (let i = 0; i < 14; i++) { hell = .3; const hh = .12 + i * .055 + (i % 3) * .01; rechteck(x0 - .1 + i * .07, 0, -.9, .045, hh); }
+    schild("Glitch · sortiert", [x0 + .3, -.02, -.9 + .02], "mass");
+  };
+  /* Das 3. Rad: drei Scheiben, die sich gegeneinander drehen */
+  const raeder = () => {
+    ["Zeit", "Form", "Farbe"].forEach((name, i) => {
+      const r = .42, mitte = [.5 + i * 1.0 * (eng ? .9 : 1), .62, -i * .25];
+      eigeneLinien(() => {
+        hell = .55; bogen(0, 0, 0, r, "xy", 0, Math.PI * 2, 48); hell = .35; bogen(0, 0, 0, r * .3, "xy", 0, Math.PI * 2, 20);
+        for (let j = 0; j < 12; j++) { const w = j * Math.PI / 6; hell = j === 0 ? .7 : .25; strich([Math.cos(w) * r * .3, Math.sin(w) * r * .3, 0], [Math.cos(w) * r, Math.sin(w) * r, 0]); }
+        hell = .3; for (let j = 0; j < 36; j++) { const w = j * Math.PI / 18; strich([Math.cos(w) * r, Math.sin(w) * r, 0], [Math.cos(w) * (r + .04), Math.sin(w) * (r + .04), 0]); }
+      }, mitte, i % 2 ? -1 : 1);
+      hell = .3; strich([mitte[0], 0, mitte[2]], [mitte[0], mitte[1] - .44, mitte[2]]); strich([mitte[0] - .14, 0, mitte[2]], [mitte[0] + .14, 0, mitte[2]]);
+      schild(name, [mitte[0], mitte[1] + .5, mitte[2]], "mass");
+    });
+  };
+  /* Apps: die Kugel aus Fäden (PHORMA III), das Tuch (PHORMA II), Scherben (PHORMA I) */
+  const kugel = () => {
+    const cx = .55, cy = .62, r = .44; hell = .42;
+    for (let i = 0; i < 11; i++) {
+      const a = new THREE.Vector3(zufall() - .5, zufall() - .5, zufall() - .5).normalize(), b = new THREE.Vector3(zufall() - .5, zufall() - .5, zufall() - .5).cross(a).normalize(), c = a.clone().cross(b);
+      const p = []; for (let j = 0; j <= 40; j++) { const w = j / 40 * Math.PI * 2; p.push([cx + r * (b.x * Math.cos(w) + c.x * Math.sin(w)), cy + r * (b.y * Math.cos(w) + c.y * Math.sin(w)), r * (b.z * Math.cos(w) + c.z * Math.sin(w))]); }
+      zug(p);
+    }
+    hell = .3; bogen(cx, 0, 0, .18, "xz", 0, Math.PI * 2, 24); strich([cx, 0, 0], [cx, cy - r, 0]);
+    schild("Kugel aus Fäden", [cx, cy + r + .08, 0], "mass");
+  };
+  const tuch = () => {
+    const b = 1.5, t = 1.0, nx = 14, nz = 9, y = (x, z) => .5 + .16 * Math.sin(3 * x + 1.6 * z) + .07 * Math.sin(6 * z + x); hell = .34;
+    for (let j = 0; j <= nz; j++) { const p = []; for (let i = 0; i <= nx; i++) { const x = i / nx * b, z = -j / nz * t; p.push([x, y(x, z), z]); } zug(p); }
+    for (let i = 0; i <= nx; i += 2) { const p = []; for (let j = 0; j <= nz; j++) { const x = i / nx * b, z = -j / nz * t; p.push([x, y(x, z), z]); } zug(p); }
+    schild("Seidentuch", [b / 2, .82, -t / 2], "mass");
+  };
+  const scherben = () => {
+    hell = .45;
+    for (let i = 0; i < 6; i++) {
+      const c = [.2 + zufall() * 1.3, .05 + zufall() * .5, -zufall() * .9], gr = .1 + zufall() * .16;
+      const e = Array.from({ length: 4 }, () => [c[0] + (zufall() - .5) * gr * 2, c[1] + (zufall() - .3) * gr * 2, c[2] + (zufall() - .5) * gr * 2]);
+      for (let a = 0; a < 4; a++) for (let b = a + 1; b < 4; b++) strich(e[a], e[b]);
+    }
+    schild("Scherben", [.9, .9, -.4], "mass");
+  };
+  /* Prompts: ein Feld mit zwei Achsen und ein Verteilapparat */
+  const achsen = () => {
+    const s = 1.1, y0 = .12; hell = .5;
+    rechteck(0, y0, 0, s, s); hell = .3; strich([s / 2, y0, 0], [s / 2, y0 + s, 0]); strich([0, y0 + s / 2, 0], [s, y0 + s / 2, 0]);
+    hell = .55; strich([-.08, y0 - .06, 0], [s + .2, y0 - .06, 0]); strich([s + .2, y0 - .06, 0], [s + .15, y0 - .03, 0]); strich([s + .2, y0 - .06, 0], [s + .15, y0 - .09, 0]);
+    strich([-.06, y0 - .08, 0], [-.06, y0 + s + .2, 0]); strich([-.06, y0 + s + .2, 0], [-.09, y0 + s + .15, 0]); strich([-.06, y0 + s + .2, 0], [-.03, y0 + s + .15, 0]);
+    schild("Nebeneinander", [s + .2, y0 - .02, 0], "mass", 1); schild("Nacheinander", [-.02, y0 + s + .24, 0], "mass", 0);
+    ["I", "II", "III", "IV"].forEach((t, i) => schild(t, [s * (.25 + (i % 2) * .5), y0 + s * (i < 2 ? .72 : .22), 0], "mass"));
+  };
+  const verteiler = () => {
+    hell = .45; const ast = (x, y, w, l, n) => { const x2 = x + Math.sin(w) * l, y2 = y + Math.cos(w) * l; strich([x, y, -.3], [x2, y2, -.3]); if (n) { ast(x2, y2, w - .45, l * .72, n - 1); ast(x2, y2, w + .45, l * .72, n - 1); } else rechteck(x2 - .02, y2 - .02, -.3, .04, .04); };
+    ast(.6, 0, 0, .38, 3);
+  };
+  /* Zettel: ein Kasten mit sieben Schubladen, Zettel in einer Reihe, Fäden dazwischen */
+  const kasten = () => {
+    const b = .9, h = 1.05, t = .45; hell = .48; quader(0, 0, 0, b, h, t);
+    hell = .34; for (let i = 0; i < 7; i++) { const y = .04 + i * (h - .08) / 7; rechteck(.05, y + .015, 0, b - .1, (h - .08) / 7 - .03); rechteck(b / 2 - .05, y + (h - .08) / 14 - .012, 0, .1, .024); }
+    mass([b + .1, 0, 0], [b + .1, h, 0], "1,05 m", [.045, 0, 0]);
+    schild("7 × 7", [b / 2, h + .06, 0], "mass");
+  };
+  const karten = () => {
+    const tops = []; hell = .45;
+    for (let i = 0; i < 7; i++) { const x = .15 + i * .2, z = -i * .1, h = .29, y = .02 + (i % 2) * .05; rechteck(x, y, z, .2, h); tops.push([x + .1, y + h, z]); }
+    hell = .3; for (const [a, b] of [[0, 4], [1, 5], [2, 6], [1, 3]]) { const p = tops[a], q = tops[b], m = [(p[0] + q[0]) / 2, Math.max(p[1], q[1]) + .22, (p[2] + q[2]) / 2]; zug([p, m, q]); }
+  };
+  /* Social: drei Stapel Zettel, wöchentlich gesammelt */
+  const stapel = () => {
+    hell = .42;
+    ["X", "Facebook", "Instagram"].forEach((name, k) => {
+      const cx = .3 + k * .6, cz = -k * .3;
+      for (let i = 0; i < 7; i++) { const w = (zufall() - .5) * .35, y = i * .03, ca = Math.cos(w), sa = Math.sin(w), b = .28, t = .4;
+        zug([[-b / 2, -t / 2], [b / 2, -t / 2], [b / 2, t / 2], [-b / 2, t / 2]].map(([u, v]) => [cx + u * ca - v * sa, y, cz + u * sa + v * ca]), true); }
+      schild(name, [cx, .3, cz], "mass");
+    });
+  };
+  /* Art: eine Wand mit drei Rahmen und ein Sockel mit einer gedrehten Säule */
+  const wand = () => {
+    const b = 1.9, h = 1.3; hell = .4; rechteck(0, 0, 0, b, h); strich([0, 0, 0], [0, 0, -.18]); strich([b, 0, 0], [b, 0, -.18]);
+    hell = .52; [[.15, .45, .5, .62], [.8, .55, .38, .48], [1.32, .38, .44, .62]].forEach(([x, y, bb, hh]) => { rechteck(x, y, .005, bb, hh); hell = .28; rechteck(x + .06, y + .06, .005, bb - .12, hh - .12); hell = .52; });
+    schild("Originale · Prints", [b / 2, h + .06, 0], "mass");
+  };
+  const saeule = () => {
+    const cx = .4, s = .38, hs = .78; hell = .45; quader(cx - s / 2, 0, s / 2, s, hs, s);
+    hell = .5; for (let i = 0; i < 8; i++) { const w = i * .22, y = hs + .05 + i * .085, r = .16; zug([0, 1, 2, 3].map(j => [cx + Math.cos(w + j * Math.PI / 2) * r, y, Math.sin(w + j * Math.PI / 2) * r]), true); }
+    schild("Arbeiten im Raum", [cx, hs + .85, 0], "mass");
+  };
+  /* Angebot: ein Tisch mit Stühlen, zwei Wände, Kisten mit Massen */
+  const tisch = () => {
+    hell = .45; const x0 = .3, z0 = -.2, b = .9, t = .6, h = .72;
+    rechteck(x0, h, z0, b, t, "xz"); for (const [x, z] of [[x0 + .05, z0 - .05], [x0 + b - .05, z0 - .05], [x0 + .05, z0 - t + .05], [x0 + b - .05, z0 - t + .05]]) strich([x, 0, z], [x, h, z]);
+    hell = .35; for (const [x, z, d] of [[x0 + .25, z0 + .3, 1], [x0 + .65, z0 + .3, 1], [x0 + .25, z0 - t - .3, -1], [x0 + .65, z0 - t - .3, -1]]) {
+      rechteck(x - .18, .45, z + .18, .36, .36, "xz"); for (const [dx, dz] of [[-.16, .16], [.16, .16], [-.16, -.16], [.16, -.16]]) strich([x + dx, 0, z + dz], [x + dx, .45, z + dz]);
+      const zr = z + .18 * d; rechteck(x - .18, .45, zr, .36, .42);
+    }
+    schild("Vermittlung", [x0 + b / 2, h + .5, z0 - t / 2], "mass");
+  };
+  const kisten = () => {
+    hell = .45; quader(0, 0, 0, .5, .5, .5); quader(.56, 0, -.1, .7, .4, .5); quader(.1, .5, -.05, .4, .3, .4);
+    mass([0, -.08, .08], [.5, -.08, .08], "0,5 m"); mass([.56, -.08, -.02], [1.26, -.08, -.02], "0,7 m");
+    schild("Produkte", [.62, .95, -.2], "mass");
+  };
+  const waende = () => {
+    hell = .4; const b = 1.1, h = 1.0;
+    for (const [x, z, w] of [[0, 0, .5], [.9, -.6, -.5]]) {
+      const c = Math.cos(w), sn = Math.sin(w), P = (u, v) => [x + u * c, v, z + u * sn];
+      zug([P(0, 0), P(b, 0), P(b, h), P(0, h)], true); hell = .5; zug([P(.25, .35), P(.6, .35), P(.6, .75), P(.25, .75)], true); hell = .4;
+    }
+    schild("Kuration", [.9, 1.12, -.3], "mass");
+  };
+
+  /* Die Schlaufe des Signets: ein grosser Bogen mit einer inneren Schlaufe, auf dem ein Punkt läuft */
+  function schlaufe(sj, seite, ab, gr) {
+    stelle(sj, seite, ab); const pts = [], wp = [];
+    for (let i = 0; i <= 160; i++) {
+      const w = i / 160 * Math.PI * 2, r = .59 + Math.cos(w), x = (r * Math.cos(w) + .45) * gr, y = r * Math.sin(w) * gr + gr * 1.25;
+      pts.push([x, y, 0]); v1.set(x, y, 0).applyMatrix4(M); wp.push(v1.x, v1.y, v1.z);
+    }
+    hell = .3; zug(pts);
+    const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(wp.slice(0, 3), 3));
+    const punkt = new THREE.Points(geo, deckeln(new THREE.PointsMaterial({ size: .09, color: hdr("#8fb0ff", .9), transparent: true, depthWrite: false }), 7));
+    g.add(punkt); bahn.laeufer.push({ punkte: wp, attr: geo.attributes.position, phase: zufall() });
+  }
+
+  /* Notationen nach Spencer-Brown: Kondensation, Aufhebung, Re-entry */
+  const NOTATIONEN = [
+    { formel: ["f", "=", { m: ["f"] }], titel: "Re-entry · Laws of Form" },
+    { formel: [{ m: [] }, { m: [] }, "=", { m: [] }], titel: "Kondensation" },
+    { formel: [{ m: [{ m: [] }] }, "=", " "], titel: "Aufhebung" },
+    { formel: [{ m: [] }], titel: "Draw a distinction" },
+  ];
+
+  // Je Bereich: welche Figur wo steht (Anteil der Länge, Seite, Abstand vom Band)
+  const PLAN = {
+    "k-web": [["notation", .08, -1, 0], [browser, .22, 1, .5], [wuerfel, .45, -1, .5], [telefon, .72, 1, .9]],
+    "k-lab": [[kolben, .25, -1, .5], [prisma, .6, 1, .4], ["notation", .85, -1, 1]],
+    "k-rad": [[raeder, .4, 1, .3], ["notation", .7, -1, 2]],
+    "k-apps": [[kugel, .2, -1, .5], [tuch, .5, 1, .5], [scherben, .8, -1, .4]],
+    "k-prompts": [[achsen, .3, 1, .5], [verteiler, .65, -1, .4], ["notation", .85, 1, 3]],
+    "k-zettel": [[kasten, .2, -1, .5], [karten, .55, 1, .4], ["schlaufe", .8, -1, .8]],
+    "k-social": [[stapel, .35, 1, .4], ["notation", .7, -1, 0]],
+    "k-art": [[wand, .3, -1, .45], [saeule, .65, 1, .6]],
+    "k-angebot": [[tisch, .2, 1, .4], [waende, .5, -1, .5], [kisten, .8, 1, .5], ["schlaufe", .9, -1, .8]],
+  };
+  // Wo am Desktop eine Beschriftung vom Band nach aussen führt, weicht die Figur ein Stück aus
+  const LW = RAUM.w / bahn.k, belegt = [];
+  if (!eng) bilder.forEach((b, i) => b.lage.rand.forEach(c => {
+    const mitte = c.x + c.b / 2; if (Math.abs(mitte - LW / 2) < LW * .12) return;
+    belegt.push({ s: bahn.kapitel[i].s0 + (c.y + Math.min(c.h / 2, 20)) * bahn.k - .25, seite: mitte < LW / 2 ? -1 : 1 });
+  }));
+  const frei = (s0, s1, sj, seite) => { for (const d of [0, .7, -.7, 1.4, -1.4, 2.1, -2.1, 2.8, -2.8]) { const t = sj + d; if (t > s0 + .4 && t < s1 - .4 && !belegt.some(x => x.seite === seite && Math.abs(x.s - t) < 1.5)) return t; } return sj; };
+  kapitel.forEach((k, i) => {
+    const x = bahn.kapitel[i], L = x.s1 - x.s0;
+    for (const [was, f, seite, ab] of PLAN[k.id] || []) {
+      const sj = frei(x.s0, x.s1, x.s0 + L * f, seite); ton = new THREE.Color(1, 1, 1);
+      // Die Figuren stehen weiter draussen als die Beschriftungen am Rand des Bandes
+      if (was === "schlaufe") { schlaufe(sj, seite, eng ? ab * .5 : ab + .5, eng ? .75 : 1); continue; }
+      if (was === "notation") { stelle(sj, seite, eng ? .4 : 1.2); schild(NOTATIONEN[ab], [0, eng ? 1.1 : 1.3, 0], "notation", 0); continue; }
+      stelle(sj, seite, eng ? ab * .5 + .1 : ab + .4); was();
+    }
+  });
+  const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(lp, 3)); geo.setAttribute("color", new THREE.Float32BufferAttribute(lc, 3));
+  g.add(new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false })));
+
+  /* Schilder: alle Beschriftungen auf einer Leinwand, jede als kleine Fläche im Raum */
+  if (!schilder.length) return;
+  const sk = 3, mz = document.createElement("canvas").getContext("2d");
+  const massSchrift = `500 10.5px ${SANS}`, formelSchrift = `italic 400 18px ${SERIF}`, kleinSchrift = `500 8.5px ${SANS}`;
+  function formelMessen(t) {
+    if (typeof t === "string") { mz.font = formelSchrift; return { b: Math.max(6, mz.measureText(t).width), h: 13 }; }
+    const innen = t.m.length ? t.m.map(formelMessen).reduce((a, c) => ({ b: a.b + c.b + 5, h: Math.max(a.h, c.h) }), { b: -5, h: 0 }) : { b: 9, h: 10 };
+    return { b: innen.b + 11, h: innen.h + 6, innen };
+  }
+  function formelZeichnen(cx, t, x, grund) {
+    if (typeof t === "string") { cx.font = formelSchrift; cx.fillText(t, x, grund); return formelMessen(t).b; }
+    const m = formelMessen(t); let xi = x + 3;
+    for (const u of t.m) xi += formelZeichnen(cx, u, xi, grund) + 5;
+    cx.fillRect(x, grund - m.h, m.b, 1.2); cx.fillRect(x + m.b - 1.2, grund - m.h, 1.2, m.h + 3);
+    return m.b;
+  }
+  const masse = schilder.map(s => {
+    if (s.art === "mass") { mz.font = massSchrift; if ("letterSpacing" in mz) mz.letterSpacing = ".8px"; return { b: Math.ceil(mz.measureText(s.inhalt).width + 8), h: 16 }; }
+    const teile = s.inhalt.formel.map(formelMessen), b = teile.reduce((a, c) => a + c.b + 7, -7), hoch = Math.max(...teile.map(c => c.h));
+    mz.font = kleinSchrift; if ("letterSpacing" in mz) mz.letterSpacing = "1.2px";
+    return { b: Math.ceil(Math.max(b, mz.measureText(s.inhalt.titel.toUpperCase()).width) + 10), h: Math.ceil(hoch + 30), hoch };
+  });
+  const AB = 1024; let x = 0, y = 0, zeile = 0; const lage = masse.map(m => { if (x + m.b > AB) { x = 0; y += zeile + 2; zeile = 0; } const l = { x, y }; x += m.b + 2; zeile = Math.max(zeile, m.h); return l; });
+  const AH = y + zeile, cv = document.createElement("canvas"); cv.width = AB * sk; cv.height = Math.ceil(AH * sk);
+  const cx = cv.getContext("2d"); cx.scale(sk, sk); cx.fillStyle = "#fff"; cx.textBaseline = "alphabetic";
+  const ap = [], au = [], ai = [], kl = .0108;
+  schilder.forEach((s, i) => {
+    const m = masse[i], l = lage[i];
+    if (s.art === "mass") { cx.font = massSchrift; if ("letterSpacing" in cx) cx.letterSpacing = ".8px"; cx.globalAlpha = .82; cx.fillText(s.inhalt, l.x + 4, l.y + 12); }
+    else {
+      cx.globalAlpha = .9; if ("letterSpacing" in cx) cx.letterSpacing = "0px"; let xi = l.x + 5; const grund = l.y + m.hoch + 2;
+      for (const t of s.inhalt.formel) xi += formelZeichnen(cx, t, xi, grund) + 7;
+      cx.globalAlpha = .55; cx.fillRect(l.x + 5, grund + 7, m.b - 10, .8);
+      cx.globalAlpha = .7; cx.font = kleinSchrift; if ("letterSpacing" in cx) cx.letterSpacing = "1.2px"; cx.fillText(s.inhalt.titel.toUpperCase(), l.x + 5, grund + 20);
+    }
+    const o = ap.length / 3, bw = m.b * kl, hw = m.h * kl;
+    for (const [u, v] of [[0, 0], [1, 0], [0, 1], [1, 1]]) { const q = s.pos.clone().addScaledVector(s.rechts, (u - s.anker) * bw).addScaledVector(s.oben, v * hw); ap.push(q.x, q.y, q.z); }
+    const u0 = l.x / AB, u1 = (l.x + m.b) / AB, v0 = 1 - (l.y + m.h) / AH, v1 = 1 - l.y / AH;
+    au.push(u0, v0, u1, v0, u0, v1, u1, v1); ai.push(o, o + 1, o + 2, o + 2, o + 1, o + 3);
+  });
+  const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  const sg = new THREE.BufferGeometry(); sg.setAttribute("position", new THREE.Float32BufferAttribute(ap, 3)); sg.setAttribute("uv", new THREE.Float32BufferAttribute(au, 2)); sg.setIndex(ai);
+  const sm = new THREE.Mesh(sg, new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
+  sm.material.userData.a = .85; g.add(sm);
 }
 
 function platzMessen() { if (bahn.L) platz.style.height = Math.round(bahn.L / bahn.k - innerHeight * .45) + "px"; }
@@ -839,7 +1354,7 @@ function kippen(nach, dauer, kap) { kipp.von = kipp.wert; kipp.nach = nach; kipp
 function kippStand(zeit) { const p = klemm((zeit - kipp.t0) / kipp.dauer), e = p < .5 ? 4 * p * p * p : 1 - Math.pow(2 - 2 * p, 3) / 2; kipp.wert = misch(kipp.von, kipp.nach, e); }
 function kameraSetzen() {
   const t = zustand.t, eng = schmal();
-  const s = zustand.s, hoch = eng ? 5.4 : 2.7, hinten = eng ? 2.4 : 1.4, voraus = eng ? 5.4 : 4.6;
+  const s = zustand.s, hoch = eng ? 5.4 : 3, hinten = eng ? 2.4 : 1.7, voraus = eng ? 5.4 : 4.6;
   // Intro: um das Netz herum, hinein, wieder hinaus
   const nah = weich(.22, .5, t), raus = weich(.5, .66, t);
   let dist = misch(misch(16, 1.8, nah), eng ? 10.5 : 8.5, raus);
@@ -936,6 +1451,11 @@ function bild(zeit) {
   if (!ruhig) zustand.dreh += dt * .08 * (1 - weich(.5, .6, zustand.t));
   zustand.v = misch(zustand.v, (zustand.s - sAlt) / Math.max(dt, 1e-3), .2);
   introDom(zustand.t);
+  // Webseiten flach: das Signet bewegt sich, bis es sich verwandelt
+  if (web && flach) {
+    if (!web.k.classList.contains("raster")) { const r = web.logo.getBoundingClientRect(); if (r.bottom > 0 && r.top < innerHeight) signetMalen(web.logo, zeit / 1000); }
+    webLaufBild(zeit);
+  }
   // Während des Wechsels zur flachen Seite läuft das Bild weiter, die Seite blendet darüber
   const imRaum = !flach || document.body.classList.contains("wechsel") || intro.getBoundingClientRect().bottom > 0;
   document.body.classList.toggle("nach-intro", intro.getBoundingClientRect().bottom <= innerHeight * .2);
@@ -974,8 +1494,16 @@ function bild(zeit) {
       bahn.gruppe.visible = auf > 0;
       bahn.materialien.forEach(m => { m.opacity = auf * (m.userData.a ?? 1); });
       // Titel liegen flacher, solange sie nah sind, und richten sich auf, während sie davonziehen
-      const fuss = zustand.s + (schmal() ? 2.4 : 1.4);
-      bahn.titel.forEach(x => { const a = ruhig ? 1.05 : misch(.35, 1.3, weich(-2, 16, fuss - x.sH)); x.mesh.rotation.x = a; x.schatten.scale.y = .15 + .85 * Math.cos(a); });
+      const fuss = zustand.s + (schmal() ? 2.4 : 1.7);
+      // Beim Kippen in die flache Seite legen sie sich auf das Band, genau dorthin, wo der Titel auf der Seite steht
+      bahn.titel.forEach(x => { const a = misch(ruhig ? 1.05 : misch(.35, 1.3, weich(-2, 16, fuss - x.sH)), 0, kipp.wert); x.mesh.rotation.x = a; x.schatten.scale.y = .15 + .85 * Math.cos(a); });
+      // Die drei Räder drehen sich langsam gegeneinander, auf jeder Schlaufe läuft ein Punkt
+      if (!ruhig) {
+        bahn.signete.forEach(f => f(zeit / 1000));
+        bahn.dreher.forEach(d => { d.o.rotation.z = zeit * .00011 * d.v; });
+        bahn.laeufer.forEach(l => { const n = l.punkte.length / 3 - 1, f = ((zeit * .00005 + l.phase) % 1) * n, i = Math.floor(f), u = f - i, P = l.punkte;
+          l.attr.setXYZ(0, misch(P[i * 3], P[i * 3 + 3], u), misch(P[i * 3 + 1], P[i * 3 + 4], u), misch(P[i * 3 + 2], P[i * 3 + 5], u)); l.attr.needsUpdate = true; });
+      }
     }
     bloom.strength = .38;
     composer.render();
@@ -1014,6 +1542,7 @@ function setzeFlach(f, id) {
 }
 function flachSetzen(f, akt, effekt) {
   flach = f; document.body.classList.toggle("flach", f); flachKnopf.textContent = f ? "Zurück in den Raum" : "Flach lesen";
+  if (!f) webZurueck();
   if (f && !effekt) kipp.wert = kipp.von = kipp.nach = 0;
   const k = akt && document.getElementById(akt);
   if (k) { if (f) k.scrollIntoView({ behavior: "auto" }); else zuKapitel(akt, true); }
@@ -1030,11 +1559,23 @@ function flachSetzen(f, akt, effekt) {
 const NS = "http://www.w3.org/2000/svg";
 function titelZerlegen(h2) {
   if (!h2.dataset.zerlegt) {
-    const text = h2.textContent; h2.setAttribute("aria-label", text); h2.textContent = "";
-    for (const c of text) { const b = document.createElement("span"); b.className = "bst"; b.setAttribute("aria-hidden", "true"); b.textContent = c; h2.append(b); }
+    // Buchstaben je Wort zusammenhalten, damit ein Titel über mehrere Zeilen nur zwischen Wörtern umbricht
+    if (!h2.hasAttribute("aria-label")) h2.setAttribute("aria-label", h2.textContent);
+    const knoten = [], gang = document.createTreeWalker(h2, NodeFilter.SHOW_TEXT); for (let n; (n = gang.nextNode());) knoten.push(n);
+    for (const n of knoten) {
+      const teile = document.createDocumentFragment();
+      for (const t of n.data.split(/(\s+)/)) {
+        if (!t) continue;
+        if (!t.trim()) { teile.append(t); continue; }
+        const w = document.createElement("span"); w.className = "wort"; w.setAttribute("aria-hidden", "true");
+        for (const c of t) { const b = document.createElement("span"); b.className = "bst"; b.textContent = c; w.append(b); }
+        teile.append(w);
+      }
+      n.replaceWith(teile);
+    }
     h2.dataset.zerlegt = "1";
   }
-  return [...h2.children];
+  return [...h2.querySelectorAll(".bst")];
 }
 function kapitelEffekt(k) {
   if (ruhig || !k || !k.animate) return;
@@ -1042,8 +1583,9 @@ function kapitelEffekt(k) {
   bst.forEach((b, j) => b.animate([{ opacity: 0, transform: "translateY(.2em)", filter: "blur(8px)" }, { opacity: 1, transform: "none", filter: "blur(0px)" }],
     { duration: 560, delay: 80 + (bst.length - 1 - j) * 55, easing: "cubic-bezier(.2,.7,.2,1)", fill: "backwards" }));
   k.querySelector(".k-netz")?.remove();
+  if (k === web?.k) return;   // bei den Webseiten ist die Verwandlung auf der Bühne der Effekt
   const b = k.clientWidth, h = Math.min(k.clientHeight, 440), letzte = bst[bst.length - 1];
-  const hx = Math.min(b - 70, letzte.offsetLeft + letzte.offsetWidth + 46), hy = h2.offsetTop + h2.offsetHeight * .5;
+  const hx = Math.min(b - 70, letzte.offsetLeft + letzte.offsetWidth + 46), hy = letzte.offsetTop + letzte.offsetHeight * .5;
   const svg = document.createElementNS(NS, "svg"); svg.setAttribute("class", "k-netz"); svg.setAttribute("aria-hidden", "true");
   svg.setAttribute("viewBox", `0 0 ${b} ${h}`); svg.style.height = h + "px";
   const el = (name, attr) => { const e = document.createElementNS(NS, name); for (const n in attr) e.setAttribute(n, attr[n]); return e; };
@@ -1065,6 +1607,168 @@ function kapitelEffekt(k) {
   k.append(svg);
   svg.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 900, delay: 2000, easing: "ease-in", fill: "forwards" }).finished.then(() => svg.remove());
 }
+/* ---------- Webseiten flach: aus dem Signet wird eine Punktkugel, daraus ein Würfel, daraus das Raster der neun Themen.
+   Ein Thema rückt nach oben links, der Rest des Rasters füllt sich mit seinen Ausführungen. Die drei Flächen zeigen ihren Inhalt auf der Bühne. ---------- */
+const SPALTEN = ["Entwickeln", "Gestalten", "Vernetzen"];
+// Vorläufig, aus dem Text der Seite Webdesign; Christian legt die neun Themen noch fest
+const THEMEN = [
+  { name: "Website", leit: "Eine Website, die in unter einer Sekunde da ist und nichts von Dritten lädt.", punkte: [["< 1 s", "bis die Seite da ist"], ["0", "Cookies, Werbung und Tracker"], ["eigen", "Schriften und Skripte auf dem eigenen Server"]] },
+  { name: "App", leit: "Apps, die im Browser laufen, sich auf den Startbildschirm legen lassen und ohne Netz weiterarbeiten.", punkte: [["Browser", "kein App-Store nötig"], ["offline", "arbeitet ohne Netz weiter"], ["7", "Apps auf ornament.cloud"]] },
+  { name: "Prototyp", leit: "Bei Apps ein lauffähiger Prototyp innert Tagen.", punkte: [["Tage", "bis zum ersten Prototyp"], ["lauffähig", "zum Ausprobieren, nicht als Bild"]] },
+  { name: "Entwurf im Browser", leit: "Ein Entwurf im Browser, zum Anfassen, nicht als Bild.", punkte: [["Handy", "und Desktop im selben Entwurf"], ["früh", "Rückmeldung am eigenen Gerät"]] },
+  { name: "Texte und Bilder", leit: "Texte und Bilder gehören zum Bau, bis zur Veröffentlichung.", punkte: [["Texte", "geschrieben und gesetzt"], ["Bilder", "ausgewählt und aufbereitet"]] },
+  { name: "Aus einer Hand", leit: "Gestaltet und gebaut aus einer Hand, vom ersten Gespräch bis zur Veröffentlichung.", punkte: [["01", "Gespräch"], ["02", "Entwurf im Browser"], ["03", "Bau und Veröffentlichung"]] },
+  { name: "Suchmaschinen und Teilen", leit: "Mit allem, was Suchmaschinen und Teilen brauchen.", punkte: [["Vorschau", "Karten für X, Facebook und Messenger"], ["Feed", "für alle, die mitlesen"]] },
+  { name: "Eigene Adresse", leit: "Eine Adresse, die bleibt.", punkte: [["eigen", "Domain und Server"], ["danach", "bleibt alles in Ihrer Hand"]] },
+  { name: "Ohne Dritte", leit: "Keine Cookies, keine Werbung, keine Tracker; Schriften und Skripte liegen auf dem eigenen Server.", punkte: [["0", "Cookies"], ["0", "Tracker"], ["0", "Dienste von aussen"]] },
+];
+const ANI = "cubic-bezier(.2,.7,.2,1)";
+const web = (() => {
+  const k = document.getElementById("k-web"); if (!k) return null;
+  return { k, buehne: k.querySelector(".buehne"), logo: k.querySelector(".logo canvas"), cv: k.querySelector(".verwandlung"), themen: k.querySelector(".themen"), zellen: k.querySelector(".zellen"),
+    kopf: k.querySelector(".spalten-kopf span"), felder: [...k.querySelectorAll(".feld")], inhalte: [...k.querySelectorAll(".fi")], knoepfe: [], offen: -1, lauf: null };
+})();
+// Die neun Themen spaltenweise: Entwickeln links, Gestalten in der Mitte, Vernetzen rechts
+const rasterPlatz = (b, i) => { b.style.gridColumn = String(Math.floor(i / 3) + 1); b.style.gridRow = String(i % 3 + 1); };
+if (web) THEMEN.forEach((th, i) => {
+  const b = document.createElement("button"); b.type = "button"; b.className = "thema"; b.setAttribute("aria-expanded", "false");
+  const nr = document.createElement("span"), name = document.createElement("b"); nr.className = "nr"; nr.textContent = "0" + (i + 1); name.textContent = th.name; b.append(nr, name);
+  b.addEventListener("click", () => (web.offen === i ? themenZu() : themaOeffnen(i)));
+  rasterPlatz(b, i); web.zellen.append(b); web.knoepfe.push(b);
+});
+function themaOeffnen(i) {
+  const th = THEMEN[i], knopf = web.knoepfe[i], vorher = knopf.hidden ? null : knopf.getBoundingClientRect(), fokus = web.zellen.contains(document.activeElement);
+  web.zellen.querySelectorAll(".erkl").forEach(e => e.remove());
+  web.knoepfe.forEach((b, j) => { b.hidden = j !== i; b.setAttribute("aria-expanded", String(j === i)); rasterPlatz(b, j); });
+  knopf.style.gridColumn = knopf.style.gridRow = "1";
+  web.themen.classList.add("offen"); web.kopf.textContent = SPALTEN[Math.floor(i / 3)];
+  const neu = [], zelle = (art, spalte, zeile) => {
+    const e = document.createElement(art === "schalter" ? "button" : "div"); e.className = "erkl " + art; if (art === "schalter") e.type = "button";
+    e.style.gridColumn = spalte; e.style.gridRow = String(zeile); web.zellen.append(e); neu.push(e); return e;
+  };
+  zelle("leitsatz", "2 / span 2", 1).textContent = th.leit;
+  [[1, 2], [2, 2], [3, 2], [1, 3]].forEach(([sp, ze], n) => {
+    const p = th.punkte[n], e = zelle(p ? "punkt" : "leer", String(sp), ze); if (!p) return;
+    const g = document.createElement("span"), kl = document.createElement("span"); g.className = "gross"; kl.className = "klein"; g.textContent = p[0]; kl.textContent = p[1]; e.append(g, kl);
+  });
+  const nx = (i + 1) % THEMEN.length, weiter = zelle("schalter", "2", 3), zurueck = zelle("schalter", "3", 3);
+  weiter.innerHTML = '<span class="klein">Weiter</span><b></b>'; weiter.querySelector("b").textContent = THEMEN[nx].name + " →"; weiter.addEventListener("click", () => themaOeffnen(nx));
+  zurueck.innerHTML = '<span class="klein">Übersicht</span><b>← Alle Themen</b>'; zurueck.addEventListener("click", () => themenZu());
+  if (fokus) knopf.focus({ preventScroll: true });
+  web.offen = i;
+  if (ruhig) return;
+  const nachher = knopf.getBoundingClientRect();
+  if (vorher) knopf.animate([{ transform: `translate(${vorher.left - nachher.left}px, ${vorher.top - nachher.top}px)` }, { transform: "none" }], { duration: 560, easing: ANI });
+  else knopf.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 320 });
+  neu.forEach((e, n) => e.animate([{ opacity: 0, transform: "translateY(8px)" }, { opacity: 1, transform: "none" }], { duration: 440, delay: 200 + n * 60, easing: ANI, fill: "backwards" }));
+}
+function themenZu(sofort) {
+  if (!web || web.offen < 0) return;
+  const i = web.offen, knopf = web.knoepfe[i], vorher = knopf.getBoundingClientRect(), fokus = web.zellen.contains(document.activeElement);
+  web.zellen.querySelectorAll(".erkl").forEach(e => e.remove());
+  web.knoepfe.forEach((b, j) => { b.hidden = false; b.setAttribute("aria-expanded", "false"); rasterPlatz(b, j); });
+  web.themen.classList.remove("offen"); web.kopf.textContent = SPALTEN[0];
+  web.offen = -1;
+  if (fokus) knopf.focus({ preventScroll: true });
+  if (sofort || ruhig) return;
+  const nachher = knopf.getBoundingClientRect();
+  knopf.animate([{ transform: `translate(${vorher.left - nachher.left}px, ${vorher.top - nachher.top}px)` }, { transform: "none" }], { duration: 560, easing: ANI });
+  web.knoepfe.forEach((b, j) => { if (j !== i) b.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 360, delay: 160 + j * 35, fill: "backwards" }); });
+}
+// Die Flächen: ihr Inhalt erscheint oben auf der Bühne, an der Stelle des Rasters
+function feldZeigen(name) {
+  webStopp(); web.k.classList.add("raster", "zeigt-feld"); web.k.dataset.feld = name;
+  web.inhalte.forEach(s => { s.hidden = s.dataset.feld !== name; });
+  web.felder.forEach(f => f.setAttribute("aria-expanded", String(f.dataset.feld === name)));
+  const r = web.buehne.getBoundingClientRect(); if (r.top < 56) scrollTo({ top: scrollY + r.top - 64, behavior: ruhig ? "auto" : "smooth" });
+  if (!ruhig) [...web.inhalte.find(s => !s.hidden).children].forEach((e, n) => e.animate([{ opacity: 0, transform: "translateY(10px)" }, { opacity: 1, transform: "none" }], { duration: 480, delay: 80 + n * 70, easing: ANI, fill: "backwards" }));
+}
+function feldZu() { web.k.classList.remove("zeigt-feld"); delete web.k.dataset.feld; web.felder.forEach(f => f.setAttribute("aria-expanded", "false")); }
+if (web) {
+  web.felder.forEach(f => f.addEventListener("click", () => (web.k.dataset.feld === f.dataset.feld ? feldZu() : feldZeigen(f.dataset.feld))));
+  web.k.querySelector(".fi-zu").addEventListener("click", feldZu);
+}
+
+// Die Verwandlung: 360 Punkte auf der Schlaufe, auf einer Kugel, auf den Kanten eines Würfels, auf den Rändern der neun Felder
+const PUNKTE = 360, HALT = .6;
+function webRaster(sofort) {
+  if (!web || web.k.classList.contains("raster") || web.lauf) return;
+  if (sofort || ruhig) { web.k.classList.add("raster"); return; }
+  web.lauf = { t0: performance.now() };
+}
+function webStopp() {
+  if (!web || !web.lauf) return;
+  web.lauf = null; web.k.classList.remove("baut"); web.cv.getContext("2d").clearRect(0, 0, web.cv.width, web.cv.height);
+}
+function webZurueck() {
+  if (!web) return;
+  webStopp(); themenZu(true); feldZu(); web.k.classList.remove("raster");
+}
+// Paare mit den kürzesten Wegen zuerst: so wandert jeder Punkt in seine Nähe und keiner fliegt quer über die Bühne
+function paaren(A, B) {
+  const n = A.length, d = new Float32Array(n * n), ord = new Uint32Array(n * n);
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) { const x = A[i][0] - B[j][0], y = A[i][1] - B[j][1]; d[i * n + j] = x * x + y * y; ord[i * n + j] = i * n + j; }
+  ord.sort((a, b) => d[a] - d[b]);
+  const zu = new Int32Array(n).fill(-1), frei = new Uint8Array(n).fill(1); let rest = n;
+  for (let q = 0; q < ord.length && rest; q++) { const i = Math.floor(ord[q] / n), j = ord[q] % n; if (zu[i] < 0 && frei[j]) { zu[i] = j; frei[j] = 0; rest--; } }
+  return zu;
+}
+function webVorbereiten(L) {
+  const B = web.buehne.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2);
+  web.cv.width = Math.round(B.width * dpr); web.cv.height = Math.round(B.height * dpr);
+  const lr = web.logo.getBoundingClientRect(), gr = Math.min(lr.width, lr.height) * .92, lx = lr.left - B.left + lr.width / 2, ly = lr.top - B.top + lr.height / 2;
+  const zr = web.zellen.getBoundingClientRect(), a = Math.min(zr.width, zr.height) * .375;
+  Object.assign(L, { dpr, lx, ly, zx: zr.left - B.left + zr.width / 2, zy: zr.top - B.top + zr.height / 2, a, R: a * 1.1, F: a * 4 });
+  // Kugel nach Fibonacci, Würfel aus der Kugel: jeden Punkt auf die Oberfläche schieben, dann auf die nächste Kante, dort gleichmässig verteilt
+  const kugel = [], wuerfel = [], kanten = new Map();
+  for (let i = 0; i < PUNKTE; i++) { const y = 1 - 2 * (i + .5) / PUNKTE, r = Math.sqrt(1 - y * y), w = i * 2.399963; kugel.push([r * Math.cos(w), y, r * Math.sin(w)]); }
+  kugel.forEach((p, i) => {
+    const ab = p.map(Math.abs), f = ab.indexOf(Math.max(...ab)), q = p.map(c => c / ab[f]), andere = [0, 1, 2].filter(j => j !== f);
+    const g = ab[andere[0]] >= ab[andere[1]] ? andere[0] : andere[1], frei = andere.find(j => j !== g);
+    q[f] = Math.sign(q[f]); q[g] = Math.sign(q[g]) || 1;
+    const lo = Math.min(f, g), hi = Math.max(f, g), sch = `${lo}${q[lo]}${hi}${q[hi]}`;
+    if (!kanten.has(sch)) kanten.set(sch, { frei, liste: [] }); kanten.get(sch).liste.push({ i, q });
+  });
+  kanten.forEach(({ frei, liste }) => { liste.sort((u, v) => u.q[frei] - v.q[frei]); liste.forEach((e, r) => { e.q[frei] = -1 + 2 * (r + .5) / liste.length; wuerfel[e.i] = e.q; }); });
+  // Die Schlaufe: so viele Punkte wie die Kugel hat, gepaart mit der Kugel, wie sie zu Beginn von vorn aussieht
+  const f = signetForm(performance.now() / 1000, PUNKTE), schlaufe = f.linie.map(q => [lx + q[0] * gr, ly + q[1] * gr]);
+  const proj = (o, cx, cy) => { const s = L.F / (L.F + o[2]); return [cx + o[0] * s, cy + o[1] * s]; };
+  const zuS = paaren(kugel.map(p => proj(p.map(c => c * L.R), lx, ly)), schlaufe);
+  // Die Felder: je 40 Punkte auf dem Rand, gepaart mit dem Würfel, wie er am Ende von vorn steht
+  const ziel = [];
+  web.knoepfe.forEach(b => {
+    const r = b.getBoundingClientRect(), x = r.left - B.left + .5, y = r.top - B.top + .5, w = r.width - 1, h = r.height - 1, u = 2 * (w + h);
+    for (let j = 0; j < PUNKTE / 9; j++) { let d = j / (PUNKTE / 9) * u; const p = d < w ? [x + d, y] : (d -= w) < h ? [x + w, y + d] : (d -= h) < w ? [x + w - d, y + h] : [x, y + h - (d - w)]; ziel.push(p); }
+  });
+  const zuZ = paaren(wuerfel.map(p => proj(p.map(c => c * a), L.zx, L.zy)), ziel);
+  L.p = kugel.map((k, i) => ({ k, w: wuerfel[i], s: schlaufe[zuS[i]], z: ziel[zuZ[i]] }));
+}
+const eio = x => (x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+function webLaufBild(zeit) {
+  const L = web && web.lauf; if (!L) return;
+  const T = (zeit - L.t0) / 1000 - HALT;
+  if (T < 0) return;
+  if (!L.p) { webVorbereiten(L); web.k.classList.add("raster", "baut"); }
+  const u1 = eio(klemm((T - .15) / .95)), u2 = eio(klemm((T - 1.45) / .85)), u3 = eio(klemm((T - 2.8) / .8));
+  const pr = klemm((T - .15) / 2.65), ry = Math.PI * 2 * eio(pr), rx = .42 * Math.sin(Math.PI * pr), c1 = Math.cos(ry), s1 = Math.sin(ry), c2 = Math.cos(rx), s2 = Math.sin(rx);
+  const mx = misch(L.lx, L.zx, u2), my = misch(L.ly, L.zy, u2), sz = L.dpr * 1.7;
+  const cx = web.cv.getContext("2d"); cx.setTransform(1, 0, 0, 1, 0, 0); cx.clearRect(0, 0, web.cv.width, web.cv.height); cx.fillStyle = "#fff";
+  const deck = klemm(T / .3) * (1 - klemm((T - 3.55) / .45));
+  for (const q of L.p) {
+    const ox = misch(q.k[0] * L.R, q.w[0] * L.a, u2), oy = misch(q.k[1] * L.R, q.w[1] * L.a, u2), oz = misch(q.k[2] * L.R, q.w[2] * L.a, u2);
+    const x1 = ox * c1 + oz * s1, z1 = -ox * s1 + oz * c1, y1 = oy * c2 - z1 * s2, z2 = oy * s2 + z1 * c2, s = L.F / (L.F + z2);
+    let x = mx + x1 * s, y = my + y1 * s;
+    x = misch(misch(q.s[0], x, u1), q.z[0], u3); y = misch(misch(q.s[1], y, u1), q.z[1], u3);
+    const tiefe = .3 + .7 * klemm(.5 - z2 / (2.4 * L.R));
+    cx.globalAlpha = deck * misch(misch(1, tiefe, Math.min(u1, 1 - u3)), 1, u3) * .92;
+    cx.fillRect(x * L.dpr - sz / 2, y * L.dpr - sz / 2, sz, sz);
+  }
+  if (T > 3.35 && web.k.classList.contains("baut")) web.k.classList.remove("baut");
+  if (T > 4) webStopp();
+}
+// Auf der flachen Seite beginnt die Verwandlung, sobald die Bühne zur Hälfte zu sehen ist
+if (web && ruhig) webRaster(true);
+if (web && "IntersectionObserver" in window) new IntersectionObserver(e => { if (flach && e[0].isIntersecting) webRaster(); }, { threshold: .5 }).observe(web.buehne);
 if ("IntersectionObserver" in window) {
   const beobachter = new IntersectionObserver(eintraege => {
     if (!flach || wechselt) return;
@@ -1123,7 +1827,7 @@ if (ok3d) {
   bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth / 2, innerHeight / 2), .38, .35, 1.0); composer.addPass(bloom);
   composer.addPass(new OutputPass());
   groesse();
-  RAUM.R = schmal() ? 8 : 10; RAUM.w = schmal() ? 4.2 : 6; RAUM.drift = 1.6 * RAUM.w / (2 * Math.PI * RAUM.R);
+  raumMasse();
   netzBauen();
   (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => bahnBauen()).catch(() => { flach = true; document.body.classList.add("flach"); });
 } else {
