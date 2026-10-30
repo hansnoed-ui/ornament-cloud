@@ -149,11 +149,10 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 
 /* 01 Webseiten: oben der Titel und rechts die drei Begriffe, mittig das Signet auf einer ruhigen, einfarbigen Bühne, darunter drei Flächen mit ihrem Titel.
    Flach wird das Signet zur Punktkugel, zum Würfel und zum Raster der neun Themen; eine Fläche zeigt ihren Inhalt auf der Bühne. */
-/* Der Kopf wie bei Apps: rechts die Marke mit den drei Begriffen, links gross der Titel, darunter der Satz */
-/* Rechts oben, auf der Höhe des Titels: die Marke klein, darunter die drei Begriffe je auf einer Zeile */
+/* Der Kopf wie bei Apps: links gross der Titel, darunter der Satz; rechts oben auf der Höhe des Titels die drei Begriffe,
+   je auf einer Zeile und klein geschrieben, ohne Marke darüber: so beziehen sie sich direkt auf «Webseiten» */
 .k-web .marke-k { position: absolute; top: clamp(40px, 8cqi, 68px); right: max(clamp(22px, 5.4cqi, 48px), env(safe-area-inset-right, 0px)); margin: 0; }
 .k-web .marke-k .zl { display: block; }
-.k-web .marke-k .zl:first-child { margin-bottom: 8px; }
 .k-web .marke-k .begriff { font: 500 clamp(17px, 2.5cqi, 23px)/1.12 var(--sans); letter-spacing: -.01em; text-transform: none; color: var(--kt); }
 .k-web .leit { font-family: var(--sans); font-style: normal; font-weight: 400; font-size: clamp(19px, 3cqi, 26px); letter-spacing: -.015em; }   /* nüchtern statt kursiv */
 .k-web h2 { font-size: clamp(42px, 9cqi, 80px); }   /* «Webseiten» ist lang: kleiner als die kurzen Titel, sonst erdrückt er die Seite */
@@ -366,7 +365,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
   <div class="raum-platz" id="raum-platz"></div>
   <div class="bahn" id="bahn">
       <article class="kapitel k-web" id="k-web" data-name="Webseiten"><div class="k-innen">
-        <span class="marke-k"><span class="zl">01 · Angebot</span><span class="zl begriff">Entwickeln,</span><span class="zl begriff">gestalten,</span><span class="zl begriff">vernetzen.</span></span>
+        <span class="marke-k"><span class="zl begriff">entwickeln,</span><span class="zl begriff">gestalten,</span><span class="zl begriff">vernetzen.</span></span>
         <h2>Webseiten</h2>
         <p class="leit">Schnell &amp; praktisch.</p>
         <div class="buehne">
@@ -605,7 +604,7 @@ const schmal = () => innerWidth < 760;
 /* ---------- DOM: Zyklen-Liste, Zettel-Feld, Kapitelzeiger ---------- */
 const zugWort = document.getElementById("zug-wort");
 zugWort.textContent = ZUG[2];
-document.getElementById("zug-kopf").textContent = `Gezogen: Strophe ${ZUG[0]} · ${ROEM[ZUG[1]]} ${ZYKLEN[ZUG[1]]}`;
+document.getElementById("zug-kopf").textContent = `Gezogen: Strophe ${ZUG[0]} · ${ZYKLEN[ZUG[1]]}`;
 document.getElementById("zug-satz").textContent = "«" + ZUG[3] + "»";
 document.getElementById("zug-hinweis").textContent = `Gezogen: Zettel ${ZUG[0]}, ${ZUG[2]}`;
 // Am Handy steht die Tafel unten, so hoch wie ihr Inhalt (Liste, Zahlen, gezogener Satz), höchstens 64 % des Fensters.
@@ -783,7 +782,7 @@ const netz = { gruppe: null, impulse: null, quadrate: null, knoten: [], etikette
 function netzBauen() {
   let saat = 11; const z = () => (saat = (saat * 16807) % 2147483647) / 2147483647 - .5;
   const kn = [], kanten = [];
-  ZYKLEN.forEach((n, i) => { const w = i * Math.PI * 2 / 7; kn.push({ art: "zyklus", i, p: new THREE.Vector3(Math.cos(w), Math.sin(w * 2) * .18, Math.sin(w)), farbe: ZYKLUSFARBEN[i], name: ROEM[i] + " " + n }); });
+  ZYKLEN.forEach((n, i) => { const w = i * Math.PI * 2 / 7; kn.push({ art: "zyklus", i, p: new THREE.Vector3(Math.cos(w), Math.sin(w * 2) * .18, Math.sin(w)), farbe: ZYKLUSFARBEN[i], name: n }); });
   DATEN.z.forEach(s => { const h = kn[s[1]]; const k = { art: "strophe", s, p: h.p.clone().add(new THREE.Vector3(z() * .5, z() * .5, z() * .5)), farbe: ZYKLUSFARBEN[s[1]] }; kn.push(k); kanten.push([h, k, 1]); });
   const pk = DATEN.p.map(name => ({ art: "person", name, p: new THREE.Vector3(), n: 0 }));
   DATEN.z.forEach((s, j) => { const sk = kn[7 + j]; s[4].forEach(pi => { pk[pi].p.add(sk.p); pk[pi].n++; kanten.push([sk, pk[pi], 0]); }); });
@@ -1687,7 +1686,7 @@ function stropheZeigen(t) {
   });
   const erste = kandidaten[0];
   if (erste && an > .5) {
-    if (erste.k.s[0] !== zeileNr && (performance.now() - zeileZeit > 1800 || (beimZug && erste.k.s === ZUG))) { zeileZeit = performance.now(); zeileNr = erste.k.s[0]; zeile.querySelector("small").textContent = `Strophe ${erste.k.s[0]} · ${ROEM[erste.k.s[1]]} ${ZYKLEN[erste.k.s[1]]} · ${erste.k.s[2]}`; zeile.querySelector("q").textContent = erste.k.s[3]; }
+    if (erste.k.s[0] !== zeileNr && (performance.now() - zeileZeit > 1800 || (beimZug && erste.k.s === ZUG))) { zeileZeit = performance.now(); zeileNr = erste.k.s[0]; zeile.querySelector("small").textContent = `Strophe ${erste.k.s[0]} · ${ZYKLEN[erste.k.s[1]]} · ${erste.k.s[2]}`; zeile.querySelector("q").textContent = erste.k.s[3]; }
     zeile.style.opacity = an;
   } else zeile.style.opacity = 0;
 }
