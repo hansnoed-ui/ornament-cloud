@@ -139,25 +139,17 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 .k-art { --k: #f2b2c0; --kt: #000000; --kg: rgba(0, 0, 0, .66); --kl: rgba(0, 0, 0, .2); --ka: #ffffff; }
 .k-angebot { --k: #1f4d3a; --kt: #ffffff; --kg: rgba(255, 255, 255, .74); --kl: rgba(255, 255, 255, .26); --ka: #9fd4b4; }
 
-/* 01 Webseiten: oben drei Begriffe, mittig das Signet auf einer Bühne mit feiner Konstruktion, im unteren Drittel drei Flächen.
+/* 01 Webseiten: oben drei Begriffe, mittig das Signet auf einer ruhigen, einfarbigen Bühne, im unteren Drittel drei Flächen.
    Flach wird das Signet zur Punktkugel, zum Würfel und zum Raster der neun Themen; eine Fläche zeigt ihren Inhalt auf der Bühne. */
 .k-web .k-innen { padding-top: clamp(40px, 5.6cqi, 54px); }
 .k-web .marke-k { position: absolute; top: clamp(40px, 5.6cqi, 54px); right: max(clamp(22px, 5.4cqi, 48px), env(safe-area-inset-right, 0px)); margin: 0; }
 .web-kopf { display: grid; gap: clamp(14px, 2.6cqi, 22px); }
-.k-web h2 { font-size: clamp(40px, 8.2cqi, 72px); font-weight: 400; letter-spacing: -.035em; line-height: 1; }
+.k-web h2 { font-size: clamp(32px, 6.3cqi, 56px); font-weight: 400; letter-spacing: -.035em; line-height: 1; }
 .k-web h2 .zl { display: block; }
 .k-web .web-kopf .leit { margin: 0; font-family: var(--sans); font-style: normal; font-size: clamp(16px, 2.3cqi, 19px); line-height: 1.38; color: var(--kg); max-width: 30ch; }
-/* Die Bühne hat das Seitenverhältnis --ar; Kreise, Signet und Raster bleiben quadratisch, weil ihre Breite durch --ar geteilt wird */
+/* Die Bühne hat das Seitenverhältnis --ar; Signet und Raster bleiben quadratisch, weil ihre Breite durch --ar geteilt wird */
 .buehne { --ar: 1; position: relative; margin: clamp(18px, 3cqi, 28px) 0 clamp(22px, 4cqi, 34px); aspect-ratio: var(--ar); }
 .buehne > * { position: absolute; }
-.konstruktion { inset: 0; transition: opacity .6s; }
-.konstruktion i { position: absolute; display: block; background: var(--kl); }
-.konstruktion .waag { left: 0; right: 0; top: 50%; height: 1px; }
-.konstruktion .senk { top: 0; bottom: 0; left: 50%; width: 1px; }
-.konstruktion .kreis { top: 6%; height: 88%; width: calc(88% / var(--ar)); left: calc(50% - 44% / var(--ar)); background: none; border: 1px solid var(--kl); border-radius: 50%; }
-.konstruktion .kreis.innen { top: 27%; height: 46%; width: calc(46% / var(--ar)); left: calc(50% - 23% / var(--ar)); }
-.konstruktion .formel { position: absolute; right: 0; bottom: 0; font: italic 400 15px/1.2 var(--serif); color: var(--kg); }
-.konstruktion .masz { position: absolute; left: 0; top: 0; font: 500 10.5px/1.2 var(--sans); letter-spacing: .08em; color: var(--kg); }
 .logo { top: 8%; height: 84%; width: calc(84% / var(--ar)); left: calc(50% - 42% / var(--ar)); transition: opacity .5s; }
 .logo canvas { display: block; width: 100%; height: 100%; }
 .verwandlung { inset: 0; width: 100%; height: 100%; pointer-events: none; }
@@ -166,7 +158,7 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 .themen .spalten-kopf { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .themen .spalten-kopf span { font: 500 10.5px/1.2 var(--sans); letter-spacing: .1em; text-transform: uppercase; color: var(--kg); padding-left: 1px; }
 .themen.offen .spalten-kopf span:not(:first-child) { visibility: hidden; }
-.zellen { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 1px; padding: 1px; background: var(--kl); }
+.zellen { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 1px; padding: 1px; background: rgba(255, 255, 255, .5); }   /* kräftiger als die Haarlinien sonst: das Raster ist das Ende der Verwandlung */
 .zellen > * { min-width: 0; min-height: 0; background: var(--k); }
 .thema { position: relative; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; padding: clamp(8px, 1.6cqi, 12px); border: 0; border-radius: 0; color: var(--kt); font: inherit; text-align: left; cursor: pointer; }
 .thema:hover { background: #2a5c47; }
@@ -196,7 +188,7 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 .fi-fragen li span, .fi-liste li span { font-size: 12.5px; color: var(--kg); text-align: right; }
 .fi .weiter { margin-top: 4px; justify-self: start; }
 .fi-zu { margin-top: auto; align-self: flex-start; padding: 8px 0; border: 0; background: none; color: var(--ka); font: 500 13.5px var(--sans); cursor: pointer; }
-.k-web.raster .logo, .k-web.raster .konstruktion, .k-web.baut .logo, .k-web.zeigt-feld .logo, .k-web.zeigt-feld .konstruktion { opacity: 0; }
+.k-web.raster .logo, .k-web.baut .logo, .k-web.zeigt-feld .logo { opacity: 0; }
 .k-web.raster:not(.baut):not(.zeigt-feld) .themen { visibility: visible; opacity: 1; transition: opacity .6s; }
 .k-web.zeigt-feld .feld-inhalt { visibility: visible; opacity: 1; transition: opacity .45s; }
 /* Drei Flächen im unteren Drittel, in drei Tönen des Tannengrüns */
@@ -373,7 +365,6 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
           <p class="leit">Websites und Apps: schnell, eigenständig, ohne Dienste von aussen.</p>
         </div>
         <div class="buehne">
-          <div class="konstruktion" aria-hidden="true"><i class="waag"></i><i class="senk"></i><i class="kreis"></i><i class="kreis innen"></i><span class="masz">ornament.cloud</span><span class="formel">r = b + cos t</span></div>
           <div class="logo" data-signet><canvas aria-hidden="true"></canvas></div>
           <div class="themen" aria-label="Neun Themen">
             <div class="spalten-kopf" aria-hidden="true"><span>Entwickeln</span><span>Gestalten</span><span>Vernetzen</span></div>
@@ -604,9 +595,9 @@ function signetMalen(cv, sek) {
   const cx = cv.getContext("2d"), f = signetForm(sek), gr = Math.min(b, h) * .92, P = q => [b / 2 + q[0] * gr, h / 2 + q[1] * gr];
   const pfad = (pts) => { cx.beginPath(); pts.forEach((q, i) => cx[i ? "lineTo" : "moveTo"](...P(q))); cx.closePath(); };
   cx.clearRect(0, 0, b, h);
-  pfad(f.innen); cx.fillStyle = "rgba(255, 255, 255, .2)"; cx.fill();
-  pfad(f.linie); cx.strokeStyle = "#fff"; cx.lineWidth = Math.max(1.5 * dpr, gr * .0045); cx.lineJoin = "round"; cx.stroke();
-  cx.beginPath(); cx.arc(...P(f.punkt), Math.max(2.5 * dpr, gr * .016), 0, Math.PI * 2); cx.fillStyle = "#fff"; cx.fill();
+  pfad(f.innen); cx.fillStyle = "rgba(255, 255, 255, .32)"; cx.fill();
+  pfad(f.linie); cx.strokeStyle = "#fff"; cx.lineWidth = Math.max(2 * dpr, gr * .0075); cx.lineJoin = "round"; cx.stroke();
+  cx.beginPath(); cx.arc(...P(f.punkt), Math.max(3.5 * dpr, gr * .021), 0, Math.PI * 2); cx.fillStyle = "#fff"; cx.fill();
 }
 
 const intro = document.getElementById("intro"), szene = document.getElementById("szene"), tip = document.getElementById("tip");
@@ -862,7 +853,7 @@ async function bahnBauen() {
       const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); geo.setIndex(idx);
       const tex = new THREE.CanvasTexture(quelle); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy(); tex.minFilter = THREE.LinearMipmapLinearFilter;
       const mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide, color: 0xffffff, fog: true, transparent: true, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 }));   // volle Farbe: Senf, Rosa und Rot wie auf der Website
-      mesh.userData.kapitel = i; g.add(mesh);
+      mesh.material.userData.frueh = true; mesh.userData.kapitel = i; g.add(mesh);
       bahn.stuecke.push({ s0: ta, s1: tb, mesh, kapitel: i });
     }
     if (b.cv.height > kachelH) b.cv.width = b.cv.height = 0;   // nur die geteilte Vorlage freigeben, die Kacheln sind eigene Leinwände
@@ -870,18 +861,19 @@ async function bahnBauen() {
   });
   bahn.L = s;
   bahn.kapitel = kapitel.map((_, i) => { const t = bahn.stuecke.filter(x => x.kapitel === i); return { s0: t[0].s0, s1: t[t.length - 1].s1 }; });
-  // Kanten als Haarlinie in der Farbe des Bereichs, genau am Rand des Bandes
-  const kp = [], kc = [];
-  const kfarbe = sj => { const st = bahn.kapitel.findIndex(x => sj <= x.s1 + 1e-6); return hdr(LEUCHTFARBEN[Math.max(0, st)], .7); };
-  for (const seite of [-1, 1]) {
-    const n = Math.ceil(bahn.L / .08);
-    for (let j = 0; j < n; j++) {
-      const s1 = j / n * bahn.L, s2 = (j + 1) / n * bahn.L, a = bahnPunkt(s1, seite * RAUM.w / 2, .004), b = bahnPunkt(s2, seite * RAUM.w / 2, .004), c = kfarbe((s1 + s2) / 2);
-      kp.push(a.x, a.y, a.z, b.x, b.y, b.z); kc.push(c.r, c.g, c.b, c.r, c.g, c.b);
+  // Der Rand: ein schmaler heller Streifen aussen am Band, als Fläche gezeichnet. So wird er geglättet wie das Band selbst
+  // und flimmert nicht wie eine Linie von einem Pixel.
+  {
+    const rp = [], ri = [], n = Math.ceil(bahn.L / .1), d = eng ? .008 : .011;
+    for (const seite of [-1, 1]) for (let j = 0; j <= n; j++) {
+      const sj = j / n * bahn.L, o = rp.length / 3;
+      rp.push(...bahnPunkt(sj, seite * RAUM.w / 2, .001).toArray(), ...bahnPunkt(sj, seite * (RAUM.w / 2 + d), .001).toArray());
+      if (j < n) ri.push(o, o + 2, o + 1, o + 1, o + 2, o + 3);
     }
+    const rg = new THREE.BufferGeometry(); rg.setAttribute("position", new THREE.Float32BufferAttribute(rp, 3)); rg.setIndex(ri);
+    const rm = new THREE.Mesh(rg, new THREE.MeshBasicMaterial({ color: 0xf4f4f0, transparent: true, side: THREE.DoubleSide, depthWrite: false }));
+    rm.material.userData.a = .7; rm.material.userData.frueh = true; g.add(rm);
   }
-  const kg = new THREE.BufferGeometry(); kg.setAttribute("position", new THREE.Float32BufferAttribute(kp, 3)); kg.setAttribute("color", new THREE.Float32BufferAttribute(kc, 3));
-  g.add(new THREE.LineSegments(kg, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, toneMapped: false })));
   // Zwischen den Umläufen nur wenige feine Linien: drei Längslinien, Marken jeden Meter, an jedem Bereich ein Strich in seiner Farbe.
   // Rechts liegt jede Linie genau dort, wo links vom nächsten Umlauf dieselbe Linie läge; links braucht es sie nur im ersten Umlauf.
   const umlauf = 2 * Math.PI * RAUM.R, luecke = RAUM.drift * umlauf - RAUM.w, lp = [], lc = [];
@@ -949,7 +941,7 @@ async function bahnBauen() {
     const geo = new THREE.PlaneGeometry(f.b * bahn.k, f.h * bahn.k).translate(f.b * bahn.k / 2, f.h * bahn.k / 2, 0);
     const mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: f.tex, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
     const schatten = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: sch.tex, transparent: true, depthWrite: false }));
-    schatten.material.userData.a = .3; schatten.position.z = .002; schatten.renderOrder = 1; mesh.renderOrder = 2;
+    schatten.material.userData.a = .3; mesh.material.userData.frueh = schatten.material.userData.frueh = true; schatten.position.z = .002; schatten.renderOrder = 1; mesh.renderOrder = 2;
     piv.add(schatten, mesh); g.add(piv);
     bahn.titel.push({ sH, mesh, schatten });
   });
@@ -957,7 +949,7 @@ async function bahnBauen() {
   bahn.signete = [];
   bilder.forEach((b, i) => {
     const l = b.lage.signet; if (!l) return;
-    const gr = Math.min(l.b, l.h) * .92, mu = l.x + l.b / 2, mv = l.y + l.h / 2, s0 = bahn.kapitel[i].s0, d = Math.max(.75, gr * .0025) / gr, N = 240;
+    const gr = Math.min(l.b, l.h) * .92, mu = l.x + l.b / 2, mv = l.y + l.h / 2, s0 = bahn.kapitel[i].s0, d = Math.max(1, gr * .00375) / gr, N = 240;
     const auf = (u, v, hoch, ziel) => bahnPunkt(s0 + (mv + v * gr) * bahn.k, RAUM.w / 2 - (mu + u * gr) * bahn.k, hoch, ziel);
     const flaeche = (n, idx) => { const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(n * 3), 3)); geo.setIndex(idx); return geo; };
     const bi = [], fi = [], si = [];
@@ -965,9 +957,9 @@ async function bahnBauen() {
     for (let j = 0; j < 60; j++) fi.push(61, j, j + 1);
     for (let j = 0; j < 24; j++) si.push(24, j, (j + 1) % 24);
     const linie = flaeche(N * 2, bi), innen = flaeche(62, fi), scheibe = flaeche(25, si);
-    [[innen, .2], [linie, 1], [scheibe, 1]].forEach(([geo, a], j) => {
+    [[innen, .32], [linie, 1], [scheibe, 1]].forEach(([geo, a], j) => {
       const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0xf2f6f3, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
-      m.material.userData.a = a; m.renderOrder = 3 + j; m.frustumCulled = false; g.add(m);
+      m.material.userData.a = a; m.material.userData.frueh = true; m.renderOrder = 3 + j; m.frustumCulled = false; g.add(m);
     });
     const v = new THREE.Vector3(), bp = linie.attributes.position.array, fp = innen.attributes.position.array, sp = scheibe.attributes.position.array;
     const setzen = sek => {
@@ -979,7 +971,7 @@ async function bahnBauen() {
       }
       let su = 0, sv = 0; f.innen.forEach((q, j) => { auf(q[0], q[1], .006, v).toArray(fp, j * 3); su += q[0]; sv += q[1]; });
       auf(su / f.innen.length, sv / f.innen.length, .006, v).toArray(fp, 61 * 3);
-      for (let j = 0; j < 24; j++) { const w = j / 24 * Math.PI * 2; auf(f.punkt[0] + Math.cos(w) * .016, f.punkt[1] + Math.sin(w) * .016, .01, v).toArray(sp, j * 3); }
+      for (let j = 0; j < 24; j++) { const w = j / 24 * Math.PI * 2; auf(f.punkt[0] + Math.cos(w) * .021, f.punkt[1] + Math.sin(w) * .021, .01, v).toArray(sp, j * 3); }
       auf(f.punkt[0], f.punkt[1], .01, v).toArray(sp, 24 * 3);
       for (const geo of [linie, innen, scheibe]) geo.attributes.position.needsUpdate = true;
     };
@@ -1481,7 +1473,7 @@ function bild(zeit) {
     const t = zustand.t;
     // Netz
     netz.gruppe.rotation.y = ruhig ? 0 : zeit * .00002;
-    const netzA = weich(.05, .22, t) * (1 - weich(.86, .98, t));
+    const netzA = weich(.05, .22, t) * (1 - weich(.84, .93, t));
     netz.gruppe.visible = netzA > 0;
     netz.gruppe.children.forEach(o => { if (o.material && o !== netz.quadrate) o.material.opacity = netzA * (o.isLineSegments ? .55 : 1); });
     const zuHub = weich(.06, .22, t), qp = netz.quadrate.geometry.attributes.position;
@@ -1498,10 +1490,11 @@ function bild(zeit) {
     stropheZeigen(t);
     // Bahn
     if (bahn.bereit) {
-      // Die Bahn blendet ein, während die Tafel geht; danach undurchsichtig
-      const auf = ruhig ? 1 : weich(.8, .93, t);
+      // Erst wenn das Netz fast weg ist und die Tafel geht, blendet das Band ein, die Figuren und Linien daneben zuletzt.
+      // So erscheint unten im Bild nichts, solange Tafel und Netz noch stehen.
+      const auf = ruhig ? 1 : weich(.89, .975, t), umher = ruhig ? 1 : weich(.94, 1, t);
       bahn.gruppe.visible = auf > 0;
-      bahn.materialien.forEach(m => { m.opacity = auf * (m.userData.a ?? 1); });
+      bahn.materialien.forEach(m => { m.opacity = (m.userData.frueh ? auf : umher) * (m.userData.a ?? 1); });
       // Titel liegen flacher, solange sie nah sind, und richten sich auf, während sie davonziehen
       const fuss = zustand.s + (schmal() ? 2.4 : 1.7);
       // Beim Kippen in die flache Seite legen sie sich auf das Band, genau dorthin, wo der Titel auf der Seite steht
@@ -1703,7 +1696,9 @@ const PUNKTE = 360, HALT = .6;
 function webRaster(sofort) {
   if (!web || web.k.classList.contains("raster") || web.lauf) return;
   if (sofort || ruhig) { web.k.classList.add("raster"); return; }
-  web.lauf = { t0: performance.now() };
+  // Die Rechnung läuft, solange das Signet noch steht; die Punkte übernehmen die Form, die es beim Start der Verwandlung hat
+  const L = web.lauf = { t0: performance.now() };
+  setTimeout(() => { if (web.lauf === L) webVorbereiten(L); }, 30);
 }
 function webStopp() {
   if (!web || !web.lauf) return;
@@ -1714,12 +1709,13 @@ function webZurueck() {
   webStopp(); themenZu(true); feldZu(); web.k.classList.remove("raster");
 }
 // Paare mit den kürzesten Wegen zuerst: so wandert jeder Punkt in seine Nähe und keiner fliegt quer über die Bühne
+// Abstand und Paar stecken in einer Zahl, damit die schnelle eingebaute Sortierung ohne Vergleichsfunktion reicht
 function paaren(A, B) {
-  const n = A.length, d = new Float32Array(n * n), ord = new Uint32Array(n * n);
-  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) { const x = A[i][0] - B[j][0], y = A[i][1] - B[j][1]; d[i * n + j] = x * x + y * y; ord[i * n + j] = i * n + j; }
-  ord.sort((a, b) => d[a] - d[b]);
+  const n = A.length, nn = n * n, k = new Float64Array(nn);
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) { const x = A[i][0] - B[j][0], y = A[i][1] - B[j][1]; k[i * n + j] = Math.round((x * x + y * y) * 8) * nn + i * n + j; }
+  k.sort();
   const zu = new Int32Array(n).fill(-1), frei = new Uint8Array(n).fill(1); let rest = n;
-  for (let q = 0; q < ord.length && rest; q++) { const i = Math.floor(ord[q] / n), j = ord[q] % n; if (zu[i] < 0 && frei[j]) { zu[i] = j; frei[j] = 0; rest--; } }
+  for (let q = 0; q < nn && rest; q++) { const ij = k[q] % nn, i = Math.floor(ij / n), j = ij % n; if (zu[i] < 0 && frei[j]) { zu[i] = j; frei[j] = 0; rest--; } }
   return zu;
 }
 function webVorbereiten(L) {
@@ -1740,7 +1736,7 @@ function webVorbereiten(L) {
   });
   kanten.forEach(({ frei, liste }) => { liste.sort((u, v) => u.q[frei] - v.q[frei]); liste.forEach((e, r) => { e.q[frei] = -1 + 2 * (r + .5) / liste.length; wuerfel[e.i] = e.q; }); });
   // Die Schlaufe: so viele Punkte wie die Kugel hat, gepaart mit der Kugel, wie sie zu Beginn von vorn aussieht
-  const f = signetForm(performance.now() / 1000, PUNKTE), schlaufe = f.linie.map(q => [lx + q[0] * gr, ly + q[1] * gr]);
+  const f = signetForm((L.t0 + HALT * 1000) / 1000, PUNKTE), schlaufe = f.linie.map(q => [lx + q[0] * gr, ly + q[1] * gr]);
   const proj = (o, cx, cy) => { const s = L.F / (L.F + o[2]); return [cx + o[0] * s, cy + o[1] * s]; };
   const zuS = paaren(kugel.map(p => proj(p.map(c => c * L.R), lx, ly)), schlaufe);
   // Die Felder: je 40 Punkte auf dem Rand, gepaart mit dem Würfel, wie er am Ende von vorn steht
@@ -1755,12 +1751,13 @@ function webVorbereiten(L) {
 const eio = x => (x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
 function webLaufBild(zeit) {
   const L = web && web.lauf; if (!L) return;
+  if (!L.p) { L.t0 = Math.max(L.t0, zeit - HALT * 1000); return; }   // noch nicht gerechnet: das Signet läuft weiter
   const T = (zeit - L.t0) / 1000 - HALT;
   if (T < 0) return;
-  if (!L.p) { webVorbereiten(L); web.k.classList.add("raster", "baut"); }
+  if (!L.an) { L.an = true; web.k.classList.add("raster", "baut"); }
   const u1 = eio(klemm((T - .15) / .95)), u2 = eio(klemm((T - 1.45) / .85)), u3 = eio(klemm((T - 2.8) / .8));
   const pr = klemm((T - .15) / 2.65), ry = Math.PI * 2 * eio(pr), rx = .42 * Math.sin(Math.PI * pr), c1 = Math.cos(ry), s1 = Math.sin(ry), c2 = Math.cos(rx), s2 = Math.sin(rx);
-  const mx = misch(L.lx, L.zx, u2), my = misch(L.ly, L.zy, u2), sz = L.dpr * 1.7;
+  const mx = misch(L.lx, L.zx, u2), my = misch(L.ly, L.zy, u2), sz = L.dpr * 2.4;
   const cx = web.cv.getContext("2d"); cx.setTransform(1, 0, 0, 1, 0, 0); cx.clearRect(0, 0, web.cv.width, web.cv.height); cx.fillStyle = "#fff";
   const deck = klemm(T / .3) * (1 - klemm((T - 3.55) / .45));
   for (const q of L.p) {
@@ -1768,8 +1765,8 @@ function webLaufBild(zeit) {
     const x1 = ox * c1 + oz * s1, z1 = -ox * s1 + oz * c1, y1 = oy * c2 - z1 * s2, z2 = oy * s2 + z1 * c2, s = L.F / (L.F + z2);
     let x = mx + x1 * s, y = my + y1 * s;
     x = misch(misch(q.s[0], x, u1), q.z[0], u3); y = misch(misch(q.s[1], y, u1), q.z[1], u3);
-    const tiefe = .3 + .7 * klemm(.5 - z2 / (2.4 * L.R));
-    cx.globalAlpha = deck * misch(misch(1, tiefe, Math.min(u1, 1 - u3)), 1, u3) * .92;
+    const tiefe = .55 + .45 * klemm(.5 - z2 / (2.4 * L.R));
+    cx.globalAlpha = deck * misch(1, tiefe, Math.min(u1, 1 - u3));
     cx.fillRect(x * L.dpr - sz / 2, y * L.dpr - sz / 2, sz, sz);
   }
   if (T > 3.35 && web.k.classList.contains("baut")) web.k.classList.remove("baut");
