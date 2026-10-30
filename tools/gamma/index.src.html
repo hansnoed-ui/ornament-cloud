@@ -6,7 +6,7 @@
 /* ornament.cloud/gamma – Landing-Page nach einer Videovorlage (29. Oktober 2026), Entwurf 3. Ein WebGL-Raum (three.js, vendor/three-0.185.1):
    zuerst ein leuchtendes Netz aus den 49 Strophen von «Zu seiner Zeit» und ihren 133 Personen, durch das die Kamera fliegt; eine Tafel
    mit dem Wort des gezogenen Zettels gleitet herein und kippt weg (bei jedem Besuch ein anderer Zettel, #zettel-12 zieht einen bestimmten); dann liegt die Website als Bahn in einer runden Trommel: Webseiten, Apps, Kunst,
-   Experimente (Lab und Das dritte Rad), Zettel und Social (Angebot vorläufig weg) als Farbfelder (Farben der Startseite /b/), die sich vor der Kamera zum Looping aufbiegen.
+   Specials (Lab und Das dritte Rad, vorher «Experimente»), Zettel und Social (Angebot vorläufig weg) als Farbfelder (Farben der Startseite /b/), die sich vor der Kamera zum Looping aufbiegen.
    Neben der Bahn stehen feine Drahtfiguren je Bereich, Notationen aus den «Laws of Form» und die Schlaufe des Signets.
    Die Bahn-Bilder zeichnet das Skript aus dem HTML der Kapitel unten; die Fläche (rechts in der liegenden Acht unten) zeigt genau dieses HTML. Schriften und Farben des Neubaus. */
 :root {
@@ -392,7 +392,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
 <header class="kopf">
   <a class="marke" href="{{LINK}}b/"><img src="{{BILD}}b/bilder/signet/signet-dunkel.svg" alt="">ornament.cloud <span class="ausgabe"><i>·</i>Gamma Version<i>·</i>Herbst 2026</span></a>
   <nav aria-label="Bereiche">
-    <a href="#k-web">Webseiten</a><a href="#k-apps">Apps</a><a href="#k-kunst">Kunst</a><a href="#k-experimente">Experimente</a><a href="#k-zettel">Zettel</a><a href="#k-social">Social</a>
+    <a href="#k-web">Webseiten</a><a href="#k-apps">Apps</a><a href="#k-kunst">Kunst</a><a href="#k-experimente">Specials</a><a href="#k-zettel">Zettel</a><a href="#k-social">Social</a>
   </nav>
   <a class="pille" href="{{LINK}}b/">Zur Website</a>
 </header>
@@ -414,7 +414,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
     </div>
     <div class="intro-text" id="intro-text">
       <h1>Sieben Bereiche, ein Netz.</h1>
-      <p>Webseiten · Apps · Kunst · Experimente · Zettel · Social<br><span id="zug-hinweis">Weiter nach unten</span></p>
+      <p>Webseiten · Apps · Kunst · Specials · Zettel · Social<br><span id="zug-hinweis">Weiter nach unten</span></p>
     </div>
   </div></div>
 </section>
@@ -537,9 +537,10 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
         </div>
       </div></article>
 
-      <article class="kapitel k-exp" id="k-experimente" data-name="Experimente"><div class="k-innen">
+      <!-- Kapitel heisst seit 30. Oktober 2026 «Specials» statt «Experimente» (Christian); id und Klasse bleiben -->
+      <article class="kapitel k-exp" id="k-experimente" data-name="Specials"><div class="k-innen">
         <span class="marke-k"><span class="zl begriff">verweben</span><span class="zl begriff">schwingen</span><span class="zl begriff">drehen</span></span>
-        <h2>Experimente</h2>
+        <h2>Specials</h2>
         <p class="leit">Bilder verwandeln, Räder drehen</p>
         <div class="buehne" role="img" aria-label="Ein doppeltes Farbrad; flach baut sich daraus eine Konstruktion auf: ein bewegtes Gewebe, Trauben, schwingende Saiten, kreisende Zeichen und zuletzt die Farben als Skulptur">
           <div class="exp-rad" data-exp></div>
@@ -599,7 +600,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
       <li class="k-web"><a href="#k-web">Webseiten <i></i></a></li>
       <li class="k-apps"><a href="#k-apps">Apps <i></i></a></li>
       <li class="k-kunst"><a href="#k-kunst">Kunst <i></i></a></li>
-      <li class="k-exp"><a href="#k-experimente">Experimente <i></i></a></li>
+      <li class="k-exp"><a href="#k-experimente">Specials <i></i></a></li>
       <li class="k-zettel"><a href="#k-zettel">Zettel <i></i></a></li>
       <li class="k-social"><a href="#k-social">Social <i></i></a></li>
     </ul>
