@@ -257,7 +257,7 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 
 /* 02 Apps: auf der Bühne liegen im Raum drei Telefone mit laufenden Bildschirmen (auf dem Band gezeichnet). Flach wird aus ihnen eine Konstruktion
    wie im Video «Hold to enter», am Ende steht ein Quadrat in drei Zeilen: fokussieren, entspannen, spielen, je mit ihren Apps */
-.handys { inset: 0; pointer-events: none; }
+.handys, .surfen { inset: 0; pointer-events: none; }
 .app-zeilen { top: 0; bottom: 0; width: min(100%, 100% / var(--ar)); left: calc(50% - min(50%, 50% / var(--ar))); display: grid; grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 1px; padding: 1px;
   background: rgba(0, 0, 0, .55); visibility: hidden; opacity: 0; transition: opacity .5s, visibility 0s .5s; }
 .app-zeile { display: flex; flex-direction: column; justify-content: space-between; min-height: 0; padding: clamp(10px, 2cqi, 16px); background: var(--k); }
@@ -389,7 +389,8 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
         <h2>Webseiten</h2>
         <p class="leit">schnell &amp; praktisch</p>
         <div class="buehne">
-          <div class="logo" data-signet><canvas aria-hidden="true"></canvas></div>
+          <div class="logo"><canvas aria-hidden="true"></canvas></div>
+          <div class="surfen" data-surfen></div>
           <div class="themen" aria-label="Neun Themen">
             <div class="spalten-kopf" aria-hidden="true"><span>Entwickeln</span><span>Gestalten</span><span>Vernetzen</span></div>
             <div class="zellen"></div>
@@ -619,21 +620,6 @@ function deckeln(m, px) {
   return m;
 }
 
-/* ---------- Das Signet: die Re-entry-Schlaufe r = b + cos t wie in b/tafeln.mjs. b atmet zwischen 0,25 und 0,95, ein Punkt läuft die Schlaufe ab.
-   Es steht nur im Raum auf dem Band; die flache Seite beginnt gleich mit der Punktkugel, die daraus wird. ---------- */
-const SIGNET = (() => {
-  const xs = [], ys = []; for (let i = 0; i <= 240; i++) { const t = i / 240 * Math.PI * 2, r = .95 + Math.cos(t); xs.push(1.2 * r * Math.cos(t) - .84); ys.push(1.2 * r * Math.sin(t)); }
-  return { mx: (Math.min(...xs) + Math.max(...xs)) / 2, my: (Math.min(...ys) + Math.max(...ys)) / 2, sp: Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) };
-})();
-// Punkte in einem Quadrat von −0,5 bis 0,5, y nach unten wie im SVG der Website
-function signetForm(sek, n = 240) {
-  const t0 = ruhig ? 3 : sek, b = .6 + .35 * Math.sin((t0 - 3) * .42);
-  const p = t => { const r = b + Math.cos(t); return [(1.2 * r * Math.cos(t) - .84 - SIGNET.mx) / SIGNET.sp, (1.2 * r * Math.sin(t) - SIGNET.my) / SIGNET.sp]; };
-  const linie = []; for (let i = 0; i < n; i++) linie.push(p(i / n * Math.PI * 2));
-  const innen = [], w = Math.acos(-b); for (let i = 0; i <= 60; i++) innen.push(p(w + (Math.PI * 2 - 2 * w) * i / 60));
-  return { linie, innen, punkt: p(-Math.PI / 2 + ((t0 - 2.5) / 8) * Math.PI * 2) };
-}
-
 const intro = document.getElementById("intro"), szene = document.getElementById("szene"), tip = document.getElementById("tip");
 const tafel = szene.querySelector(".tafel"), wort = tafel.querySelector(".wort"), spalte = tafel.querySelector(".spalte"), introText = document.getElementById("intro-text");
 const abschnitt = document.getElementById("bahn-abschnitt"), platz = document.getElementById("raum-platz"), bahnDom = document.getElementById("bahn");
@@ -717,7 +703,7 @@ async function kapitelZeichnen(k, i, LW) {
   const r0 = kl.getBoundingClientRect(), LH = Math.ceil(r0.height);
   const cv = document.createElement("canvas"); cv.width = Math.round(LW * skala); cv.height = Math.round(LH * skala);
   const cx = cv.getContext("2d"); cx.scale(skala, skala);
-  const lage = { titel: null, rand: [], signet: null, handys: null }, range = document.createRange();
+  const lage = { titel: null, rand: [], surfen: null, handys: null }, range = document.createRange();
   const leer = c => !c || c === "transparent" || /rgba?\(.*,\s*0\)$/.test(c);
   const schrift = cs => `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
   const oberlaenge = () => { const m = cx.measureText("Hg"); return m.fontBoundingBoxAscent ?? m.actualBoundingBoxAscent * 1.12; };
@@ -761,7 +747,7 @@ async function kapitelZeichnen(k, i, LW) {
       return;
     }
     if (el.dataset && el.dataset.rand) lage.rand.push({ text: el.dataset.rand, x, y, b, h });
-    if (el.dataset && "signet" in el.dataset) lage.signet = { x, y, b, h };
+    if (el.dataset && "surfen" in el.dataset) lage.surfen = { x, y, b, h };
     if (el.dataset && "handys" in el.dataset) lage.handys = { x, y, b, h };
     cx.save(); cx.globalAlpha = a;
     if (cs.mixBlendMode && cs.mixBlendMode !== "normal") cx.globalCompositeOperation = cs.mixBlendMode;
@@ -989,38 +975,27 @@ async function bahnBauen() {
     bahn.titel.push({ sH, mesh, schatten, hoch: f.h * bahn.k, B: new THREE.Vector3(e[12], e[13], e[14]), X: new THREE.Vector3(e[0], e[1], e[2]),
       Y: new THREE.Vector3(e[4], e[5], e[6]), Z: new THREE.Vector3(e[8], e[9], e[10]), E: bahnPunkt(bahn.kapitel[i].s0 + .03) });
   });
-  // Das Signet auf der Bühne der Webseiten: eine Linie auf dem Band, die atmet, ihre innere Schleife und der laufende Punkt
+  // Auf der Bühne der Webseiten steht ein Laptop auf dem Band, auf dem jemand durch ornament.cloud geht (bis 30. Oktober 2026 das Signet).
+  // Wie die Telefone ein feines Gitter, das der Krümmung des Bandes folgt; neu gezeichnet nur, wenn sich etwas bewegt und die Kamera in der Nähe ist
   bahn.signete = [];
   bilder.forEach((b, i) => {
-    const l = b.lage.signet; if (!l) return;
-    const gr = Math.min(l.b, l.h) * .92, mu = l.x + l.b / 2, mv = l.y + l.h / 2, s0 = bahn.kapitel[i].s0, d = Math.max(1, gr * .00375) / gr, N = 240;
-    const auf = (u, v, hoch, ziel) => bahnPunkt(s0 + (mv + v * gr) * bahn.k, RAUM.w / 2 - (mu + u * gr) * bahn.k, hoch, ziel);
-    const flaeche = (n, idx) => { const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(n * 3), 3)); geo.setIndex(idx); return geo; };
-    const bi = [], fi = [], si = [];
-    for (let j = 0; j < N; j++) { const a = j * 2, c = ((j + 1) % N) * 2; bi.push(a, c, a + 1, a + 1, c, c + 1); }
-    for (let j = 0; j < 60; j++) fi.push(61, j, j + 1);
-    for (let j = 0; j < 24; j++) si.push(24, j, (j + 1) % 24);
-    const linie = flaeche(N * 2, bi), innen = flaeche(62, fi), scheibe = flaeche(25, si);
-    [[innen, .32], [linie, 1], [scheibe, 1]].forEach(([geo, a], j) => {
-      const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0xf2f6f3, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
-      m.material.userData.a = a; m.material.userData.frueh = true; m.renderOrder = 3 + j; m.frustumCulled = false; g.add(m);
-    });
-    const v = new THREE.Vector3(), bp = linie.attributes.position.array, fp = innen.attributes.position.array, sp = scheibe.attributes.position.array;
-    const setzen = sek => {
-      const f = signetForm(sek, N);
-      for (let j = 0; j < N; j++) {
-        const a = f.linie[(j + N - 1) % N], c = f.linie[(j + 1) % N], q = f.linie[j];
-        let nx = a[1] - c[1], ny = c[0] - a[0]; const nl = Math.hypot(nx, ny) || 1; nx *= d / nl; ny *= d / nl;
-        auf(q[0] + nx, q[1] + ny, .008, v).toArray(bp, j * 6); auf(q[0] - nx, q[1] - ny, .008, v).toArray(bp, j * 6 + 3);
-      }
-      let su = 0, sv = 0; f.innen.forEach((q, j) => { auf(q[0], q[1], .006, v).toArray(fp, j * 3); su += q[0]; sv += q[1]; });
-      auf(su / f.innen.length, sv / f.innen.length, .006, v).toArray(fp, 61 * 3);
-      for (let j = 0; j < 24; j++) { const w = j / 24 * Math.PI * 2; auf(f.punkt[0] + Math.cos(w) * .021, f.punkt[1] + Math.sin(w) * .021, .01, v).toArray(sp, j * 3); }
-      auf(f.punkt[0], f.punkt[1], .01, v).toArray(sp, 24 * 3);
-      for (const geo of [linie, innen, scheibe]) geo.attributes.position.needsUpdate = true;
-    };
-    setzen(performance.now() / 1000);
-    bahn.signete.push(setzen);
+    const l = b.lage.surfen; if (!l) return;
+    const s0 = bahn.kapitel[i].s0, farbe = getComputedStyle(kapitel[i]).color, A = LAPTOP_B / LAPTOP_H;
+    const lb = Math.min(l.b * .9, l.h * .9 * A), lh = lb / A, lx = l.x + (l.b - lb) / 2, ly = l.y + (l.h - lh) / 2;
+    const lt = laptopBild(farbe), tex = new THREE.CanvasTexture(lt.cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    const geo = new THREE.PlaneGeometry(1, 1, 8, 6), pos = geo.attributes.position, v = new THREE.Vector3();
+    for (let j = 0; j < pos.count; j++) {
+      const u = pos.getX(j) + .5, w = .5 - pos.getY(j);
+      bahnPunkt(s0 + (ly + w * lh) * bahn.k, RAUM.w / 2 - (lx + u * lb) * bahn.k, .006, v); pos.setXYZ(j, v.x, v.y, v.z);
+    }
+    const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
+    m.material.userData.frueh = true; m.renderOrder = 3; m.frustumCulled = false; g.add(m);
+    const mitte = bahnPunkt(s0 + (ly + lh / 2) * bahn.k, RAUM.w / 2 - (lx + lb / 2) * bahn.k, 0), neu = sek => { if (lt.zeichnen(sek)) tex.needsUpdate = true; };
+    neu(1);
+    // Die Seiten kommen als eigenes Bild nach: sobald es da ist, einmal neu zeichnen
+    if (!surfBild.complete) surfBild.addEventListener("load", () => neu(performance.now() / 1000), { once: true });
+    let zuletzt = -1;
+    bahn.signete.push(sek => { if (sek - zuletzt < 1 / 15 || kamera.position.distanceTo(mitte) > 16) return; zuletzt = sek; neu(sek); });
   });
   // Auf der Bühne der Apps liegen drei Telefone auf dem Band: The Fictory, OMNA COLOR, PHORMA III, kleiner als auf der flachen Seite.
   // Jedes ist ein feines Gitter, das der Krümmung des Bandes folgt; die Bildschirme laufen mit etwa fünfzehn Bildern in der Sekunde, solange die Kamera in der Nähe ist
@@ -2116,7 +2091,7 @@ function webLaufBild(zeit) {
 }
 /* ---------- Bildschirme der Apps: kleine Szenen aus The Fictory, OMNA COLOR und PHORMA III ----------
    Jede Szene zeichnet auf eine Fläche von 120 × 236; handyBild legt sie in ein Telefon mit feinem Rand.
-   Die Telefone auf dem Band und auf der flachen Bühne der Apps sind dieselben */
+   Die Telefone liegen nur auf dem Band; auf der flachen Bühne beginnt die Verwandlung mit ihren leeren Umrissen */
 const SCHIRM_B = 120, SCHIRM_H = 236, SCHIRM_SANS = '"Instrument Sans", system-ui, sans-serif';
 const schirmKopf = (cx, name) => {
   cx.fillStyle = "#0b0b0b"; cx.fillRect(0, 0, SCHIRM_B, SCHIRM_H);
@@ -2328,15 +2303,73 @@ function handyLage(b, h, k = 1) {
   const ph = Math.min(h * .82, (b - 2 * luecke) / 3 / verh) * k, pb = ph * verh;
   return [-1, 0, 1].map(i => ({ x: b / 2 + i * (pb + luecke) - pb / 2, y: (h - ph) / 2, b: pb, h: ph }));
 }
-/* ---------- Apps flach: die drei Telefone der Bühne werden zur Konstruktion wie im Video «Hold to enter» ----------
-   Die Kamera schwenkt in den Raum, die Telefone klappen nach hinten und hängen als Plattenstapel über einem Sockel. Ein Boden aus Punkten mit Lichtflecken,
+/* ---------- Webseiten im Raum: ein stilisierter Laptop, auf dem jemand durch ornament.cloud geht ----------
+   Die Seiten sind Bildschirmfotos der Website (1280 px breit, oben 2400 px), verkleinert und untereinander in einem Bild; je Seite Pfad, Lage und Höhe.
+   Jede Seite lädt mit einem feinen Strich, scrollt in zwei ruhigen Zügen hinunter, dann klickt der Zeiger und die nächste blendet auf */
+const SURF_BILD = "../gamma/bilder/surfen.webp", SURF_B = 520;
+const SURF_SEITEN = [["b/", 0, 975], ["b/apps/", 975, 975], ["b/zettel/", 1950, 975], ["b/werke/", 2925, 741], ["beta/lab/", 3926, 715], ["b/angebot/webdesign/", 4641, 975]];
+let surfBild = null;
+const LAPTOP_B = 340, LAPTOP_H = 212;
+function laptopBild(farbe, sk = 3) {
+  if (!surfBild) { surfBild = new Image(); surfBild.decoding = "async"; surfBild.src = SURF_BILD; }
+  const W = LAPTOP_B, H = LAPTOP_H, cv = document.createElement("canvas"); cv.width = W * sk; cv.height = H * sk;
+  const cx = cv.getContext("2d"); cx.scale(sk, sk);
+  const rund = (x, y, b, h, r) => { cx.beginPath(); if (cx.roundRect) cx.roundRect(x, y, b, h, r); else cx.rect(x, y, b, h); };
+  // Deckel mit Rahmen, darin der Schirm; unten das flache Unterteil, vorn breiter, mit der Mulde zum Aufklappen
+  const DX = 22, DB = W - 2 * DX, DH = 190, R = 5, SX = DX + 7, SY = 8, SB = DB - 14, SH = DH - 15, LEISTE = 13;
+  const IX = SX, IY = SY + LEISTE, IB = SB, IH = SH - LEISTE, P = 3.8, N = SURF_SEITEN.length;
+  const seite = (n, o, a) => {
+    const [, y0, h] = SURF_SEITEN[n], s = IB / SURF_B, sh = IH / s;
+    cx.globalAlpha = a; cx.drawImage(surfBild, 0, y0 + o * (h - sh), SURF_B, sh, IX, IY, IB, IH);
+  };
+  const lauf = t => .4 * eio(klemm((t - .7) / 1)) + .5 * eio(klemm((t - 2) / 1));
+  let zuletzt = "";
+  return { cv, W, H, zeichnen(sek) {
+    const nr = Math.floor(sek / P), n = ((nr % N) + N) % N, t = sek - nr * P, vor = (n + N - 1) % N, bereit = surfBild.complete && surfBild.naturalWidth > 0;
+    // Zeiger: steht, wo er zuletzt geklickt hat, gleitet zur Ruhe und gegen Ende zum nächsten Link
+    const z = (k, q, m) => .5 + .5 * Math.sin(m * k + q), ziel = m => [IX + IB * (.2 + .6 * z(2.3, 4, m)), IY + IH * (.22 + .4 * z(3.1, 0, m))], ruhe = [IX + IB * (.55 + .2 * z(1.7, 1, nr)), IY + IH * (.62 + .2 * z(1.1, 2, nr))];
+    const [ax0, ay0] = ziel(nr - 1), [ax1, ay1] = ziel(nr), u1 = eio(klemm((t - .5) / 1)), u2 = eio(klemm((t - 2.9) / .5));
+    const zx = misch(misch(ax0, ruhe[0], u1), ax1, u2), zy = misch(misch(ay0, ruhe[1], u1), ay1, u2), klick = klemm((t - 3.42) / .3);
+    const auf = eio(klemm(t / .4)), o = lauf(t);
+    const schluessel = `${bereit}|${n}|${Math.round(o * 400)}|${Math.round(auf * 20)}|${Math.round(zx * 2)}|${Math.round(zy * 2)}|${Math.round(klick * 10)}`;
+    if (schluessel === zuletzt) return false;
+    zuletzt = schluessel;
+    cx.clearRect(0, 0, W, H);
+    // Unterteil
+    cx.fillStyle = "#0e0e0e"; cx.strokeStyle = farbe; cx.lineWidth = 1.2;
+    cx.beginPath(); cx.moveTo(DX - 4, DH); cx.lineTo(W - DX + 4, DH); cx.lineTo(W - 2, DH + 13); cx.quadraticCurveTo(W - 2, H - 2, W - 8, H - 2); cx.lineTo(8, H - 2); cx.quadraticCurveTo(2, H - 2, 2, DH + 13); cx.closePath(); cx.fill(); cx.stroke();
+    cx.globalAlpha = .55; cx.beginPath(); cx.moveTo(W / 2 - 22, DH + 1); cx.quadraticCurveTo(W / 2, DH + 6, W / 2 + 22, DH + 1); cx.stroke(); cx.globalAlpha = 1;
+    // Deckel und Schirm
+    rund(DX, 1, DB, DH, R); cx.fill(); cx.stroke();
+    cx.fillStyle = "#050505"; cx.fillRect(SX, SY, SB, SH);
+    cx.fillStyle = farbe; cx.globalAlpha = .5; cx.beginPath(); cx.arc(W / 2, 4.5, 1, 0, 7); cx.fill(); cx.globalAlpha = 1;
+    // Browserleiste: drei Punkte, Adressfeld, beim Laden ein feiner Strich
+    cx.fillStyle = "#161616"; cx.fillRect(SX, SY, SB, LEISTE);
+    cx.strokeStyle = "rgba(255,255,255,.55)"; cx.lineWidth = .6; for (let i = 0; i < 3; i++) { cx.beginPath(); cx.arc(SX + 7 + i * 6, SY + LEISTE / 2, 1.7, 0, 7); cx.stroke(); }
+    const fx = SX + 34, fb = SB - 68; cx.fillStyle = "rgba(255,255,255,.09)"; rund(fx, SY + 2.5, fb, LEISTE - 5, 4); cx.fill();
+    cx.fillStyle = "#fff"; cx.globalAlpha = .85; cx.font = `400 5.6px ${SCHIRM_SANS}`; cx.textAlign = "center"; cx.textBaseline = "middle"; if ("letterSpacing" in cx) cx.letterSpacing = ".2px";
+    cx.fillText("ornament.cloud/" + SURF_SEITEN[n][0], fx + fb / 2, SY + LEISTE / 2 + .3); cx.textAlign = "left"; cx.globalAlpha = 1;
+    if (auf < 1) { cx.fillStyle = "#ffffff"; cx.globalAlpha = .7 * (1 - auf); cx.fillRect(SX, SY + LEISTE - 1, SB * auf, 1); cx.globalAlpha = 1; }
+    // Die Seiten: die vorige steht noch, die neue blendet darüber auf
+    cx.save(); cx.beginPath(); cx.rect(IX, IY, IB, IH); cx.clip();
+    if (bereit) { if (auf < 1) seite(vor, lauf(P), 1); seite(n, o, auf); cx.globalAlpha = 1; }
+    // Zeiger mit Klick
+    if (klick > 0 && klick < 1) { cx.strokeStyle = "#fff"; cx.globalAlpha = .8 * (1 - klick); cx.lineWidth = .8; cx.beginPath(); cx.arc(zx, zy, 2 + 9 * klick, 0, 7); cx.stroke(); cx.globalAlpha = 1; }
+    cx.translate(zx, zy); cx.beginPath(); cx.moveTo(0, 0); cx.lineTo(0, 9); cx.lineTo(2.4, 6.8); cx.lineTo(4.3, 10.6); cx.lineTo(5.8, 9.9); cx.lineTo(4, 6.3); cx.lineTo(7, 6.1); cx.closePath();
+    cx.fillStyle = "#fff"; cx.fill(); cx.strokeStyle = "#000"; cx.lineWidth = .7; cx.stroke();
+    cx.restore();
+    return true;
+  } };
+}
+/* ---------- Apps flach: aus den Umrissen der drei Telefone wird die Konstruktion wie im Video «Hold to enter» ----------
+   Es beginnt mit leeren Rechtecken in der Form der Telefone, wo sie auf dem Band lagen. Die Kamera schwenkt in den Raum, die Rechtecke klappen nach hinten und hängen als Plattenstapel über einem Sockel. Ein Boden aus Punkten mit Lichtflecken,
    Regen, Lichtbahnen, Terrassen mit einem Baum, Pfosten und Balken wachsen darum herum; ein Würfel füllt sich mit Licht.
    Dann dreht alles nach vorn, die Platten sinken auf die Grenzen der drei Zeilen und aus dem Würfel wird das Quadrat: fokussieren, entspannen, spielen.
    Gezeichnet auf einer Leinwand in Welt-Einheiten: das fertige Quadrat reicht von −1 bis 1, der Boden liegt bei −1,75 ---------- */
 const apps = (() => {
   const k = document.getElementById("k-apps"); if (!k) return null;
   return { k, buehne: k.querySelector(".buehne"), cv: k.querySelector(".verwandlung"), zeilen: k.querySelector(".app-zeilen"),
-    felder: [...k.querySelectorAll(".feld")], inhalte: [...k.querySelectorAll(".fi")], lauf: null, telefone: null, welt: null };
+    felder: [...k.querySelectorAll(".feld")], inhalte: [...k.querySelectorAll(".fi")], lauf: null, welt: null };
 })();
 const KANTEN = [[0, 1], [2, 3], [4, 5], [6, 7], [0, 2], [1, 3], [4, 6], [5, 7], [0, 4], [1, 5], [2, 6], [3, 7]];
 // Was in der Konstruktion steht, wird einmal ausgewürfelt
@@ -2373,7 +2406,6 @@ function appsRaster(sofort) {
   if (sofort || ruhig) { apps.k.classList.add("raster"); return; }
   const B = apps.buehne.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2), zr = apps.zeilen.getBoundingClientRect(), farbe = getComputedStyle(apps.k).color;
   apps.cv.width = Math.round(B.width * dpr); apps.cv.height = Math.round(B.height * dpr);
-  if (!apps.telefone) apps.telefone = HANDY_SZENEN.map(s => handyBild(s, farbe));
   if (!apps.welt) apps.welt = appsWelt();
   apps.lauf = { t0: null, dpr, b: B.width, h: B.height, H: zr.width / 2, farbe, lage: handyLage(B.width, B.height) };
 }
@@ -2512,10 +2544,8 @@ function appsLaufBild(zeit) {
   // Die Kanten des Würfels wachsen von oben nach unten; mit den Platten zusammen sind sie am Ende das Quadrat der drei Zeilen
   const kante = eio(klemm((T - 3.4) / .7));
   if (kante > 0) { stil(schrift, .9, 1.2); for (const [a, c] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) linie([a, 1, c], [a, -1, c], kante); cx.stroke(); }
-  stil(schrift, .9 * weich(.7, .95, T), 1.2); platten.forEach(viereck); cx.stroke();
-  // Zu Beginn die Telefone selbst mit laufenden Bildschirmen, genau dort, wo sie auf dem Band lagen
-  const bildA = 1 - weich(.6, 1, T);
-  if (bildA > 0) L.lage.forEach((p, n) => { const t = apps.telefone[n]; t.zeichnen(zeit / 1000 + n * 3.1); cx.globalAlpha = bildA * ende; cx.drawImage(t.cv, p.x * d, p.y * d, p.b * d, p.h * d); });
+  // Die Platten sind von Anfang an da: leere Rechtecke in der Form der Telefone, ohne Bildschirme (Wunsch vom 30. Oktober 2026)
+  stil(schrift, .9, 1.2); platten.forEach(viereck); cx.stroke();
   cx.globalAlpha = 1;
   if (T > 5.6 && apps.k.classList.contains("baut")) apps.k.classList.remove("baut");
   if (T > 6.3) appsStopp();

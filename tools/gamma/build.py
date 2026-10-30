@@ -25,6 +25,9 @@ web = web.replace("{{BILD}}", "../").replace("{{LINK}}", "../").replace("{{VENDO
 
 if len(sys.argv) > 1:
     gf = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Newsreader:ital,wght@0,400;1,400&display=swap">'
-    v = html.replace("<!--KOPF-->", "").replace("<!--SCHRIFTEN-->", gf).replace("{{BILD}}", "").replace("{{LINK}}", "https://ornament.cloud/").replace('"{{VENDOR}}three-0.185.1/three.module.min.js"', '"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js"').replace('"{{VENDOR}}three-0.185.1/addons/"', '"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"')
+    # Bilder, die auf eine Leinwand gezeichnet werden, müssen dort aus derselben Quelle kommen: in der Vorschau eingebettet
+    import base64
+    eingebettet = "data:image/webp;base64," + base64.b64encode((WURZEL / "gamma/bilder/surfen.webp").read_bytes()).decode()
+    v = html.replace("{{BILD}}gamma/bilder/surfen.webp", eingebettet).replace("<!--KOPF-->", "").replace("<!--SCHRIFTEN-->", gf).replace("{{BILD}}", "").replace("{{LINK}}", "https://ornament.cloud/").replace('"{{VENDOR}}three-0.185.1/three.module.min.js"', '"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js"').replace('"{{VENDOR}}three-0.185.1/addons/"', '"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"')
     # Die Artifact-Vorschau lädt Skripte nur von freigegebenen CDNs, nicht aus eigenen Dateien
     pathlib.Path(sys.argv[1]).write_text(v)
