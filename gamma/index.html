@@ -201,6 +201,9 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 .k-web.raster .logo, .k-web.baut .logo, .k-web.zeigt-feld .logo { opacity: 0; }
 .k-web.raster:not(.baut):not(.zeigt-feld) .themen { visibility: visible; opacity: 1; transition: opacity .6s; }
 .k-web.zeigt-feld .feld-inhalt { visibility: visible; opacity: 1; transition: opacity .45s; }
+/* Ist der Inhalt höher als die Bühne (am Handy, erst recht mit grösserer Systemschrift), wächst die Bühne mit:
+   der Inhalt steht dann im Fluss, statt über die Flächen darunter zu laufen */
+.k-web.zeigt-feld .feld-inhalt { position: relative; min-height: 100%; }
 /* Drei Flächen unter der Bühne, nur mit ihrem Titel (der Satz steht nach dem Anklicken auf der Bühne), in drei Tönen des Tannengrüns */
 .flaechen { display: grid; border-top: 1px solid var(--kt); }
 .feld { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: clamp(52px, 8cqi, 64px); padding: 0 clamp(14px, 2.6cqi, 20px); border: 0; border-radius: 0; color: var(--kt); font: inherit; text-align: left; cursor: pointer; }
