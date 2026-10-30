@@ -230,8 +230,10 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 .exp-rad { inset: 0; pointer-events: none; }
 .exp-karten { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(12px, 3cqi, 21px); border-top: 1px solid var(--kt); padding-top: clamp(14px, 3cqi, 21px); }
 .exp-karte { display: grid; align-content: start; gap: 7px; padding-bottom: 13px; border-bottom: 1px solid var(--kl); }
-.exp-karte img { width: 100%; aspect-ratio: 1.618; object-fit: cover; margin-bottom: 6px; }
-.exp-karte:nth-child(2) img { object-fit: contain; background: #d9782d; }   /* nur das Rad aus der Vorschaukarte, auf ihrem Orange */
+/* Die Karten zeigen kleine Filme (31. Oktober 2026): das Intro des Labs und das drehende Rad mit dem Farbenkreis dahinter. Darunter liegt ein Standbild:
+   das zeigt das Band im Raum, und es bleibt bei reduzierter Bewegung */
+.exp-film { position: relative; display: block; aspect-ratio: 1.618; overflow: hidden; margin-bottom: 6px; background: #000; }
+.exp-film img, .exp-film video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .exp-karte b { font-weight: 500; font-size: clamp(21px, 4.2cqi, 34px); letter-spacing: -.03em; line-height: 1.04; }
 .exp-karte .satz { font-size: clamp(12.5px, 1.9cqi, 14px); line-height: 1.4; color: var(--kg); }
 .exp-karte .los { margin-top: 4px; font-weight: 500; font-size: 14px; color: var(--ka); }
@@ -545,8 +547,8 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
           <canvas class="verwandlung" aria-hidden="true"></canvas>
         </div>
         <div class="exp-karten">
-          <a class="exp-karte" href="{{LINK}}beta/lab/"><img src="{{BILD}}beta/lab/bilder/v-glitch.jpg" alt="" loading="lazy"><span class="label">ornament.lab</span><b>Lab</b><span class="satz">Ein Bild wird Material: Glitch, Pixelsortierung, Teilung, Raster, Punkte, Neusetzen.</span><span class="los">Lab öffnen →</span></a>
-          <a class="exp-karte" href="{{LINK}}beta/drittes-rad/"><img src="{{BILD}}gamma/bilder/rad-scheibe.jpg" alt="" loading="lazy"><span class="label">Beta</span><b>Das dritte Rad</b><span class="satz">Zeit, Form und Farbe drehen gegeneinander: Strophe, Begegnung, Übung.</span><span class="los">Rad drehen →</span></a>
+          <a class="exp-karte" href="{{LINK}}beta/lab/"><span class="exp-film"><img src="{{BILD}}gamma/bilder/karte-lab.jpg" alt="" loading="lazy"><video src="{{BILD}}gamma/bilder/karte-lab.mp4" poster="{{BILD}}gamma/bilder/karte-lab.jpg" muted loop playsinline preload="none" aria-hidden="true"></video></span><span class="label">ornament.lab</span><b>Lab</b><span class="satz">Ein Bild wird Material: Glitch, Pixelsortierung, Teilung, Raster, Punkte, Neusetzen.</span><span class="los">Lab öffnen →</span></a>
+          <a class="exp-karte" href="{{LINK}}beta/drittes-rad/"><span class="exp-film"><img src="{{BILD}}gamma/bilder/karte-rad.jpg" alt="" loading="lazy"><video src="{{BILD}}gamma/bilder/karte-rad.mp4" poster="{{BILD}}gamma/bilder/karte-rad.jpg" muted loop playsinline preload="none" aria-hidden="true"></video></span><span class="label">Beta</span><b>Das dritte Rad</b><span class="satz">Zeit, Form und Farbe drehen gegeneinander: Strophe, Begegnung, Übung.</span><span class="los">Rad drehen →</span></a>
         </div>
       </div></article>
 
@@ -3086,6 +3088,11 @@ if (exp && "IntersectionObserver" in window) new IntersectionObserver(e => {
   if (flach && !wechselt && e[0].intersectionRatio >= .5) expRaster();
 }, { threshold: [0, .5] }).observe(exp.buehne);
 addEventListener("resize", () => { if (exp && exp.lauf && exp.lauf.fest) { exp.lauf = null; expRaster(true); } });
+// Die Filme der zwei Karten laufen nur, solange sie zu sehen sind (im Raum ist die flache Seite verborgen, dann stehen sie)
+if (!ruhig && "IntersectionObserver" in window) {
+  const filme = new IntersectionObserver(e => e.forEach(x => { if (x.isIntersecting) x.target.play().catch(() => {}); else x.target.pause(); }), { threshold: .25 });
+  document.querySelectorAll(".exp-film video").forEach(v => filme.observe(v));
+}
 /* ---------- Kunst: ein Foto aus der Praxis, erst als Skizze ----------
    Vorgerechnet mit tools/gamma/kunst_linien.py: das bearbeitete Foto als WebP und die Skizze als verlustfreies WebP.
    In der Skizze ist Rot die Kreide, Grün der Zeitpunkt, an dem der Strich an dieser Stelle gezogen wird, Blau trennt Umrisse (hell) von Schraffur.
