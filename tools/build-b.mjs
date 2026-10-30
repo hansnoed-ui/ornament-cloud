@@ -19,7 +19,7 @@ import { createHash } from "node:crypto";
 
 const ROOT = new URL("../", import.meta.url);
 const AUS_DE = new URL("b/", ROOT);
-const V = 41;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 42;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 const INHALT = { de: DE, en: EN };
@@ -165,7 +165,7 @@ function bau(sprache) {
   const fOrma = (k) => k && { artId: "konstellation", href: `/portfolio/nebeneinander-nacheinander/?pair=${k.id}`, was: `${k.kuenstler} × ${k.theoretiker}${T.konstellationDeutsch}`, klein: k.frage, deutsch: true };
 
   /** Eine App als Kachel: immer quadratisch. Seit 30. Oktober 2026 lebt das Bild («diese App-Bilder etwas sehr langweilig»): die Bild-Apps zeigen
-   *  10 Sekunden aus ihrem Beispielfilm (b/bilder/apps/filme/, quadratisch, stumm, PHORMA III umgekehrt), die übrigen ihre Tafel in Bewegung
+   *  10 Sekunden aus ihrem Beispielfilm (b/bilder/apps/filme/, quadratisch, stumm; PHORMA III die Traube, Wunsch vom selben Tag, tools/phorma-beispiele.mjs), die übrigen ihre Tafel in Bewegung
    *  (b/tafeln-leben.js spielt beides nur, solange es im Bild ist, nie bei reduzierter Bewegung) */
   function appKachel(a) {
     const bild = KACHEL_FILME.has(a.slug)
@@ -176,8 +176,6 @@ function bau(sprache) {
 
   /** ein Beispielvideo mit Versionsmarke an Film und Poster */
   const video = (b) => `<video controls muted loop playsinline preload="metadata" poster="${attr(mitMarke(b.bild))}" width="${b.mass?.[0] || 1080}" height="${b.mass?.[1] || 1350}">${b.webm ? `<source src="${attr(mitMarke(b.webm))}" type="video/webm">` : ""}<source src="${attr(mitMarke(b.datei))}" type="video/mp4"></video>`;
-  /** der gerechnete Film einer App (der letzte unter assets/beispiele/: bei PHORMA III der Film mit drei Effekten, nicht das Intro) */
-  const filmVon = (a) => [].concat(a.beispiele || []).filter((b) => b.art === "video" && b.datei.startsWith("assets/beispiele/")).at(-1);
 
   /** Beispiele: was aus einer App herauskommt (Bildpaar vorher/nachher, Video, Texte aus ORNA, ORMA und OMNA COLOR – auf Englisch als «texte» übersetzt im Inhalt) */
   function beispiele(a, { kurz = false } = {}) {
@@ -510,9 +508,8 @@ ${gruppen.map((g) => `<section class="abschnitt" aria-labelledby="g-${g.replace(
 </div></section>`).join("\n")}
 <section class="abschnitt" aria-labelledby="resultate-titel"><div class="spalte">
   <div class="abschnitt-kopf"><h2 id="resultate-titel">${esc(T.apps.ergebnis)}</h2><p>${esc(T.apps.ergebnisText)}</p></div>
-  <!-- die vier gerechneten Filme klein nebeneinander (21. Oktober 2026, Rückmeldung: «schlecht lesbar, weil gross», und es fehlten die neu
-       gerechneten Beispiele), die Beschreibung steht auf der Seite der App; darunter eine Konstellation und eine Übung -->
-  <div class="galerie-filme">${["the-fictory", "phorma-i", "phorma-ii", "phorma-iii"].map((sl) =>   /* wie auf «Apps» (21. Oktober 2026, Wunsch: «zuerst THE FICTORY, dann PHORMA I, PHORMA II, PHORMA III») */ { const a = appVon(sl), b = filmVon(a); return b ? `<figure class="galerie-film">${video(b)}<figcaption class="klein"><a href="${B}apps/${a.slug}/">${esc(a.name)}</a></figcaption></figure>` : ""; }).join("")}</div>
+  <!-- die vier Filme stehen hier nicht mehr (30. Oktober 2026: die Kacheln oben zeigen sie schon, «dann kann das gespart werden»);
+       die ganzen Filme stehen auf der Seite der App -->
   <div class="galerie">
     ${["orna", "omna-color"].map((sl) => { const a = appVon(sl); return `<div class="galerie-stueck"><p class="klein"><a href="${B}apps/${a.slug}/">${esc(a.name)}</a></p>${beispiele(a, { kurz: true })}</div>`; }).join("")}
   </div>
