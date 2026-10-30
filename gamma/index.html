@@ -14,8 +14,8 @@
 <style>
 /* ornament.cloud/gamma – Landing-Page nach einer Videovorlage (29. Oktober 2026), Entwurf 3. Ein WebGL-Raum (three.js, vendor/three-0.185.1):
    zuerst ein leuchtendes Netz aus den 49 Strophen von «Zu seiner Zeit» und ihren 133 Personen, durch das die Kamera fliegt; eine Tafel
-   mit dem Wort des gezogenen Zettels gleitet herein und kippt weg (bei jedem Besuch ein anderer Zettel, #zettel-12 zieht einen bestimmten); dann liegt die Website als Bahn in einer runden Trommel: Webseiten, Lab, Das 3. Rad,
-   Apps, Prompts, Zettel, Social, Art und Angebot als Farbfelder (Farben der Startseite /b/), die sich vor der Kamera zum Looping aufbiegen.
+   mit dem Wort des gezogenen Zettels gleitet herein und kippt weg (bei jedem Besuch ein anderer Zettel, #zettel-12 zieht einen bestimmten); dann liegt die Website als Bahn in einer runden Trommel: Webseiten, Apps, Lab,
+   Das 3. Rad, Prompts, Zettel, Social, Art und Angebot als Farbfelder (Farben der Startseite /b/), die sich vor der Kamera zum Looping aufbiegen.
    Neben der Bahn stehen feine Drahtfiguren je Bereich, Notationen aus den «Laws of Form» und die Schlaufe des Signets.
    Die Bahn-Bilder zeichnet das Skript aus dem HTML der Kapitel unten; «Flach lesen» zeigt genau dieses HTML. Schriften und Farben des Neubaus. */
 :root {
@@ -50,12 +50,22 @@ body.flach.nach-intro #welt, body.ohne-3d #welt { visibility: hidden; }
 .kopf .marke { display: flex; align-items: center; gap: 9px; text-decoration: none; font-weight: 500; letter-spacing: -.01em; white-space: nowrap; }
 .kopf .marke img { width: 24px; height: 24px; display: block; }
 .kopf .ausgabe { color: rgba(255, 255, 255, .55); font-weight: 400; }
-.kopf nav { display: flex; gap: 16px; margin-left: 10px; }
+.kopf .ausgabe i { font-style: normal; padding: 0 .42em; }
+.kopf .ausgabe i:first-child { padding-left: 0; }
+.kopf nav { display: flex; gap: 16px; margin-left: 10px; transition: opacity .4s; }
+/* Sobald links der Kapitelzeiger steht, braucht der Kopf das Menü nicht mehr: es bleiben die Marke und «Zur Website» */
+.kopf.ohne-nav nav { opacity: 0; visibility: hidden; transition: opacity .4s, visibility 0s .4s; }
 .kopf nav a { text-decoration: none; color: rgba(255, 255, 255, .78); }
 .kopf nav a:hover { color: #fff; }
 .kopf .pille { margin-left: auto; background: #fff; color: #000; text-decoration: none; padding: 6px 13px; border-radius: 99px; font-weight: 500; white-space: nowrap; }
 @media (max-width: 900px) { .kopf nav { display: none; } }
-@media (max-width: 420px) { .kopf .ausgabe { display: none; } }
+/* Am Handy reicht der Platz neben «Zur Website» nicht für eine Zeile: die Ausgabe steht klein unter dem Namen */
+@media (max-width: 420px) {
+  .kopf .marke { display: grid; grid-template-columns: 24px auto; gap: 2px 9px; align-items: center; line-height: 1.15; }
+  .kopf .marke img { grid-row: span 2; }
+  .kopf .ausgabe { font-size: 10px; letter-spacing: .01em; }
+  .kopf .ausgabe i:first-child { display: none; }
+}
 
 /* ---------- Intro: Text, Beschriftungen und Tafel über dem Raum ---------- */
 #intro { position: relative; z-index: 1; height: 460vh; pointer-events: none; }
@@ -79,6 +89,7 @@ body.raum-an .tafel, body.raum-an .tafel .wort, body.raum-an .tafel .spalte { wi
 .tafel .wort { flex: none; writing-mode: vertical-rl; transform: rotate(180deg); font-weight: 500; letter-spacing: -.045em; line-height: .8;
   font-size: min(calc((100svh - 70px) / 6.2), 28vw); margin: 0; padding: 14px 6px 14px 4px; white-space: nowrap; }
 .tafel .spalte { flex: 1; min-width: 0; padding: 18px 18px 18px 26px; display: flex; flex-direction: column; gap: 14px; opacity: 0; }
+.tafel .auszug { margin: 0 0 -6px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; }
 .tafel ol { list-style: none; margin: 0; padding: 0; font-family: var(--mono); font-size: 12px; line-height: 1.75; letter-spacing: .01em; }
 .tafel ol li { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px solid rgba(255, 255, 255, .22); }
 .tafel ol span { font-variant-numeric: tabular-nums; opacity: .7; }
@@ -220,7 +231,7 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
   .flaechen { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
-/* 02 Lab: ein grosses Bild, die sechs Verfahren als Liste, darunter die übrigen Ergebnisse als Kontaktbogen */
+/* 03 Lab: ein grosses Bild, die sechs Verfahren als Liste, darunter die übrigen Ergebnisse als Kontaktbogen */
 .lab-werk { display: grid; gap: 22px; }
 .lab-gross img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; }
 .liste { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--kt); }
@@ -234,7 +245,7 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 .kontakt figcaption { margin-top: 7px; font: 500 10.5px/1 var(--sans); letter-spacing: .08em; color: var(--kg); }
 @container (min-width: 640px) { .lab-werk { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 34px; align-items: start; } }
 
-/* 03 Das 3. Rad: drei Scheiben nebeneinander */
+/* 04 Das 3. Rad: drei Scheiben nebeneinander */
 .raeder { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(14px, 3.4cqi, 30px); }
 .rad { display: grid; align-content: start; gap: 6px; }
 .scheibe { position: relative; display: block; aspect-ratio: 1; border-radius: 50%; overflow: hidden; background: #ffffff; margin-bottom: 12px; }
@@ -244,9 +255,9 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 .rad b { font-weight: 500; font-size: clamp(18px, 3cqi, 24px); letter-spacing: -.015em; line-height: 1.15; }
 .rad > span:last-child { font-size: clamp(12px, 1.9cqi, 14px); line-height: 1.4; color: var(--kg); }
 
-/* 04 Apps: auf der Bühne liegt im Raum ein kleiner Drahtwürfel (der Keim, als Linie auf dem Band). Flach wachsen aus ihm Platten, Kanten und Licht
+/* 02 Apps: auf der Bühne liegen im Raum drei Telefone mit laufenden Bildschirmen (auf dem Band gezeichnet). Flach wird aus ihnen eine Konstruktion
    wie im Video «Hold to enter», am Ende steht ein Quadrat in drei Zeilen: fokussieren, entspannen, spielen, je mit ihren Apps */
-.keim { top: 36%; height: 28%; width: calc(28% / var(--ar)); left: calc(50% - 14% / var(--ar)); pointer-events: none; }
+.handys { inset: 0; pointer-events: none; }
 .app-zeilen { top: 0; bottom: 0; width: min(100%, 100% / var(--ar)); left: calc(50% - min(50%, 50% / var(--ar))); display: grid; grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 1px; padding: 1px;
   background: rgba(0, 0, 0, .55); visibility: hidden; opacity: 0; transition: opacity .5s, visibility 0s .5s; }
 .app-zeile { display: flex; flex-direction: column; justify-content: space-between; min-height: 0; padding: clamp(10px, 2cqi, 16px); background: var(--k); }
@@ -339,9 +350,9 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
 
 <canvas id="welt" aria-label="Raum mit dem Netz der Strophen und der Bahn der Bereiche"></canvas>
 <header class="kopf">
-  <a class="marke" href="../b/"><img src="../b/bilder/signet/signet-dunkel.svg" alt="">ornament.cloud <span class="ausgabe">Gamma · Herbst 2026</span></a>
+  <a class="marke" href="../b/"><img src="../b/bilder/signet/signet-dunkel.svg" alt="">ornament.cloud <span class="ausgabe"><i>·</i>Gamma Version<i>·</i>Herbst 2026</span></a>
   <nav aria-label="Bereiche">
-    <a href="#k-web">Webseiten</a><a href="#k-lab">Lab</a><a href="#k-rad">3. Rad</a><a href="#k-apps">Apps</a><a href="#k-prompts">Prompts</a><a href="#k-zettel">Zettel</a><a href="#k-social">Social</a><a href="#k-art">Art</a><a href="#k-angebot">Angebot</a>
+    <a href="#k-web">Webseiten</a><a href="#k-apps">Apps</a><a href="#k-lab">Lab</a><a href="#k-rad">3. Rad</a><a href="#k-prompts">Prompts</a><a href="#k-zettel">Zettel</a><a href="#k-social">Social</a><a href="#k-art">Art</a><a href="#k-angebot">Angebot</a>
   </nav>
   <a class="pille" href="../b/">Zur Website</a>
 </header>
@@ -353,6 +364,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
     <div class="tafel">
       <p class="wort" id="zug-wort">Anschluss</p>
       <div class="spalte">
+        <p class="auszug">Auszug aus dem Zettelkasten</p>
         <ol id="zyklen-liste"></ol>
         <div class="zahl"><b>49</b>Strophen in sieben Zyklen</div>
         <div class="zahl"><b>133</b>Personen aus Kunst, Theorie und Wissenschaft</div>
@@ -363,7 +375,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
     </div>
     <div class="intro-text" id="intro-text">
       <h1>Neun Bereiche, ein Netz.</h1>
-      <p>Webseiten · Lab · 3. Rad · Apps · Prompts · Zettel · Social · Art · Angebot<br><span id="zug-hinweis">Weiter nach unten</span></p>
+      <p>Webseiten · Apps · Lab · 3. Rad · Prompts · Zettel · Social · Art · Angebot<br><span id="zug-hinweis">Weiter nach unten</span></p>
     </div>
   </div></div>
 </section>
@@ -410,49 +422,12 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
         </div>
       </div></article>
 
-      <article class="kapitel k-lab" id="k-lab" data-name="Lab"><div class="k-innen">
-        <span class="marke-k">02 · ornament.lab</span>
-        <h2>Lab</h2>
-        <p class="leit">Ein Bild wird Material.</p>
-        <div class="lab-werk">
-          <a class="lab-gross" href="../beta/lab/"><img src="../beta/lab/bilder/v-glitch.jpg" alt="Porträt, Zeilen und Farbkanäle verschoben" loading="lazy"></a>
-          <ol class="liste">
-            <li data-rand="Glitch"><span class="nr">01</span><b>Glitch</b><span>Zeilen verrutschen, Kanäle trennen sich.</span></li>
-            <li><span class="nr">02</span><b>Pixelsortierung</b><span>Helligkeit ordnet die Pixel neu.</span></li>
-            <li><span class="nr">03</span><b>Teilung</b><span>Linienbilder nach Makelangelo, in den Farben des Bildes.</span></li>
-            <li><span class="nr">04</span><b>Raster</b><span>Das Bild als gedrucktes Raster.</span></li>
-            <li><span class="nr">05</span><b>Punkte</b><span>Punktieren statt zeichnen.</span></li>
-            <li data-rand="Neusetzen"><span class="nr">06</span><b>Neusetzen</b><span>Teile ordnen sich zu einem neuen Bild.</span></li>
-          </ol>
-        </div>
-        <div class="kontakt">
-          <figure><img src="../beta/lab/bilder/v-sort.jpg" alt="" loading="lazy"><figcaption>02</figcaption></figure>
-          <figure><img src="../beta/lab/bilder/v-teilung.jpg" alt="" loading="lazy"><figcaption>03</figcaption></figure>
-          <figure><img src="../beta/lab/bilder/v-raster.jpg" alt="" loading="lazy"><figcaption>04</figcaption></figure>
-          <figure><img src="../beta/lab/bilder/v-punkte.jpg" alt="" loading="lazy"><figcaption>05</figcaption></figure>
-          <figure><img src="../beta/lab/bilder/v-neu.jpg" alt="" loading="lazy"><figcaption>06</figcaption></figure>
-        </div>
-        <a class="weiter" href="../beta/lab/">Lab ansehen →</a>
-      </div></article>
-
-      <article class="kapitel k-rad" id="k-rad" data-name="Das 3. Rad"><div class="k-innen">
-        <span class="marke-k">03 · Beta</span>
-        <h2>Das 3. Rad</h2>
-        <p class="leit">Zeit, Form und Farbe drehen gegeneinander.</p>
-        <div class="raeder">
-          <a class="rad" href="../beta/drittes-rad/" data-rand="Strophe"><span class="scheibe ausschnitt"><img src="../beta/drittes-rad/og-drittes-rad.jpg" alt="" loading="lazy"></span><span class="label">Zettelkasten</span><b>Strophe</b><span>Jede Drehung zieht eine Strophe aus «Zu seiner Zeit».</span></a>
-          <a class="rad" href="../beta/drittes-rad/"><span class="scheibe"><img src="../b/bilder/apps/orna.svg" alt="" loading="lazy"></span><span class="label">ORNA</span><b>Begegnung</b><span>Künstler:innen treffen Theoretiker:innen.</span></a>
-          <a class="rad" href="../beta/drittes-rad/" data-rand="Übung"><span class="scheibe"><img src="../b/bilder/apps/omna-color.svg" alt="" loading="lazy"></span><span class="label">OMNA COLOR</span><b>Übung</b><span>Eine Gestaltungsübung, und von jedem Treffer geht es weiter.</span></a>
-        </div>
-        <a class="weiter" href="../beta/drittes-rad/">Rad drehen →</a>
-      </div></article>
-
       <article class="kapitel k-apps" id="k-apps" data-name="Apps"><div class="k-innen">
         <span class="marke-k"><span class="zl begriff">fokussieren</span><span class="zl begriff">entspannen</span><span class="zl begriff">spielen</span></span>
         <h2>Apps</h2>
         <p class="leit">Kleine Werkzeuge zum Ausprobieren. Alles bleibt auf dem Gerät.</p>
         <div class="buehne">
-          <div class="keim" data-wuerfel></div>
+          <div class="handys" data-handys></div>
           <div class="app-zeilen" aria-label="Sieben Apps in drei Zeilen">
             <div class="app-zeile"><span class="label">Fokussieren</span><ul><li><a href="../b/apps/omna-color/">OMNA COLOR</a></li><li><a href="../b/apps/orma/">ORMA</a></li></ul></div>
             <div class="app-zeile"><span class="label">Entspannen</span><ul><li><a href="../b/apps/phorma-ii/">PHORMA II</a></li><li><a href="../b/apps/phorma-iii/">PHORMA III</a></li></ul></div>
@@ -484,6 +459,43 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
           <button type="button" class="feld" data-feld="geraet" aria-expanded="false"><span class="feld-titel">Auf dem Gerät</span><span class="feld-pfeil">→</span></button>
           <button type="button" class="feld" data-feld="eigene" aria-expanded="false" data-rand="Eigene App"><span class="feld-titel">Eigene App</span><span class="feld-pfeil">→</span></button>
         </div>
+      </div></article>
+
+      <article class="kapitel k-lab" id="k-lab" data-name="Lab"><div class="k-innen">
+        <span class="marke-k">03 · ornament.lab</span>
+        <h2>Lab</h2>
+        <p class="leit">Ein Bild wird Material.</p>
+        <div class="lab-werk">
+          <a class="lab-gross" href="../beta/lab/"><img src="../beta/lab/bilder/v-glitch.jpg" alt="Porträt, Zeilen und Farbkanäle verschoben" loading="lazy"></a>
+          <ol class="liste">
+            <li data-rand="Glitch"><span class="nr">01</span><b>Glitch</b><span>Zeilen verrutschen, Kanäle trennen sich.</span></li>
+            <li><span class="nr">02</span><b>Pixelsortierung</b><span>Helligkeit ordnet die Pixel neu.</span></li>
+            <li><span class="nr">03</span><b>Teilung</b><span>Linienbilder nach Makelangelo, in den Farben des Bildes.</span></li>
+            <li><span class="nr">04</span><b>Raster</b><span>Das Bild als gedrucktes Raster.</span></li>
+            <li><span class="nr">05</span><b>Punkte</b><span>Punktieren statt zeichnen.</span></li>
+            <li data-rand="Neusetzen"><span class="nr">06</span><b>Neusetzen</b><span>Teile ordnen sich zu einem neuen Bild.</span></li>
+          </ol>
+        </div>
+        <div class="kontakt">
+          <figure><img src="../beta/lab/bilder/v-sort.jpg" alt="" loading="lazy"><figcaption>02</figcaption></figure>
+          <figure><img src="../beta/lab/bilder/v-teilung.jpg" alt="" loading="lazy"><figcaption>03</figcaption></figure>
+          <figure><img src="../beta/lab/bilder/v-raster.jpg" alt="" loading="lazy"><figcaption>04</figcaption></figure>
+          <figure><img src="../beta/lab/bilder/v-punkte.jpg" alt="" loading="lazy"><figcaption>05</figcaption></figure>
+          <figure><img src="../beta/lab/bilder/v-neu.jpg" alt="" loading="lazy"><figcaption>06</figcaption></figure>
+        </div>
+        <a class="weiter" href="../beta/lab/">Lab ansehen →</a>
+      </div></article>
+
+      <article class="kapitel k-rad" id="k-rad" data-name="Das 3. Rad"><div class="k-innen">
+        <span class="marke-k">04 · Beta</span>
+        <h2>Das 3. Rad</h2>
+        <p class="leit">Zeit, Form und Farbe drehen gegeneinander.</p>
+        <div class="raeder">
+          <a class="rad" href="../beta/drittes-rad/" data-rand="Strophe"><span class="scheibe ausschnitt"><img src="../beta/drittes-rad/og-drittes-rad.jpg" alt="" loading="lazy"></span><span class="label">Zettelkasten</span><b>Strophe</b><span>Jede Drehung zieht eine Strophe aus «Zu seiner Zeit».</span></a>
+          <a class="rad" href="../beta/drittes-rad/"><span class="scheibe"><img src="../b/bilder/apps/orna.svg" alt="" loading="lazy"></span><span class="label">ORNA</span><b>Begegnung</b><span>Künstler:innen treffen Theoretiker:innen.</span></a>
+          <a class="rad" href="../beta/drittes-rad/" data-rand="Übung"><span class="scheibe"><img src="../b/bilder/apps/omna-color.svg" alt="" loading="lazy"></span><span class="label">OMNA COLOR</span><b>Übung</b><span>Eine Gestaltungsübung, und von jedem Treffer geht es weiter.</span></a>
+        </div>
+        <a class="weiter" href="../beta/drittes-rad/">Rad drehen →</a>
       </div></article>
 
       <article class="kapitel k-prompts" id="k-prompts" data-name="Prompts"><div class="k-innen">
@@ -556,9 +568,9 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
     <h2>Wohin als Nächstes?</h2>
     <ul>
       <li class="k-web"><a href="../b/angebot/webdesign/">Webseiten <i></i></a></li>
+      <li class="k-apps"><a href="../b/apps/">Apps <i></i></a></li>
       <li class="k-lab"><a href="../beta/lab/">Lab <i></i></a></li>
       <li class="k-rad"><a href="../beta/drittes-rad/">Das 3. Rad <i></i></a></li>
-      <li class="k-apps"><a href="../b/apps/">Apps <i></i></a></li>
       <li class="k-prompts"><a href="../b/raster/">Prompts <i></i></a></li>
       <li class="k-zettel"><a href="../b/zettel/">Zettel <i></i></a></li>
       <li class="k-social"><a href="../b/zuletzt/">Social <i></i></a></li>
@@ -625,7 +637,7 @@ function signetForm(sek, n = 240) {
 const intro = document.getElementById("intro"), szene = document.getElementById("szene"), tip = document.getElementById("tip");
 const tafel = szene.querySelector(".tafel"), wort = tafel.querySelector(".wort"), spalte = tafel.querySelector(".spalte"), introText = document.getElementById("intro-text");
 const abschnitt = document.getElementById("bahn-abschnitt"), platz = document.getElementById("raum-platz"), bahnDom = document.getElementById("bahn");
-const steuer = document.getElementById("steuer"), flachKnopf = document.getElementById("flach"), zeiger = document.getElementById("zeiger");
+const steuer = document.getElementById("steuer"), flachKnopf = document.getElementById("flach"), zeiger = document.getElementById("zeiger"), kopfLeiste = document.querySelector(".kopf");
 const kapitel = [...bahnDom.querySelectorAll(".kapitel")];
 const schmal = () => innerWidth < 760;
 
@@ -705,7 +717,7 @@ async function kapitelZeichnen(k, i, LW) {
   const r0 = kl.getBoundingClientRect(), LH = Math.ceil(r0.height);
   const cv = document.createElement("canvas"); cv.width = Math.round(LW * skala); cv.height = Math.round(LH * skala);
   const cx = cv.getContext("2d"); cx.scale(skala, skala);
-  const lage = { titel: null, rand: [], signet: null, wuerfel: null }, range = document.createRange();
+  const lage = { titel: null, rand: [], signet: null, handys: null }, range = document.createRange();
   const leer = c => !c || c === "transparent" || /rgba?\(.*,\s*0\)$/.test(c);
   const schrift = cs => `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
   const oberlaenge = () => { const m = cx.measureText("Hg"); return m.fontBoundingBoxAscent ?? m.actualBoundingBoxAscent * 1.12; };
@@ -750,7 +762,7 @@ async function kapitelZeichnen(k, i, LW) {
     }
     if (el.dataset && el.dataset.rand) lage.rand.push({ text: el.dataset.rand, x, y, b, h });
     if (el.dataset && "signet" in el.dataset) lage.signet = { x, y, b, h };
-    if (el.dataset && "wuerfel" in el.dataset) lage.wuerfel = { x, y, b, h };
+    if (el.dataset && "handys" in el.dataset) lage.handys = { x, y, b, h };
     cx.save(); cx.globalAlpha = a;
     if (cs.mixBlendMode && cs.mixBlendMode !== "normal") cx.globalCompositeOperation = cs.mixBlendMode;
     const rad = radius(cs, b, h);
@@ -1008,34 +1020,25 @@ async function bahnBauen() {
     setzen(performance.now() / 1000);
     bahn.signete.push(setzen);
   });
-  // Der Keim auf der Bühne der Apps: ein kleiner Drahtwürfel, der sich auf dem Band dreht; flach wächst aus ihm das Quadrat der drei Zeilen
+  // Auf der Bühne der Apps liegen drei Telefone auf dem Band: The Fictory, OMNA COLOR, PHORMA II.
+  // Jedes ist ein feines Gitter, das der Krümmung des Bandes folgt; die Bildschirme laufen mit etwa fünfzehn Bildern in der Sekunde, solange die Kamera in der Nähe ist
   bilder.forEach((b, i) => {
-    const l = b.lage.wuerfel; if (!l) return;
-    const gr = Math.min(l.b, l.h) * .3, mu = l.x + l.b / 2, mv = l.y + l.h / 2, s0 = bahn.kapitel[i].s0, d = Math.max(1.5, gr * .03);
-    const auf = (u, v, ziel) => bahnPunkt(s0 + (mv + v) * bahn.k, RAUM.w / 2 - (mu + u) * bahn.k, .008, ziel);
-    const E = [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]], idx = [];
-    E.forEach((_, j) => idx.push(j * 4, j * 4 + 1, j * 4 + 2, j * 4 + 2, j * 4 + 1, j * 4 + 3));
-    const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(E.length * 12), 3)); geo.setIndex(idx);
-    const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: new THREE.Color(getComputedStyle(kapitel[i]).color), transparent: true, depthWrite: false, side: THREE.DoubleSide }));
-    m.material.userData.a = .85; m.material.userData.frueh = true; m.renderOrder = 3; m.frustumCulled = false; g.add(m);
-    const pos = geo.attributes.position.array, v = new THREE.Vector3(), q = [];
-    // Ecken 0–3 unten, 4–7 oben, je im Kreis herum
-    const ECKEN = [[-1, -1, -1], [1, -1, -1], [1, -1, 1], [-1, -1, 1], [-1, 1, -1], [1, 1, -1], [1, 1, 1], [-1, 1, 1]];
-    const setzen = sek => {
-      const ry = .75 + sek * .35, rx = .5, c1 = Math.cos(ry), s1 = Math.sin(ry), c2 = Math.cos(rx), s2 = Math.sin(rx);
-      ECKEN.forEach(([x, y, z], j) => {
-        const x1 = x * c1 + z * s1, z1 = -x * s1 + z * c1, y1 = y * c2 - z1 * s2, z2 = y * s2 + z1 * c2, f = 4 / (4 + z2);
-        q[j] = [x1 * f * gr, -y1 * f * gr];
-      });
-      E.forEach(([a, c], j) => {
-        let nx = q[a][1] - q[c][1], ny = q[c][0] - q[a][0]; const nl = Math.hypot(nx, ny) || 1; nx *= d / 2 / nl; ny *= d / 2 / nl;
-        auf(q[a][0] + nx, q[a][1] + ny, v).toArray(pos, j * 12); auf(q[a][0] - nx, q[a][1] - ny, v).toArray(pos, j * 12 + 3);
-        auf(q[c][0] + nx, q[c][1] + ny, v).toArray(pos, j * 12 + 6); auf(q[c][0] - nx, q[c][1] - ny, v).toArray(pos, j * 12 + 9);
-      });
-      geo.attributes.position.needsUpdate = true;
-    };
-    setzen(performance.now() / 1000);
-    bahn.signete.push(setzen);
+    const l = b.lage.handys; if (!l) return;
+    const s0 = bahn.kapitel[i].s0, farbe = getComputedStyle(kapitel[i]).color;
+    handyLage(l.b, l.h).forEach((p, n) => {
+      const hb = handyBild(HANDY_SZENEN[n], farbe), tex = new THREE.CanvasTexture(hb.cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+      const geo = new THREE.PlaneGeometry(1, 1, 4, 8), pos = geo.attributes.position, v = new THREE.Vector3();
+      for (let j = 0; j < pos.count; j++) {
+        const u = pos.getX(j) + .5, w = .5 - pos.getY(j);   // u nach rechts, w nach unten wie auf der Seite
+        bahnPunkt(s0 + (l.y + p.y + w * p.h) * bahn.k, RAUM.w / 2 - (l.x + p.x + u * p.b) * bahn.k, .006, v); pos.setXYZ(j, v.x, v.y, v.z);
+      }
+      const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
+      m.material.userData.frueh = true; m.renderOrder = 3; m.frustumCulled = false; g.add(m);
+      const mitte = bahnPunkt(s0 + (l.y + p.y + p.h / 2) * bahn.k, RAUM.w / 2 - (l.x + p.x + p.b / 2) * bahn.k, 0), s1 = n * 3.1;
+      hb.zeichnen(s1 + 2); tex.needsUpdate = true;
+      let zuletzt = -1;
+      bahn.signete.push(sek => { if (sek - zuletzt < 1 / 15 || kamera.position.distanceTo(mitte) > 14) return; zuletzt = sek; hb.zeichnen(sek + s1); tex.needsUpdate = true; });
+    });
   });
   // Metermarken: alle fünf Meter eine Zahl in Mono am linken Rand
   const marken = []; for (let m = 5; m <= bahn.L; m += 5) marken.push(m);
@@ -1303,110 +1306,25 @@ function figurenBauen(g, bilder) {
       schild(name, [mitte[0], mitte[1] + .5, mitte[2]], "mass");
     });
   };
-  /* Apps: drei Handys, auf ihren Bildschirmen laufen Szenen aus den Apps: der Schleimpilz aus PHORMA II, die Farbräder aus OMNA COLOR, die Scherben aus PHORMA I.
-     Jede Szene zeichnet auf eine kleine Leinwand, etwa fünfzehn Bilder in der Sekunde und nur, wenn die Kamera in der Nähe ist */
-  const SCHIRM_B = 120, SCHIRM_H = 236;
-  const schirmKopf = (cx, name) => {
-    cx.fillStyle = "#0b0b0b"; cx.fillRect(0, 0, SCHIRM_B, SCHIRM_H);
-    cx.globalAlpha = .85; cx.fillStyle = "#fff"; cx.font = `500 8px ${SANS}`; cx.textBaseline = "top"; if ("letterSpacing" in cx) cx.letterSpacing = ".6px"; cx.fillText(name, 9, 9);
-    cx.globalAlpha = .5; cx.fillRect(SCHIRM_B / 2 - 16, SCHIRM_H - 7, 32, 1.5); cx.globalAlpha = 1;
-  };
-  // PHORMA II: ein Schleimpilz aus 1500 Spuren auf einem groben Feld; jede riecht vor sich, links und rechts und biegt zum stärksten Duft,
-  // das Feld verläuft und verblasst. Einige Spuren setzen immer wieder neu an, damit das Netz in Bewegung bleibt und nicht zu einem Strang schrumpft
-  const schleimpilz = cx => {
-    const GB = 64, GH = 119, feld = new Float32Array(GB * GH), neu = new Float32Array(GB * GH), N = 1500, sp = [], SD = 5, SA = .7, RA = .45;
-    let z = 3; const zf = () => (z = (z * 16807) % 2147483647) / 2147483647;
-    const setze = p => { p.x = 2 + zf() * (GB - 4); p.y = 2 + zf() * (GH - 4); p.w = zf() * Math.PI * 2; };
-    for (let i = 0; i < N; i++) { const p = {}; setze(p); sp.push(p); }
-    const bild = new ImageData(GB, GH), lw = document.createElement("canvas"); lw.width = GB; lw.height = GH; const lx = lw.getContext("2d");
-    const riechen = (x, y) => { const i = Math.round(x), j = Math.round(y); return i < 0 || j < 0 || i >= GB || j >= GH ? -1 : feld[j * GB + i]; };
-    const schritt = () => {
-      for (const p of sp) {
-        const v = riechen(p.x + Math.cos(p.w) * SD, p.y + Math.sin(p.w) * SD), l = riechen(p.x + Math.cos(p.w - SA) * SD, p.y + Math.sin(p.w - SA) * SD), r = riechen(p.x + Math.cos(p.w + SA) * SD, p.y + Math.sin(p.w + SA) * SD);
-        if (v > l && v > r) { /* geradeaus */ } else if (v < l && v < r) p.w += zf() < .5 ? -RA : RA; else if (l > r) p.w -= RA; else if (r > l) p.w += RA;
-        p.x += Math.cos(p.w); p.y += Math.sin(p.w);
-        if (p.x < 1 || p.x > GB - 2 || p.y < 1 || p.y > GH - 2) { p.x = klemm(p.x, 1, GB - 2); p.y = klemm(p.y, 1, GH - 2); p.w = zf() * Math.PI * 2; }
-        if (zf() < .012) setze(p);
-        const k = Math.round(p.y) * GB + Math.round(p.x); feld[k] = Math.min(6, feld[k] + 1);
-      }
-      for (let j = 0; j < GH; j++) for (let i = 0; i < GB; i++) {
-        let su = 0, n = 0; for (let b = -1; b <= 1; b++) for (let a = -1; a <= 1; a++) { const x = i + a, y = j + b; if (x >= 0 && y >= 0 && x < GB && y < GH) { su += feld[y * GB + x]; n++; } }
-        const k = j * GB + i; neu[k] = (feld[k] * .65 + su / n * .35) * .85;
-      }
-      feld.set(neu);
-    };
-    for (let i = 0; i < 40; i++) schritt();
-    return () => {
-      schritt(); schritt();
-      for (let i = 0; i < GB * GH; i++) { const t = Math.min(1, feld[i] * .4); bild.data[i * 4] = 255 * t; bild.data[i * 4 + 1] = 205 * t ** 1.3; bild.data[i * 4 + 2] = 110 * t ** 2.2; bild.data[i * 4 + 3] = 255; }
-      lx.putImageData(bild, 0, 0); schirmKopf(cx, "PHORMA II");
-      cx.imageSmoothingEnabled = true; cx.drawImage(lw, 4, 24, SCHIRM_B - 8, SCHIRM_H - 36);
-    };
-  };
-  // OMNA COLOR: zwei Farbräder drehen ruckweise gegeneinander und halten an; die Mitte zählt die Übung
-  const farbraeder = cx => {
-    const FARBEN = ["#e6b117", "#e0503c", "#c2185b", "#f2b2c0", "#8fb0ff", "#1d3fd6", "#2f7a58", "#9fd4b4", "#ffffff", "#7a1235", "#5c86ff", "#f0e6c8"];
-    return sek => {
-      schirmKopf(cx, "OMNA COLOR");
-      const mx = SCHIRM_B / 2, my = SCHIRM_H / 2 + 6, takt = Math.floor(sek / 2.6), u = eio(klemm((sek % 2.6) / .9));
-      [[50, 38, 1], [35, 23, -1]].forEach(([ra, ri, dir], n) => {
-        const w0 = dir * (takt + u) * Math.PI * 2 / 12 * (n ? 2 : 1);
-        for (let j = 0; j < 12; j++) {
-          const a = w0 + j * Math.PI / 6, b = a + Math.PI / 6 - .04;
-          cx.beginPath(); cx.arc(mx, my, ra, a, b); cx.arc(mx, my, ri, b, a, true); cx.closePath(); cx.fillStyle = FARBEN[(j + n * 5) % 12]; cx.fill();
-        }
-      });
-      cx.fillStyle = "#fff"; cx.beginPath(); cx.moveTo(mx, my - 54); cx.lineTo(mx - 4, my - 61); cx.lineTo(mx + 4, my - 61); cx.fill();
-      cx.textAlign = "center"; cx.textBaseline = "middle"; cx.font = `500 13px ${SANS}`; if ("letterSpacing" in cx) cx.letterSpacing = "0px";
-      cx.fillText(String(1 + (takt * 37) % 180), mx, my); cx.font = `500 6.5px ${SANS}`; cx.globalAlpha = .6; cx.fillText("VON 180", mx, my + 12); cx.globalAlpha = 1;
-      cx.textAlign = "left";
-    };
-  };
-  // PHORMA I: ein Bild aus Dreiecken zerfällt in Scherben, schwebt und setzt sich wieder zusammen
-  const scherben = cx => {
-    const NX = 6, NY = 11, w = (SCHIRM_B - 16) / NX, h = (SCHIRM_H - 44) / NY, x0 = 8, y0 = 26, teile = [];
-    let z = 9; const zf = () => (z = (z * 16807) % 2147483647) / 2147483647;
-    // Das Bild: ein Abend über dem Wasser, Sonne und Horizont
-    const farbe = (x, y) => {
-      const v = (y - y0) / (SCHIRM_H - 44), sonne = Math.hypot(x - SCHIRM_B * .62, y - (y0 + (SCHIRM_H - 44) * .42)) < 17;
-      if (sonne) return "#ffd27a";
-      return v < .5 ? `hsl(${18 + v * 40}, 70%, ${30 + v * 46}%)` : `hsl(215, 45%, ${46 - (v - .5) * 60}%)`;
-    };
-    for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) for (const t of [0, 1]) {
-      const a = [x0 + i * w, y0 + j * h], b = [a[0] + w, a[1]], c = [a[0], a[1] + h], d = [a[0] + w, a[1] + h], e = t ? [b, d, c] : [a, b, c];
-      const mx = (e[0][0] + e[1][0] + e[2][0]) / 3, my = (e[0][1] + e[1][1] + e[2][1]) / 3, rw = Math.atan2(my - SCHIRM_H / 2, mx - SCHIRM_B / 2);
-      teile.push({ e, mx, my, f: farbe(mx, my), dx: Math.cos(rw) * (6 + zf() * 16), dy: Math.sin(rw) * (6 + zf() * 18) - zf() * 6, rot: (zf() - .5) * 2.2, v: zf() * .35 });
+  /* Apps: neben dem Band die Konstruktion aus dem Video «Hold to enter». Auf der einen Seite ein Sockel, darüber hängt ein Stapel aus Platten,
+     dazwischen schwebt ein kleiner Würfel; auf der anderen Seite Terrassen, auf denen ein Baum wächst, und feiner Regen */
+  const sockel = () => {
+    hell = .5; quader(0, 0, 0, .9, .3, .9); rechteck(-.05, .34, .05, 1, 1, "xz"); rechteck(-.05, .36, .05, 1, 1, "xz");
+    const st = [[1.78, .5], [1.58, .4], [1.4, .3]];
+    st.forEach(([y, s]) => rechteck(.45 - s, y, -.45 + s, 2 * s, 2 * s, "xz"));
+    for (let n = 0; n < st.length - 1; n++) {
+      const [ya, sa] = st[n], [yb, sb] = st[n + 1];
+      for (const [a, c] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) strich([.45 + a * sa, ya, -.45 + c * sa], [.45 + a * sb, yb, -.45 + c * sb]);
     }
-    return sek => {
-      schirmKopf(cx, "PHORMA I");
-      const T = sek % 6.5;
-      cx.save(); cx.beginPath(); cx.rect(4, 24, SCHIRM_B - 8, SCHIRM_H - 36); cx.clip();
-      for (const p of teile) {
-        const u = eio(klemm((T - 1.4 - p.v) / 1.3)) * (1 - eio(klemm((T - 4 - p.v) / 1.6))), c = Math.cos(p.rot * u), s = Math.sin(p.rot * u);
-        cx.beginPath();
-        p.e.forEach(([x, y], n) => { const rx = x - p.mx, ry = y - p.my, X = p.mx + p.dx * u + (rx * c - ry * s) * (1 - .25 * u), Y = p.my + p.dy * u + (rx * s + ry * c) * (1 - .25 * u); if (n) cx.lineTo(X, Y); else cx.moveTo(X, Y); });
-        cx.closePath(); cx.fillStyle = p.f; cx.fill();
-        if (u > .02) { cx.strokeStyle = `rgba(255, 255, 255, ${.5 * u})`; cx.lineWidth = .5; cx.stroke(); }
-      }
-      cx.restore();
-    };
+    hell = .26; for (const [a, c] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) strich([.45 + a * .5, 1.78, -.45 + c * .5], [.45 + a * .5, 2.5, -.45 + c * .5]);
+    strich([.45, .36, -.45], [.45, .74, -.45]); strich([.45, .96, -.45], [.45, 1.4, -.45]);
+    hell = .55; quader(.34, .74, -.34, .22, .22, .22);
   };
-  const handy = szene => () => {
-    const b = .52, h = 1.02, r = .07, y0 = .2, rand = .03; hell = .55;
-    strich([b / 2, 0, 0], [b / 2, y0, 0]); strich([b / 2 - .14, 0, 0], [b / 2 + .14, 0, 0]);
-    strich([r, y0, 0], [b - r, y0, 0]); strich([b, y0 + r, 0], [b, y0 + h - r, 0]); strich([b - r, y0 + h, 0], [r, y0 + h, 0]); strich([0, y0 + h - r, 0], [0, y0 + r, 0]);
-    bogen(b - r, y0 + r, 0, r, "xy", -Math.PI / 2, 0, 6); bogen(b - r, y0 + h - r, 0, r, "xy", 0, Math.PI / 2, 6); bogen(r, y0 + h - r, 0, r, "xy", Math.PI / 2, Math.PI, 6); bogen(r, y0 + r, 0, r, "xy", Math.PI, Math.PI * 1.5, 6);
-    const sk = 2, cv = document.createElement("canvas"); cv.width = SCHIRM_B * sk; cv.height = SCHIRM_H * sk;
-    const cx = cv.getContext("2d"); cx.scale(sk, sk);
-    const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
-    const sb = b - 2 * rand, sh = sb * SCHIRM_H / SCHIRM_B, mitte = new THREE.Vector3(b / 2, y0 + h / 2, .002).applyMatrix4(M);
-    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(sb, sh), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
-    mesh.matrixAutoUpdate = false; mesh.matrix.makeBasis(rechtsW, obenW, new THREE.Vector3().crossVectors(rechtsW, obenW)).scale(new THREE.Vector3().setScalar(eng ? .75 : 1)).setPosition(mitte);
-    mesh.material.userData.a = .95; g.add(mesh);
-    const zeichnen = szene(cx), s0 = zufall() * 20;
-    zeichnen(s0 + 2); tex.needsUpdate = true;
-    let zuletzt = -1;
-    bahn.flackern.push(sek => { if (sek - zuletzt < 1 / 15 || kamera.position.distanceTo(mitte) > 16) return; zuletzt = sek; zeichnen(sek + s0); tex.needsUpdate = true; });
+  const terrasse = () => {
+    hell = .45; quader(0, 0, 0, 1.3, .1, .7); quader(.12, .1, -.06, 1, .1, .56); quader(.26, .2, -.12, .7, .1, .44);
+    hell = .4; const ast = (p, w, l, n) => { const q = [p[0] + Math.sin(w) * l, p[1] + Math.cos(w) * l, p[2]]; strich(p, q); if (n) { ast(q, w - .42, l * .74, n - 1); ast(q, w + .38, l * .7, n - 1); } };
+    ast([.62, .3, -.34], 0, .3, 5);
+    hell = .22; for (let i = 0; i < 9; i++) { const x = .08 + i * .15, z = -.1 - (i * .37) % .6, y = 1.25 + (i * .53) % .9; strich([x, y, z], [x, y - .28, z]); }
   };
   /* Prompts: ein Feld mit zwei Achsen und ein Verteilapparat */
   const achsen = () => {
@@ -1504,7 +1422,7 @@ function figurenBauen(g, bilder) {
     "k-web": [[ascii, .08, -1, 0], [browser, .22, 1, .5], [baran, .45, -1, .2], [telefon, .72, 1, .9]],
     "k-lab": [[kolben, .25, -1, .5], [prisma, .6, 1, .4], ["notation", .85, -1, 1]],
     "k-rad": [[raeder, .4, 1, .3], ["notation", .7, -1, 2]],
-    "k-apps": [[handy(schleimpilz), .22, -1, .3], [handy(farbraeder), .5, 1, .3], [handy(scherben), .78, -1, .3]],
+    "k-apps": [[sockel, .3, -1, .4], [terrasse, .62, 1, .4]],
     "k-prompts": [[achsen, .3, 1, .5], [verteiler, .65, -1, .4], ["notation", .85, 1, 3]],
     "k-zettel": [[kasten, .2, -1, .5], [karten, .55, 1, .4], ["schlaufe", .8, -1, .8]],
     "k-social": [[stapel, .35, 1, .4], ["notation", .7, -1, 0]],
@@ -1840,6 +1758,8 @@ function bild(zeit) {
   if (!ruhig) zustand.dreh += dt * .08 * (1 - weich(.5, .6, zustand.t));
   zustand.v = misch(zustand.v, (zustand.s - sAlt) / Math.max(dt, 1e-3), .2);
   introDom(zustand.t);
+  // Wer ganz nach oben bis zum Zettel zurückkehrt, sieht die Seiten beim nächsten Hinunterscrollen wieder im Raum, auch wenn er vorher flach gelesen hat
+  if (flach && !wechselt && ok3d && bahn.bereit && (ruhig ? intro.getBoundingClientRect().bottom > innerHeight * 1.6 : zustand.t < .9)) flachSetzen(false);
   // Webseiten flach: die Punkte der Verwandlung
   if (web && flach) webLaufBild(zeit);
   if (apps && flach) appsLaufBild(zeit);
@@ -1848,7 +1768,7 @@ function bild(zeit) {
   document.body.classList.toggle("nach-intro", intro.getBoundingClientRect().bottom <= innerHeight * .2);
   const r = abschnitt.getBoundingClientRect(), drin = r.top < innerHeight * .3 && r.bottom > innerHeight * .5;
   steuer.classList.toggle("da", drin || (!flach && zustand.t > .97 && r.bottom > innerHeight * .5));
-  zeiger.classList.toggle("da", drin);
+  zeiger.classList.toggle("da", drin); kopfLeiste.classList.toggle("ohne-nav", drin);
   // aktives Kapitel
   let akt = 0;
   if (flach) kapitel.forEach((k, i) => { if (k.getBoundingClientRect().top < innerHeight * .4) akt = i; });
@@ -1966,6 +1886,12 @@ function flachSetzen(f, akt, effekt) {
     });
     letzterEffekt = k; kapitelEffekt(k);
   } else if (effekt) { kipp.wert = kipp.von = kipp.nach = 0; zustand.halten = false; wechselt = false; }
+  // Auch über den Knopf «Flach lesen» bekommt das Kapitel in der Mitte sein Netz; zurück im Raum zählt beim nächsten Mal wieder jedes Kapitel
+  if (f && !(effekt && k)) requestAnimationFrame(() => {
+    const m = innerHeight / 2, mitte = kapitel.find(c => { const r = c.getBoundingClientRect(); return r.top < m && r.bottom > m; });
+    if (mitte) { letzterEffekt = mitte; kapitelEffekt(mitte); }
+  });
+  if (!f) letzterEffekt = null;
 }
 
 /* ---------- Flache Seiten: beim Wechsel des Kapitels ein kurzes Netz, der Titel Buchstabe für Buchstabe ---------- */
@@ -1996,7 +1922,6 @@ function kapitelEffekt(k) {
   bst.forEach((b, j) => b.animate([{ opacity: 0, transform: "translateY(.2em)", filter: "blur(5px)" }, { opacity: 1, transform: "none", filter: "blur(0px)" }],
     { duration: 560, delay: 80 + (bst.length - 1 - j) * 55, easing: "cubic-bezier(.2,.7,.2,1)", fill: "backwards" }));
   k.querySelector(".k-netz")?.remove();
-  if (k === web?.k || k === apps?.k) return;   // bei den Webseiten und den Apps ist die Verwandlung auf der Bühne der Effekt
   const b = k.clientWidth, h = Math.min(k.clientHeight, 440), letzte = bst[bst.length - 1];
   const hx = Math.min(b - 70, letzte.offsetLeft + letzte.offsetWidth + 46), hy = letzte.offsetTop + letzte.offsetHeight * .5;
   const svg = document.createElementNS(NS, "svg"); svg.setAttribute("class", "k-netz"); svg.setAttribute("aria-hidden", "true");
@@ -2185,23 +2110,192 @@ function webLaufBild(zeit) {
   if (T > 3.35 && web.k.classList.contains("baut")) web.k.classList.remove("baut");
   if (T > 4) webStopp();
 }
-/* ---------- Apps flach: aus dem kleinen Drahtwürfel wachsen Platten, Kanten und Licht wie im Video «Hold to enter»,
-   am Ende liegt das Quadrat in drei Zeilen: fokussieren, entspannen, spielen ---------- */
+/* ---------- Bildschirme der Apps: kleine Szenen aus The Fictory, OMNA COLOR und PHORMA II ----------
+   Jede Szene zeichnet auf eine Fläche von 120 × 236; handyBild legt sie in ein Telefon mit feinem Rand.
+   Die Telefone auf dem Band und auf der flachen Bühne der Apps sind dieselben */
+const SCHIRM_B = 120, SCHIRM_H = 236, SCHIRM_SANS = '"Instrument Sans", system-ui, sans-serif';
+const schirmKopf = (cx, name) => {
+  cx.fillStyle = "#0b0b0b"; cx.fillRect(0, 0, SCHIRM_B, SCHIRM_H);
+  cx.globalAlpha = .85; cx.fillStyle = "#fff"; cx.font = `500 8px ${SCHIRM_SANS}`; cx.textBaseline = "top"; cx.textAlign = "left"; if ("letterSpacing" in cx) cx.letterSpacing = ".6px"; cx.fillText(name, 9, 9);
+  cx.globalAlpha = .5; cx.fillRect(SCHIRM_B / 2 - 16, SCHIRM_H - 7, 32, 1.5); cx.globalAlpha = 1;
+};
+// The Fictory: ein Bild liegt auf der Werkbank, ein Raster legt sich darüber, die Teile lösen sich, ordnen sich nach Helligkeit,
+// ziehen Spuren und setzen sich wieder zusammen
+const fictory = cx => {
+  const B = SCHIRM_B - 8, H = SCHIRM_H - 36, x0 = 4, y0 = 24, bild = document.createElement("canvas"); bild.width = B * 2; bild.height = H * 2;
+  const b = bild.getContext("2d"); b.scale(2, 2);
+  const flaeche = (farbe, pkt) => { b.fillStyle = farbe; b.beginPath(); pkt.forEach(([u, v], n) => (n ? b.lineTo(B * u, H * v) : b.moveTo(B * u, H * v))); b.fill(); };
+  // Das Bild in der Art der Beispiele: Himmel, Meer, Sonne, ein blauer Körper mit roten Zacken und hellen Augen, ein Haus, Erde, schwarze Figuren
+  b.fillStyle = "#cfcdc4"; b.fillRect(0, 0, B, H);
+  b.fillStyle = "#3f72c6"; b.fillRect(0, H * .27, B, H * .07);
+  b.fillStyle = "#c8641f"; b.fillRect(0, H * .55, B, H * .45);
+  flaeche("#8a3d1a", [[0, .62], [.45, .58], [.2, 1], [0, 1]]);
+  flaeche("#e8a33c", [[.5, 1], [.62, .74], [1, .8], [1, 1]]);
+  b.fillStyle = "#f08a24"; b.beginPath(); b.arc(B * .74, H * .17, B * .19, 0, 7); b.fill();
+  b.fillStyle = "#c2457a"; b.fillRect(B * .06, H * .25, B * .22, H * .28);
+  flaeche("#4f5e2a", [[.02, .26], [.17, .17], [.32, .26]]);
+  b.fillStyle = "#3f86d8"; b.beginPath(); b.moveTo(B * .22, H * .36); b.quadraticCurveTo(B * .55, H * .28, B * .92, H * .38); b.quadraticCurveTo(B * .84, H * .62, B * .5, H * .66); b.quadraticCurveTo(B * .26, H * .6, B * .22, H * .36); b.fill();
+  [[.42, .42], [.62, .47], [.48, .56]].forEach(([u, v]) => flaeche("#d8382a", [[u, v], [u + .11, v - .05], [u + .07, v + .05]]));
+  b.fillStyle = "#f3ead2"; [[.36, .48], [.57, .59], [.72, .44]].forEach(([u, v]) => { b.beginPath(); b.ellipse(B * u, H * v, B * .055, H * .02, -.5, 0, 7); b.fill(); });
+  b.fillStyle = "#121212"; [[.3, .86], [.55, .9], [.82, .84]].forEach(([u, v]) => { flaeche("#121212", [[u, v], [u + .05, 1], [u - .05, 1]]); b.beginPath(); b.arc(B * u, H * v, B * .035, 0, 7); b.fill(); });
+  // Die Teile: 5 × 9 Felder; geordnet liegen sie nach Helligkeit, etwas kleiner, mit Luft dazwischen
+  const NX = 5, NY = 9, w = B / NX, h = H / NY, px = b.getImageData(0, 0, B * 2, H * 2).data, teile = [];
+  for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) {
+    const k = (Math.floor((j + .5) * h * 2) * B * 2 + Math.floor((i + .5) * w * 2)) * 4;
+    teile.push({ i, j, hell: px[k] * .3 + px[k + 1] * .59 + px[k + 2] * .11, v: ((i * 7 + j * 3) % 5) * .07, dreh: (i + j) % 2 ? .3 : -.3 });
+  }
+  [...teile].sort((a, c) => a.hell - c.hell).forEach((t, n) => { t.ti = n % NX; t.tj = Math.floor(n / NX); });
+  return sek => {
+    schirmKopf(cx, "THE FICTORY");
+    const T = sek % 9.5;
+    // Spuren wie Höhenlinien um die geordneten Teile
+    const sp = weich(3.6, 4.6, T) * (1 - weich(6, 7, T));
+    if (sp > 0) {
+      cx.lineWidth = .7;
+      for (let r = 0; r < 4; r++) {
+        cx.strokeStyle = r % 2 ? "#3f86d8" : "#f08a24"; cx.globalAlpha = .55 * sp; cx.beginPath();
+        for (let a = 0; a <= 64 * sp; a++) {
+          const w2 = a / 64 * Math.PI * 2, rr = 22 + r * 13 + Math.sin(w2 * 5 + r * 1.7 + sek * .8) * 3;
+          const X = SCHIRM_B / 2 + Math.cos(w2) * rr * .82, Y = y0 + H / 2 + Math.sin(w2) * rr * 1.3;
+          if (a) cx.lineTo(X, Y); else cx.moveTo(X, Y);
+        }
+        cx.stroke();
+      }
+      cx.globalAlpha = 1;
+    }
+    for (const t of teile) {
+      const u = eio(klemm((T - 2.4 - t.v) / 1.3)) * (1 - eio(klemm((T - 6 - t.v) / 1.4))), s = 1 - .4 * u;
+      const mx = misch(x0 + t.i * w, x0 + t.ti * w, u) + w / 2, my = misch(y0 + t.j * h, y0 + t.tj * h, u) + h / 2 - Math.sin(u * Math.PI) * 5;
+      cx.save(); cx.translate(mx, my); cx.rotate(Math.sin(u * Math.PI) * t.dreh);
+      cx.drawImage(bild, t.i * w * 2, t.j * h * 2, w * 2, h * 2, -w * s / 2 - .2, -h * s / 2 - .2, w * s + .4, h * s + .4); cx.restore();
+    }
+    // Das Raster legt sich über das ganze Bild, bevor es zerfällt
+    const g = weich(1.3, 2.1, T) * (1 - weich(2.5, 3.1, T));
+    if (g > 0) {
+      cx.strokeStyle = "#141414"; cx.lineWidth = 1.1; cx.globalAlpha = .9; cx.beginPath();
+      for (let i = 1; i < NX; i++) { cx.moveTo(x0 + i * w, y0); cx.lineTo(x0 + i * w, y0 + H * g); }
+      for (let j = 1; j < NY; j++) { cx.moveTo(x0, y0 + j * h); cx.lineTo(x0 + B * g, y0 + j * h); }
+      cx.stroke(); cx.globalAlpha = 1;
+    }
+  };
+};
+// OMNA COLOR: zwei Farbräder drehen ruckweise gegeneinander und halten an; die Mitte zählt die Übung
+const farbraeder = cx => {
+  const FARBEN = ["#e6b117", "#e0503c", "#c2185b", "#f2b2c0", "#8fb0ff", "#1d3fd6", "#2f7a58", "#9fd4b4", "#ffffff", "#7a1235", "#5c86ff", "#f0e6c8"];
+  return sek => {
+    schirmKopf(cx, "OMNA COLOR");
+    const mx = SCHIRM_B / 2, my = SCHIRM_H / 2 + 6, takt = Math.floor(sek / 2.6), u = eio(klemm((sek % 2.6) / .9));
+    [[50, 38, 1], [35, 23, -1]].forEach(([ra, ri, dir], n) => {
+      const w0 = dir * (takt + u) * Math.PI * 2 / 12 * (n ? 2 : 1);
+      for (let j = 0; j < 12; j++) {
+        const a = w0 + j * Math.PI / 6, c = a + Math.PI / 6 - .04;
+        cx.beginPath(); cx.arc(mx, my, ra, a, c); cx.arc(mx, my, ri, c, a, true); cx.closePath(); cx.fillStyle = FARBEN[(j + n * 5) % 12]; cx.fill();
+      }
+    });
+    cx.fillStyle = "#fff"; cx.beginPath(); cx.moveTo(mx, my - 54); cx.lineTo(mx - 4, my - 61); cx.lineTo(mx + 4, my - 61); cx.fill();
+    cx.textAlign = "center"; cx.textBaseline = "middle"; cx.font = `500 13px ${SCHIRM_SANS}`; if ("letterSpacing" in cx) cx.letterSpacing = "0px";
+    cx.fillText(String(1 + (takt * 37) % 180), mx, my); cx.font = `500 6.5px ${SCHIRM_SANS}`; cx.globalAlpha = .6; cx.fillText("VON 180", mx, my + 12); cx.globalAlpha = 1;
+    cx.textAlign = "left";
+  };
+};
+// PHORMA II: ein Schleimpilz aus 1500 Spuren auf einem groben Feld; jede riecht vor sich, links und rechts und biegt zum stärksten Duft,
+// das Feld verläuft und verblasst. Einige Spuren setzen immer wieder neu an, damit das Netz in Bewegung bleibt und nicht zu einem Strang schrumpft
+const schleimpilz = cx => {
+  const GB = 64, GH = 119, feld = new Float32Array(GB * GH), neu = new Float32Array(GB * GH), N = 1500, sp = [], SD = 5, SA = .7, RA = .45;
+  let z = 3; const zf = () => (z = (z * 16807) % 2147483647) / 2147483647;
+  const setze = p => { p.x = 2 + zf() * (GB - 4); p.y = 2 + zf() * (GH - 4); p.w = zf() * Math.PI * 2; };
+  for (let i = 0; i < N; i++) { const p = {}; setze(p); sp.push(p); }
+  const bild = new ImageData(GB, GH), lw = document.createElement("canvas"); lw.width = GB; lw.height = GH; const lx = lw.getContext("2d");
+  const riechen = (x, y) => { const i = Math.round(x), j = Math.round(y); return i < 0 || j < 0 || i >= GB || j >= GH ? -1 : feld[j * GB + i]; };
+  const schritt = () => {
+    for (const p of sp) {
+      const v = riechen(p.x + Math.cos(p.w) * SD, p.y + Math.sin(p.w) * SD), l = riechen(p.x + Math.cos(p.w - SA) * SD, p.y + Math.sin(p.w - SA) * SD), r = riechen(p.x + Math.cos(p.w + SA) * SD, p.y + Math.sin(p.w + SA) * SD);
+      if (v > l && v > r) { /* geradeaus */ } else if (v < l && v < r) p.w += zf() < .5 ? -RA : RA; else if (l > r) p.w -= RA; else if (r > l) p.w += RA;
+      p.x += Math.cos(p.w); p.y += Math.sin(p.w);
+      if (p.x < 1 || p.x > GB - 2 || p.y < 1 || p.y > GH - 2) { p.x = klemm(p.x, 1, GB - 2); p.y = klemm(p.y, 1, GH - 2); p.w = zf() * Math.PI * 2; }
+      if (zf() < .012) setze(p);
+      const k = Math.round(p.y) * GB + Math.round(p.x); feld[k] = Math.min(6, feld[k] + 1);
+    }
+    for (let j = 0; j < GH; j++) for (let i = 0; i < GB; i++) {
+      let su = 0, n = 0; for (let b = -1; b <= 1; b++) for (let a = -1; a <= 1; a++) { const x = i + a, y = j + b; if (x >= 0 && y >= 0 && x < GB && y < GH) { su += feld[y * GB + x]; n++; } }
+      const k = j * GB + i; neu[k] = (feld[k] * .65 + su / n * .35) * .85;
+    }
+    feld.set(neu);
+  };
+  for (let i = 0; i < 40; i++) schritt();
+  return () => {
+    schritt(); schritt();
+    for (let i = 0; i < GB * GH; i++) { const t = Math.min(1, feld[i] * .4); bild.data[i * 4] = 255 * t; bild.data[i * 4 + 1] = 205 * t ** 1.3; bild.data[i * 4 + 2] = 110 * t ** 2.2; bild.data[i * 4 + 3] = 255; }
+    lx.putImageData(bild, 0, 0); schirmKopf(cx, "PHORMA II");
+    cx.imageSmoothingEnabled = true; cx.drawImage(lw, 4, 24, SCHIRM_B - 8, SCHIRM_H - 36);
+  };
+};
+const HANDY_SZENEN = [fictory, farbraeder, schleimpilz];
+// Ein Telefon: feiner Rand in der Farbe der Schrift, darin der Bildschirm mit der Szene; zeichnen(sek) malt beides neu
+function handyBild(szene, farbe, sk = 2) {
+  const R = 7, W = SCHIRM_B + 2 * R, H = SCHIRM_H + 2 * R, cv = document.createElement("canvas"); cv.width = W * sk; cv.height = H * sk;
+  const cx = cv.getContext("2d"); cx.scale(sk, sk);
+  const malen = szene(cx), rund = (x, y, b, h, r) => { cx.beginPath(); if (cx.roundRect) cx.roundRect(x, y, b, h, r); else cx.rect(x, y, b, h); };
+  return { cv, W, H, zeichnen(sek) {
+    cx.clearRect(0, 0, W, H);
+    cx.save(); rund(R, R, SCHIRM_B, SCHIRM_H, 9); cx.clip(); cx.translate(R, R); malen(sek); cx.restore();
+    cx.strokeStyle = farbe; cx.lineWidth = 1.6; rund(.8, .8, W - 1.6, H - 1.6, 16); cx.stroke();
+  } };
+}
+// Drei Telefone nebeneinander in einem Feld b × h (Pixel): so gross wie möglich, höchstens 82 % der Höhe
+function handyLage(b, h) {
+  const verh = (SCHIRM_B + 14) / (SCHIRM_H + 14), luecke = Math.min(b, h) * .05;
+  const ph = Math.min(h * .82, (b - 2 * luecke) / 3 / verh), pb = ph * verh;
+  return [-1, 0, 1].map(i => ({ x: b / 2 + i * (pb + luecke) - pb / 2, y: (h - ph) / 2, b: pb, h: ph }));
+}
+/* ---------- Apps flach: die drei Telefone der Bühne werden zur Konstruktion wie im Video «Hold to enter» ----------
+   Die Kamera schwenkt in den Raum, die Telefone klappen nach hinten und hängen als Plattenstapel über einem Sockel. Ein Boden aus Punkten mit Lichtflecken,
+   Regen, Lichtbahnen, Terrassen mit einem Baum, Pfosten und Balken wachsen darum herum; ein Würfel füllt sich mit Licht.
+   Dann dreht alles nach vorn, die Platten sinken auf die Grenzen der drei Zeilen und aus dem Würfel wird das Quadrat: fokussieren, entspannen, spielen.
+   Gezeichnet auf einer Leinwand in Welt-Einheiten: das fertige Quadrat reicht von −1 bis 1, der Boden liegt bei −1,75 ---------- */
 const apps = (() => {
   const k = document.getElementById("k-apps"); if (!k) return null;
-  return { k, buehne: k.querySelector(".buehne"), keim: k.querySelector(".keim"), cv: k.querySelector(".verwandlung"), zeilen: k.querySelector(".app-zeilen"),
-    felder: [...k.querySelectorAll(".feld")], inhalte: [...k.querySelectorAll(".fi")], lauf: null };
+  return { k, buehne: k.querySelector(".buehne"), cv: k.querySelector(".verwandlung"), zeilen: k.querySelector(".app-zeilen"),
+    felder: [...k.querySelectorAll(".feld")], inhalte: [...k.querySelectorAll(".fi")], lauf: null, telefone: null, welt: null };
 })();
+const KANTEN = [[0, 1], [2, 3], [4, 5], [6, 7], [0, 2], [1, 3], [4, 6], [5, 7], [0, 4], [1, 5], [2, 6], [3, 7]];
+// Was in der Konstruktion steht, wird einmal ausgewürfelt
+function appsWelt() {
+  let z = 11; const zf = () => (z = (z * 16807) % 2147483647) / 2147483647;
+  const BODEN = -1.75, punkte = [], regen = [], pfosten = [], baum = [], voxel = [];
+  // Boden: ein Raster aus Punkten, unter dem Sockel und links und rechts liegt Licht
+  for (let i = -12; i <= 12; i++) for (let k = -12; k <= 12; k++) {
+    const x = i * .3, zz = k * .3; let w = 0;
+    for (const [px, pz, pr] of [[0, -.2, 1.6], [-2.3, .4, 1.1], [2.4, 1, 1]]) w = Math.max(w, (1 - klemm(Math.hypot(x - px, zz - pz) / pr)) ** 1.5);
+    punkte.push({ x, z: zz, r: Math.hypot(x, zz), w });
+  }
+  for (let i = 0; i < 64; i++) regen.push({ x: -3.4 + zf() * 6.8, z: -2 + zf() * 4.8, p: zf() * 6, l: .25 + zf() * .3 });
+  [[-2.7, -1.3, 2.6], [-2, 1.9, 3.4], [2.5, -1.2, 2.2], [3.1, .9, 3.6], [-3.3, .7, 1.8], [1.8, 2.2, 2.9], [.4, 2.8, 3.8]].forEach(([x, zz, h], n) => pfosten.push({ x, z: zz, h, t: 2.75 + n * .09 }));
+  // Der Baum auf der obersten linken Terrasse: jeder Ast teilt sich, etwas aus der Ebene gedreht
+  const ast = (p, w, dr, l, n) => {
+    const q = [p[0] + Math.sin(w) * Math.cos(dr) * l, p[1] + Math.cos(w) * l, p[2] + Math.sin(w) * Math.sin(dr) * l];
+    baum.push({ a: p, b: q, n: 6 - n }); if (n) { ast(q, w - .38 - zf() * .25, dr + zf() * 1.2, l * .73, n - 1); ast(q, w + .34 + zf() * .25, dr - zf() * 1.2, l * .7, n - 1); }
+  };
+  ast([-2.45, -1.15, -.3], 0, 0, .5, 6);
+  // Der Würfel aus 6 × 6 × 6 Zellen füllt sich von oben her mit Licht
+  for (let i = 0; i < 6; i++) for (let j = 0; j < 6; j++) for (let k = 0; k < 6; k++) {
+    const x = -1 + (i + .5) / 3, y = -1 + (j + .5) / 3, zz = -1 + (k + .5) / 3;
+    voxel.push({ x, y, z: zz, t: 3.25 + Math.hypot(x * .8, (y - 1) * .55, zz * .8) * .62 + zf() * .3 });
+  }
+  return { BODEN, punkte, regen, pfosten, baum, voxel,
+    // Terrassen: x0, x1 (x0 liegt am Sockel), y0, y1, z0, z1, Beginn
+    terrassen: [[-1.35, -3.4, BODEN, -1.55, -1.3, 1.1, 2.3], [-1.6, -3.2, -1.55, -1.35, -1.1, .7, 2.45], [-1.9, -3, -1.35, -1.15, -.9, .3, 2.6],
+      [1.35, 3.6, BODEN, -1.6, -.6, 1.5, 2.4], [1.6, 3.3, -1.6, -1.45, -.3, 1.3, 2.55], [2, 3.5, -1.45, -1.3, .2, 1.4, 2.7]],
+    balken: [[0, 4, 3.15], [2, 3, 3.25], [1, 5, 3.35]] };
+}
 function appsRaster(sofort) {
   if (!apps || apps.k.classList.contains("raster") || apps.lauf) return;
   if (sofort || ruhig) { apps.k.classList.add("raster"); return; }
-  const B = apps.buehne.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2), kr = apps.keim.getBoundingClientRect(), zr = apps.zeilen.getBoundingClientRect();
+  const B = apps.buehne.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2), zr = apps.zeilen.getBoundingClientRect(), farbe = getComputedStyle(apps.k).color;
   apps.cv.width = Math.round(B.width * dpr); apps.cv.height = Math.round(B.height * dpr);
-  const H = zr.width / 2, rnd = (() => { let z = 5; return () => (z = (z * 16807) % 2147483647) / 2147483647; })();
-  // Lichtzellen auf der Vorderseite und dem Deckel: jede leuchtet einmal kurz auf
-  const zellen = []; for (let i = 0; i < 6; i++) for (let j = 0; j < 6; j++) { if (rnd() < .45) zellen.push({ f: "vorn", i, j, t: 2 + rnd() * .9 }); if (rnd() < .35) zellen.push({ f: "oben", i, j, t: 1.9 + rnd() * .8 }); }
-  apps.lauf = { t0: null, dpr, H, kx: kr.left - B.left + kr.width / 2, ky: kr.top - B.top + kr.height / 2, k0: kr.width * .3 / H,
-    zx: zr.left - B.left + H, zy: zr.top - B.top + zr.height / 2, farbe: getComputedStyle(apps.k).color, zellen };
+  if (!apps.telefone) apps.telefone = HANDY_SZENEN.map(s => handyBild(s, farbe));
+  if (!apps.welt) apps.welt = appsWelt();
+  apps.lauf = { t0: null, dpr, b: B.width, h: B.height, H: zr.width / 2, farbe, lage: handyLage(B.width, B.height) };
 }
 function appsStopp() {
   if (!apps || !apps.lauf) return;
@@ -2213,40 +2307,138 @@ if (apps) { apps.stopp = appsStopp; felderVerbinden(apps); }
 function appsLaufBild(zeit) {
   const L = apps && apps.lauf; if (!L) return;
   if (L.t0 === null) { L.t0 = zeit; apps.k.classList.add("raster", "baut"); apps.cv.style.visibility = ""; }
-  const T = (zeit - L.t0) / 1000, cx = apps.cv.getContext("2d"), d = L.dpr;
+  const T = (zeit - L.t0) / 1000, cx = apps.cv.getContext("2d"), d = L.dpr, W = apps.welt, BO = W.BODEN, schrift = L.farbe;
   cx.setTransform(1, 0, 0, 1, 0, 0); cx.clearRect(0, 0, apps.cv.width, apps.cv.height);
-  // Drehung erst schräg wie im Video, dann frontal ohne Fluchtpunkt: der Würfel wird zum Quadrat, die Platten zu den Linien zwischen den Zeilen
-  const flachU = eio(klemm((T - 2.6) / 1)), wachs = eio(klemm((T - 1.2) / 1.1)), hin = eio(klemm((T - .5) / 1.6));
-  const ry0 = .75 + .35 * Math.min(T, 2.6), ryZ = Math.round((.75 + .35 * 2.6) / (Math.PI / 2)) * Math.PI / 2, ry = misch(ry0, ryZ, flachU), rx = misch(.5, 0, flachU), tiefe = 1 - flachU;
-  const cy = Math.cos(ry), sy = Math.sin(ry), cxr = Math.cos(rx), sxr = Math.sin(rx), F = 5, S = L.H;
-  const mx = misch(L.kx, L.zx, hin), my = misch(L.ky, L.zy, hin);
-  const P = (x, y, z) => { const x1 = x * cy + z * sy, z1 = -x * sy + z * cy, y1 = y * cxr - z1 * sxr, z2 = y * sxr + z1 * cxr, f = F / (F + z2 * tiefe); return [(mx + x1 * f * S) * d, (my - y1 * f * S) * d]; };
-  const linie = (a, b) => { cx.moveTo(...P(...a)); cx.lineTo(...P(...b)); };
-  const quadratY = (y, h) => { const e = [[-h, y, -h], [h, y, -h], [h, y, h], [-h, y, h]]; for (let i = 0; i < 4; i++) linie(e[i], e[(i + 1) % 4]); };
-  const ende = 1 - klemm((T - 3.5) / .5);
-  cx.strokeStyle = L.farbe; cx.lineWidth = d;
-  // Der Würfel: klein am Keim, schräg so gross, dass er ganz auf der Bühne bleibt, frontal so gross wie das Quadrat; die Platten wachsen mit
-  const c = misch(misch(L.k0, .62, wachs), 1, flachU), pl = misch(.62, 1, flachU);
-  cx.globalAlpha = .9 * klemm(T / .3) * ende; cx.beginPath();
-  quadratY(-c, c); quadratY(c, c); for (const [x, z] of [[-c, -c], [c, -c], [c, c], [-c, c]]) linie([x, -c, z], [x, c, z]); cx.stroke();
-  // Vier Platten kommen von oben und unten und legen sich auf die Grenzen der drei Zeilen
-  [-1, -1 / 3, 1 / 3, 1].forEach((y, j) => {
-    const t = eio(klemm((T - .25 - (j % 2 ? .25 : 0) - (y > 0 ? 0 : .15)) / 1.3)); if (!t) return;
-    cx.globalAlpha = .75 * klemm(t * 3) * ende; cx.beginPath(); quadratY(misch(y * 4.2, y, t) * pl, pl); cx.stroke();
-  });
-  // Feine Führungslinien von oben und unten zu den Ecken, solange die Platten unterwegs sind
-  const fuehr = klemm(T / .4) * (1 - klemm((T - 1.9) / .6));
-  if (fuehr > 0) { cx.globalAlpha = .3 * fuehr * ende; cx.beginPath(); for (const [x, z] of [[-pl, -pl], [pl, -pl], [pl, pl], [-pl, pl]]) { linie([x, pl, z], [x, 6, z]); linie([x, -pl, z], [x, -6, z]); } cx.stroke(); }
-  // Das Licht: Zellen leuchten kurz in Weiss auf, wie die Füllung im Video
-  cx.fillStyle = "#fff";
-  for (const z of L.zellen) {
-    const t = (T - z.t) / .55; if (t < 0 || t > 1) continue;
-    const a = Math.sin(Math.PI * t) * .6 * ende, u0 = c * (-1 + z.i / 3), u1 = u0 + c / 3, v0 = c * (-1 + z.j / 3), v1 = v0 + c / 3;
-    const ecken = z.f === "vorn" ? [[u0, v0, c], [u1, v0, c], [u1, v1, c], [u0, v1, c]] : [[u0, c, v0], [u1, c, v0], [u1, c, v1], [u0, c, v1]];
-    cx.globalAlpha = a; cx.beginPath(); ecken.forEach((e, n) => { const q = P(...e); if (n) cx.lineTo(...q); else cx.moveTo(...q); }); cx.closePath(); cx.fill();
+  // Die Kamera: erst frontal wie die Seite, dann schräg von oben in den Raum und langsam weiter, am Ende wieder frontal und ohne Fluchtpunkt
+  const k1 = eio(klemm((T - .9) / 1.4)), kE = eio(klemm((T - 4.5) / 1.3));
+  const th = misch(misch(0, .55, k1) + .05 * klemm(T - 2.1, 0, 2.4), 0, kE), ph = misch(misch(0, -.3, k1), 0, kE);
+  const pers = misch(k1, 0, kE), Z = misch(misch(1, .36, k1), 1, kE), ty = misch(misch(0, .1, k1), 0, kE), F = 5.5;
+  const S = L.H * Z, mx = L.b / 2, my = L.h / 2, ct = Math.cos(th), st = Math.sin(th), cp = Math.cos(ph), sp = Math.sin(ph);
+  const P = (x, y, z) => {
+    y -= ty; const x1 = x * ct - z * st, z1 = x * st + z * ct, y1 = y * cp - z1 * sp, z2 = y * sp + z1 * cp, f = F / Math.max(F * .2, F + z2 * pers);
+    return [(mx + x1 * f * S) * d, (my - y1 * f * S) * d, z2, f];
+  };
+  const ende = 1 - weich(5.75, 6.25, T), aussen = 1 - weich(4.4, 5.2, T);
+  const stil = (farbe, a, lw = 1) => { cx.strokeStyle = farbe; cx.globalAlpha = klemm(a) * ende; cx.lineWidth = lw * d; cx.beginPath(); };
+  const linie = (a, b, u = 1) => {
+    if (u <= 0) return; const p = P(a[0], a[1], a[2]), q = P(a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u, a[2] + (b[2] - a[2]) * u);
+    cx.moveTo(p[0], p[1]); cx.lineTo(q[0], q[1]);
+  };
+  const kiste = (x0, x1, y0, y1, z0, z1, u = 1) => { const c = i => [i & 1 ? x1 : x0, i & 2 ? y1 : y0, i & 4 ? z1 : z0]; KANTEN.forEach(([a, b], j) => linie(c(a), c(b), klemm(u * 1.4 - j * .033))); };
+  const viereck = e => { const p = e.map(q => P(q[0], q[1], q[2])); cx.moveTo(p[0][0], p[0][1]); for (let i = 1; i < 4; i++) cx.lineTo(p[i][0], p[i][1]); cx.closePath(); };
+
+  // Lichtbahnen schräg von oben
+  const licht = weich(2.1, 2.9, T) * aussen;
+  if (licht > 0) {
+    cx.globalAlpha = ende;
+    for (const [x, z, br] of [[-1.6, .6, .55], [.2, 1.4, .4], [1.3, -.2, .3]]) {
+      const a = P(x, 5.5, z), b = P(x + br, 5.5, z), c = P(x + br + 1.7, BO, z), e = P(x + 1.7, BO, z), gr = cx.createLinearGradient(a[0], a[1], e[0], e[1]);
+      gr.addColorStop(0, `rgba(255, 255, 255, ${.18 * licht})`); gr.addColorStop(1, "rgba(255, 255, 255, 0)");
+      cx.fillStyle = gr; cx.beginPath(); cx.moveTo(a[0], a[1]); cx.lineTo(b[0], b[1]); cx.lineTo(c[0], c[1]); cx.lineTo(e[0], e[1]); cx.closePath(); cx.fill();
+    }
   }
-  if (T > 3.35 && apps.k.classList.contains("baut")) apps.k.classList.remove("baut");
-  if (T > 4.05) appsStopp();
+  // Der Boden breitet sich von der Mitte her aus; wo Licht liegt, sind die Punkte weiss
+  const boden = 5.4 * eio(klemm((T - 1.3) / 1.4));
+  if (boden > 0 && aussen > 0) {
+    for (const q of W.punkte) {
+      const e = klemm((boden - q.r) / .7); if (e <= 0) continue;
+      const p = P(q.x, BO, q.z), s = Math.max(1, 3.4 * p[3] * Z) * d;
+      cx.fillStyle = q.w > .05 ? "#fff" : schrift; cx.globalAlpha = e * aussen * ende * (q.w > .05 ? .4 + .6 * q.w : .45);
+      cx.fillRect(p[0] - s / 2, p[1] - s / 2, s, s);
+    }
+    stil(schrift, .12 * klemm(boden / 5.4) * aussen, .8);
+    for (let i = -3; i <= 3; i++) { linie([i * 1.2, BO, -3.6], [i * 1.2, BO, 3.6]); linie([-3.6, BO, i * 1.2], [3.6, BO, i * 1.2]); }
+    cx.stroke();
+  }
+  // Regen: feine helle Striche fallen bis auf den Boden
+  const regen = weich(2, 2.6, T) * aussen;
+  if (regen > 0) {
+    stil("#fff", .75 * regen, .8);
+    for (const r of W.regen) { const y = 4 - ((T * 3.2 + r.p) % 5.75); linie([r.x, y, r.z], [r.x, Math.max(BO, y - r.l), r.z]); }
+    cx.stroke();
+  }
+  // Terrassen wachsen vom Sockel nach aussen, Pfosten steigen auf, Balken spannen sich dazwischen, auf der obersten Terrasse wächst ein Baum
+  if (aussen > 0 && T > 2.2) {
+    stil(schrift, .62 * aussen, 1);
+    for (const [x0, x1, y0, y1, z0, z1, t0] of W.terrassen) { const g = eio(klemm((T - t0) / .7)); if (g > 0) kiste(x0, misch(x0, x1, g), y0, y1, z0, z1); }
+    W.pfosten.forEach(p => { const u = eio(klemm((T - p.t) / .6)); linie([p.x, BO, p.z], [p.x, BO + p.h, p.z], u); linie([p.x + .05, BO, p.z], [p.x + .05, BO + p.h, p.z], u); });
+    for (const [a, b, t0] of W.balken) {
+      const pa = W.pfosten[a], pb = W.pfosten[b], y = BO + Math.min(pa.h, pb.h) - .25, u = eio(klemm((T - t0) / .6));
+      linie([pa.x, y, pa.z], [pb.x, y, pb.z], u); linie([pa.x, y - .07, pa.z], [pb.x, y - .07, pb.z], u);
+    }
+    cx.stroke();
+    stil(schrift, .55 * aussen, .8);
+    for (const s of W.baum) linie(s.a, s.b, klemm((T - 2.8 - s.n * .14) / .2));
+    cx.stroke();
+    cx.fillStyle = "#fff";
+    for (const s of W.baum) if (s.n === 6 && T > 2.8 + 6 * .14 + .2) { const p = P(s.b[0], s.b[1], s.b[2]); cx.globalAlpha = .9 * aussen * ende * klemm((T - 3.84) / .3); cx.fillRect(p[0] - d, p[1] - d, 2 * d, 2 * d); }
+  }
+  // Der Sockel unter dem Würfel; seine Deckplatte steigt am Ende auf die untere Kante des Quadrats
+  const r = eio(klemm((T - 3.7) / 1.1));
+  if (T > 1.6) {
+    stil(schrift, .75 * aussen, 1); kiste(-1.05, 1.05, BO, -1.25, -1.05, 1.05, eio(klemm((T - 1.7) / .8))); cx.stroke();
+    const pl = eio(klemm((T - 2.3) / .4));
+    if (pl > 0) {
+      const y = misch(-1.2, -1, r), s = misch(1.15, 1, r) * misch(.6, 1, pl), o = .05 * (1 - r);
+      stil(schrift, .9 * pl, 1.2); viereck([[-s, y, -s], [s, y, -s], [s, y, s], [-s, y, s]]); if (o > .002) viereck([[-s, y + o, -s], [s, y + o, -s], [s, y + o, s], [-s, y + o, s]]); cx.stroke();
+    }
+  }
+  // Die Telefone klappen nach hinten und hängen als Stapel aus Platten über dem Sockel, später sinken sie auf die Grenzen der drei Zeilen
+  const m = eio(klemm((T - .95) / 1.25)), ZIEL = [[1.9, 1.05, 1], [1.65, .85, 1 / 3], [1.42, .66, -1 / 3]];
+  const platten = L.lage.map((p, n) => {
+    const X = px => (px - L.b / 2) / L.H, Y = py => -(py - L.h / 2) / L.H, [yk, sk, yz] = ZIEL[n], y = misch(yk, yz, r), s = misch(sk, 1, r), hub = Math.sin(Math.PI * m) * .5;
+    const von = [[X(p.x), Y(p.y + p.h), 0], [X(p.x + p.b), Y(p.y + p.h), 0], [X(p.x + p.b), Y(p.y), 0], [X(p.x), Y(p.y), 0]], nach = [[-s, y, -s], [s, y, -s], [s, y, s], [-s, y, s]];
+    return von.map((v, j) => [misch(v[0], nach[j][0], m), misch(v[1], nach[j][1], m) + hub, misch(v[2], nach[j][2], m)]);
+  });
+  // Führungslinien nach oben, die Verbindungen im Stapel und die Achse bis auf den Sockel
+  const fuehr = eio(klemm((T - 1.9) / .6)) * (1 - weich(3.8, 4.4, T));
+  if (fuehr > 0) {
+    stil(schrift, .3 * fuehr, .8); for (const e of platten[0]) linie(e, [e[0], 6, e[2]], fuehr); cx.stroke();
+    stil(schrift, .55 * fuehr, .9); for (let n = 0; n < 2; n++) for (let j = 0; j < 4; j++) linie(platten[n][j], platten[n + 1][j], fuehr); cx.stroke();
+  }
+  const achse = eio(klemm((T - 2.2) / .6)) * aussen;
+  if (achse > 0) { stil(schrift, .45 * achse, .9); linie([0, platten[2][0][1], 0], [0, -1.2, 0], achse); cx.stroke(); }
+  // In der Mitte schwebt ein Würfel aus Punkten wie im Video; wenn das Licht kommt, weitet er sich zum ganzen Würfel und vergeht
+  const pw = weich(1.3, 1.8, T) * (1 - weich(3.6, 4.1, T));
+  if (pw > 0) {
+    const gr = misch(.3, 1, eio(klemm((T - 3.3) / .7))), dr = T * .5, c = Math.cos(dr), s2 = Math.sin(dr);
+    cx.fillStyle = schrift; cx.globalAlpha = .75 * pw * ende;
+    for (let i = 0; i < 5; i++) for (let j = 0; j < 5; j++) for (let k = 0; k < 5; k++) {
+      const x = (i / 2 - 1) * gr, y = (j / 2 - 1) * gr, z = (k / 2 - 1) * gr, p = P(x * c - z * s2, y, x * s2 + z * c), sz = Math.max(1, 2.6 * p[3] * Z) * d;
+      cx.fillRect(p[0] - sz / 2, p[1] - sz / 2, sz, sz);
+    }
+  }
+  // Licht im Würfel: Zellen leuchten von oben her auf und bilden eine helle Masse, die am Ende wieder verlischt
+  const vf = 1 - weich(4.9, 5.6, T);
+  if (vf > 0 && T > 3.2) {
+    const an = W.voxel.filter(v => T > v.t), hs = 1 / 6;
+    if (an.length) {
+      let sx = 0, sy = 0; an.forEach(v => { sx += v.x; sy += v.y; });
+      const c = P(sx / an.length, sy / an.length, 0), rad = 1.6 * S * c[3] * d, gl = cx.createRadialGradient(c[0], c[1], 0, c[0], c[1], rad);
+      gl.addColorStop(0, `rgba(255, 255, 255, ${.4 * vf * an.length / W.voxel.length})`); gl.addColorStop(1, "rgba(255, 255, 255, 0)");
+      cx.globalAlpha = ende; cx.fillStyle = gl; cx.fillRect(c[0] - rad, c[1] - rad, rad * 2, rad * 2);
+      const fx = st * cp > 0 ? -1 : 1, fy = sp > 0 ? -1 : 1, fz = ct * cp > 0 ? -1 : 1;
+      an.map(v => [P(v.x, v.y, v.z)[2], v]).sort((a, b) => b[0] - a[0]).forEach(([, v]) => {
+        const a = klemm((T - v.t) / .3) * vf * ende, X = v.x + fx * hs, Y = v.y + fy * hs, Zz = v.z + fz * hs;
+        cx.fillStyle = "#fff"; cx.strokeStyle = "#fff"; cx.lineWidth = .6 * d;
+        for (const [e, f] of [[[[X, v.y - hs, v.z - hs], [X, v.y + hs, v.z - hs], [X, v.y + hs, v.z + hs], [X, v.y - hs, v.z + hs]], .2],
+          [[[v.x - hs, Y, v.z - hs], [v.x + hs, Y, v.z - hs], [v.x + hs, Y, v.z + hs], [v.x - hs, Y, v.z + hs]], .32],
+          [[[v.x - hs, v.y - hs, Zz], [v.x + hs, v.y - hs, Zz], [v.x + hs, v.y + hs, Zz], [v.x - hs, v.y + hs, Zz]], .24]]) {
+          cx.beginPath(); viereck(e); cx.globalAlpha = a * f; cx.fill(); cx.globalAlpha = a * .45; cx.stroke();
+        }
+      });
+    }
+  }
+  // Die Kanten des Würfels wachsen von oben nach unten; mit den Platten zusammen sind sie am Ende das Quadrat der drei Zeilen
+  const kante = eio(klemm((T - 3.4) / .7));
+  if (kante > 0) { stil(schrift, .9, 1.2); for (const [a, c] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) linie([a, 1, c], [a, -1, c], kante); cx.stroke(); }
+  stil(schrift, .9 * weich(.7, .95, T), 1.2); platten.forEach(viereck); cx.stroke();
+  // Zu Beginn die Telefone selbst mit laufenden Bildschirmen, genau dort, wo sie auf dem Band lagen
+  const bildA = 1 - weich(.6, 1, T);
+  if (bildA > 0) L.lage.forEach((p, n) => { const t = apps.telefone[n]; t.zeichnen(zeit / 1000 + n * 3.1); cx.globalAlpha = bildA * ende; cx.drawImage(t.cv, p.x * d, p.y * d, p.b * d, p.h * d); });
+  cx.globalAlpha = 1;
+  if (T > 5.6 && apps.k.classList.contains("baut")) apps.k.classList.remove("baut");
+  if (T > 6.3) appsStopp();
 }
 function appsPruefen() {
   if (!apps || !flach) return;
