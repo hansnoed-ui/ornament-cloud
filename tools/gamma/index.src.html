@@ -2107,7 +2107,7 @@ function webLaufBild(zeit) {
 }
 /* ---------- Bildschirme der Apps: kleine Szenen aus The Fictory, OMNA COLOR und PHORMA III ----------
    Jede Szene zeichnet auf eine Fläche von 120 × 236; handyBild legt sie in ein Telefon mit feinem Rand.
-   Die Telefone auf dem Band und auf der flachen Bühne der Apps sind dieselben */
+   Die Telefone liegen nur auf dem Band; auf der flachen Bühne beginnt die Verwandlung mit ihren leeren Umrissen */
 const SCHIRM_B = 120, SCHIRM_H = 236, SCHIRM_SANS = '"Instrument Sans", system-ui, sans-serif';
 const schirmKopf = (cx, name) => {
   cx.fillStyle = "#0b0b0b"; cx.fillRect(0, 0, SCHIRM_B, SCHIRM_H);
@@ -2319,15 +2319,15 @@ function handyLage(b, h, k = 1) {
   const ph = Math.min(h * .82, (b - 2 * luecke) / 3 / verh) * k, pb = ph * verh;
   return [-1, 0, 1].map(i => ({ x: b / 2 + i * (pb + luecke) - pb / 2, y: (h - ph) / 2, b: pb, h: ph }));
 }
-/* ---------- Apps flach: die drei Telefone der Bühne werden zur Konstruktion wie im Video «Hold to enter» ----------
-   Die Kamera schwenkt in den Raum, die Telefone klappen nach hinten und hängen als Plattenstapel über einem Sockel. Ein Boden aus Punkten mit Lichtflecken,
+/* ---------- Apps flach: aus den Umrissen der drei Telefone wird die Konstruktion wie im Video «Hold to enter» ----------
+   Es beginnt mit leeren Rechtecken in der Form der Telefone, wo sie auf dem Band lagen. Die Kamera schwenkt in den Raum, die Rechtecke klappen nach hinten und hängen als Plattenstapel über einem Sockel. Ein Boden aus Punkten mit Lichtflecken,
    Regen, Lichtbahnen, Terrassen mit einem Baum, Pfosten und Balken wachsen darum herum; ein Würfel füllt sich mit Licht.
    Dann dreht alles nach vorn, die Platten sinken auf die Grenzen der drei Zeilen und aus dem Würfel wird das Quadrat: fokussieren, entspannen, spielen.
    Gezeichnet auf einer Leinwand in Welt-Einheiten: das fertige Quadrat reicht von −1 bis 1, der Boden liegt bei −1,75 ---------- */
 const apps = (() => {
   const k = document.getElementById("k-apps"); if (!k) return null;
   return { k, buehne: k.querySelector(".buehne"), cv: k.querySelector(".verwandlung"), zeilen: k.querySelector(".app-zeilen"),
-    felder: [...k.querySelectorAll(".feld")], inhalte: [...k.querySelectorAll(".fi")], lauf: null, telefone: null, welt: null };
+    felder: [...k.querySelectorAll(".feld")], inhalte: [...k.querySelectorAll(".fi")], lauf: null, welt: null };
 })();
 const KANTEN = [[0, 1], [2, 3], [4, 5], [6, 7], [0, 2], [1, 3], [4, 6], [5, 7], [0, 4], [1, 5], [2, 6], [3, 7]];
 // Was in der Konstruktion steht, wird einmal ausgewürfelt
@@ -2364,7 +2364,6 @@ function appsRaster(sofort) {
   if (sofort || ruhig) { apps.k.classList.add("raster"); return; }
   const B = apps.buehne.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2), zr = apps.zeilen.getBoundingClientRect(), farbe = getComputedStyle(apps.k).color;
   apps.cv.width = Math.round(B.width * dpr); apps.cv.height = Math.round(B.height * dpr);
-  if (!apps.telefone) apps.telefone = HANDY_SZENEN.map(s => handyBild(s, farbe));
   if (!apps.welt) apps.welt = appsWelt();
   apps.lauf = { t0: null, dpr, b: B.width, h: B.height, H: zr.width / 2, farbe, lage: handyLage(B.width, B.height) };
 }
@@ -2503,10 +2502,8 @@ function appsLaufBild(zeit) {
   // Die Kanten des Würfels wachsen von oben nach unten; mit den Platten zusammen sind sie am Ende das Quadrat der drei Zeilen
   const kante = eio(klemm((T - 3.4) / .7));
   if (kante > 0) { stil(schrift, .9, 1.2); for (const [a, c] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) linie([a, 1, c], [a, -1, c], kante); cx.stroke(); }
-  stil(schrift, .9 * weich(.7, .95, T), 1.2); platten.forEach(viereck); cx.stroke();
-  // Zu Beginn die Telefone selbst mit laufenden Bildschirmen, genau dort, wo sie auf dem Band lagen
-  const bildA = 1 - weich(.6, 1, T);
-  if (bildA > 0) L.lage.forEach((p, n) => { const t = apps.telefone[n]; t.zeichnen(zeit / 1000 + n * 3.1); cx.globalAlpha = bildA * ende; cx.drawImage(t.cv, p.x * d, p.y * d, p.b * d, p.h * d); });
+  // Die Platten sind von Anfang an da: leere Rechtecke in der Form der Telefone, ohne Bildschirme (Wunsch vom 30. Oktober 2026)
+  stil(schrift, .9, 1.2); platten.forEach(viereck); cx.stroke();
   cx.globalAlpha = 1;
   if (T > 5.6 && apps.k.classList.contains("baut")) apps.k.classList.remove("baut");
   if (T > 6.3) appsStopp();
