@@ -6,10 +6,10 @@ ein Querformat bleibt ganz (höchstens 16:9); sein Seitenverhältnis gehört dan
 Bearbeitung (Christian, 30. Oktober 2026: jedes Foto für diese Seite zuerst sauber bearbeiten): Display P3 nach sRGB, ohne kräftige Farben
 abzuschneiden; Weissabgleich nur, wo fast farblose helle Stellen einen Stich zeigen; Farbrauschen stark, Helligkeitsrauschen leicht und vor allem in
 den Schatten mindern; das Licht grossflächig ausgleichen (dunkle Ecken heben, Lichtflecken dämpfen); gelbe, mittel gesättigte Flächen etwas ruhiger,
-kräftige Farben bleiben; beim Verkleinern leicht nachschärfen.
-Die Zeichnung besteht nur aus Geraden: Raumkanten, Rahmen und Fugen, dazu ein Raster schräger Striche, wo das Foto hell ist: wie weisse Kreide auf getöntem Papier.
+kräftige Farben bleiben; zuletzt etwas wärmer; beim Verkleinern leicht nachschärfen.
+Die Zeichnung besteht nur aus Geraden: Raumkanten, Rahmen und Fugen, ohne Schraffur, wie weisse Kreide auf getöntem Papier.
 In den Linien ist Rot die Deckung, Grün der Zeitpunkt (0–254), an dem die Linie an dieser Stelle gezeichnet wird (255: nie),
-Blau 255 für Umrisse und 0 für Schraffur. So kann die Seite die Zeichnung wachsen lassen, ohne Linien zu kennen: ein Wert im Shader genügt."""
+Blau 255 für Umrisse. So kann die Seite die Zeichnung wachsen lassen, ohne Linien zu kennen: ein Wert im Shader genügt."""
 import io, sys, math, random, pathlib
 import numpy as np
 from PIL import Image, ImageCms, ImageDraw, ImageFilter, ImageOps
@@ -74,6 +74,8 @@ def bearbeiten(bild):
     gelb = np.clip(1 - np.abs(hue - 40) / 28, 0, 1) * np.clip(1 - (s - .45) / .3, 0, 1)
     Y = a @ np.array([.299, .587, .114], np.float32)
     a = Y[..., None] + (a - Y[..., None]) * (1 - .14 * gelb)[..., None]
+    # Wärmer (Christian, 30. Oktober 2026): Rot und etwas Grün hinauf, Blau hinunter, also golden statt rosa; die Helligkeit bleibt
+    w = a * np.array([1.04, 1.015, .89], np.float32); a = w * (Y / np.maximum(w @ np.array([.299, .587, .114], np.float32), 1e-4))[..., None]
     return np.clip(a, 0, 1)
 
 name = sys.argv[2] if len(sys.argv) > 2 else "kunst"
@@ -89,11 +91,7 @@ foto = quelle.resize((FOTO_B, round(FOTO_B / FORMAT)), Image.LANCZOS).filter(Ima
 foto.save(WURZEL / f"gamma/bilder/{name}-foto.webp", quality=78, method=6)
 H = round(B / FORMAT)
 
-# Helligkeit, auf die mittleren 96 % gestreckt
 f = np.asarray(quelle.resize((B, H), Image.LANCZOS), dtype=np.float32) / 255
-L = f[..., 0] * .3 + f[..., 1] * .59 + f[..., 2] * .11
-lo, hi = np.percentile(L, [2, 98]); L = np.clip((L - lo) / max(hi - lo, 1e-3), 0, 1)
-Lg = nd.gaussian_filter(L, 2)
 
 yy, xx = np.mgrid[0:H, 0:B].astype(np.float32)
 
@@ -117,49 +115,23 @@ TH = np.deg2rad(np.arange(0, 180, .5)); ct, st = np.cos(TH), np.sin(TH); RMAX = 
 akk = np.zeros((len(TH), 2 * RMAX), np.int32)
 for i in range(len(TH)):
     m_ = passt(TH[i]); akk[i] += np.bincount(np.round(kx[m_] * ct[i] + ky[m_] * st[i]).astype(int) + RMAX, minlength=2 * RMAX)
-umrisse = []; maske = Image.new("L", (B, H), 0); dm = ImageDraw.Draw(maske)
-for _ in range(80):
+umrisse = []
+for _ in range(140):
     i, r = np.unravel_index(int(np.argmax(akk)), akk.shape)
-    if akk[i, r] < 70: break
+    if akk[i, r] < 45: break
     # Nachbarschaft löschen (auch die zweite Kante einer dünnen Linie), Winkel am Rand zyklisch
     for di in range(-6, 7): akk[(i + di) % len(TH), max(r - 7, 0):r + 8] = 0
     nah = (np.abs(kx * ct[i] + ky * st[i] - (r - RMAX)) < 1.6) & passt(TH[i])
     tt = -kx[nah] * st[i] + ky[nah] * ct[i]; tt.sort()
     if len(tt) < 2: continue
-    for t_ in np.split(tt, np.nonzero(np.diff(tt) > 16)[0] + 1):
+    for t_ in np.split(tt, np.nonzero(np.diff(tt) > 12)[0] + 1):
         lg_ = t_[-1] - t_[0]
-        if lg_ < 70 or len(t_) / lg_ < .5: continue
+        if lg_ < 40 or len(t_) / lg_ < .5: continue
         rr = r - RMAX; p0 = (rr * ct[i] - t_[0] * st[i], rr * st[i] + t_[0] * ct[i]); p1 = (rr * ct[i] - t_[-1] * st[i], rr * st[i] + t_[-1] * ct[i])
-        umrisse.append(gerade(p0, p1)); dm.line([p0, p1], fill=255, width=9)
+        umrisse.append(gerade(p0, p1))
 print(len(umrisse), "Geraden")
-nahe = np.asarray(maske) > 0
 
-def wert(a, x, y):
-    x = min(max(x, 0), B - 1.001); y = min(max(y, 0), H - 1.001); i, j = int(x), int(y); u, v = x - i, y - j
-    return (a[j, i] * (1 - u) + a[j, i + 1] * u) * (1 - v) + (a[j + 1, i] * (1 - u) + a[j + 1, i + 1] * u) * v
-
-# Schraffur: ein festes Raster gerader Linien unter 45° im Abstand von 12 px. Jede Linie ist nur dort gezogen, wo das Foto hell genug ist,
-# im Hellsten kreuzt eine zweite, doppelt so weite Lage. An den Umrissen setzt sie aus; kürzer als 14 px fällt weg
-dichte = nd.gaussian_filter(np.clip((Lg - .28) / .62, 0, 1), 4)
-def lage(winkel, abst, schwelle):
-    d = (math.cos(winkel), math.sin(winkel)); nn = (-d[1], d[0]); ecken = [(0, 0), (B, 0), (0, H), (B, H)]
-    cs = [x * nn[0] + y * nn[1] for x, y in ecken]; ts = [x * d[0] + y * d[1] for x, y in ecken]
-    aus = []
-    for c in np.arange(min(cs) + abst / 2, max(cs), abst):
-        t = np.arange(min(ts), max(ts), 1.)
-        x, y = c * nn[0] + t * d[0], c * nn[1] + t * d[1]
-        drin = (x >= 0) & (x < B - 1) & (y >= 0) & (y < H - 1)
-        an = np.zeros(len(t), bool); xi, yi = x[drin].astype(int), y[drin].astype(int)
-        an[drin] = (dichte[yi, xi] > schwelle) & ~nahe[yi, xi]
-        kanten = np.flatnonzero(np.diff(np.r_[0, an.astype(np.int8), 0]))
-        for a_, b_ in zip(kanten[::2], kanten[1::2] - 1):
-            if b_ - a_ >= 14: aus.append(gerade((x[a_], y[a_]), (x[b_], y[b_])))
-    return aus
-schraffur = lage(-math.pi / 4, 12, .18) + lage(math.pi / 4, 24, .66)
-print(len(schraffur), "Schraffurlinien")
-
-# Reihenfolge: erst die Umrisse (lange und mittige zuerst), dann die Schraffur, Lage um Lage von der Mitte nach aussen.
-# Zeit 0 bis 1; Umrisse laufen langsam wie mit dem Stift gezogen, Schraffurstriche schnell
+# Reihenfolge: lange und mittige Geraden zuerst, dann nach aussen. Zeit 0 bis 1, jede läuft wie mit dem Stift gezogen
 def ordnen(linien, von, bis, dauer):
     if not linien: return []
     lg = np.array([len(p) for p in linien], np.float32) * np.array([math.hypot(p[1][0] - p[0][0], p[1][1] - p[0][1]) for p in linien], np.float32)
@@ -167,22 +139,21 @@ def ordnen(linien, von, bis, dauer):
     sp = np.array([min(1, math.hypot(p[len(p) // 2][0] / B - .5, p[len(p) // 2][1] / H - .5) / .62) for p in linien], np.float32)
     k = .45 * rang + .55 * sp + .06 * np.random.rand(len(linien)); k = (k - k.min()) / (np.ptp(k) or 1)
     return [(von + (bis - von) * k[i], dauer * lg[i] / lg.max(), lg[i]) for i in range(len(linien))]
-striche = [(p, *z, 255, 1.05) for p, z in zip(umrisse, ordnen(umrisse, 0, .4, .2))] + [(p, *z, 120, 0) for p, z in zip(schraffur, ordnen(schraffur, .3, .9, .08))]
+striche = [(p, *z, 255, 1.05) for p, z in zip(umrisse, ordnen(umrisse, 0, .7, .3))]
 tinte = Image.new("L", (B * S, H * S), 0); zeit = Image.new("L", (B * S, H * S), 255); zufall = Image.new("L", (B * S, H * S), 0)
 dt, dz, dzu = ImageDraw.Draw(tinte), ImageDraw.Draw(zeit), ImageDraw.Draw(zufall)
 # die späteren zuerst: wo sich Linien kreuzen, gilt die frühere
 for p, anfang, dauer, lg, hell, breite in sorted(striche, key=lambda s_: -s_[1]):
     # gleichmässige Richtung der Hand: jede Linie beginnt oben links
     if p[0][0] + .6 * p[0][1] > p[-1][0] + .6 * p[-1][1]: p = p[::-1]
-    z = 255 if breite else 0; n = len(p) - 1
+    n = len(p) - 1
     for k in range(n):
         (ax, ay), (bx, by) = p[k], p[k + 1]; s_ = k / n
-        d = breite or .3 + .6 * wert(dichte, ax, ay)
-        w = d * min(1, (s_ * lg / 7) ** .5, ((1 - s_) * lg / 7) ** .5) + .2
+        w = breite * min(1, (s_ * lg / 7) ** .5, ((1 - s_) * lg / 7) ** .5) + .2
         g = round(254 * min(1, anfang + s_ * dauer))
         seg = [(ax * S, ay * S), (bx * S, by * S)]; ww = max(1, round(w * S)); r = w * S / 2
         dt.line(seg, fill=hell, width=ww); dt.ellipse((bx * S - r, by * S - r, bx * S + r, by * S + r), fill=hell)
-        dz.line(seg, fill=g, width=ww + 1); dzu.line(seg, fill=z, width=ww + 1)
+        dz.line(seg, fill=g, width=ww + 1); dzu.line(seg, fill=255, width=ww + 1)
 
 R = np.asarray(tinte.resize((B, H), Image.BOX))
 G = np.asarray(zeit).reshape(H, S, B, S).min(axis=(1, 3))
@@ -192,6 +163,6 @@ out = WURZEL / f"gamma/bilder/{name}-linien.webp"
 Image.fromarray(np.dstack([R, G, Bl])).save(out, lossless=True, quality=100, method=6)
 print(out, out.stat().st_size, "Bytes;", (WURZEL / f"gamma/bilder/{name}-foto.webp").stat().st_size, "Bytes Foto")
 if len(sys.argv) > 4:
-    grund = np.array([90, 66, 50], np.float32)
+    grund = np.array([149, 7, 64], np.float32)
     a = (R.astype(np.float32) / 255)[..., None] * .92
     Image.fromarray((grund * (1 - a) + 255 * a).astype(np.uint8)).save(sys.argv[4])
