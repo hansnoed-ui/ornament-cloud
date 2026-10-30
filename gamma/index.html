@@ -57,9 +57,9 @@ body.flach.nach-intro #welt, body.ohne-3d #welt { visibility: hidden; }
 
 /* ---------- Intro: Text, Beschriftungen und Tafel über dem Raum ---------- */
 #intro { position: relative; z-index: 1; height: 460vh; pointer-events: none; }
-.intro-buehne { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; perspective: 900px; }
+.intro-buehne { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
 body.raum-an .intro-buehne { position: fixed; left: 0; right: 0; top: 0; }
-.szene { position: absolute; inset: 0; transform-origin: 50% 100%; will-change: transform; }
+.szene { position: absolute; inset: 0; }
 .intro-text { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(28px + env(safe-area-inset-bottom, 0px));
   display: flex; justify-content: space-between; align-items: end; gap: 20px; color: #fff; }
 .intro-text h1 { margin: 0; font-size: clamp(34px, 6vw, 84px); font-weight: 500; letter-spacing: -.04em; line-height: .95; text-wrap: balance; max-width: 13ch; }
@@ -70,7 +70,9 @@ body.raum-an .intro-buehne { position: fixed; left: 0; right: 0; top: 0; }
 .zeile small { display: block; font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: rgba(255, 255, 255, .55); margin-bottom: 6px; }
 .zeile q { font-family: var(--serif); font-style: italic; font-size: clamp(19px, 2.3vw, 28px); line-height: 1.25; quotes: "«" "»"; text-wrap: balance; }
 .etiketten span { position: absolute; left: 0; top: 0; font-family: var(--mono); font-size: 11px; color: #fff; white-space: nowrap; will-change: transform; text-shadow: 0 0 8px #000; }
+/* Die Tafel hat ihre volle Breite und wird nur verschoben, ihr Inhalt gegenläufig: so wird beim Aufziehen nichts neu gezeichnet */
 .tafel { position: absolute; top: 48px; bottom: 0; left: 0; width: 0; background: var(--blau); color: #fff; overflow: hidden; display: flex; pointer-events: auto; }
+body.raum-an .tafel, body.raum-an .tafel .wort, body.raum-an .tafel .spalte { will-change: transform; }
 .tafel .wort { flex: none; writing-mode: vertical-rl; transform: rotate(180deg); font-weight: 500; letter-spacing: -.045em; line-height: .8;
   font-size: min(calc((100svh - 70px) / 6.2), 28vw); margin: 0; padding: 14px 6px 14px 4px; white-space: nowrap; }
 .tafel .spalte { flex: 1; min-width: 0; padding: 18px 18px 18px 26px; display: flex; flex-direction: column; gap: 14px; opacity: 0; }
@@ -613,7 +615,7 @@ const schmal = () => innerWidth < 760;
 
 /* ---------- DOM: Zyklen-Liste, Zettel-Feld, Kapitelzeiger ---------- */
 const zugWort = document.getElementById("zug-wort");
-zugWort.textContent = ZUG[2] === "Der blinde Fleck" ? "Blinder Fleck" : ZUG[2].replace(/^(Der|Die|Das) /, "");
+zugWort.textContent = ZUG[2];
 document.getElementById("zug-kopf").textContent = `Gezogen: Strophe ${ZUG[0]} · ${ROEM[ZUG[1]]} ${ZYKLEN[ZUG[1]]}`;
 document.getElementById("zug-satz").textContent = "«" + ZUG[3] + "»";
 document.getElementById("zug-hinweis").textContent = `Gezogen: Zettel ${ZUG[0]}, ${ZUG[2]}`;
@@ -1417,7 +1419,12 @@ function introDom(t) {
   // Die Tafel gleitet ruhig in Blaupause herein, ohne Farbschnitte,
   // und geht am Ende auf demselben Weg wieder, während sich der Blick auf die Bahn senkt
   const auf = weich(.6, .76, t) * (1 - weich(.86, .96, t));
-  tafel.style.width = (auf * (eng ? innerWidth : Math.min(innerWidth * .4, 560))) + "px";
+  const B = eng ? innerWidth : Math.min(innerWidth * .4, 560), dx = ((1 - auf) * B).toFixed(1);
+  if (tafel.style.width !== B + "px") tafel.style.width = B + "px";
+  tafel.style.visibility = auf > 0 ? "" : "hidden";
+  tafel.style.transform = `translate3d(${-dx}px, 0, 0)`;
+  zugWort.style.transform = `translate3d(${dx}px, 0, 0) rotate(180deg)`;
+  spalte.style.transform = `translate3d(${dx}px, 0, 0)`;
   spalte.style.opacity = weich(.72, .82, t) * (1 - weich(.84, .89, t));
   szene.style.visibility = t >= .999 ? "hidden" : "visible";
 }
@@ -1456,6 +1463,8 @@ function stropheZeigen(t) {
 let letzte = performance.now();
 function bild(zeit) {
   const dt = Math.min(.25, (zeit - letzte) / 1000); letzte = zeit;
+  if (gerendert) leistungMessen(dt);
+  gerendert = false;
   // Leicht gedämpft: das Intro gleitet, die Bahn folgt dem Finger fast unmittelbar und läuft nicht nach
   const sAlt = zustand.s; zeitachse(dt); kippStand(zeit);
   // Das Netz dreht sich nur, solange man es betrachtet; ab der Tafel steht es still
@@ -1521,7 +1530,7 @@ function bild(zeit) {
       }
     }
     bloom.strength = .38;
-    composer.render();
+    composer.render(); gerendert = true;
   }
   requestAnimationFrame(bild);
 }
@@ -1848,14 +1857,23 @@ addEventListener("pointermove", e => {
 }, { passive: true });
 
 /* ---------- Start ---------- */
-let mass = { b: 0, h: 0 };
+let mass = { b: 0, h: 0 }, gerendert = false;
+// Auf schwacher Grafik: braucht ein Bild im Schnitt länger als 30 ms, rechnet der Raum mit weniger Pixeln (höchstens zweimal),
+// damit Bewegung und Scrollen flüssig bleiben
+const leistung = { faktor: 1, schnitt: 0, lang: 0 };
+function leistungMessen(dt) {
+  if (dt <= 0 || dt > .2 || document.hidden || leistung.faktor <= .7) return;
+  leistung.schnitt = leistung.schnitt ? misch(leistung.schnitt, dt, .05) : dt;
+  leistung.lang = leistung.schnitt > .03 ? leistung.lang + dt : 0;
+  if (leistung.lang > 1.5) { leistung.faktor = Math.max(.7, leistung.faktor - .15); leistung.lang = leistung.schnitt = 0; mass = { b: 0, h: 0 }; groesse(); }
+}
 function groesse() {
   if (!ok3d) return;
   // Die Leinwand ist 100lvh hoch: die Adressleiste am Handy ändert ihre Grösse beim Scrollen nicht, das Bild zoomt nicht
   const cv = renderer.domElement, b = cv.clientWidth, h = cv.clientHeight;
   if (b === mass.b && h === mass.h) return;
   mass = { b, h };
-  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2) * leistung.faktor);
   renderer.setSize(b, h, false);
   composer.setPixelRatio(renderer.getPixelRatio());
   composer.setSize(b, h);
