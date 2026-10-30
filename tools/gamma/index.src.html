@@ -142,6 +142,7 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
    Flach wird das Signet zur Punktkugel, zum Würfel und zum Raster der neun Themen; eine Fläche zeigt ihren Inhalt auf der Bühne. */
 /* Der Kopf wie bei Apps: rechts die Marke mit den drei Begriffen, links gross der Titel, darunter der Satz */
 .k-web .marke-k .zl { display: block; }
+.k-web h2 { font-size: clamp(42px, 9cqi, 80px); }   /* «Webseiten» ist lang: kleiner als die kurzen Titel, sonst erdrückt er die Seite */
 /* Die Bühne hat das Seitenverhältnis --ar; Signet und Raster bleiben quadratisch, weil ihre Breite durch --ar geteilt wird */
 .buehne { --ar: 1; position: relative; margin: clamp(18px, 3cqi, 28px) 0 clamp(22px, 4cqi, 34px); aspect-ratio: var(--ar); }
 .buehne > * { position: absolute; }
