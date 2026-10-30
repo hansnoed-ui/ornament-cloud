@@ -862,7 +862,9 @@ async function bahnBauen() {
   bahn.k = RAUM.w / LW;
   // Platzhalter, bis die Bilder gezeichnet sind: Kapitel in ihrer Farbe mit geschätzter Länge
   const bilder = [];
-  for (let i = 0; i < kapitel.length; i++) bilder.push(await kapitelZeichnen(kapitel[i], i, LW));
+  // Zwischen zwei Kapiteln kommt je ein Bild zum Zug, damit das Netz im Intro weiterläuft, während die Seiten gezeichnet werden
+  const luft = () => new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
+  for (let i = 0; i < kapitel.length; i++) { if (i) await luft(); bilder.push(await kapitelZeichnen(kapitel[i], i, LW)); }
   const g = new THREE.Group(); let s = 0;
   bahn.stuecke = [];
   const kachelH = Math.min(renderer.capabilities.maxTextureSize, 4096);
@@ -1011,12 +1013,12 @@ async function bahnBauen() {
     setzen(performance.now() / 1000);
     bahn.signete.push(setzen);
   });
-  // Auf der Bühne der Apps liegen drei Telefone auf dem Band: The Fictory, OMNA COLOR, PHORMA II.
+  // Auf der Bühne der Apps liegen drei Telefone auf dem Band: The Fictory, OMNA COLOR, PHORMA III, kleiner als auf der flachen Seite.
   // Jedes ist ein feines Gitter, das der Krümmung des Bandes folgt; die Bildschirme laufen mit etwa fünfzehn Bildern in der Sekunde, solange die Kamera in der Nähe ist
   bilder.forEach((b, i) => {
     const l = b.lage.handys; if (!l) return;
     const s0 = bahn.kapitel[i].s0, farbe = getComputedStyle(kapitel[i]).color;
-    handyLage(l.b, l.h).forEach((p, n) => {
+    handyLage(l.b, l.h, .75).forEach((p, n) => {
       const hb = handyBild(HANDY_SZENEN[n], farbe), tex = new THREE.CanvasTexture(hb.cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
       const geo = new THREE.PlaneGeometry(1, 1, 4, 8), pos = geo.attributes.position, v = new THREE.Vector3();
       for (let j = 0; j < pos.count; j++) {
@@ -1070,6 +1072,7 @@ async function bahnBauen() {
   figurenBauen(g, bilder);
   bahn.materialien = []; g.traverse(o => { if (o.material) bahn.materialien.push(o.material); });
   welt.add(g); bahn.gruppe = g; bahn.nurSatellit = null;
+  vorUebersetzen();
   bahn.bereit = true;
   platzMessen();
 }
@@ -1802,8 +1805,9 @@ function bild(zeit) {
       const fuss = zustand.s + (schmal() ? 2.4 : 1.7);
       // Beim Kippen in die flache Seite legen sie sich auf das Band, genau dorthin, wo der Titel auf der Seite steht
       bahn.titel.forEach(x => { const a = misch(titelWinkel(x, ruhig ? 1.05 : misch(.35, 1.3, weich(-2, 16, fuss - x.sH))), 0, kipp.wert); x.mesh.rotation.x = a; x.schatten.scale.y = .15 + .85 * Math.cos(a); });
-      // Die drei Räder drehen sich langsam gegeneinander, auf jeder Schlaufe läuft ein Punkt
-      if (!ruhig) {
+      // Die drei Räder drehen sich langsam gegeneinander, auf jeder Schlaufe läuft ein Punkt.
+      // Solange das Band nicht zu sehen ist (im Intro), rechnet nichts davon: sonst zeichneten Handys und ASCII-Fläche schon neben dem Netz und es ruckelte
+      if (!ruhig && bahn.gruppe.visible) {
         bahn.signete.forEach(f => f(zeit / 1000));
         if (bahn.satellit) bahn.satellit(zeit / 1000);
         if (bahn.ascii) bahn.ascii(zeit / 1000);
@@ -2101,7 +2105,7 @@ function webLaufBild(zeit) {
   if (T > 3.35 && web.k.classList.contains("baut")) web.k.classList.remove("baut");
   if (T > 4) webStopp();
 }
-/* ---------- Bildschirme der Apps: kleine Szenen aus The Fictory, OMNA COLOR und PHORMA II ----------
+/* ---------- Bildschirme der Apps: kleine Szenen aus The Fictory, OMNA COLOR und PHORMA III ----------
    Jede Szene zeichnet auf eine Fläche von 120 × 236; handyBild legt sie in ein Telefon mit feinem Rand.
    Die Telefone auf dem Band und auf der flachen Bühne der Apps sind dieselben */
 const SCHIRM_B = 120, SCHIRM_H = 236, SCHIRM_SANS = '"Instrument Sans", system-ui, sans-serif';
@@ -2189,39 +2193,115 @@ const farbraeder = cx => {
     cx.textAlign = "left";
   };
 };
-// PHORMA II: ein Schleimpilz aus 1500 Spuren auf einem groben Feld; jede riecht vor sich, links und rechts und biegt zum stärksten Duft,
-// das Feld verläuft und verblasst. Einige Spuren setzen immer wieder neu an, damit das Netz in Bewegung bleibt und nicht zu einem Strang schrumpft
-const schleimpilz = cx => {
-  const GB = 64, GH = 119, feld = new Float32Array(GB * GH), neu = new Float32Array(GB * GH), N = 1500, sp = [], SD = 5, SA = .7, RA = .45;
-  let z = 3; const zf = () => (z = (z * 16807) % 2147483647) / 2147483647;
-  const setze = p => { p.x = 2 + zf() * (GB - 4); p.y = 2 + zf() * (GH - 4); p.w = zf() * Math.PI * 2; };
-  for (let i = 0; i < N; i++) { const p = {}; setze(p); sp.push(p); }
-  const bild = new ImageData(GB, GH), lw = document.createElement("canvas"); lw.width = GB; lw.height = GH; const lx = lw.getContext("2d");
-  const riechen = (x, y) => { const i = Math.round(x), j = Math.round(y); return i < 0 || j < 0 || i >= GB || j >= GH ? -1 : feld[j * GB + i]; };
-  const schritt = () => {
-    for (const p of sp) {
-      const v = riechen(p.x + Math.cos(p.w) * SD, p.y + Math.sin(p.w) * SD), l = riechen(p.x + Math.cos(p.w - SA) * SD, p.y + Math.sin(p.w - SA) * SD), r = riechen(p.x + Math.cos(p.w + SA) * SD, p.y + Math.sin(p.w + SA) * SD);
-      if (v > l && v > r) { /* geradeaus */ } else if (v < l && v < r) p.w += zf() < .5 ? -RA : RA; else if (l > r) p.w -= RA; else if (r > l) p.w += RA;
-      p.x += Math.cos(p.w); p.y += Math.sin(p.w);
-      if (p.x < 1 || p.x > GB - 2 || p.y < 1 || p.y > GH - 2) { p.x = klemm(p.x, 1, GB - 2); p.y = klemm(p.y, 1, GH - 2); p.w = zf() * Math.PI * 2; }
-      if (zf() < .012) setze(p);
-      const k = Math.round(p.y) * GB + Math.round(p.x); feld[k] = Math.min(6, feld[k] + 1);
-    }
-    for (let j = 0; j < GH; j++) for (let i = 0; i < GB; i++) {
-      let su = 0, n = 0; for (let b = -1; b <= 1; b++) for (let a = -1; a <= 1; a++) { const x = i + a, y = j + b; if (x >= 0 && y >= 0 && x < GB && y < GH) { su += feld[y * GB + x]; n++; } }
-      const k = j * GB + i; neu[k] = (feld[k] * .65 + su / n * .35) * .85;
-    }
-    feld.set(neu);
+// PHORMA III, Traube: glänzende rote Perlen in einem Knäuel aus feinen weissen Fäden, mit Tiefenschärfe und etwas Rauch.
+// Eine grosse Traube hängt unten in der Kugel, Schnüre aus Beeren ziehen hindurch; im Takt schwellen die Perlen und glühen rot.
+// Alle acht Schläge ein harter Schnitt zwischen der ganzen Kugel und der Nähe, in der die Schärfe durch die Traube wandert
+const traube = cx => {
+  let z = 11; const zf = () => (z = (z * 16807) % 2147483647) / 2147483647;
+  const TAU = Math.PI * 2, X0 = 4, Y0 = 24, B = SCHIRM_B - 8, H = SCHIRM_H - 36, S = 64;
+  const richtung = () => { const zz = 2 * zf() - 1, r = Math.sqrt(1 - zz * zz), w = zf() * TAU; return [r * Math.cos(w), zz, r * Math.sin(w)]; };
+  // Perlen als fertige Bilder: scharf in zwei Tönen (satt und perlmuttblass), dazu ein weicher Fleck für die Unschärfe
+  const blatt = () => { const c = document.createElement("canvas"); c.width = c.height = S; return [c, c.getContext("2d")]; };
+  const perle = (tief, mitte, licht) => {
+    const [c, p] = blatt(), m = S / 2, kreis = () => { p.beginPath(); p.arc(m, m, m - .5, 0, TAU); };
+    const verlauf = (x, y, r0, r1, stopps) => { const g = p.createRadialGradient(x, y, r0, x, y, r1); stopps.forEach(([o, f]) => g.addColorStop(o, f)); p.fillStyle = g; kreis(); p.fill(); };
+    const g = p.createRadialGradient(S * .38, S * .34, 0, m, m, m); [[0, licht], [.3, mitte], [.74, tief], [1, "#1a0204"]].forEach(([o, f]) => g.addColorStop(o, f)); p.fillStyle = g; kreis(); p.fill();
+    verlauf(m, m, m * .6, m, [[0, "rgba(255,110,100,0)"], [1, "rgba(255,125,112,.42)"]]);                 // Licht durch den Rand wie bei Gelee
+    verlauf(S * .7, S * .74, 0, m * .62, [[0, "rgba(205,190,255,.24)"], [1, "rgba(205,190,255,0)"]]);      // ein Hauch Perlmutt
+    verlauf(S * .34, S * .3, 0, m * .52, [[0, "rgba(255,242,238,.6)"], [1, "rgba(255,242,238,0)"]]);        // weiter Glanz
+    p.fillStyle = "rgba(255,255,255,.96)"; p.beginPath(); p.ellipse(S * .33, S * .28, m * .12, m * .085, -.6, 0, TAU); p.fill();
+    return c;
   };
-  for (let i = 0; i < 40; i++) schritt();
-  return () => {
-    schritt(); schritt();
-    for (let i = 0; i < GB * GH; i++) { const t = Math.min(1, feld[i] * .4); bild.data[i * 4] = 255 * t; bild.data[i * 4 + 1] = 205 * t ** 1.3; bild.data[i * 4 + 2] = 110 * t ** 2.2; bild.data[i * 4 + 3] = 255; }
-    lx.putImageData(bild, 0, 0); schirmKopf(cx, "PHORMA II");
-    cx.imageSmoothingEnabled = true; cx.drawImage(lw, 4, 24, SCHIRM_B - 8, SCHIRM_H - 36);
+  const satt = perle("#6c1418", "#d4625c", "#ffd2c6"), blass = perle("#5e1c22", "#cc908c", "#fff0ea");
+  const [fleck, fp] = blatt(), fg = fp.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2);
+  [[0, "rgba(236,140,130,.82)"], [.5, "rgba(192,80,80,.52)"], [1, "rgba(150,44,48,0)"]].forEach(([o, f]) => fg.addColorStop(o, f)); fp.fillStyle = fg; fp.fillRect(0, 0, S, S);
+  // Die Perlen: eine grosse Traube unten in der Kugel (innen grosse, aussen kleine Beeren), Schnüre wie Würmer aus Beeren, einige verstreut, Funken
+  const MITTE = [.08, -.28, .05], perlen = [];
+  for (let i = 0; i < 58; i++) { const d = richtung(), e = Math.cbrt(zf()); perlen.push({ art: 0, b: [MITTE[0] + d[0] * .46 * e, MITTE[1] + d[1] * .4 * e, MITTE[2] + d[2] * .46 * e], r: (.06 + .06 * zf()) * (1.2 - .5 * e) }); }
+  for (let c = 0; c < 7; c++) {
+    const b = richtung().map(v => v * .35), A = .2 + .16 * zf(), w = [.6 + zf(), .6 + zf(), .6 + zf()], ph = [zf() * TAU, zf() * TAU, zf() * TAU], rc = .05 + .035 * zf();
+    for (let j = 0; j < 9; j++) perlen.push({ art: 1, b, A, w, ph, j, r: rc * (1 - .55 * j / 9) });
+  }
+  for (let i = 0; i < 30; i++) { const d = richtung(), e = .4 + .45 * Math.cbrt(zf()); perlen.push({ art: 0, b: d.map(v => v * e), r: .035 + .055 * zf() }); }
+  for (let i = 0; i < 24; i++) { const d = richtung(), e = 1.25 * Math.cbrt(zf()); perlen.push({ art: 2, b: d.map(v => v * e), r: 0 }); }
+  perlen.forEach(p => { p.ph0 = zf() * TAU; p.ton = zf() < .3; p.puls = .3 + .7 * zf(); p.q = [0, 0, 0]; });
+  // Die Fäden: Bögen auf der Kugel, die sich langsam winden
+  const faeden = Array.from({ length: 26 }, () => {
+    const u = richtung(), t = richtung(), v = [u[1] * t[2] - u[2] * t[1], u[2] * t[0] - u[0] * t[2], u[0] * t[1] - u[1] * t[0]], l = Math.hypot(...v) || 1;
+    return { u, v: v.map(x => x / l), a0: zf() * TAU, span: 1.4 + 2.8 * zf(), ph: zf() * TAU, hell: .1 + .16 * zf() };
+  });
+  const q = [0, 0, 0];
+  return sek => {
+    schirmKopf(cx, "PHORMA III");
+    cx.save(); cx.beginPath(); cx.rect(X0, Y0, B, H); cx.clip();
+    cx.fillStyle = "#060304"; cx.fillRect(X0, Y0, B, H);
+    const TAKT = .6, nr = Math.floor(sek / TAKT), schlag = Math.exp(-(sek % TAKT) / .16), bass = nr % 4 === 0 ? 1 : .35, glut = schlag * bass;
+    const einst = Math.floor(sek / (TAKT * 8)), nah = einst % 2 === 1;
+    // Kamera: kreist langsam um die Kugel, in der Nähe um die Traube; beim Schlag ein kleiner Ruck
+    const a = sek * .2 + einst * 1.7, el = .2 + .1 * Math.sin(sek * .3 + einst), D = nah ? 1.3 : 2.05, f = nah ? 104 : 100, C = nah ? MITTE : [0, -.08, 0];
+    const ca = Math.cos(a), sa = Math.sin(a), ce = Math.cos(el), se = Math.sin(el), mx = X0 + B / 2, my = Y0 + H / 2 + 4 + schlag * bass * 1.2;
+    const proj = (x, y, zz, o) => {
+      x -= C[0]; y -= C[1]; zz -= C[2];
+      const x1 = x * ca + zz * sa, z1 = zz * ca - x * sa, y1 = y * ce - z1 * se, z2 = y * se + z1 * ce, d = D - z2;
+      o[0] = mx + f * x1 / d; o[1] = my - f * y1 / d; o[2] = d; return o;
+    };
+    // Rauch: dunkle, rötliche Schwaden, mit der Glut etwas heller
+    cx.globalCompositeOperation = "lighter";
+    for (let i = 0; i < 4; i++) {
+      const x = X0 + B * (.5 + .5 * Math.sin(sek * .07 * (i + 1) + i * 2.1)), y = Y0 + H * (.5 + .42 * Math.cos(sek * .05 * (i + 2) + i)), r = 55 + 18 * i;
+      const g = cx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, `rgba(44,28,32,${.13 + .12 * glut})`); g.addColorStop(1, "rgba(44,28,32,0)"); cx.fillStyle = g; cx.fillRect(X0, Y0, B, H);
+    }
+    // Fäden: fein und weiss, nah an der Kamera ausgelassen
+    cx.strokeStyle = "#fff"; cx.lineWidth = .4;
+    for (const fd of faeden) {
+      cx.globalAlpha = fd.hell; cx.beginPath(); let an = false;
+      for (let n = 0; n <= 30; n++) {
+        const th = fd.a0 + fd.span * n / 30 + sek * .05, R = .96 + .07 * Math.sin(3 * th + fd.ph + sek * .5), c = Math.cos(th) * R, s = Math.sin(th) * R;
+        proj(c * fd.u[0] + s * fd.v[0], c * fd.u[1] + s * fd.v[1], c * fd.u[2] + s * fd.v[2], q);
+        if (q[2] < .35) { an = false; continue; }
+        if (an) cx.lineTo(q[0], q[1]); else cx.moveTo(q[0], q[1]); an = true;
+      }
+      cx.stroke();
+    }
+    // Perlen: Lage zur Zeit, weich in die Kugel gedrückt, von hinten nach vorn
+    const s = sek * .45;
+    for (const p of perlen) {
+      let x, y, zz;
+      if (p.art === 1) { const sg = s - p.j * .17; x = p.b[0] + p.A * Math.sin(p.w[0] * sg + p.ph[0]); y = p.b[1] + p.A * Math.sin(p.w[1] * sg + p.ph[1]); zz = p.b[2] + p.A * Math.sin(p.w[2] * sg + p.ph[2]); }
+      else { const sw = p.art === 2 ? .06 : .035; x = p.b[0] + sw * Math.sin(s * .9 + p.ph0); y = p.b[1] + sw * Math.sin(s * 1.2 + p.ph0 * 1.3); zz = p.b[2] + sw * Math.sin(s * .7 + p.ph0 * .7); }
+      if (p.art !== 2) { const L = Math.hypot(x, y, zz), G = .8, k = L > 1e-6 ? G * Math.tanh(L / G) / L : 1; x *= k; y *= k; zz *= k; }
+      proj(x, y, zz, p.q);
+    }
+    perlen.sort((u, v) => v.q[2] - u.q[2]);
+    // Schärfe: in der Kugel auf der Traube, in der Nähe wandert sie langsam hin und her
+    const fokus = nah ? 1.25 + .28 * Math.sin(sek * .8) : D, blende = nah ? 1.9 : 1.5;
+    cx.globalCompositeOperation = "source-over";
+    for (const p of perlen) {
+      const d = p.q[2]; if (d < .12) continue;
+      if (p.art === 2) { cx.globalAlpha = .35 + .5 * schlag; cx.fillStyle = "#fff"; cx.fillRect(p.q[0] - .4, p.q[1] - .4, .8, .8); continue; }
+      const r = p.r * f / d * (1 + .16 * schlag * p.puls), u = Math.min(1, blende * Math.abs(d - fokus) / fokus), R = r * (1 + 1.5 * u);
+      if (R < .4 || p.q[0] + R < X0 || p.q[0] - R > X0 + B || p.q[1] + R < Y0 || p.q[1] - R > Y0 + H) continue;
+      if (u < .9) { const rr = r * (1 + .4 * u); cx.globalAlpha = (1 - u / .9) ** 1.4; cx.drawImage(p.ton ? blass : satt, p.q[0] - rr, p.q[1] - rr, 2 * rr, 2 * rr); }
+      if (u > .08) { cx.globalAlpha = Math.min(1, u * 1.1) * Math.max(.18, (r / R) ** 2 * 1.6); cx.drawImage(fleck, p.q[0] - R, p.q[1] - R, 2 * R, 2 * R); }
+    }
+    // Glut: die Traube glüht im Takt von innen
+    if (glut > .02) {
+      proj(MITTE[0], MITTE[1], MITTE[2], q); const r = 30 * f / q[2];
+      const g = cx.createRadialGradient(q[0], q[1], 0, q[0], q[1], r); g.addColorStop(0, `rgba(255,44,20,${.32 * glut})`); g.addColorStop(1, "rgba(255,44,20,0)");
+      cx.globalCompositeOperation = "lighter"; cx.globalAlpha = 1; cx.fillStyle = g; cx.fillRect(X0, Y0, B, H);
+    }
+    cx.globalCompositeOperation = "source-over";
+    // Sucherecken und Zeile wie im Film
+    cx.globalAlpha = .55; cx.strokeStyle = "#fff"; cx.lineWidth = .6; cx.beginPath();
+    for (const [x, y, sx, sy] of [[X0 + 4, Y0 + 4, 1, 1], [X0 + B - 4, Y0 + 4, -1, 1], [X0 + 4, Y0 + H - 4, 1, -1], [X0 + B - 4, Y0 + H - 4, -1, -1]]) { cx.moveTo(x, y + sy * 6); cx.lineTo(x, y); cx.lineTo(x + sx * 6, y); }
+    cx.stroke();
+    cx.fillStyle = "#fff"; cx.font = `500 5.5px ui-monospace, Menlo, Consolas, monospace`; if ("letterSpacing" in cx) cx.letterSpacing = ".4px"; cx.textBaseline = "alphabetic";
+    cx.fillText(nah ? "01 TRAUBE · NAH" : "01 TRAUBE", X0 + 10, Y0 + H - 7);
+    const zeit = Math.floor(sek) % 3600; cx.textAlign = "right"; cx.fillText(`00:${String(Math.floor(zeit / 60) % 60).padStart(2, "0")}:${String(zeit % 60).padStart(2, "0")}`, X0 + B - 10, Y0 + H - 7); cx.textAlign = "left";
+    cx.globalAlpha = 1; cx.restore();
   };
 };
-const HANDY_SZENEN = [fictory, farbraeder, schleimpilz];
+const HANDY_SZENEN = [fictory, farbraeder, traube];
 // Ein Telefon: feiner Rand in der Farbe der Schrift, darin der Bildschirm mit der Szene; zeichnen(sek) malt beides neu
 function handyBild(szene, farbe, sk = 2) {
   const R = 7, W = SCHIRM_B + 2 * R, H = SCHIRM_H + 2 * R, cv = document.createElement("canvas"); cv.width = W * sk; cv.height = H * sk;
@@ -2233,10 +2313,10 @@ function handyBild(szene, farbe, sk = 2) {
     cx.strokeStyle = farbe; cx.lineWidth = 1.6; rund(.8, .8, W - 1.6, H - 1.6, 16); cx.stroke();
   } };
 }
-// Drei Telefone nebeneinander in einem Feld b × h (Pixel): so gross wie möglich, höchstens 82 % der Höhe
-function handyLage(b, h) {
-  const verh = (SCHIRM_B + 14) / (SCHIRM_H + 14), luecke = Math.min(b, h) * .05;
-  const ph = Math.min(h * .82, (b - 2 * luecke) / 3 / verh), pb = ph * verh;
+// Drei Telefone nebeneinander in einem Feld b × h (Pixel): so gross wie möglich, höchstens 82 % der Höhe; k verkleinert alle drei um die Mitte
+function handyLage(b, h, k = 1) {
+  const verh = (SCHIRM_B + 14) / (SCHIRM_H + 14), luecke = Math.min(b, h) * .05 * k;
+  const ph = Math.min(h * .82, (b - 2 * luecke) / 3 / verh) * k, pb = ph * verh;
   return [-1, 0, 1].map(i => ({ x: b / 2 + i * (pb + luecke) - pb / 2, y: (h - ph) / 2, b: pb, h: ph }));
 }
 /* ---------- Apps flach: die drei Telefone der Bühne werden zur Konstruktion wie im Video «Hold to enter» ----------
@@ -2492,6 +2572,18 @@ function leistungMessen(dt) {
   leistung.lang = leistung.schnitt > .03 ? leistung.lang + dt : 0;
   if (leistung.lang > 1.5) { leistung.faktor = Math.max(.7, leistung.faktor - .15); leistung.lang = leistung.schnitt = 0; mass = { b: 0, h: 0 }; groesse(); }
 }
+// Die Shader aller Netz- und Bandteile gleich nach dem Bauen übersetzen, nicht erst beim ersten Zeigen: das kostete sonst mitten im Scrollen ein Ruckeln.
+// compile() geht nur über sichtbare Teile, darum kurz alles einblenden; ins Zwischenbild des Composers, sonst entstünden Shader für die Ausgabe auf
+// den Schirm, die der Composer nicht braucht. Mit rendern einmal unsichtbar zeichnen: Ohne paralleles Übersetzen im Browser binden die Shader erst dann
+const allesZeigen = () => { const v = []; welt.traverse(o => { if (!o.visible) { v.push(o); o.visible = true; } }); return () => v.forEach(o => { o.visible = false; }); };
+function vorUebersetzen(rendern) {
+  if (!renderer.compileAsync) return;
+  const ziel = renderer.getRenderTarget(), zurueck = allesZeigen(); renderer.setRenderTarget(composer.readBuffer);
+  const fertig = renderer.compileAsync(welt, kamera);
+  renderer.setRenderTarget(ziel); zurueck();
+  if (rendern) fertig.then(() => { const z = allesZeigen(); renderer.setRenderTarget(composer.readBuffer); renderer.render(welt, kamera); renderer.setRenderTarget(null); z(); }).catch(() => {});
+  else fertig.catch(() => {});
+}
 function groesse() {
   if (!ok3d) return;
   // Die Leinwand ist 100lvh hoch: die Adressleiste am Handy ändert ihre Grösse beim Scrollen nicht, das Bild zoomt nicht
@@ -2518,6 +2610,7 @@ if (ok3d) {
   groesse();
   raumMasse();
   netzBauen();
+  vorUebersetzen(true);
   (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => bahnBauen()).catch(() => { flach = true; document.body.classList.add("flach"); });
 } else {
   platz.style.height = "0px";
