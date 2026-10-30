@@ -919,6 +919,28 @@ async function bahnBauen() {
   }
   const lg = new THREE.BufferGeometry(); lg.setAttribute("position", new THREE.Float32BufferAttribute(lp, 3)); lg.setAttribute("color", new THREE.Float32BufferAttribute(lc, 3));
   g.add(new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false })));
+  // Am Anfang ist das Band an den Raum gebunden: feine Fäden laufen über die obere Kante hinaus zurück in die Trommel, fächern auf, heben sich vom Boden ab und verklingen.
+  // Nah an der Kante sind sie zu einem lockeren Rautengeflecht verschränkt, das nach hinten lückenhaft wird. Additiv gezeichnet, so verschwindet, was dunkel wird
+  {
+    let saat = 7; const z = () => (saat = (saat * 16807) % 2147483647) / 2147483647;
+    const n = eng ? 16 : 26, M = 28, faeden = [];
+    for (let i = 0; i < n; i++) faeden.push({ q: -RAUM.w / 2 + RAUM.w * (i + .5) / n, L: .7 + 2.6 * z() ** 1.8, auf: .1 + .9 * z(), dreh: z() * 6 });
+    const ort = (f, sj) => { const t = -sj / f.L; return bahnPunkt(sj, f.q * (1 + .55 * t) + .15 * Math.sin(t * 3.2 + f.dreh) * t, .004 + f.auf * t * t); };
+    const fp = [], fc = [], strich = (a, b, ha, hb) => { fp.push(...a.toArray(), ...b.toArray()); fc.push(ha, ha, ha * .97, hb, hb, hb * .97); };
+    const hell = t => .24 * (1 - t) ** 2;
+    for (const f of faeden) for (let j = 0; j < M; j++) strich(ort(f, -j / M * f.L), ort(f, -(j + 1) / M * f.L), hell(j / M), hell((j + 1) / M));
+    for (let k = 0; k < 5; k++) {
+      const sa = -.03 - .1 * k, sb = sa - .1, h = .8 * (1 - k / 5);
+      for (let i = 0; i + 1 < n; i++) {
+        const a = faeden[i], b = faeden[i + 1];
+        if (-sb > a.L || -sb > b.L || z() < k / 6) continue;
+        strich(ort(a, sa), ort(b, sb), h * hell(-sa / a.L), h * hell(-sb / b.L));
+        strich(ort(b, sa), ort(a, sb), h * hell(-sa / b.L), h * hell(-sb / a.L));
+      }
+    }
+    const fg = new THREE.BufferGeometry(); fg.setAttribute("position", new THREE.Float32BufferAttribute(fp, 3)); fg.setAttribute("color", new THREE.Float32BufferAttribute(fc, 3));
+    g.add(new THREE.LineSegments(fg, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })));
+  }
   const mp = [], mc = [];
   bahn.kapitel.forEach((x, i) => { const c = hdr(LEUCHTFARBEN[i], .5); for (const seite of [-1, 1]) { const a = bahnPunkt(x.s0, seite * (RAUM.w / 2 + .06), .003), b = bahnPunkt(x.s0, seite * (RAUM.w / 2 + .7), .003); mp.push(...a.toArray(), ...b.toArray()); mc.push(c.r, c.g, c.b, c.r, c.g, c.b); } });
   const mg = new THREE.BufferGeometry(); mg.setAttribute("position", new THREE.Float32BufferAttribute(mp, 3)); mg.setAttribute("color", new THREE.Float32BufferAttribute(mc, 3));
@@ -981,7 +1003,7 @@ async function bahnBauen() {
   bilder.forEach((b, i) => {
     const l = b.lage.surfen; if (!l) return;
     const s0 = bahn.kapitel[i].s0, farbe = getComputedStyle(kapitel[i]).color, A = LAPTOP_B / LAPTOP_H;
-    const lb = Math.min(l.b * .9, l.h * .9 * A), lh = lb / A, lx = l.x + (l.b - lb) / 2, ly = l.y + (l.h - lh) / 2;
+    const lb = Math.min(l.b * .76, l.h * .9 * A), lh = lb / A, lx = l.x + (l.b - lb) / 2, ly = l.y + (l.h - lh) / 2;
     const lt = laptopBild(farbe), tex = new THREE.CanvasTexture(lt.cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
     const geo = new THREE.PlaneGeometry(1, 1, 8, 6), pos = geo.attributes.position, v = new THREE.Vector3();
     for (let j = 0; j < pos.count; j++) {
@@ -1498,7 +1520,7 @@ function figurenBauen(g, bilder) {
         }` }));
     saum.renderOrder = 11; saum.onBeforeRender = () => { saum.material.uniforms.a.value = saum.material.opacity; };
     kugel.add(drehteil, kern, saum); g.add(kugel);
-    // Die Umlaufbahn gepunktet; hinter dem Satelliten wird sie für ein Stück zur Spur
+    // Die Umlaufbahn als ganz feine Linie; hinter dem Satelliten wird sie für ein Stück zur Spur
     const NB = 180, bp = [];
     for (let i = 0; i <= NB; i++) { const w = i / NB * Math.PI * 2; bp.push(C.clone().addScaledVector(A, ro * Math.cos(w)).addScaledVector(B, ro * Math.sin(w))); }
     const umlauf = linien(s => { for (let i = 0; i < NB; i++) s(bp[i].toArray(), bp[i + 1].toArray(), 0); }), farben = umlauf.geometry.attributes.color;
@@ -1518,6 +1540,23 @@ function figurenBauen(g, bilder) {
       for (let j = 0; j < 4; j++) { const w = j * Math.PI / 2 + .3; s([.035 * Math.cos(w), .035 * Math.sin(w), -.075], [0, 0, -.11], .3); }
       s([0, 0, k], [0, 0, .1], .4);
     }));
+    // Die Segel glänzen: tiefblaues Glas mit Zellen, ein Lichtstreif wandert langsam darüber, und wo die Sonne zur Kamera spiegelt, blitzt es kurz auf
+    const glanz = { t: { value: 0 }, a: { value: 1 }, sonne };
+    const segelStoff = new THREE.ShaderMaterial({ uniforms: glanz, transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending,
+      vertexShader: "varying vec2 vU; varying vec3 vN, vV; void main() { vU = uv; vec4 w = modelMatrix * vec4(position, 1.); vN = normalize(mat3(modelMatrix) * vec3(0., 0., 1.)); vV = cameraPosition - w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }",
+      fragmentShader: `uniform float t, a; uniform vec3 sonne; varying vec2 vU; varying vec3 vN, vV;
+        void main() {
+          vec3 v = normalize(vV), n = faceforward(vN, -v, vN), h = normalize(sonne + v);
+          float zelle = 1. - .55 * max(step(.94, fract(vU.x * 3.)), step(.9, fract(vU.y * 2.)));
+          float streif = exp(-pow((vU.x * 1.4 + vU.y * .6 - mod(t * .32, 3.4) + .7) * 9., 2.));
+          float blitz = pow(max(dot(n, h), 0.), 60.);
+          vec3 c = vec3(.03, .06, .2) * zelle + vec3(.5, .62, 1.) * .55 * streif + vec3(1., .96, .86) * 1.3 * blitz;
+          gl_FragColor = vec4(c * a, 1.);
+        }` });
+    for (const sg of [-1, 1]) {
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(.185, .09), segelStoff); m.position.x = sg * .1575; if (sg < 0) m.rotation.z = Math.PI;
+      m.renderOrder = 12; m.onBeforeRender = () => { glanz.a.value = segelStoff.opacity; }; sat.add(m);
+    }
     const lg = new THREE.BufferGeometry(); lg.setAttribute("position", new THREE.Float32BufferAttribute([0, 0, .1], 3));
     const licht = new THREE.Points(lg, deckeln(new THREE.PointsMaterial({ size: .05, color: hdr("#ffa3d1", .9), transparent: true, depthWrite: false }), 5));
     sat.add(licht); g.add(sat);
@@ -1530,11 +1569,11 @@ function figurenBauen(g, bilder) {
       tP.copy(C).addScaledVector(A, ro * Math.cos(w)).addScaledVector(B, ro * Math.sin(w));
       tT.copy(A).multiplyScalar(-Math.sin(w)).addScaledVector(B, Math.cos(w)); tR.copy(tP).sub(C).normalize(); tY.crossVectors(tR, tT);
       sat.matrix.makeBasis(tT, tY, tR).scale(gross).setPosition(tP); sat.matrixWorldNeedsUpdate = true;
-      drehteil.rotation.y = sek * .12;
+      drehteil.rotation.y = sek * .12; glanz.t.value = sek;
       for (let i = 0; i < NB; i++) {
         let d = w - (i + .5) / NB * Math.PI * 2; d -= Math.floor(d / (Math.PI * 2)) * Math.PI * 2;
-        // Die Spur in Senf, die übrige Bahn gepunktet im Blau der Kugel
-        const f = d < 1.9 ? senf : himmel, h = d < 1.9 ? .1 + .6 * (1 - d / 1.9) ** 2 : i % 2 ? .16 : 0;
+        // Die Spur in Senf, die übrige Bahn nur ein Hauch im Blau der Kugel (bis 30. Oktober 2026 gepunktet)
+        const f = d < 1.9 ? senf : himmel, h = d < 1.9 ? .06 + .64 * (1 - d / 1.9) ** 2 : .06;
         farben.setXYZ(2 * i, f.r * h, f.g * h, f.b * h); farben.setXYZ(2 * i + 1, f.r * h, f.g * h, f.b * h);
       }
       farben.needsUpdate = true;
@@ -2304,18 +2343,20 @@ function handyLage(b, h, k = 1) {
   return [-1, 0, 1].map(i => ({ x: b / 2 + i * (pb + luecke) - pb / 2, y: (h - ph) / 2, b: pb, h: ph }));
 }
 /* ---------- Webseiten im Raum: ein Laptop aus weissen Linien, auf dem das Intro des Labs läuft und danach jemand durch ornament.cloud geht ----------
-   Das Intro ist das Video der Lab-Seite (9,4 s, 640 × 360); Schwarz wird durchsichtig, so stehen seine Linien direkt auf dem Grün des Bandes.
+   Das Intro ist das Video der Lab-Seite (9,4 s), auf die Figur zugeschnitten (560 × 322) und etwas langsamer; Schwarz wird durchsichtig, so stehen seine Linien direkt auf dem Grün des Bandes.
    Die Seiten sind Bildschirmfotos der Website (1280 px breit, oben 2400 px), verkleinert und untereinander in einem Bild; je Seite Pfad, Lage und Höhe.
    Jede Seite lädt mit einem feinen Strich, scrollt in zwei ruhigen Zügen hinunter, dann klickt der Zeiger und die nächste blendet auf */
 const SURF_BILD = "../gamma/bilder/surfen.webp", SURF_INTRO = "../gamma/bilder/lab-intro.mp4", SURF_B = 520;
 const SURF_SEITEN = [["b/", 0, 975], ["b/apps/", 975, 975], ["b/zettel/", 1950, 975], ["b/werke/", 2925, 741], ["b/angebot/webdesign/", 3666, 975]];
-const LAPTOP_B = 340, LAPTOP_H = 212, SURF_IB = 640, SURF_IH = 360;
+// Der Film blendet ab 9 s aus; das Intro hält vorher an, auf dem Bild mit «ornament.lab»
+const LAPTOP_B = 340, LAPTOP_H = 252, SURF_IB = 560, SURF_IH = 322, INTRO_TEMPO = .85, INTRO_SCHLUSS = 8.9;
 let surfBild = null, surfVideo = null;
 function laptopBild(farbe, sk = 3) {
   if (!surfBild) {
     surfBild = new Image(); surfBild.decoding = "async"; surfBild.src = SURF_BILD;
     // Das Video steht unsichtbar im Dokument, sonst spielen es manche Telefone nicht ab
     surfVideo = document.createElement("video"); surfVideo.muted = true; surfVideo.playsInline = true; surfVideo.preload = "auto";
+    surfVideo.defaultPlaybackRate = surfVideo.playbackRate = INTRO_TEMPO;
     surfVideo.setAttribute("muted", ""); surfVideo.setAttribute("playsinline", ""); surfVideo.setAttribute("aria-hidden", "true");
     surfVideo.style.cssText = "position:fixed;left:0;top:0;width:2px;height:2px;opacity:0;pointer-events:none"; surfVideo.src = SURF_INTRO; document.body.append(surfVideo);
   }
@@ -2323,8 +2364,21 @@ function laptopBild(farbe, sk = 3) {
   const cx = cv.getContext("2d"); cx.scale(sk, sk);
   const iv = document.createElement("canvas"); iv.width = SURF_IB; iv.height = SURF_IH; const ix = iv.getContext("2d", { willReadFrequently: true });
   const rund = (x, y, b, h, r) => { cx.beginPath(); if (cx.roundRect) cx.roundRect(x, y, b, h, r); else cx.rect(x, y, b, h); };
-  // Deckel mit Rahmen, darin der Schirm; unten das flache Unterteil, vorn breiter, mit der Mulde zum Aufklappen
+  // Deckel mit Rahmen, darin der Schirm; davor das Unterteil, leicht von oben gesehen, mit Tasten und Tastfeld
   const DX = 22, DB = W - 2 * DX, DH = 190, R = 5, SX = DX + 7, SY = 8, SB = DB - 14, SH = DH - 15, LEISTE = 13;
+  const UY = DH + 1, UT = H - 8, ul = q => misch(DX - 6, 2, q), ur = q => misch(W - DX + 6, W - 2, q), ort = (u, q) => [misch(ul(q), ur(q), u), misch(UY, UT, q)];
+  // Tastenreihen als Breitenanteile, von hinten nach vorn; dazu je Reihe Anfang und Ende in der Tiefe
+  const REIHEN = [[[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2], .1, .2], [[1.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.5], .21, .31], [[1.8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2.2], .32, .42],
+    [[2.3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2.7], .43, .53], [[1, 1, 1, 1.3, 5.4, 1.3, 1, 1, 1], .54, .65]];
+  const viereck = (u0, u1, q0, q1) => { const a = ort(u0, q0), b = ort(u1, q0), c = ort(u1, q1), d = ort(u0, q1); cx.moveTo(a[0], a[1]); cx.lineTo(b[0], b[1]); cx.lineTo(c[0], c[1]); cx.lineTo(d[0], d[1]); cx.closePath(); };
+  const tastatur = () => {
+    cx.beginPath();
+    for (const [teile, q0, q1] of REIHEN) {
+      const summe = teile.reduce((x, y) => x + y, 0), luft = .006; let u = .09;
+      for (const t of teile) { const b = .82 * t / summe; viereck(u + luft, u + b - luft, q0, q1); u += b; }
+    }
+    viereck(.37, .63, .72, .94); cx.stroke();
+  };
   const IX = SX, IY = SY + LEISTE, IB = SB, IH = SH - LEISTE, P = 3.8, N = SURF_SEITEN.length;
   let introAus = false, wache = 0, introDa = false;
   surfVideo.addEventListener("error", () => { introAus = true; }, { once: true });
@@ -2342,17 +2396,20 @@ function laptopBild(farbe, sk = 3) {
   const intro = a => { if (!introDa) return; const s = Math.min(IB / SURF_IB, IH / SURF_IH), b = SURF_IB * s, h = SURF_IH * s; cx.globalAlpha = a; cx.drawImage(iv, IX + (IB - b) / 2, IY + (IH - h) / 2, b, h); };
   const lauf = t => .4 * eio(klemm((t - .7) / 1)) + .5 * eio(klemm((t - 2) / 1));
   let zuletzt = "";
-  // Ablauf: das Intro dauert, so lange der Film läuft (höchstens 11 s), dann die Seiten; danach beginnt der Film von vorn. Ohne Film nur die Seiten
-  let phase = "intro", t0 = null;
+  // Ablauf: das Intro dauert, so lange der Film läuft, und sein letztes Bild bleibt noch kurz stehen (zusammen höchstens 16 s), dann die Seiten; danach beginnt der Film von vorn. Ohne Film nur die Seiten
+  let phase = "intro", t0 = null, ende = null;
   return { cv, W, H, zeichnen(sek) {
     const still = sek === null, bereit = surfBild.complete && surfBild.naturalWidth > 0;
     if (!still && t0 === null) t0 = sek;
     if (introAus && phase === "intro") { phase = "seiten"; t0 = sek; }
-    if (!still && phase === "intro" && (surfVideo.ended || sek - t0 > 11)) { phase = "seiten"; t0 = sek; }
-    if (!still && phase === "seiten" && sek - t0 >= N * P) { t0 = sek; if (!introAus) { phase = "intro"; surfVideo.currentTime = 0; } }
+    if (!still && phase === "intro") {
+      if (ende === null && (surfVideo.ended || surfVideo.currentTime >= INTRO_SCHLUSS)) { ende = sek; surfVideo.pause(); }
+      if ((ende !== null && sek - ende > 1.8) || sek - t0 > 16) { phase = "seiten"; t0 = sek; ende = null; }
+    }
+    if (!still && phase === "seiten" && sek - t0 >= N * P) { t0 = sek; if (!introAus) { phase = "intro"; surfVideo.playbackRate = INTRO_TEMPO; surfVideo.currentTime = 0; } }
     const imIntro = !still && phase === "intro", tp = still ? 2.4 : sek - t0;
     // Der Film läuft nur, solange jemand hinsieht: bleiben die Aufrufe aus, hält er nach kurzer Zeit an und läuft beim nächsten Mal weiter
-    if (imIntro) {
+    if (imIntro && ende === null) {
       if (surfVideo.paused && !surfVideo.ended) surfVideo.play().catch(() => { introAus = true; });
       clearTimeout(wache); wache = setTimeout(() => surfVideo.pause(), 1500);
       if (surfVideo.readyState >= 2) introFassen();
@@ -2368,9 +2425,10 @@ function laptopBild(farbe, sk = 3) {
     if (schluessel === zuletzt) return false;
     zuletzt = schluessel;
     cx.clearRect(0, 0, W, H); cx.strokeStyle = farbe; cx.fillStyle = farbe;
-    // Nur Linien: Unterteil mit Mulde, Deckel, Schirm, Kamera
-    cx.lineWidth = 1.2; cx.beginPath(); cx.moveTo(DX - 4, DH); cx.lineTo(W - DX + 4, DH); cx.lineTo(W - 2, DH + 13); cx.quadraticCurveTo(W - 2, H - 2, W - 8, H - 2); cx.lineTo(8, H - 2); cx.quadraticCurveTo(2, H - 2, 2, DH + 13); cx.closePath(); cx.stroke();
-    cx.globalAlpha = .6; cx.beginPath(); cx.moveTo(W / 2 - 22, DH + 1); cx.quadraticCurveTo(W / 2, DH + 6, W / 2 + 22, DH + 1); cx.stroke(); cx.globalAlpha = 1;
+    // Nur Linien: Unterteil mit Vorderkante, Tasten und Tastfeld, Deckel, Schirm, Kamera
+    cx.lineWidth = 1.2; cx.beginPath(); cx.moveTo(ul(0), UY); cx.lineTo(ur(0), UY); cx.lineTo(W - 2, UT); cx.quadraticCurveTo(W - 2, H - 2, W - 8, H - 2); cx.lineTo(8, H - 2); cx.quadraticCurveTo(2, H - 2, 2, UT); cx.closePath(); cx.stroke();
+    cx.lineWidth = .6; cx.globalAlpha = .6; cx.beginPath(); cx.moveTo(4, UT + 1); cx.lineTo(W - 4, UT + 1); cx.moveTo(W / 2 - 16, H - 2); cx.quadraticCurveTo(W / 2, H - 5.5, W / 2 + 16, H - 2); cx.stroke();
+    cx.lineWidth = .5; cx.globalAlpha = .5; tastatur(); cx.globalAlpha = 1; cx.lineWidth = 1.2;
     rund(DX, 1, DB, DH, R); cx.stroke();
     cx.lineWidth = .6; cx.globalAlpha = .7; cx.strokeRect(SX, SY, SB, SH); cx.beginPath(); cx.arc(W / 2, 4.5, 1, 0, 7); cx.stroke();
     // Browserleiste: drei Punkte, Adressfeld, unten eine Linie; beim Laden ein feiner Strich
@@ -2440,7 +2498,8 @@ function appsRaster(sofort) {
   const B = apps.buehne.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2), zr = apps.zeilen.getBoundingClientRect(), farbe = getComputedStyle(apps.k).color;
   apps.cv.width = Math.round(B.width * dpr); apps.cv.height = Math.round(B.height * dpr);
   if (!apps.welt) apps.welt = appsWelt();
-  apps.lauf = { t0: null, dpr, b: B.width, h: B.height, H: zr.width / 2, farbe, lage: handyLage(B.width, B.height) };
+  // Die Umrisse am Anfang so gross wie die Telefone im Raum (dort um ein Viertel verkleinert)
+  apps.lauf = { t0: null, dpr, b: B.width, h: B.height, H: zr.width / 2, farbe, lage: handyLage(B.width, B.height, .75) };
 }
 function appsStopp() {
   if (!apps || !apps.lauf) return;
