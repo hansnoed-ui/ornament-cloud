@@ -301,6 +301,9 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 
 /* 03 Kunst: auf der Bühne ein Foto aus der Praxis als Zeichnung in weisser Kreide auf Umbra; wo man darüberfährt oder tippt, taucht das Foto auf.
    Gezeichnet mit WebGL auf einer eigenen Leinwand; im Raum liegt dieselbe Zeichnung auf dem Band, zwei Lichter wandern darüber */
+/* Das Foto ist quer (3:2): am Handy ist die Bühne der Kunst darum nicht ganz quadratisch */
+.k-kunst .buehne { --ar: 1.3; }
+@container (min-width: 640px) { .k-kunst .buehne { --ar: 1.618; } }   /* wie alle Bühnen im goldenen Rechteck */
 .kunst-bild { inset: 0; transition: opacity .5s; touch-action: pan-y; cursor: crosshair; }
 .kunst-bild canvas { display: block; width: 100%; height: 100%; }
 .k-kunst.zeigt-feld .kunst-bild { opacity: 0; pointer-events: none; }
@@ -320,30 +323,65 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 .angebot-liste a > span:last-child { margin-top: 4px; font-size: 13.5px; line-height: 1.4; color: var(--kg); }
 @container (min-width: 640px) { .angebot-liste { grid-template-columns: 1fr 1fr; column-gap: 34px; } }
 
+/* ---------- Goldener Schnitt (30. Oktober 2026, Wunsch: «beim scrollen durch die webseiten … den "goldenen schnitt" wo immer möglich beachten
+   (verhältnis 62:38) … frei interpretiert … und auch skaliert»; «auf dem telefon würde ich nichts machen»).
+   Nur ab 640 px Kapitelbreite: die flache Seite am Bildschirm und das Band im Raum (gezeichnet in 820 px); am Telefon (Band 430 px) bleibt alles, wie es war.
+   Spalten 61,8 : 38,2, Abstände aus der Fibonacci-Reihe (8, 13, 21, 34, 55, 89; je zwei Nachbarn stehen im goldenen Schnitt), oben und unten 55 : 89 = 38 : 62,
+   Leitsätze höchstens 61,8 % breit, Bühnen im goldenen Rechteck 1,618 : 1. Die festen Raster (7 × 7 Strophen, 3 × 3 Themen) und die Dreierreihen bleiben. */
+@container (min-width: 640px) {
+  .k-innen { padding: 55px max(55px, env(safe-area-inset-right, 0px)) 89px max(55px, env(safe-area-inset-left, 0px)); }
+  .marke-k { margin-bottom: 21px; }
+  :is(.k-web, .k-apps, .k-kunst) .marke-k { top: calc(55px + .43 * clamp(42px, 9cqi, 80px) - 1.68 * clamp(17px, 2.5cqi, 23px)); right: max(55px, env(safe-area-inset-right, 0px)); }
+  .kapitel .leit { margin: 21px 0 55px; max-width: 61.8%; }
+  .kapitel .weiter { margin-top: 34px; }
+  .buehne { --ar: 1.618; margin: 21px 0 34px; }
+  .fi-satz { max-width: 61.8%; }
+  .fi { gap: 21px; }
+  .fi-fragen li, .fi-liste li { padding: 8px 0 13px; }
+  .feld { min-height: 55px; padding: 0 21px; }
+  /* Lab: Bild 62, Verfahren 38 */
+  .lab-werk { grid-template-columns: minmax(0, 1.618fr) minmax(0, 1fr); gap: 34px; }
+  .liste li { padding: 8px 0 13px; }
+  .kontakt { gap: 13px; margin-top: 34px; }
+  .raeder { gap: 34px; }
+  /* Prompts: die linke Spalte der Matrix 62, die rechte 38 */
+  .matrix { grid-template-columns: minmax(0, 1.618fr) minmax(0, 1fr); }
+  .matrix a { padding: 21px; }
+  /* Zettel: das Raster der 49 Strophen 38, die gezogene Strophe 62 (ihr Titel braucht die Breite) */
+  .zettel-feld { grid-template-columns: minmax(0, 1fr) minmax(0, 1.618fr); gap: 34px; }
+  .strophe { padding-top: 13px; gap: 13px; }
+  /* Social: die drei Zettel um 21 und 55 versetzt */
+  .kanaele { gap: 21px; }
+  .kanal:nth-child(2) { margin-top: 55px; }
+  .kanal:nth-child(3) { margin-top: 21px; }
+  /* Angebot: Spalten 62 : 38, je Leistung oben 13, unten 21 */
+  .angebot-liste { grid-template-columns: minmax(0, 1.618fr) minmax(0, 1fr); column-gap: 34px; }
+  .angebot-liste a { padding: 13px 0 21px; }
+}
+
 /* Steuerung unten links und Kapitelzeiger links */
 /* Umschalten Raum / Fläche: eine liegende Acht unten in der Mitte, links Raum, rechts Fläche; eine feine Leuchtspur läuft auf ihr um */
-.steuer { position: fixed; z-index: 15; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); width: 128px; height: 36px; transform: translateX(-50%); opacity: 0; pointer-events: none; transition: opacity .3s; }
+.steuer { position: fixed; z-index: 15; left: 50%; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); width: 148px; height: 72px; transform: translateX(-50%); opacity: 0; pointer-events: none; transition: opacity .3s; }
 .steuer.da { opacity: 1; pointer-events: auto; }
 body.ohne-3d .steuer { display: none; }
 /* Glas: die Form der Acht verschwimmt den Grund dahinter leicht (clip-path aus dem Pfad, im Skript gesetzt), darüber ein zarter dunkler Ton;
    die gewählte Seite füllt sich hell, ein feiner Umriss und die Leuchtspur laufen darüber */
 .acht-glas { position: absolute; inset: 0; -webkit-backdrop-filter: blur(7px) saturate(1.2); backdrop-filter: blur(7px) saturate(1.2); }
-.acht { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
-.acht-grund { fill: rgba(16, 13, 11, .5); }
+.acht { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; filter: drop-shadow(0 3px 10px rgba(0, 0, 0, .28)); }
+.acht-grund { fill: rgba(16, 13, 11, .56); }
 .acht-feld { fill: #fff; opacity: 0; transition: opacity .5s; }
-.steuer[data-ansicht="raum"] .acht-raum, .steuer[data-ansicht="flaeche"] .acht-flaeche { opacity: .16; }
+.steuer[data-ansicht="raum"] .acht-raum, .steuer[data-ansicht="flaeche"] .acht-flaeche { opacity: .18; }
 .steuer[data-ansicht="flaeche"]:has(#zum-raum:hover) .acht-raum, .steuer[data-ansicht="raum"]:has(#zur-flaeche:hover) .acht-flaeche { opacity: .07; }
-.acht-rand { fill: none; stroke: rgba(255, 255, 255, .4); stroke-width: .75; }
-.acht-spur use { fill: none; stroke: #fff; stroke-linecap: round; stroke-width: 1; animation: acht-lauf 6s linear infinite; }
-@keyframes acht-lauf { from { stroke-dashoffset: var(--o); } to { stroke-dashoffset: calc(var(--o) - 100); } }
+.acht-rand { fill: none; stroke: rgba(255, 255, 255, .6); stroke-width: 1; }
+.acht-spur use { fill: none; stroke: #fff; stroke-linecap: round; stroke-width: 1.6; }
 @media (prefers-reduced-motion: reduce) { .acht-spur { display: none; } }
 .steuer button { position: absolute; top: 0; bottom: 0; width: 50%; display: flex; align-items: center; justify-content: center; margin: 0; padding: 0; border: 0; background: none;
-  font: 400 11px/1 var(--sans); letter-spacing: .01em; color: rgba(255, 255, 255, .6); cursor: pointer; transition: color .4s; -webkit-tap-highlight-color: transparent; }
+  font: 400 13px/1 var(--sans); letter-spacing: .01em; color: rgba(255, 255, 255, .66); cursor: pointer; transition: color .4s; -webkit-tap-highlight-color: transparent; }
 .steuer button:hover { color: rgba(255, 255, 255, .85); }
 .steuer button[aria-pressed="true"] { color: #fff; cursor: default; }
-.steuer button:focus-visible { outline: 1px solid #fff; outline-offset: -5px; border-radius: 99px; }
-/* Wörter in der Mitte ihrer Schlaufe (die breiteste Stelle liegt aussen, bei x 22 und 106) */
-#zum-raum { left: 0; padding: 0 8px 0 6px; } #zur-flaeche { right: 0; padding: 0 6px 0 8px; }
+.steuer button:focus-visible { outline: 1px solid #fff; outline-offset: -12px; border-radius: 99px; }
+/* Wörter in der Mitte ihrer Schlaufe (Schwerpunkt bei x 32 und 116) */
+#zum-raum { left: 0; padding-right: 10px; } #zur-flaeche { right: 0; padding-left: 10px; }
 .zeiger { position: fixed; z-index: 15; left: max(16px, calc(env(safe-area-inset-left, 0px) + 12px)); top: 50%; transform: translateY(-50%); list-style: none; margin: 0; padding: 0;
   font-family: var(--mono); font-size: 11px; line-height: 1.9; opacity: 0; pointer-events: none; transition: opacity .3s; }
 .zeiger.da { opacity: 1; pointer-events: auto; }
@@ -486,7 +524,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
         <h2>Kunst</h2>
         <p class="leit">Bilder, Gespräche, Räume</p>
         <div class="buehne">
-          <div class="kunst-bild" data-kunst data-fokus=".5" role="img" aria-label="Ausstellungswand aus Naturstein mit einem grossen farbigen Gemälde, einem kleinen gerahmten Bild, einer Nische und einer Vitrine; zuerst als Zeichnung, unter dem Zeiger erscheint das Foto"><canvas aria-hidden="true"></canvas></div>
+          <div class="kunst-bild" data-kunst data-fokus=".48" data-format="1.5" data-rahmen=".35 .435 .094 .138" role="img" aria-label="Ausstellung in einem Raum mit rauen Steinwänden und hellem Holzboden: an der linken Wand ein blaues und ein gelb-schwarzes Bild, an der rechten ein hohes dunkelblaues Bild, zwei Winterbilder und ein grosses Bild mit Mond über Wolken; zuerst als Zeichnung, unter dem Zeiger erscheint das Foto"><canvas aria-hidden="true"></canvas></div>
           <p class="kunst-hinweis" aria-hidden="true">Darüberfahren zeigt das Foto</p>
           <div class="feld-inhalt">
             <section class="fi" data-feld="vermittlung" hidden>
@@ -624,12 +662,12 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
 
 <div class="steuer" id="steuer" role="group" aria-label="Ansicht" data-ansicht="raum">
   <div class="acht-glas"></div>
-  <svg class="acht" viewBox="0 0 128 36" aria-hidden="true">
-    <defs><path id="acht-weg" pathLength="100" d="M64.00 18.00 L67.14 19.67 L70.27 21.33 L73.39 22.94 L76.47 24.51 L79.53 26.00 L82.54 27.40 L85.50 28.71 L88.40 29.89 L91.24 30.94 L94.00 31.86 L96.68 32.62 L99.27 33.22 L101.76 33.65 L104.15 33.91 L106.43 34.00 L108.59 33.91 L110.63 33.65 L112.54 33.22 L114.32 32.62 L115.96 31.86 L117.46 30.94 L118.81 29.89 L120.01 28.71 L121.06 27.40 L121.96 26.00 L122.69 24.51 L123.26 22.94 L123.67 21.33 L123.92 19.67 L124.00 18.00 L123.92 16.33 L123.67 14.67 L123.26 13.06 L122.69 11.49 L121.96 10.00 L121.06 8.60 L120.01 7.29 L118.81 6.11 L117.46 5.06 L115.96 4.14 L114.32 3.38 L112.54 2.78 L110.63 2.35 L108.59 2.09 L106.43 2.00 L104.15 2.09 L101.76 2.35 L99.27 2.78 L96.68 3.38 L94.00 4.14 L91.24 5.06 L88.40 6.11 L85.50 7.29 L82.54 8.60 L79.53 10.00 L76.47 11.49 L73.39 13.06 L70.27 14.67 L67.14 16.33 L64.00 18.00 L60.86 19.67 L57.73 21.33 L54.61 22.94 L51.53 24.51 L48.47 26.00 L45.46 27.40 L42.50 28.71 L39.60 29.89 L36.76 30.94 L34.00 31.86 L31.32 32.62 L28.73 33.22 L26.24 33.65 L23.85 33.91 L21.57 34.00 L19.41 33.91 L17.37 33.65 L15.46 33.22 L13.68 32.62 L12.04 31.86 L10.54 30.94 L9.19 29.89 L7.99 28.71 L6.94 27.40 L6.04 26.00 L5.31 24.51 L4.74 22.94 L4.33 21.33 L4.08 19.67 L4.00 18.00 L4.08 16.33 L4.33 14.67 L4.74 13.06 L5.31 11.49 L6.04 10.00 L6.94 8.60 L7.99 7.29 L9.19 6.11 L10.54 5.06 L12.04 4.14 L13.68 3.38 L15.46 2.78 L17.37 2.35 L19.41 2.09 L21.57 2.00 L23.85 2.09 L26.24 2.35 L28.73 2.78 L31.32 3.38 L34.00 4.14 L36.76 5.06 L39.60 6.11 L42.50 7.29 L45.46 8.60 L48.47 10.00 L51.53 11.49 L54.61 13.06 L57.73 14.67 L60.86 16.33Z"/><clipPath id="acht-form"><use href="#acht-weg"/></clipPath><filter id="acht-glanz" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="1.3" result="w"/><feMerge><feMergeNode in="w"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+  <svg class="acht" viewBox="0 0 148 72" aria-hidden="true">
+    <defs><path id="acht-weg" pathLength="100" d="M74.00 36.00 L72.62 34.21 L71.25 32.43 L69.86 30.65 L68.46 28.88 L67.04 27.13 L65.60 25.38 L64.14 23.66 L62.64 21.96 L61.11 20.28 L59.55 18.64 L57.94 17.04 L56.28 15.48 L54.58 13.97 L52.82 12.53 L51.01 11.15 L49.13 9.85 L47.19 8.63 L45.19 7.52 L43.13 6.53 L41.00 5.67 L38.81 4.95 L36.56 4.39 L34.26 4.02 L31.91 3.84 L29.52 3.88 L27.12 4.15 L24.70 4.68 L22.29 5.48 L19.91 6.56 L17.59 7.94 L15.35 9.61 L13.23 11.59 L11.25 13.86 L9.45 16.41 L7.86 19.23 L6.51 22.28 L5.43 25.52 L4.64 28.93 L4.16 32.44 L4.00 36.00 L4.16 39.56 L4.64 43.07 L5.43 46.48 L6.51 49.72 L7.86 52.77 L9.45 55.59 L11.25 58.14 L13.23 60.41 L15.35 62.39 L17.59 64.06 L19.91 65.44 L22.29 66.52 L24.70 67.32 L27.12 67.85 L29.52 68.12 L31.91 68.16 L34.26 67.98 L36.56 67.61 L38.81 67.05 L41.00 66.33 L43.13 65.47 L45.19 64.48 L47.19 63.37 L49.13 62.15 L51.01 60.85 L52.82 59.47 L54.58 58.03 L56.28 56.52 L57.94 54.96 L59.55 53.36 L61.11 51.72 L62.64 50.04 L64.14 48.34 L65.60 46.62 L67.04 44.87 L68.46 43.12 L69.86 41.35 L71.25 39.57 L72.62 37.79 L74.00 36.00 L75.38 34.21 L76.75 32.43 L78.14 30.65 L79.54 28.88 L80.96 27.13 L82.40 25.38 L83.86 23.66 L85.36 21.96 L86.89 20.28 L88.45 18.64 L90.06 17.04 L91.72 15.48 L93.42 13.97 L95.18 12.53 L96.99 11.15 L98.87 9.85 L100.81 8.63 L102.81 7.52 L104.87 6.53 L107.00 5.67 L109.19 4.95 L111.44 4.39 L113.74 4.02 L116.09 3.84 L118.48 3.88 L120.88 4.15 L123.30 4.68 L125.71 5.48 L128.09 6.56 L130.41 7.94 L132.65 9.61 L134.77 11.59 L136.75 13.86 L138.55 16.41 L140.14 19.23 L141.49 22.28 L142.57 25.52 L143.36 28.93 L143.84 32.44 L144.00 36.00 L143.84 39.56 L143.36 43.07 L142.57 46.48 L141.49 49.72 L140.14 52.77 L138.55 55.59 L136.75 58.14 L134.77 60.41 L132.65 62.39 L130.41 64.06 L128.09 65.44 L125.71 66.52 L123.30 67.32 L120.88 67.85 L118.48 68.12 L116.09 68.16 L113.74 67.98 L111.44 67.61 L109.19 67.05 L107.00 66.33 L104.87 65.47 L102.81 64.48 L100.81 63.37 L98.87 62.15 L96.99 60.85 L95.18 59.47 L93.42 58.03 L91.72 56.52 L90.06 54.96 L88.45 53.36 L86.89 51.72 L85.36 50.04 L83.86 48.34 L82.40 46.62 L80.96 44.87 L79.54 43.12 L78.14 41.35 L76.75 39.57 L75.38 37.79Z"/><clipPath id="acht-form"><use href="#acht-weg"/></clipPath><filter id="acht-glanz" x="-20%" y="-30%" width="140%" height="160%"><feGaussianBlur stdDeviation="2.4" result="w"/><feMerge><feMergeNode in="w"/><feMergeNode in="w"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
     <use href="#acht-weg" class="acht-grund"/>
-    <g clip-path="url(#acht-form)"><rect class="acht-feld acht-raum" x="0" y="0" width="64" height="36"/><rect class="acht-feld acht-flaeche" x="64" y="0" width="64" height="36"/></g>
+    <g clip-path="url(#acht-form)"><rect class="acht-feld acht-raum" x="0" y="0" width="74" height="72"/><rect class="acht-feld acht-flaeche" x="74" y="0" width="74" height="72"/></g>
     <use href="#acht-weg" class="acht-rand"/>
-    <g class="acht-spur" filter="url(#acht-glanz)"><use href="#acht-weg" stroke-dasharray="18 82" stroke-opacity=".12" style="--o:18"/><use href="#acht-weg" stroke-dasharray="8 92" stroke-opacity=".3" style="--o:8"/><use href="#acht-weg" stroke-dasharray="2 98" stroke-opacity=".9" style="--o:2"/></g>
+    <g class="acht-spur" filter="url(#acht-glanz)"><use href="#acht-weg" stroke-dasharray="34 66" stroke-opacity=".06" data-l="34"/><use href="#acht-weg" stroke-dasharray="24 76" stroke-opacity=".1" data-l="24"/><use href="#acht-weg" stroke-dasharray="16 84" stroke-opacity=".15" data-l="16"/><use href="#acht-weg" stroke-dasharray="10 90" stroke-opacity=".22" data-l="10"/><use href="#acht-weg" stroke-dasharray="6 94" stroke-opacity=".32" data-l="6"/><use href="#acht-weg" stroke-dasharray="3.4 96.6" stroke-opacity=".5" data-l="3.4"/><use href="#acht-weg" stroke-dasharray="1.8 98.2" stroke-opacity=".75" data-l="1.8"/><use href="#acht-weg" stroke-dasharray="0.7 99.3" stroke-opacity="1" data-l="0.7"/></g>
   </svg>
   <button type="button" id="zum-raum" aria-pressed="true">Raum</button><button type="button" id="zur-flaeche" aria-pressed="false">Fläche</button>
 </div>
@@ -674,8 +712,10 @@ const intro = document.getElementById("intro"), szene = document.getElementById(
 const tafel = szene.querySelector(".tafel"), wort = tafel.querySelector(".wort"), spalte = tafel.querySelector(".spalte"), introText = document.getElementById("intro-text");
 const abschnitt = document.getElementById("bahn-abschnitt"), platz = document.getElementById("raum-platz"), bahnDom = document.getElementById("bahn");
 const steuer = document.getElementById("steuer"), zumRaum = document.getElementById("zum-raum"), zurFlaeche = document.getElementById("zur-flaeche"), zeiger = document.getElementById("zeiger"), kopfLeiste = document.querySelector(".kopf");
-// Glas der Acht: der Weichzeichner hinter der Acht folgt genau ihrer Form (Pfad in px, Steuerung ist 128 × 36 wie die viewBox)
+// Glas der Acht: der Weichzeichner hinter der Acht folgt genau ihrer Form (Pfad in px, Steuerung ist 148 × 72 wie die viewBox)
 steuer.querySelector(".acht-glas").style.clipPath = `path("${document.getElementById("acht-weg").getAttribute("d")}")`;
+// Leuchtspur: alle Lagen mit derselben Spitze, einmal um die Acht in 7 s (per Skript: var() in @keyframes lief in Chrome nicht)
+for (const u of steuer.querySelectorAll(".acht-spur use")) { const l = +u.dataset.l; u.animate([{ strokeDashoffset: l }, { strokeDashoffset: l - 100 }], { duration: 7000, iterations: Infinity }); }
 const kapitel = [...bahnDom.querySelectorAll(".kapitel")];
 const schmal = () => innerWidth < 760;
 
@@ -1136,44 +1176,86 @@ async function bahnBauen() {
       bahn.signete.push(sek => { if (sek - zuletzt < 1 / 15 || kamera.position.distanceTo(mitte) > 14) return; zuletzt = sek; hb.zeichnen(sek + s1); tex.needsUpdate = true; });
     });
   });
-  // Auf der Bühne der Kunst liegt die Skizze auf dem Band und wächst, sobald die Kamera näher kommt. Eine weiche Fläche wandert darüber:
-  // dort zeigt sich das Foto, zum Rand hin verlaufend, und hebt sich als sanfter Hügel vom Band ab (feines Gitter, das der Krümmung folgt)
+  // Auf der Bühne der Kunst liegt die Skizze auf dem Band und wächst, sobald die Kamera näher kommt. Eine weiche Fläche wandert darüber, dort zeigt sich das Foto.
+  // Unter ihr heben sich Säulen aus dem Band wie aus einem Nadelbrett (nach «Pillars» von textures.dev, hier räumlich): je näher der Mitte und je heller das Foto,
+  // desto höher; ihre Deckel tragen das Foto. Beim Wechsel zur Fläche zieht sich alles in einen Bildrahmen des Fotos zusammen, dort übernimmt die flache Seite
   bilder.forEach((b, i) => {
     const l = b.lage.kunst; if (!l || !kunst) return;
-    const s0 = bahn.kapitel[i].s0, ar = l.b / l.h, a = kunstAusschnitt(ar, kunst.fokus), [imF, imL] = kunstLaden();
+    const s0 = bahn.kapitel[i].s0, ar = l.b / l.h, a = kunstAusschnitt(ar, kunst.fokus, kunst.format), R = kunstRahmen(a), [imF, imL] = kunstLaden();
     const textur = (im, farbig) => {
       const t = new THREE.Texture(im); t.colorSpace = farbig ? THREE.SRGBColorSpace : THREE.NoColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy();
       if (im.complete && im.naturalWidth) t.needsUpdate = true;
       im.addEventListener("load", () => { t.needsUpdate = true; });
       return t;
     };
-    const nx = 96, ny = Math.max(24, Math.round(96 / ar)), geo = new THREE.PlaneGeometry(1, 1, nx, ny), pos = geo.attributes.position, v = new THREE.Vector3(), nv = new THREE.Vector3(), nrm = [];
+    const nx = 48, ny = Math.max(12, Math.round(48 / ar)), geo = new THREE.PlaneGeometry(1, 1, nx, ny), pos = geo.attributes.position, v = new THREE.Vector3();
     for (let j = 0; j < pos.count; j++) {
-      const u = pos.getX(j) + .5, w = .5 - pos.getY(j), sj = s0 + (l.y + w * l.h) * bahn.k;
-      bahnPunkt(sj, RAUM.w / 2 - (l.x + u * l.b) * bahn.k, .007, v); pos.setXYZ(j, v.x, v.y, v.z); normale(sj, nv); nrm.push(nv.x, nv.y, nv.z);
+      const u = pos.getX(j) + .5, w = .5 - pos.getY(j);
+      bahnPunkt(s0 + (l.y + w * l.h) * bahn.k, RAUM.w / 2 - (l.x + u * l.b) * bahn.k, .007, v); pos.setXYZ(j, v.x, v.y, v.z);
     }
-    geo.setAttribute("nrm", new THREE.Float32BufferAttribute(nrm, 3));
     const farbe = getComputedStyle(kapitel[i]).getPropertyValue("--k").trim() || "#5a4232";
     const uni = { foto: { value: textur(imF, true) }, linien: { value: textur(imL, false) }, zeit: { value: 0 }, zug: { value: ruhig ? 1.02 : 0 }, deck: { value: 1 },
       aus: { value: new THREE.Vector4(...a) }, seite: { value: new THREE.Vector2(ar, 1) }, grund: { value: new THREE.Color(farbe) }, tinte: { value: new THREE.Color(.8, .8, .8) },
-      licht: { value: new THREE.Vector4(...kunstLicht(0), ruhig ? 0 : 1) }, hub: { value: .05 * RAUM.w / 5 } };
+      licht: { value: new THREE.Vector4(...kunstLicht(0), ruhig ? 0 : 1) }, rahmen: { value: new THREE.Vector4(...R) }, rm: { value: 0 } };
     const stoff = new THREE.ShaderMaterial({ uniforms: uni, transparent: true, depthWrite: false, side: THREE.DoubleSide,
-      vertexShader: `attribute vec3 nrm; uniform sampler2D foto; uniform vec4 aus, licht; uniform vec2 seite; uniform float zeit, hub; varying vec2 vv; ${KUNST_GLSL.split("vec3 kFarbe")[0]}
-void main() {
-  vv = vec2(uv.x, 1. - uv.y);
-  vec3 f = texture2D(foto, aus.xy + vv * aus.zw).rgb;
-  vec3 p = position + nrm * kAuf(vv, seite, licht, zeit) * hub * (.3 + .7 * dot(f, vec3(.3, .59, .11)));
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.);
-}`,
+      vertexShader: `varying vec2 vv; void main() { vv = vec2(uv.x, 1. - uv.y); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }`,
       fragmentShader: `uniform sampler2D foto, linien; uniform vec4 aus, licht; uniform vec2 seite; uniform float zeit, zug, deck; uniform vec3 grund, tinte; varying vec2 vv; ${KUNST_GLSL}
 void main() { gl_FragColor = vec4(kFarbe(foto, linien, aus.xy + vv * aus.zw, vv * seite, kAuf(vv, seite, licht, zeit), zug, zeit, grund, tinte), deck); }` });
     const m = new THREE.Mesh(geo, stoff); stoff.userData.frueh = true; m.renderOrder = 3; m.frustumCulled = false; g.add(m);
     m.onBeforeRender = () => { uni.deck.value = stoff.opacity; };
-    const mitte = bahnPunkt(s0 + (l.y + l.h / 2) * bahn.k, RAUM.w / 2 - (l.x + l.b / 2) * bahn.k, 0);
+    // Säulen in versetzten Reihen; jede steht senkrecht auf dem Band (x quer, y aus dem Band, z entlang)
+    const SP = 30, teil = l.b / SP, reihen = Math.max(4, Math.round(l.h / (teil * .866))), n = SP * reihen, rad = teil * bahn.k * .43;
+    const zyl = new THREE.CylinderGeometry(1, 1, 1, 18, 1).translate(0, .5, 0), iuv = new Float32Array(n * 2);
+    const M = new THREE.Matrix4(), P = new THREE.Vector3(), q1 = new THREE.Vector3(), q2 = new THREE.Vector3(), X = new THREE.Vector3(), N = new THREE.Vector3(), Z = new THREE.Vector3();
+    const sUni = { ...uni, hoch: { value: teil * bahn.k * 2.6 } };
+    const sStoff = new THREE.ShaderMaterial({ uniforms: sUni, transparent: true,
+      vertexShader: `attribute vec2 iuv; uniform sampler2D foto; uniform vec4 aus, licht; uniform vec2 seite; uniform float zeit, hoch;
+varying vec2 vf, vq; varying vec3 vn, vwn, vw; varying float va, vh; ${KUNST_GLSL.split("vec3 kFarbe")[0]}
+void main() {
+  vf = aus.xy + iuv * aus.zw; vq = position.xz; vn = normal; vh = position.y;
+  float auf = kAuf(iuv, seite, licht, zeit); va = auf;
+  float hell = dot(texture2D(foto, vf).rgb, vec3(.3, .59, .11));
+  float h = hoch * pow(auf, 1.4) * (.35 + .65 * hell) * (1. + .06 * sin(zeit * 1.4 + iuv.x * 11. + iuv.y * 7.));
+  vec3 p = position; p.y *= h;
+  if (h < .002) p = vec3(0.);   // ganz flach: keine Säule, dort bleibt die Skizze auf dem Band
+  vec4 w = modelMatrix * instanceMatrix * vec4(p, 1.); vw = w.xyz; vwn = mat3(modelMatrix * instanceMatrix) * normal;
+  gl_Position = projectionMatrix * viewMatrix * w;
+}`,
+      fragmentShader: `uniform sampler2D foto; uniform vec3 grund, tinte; uniform float deck; varying vec2 vf, vq; varying vec3 vn, vwn, vw; varying float va, vh;
+void main() {
+  vec3 f = texture2D(foto, vf).rgb;
+  f = mix(vec3(dot(f, vec3(.3, .59, .11))), f, smoothstep(.2, .85, va));
+  vec3 c;
+  if (vn.y > .5) c = mix(f, tinte, smoothstep(.8, .97, length(vq)) * .6);   // Deckel: das Foto mit feinem hellem Rand
+  else {
+    // Mantel im Grund des Kapitels, von oben links beleuchtet, unten dunkler; an der Kante zur Kamera eine feine helle Linie wie gezeichnet
+    float licht_ = max(dot(normalize(vn), normalize(vec3(-.55, .4, -.7))), 0.);
+    c = grund * (.5 + .75 * licht_) * (.55 + .45 * vh);
+    c = mix(c, tinte, smoothstep(.8, .97, 1. - abs(dot(normalize(cameraPosition - vw), normalize(vwn)))) * .7);
+  }
+  gl_FragColor = vec4(c, deck);
+}` });
+    sStoff.userData.frueh = true;
+    const saeulen = new THREE.InstancedMesh(zyl, sStoff, n);
+    let k = 0;
+    for (let r = 0; r < reihen; r++) for (let c = 0; c < SP; c++) {
+      const u = (c + (r % 2 ? .75 : .25)) / SP, w = (r + .5) / reihen, sj = s0 + (l.y + w * l.h) * bahn.k, q = RAUM.w / 2 - (l.x + u * l.b) * bahn.k;
+      bahnPunkt(sj, q, .007, P); bahnPunkt(sj, q - .01, .007, q1); bahnPunkt(sj, q + .01, .007, q2);
+      X.subVectors(q1, q2).normalize(); normale(sj, N); Z.crossVectors(X, N).normalize(); X.crossVectors(N, Z);
+      M.makeBasis(X.multiplyScalar(rad), N, Z.multiplyScalar(rad)).setPosition(P); saeulen.setMatrixAt(k, M);
+      iuv[2 * k] = u; iuv[2 * k + 1] = w; k++;
+    }
+    zyl.setAttribute("iuv", new THREE.InstancedBufferAttribute(iuv, 2));
+    saeulen.renderOrder = 4; saeulen.frustumCulled = false; g.add(saeulen);
+    saeulen.onBeforeRender = () => { sUni.deck.value = sStoff.opacity; };
+    const mitte = bahnPunkt(s0 + (l.y + l.h / 2) * bahn.k, RAUM.w / 2 - (l.x + l.b / 2) * bahn.k, 0), RL = kunstRahmenLicht(R, ar);
     let beginn = null;
     bahn.signete.push(sek => {
       uni.zeit.value = sek % 1000;
-      const [x, y, rr] = kunstLicht(sek); uni.licht.value.set(x, y, rr, weich(KUNST_ZUG - .6, KUNST_ZUG + 1.2, beginn === null ? 0 : sek - beginn));
+      const [x, y, rr] = kunstLicht(sek), st = weich(KUNST_ZUG - .6, KUNST_ZUG + 1.2, beginn === null ? 0 : sek - beginn);
+      // Wechsel zur Fläche: die Fläche gleitet in den Bildrahmen und schliesst sich um ihn, die Säulen sammeln sich darin
+      const e = kunst.wechselAb ? eio(klemm((performance.now() - kunst.wechselAb) / 600)) : 0;
+      uni.licht.value.set(x + (RL[0] - x) * e, y + (RL[1] - y) * e, rr + (RL[2] - rr) * e, st + (1 - st) * e); uni.rm.value = weich(.35, 1, e);
       if (beginn === null && kamera.position.distanceTo(mitte) < 15) beginn = sek;
       if (beginn !== null) kunst.raumZug = uni.zug.value = 1.02 * eio(klemm((sek - beginn) / KUNST_ZUG));
     });
@@ -2018,6 +2100,7 @@ function setzeFlach(f, id) {
   const animiert = !ruhig && ok3d && bahn.bereit && zustand.t >= .97;
   if (!animiert) { flachSetzen(f, akt); return; }
   wechselt = true;
+  if (kunst) kunst.wechselAb = f && akt === kunst.k.id ? performance.now() : 0;
   if (f) {
     zustand.halten = true; kippen(1, 760, i);
     setTimeout(() => flachSetzen(true, akt, true), 600);
@@ -2055,13 +2138,14 @@ function flachSetzen(f, akt, effekt) {
       webPruefen(); appsPruefen();
     });
     letzterEffekt = k; kapitelEffekt(k);
+    if (kunst && k === kunst.k && kunst.wechselAb) kunst.rahmenAb = 1;
   } else if (effekt) { kipp.wert = kipp.von = kipp.nach = 0; zustand.halten = false; wechselt = false; }
   // Auch über die Acht unten (rechts «Fläche») bekommt das Kapitel in der Mitte sein Netz; zurück im Raum zählt beim nächsten Mal wieder jedes Kapitel
   if (f && !(effekt && k)) requestAnimationFrame(() => {
     const m = innerHeight / 2, mitte = kapitel.find(c => { const r = c.getBoundingClientRect(); return r.top < m && r.bottom > m; });
     if (mitte) { letzterEffekt = mitte; kapitelEffekt(mitte); }
   });
-  if (!f) letzterEffekt = null;
+  if (!f) { letzterEffekt = null; if (kunst) kunst.wechselAb = 0; }
 }
 
 /* ---------- Flache Seiten: beim Wechsel des Kapitels ein kurzes Netz, der Titel Buchstabe für Buchstabe ---------- */
@@ -2837,22 +2921,29 @@ function kunstLaden() {
   return kunstBilder;
 }
 // Die Fläche auf ruhiger Bahn: Lage auf der Bühne (0 bis 1) und Halbmesser im Verhältnis zur Höhe der Bühne
-const kunstLicht = sek => [.5 + .3 * Math.sin(sek * .17 + 1.3), .5 + .22 * Math.sin(sek * .23 + .4), .36];
-// Der Ausschnitt des quadratischen Bildes für eine Bühne mit dem Seitenverhältnis ar: am Computer ein breiter Streifen um den Fokus
-function kunstAusschnitt(ar, fokus) {
-  if (ar >= 1) { const h = 1 / ar; return [0, klemm(fokus - h / 2, 0, 1 - h), 1, h]; }
-  return [.5 - ar / 2, 0, ar, 1];
+const kunstLicht = sek => [.5 + .26 * Math.sin(sek * .17 + 1.3), .5 + .2 * Math.sin(sek * .23 + .4), .46];
+// Der Ausschnitt des Bildes (Seitenverhältnis ta) für eine Bühne mit dem Seitenverhältnis ar: ist die Bühne breiter, ein Streifen um den Fokus, sonst die Mitte
+function kunstAusschnitt(ar, fokus, ta = 1) {
+  if (ar >= ta) { const h = ta / ar; return [0, klemm(fokus - h / 2, 0, 1 - h), 1, h]; }
+  const w = ar / ta; return [.5 - w / 2, 0, w, 1];
 }
+// Der Bildrahmen im Foto (Mitte, halbe Breite und Höhe, in Teilen des Fotos) auf der Bühne mit dem Ausschnitt a
+const kunstRahmen = a => { const r = kunst.rahmen; return [(r[0] - a[0]) / a[2], (r[1] - a[1]) / a[3], r[2] / a[2], r[3] / a[3]]; };
+// Ein Kreis von etwa der Grösse des Rahmens (Halbmesser in Höhen der Bühne), von dem aus die Fläche weiterwandert
+const kunstRahmenLicht = (R, ar) => [R[0], R[1], 1.25 * Math.max(R[2] * ar, R[3]), 1];
 const KUNST_GLSL = `
 float kH(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
 float kR(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f);
   return mix(mix(kH(i), kH(i + vec2(1., 0.)), f.x), mix(kH(i + vec2(0., 1.)), kH(i + vec2(1., 1.)), f.x), f.y); }
 float kF(vec2 p) { float s = 0., a = .5; for (int i = 0; i < 4; i++) { s += a * kR(p); p = p * 2.03 + 17.1; a *= .5; } return s; }
-// Wie stark das Foto an der Stelle v steht: l ist die Fläche (Mitte, Halbmesser, Stärke), seite das Seitenverhältnis der Bühne
+uniform vec4 rahmen; uniform float rm;
+// Wie stark das Foto an der Stelle v steht: l ist die Fläche (Mitte, Halbmesser, Stärke), seite das Seitenverhältnis der Bühne.
+// Beim Wechsel vom Raum zur Fläche (rm 1) steht das Foto genau im Bildrahmen (rahmen: Mitte, halbe Breite und Höhe auf der Bühne)
 float kAuf(vec2 v, vec2 seite, vec4 l, float zeit) {
   vec2 q = v * seite, w = vec2(kF(q * 2.2 + zeit * .04), kF(q * 2.2 + 5.2 - zeit * .03));
   float d = length((v - l.xy) * seite) / l.z + (kF(q * 4. + w * 1.4) - .5) * .45;
-  return l.w * (1. - smoothstep(.12, 1., d));
+  vec2 e = abs(v - rahmen.xy) / rahmen.zw;
+  return mix(l.w * (1. - smoothstep(.12, 1., d)), 1. - smoothstep(.97, 1.03, max(e.x, e.y)), rm);
 }
 vec3 kFarbe(sampler2D foto, sampler2D linien, vec2 uv, vec2 q, float auf, float zug, float zeit, vec3 grund, vec3 tinte) {
   vec3 l = texture2D(linien, uv).rgb;
@@ -2866,7 +2957,9 @@ const kunst = (() => {
   const k = document.getElementById("k-kunst"); if (!k) return null;
   const bild = k.querySelector(".kunst-bild");
   return { k, bild, cv: bild.querySelector("canvas"), buehne: k.querySelector(".buehne"), hinweis: k.querySelector(".kunst-hinweis"), fokus: parseFloat(bild.dataset.fokus) || .5,
-    felder: [...k.querySelectorAll(".feld")], inhalte: [...k.querySelectorAll(".fi")], gl: null, sichtbar: false, t0: null, raumZug: 0, zug: 0, licht: null, zeiger: null, tipp: null };
+    format: parseFloat(bild.dataset.format) || 1, rahmen: (bild.dataset.rahmen || ".5 .5 .1 .1").split(" ").map(Number),
+    felder: [...k.querySelectorAll(".feld")], inhalte: [...k.querySelectorAll(".fi")], gl: null, sichtbar: false, t0: null, raumZug: 0, zug: 0, licht: null, zeiger: null, tipp: null,
+    wechselAb: 0, rahmenAb: 0, rahmenSeit: 0, rm: 0 };
 })();
 if (kunst) {
   kunst.stopp = () => {}; felderVerbinden(kunst);
@@ -2893,7 +2986,7 @@ void main() { gl_FragColor = vec4(kFarbe(foto, linien, aus.xy + v * aus.zw, v * 
   gl.linkProgram(pr); gl.useProgram(pr);
   const puffer = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, puffer); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
   const ap = gl.getAttribLocation(pr, "p"); gl.enableVertexAttribArray(ap); gl.vertexAttribPointer(ap, 2, gl.FLOAT, false, 0, 0);
-  const U = {}; ["foto", "linien", "aus", "licht", "seite", "zeit", "zug", "grund", "tinte"].forEach(n => { U[n] = gl.getUniformLocation(pr, n); });
+  const U = {}; ["foto", "linien", "aus", "licht", "seite", "zeit", "zug", "grund", "tinte", "rahmen", "rm"].forEach(n => { U[n] = gl.getUniformLocation(pr, n); });
   const textur = (einheit, roh) => {
     const t = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + einheit); gl.bindTexture(gl.TEXTURE_2D, t);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array(roh ? [0, 255, 0] : [90, 66, 50]));
@@ -2930,11 +3023,15 @@ function kunstLaufBild(zeit, dt) {
     K.t0 = zeit - (ruhig ? KUNST_ZUG + 9 : K.raumZug * KUNST_ZUG) * 1000;
     K.licht = [...kunstLicht(zeit / 1000), K.raumZug >= 1 ? 1 : 0];
   }
+  // Eben aus dem Raum gewechselt: das Foto steht zuerst genau im Bildrahmen, nach einer halben Sekunde löst sich der Rahmen in die weiche Fläche auf, die weiterwandert
+  if (K.rahmenAb) { K.rahmenAb = 0; K.rahmenSeit = zeit; K.rm = 1; K.licht = kunstRahmenLicht(kunstRahmen(kunstAusschnitt(r.width / r.height, K.fokus, K.format)), r.width / r.height); }
+  const seitRahmen = K.rahmenSeit ? (zeit - K.rahmenSeit) / 1000 : 99;
+  K.rm = 1 - eio(klemm((seitRahmen - .5) / 1.4));
   const T = (zeit - K.t0) / 1000, L = K.licht, tippt = K.tipp && zeit - K.tipp.t < 4500;
   // Ziel der Fläche: der Zeiger, sonst die Stelle, die getippt wurde, sonst ihre ruhige Bahn. Solange die Skizze entsteht, ist sie aus
-  const ziel = K.zeiger ? [K.zeiger.x, K.zeiger.y, .3] : tippt ? [K.tipp.x, K.tipp.y, .34] : kunstLicht(zeit / 1000);
-  const an = ruhig ? (K.zeiger || tippt ? 1 : 0) : weich(KUNST_ZUG - .6, KUNST_ZUG + 1.2, T);
-  const k = 1 - Math.exp(-dt * (K.zeiger ? 8 : tippt ? 5 : 2));
+  const ziel = K.zeiger ? [K.zeiger.x, K.zeiger.y, .42] : tippt ? [K.tipp.x, K.tipp.y, .46] : kunstLicht(zeit / 1000);
+  const an = ruhig ? (K.zeiger || tippt ? 1 : 0) : Math.max(weich(KUNST_ZUG - .6, KUNST_ZUG + 1.2, T), seitRahmen < 3 ? 1 : 0);
+  const k = 1 - Math.exp(-dt * (K.zeiger ? 8 : tippt ? 5 : seitRahmen < .5 ? 0 : seitRahmen < 3 ? .9 : 2));
   for (let i = 0; i < 3; i++) L[i] += (ziel[i] - L[i]) * k;
   L[3] += (an - L[3]) * (1 - Math.exp(-dt * 2.5));
   K.zug = ruhig ? 1.02 : 1.02 * eio(klemm(T / KUNST_ZUG));
@@ -2942,9 +3039,10 @@ function kunstLaufBild(zeit, dt) {
 }
 function kunstZeichnen(zeit) {
   const K = kunst; if (!K.gl) return;
-  const { gl, U } = K.gl, w = K.cv.width, h = K.cv.height, a = kunstAusschnitt(w / h, K.fokus), L = K.licht || [.5, .5, .36, 0];
+  const { gl, U } = K.gl, w = K.cv.width, h = K.cv.height, a = kunstAusschnitt(w / h, K.fokus, K.format), L = K.licht || [.5, .5, .46, 0], R = kunstRahmen(a);
   gl.viewport(0, 0, w, h);
   gl.uniform4f(U.aus, a[0], a[1], a[2], a[3]); gl.uniform4f(U.licht, L[0], L[1], L[2], L[3]); gl.uniform2f(U.seite, w / h, 1);
+  gl.uniform4f(U.rahmen, R[0], R[1], R[2], R[3]); gl.uniform1f(U.rm, K.rm || 0);
   gl.uniform1f(U.zeit, ruhig ? 0 : zeit / 1000 % 1000); gl.uniform1f(U.zug, K.zug || 0);
   gl.uniform3fv(U.grund, K.gl.grund); gl.uniform3f(U.tinte, 1, 1, 1);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
