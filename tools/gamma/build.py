@@ -15,7 +15,7 @@ KOPF = """<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="ornament.cloud im Überblick: ein Netz aus 49 Strophen und 133 Personen, dann Webseiten, Apps, Kunst, Experimente, Zettel und Social als Farbfelder auf einer Bahn im Raum.">
+<meta name="description" content="ornament.cloud im Überblick: ein Netz aus 49 Strophen und 133 Personen, dann Webseiten, Apps, Kunst, Specials, Zettel und Social als Farbfelder auf einer Bahn im Raum.">
 <meta name="robots" content="noindex">
 <link rel="icon" href="../b/bilder/signet/signet.svg">"""
 web = html.replace("<!--KOPF-->", KOPF).replace("<!--SCHRIFTEN-->", '<link rel="stylesheet" href="../vendor/fonts/fonts.css">\n</head>\n<body>')

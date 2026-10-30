@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="ornament.cloud im Überblick: ein Netz aus 49 Strophen und 133 Personen, dann Webseiten, Apps, Kunst, Experimente, Zettel und Social als Farbfelder auf einer Bahn im Raum.">
+<meta name="description" content="ornament.cloud im Überblick: ein Netz aus 49 Strophen und 133 Personen, dann Webseiten, Apps, Kunst, Specials, Zettel und Social als Farbfelder auf einer Bahn im Raum.">
 <meta name="robots" content="noindex">
 <link rel="icon" href="../b/bilder/signet/signet.svg">
 <title>ornament.cloud Gamma</title>
@@ -15,7 +15,7 @@
 /* ornament.cloud/gamma – Landing-Page nach einer Videovorlage (29. Oktober 2026), Entwurf 3. Ein WebGL-Raum (three.js, vendor/three-0.185.1):
    zuerst ein leuchtendes Netz aus den 49 Strophen von «Zu seiner Zeit» und ihren 133 Personen, durch das die Kamera fliegt; eine Tafel
    mit dem Wort des gezogenen Zettels gleitet herein und kippt weg (bei jedem Besuch ein anderer Zettel, #zettel-12 zieht einen bestimmten); dann liegt die Website als Bahn in einer runden Trommel: Webseiten, Apps, Kunst,
-   Experimente (Lab und Das dritte Rad), Zettel und Social (Angebot vorläufig weg) als Farbfelder (Farben der Startseite /b/), die sich vor der Kamera zum Looping aufbiegen.
+   Specials (Lab und Das dritte Rad, vorher «Experimente»), Zettel und Social (Angebot vorläufig weg) als Farbfelder (Farben der Startseite /b/), die sich vor der Kamera zum Looping aufbiegen.
    Neben der Bahn stehen feine Drahtfiguren je Bereich, Notationen aus den «Laws of Form» und die Schlaufe des Signets.
    Die Bahn-Bilder zeichnet das Skript aus dem HTML der Kapitel unten; die Fläche (rechts in der liegenden Acht unten) zeigt genau dieses HTML. Schriften und Farben des Neubaus. */
 :root {
@@ -135,8 +135,8 @@ body.zurueck .bahn { position: fixed; left: 0; right: 0; pointer-events: none; }
 .k-innen { padding: clamp(40px, 8cqi, 68px) max(clamp(22px, 5.4cqi, 48px), env(safe-area-inset-right, 0px)) clamp(52px, 9cqi, 84px) max(clamp(22px, 5.4cqi, 48px), env(safe-area-inset-left, 0px)); }
 .kapitel a { color: inherit; text-decoration: none; }
 .kapitel img { display: block; }
-/* Titel in Grossbuchstaben, etwas kleiner als zuvor in gemischter Schreibung, weniger eng gesetzt (Christian, 30. Oktober 2026) */
-.kapitel h2 { margin: 0; font-size: clamp(46px, 12cqi, 104px); font-weight: 500; letter-spacing: -.015em; line-height: .88; text-transform: uppercase; }
+/* Titel in Grossbuchstaben, alle gleich gross (so gross wie «Webseiten»), weniger eng gesetzt (Christian, 30. Oktober 2026) */
+.kapitel h2 { margin: 0; font-size: clamp(34px, 7cqi, 62px); font-weight: 500; letter-spacing: -.015em; line-height: .88; text-transform: uppercase; }
 .kapitel h2 .wort, .kapitel h2 .bst { display: inline-block; }
 .kapitel h2 .wort { white-space: nowrap; }
 .marke-k, .kapitel .label { font: 500 11px/1.25 var(--sans); letter-spacing: .1em; text-transform: uppercase; color: var(--kg); }
@@ -170,7 +170,6 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 :is(.k-web, .k-apps, .k-kunst, .k-exp) .marke-k .zl { display: block; }
 :is(.k-web, .k-apps, .k-kunst, .k-exp) .marke-k .begriff { font: 500 clamp(17px, 2.5cqi, 23px)/1.12 var(--sans); letter-spacing: -.01em; text-transform: none; color: var(--kt); }
 :is(.k-web, .k-apps, .k-kunst, .k-exp) .leit { font-family: var(--sans); font-style: normal; font-weight: 400; font-size: clamp(19px, 3cqi, 26px); letter-spacing: -.015em; }   /* nüchtern statt kursiv */
-:is(.k-web, .k-apps, .k-kunst, .k-exp) h2 { font-size: clamp(34px, 7cqi, 62px); }   /* «Webseiten» ist lang: kleiner als die kurzen Titel, sonst erdrückt er die Seite; Apps gleich gross */
 /* Die Bühne hat das Seitenverhältnis --ar; Signet und Raster bleiben quadratisch, weil ihre Breite durch --ar geteilt wird */
 .buehne { --ar: 1; position: relative; margin: clamp(18px, 3cqi, 28px) 0 clamp(22px, 4cqi, 34px); aspect-ratio: var(--ar); }
 .buehne > * { position: absolute; }
@@ -402,7 +401,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
 <header class="kopf">
   <a class="marke" href="../b/"><img src="../b/bilder/signet/signet-dunkel.svg" alt="">ornament.cloud <span class="ausgabe"><i>·</i>Gamma Version<i>·</i>Herbst 2026</span></a>
   <nav aria-label="Bereiche">
-    <a href="#k-web">Webseiten</a><a href="#k-apps">Apps</a><a href="#k-kunst">Kunst</a><a href="#k-experimente">Experimente</a><a href="#k-zettel">Zettel</a><a href="#k-social">Social</a>
+    <a href="#k-web">Webseiten</a><a href="#k-apps">Apps</a><a href="#k-kunst">Kunst</a><a href="#k-experimente">Specials</a><a href="#k-zettel">Zettel</a><a href="#k-social">Social</a>
   </nav>
   <a class="pille" href="../b/">Zur Website</a>
 </header>
@@ -424,7 +423,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
     </div>
     <div class="intro-text" id="intro-text">
       <h1>Sieben Bereiche, ein Netz.</h1>
-      <p>Webseiten · Apps · Kunst · Experimente · Zettel · Social<br><span id="zug-hinweis">Weiter nach unten</span></p>
+      <p>Webseiten · Apps · Kunst · Specials · Zettel · Social<br><span id="zug-hinweis">Weiter nach unten</span></p>
     </div>
   </div></div>
 </section>
@@ -547,9 +546,10 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
         </div>
       </div></article>
 
-      <article class="kapitel k-exp" id="k-experimente" data-name="Experimente"><div class="k-innen">
+      <!-- Kapitel heisst seit 30. Oktober 2026 «Specials» statt «Experimente» (Christian); id und Klasse bleiben -->
+      <article class="kapitel k-exp" id="k-experimente" data-name="Specials"><div class="k-innen">
         <span class="marke-k"><span class="zl begriff">verweben</span><span class="zl begriff">schwingen</span><span class="zl begriff">drehen</span></span>
-        <h2>Experimente</h2>
+        <h2>Specials</h2>
         <p class="leit">Bilder verwandeln, Räder drehen</p>
         <div class="buehne" role="img" aria-label="Ein doppeltes Farbrad; flach baut sich daraus eine Konstruktion auf: ein bewegtes Gewebe, Trauben, schwingende Saiten, kreisende Zeichen und zuletzt die Farben als Skulptur">
           <div class="exp-rad" data-exp></div>
@@ -605,13 +605,13 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
   <div class="innen">
     <h2>Wohin als Nächstes?</h2>
     <ul>
-      <li class="k-web"><a href="../b/angebot/webdesign/">Webseiten <i></i></a></li>
-      <li class="k-apps"><a href="../b/apps/">Apps <i></i></a></li>
-      <li class="k-kunst"><a href="../b/werke/">Kunst <i></i></a></li>
-      <li class="k-exp"><a href="../beta/lab/">Lab <i></i></a></li>
-      <li class="k-exp"><a href="../beta/drittes-rad/">Das dritte Rad <i></i></a></li>
-      <li class="k-zettel"><a href="../b/zettel/">Zettel <i></i></a></li>
-      <li class="k-social"><a href="../b/zuletzt/">Social <i></i></a></li>
+      <!-- Die Links führen zu den Kapiteln dieser Seite, nicht auf die Website (Christian, 30. Oktober 2026) -->
+      <li class="k-web"><a href="#k-web">Webseiten <i></i></a></li>
+      <li class="k-apps"><a href="#k-apps">Apps <i></i></a></li>
+      <li class="k-kunst"><a href="#k-kunst">Kunst <i></i></a></li>
+      <li class="k-exp"><a href="#k-experimente">Specials <i></i></a></li>
+      <li class="k-zettel"><a href="#k-zettel">Zettel <i></i></a></li>
+      <li class="k-social"><a href="#k-social">Social <i></i></a></li>
     </ul>
     <p>ornament.cloud · Christian Strickler · Gamma, Herbst 2026</p>
   </div>
