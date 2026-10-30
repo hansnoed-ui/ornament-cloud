@@ -150,7 +150,12 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 /* 01 Webseiten: oben der Titel und rechts die drei Begriffe, mittig das Signet auf einer ruhigen, einfarbigen Bühne, darunter drei Flächen mit ihrem Titel.
    Flach wird das Signet zur Punktkugel, zum Würfel und zum Raster der neun Themen; eine Fläche zeigt ihren Inhalt auf der Bühne. */
 /* Der Kopf wie bei Apps: rechts die Marke mit den drei Begriffen, links gross der Titel, darunter der Satz */
+/* Rechts oben, auf der Höhe des Titels: die Marke klein, darunter die drei Begriffe je auf einer Zeile */
+.k-web .marke-k { position: absolute; top: clamp(40px, 8cqi, 68px); right: max(clamp(22px, 5.4cqi, 48px), env(safe-area-inset-right, 0px)); margin: 0; }
 .k-web .marke-k .zl { display: block; }
+.k-web .marke-k .zl:first-child { margin-bottom: 8px; }
+.k-web .marke-k .begriff { font: 500 clamp(17px, 2.5cqi, 23px)/1.12 var(--sans); letter-spacing: -.01em; text-transform: none; color: var(--kt); }
+.k-web .leit { font-family: var(--sans); font-style: normal; font-weight: 400; font-size: clamp(19px, 3cqi, 26px); letter-spacing: -.015em; }   /* nüchtern statt kursiv */
 .k-web h2 { font-size: clamp(42px, 9cqi, 80px); }   /* «Webseiten» ist lang: kleiner als die kurzen Titel, sonst erdrückt er die Seite */
 /* Die Bühne hat das Seitenverhältnis --ar; Signet und Raster bleiben quadratisch, weil ihre Breite durch --ar geteilt wird */
 .buehne { --ar: 1; position: relative; margin: clamp(18px, 3cqi, 28px) 0 clamp(22px, 4cqi, 34px); aspect-ratio: var(--ar); }
@@ -361,7 +366,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
   <div class="raum-platz" id="raum-platz"></div>
   <div class="bahn" id="bahn">
       <article class="kapitel k-web" id="k-web" data-name="Webseiten"><div class="k-innen">
-        <span class="marke-k"><span class="zl">01 · Angebot</span><span class="zl">Entwickeln, gestalten, vernetzen</span></span>
+        <span class="marke-k"><span class="zl">01 · Angebot</span><span class="zl begriff">Entwickeln,</span><span class="zl begriff">gestalten,</span><span class="zl begriff">vernetzen.</span></span>
         <h2>Webseiten</h2>
         <p class="leit">Schnell &amp; praktisch.</p>
         <div class="buehne">
@@ -1025,7 +1030,7 @@ function figurenBauen(g, bilder) {
   let lp = [], lc = [], hell = .5, ton = new THREE.Color(1, 1, 1);
   const schilder = [], M = new THREE.Matrix4(), v1 = new THREE.Vector3(), v2 = new THREE.Vector3(), rechtsW = new THREE.Vector3(), obenW = new THREE.Vector3();
   let saat = 7; const zufall = () => (saat = (saat * 16807) % 2147483647) / 2147483647;
-  bahn.dreher = []; bahn.laeufer = []; bahn.ascii = null;
+  bahn.dreher = []; bahn.laeufer = []; bahn.ascii = null; bahn.flackern = [];
   // Rahmen an der Stelle sj, ab Meter neben dem Rand des Bandes; seite 1 = rechts im Bild
   function stelle(sj, seite, ab) {
     const T = bahnPunkt(sj + .01).sub(bahnPunkt(sj - .01)).normalize(), N = normale(sj), S = new THREE.Vector3().crossVectors(T, N).normalize();
@@ -1060,15 +1065,58 @@ function figurenBauen(g, bilder) {
     halter.add(o); g.add(halter); bahn.dreher.push({ o, v });
   }
 
+  // Linien, die für sich flackern sollen, in eigenen Koordinaten der Welt
+  function eigeneStriche(zeichne) {
+    const altP = lp, altC = lc; lp = []; lc = []; zeichne();
+    const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(lp, 3)); geo.setAttribute("color", new THREE.Float32BufferAttribute(lc, 3));
+    const o = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false }));
+    lp = altP; lc = altC; g.add(o); return o.material;
+  }
+  // Ein Bildschirm leuchtet schwach in Mint. Über den Browser zieht langsam eine helle Zeile nach unten, über das Telefon ab und zu ein schräger Glanz
+  function schirm(x, y, b, h, glanz) {
+    const u = { t: { value: 0 }, a: { value: 1 }, hell: { value: 1 }, farbe: { value: hdr("#9fd4b4", 1) } };
+    const m = new THREE.ShaderMaterial({ uniforms: u, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+      vertexShader: "varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }",
+      fragmentShader: `uniform float t, a, hell; uniform vec3 farbe; varying vec2 vUv;
+        void main() {
+          float rand = smoothstep(0., .05, vUv.x) * smoothstep(1., .95, vUv.x) * smoothstep(0., .05, vUv.y) * smoothstep(1., .95, vUv.y);
+          ${glanz ? "float d = vUv.x * .6 + vUv.y + .8 - fract(t / 8.) * 6.; float licht = .2 * exp(-d * d * 60.);" : "float d = vUv.y - 1. + fract(t * .11); float licht = .14 * exp(-d * d * 300.);"}
+          gl_FragColor = vec4(farbe * (.04 + licht) * rand * hell * a, 1.);
+        }` });
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(b, h), m); mesh.matrixAutoUpdate = false; mesh.matrix.copy(M).multiply(new THREE.Matrix4().makeTranslation(x + b / 2, y + h / 2, -.004));
+    mesh.onBeforeRender = () => { u.a.value = m.opacity; }; g.add(mesh);
+    return u;
+  }
+  // Ein kleines Licht an einem Gerät
+  const lichtpunkt = (p, farbe) => {
+    v1.set(p[0], p[1], p[2]).applyMatrix4(M); const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(v1.toArray(), 3));
+    const o = new THREE.Points(geo, deckeln(new THREE.PointsMaterial({ size: .042, color: hdr(farbe, .9), transparent: true, depthWrite: false }), 5)); g.add(o); return o.material;
+  };
+  // Leichtes Flackern: ein feines Zittern der Helligkeit, alle paar Sekunden ein kurzer Einbruch
+  const flackern = (t, s) => {
+    const z = Math.abs(Math.sin(Math.floor(t * 11 + s * 37) * 91.7 + s * 13.1) * 437.58) % 1;
+    return z > .955 ? .62 + z * .2 : 1 - .07 * (.5 + .5 * Math.sin(t * 17 + s * 4) * Math.sin(t * 5.3 + s));
+  };
+
   /* Webseiten: ein Browser auf zwei Stützen, die Stufen 1440 · 768 · 390, ein Telefon, eine ASCII-Fläche und das Netz nach Baran */
   const browser = () => {
     const b = 1.6, h = .98, y0 = .34; hell = .55;
     strich([.22, 0, 0], [.22, y0, 0]); strich([b - .22, 0, 0], [b - .22, y0, 0]);
     rechteck(0, y0, 0, b, h); strich([0, y0 + h - .1, 0], [b, y0 + h - .1, 0]);
     for (let i = 0; i < 3; i++) bogen(.07 + i * .055, y0 + h - .05, 0, .015, "xy", 0, Math.PI * 2, 10);
-    hell = .17; for (let i = 1; i < 12; i++) strich([i * b / 12, y0, 0], [i * b / 12, y0 + h - .1, 0]);
-    hell = .5; rechteck(b / 12 * .5, y0 + h - .3, 0, b * .55, .1); rechteck(b / 12 * .5, y0 + .1, 0, b * .82, .34);
+    // Der Inhalt flackert leicht, im Titelfeld blinkt die Schreibmarke, unten rechts atmet ein Betriebslicht
+    const inhalt = eigeneStriche(() => {
+      hell = .17; for (let i = 1; i < 12; i++) strich([i * b / 12, y0, 0], [i * b / 12, y0 + h - .1, 0]);
+      hell = .5; rechteck(b / 12 * .5, y0 + h - .3, 0, b * .55, .1); rechteck(b / 12 * .5, y0 + .1, 0, b * .82, .34);
+    });
+    const marke = eigeneStriche(() => { hell = .8; strich([b / 12 * .5 + .05, y0 + h - .28, 0], [b / 12 * .5 + .05, y0 + h - .22, 0]); });
+    const glimmen = schirm(0, y0, b, h - .1, false), betrieb = lichtpunkt([b - .05, y0 - .045, 0], "#9fd4b4"), s0 = zufall() * 9;
     mass([0, y0 - .1, 0], [b, y0 - .1, 0], "1280 px");
+    bahn.flackern.push(t => {
+      const f = flackern(t, s0); inhalt.userData.a = f; glimmen.hell.value = f; glimmen.t.value = t;
+      marke.userData.a = weich(.1, 0, Math.abs((t * .9) % 1 - .25) - .25) * f;
+      betrieb.userData.a = .35 + .65 * (.5 + .5 * Math.sin(t * 1.6));
+    });
   };
   const stufen = () => {
     hell = .42; [[1.44, .9, "1440"], [.768, .9, "768"], [.39, .8, "390 px"]].forEach(([b, h, t], i) => { const z = -i * .4; rechteck(0, 0, z, b, h); schild(t, [b - .04, h + .05, z], "mass", 1); });
@@ -1079,8 +1127,16 @@ function figurenBauen(g, bilder) {
     strich([b / 2, 0, 0], [b / 2, y0, 0]); strich([b / 2 - .12, 0, 0], [b / 2 + .12, 0, 0]);
     strich([r, y0, 0], [b - r, y0, 0]); strich([b, y0 + r, 0], [b, y0 + h - r, 0]); strich([b - r, y0 + h, 0], [r, y0 + h, 0]); strich([0, y0 + h - r, 0], [0, y0 + r, 0]);
     bogen(b - r, y0 + r, 0, r, "xy", -Math.PI / 2, 0, 6); bogen(b - r, y0 + h - r, 0, r, "xy", 0, Math.PI / 2, 6); bogen(r, y0 + h - r, 0, r, "xy", Math.PI / 2, Math.PI, 6); bogen(r, y0 + r, 0, r, "xy", Math.PI, Math.PI * 1.5, 6);
-    hell = .4; rechteck(.06, y0 + h - .2, 0, b * .62, .06); rechteck(.06, y0 + .3, 0, b - .12, b - .12);
-    hell = .3; for (let i = 0; i < 3; i++) strich([.06, y0 + .2 - i * .045, 0], [b - .06 - i * .06, y0 + .2 - i * .045, 0]);
+    // Auch hier flackert der Inhalt leicht; oben blinkt zweimal kurz ein Hinweislicht, über das Glas zieht ab und zu ein Glanz
+    const inhalt = eigeneStriche(() => {
+      hell = .4; rechteck(.06, y0 + h - .2, 0, b * .62, .06); rechteck(.06, y0 + .3, 0, b - .12, b - .12);
+      hell = .3; for (let i = 0; i < 3; i++) strich([.06, y0 + .2 - i * .045, 0], [b - .06 - i * .06, y0 + .2 - i * .045, 0]);
+    });
+    const glimmen = schirm(.02, y0 + .02, b - .04, h - .04, true), hinweis = lichtpunkt([b / 2, y0 + h - .06, 0], "#ffa3d1"), s0 = zufall() * 9;
+    bahn.flackern.push(t => {
+      const f = flackern(t, s0); inhalt.userData.a = f; glimmen.hell.value = f; glimmen.t.value = t;
+      const z = (t + s0) % 3.4; hinweis.userData.a = .15 + .85 * Math.max(weich(.0, .08, z) * weich(.3, .16, z), weich(.45, .53, z) * weich(.75, .61, z));
+    });
   };
   /* ASCII: auf einer Zeichenfläche lösen sich Kugel, Würfel und Raster 3 × 3 ab, wie bei der Verwandlung auf der flachen Seite.
      Jede Zelle tastet eine Distanzfunktion ab, das Licht kreist; die Helligkeit wählt das Zeichen */
@@ -1337,9 +1393,9 @@ function figurenBauen(g, bilder) {
     }
   });
 
-  /* Im dunklen Raum vor dem Anfang der Bahn kreist ein Satellit um eine Kugel aus Breiten- und Längenkreisen.
-     Die Umlaufbahn liegt schräg zum Blick, mit dem das Band erscheint; hinter der Kugel verschwindet er, die letzte Strecke zieht eine feine Spur nach.
-     Farben aus den Bereichen: die Kugel im Himmelblau, der Satellit in Senf wie Goldfolie, seine Segel blau */
+  /* Im dunklen Raum vor dem Anfang der Bahn kreist ein Satellit um einen Planeten aus Punkten.
+     Die Umlaufbahn liegt schräg zum Blick, mit dem das Band erscheint; hinter dem Planeten verschwindet er, die letzte Strecke zieht eine feine Spur nach.
+     Farben aus den Bereichen: Land im Mint der Webseiten, Meer und Luftsaum blau, der Satellit in Senf wie Goldfolie, seine Segel blau */
   {
     const C = bahnPunkt(eng ? -2 : -1.4, eng ? .4 : -1, eng ? 2.6 : 1.8), sK = S_START() + (eng ? 2.4 : 1.7);
     const V = C.clone().sub(bahnPunkt(sK, 0, eng ? 5.4 : 3)).normalize(), X = new THREE.Vector3().crossVectors(V, normale(sK)).normalize(), Y = new THREE.Vector3().crossVectors(X, V);
@@ -1352,15 +1408,64 @@ function figurenBauen(g, bilder) {
       return new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false }));
     };
     const ring = (s, n, h, f, farbe) => { for (let i = 0; i < n; i++) s(f(i / n * Math.PI * 2), f((i + 1) / n * Math.PI * 2), h, farbe); };
-    // Die Kugel: Achse etwas geneigt, sie dreht sich langsam; ein schwarzer Kern verdeckt ihre Rückseite und was hinter ihr vorbeizieht
+    // Der Planet: Achse etwas geneigt, er dreht sich langsam. Land, Meer und Polkappen kommen aus einem festen Rauschen, so sieht er bei jedem Besuch gleich aus.
+    // Die Sonne steht links vorn: Tag- und Nachtseite. Der Kern verdeckt die Rückseite und was hinter ihm vorbeizieht, ein feiner Luftsaum liegt um ihn
     const kugel = new THREE.Group(); kugel.position.copy(C); kugel.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), Y.clone().applyAxisAngle(V, .38).normalize());
-    const drehteil = linien(s => {
-      for (const [b, h] of [[-.9, .3], [-.45, .42], [0, .62], [.45, .42], [.9, .3]]) { const r = rg * Math.cos(b), y = rg * Math.sin(b); ring(s, 48, h, w => [r * Math.cos(w), y, r * Math.sin(w)], himmel); }
-      for (let k = 0; k < 6; k++) { const a = k * Math.PI / 6; ring(s, 48, .42, w => [rg * Math.cos(w) * Math.cos(a), rg * Math.sin(w), rg * Math.cos(w) * Math.sin(a)], himmel); }
+    const sonne = { value: X.clone().multiplyScalar(-.85).addScaledVector(Y, .3).addScaledVector(V, -.38).normalize() };
+    const streu = (x, y, z) => { const t = Math.sin(x * 127.1 + y * 311.7 + z * 74.7) * 43758.5453; return t - Math.floor(t); };
+    const rauschen = (x, y, z) => {
+      const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z), u = x - xi, v = y - yi, w = z - zi, e = (a, b, c) => streu(xi + a, yi + b, zi + c);
+      const su = u * u * (3 - 2 * u), sv = v * v * (3 - 2 * v), sw = w * w * (3 - 2 * w);
+      return misch(misch(misch(e(0, 0, 0), e(1, 0, 0), su), misch(e(0, 1, 0), e(1, 1, 0), su), sv), misch(misch(e(0, 0, 1), e(1, 0, 1), su), misch(e(0, 1, 1), e(1, 1, 1), su), sv), sw);
+    };
+    const hoehe = (x, y, z) => {
+      // leicht verzogen, damit die Küsten nicht nach Würfelrauschen aussehen
+      const q = .45 * (rauschen(x * 1.3 + 5, y * 1.3, z * 1.3) - .5);
+      let h = 0, a = .5, f = 1.6; for (let o = 0; o < 5; o++) { h += a * rauschen((x + q) * f + 11.3, (y - q) * f + 4.1, (z + q) * f + 7.7); a *= .5; f *= 2.03; }
+      return h;
+    };
+    // Punkte gleichmässig auf der Kugel (Fibonacci), gut ein Drittel davon Land
+    const PN = eng ? 3200 : 5200, pk = [], hs = [];
+    for (let i = 0; i < PN; i++) { const y = 1 - 2 * (i + .5) / PN, r = Math.sqrt(1 - y * y), w = i * 2.399963; pk.push([r * Math.cos(w), y, r * Math.sin(w)]); hs.push(hoehe(...pk[i])); }
+    const kueste = [...hs].sort((a, b) => a - b)[Math.floor(PN * .66)], mint = new THREE.Color("#9fd4b4"), sand = new THREE.Color("#e8e0c2"), meer = new THREE.Color("#5c86ff");
+    const landP = [], landF = [], meerP = [], meerF = [], fb = new THREE.Color();
+    pk.forEach(([x, y, z], i) => {
+      const h = hs[i], eis = Math.abs(y) + .3 * (h - .5) > .87;
+      if (eis) fb.copy(weiss).multiplyScalar(.6);
+      else if (h > kueste) fb.copy(mint).lerp(sand, klemm((h - kueste) / .2)).multiplyScalar(.58 + .17 * klemm((h - kueste) / .1));
+      else fb.copy(meer).multiplyScalar(.06 + .14 * klemm(1 - (kueste - h) / .12));
+      const [pp, ff] = eis || h > kueste ? [landP, landF] : [meerP, meerF];
+      pp.push(x * rg, y * rg, z * rg); ff.push(fb.r, fb.g, fb.b);
     });
-    // Der Kern ist nicht schwarz, sondern ein tiefes Nachtblau: so steht die Kugel als Körper im Raum
-    const kern = new THREE.Mesh(new THREE.SphereGeometry(rg * .97, 32, 16), new THREE.MeshBasicMaterial({ color: new THREE.Color("#0b1838") }));
-    kugel.add(drehteil, kern); g.add(kugel);
+    // Die Punkte nehmen das Licht der Sonne an, auf der Nachtseite bleibt nur ein Hauch; zum Rand hin treten sie zurück, dort zeichnet der Luftsaum die Kante
+    const punkte = (p, f, gr) => {
+      const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(p, 3)); geo.setAttribute("color", new THREE.Float32BufferAttribute(f, 3));
+      const m = new THREE.PointsMaterial({ size: gr, vertexColors: true, transparent: true, depthWrite: false });
+      m.onBeforeCompile = sh => {
+        sh.uniforms.sonne = sonne;
+        sh.vertexShader = "uniform vec3 sonne;\n" + sh.vertexShader.replace("#include <fog_vertex>", `gl_PointSize = min(gl_PointSize, ${(7 * Math.min(devicePixelRatio || 1, 2)).toFixed(1)});
+  vColor *= (.08 + .92 * smoothstep(-.18, .32, dot(normalize(mat3(modelMatrix) * position), sonne))) * smoothstep(.02, .4, dot(normalize(mat3(modelViewMatrix) * position), -normalize(mvPosition.xyz)));
+#include <fog_vertex>`);
+      };
+      const o = new THREE.Points(geo, m); o.renderOrder = 10; return o;
+    };
+    const drehteil = new THREE.Group(); drehteil.add(punkte(meerP, meerF, eng ? .009 : .012), punkte(landP, landF, eng ? .015 : .02));
+    // Der Kern: Meer in tiefem Nachtblau, zur Nachtseite hin fast schwarz
+    const kern = new THREE.Mesh(new THREE.SphereGeometry(rg * .97, 48, 24), new THREE.ShaderMaterial({ uniforms: { sonne },
+      vertexShader: "varying vec3 vN; void main() { vN = mat3(modelMatrix) * normal; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }",
+      fragmentShader: "uniform vec3 sonne; varying vec3 vN; void main() { float t = smoothstep(-.2, .45, dot(normalize(vN), sonne)); gl_FragColor = vec4(mix(vec3(.0006, .0012, .004), vec3(.0045, .012, .05), t), 1.); }" }));
+    // Der Luftsaum: ein Hauch Himmelblau am Rand, auf der Tagseite stärker, nach aussen ausklingend
+    const saum = new THREE.Mesh(new THREE.SphereGeometry(rg * 1.12, 48, 24), new THREE.ShaderMaterial({ uniforms: { sonne, a: { value: 1 }, farbe: { value: himmel.clone().multiplyScalar(.3) } },
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+      vertexShader: "varying vec3 vN, vV; void main() { vec4 w = modelMatrix * vec4(position, 1.); vN = mat3(modelMatrix) * normal; vV = cameraPosition - w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }",
+      fragmentShader: `uniform vec3 sonne, farbe; uniform float a; varying vec3 vN, vV;
+        void main() {
+          vec3 n = normalize(vN); float d = dot(n, normalize(vV)), r = sqrt(max(0., 1. - d * d)), r0 = ${(1 / 1.12).toFixed(4)};
+          float f = r < r0 ? .5 * pow(r / r0, 18.) : .8 * pow(clamp((1. - r) / (1. - r0), 0., 1.), 2.6);
+          gl_FragColor = vec4(farbe * f * (.2 + .8 * smoothstep(-.35, .5, dot(n, sonne))) * a, 1.);
+        }` }));
+    saum.renderOrder = 11; saum.onBeforeRender = () => { saum.material.uniforms.a.value = saum.material.opacity; };
+    kugel.add(drehteil, kern, saum); g.add(kugel);
     // Die Umlaufbahn gepunktet; hinter dem Satelliten wird sie für ein Stück zur Spur
     const NB = 180, bp = [];
     for (let i = 0; i <= NB; i++) { const w = i / NB * Math.PI * 2; bp.push(C.clone().addScaledVector(A, ro * Math.cos(w)).addScaledVector(B, ro * Math.sin(w))); }
@@ -1654,6 +1759,7 @@ function bild(zeit) {
         bahn.signete.forEach(f => f(zeit / 1000));
         if (bahn.satellit) bahn.satellit(zeit / 1000);
         if (bahn.ascii) bahn.ascii(zeit / 1000);
+        bahn.flackern.forEach(f => f(zeit / 1000));
         bahn.dreher.forEach(d => { d.o.rotation.z = zeit * .00011 * d.v; });
         bahn.laeufer.forEach(l => { const n = l.punkte.length / 3 - 1, f = ((zeit * .00005 * (l.v || 1) + l.phase) % 1) * n, i = Math.floor(f), u = f - i, P = l.punkte;
           l.attr.setXYZ(0, misch(P[i * 3], P[i * 3 + 3], u), misch(P[i * 3 + 1], P[i * 3 + 4], u), misch(P[i * 3 + 2], P[i * 3 + 5], u)); l.attr.needsUpdate = true; });
