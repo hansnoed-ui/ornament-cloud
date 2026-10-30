@@ -8,7 +8,7 @@
    mit dem Wort des gezogenen Zettels gleitet herein und kippt weg (bei jedem Besuch ein anderer Zettel, #zettel-12 zieht einen bestimmten); dann liegt die Website als Bahn in einer runden Trommel: Webseiten, Apps, Lab,
    Das 3. Rad, Prompts, Zettel, Social, Art und Angebot als Farbfelder (Farben der Startseite /b/), die sich vor der Kamera zum Looping aufbiegen.
    Neben der Bahn stehen feine Drahtfiguren je Bereich, Notationen aus den «Laws of Form» und die Schlaufe des Signets.
-   Die Bahn-Bilder zeichnet das Skript aus dem HTML der Kapitel unten; «Flach lesen» zeigt genau dieses HTML. Schriften und Farben des Neubaus. */
+   Die Bahn-Bilder zeichnet das Skript aus dem HTML der Kapitel unten; die Fläche (rechts in der liegenden Acht unten) zeigt genau dieses HTML. Schriften und Farben des Neubaus. */
 :root {
   --nacht: #000000; --text: #ffffff; --leise: rgba(255, 255, 255, .62); --strich: rgba(255, 255, 255, .5); --fein: rgba(255, 255, 255, .14);
   --faden: #8fb0ff; --blau: #1d3fd6;
@@ -64,13 +64,14 @@ body.flach.nach-intro #welt, body.ohne-3d #welt { visibility: hidden; }
 /* Mindestens so hoch wie das Fenster: an einem Büro-PC mit Edge reichten Leinwand und Bühne unten 48 px zu wenig weit */
 body.raum-an .intro-buehne { position: fixed; left: 0; right: 0; top: 0; height: max(100svh, 100%); }
 .szene { position: absolute; inset: 0; }
-.intro-text { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+/* Text und Zeile hängen am kleinen Fenster (svh), von oben gemessen: so springen sie am Handy nicht, wenn die Adressleiste beim Scrollen verschwindet und die Bühne wächst */
+.intro-text { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); top: calc(100vh - 28px); top: calc(100svh - 28px - env(safe-area-inset-bottom, 0px)); transform: translateY(-100%);
   display: flex; justify-content: space-between; align-items: end; gap: 20px; color: #fff; }
 .intro-text h1 { margin: 0; font-size: clamp(34px, 6vw, 84px); font-weight: 500; letter-spacing: -.04em; line-height: .95; text-wrap: balance; max-width: 13ch; }
 .intro-text p { margin: 0; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: rgba(255, 255, 255, .62); text-align: right; }
 .etiketten .st { font-size: 10.5px; color: rgba(255, 255, 255, .78); transition: opacity .4s; }
 .etiketten .st b { font-weight: 400; color: rgba(255, 255, 255, .45); margin-right: 6px; }
-.zeile { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(30px + env(safe-area-inset-bottom, 0px)); max-width: min(560px, calc(100% - 32px)); color: #fff; opacity: 0; transition: opacity .6s; pointer-events: none; }
+.zeile { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); top: calc(100vh - 30px); top: calc(100svh - 30px - env(safe-area-inset-bottom, 0px)); transform: translateY(-100%); max-width: min(560px, calc(100% - 32px)); color: #fff; opacity: 0; transition: opacity .6s; pointer-events: none; }
 .zeile { display: grid; }
 .zeile p { grid-area: 1 / 1; margin: 0; opacity: 0; transition: opacity .9s ease; }
 .zeile p.an { opacity: 1; }
@@ -316,9 +317,21 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 @container (min-width: 640px) { .angebot-liste { grid-template-columns: 1fr 1fr; column-gap: 34px; } }
 
 /* Steuerung unten links und Kapitelzeiger links */
-.steuer { position: fixed; z-index: 15; left: max(16px, calc(env(safe-area-inset-left, 0px) + 12px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); display: flex; gap: 8px; opacity: 0; pointer-events: none; transition: opacity .3s; }
+/* Umschalten Raum / Fläche: eine liegende Acht unten in der Mitte, links Raum, rechts Fläche; eine feine Leuchtspur läuft auf ihr um */
+.steuer { position: fixed; z-index: 15; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); width: 128px; height: 36px; transform: translateX(-50%); opacity: 0; pointer-events: none; transition: opacity .3s; }
 .steuer.da { opacity: 1; pointer-events: auto; }
-.steuer button { font: 500 13px var(--sans); padding: 9px 15px; border-radius: 99px; border: 1px solid rgba(255, 255, 255, .5); background: #000; color: #fff; cursor: pointer; }
+body.ohne-3d .steuer { display: none; }
+.acht { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.acht-grund { fill: rgba(0, 0, 0, .84); stroke: rgba(255, 255, 255, .5); stroke-width: 1; }
+.acht-spur use { fill: none; stroke: #fff; stroke-linecap: round; stroke-width: 1.3; animation: acht-lauf 5.2s linear infinite; }
+@keyframes acht-lauf { from { stroke-dashoffset: var(--o); } to { stroke-dashoffset: calc(var(--o) - 100); } }
+@media (prefers-reduced-motion: reduce) { .acht-spur { display: none; } }
+.steuer button { position: absolute; top: 0; bottom: 0; width: 50%; display: flex; align-items: center; justify-content: center; margin: 0; padding: 0; border: 0; background: none;
+  font: 500 10.5px var(--sans); letter-spacing: .01em; color: rgba(255, 255, 255, .5); cursor: pointer; transition: color .3s; -webkit-tap-highlight-color: transparent; }
+.steuer button:hover { color: rgba(255, 255, 255, .85); }
+.steuer button[aria-pressed="true"] { color: #fff; cursor: default; }
+.steuer button:focus-visible { outline: 1px solid #fff; outline-offset: -5px; border-radius: 99px; }
+#zum-raum { left: 0; padding-right: 18px; } #zur-flaeche { right: 0; padding-left: 18px; }
 .zeiger { position: fixed; z-index: 15; left: max(16px, calc(env(safe-area-inset-left, 0px) + 12px)); top: 50%; transform: translateY(-50%); list-style: none; margin: 0; padding: 0;
   font-family: var(--mono); font-size: 11px; line-height: 1.9; opacity: 0; pointer-events: none; transition: opacity .3s; }
 .zeiger.da { opacity: 1; pointer-events: auto; }
@@ -576,7 +589,14 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
   </div>
 </section>
 
-<div class="steuer" id="steuer"><button type="button" id="flach">Flach lesen</button></div>
+<div class="steuer" id="steuer" role="group" aria-label="Ansicht">
+  <svg class="acht" viewBox="0 0 128 36" aria-hidden="true">
+    <defs><path id="acht-weg" pathLength="100" d="M64.00 18.00 L67.14 19.67 L70.27 21.33 L73.39 22.94 L76.47 24.51 L79.53 26.00 L82.54 27.40 L85.50 28.71 L88.40 29.89 L91.24 30.94 L94.00 31.86 L96.68 32.62 L99.27 33.22 L101.76 33.65 L104.15 33.91 L106.43 34.00 L108.59 33.91 L110.63 33.65 L112.54 33.22 L114.32 32.62 L115.96 31.86 L117.46 30.94 L118.81 29.89 L120.01 28.71 L121.06 27.40 L121.96 26.00 L122.69 24.51 L123.26 22.94 L123.67 21.33 L123.92 19.67 L124.00 18.00 L123.92 16.33 L123.67 14.67 L123.26 13.06 L122.69 11.49 L121.96 10.00 L121.06 8.60 L120.01 7.29 L118.81 6.11 L117.46 5.06 L115.96 4.14 L114.32 3.38 L112.54 2.78 L110.63 2.35 L108.59 2.09 L106.43 2.00 L104.15 2.09 L101.76 2.35 L99.27 2.78 L96.68 3.38 L94.00 4.14 L91.24 5.06 L88.40 6.11 L85.50 7.29 L82.54 8.60 L79.53 10.00 L76.47 11.49 L73.39 13.06 L70.27 14.67 L67.14 16.33 L64.00 18.00 L60.86 19.67 L57.73 21.33 L54.61 22.94 L51.53 24.51 L48.47 26.00 L45.46 27.40 L42.50 28.71 L39.60 29.89 L36.76 30.94 L34.00 31.86 L31.32 32.62 L28.73 33.22 L26.24 33.65 L23.85 33.91 L21.57 34.00 L19.41 33.91 L17.37 33.65 L15.46 33.22 L13.68 32.62 L12.04 31.86 L10.54 30.94 L9.19 29.89 L7.99 28.71 L6.94 27.40 L6.04 26.00 L5.31 24.51 L4.74 22.94 L4.33 21.33 L4.08 19.67 L4.00 18.00 L4.08 16.33 L4.33 14.67 L4.74 13.06 L5.31 11.49 L6.04 10.00 L6.94 8.60 L7.99 7.29 L9.19 6.11 L10.54 5.06 L12.04 4.14 L13.68 3.38 L15.46 2.78 L17.37 2.35 L19.41 2.09 L21.57 2.00 L23.85 2.09 L26.24 2.35 L28.73 2.78 L31.32 3.38 L34.00 4.14 L36.76 5.06 L39.60 6.11 L42.50 7.29 L45.46 8.60 L48.47 10.00 L51.53 11.49 L54.61 13.06 L57.73 14.67 L60.86 16.33Z"/><filter id="acht-glanz" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="1.3" result="w"/><feMerge><feMergeNode in="w"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+    <use href="#acht-weg" class="acht-grund"/>
+    <g class="acht-spur" filter="url(#acht-glanz)"><use href="#acht-weg" stroke-dasharray="16 84" stroke-opacity=".18" style="--o:16"/><use href="#acht-weg" stroke-dasharray="8 92" stroke-opacity=".4" style="--o:8"/><use href="#acht-weg" stroke-dasharray="2.5 97.5" style="--o:2.5"/></g>
+  </svg>
+  <button type="button" id="zum-raum" aria-pressed="true">Raum</button><button type="button" id="zur-flaeche" aria-pressed="false">Fläche</button>
+</div>
 <ol class="zeiger" id="zeiger"></ol>
 
 <script>
@@ -617,7 +637,7 @@ function deckeln(m, px) {
 const intro = document.getElementById("intro"), szene = document.getElementById("szene"), tip = document.getElementById("tip");
 const tafel = szene.querySelector(".tafel"), wort = tafel.querySelector(".wort"), spalte = tafel.querySelector(".spalte"), introText = document.getElementById("intro-text");
 const abschnitt = document.getElementById("bahn-abschnitt"), platz = document.getElementById("raum-platz"), bahnDom = document.getElementById("bahn");
-const steuer = document.getElementById("steuer"), flachKnopf = document.getElementById("flach"), zeiger = document.getElementById("zeiger"), kopfLeiste = document.querySelector(".kopf");
+const steuer = document.getElementById("steuer"), zumRaum = document.getElementById("zum-raum"), zurFlaeche = document.getElementById("zur-flaeche"), zeiger = document.getElementById("zeiger"), kopfLeiste = document.querySelector(".kopf");
 const kapitel = [...bahnDom.querySelectorAll(".kapitel")];
 const schmal = () => innerWidth < 760;
 
@@ -921,15 +941,15 @@ async function bahnBauen() {
     const fp = [], fc = [], fw = [], quer = new THREE.Vector3(), a = new THREE.Vector3(), b = new THREE.Vector3();
     const punkt = (q, d) => bahnPunkt(-d, q, hoehe(d));
     // Je Punkt: wie weit er weht (entlang der Normalen und etwas quer) und seine Phase, damit eine langsame Welle über den Fries läuft
-    const wind = (q, d) => {
-      const frei = klemm(d / D) ** 1.3, nn = normale(-d); bahnPunkt(-d, q + .01, hoehe(d), a); bahnPunkt(-d, q, hoehe(d), b); quer.subVectors(a, b).normalize();
+    const wind = (q, d, k = 1) => {
+      const frei = klemm(d / D) ** 1.3 * k, nn = normale(-d); bahnPunkt(-d, q + .01, hoehe(d), a); bahnPunkt(-d, q, hoehe(d), b); quer.subVectors(a, b).normalize();
       return [nn.x * .045 * frei + quer.x * .02 * frei, nn.y * .045 * frei + quer.y * .02 * frei, nn.z * .045 * frei + quer.z * .02 * frei, d * 7 - q * 1.1];
     };
-    const strich = (qa, da, qb, db, ha, hb) => {
-      fp.push(...punkt(qa, da).toArray(), ...punkt(qb, db).toArray()); fc.push(ha, ha, ha * .97, hb, hb, hb * .97); fw.push(...wind(qa, da), ...wind(qb, db));
+    const strich = (qa, da, qb, db, ha, hb, k) => {
+      fp.push(...punkt(qa, da).toArray(), ...punkt(qb, db).toArray()); fc.push(ha, ha, ha * .97, hb, hb, hb * .97); fw.push(...wind(qa, da, k), ...wind(qb, db, k));
     };
     const hell = d => .26 * (1 - klemm(d / D)) ** 1.2;
-    const zug = pkte => { for (let i = 0; i + 1 < pkte.length; i++) { const [qa, da] = pkte[i], [qb, db] = pkte[i + 1]; strich(qa, da, qb, db, hell(da), hell(db)); } };
+    const zug = (pkte, h = 1, k = 1) => { for (let i = 0; i + 1 < pkte.length; i++) { const [qa, da] = pkte[i], [qb, db] = pkte[i + 1]; strich(qa, da, qb, db, h * hell(da), h * hell(db), k); } };
     // Gewebe: Kante und Abschluss als Schussfaden, dazwischen Kettfäden und zwei Reihen Rauten
     const kq = i => -W2 + RAUM.w * i / n;
     zug(Array.from({ length: 2 * n + 1 }, (_, i) => [-W2 + RAUM.w * i / (2 * n), .014]));
@@ -950,6 +970,17 @@ async function bahnBauen() {
       const qc = fq(j) + fb / 2, dc = GW + .085, gr = fb * .16;
       if (j % 2 === 0) zug(Array.from({ length: 49 }, (_, k) => { const t = Math.PI * 2 * k / 48, r = .5 + Math.cos(t); return [qc + gr * r * Math.sin(t), dc - gr * (r * Math.cos(t) - .72) * .8]; }));
       else zug(Array.from({ length: 65 }, (_, k) => { const t = Math.PI * 2 * k / 64, r = .55 * Math.abs(Math.cos(2 * t)) + .15; return [qc + gr * r * Math.cos(t), dc + gr * r * Math.sin(t) * .8]; }));
+    }
+    // Wenige freie Fäden, die organisch schwingen: zwei, die sich als Zopf durch die Bögen flechten, einer weiter oben mit unruhiger Welle,
+    // und ein paar Ranken, die sich über der Arkade einrollen. Sie wehen stärker als der Rest (k)
+    const breite = Array.from({ length: 121 }, (_, i) => -W2 + RAUM.w * i / 120);
+    for (const ph of [0, Math.PI]) zug(breite.map(q => [q, GW + .075 + .045 * Math.sin(q * Math.PI / fb + ph) + .008 * Math.sin(q * 5.3 + ph)]), .8, 2.6);
+    zug(breite.map(q => [q, GW + BH * .62 + .035 * Math.sin(q * 1.3 + 1) + .022 * Math.sin(q * 3.7 + 2)]), .55, 3.2);
+    for (const [j, sg] of (eng ? [[2, 1], [5, -1]] : [[2, 1], [6, -1], [9, 1]])) {
+      const q0 = fq(j) + fb * .5, d0 = GW + BH * .92, cq = q0 + sg * .035, cd = d0 + .1;
+      const stiel = Array.from({ length: 10 }, (_, k) => { const u = k / 9; return [q0 + sg * .035 * Math.sin(u * Math.PI / 2) + sg * .045 * u * u, d0 + .1 * Math.sin(u * Math.PI / 2)]; });
+      const rolle = Array.from({ length: 40 }, (_, k) => { const u = k / 39, a = u * 2.4 * Math.PI, rr = .045 * (1 - .78 * u); return [cq + sg * rr * Math.cos(a), cd + rr * Math.sin(a)]; });
+      zug([...stiel, ...rolle], .7, 2.2);
     }
     // Fransen über den Scheiteln der Bögen, jede mit einem kleinen Ring am Ende
     let saat = 7; const z = () => (saat = (saat * 16807) % 2147483647) / 2147483647;
@@ -1925,7 +1956,7 @@ function setzeFlach(f, id) {
   });
 }
 function flachSetzen(f, akt, effekt) {
-  flach = f; document.body.classList.toggle("flach", f); flachKnopf.textContent = f ? "Zurück in den Raum" : "Flach lesen";
+  flach = f; document.body.classList.toggle("flach", f); zumRaum.setAttribute("aria-pressed", !f); zurFlaeche.setAttribute("aria-pressed", f);
   if (!f && !document.body.classList.contains("zurueck")) { webZurueck(); appsZurueck(); }
   if (f && !effekt) kipp.wert = kipp.von = kipp.nach = 0;
   const k = akt && document.getElementById(akt);
@@ -1943,7 +1974,7 @@ function flachSetzen(f, akt, effekt) {
     });
     letzterEffekt = k; kapitelEffekt(k);
   } else if (effekt) { kipp.wert = kipp.von = kipp.nach = 0; zustand.halten = false; wechselt = false; }
-  // Auch über den Knopf «Flach lesen» bekommt das Kapitel in der Mitte sein Netz; zurück im Raum zählt beim nächsten Mal wieder jedes Kapitel
+  // Auch über die Acht unten (rechts «Fläche») bekommt das Kapitel in der Mitte sein Netz; zurück im Raum zählt beim nächsten Mal wieder jedes Kapitel
   if (f && !(effekt && k)) requestAnimationFrame(() => {
     const m = innerHeight / 2, mitte = kapitel.find(c => { const r = c.getBoundingClientRect(); return r.top < m && r.bottom > m; });
     if (mitte) { letzterEffekt = mitte; kapitelEffekt(mitte); }
@@ -2676,8 +2707,17 @@ function appsLaufBild(zeit) {
   // Die Kanten des Würfels wachsen von oben nach unten; mit den Platten zusammen sind sie am Ende das Quadrat der drei Zeilen
   const kante = eio(klemm((T - 3.4) / .7));
   if (kante > 0) { stil(schrift, .9, 1.2); for (const [a, c] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) linie([a, 1, c], [a, -1, c], kante); cx.stroke(); }
-  // Die Platten sind von Anfang an da: leere Rechtecke in der Form der Telefone, ohne Bildschirme (Wunsch vom 30. Oktober 2026)
-  stil(schrift, .9, 1.2); platten.forEach(viereck); cx.stroke();
+  // Die Platten sind von Anfang an da: leere Rechtecke in der Form der Telefone, ohne Bildschirme (Wunsch vom 30. Oktober 2026),
+  // mit runden Ecken wie die Telefone im Raum; beim Wegklappen werden die Ecken spitz, damit am Ende das Raster stimmt
+  const rundViereck = (e, r) => {
+    const p = e.map(q => P(q[0], q[1], q[2])), kante = (a, b) => Math.hypot(b[0] - a[0], b[1] - a[1]);
+    r = Math.min(r, .45 * Math.min(...p.map((a, i) => kante(a, p[(i + 1) % 4]))));
+    if (r < .5) { cx.moveTo(p[0][0], p[0][1]); for (let i = 1; i < 4; i++) cx.lineTo(p[i][0], p[i][1]); cx.closePath(); return; }
+    cx.moveTo((p[3][0] + p[0][0]) / 2, (p[3][1] + p[0][1]) / 2);
+    for (let i = 0; i < 4; i++) cx.arcTo(p[i][0], p[i][1], p[(i + 1) % 4][0], p[(i + 1) % 4][1], r);
+    cx.closePath();
+  };
+  stil(schrift, .9, 1.2); platten.forEach((e, n) => rundViereck(e, L.lage[n].b * 16 / (SCHIRM_B + 14) * d * (1 - m))); cx.stroke();
   cx.globalAlpha = 1;
   if (T > 5.6 && apps.k.classList.contains("baut")) apps.k.classList.remove("baut");
   if (T > 6.3) appsStopp();
@@ -2704,7 +2744,8 @@ if ("IntersectionObserver" in window) {
   }, { rootMargin: "-45% 0px -45% 0px" });
   kapitel.forEach(k => beobachter.observe(k));
 }
-flachKnopf.addEventListener("click", () => setzeFlach(!flach));
+zumRaum.addEventListener("click", () => { if (flach) setzeFlach(false); });
+zurFlaeche.addEventListener("click", () => { if (!flach) setzeFlach(true); });
 document.querySelectorAll('a[href^="#k-"]').forEach(a => a.addEventListener("click", e => { e.preventDefault(); zuKapitel(a.getAttribute("href").slice(1)); }));
 
 /* ---------- Tippen und Zeigen im Raum ---------- */
