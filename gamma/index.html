@@ -15,7 +15,7 @@
 /* ornament.cloud/gamma – Landing-Page nach einer Videovorlage (29. Oktober 2026), Entwurf 3. Ein WebGL-Raum (three.js, vendor/three-0.185.1):
    zuerst ein leuchtendes Netz aus den 49 Strophen von «Zu seiner Zeit» und ihren 133 Personen, durch das die Kamera fliegt; eine Tafel
    mit dem Wort des gezogenen Zettels gleitet herein und kippt weg (bei jedem Besuch ein anderer Zettel, #zettel-12 zieht einen bestimmten); dann liegt die Website als Bahn in einer runden Trommel: Webseiten, Apps, Kunst,
-   Experimente (Lab und Das dritte Rad), Zettel, Social und Angebot als Farbfelder (Farben der Startseite /b/), die sich vor der Kamera zum Looping aufbiegen.
+   Experimente (Lab und Das dritte Rad), Zettel und Social (Angebot vorläufig weg) als Farbfelder (Farben der Startseite /b/), die sich vor der Kamera zum Looping aufbiegen.
    Neben der Bahn stehen feine Drahtfiguren je Bereich, Notationen aus den «Laws of Form» und die Schlaufe des Signets.
    Die Bahn-Bilder zeichnet das Skript aus dem HTML der Kapitel unten; die Fläche (rechts in der liegenden Acht unten) zeigt genau dieses HTML. Schriften und Farben des Neubaus. */
 :root {
@@ -400,7 +400,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
 <header class="kopf">
   <a class="marke" href="../b/"><img src="../b/bilder/signet/signet-dunkel.svg" alt="">ornament.cloud <span class="ausgabe"><i>·</i>Gamma Version<i>·</i>Herbst 2026</span></a>
   <nav aria-label="Bereiche">
-    <a href="#k-web">Webseiten</a><a href="#k-apps">Apps</a><a href="#k-kunst">Kunst</a><a href="#k-experimente">Experimente</a><a href="#k-zettel">Zettel</a><a href="#k-social">Social</a><a href="#k-angebot">Angebot</a>
+    <a href="#k-web">Webseiten</a><a href="#k-apps">Apps</a><a href="#k-kunst">Kunst</a><a href="#k-experimente">Experimente</a><a href="#k-zettel">Zettel</a><a href="#k-social">Social</a>
   </nav>
   <a class="pille" href="../b/">Zur Website</a>
 </header>
@@ -422,7 +422,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
     </div>
     <div class="intro-text" id="intro-text">
       <h1>Sieben Bereiche, ein Netz.</h1>
-      <p>Webseiten · Apps · Kunst · Experimente · Zettel · Social · Angebot<br><span id="zug-hinweis">Weiter nach unten</span></p>
+      <p>Webseiten · Apps · Kunst · Experimente · Zettel · Social<br><span id="zug-hinweis">Weiter nach unten</span></p>
     </div>
   </div></div>
 </section>
@@ -582,6 +582,8 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
         <a class="weiter" href="../b/zuletzt/">Zu den Beiträgen →</a>
       </div></article>
 
+      <!-- Angebot vorläufig weg (Christian, 30. Oktober 2026: «kann zurzeit mal weg»); das Kapitel liegt unbenutzt im template -->
+      <template id="k-angebot-spaeter">
       <article class="kapitel k-angebot" id="k-angebot" data-name="Angebot"><div class="k-innen">
         <span class="marke-k">07 · drei Leistungen</span>
         <h2>Angebot</h2>
@@ -593,6 +595,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
         </ol>
         <a class="weiter" href="../b/angebot/">Zum Angebot →</a>
       </div></article>
+      </template>
   </div>
 </section>
 
@@ -607,7 +610,6 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
       <li class="k-exp"><a href="../beta/drittes-rad/">Das dritte Rad <i></i></a></li>
       <li class="k-zettel"><a href="../b/zettel/">Zettel <i></i></a></li>
       <li class="k-social"><a href="../b/zuletzt/">Social <i></i></a></li>
-      <li class="k-angebot"><a href="../b/angebot/">Angebot <i></i></a></li>
     </ul>
     <p>ornament.cloud · Christian Strickler · Gamma, Herbst 2026</p>
   </div>
@@ -648,8 +650,8 @@ const ZUG = (() => {
 })();
 const ZYKLEN = ["Operation", "Rekursion", "Adresse", "Koppelung", "Kunst", "Plattform", "Zukunft"];
 const ROEM = ["I", "II", "III", "IV", "V", "VI", "VII"];
-const KAPITELFARBEN = ["#4f8e9c", "#fadd26", "#a3546f", "#5fb3b4", "#ffffff", "#8fb0ff", "#2f7a58"];   // Quadrate im Intro: auf Schwarz sichtbar
-const LEUCHTFARBEN = ["#7cc4cc", "#fadd26", "#e08aa6", "#8fe0d8", "#d6dbe4", "#9aa6bd", "#5fcf95"];   // Kanten und Marken im Raum
+const KAPITELFARBEN = ["#4f8e9c", "#fadd26", "#a3546f", "#5fb3b4", "#ffffff", "#8fb0ff"];   // Quadrate im Intro: auf Schwarz sichtbar
+const LEUCHTFARBEN = ["#7cc4cc", "#fadd26", "#e08aa6", "#8fe0d8", "#d6dbe4", "#9aa6bd"];   // Kanten und Marken im Raum
 const ZYKLUSFARBEN = ["#ff5c9a", "#ffc21a", "#ff5a3c", "#ffffff", "#8fb0ff", "#3fd08e", "#ffa3d1"];
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const klemm = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
