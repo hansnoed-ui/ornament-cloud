@@ -583,7 +583,7 @@ function deckeln(m, px) {
 }
 
 /* ---------- Das Signet: die Re-entry-Schlaufe r = b + cos t wie in b/tafeln.mjs. b atmet zwischen 0,25 und 0,95, ein Punkt läuft die Schlaufe ab.
-   Raum und flache Seite rechnen mit derselben Uhr, darum geht die Bewegung beim Wechsel ohne Sprung weiter. ---------- */
+   Es steht nur im Raum auf dem Band; die flache Seite beginnt gleich mit der Punktkugel, die daraus wird. ---------- */
 const SIGNET = (() => {
   const xs = [], ys = []; for (let i = 0; i <= 240; i++) { const t = i / 240 * Math.PI * 2, r = .95 + Math.cos(t); xs.push(1.2 * r * Math.cos(t) - .84); ys.push(1.2 * r * Math.sin(t)); }
   return { mx: (Math.min(...xs) + Math.max(...xs)) / 2, my: (Math.min(...ys) + Math.max(...ys)) / 2, sp: Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) };
@@ -595,17 +595,6 @@ function signetForm(sek, n = 240) {
   const linie = []; for (let i = 0; i < n; i++) linie.push(p(i / n * Math.PI * 2));
   const innen = [], w = Math.acos(-b); for (let i = 0; i <= 60; i++) innen.push(p(w + (Math.PI * 2 - 2 * w) * i / 60));
   return { linie, innen, punkt: p(-Math.PI / 2 + ((t0 - 2.5) / 8) * Math.PI * 2) };
-}
-function signetMalen(cv, sek) {
-  const r = cv.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2), b = Math.round(r.width * dpr), h = Math.round(r.height * dpr);
-  if (!b || !h) return;
-  if (cv.width !== b || cv.height !== h) { cv.width = b; cv.height = h; }
-  const cx = cv.getContext("2d"), f = signetForm(sek), gr = Math.min(b, h) * .92, P = q => [b / 2 + q[0] * gr, h / 2 + q[1] * gr];
-  const pfad = (pts) => { cx.beginPath(); pts.forEach((q, i) => cx[i ? "lineTo" : "moveTo"](...P(q))); cx.closePath(); };
-  cx.clearRect(0, 0, b, h);
-  pfad(f.innen); cx.fillStyle = "rgba(255, 255, 255, .32)"; cx.fill();
-  pfad(f.linie); cx.strokeStyle = "#fff"; cx.lineWidth = Math.max(2 * dpr, gr * .0075); cx.lineJoin = "round"; cx.stroke();
-  cx.beginPath(); cx.arc(...P(f.punkt), Math.max(3.5 * dpr, gr * .021), 0, Math.PI * 2); cx.fillStyle = "#fff"; cx.fill();
 }
 
 const intro = document.getElementById("intro"), szene = document.getElementById("szene"), tip = document.getElementById("tip");
@@ -1028,7 +1017,7 @@ async function bahnBauen() {
   }
   figurenBauen(g, bilder);
   bahn.materialien = []; g.traverse(o => { if (o.material) bahn.materialien.push(o.material); });
-  welt.add(g); bahn.gruppe = g;
+  welt.add(g); bahn.gruppe = g; bahn.nurSatellit = null;
   bahn.bereit = true;
   platzMessen();
 }
@@ -1333,6 +1322,7 @@ function figurenBauen(g, bilder) {
     const lg = new THREE.BufferGeometry(); lg.setAttribute("position", new THREE.Float32BufferAttribute([0, 0, .1], 3));
     const licht = new THREE.Points(lg, deckeln(new THREE.PointsMaterial({ size: .05, color: hdr("#8fb0ff", .9), transparent: true, depthWrite: false }), 5));
     sat.add(licht); g.add(sat);
+    kugel.userData.immer = umlauf.userData.immer = sat.userData.immer = true;
     M.identity(); rechtsW.copy(X); obenW.copy(Y);
     schild(`Umlauf ${UMLAUF} s`, bp[Math.round(NB * .75)].clone().addScaledVector(Y, eng ? -.2 : -.24).toArray(), "mass", .5, .6);
     const tP = new THREE.Vector3(), tT = new THREE.Vector3(), tR = new THREE.Vector3(), tY = new THREE.Vector3(), gross = new THREE.Vector3().setScalar(eng ? 1 : .9);
@@ -1536,11 +1526,8 @@ function bild(zeit) {
   if (!ruhig) zustand.dreh += dt * .08 * (1 - weich(.5, .6, zustand.t));
   zustand.v = misch(zustand.v, (zustand.s - sAlt) / Math.max(dt, 1e-3), .2);
   introDom(zustand.t);
-  // Webseiten flach: das Signet bewegt sich, bis es sich verwandelt
-  if (web && flach) {
-    if (!web.k.classList.contains("raster")) { const r = web.logo.getBoundingClientRect(); if (r.bottom > 0 && r.top < innerHeight) signetMalen(web.logo, zeit / 1000); }
-    webLaufBild(zeit);
-  }
+  // Webseiten flach: die Punkte der Verwandlung
+  if (web && flach) webLaufBild(zeit);
   // Während des Wechsels zur flachen Seite läuft das Bild weiter, die Seite blendet darüber
   const imRaum = !flach || document.body.classList.contains("wechsel") || intro.getBoundingClientRect().bottom > 0;
   document.body.classList.toggle("nach-intro", intro.getBoundingClientRect().bottom <= innerHeight * .2);
@@ -1580,6 +1567,9 @@ function bild(zeit) {
       // Das Band selbst ist dabei deckend und ein schwarzer Schleier davor blendet ab: so sieht man nie durch halb durchsichtige Flächen hindurch.
       const auf = ruhig ? 1 : weich(.935, .99, t), umher = ruhig ? 1 : weich(.955, 1, t);
       bahn.gruppe.visible = auf > 0;
+      // Flach folgt auf das Intro die Seite selbst: im Raum darüber bleibt dann nur der Satellit, sonst stünde das Band ein zweites Mal über der Seite
+      const nurSatellit = flach && kipp.wert === 0 && !document.body.classList.contains("wechsel");
+      if (bahn.nurSatellit !== nurSatellit) { bahn.nurSatellit = nurSatellit; bahn.gruppe.children.forEach(o => { if (!o.userData.immer) o.visible = !nurSatellit; }); }
       bahn.materialien.forEach(m => { m.opacity = (m.userData.frueh ? 1 : umher) * (m.userData.a ?? 1); });
       schleier.visible = bahn.gruppe.visible && auf < 1; schleier.material.uniforms.a.value = 1 - auf;
       // Titel liegen flacher, solange sie nah sind, und richten sich auf, während sie davonziehen
@@ -1795,12 +1785,12 @@ if (web) {
   web.k.querySelector(".fi-zu").addEventListener("click", feldZu);
 }
 
-// Die Verwandlung: 360 Punkte auf der Schlaufe, auf einer Kugel, auf den Kanten eines Würfels, auf den Rändern der neun Felder
-const PUNKTE = 360, HALT = .6;
+// Die Verwandlung: 360 Punkte entstehen als Kugel an der Stelle des Signets, wandern auf die Kanten eines Würfels und auf die Ränder der neun Felder.
+// Flach steht kein Signet: beim Wechsel aus dem Raum blendet das Signet des Bandes aus, und die Kugel entsteht auf der leeren Bühne
+const PUNKTE = 360;
 function webRaster(sofort) {
   if (!web || web.k.classList.contains("raster") || web.lauf) return;
   if (sofort || ruhig) { web.k.classList.add("raster"); return; }
-  // Die Rechnung läuft, solange das Signet noch steht; die Punkte übernehmen die Form, die es beim Start der Verwandlung hat
   const L = web.lauf = { t0: performance.now() };
   setTimeout(() => { if (web.lauf === L) webVorbereiten(L); }, 30);
 }
@@ -1828,7 +1818,7 @@ function paaren(A, B) {
 function webVorbereiten(L) {
   const B = web.buehne.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2);
   web.cv.width = Math.round(B.width * dpr); web.cv.height = Math.round(B.height * dpr);
-  const lr = web.logo.getBoundingClientRect(), gr = Math.min(lr.width, lr.height) * .92, lx = lr.left - B.left + lr.width / 2, ly = lr.top - B.top + lr.height / 2;
+  const lr = web.logo.getBoundingClientRect(), lx = lr.left - B.left + lr.width / 2, ly = lr.top - B.top + lr.height / 2;
   const zr = web.zellen.getBoundingClientRect(), a = Math.min(zr.width, zr.height) * .375;
   Object.assign(L, { dpr, lx, ly, zx: zr.left - B.left + zr.width / 2, zy: zr.top - B.top + zr.height / 2, a, R: a * 1.1, F: a * 4 });
   // Kugel nach Fibonacci, Würfel aus der Kugel: jeden Punkt auf die Oberfläche schieben, dann auf die nächste Kante, dort gleichmässig verteilt
@@ -1842,10 +1832,7 @@ function webVorbereiten(L) {
     if (!kanten.has(sch)) kanten.set(sch, { frei, liste: [] }); kanten.get(sch).liste.push({ i, q });
   });
   kanten.forEach(({ frei, liste }) => { liste.sort((u, v) => u.q[frei] - v.q[frei]); liste.forEach((e, r) => { e.q[frei] = -1 + 2 * (r + .5) / liste.length; wuerfel[e.i] = e.q; }); });
-  // Die Schlaufe: so viele Punkte wie die Kugel hat, gepaart mit der Kugel, wie sie zu Beginn von vorn aussieht
-  const f = signetForm((L.t0 + HALT * 1000) / 1000, PUNKTE), schlaufe = f.linie.map(q => [lx + q[0] * gr, ly + q[1] * gr]);
   const proj = (o, cx, cy) => { const s = L.F / (L.F + o[2]); return [cx + o[0] * s, cy + o[1] * s]; };
-  const zuS = paaren(kugel.map(p => proj(p.map(c => c * L.R), lx, ly)), schlaufe);
   // Die Felder: je 40 Punkte auf dem Rand, gepaart mit dem Würfel, wie er am Ende von vorn steht
   const ziel = [];
   web.knoepfe.forEach(b => {
@@ -1853,27 +1840,28 @@ function webVorbereiten(L) {
     for (let j = 0; j < PUNKTE / 9; j++) { let d = j / (PUNKTE / 9) * u; const p = d < w ? [x + d, y] : (d -= w) < h ? [x + w, y + d] : (d -= h) < w ? [x + w - d, y + h] : [x, y + h - (d - w)]; ziel.push(p); }
   });
   const zuZ = paaren(wuerfel.map(p => proj(p.map(c => c * a), L.zx, L.zy)), ziel);
-  L.p = kugel.map((k, i) => ({ k, w: wuerfel[i], s: schlaufe[zuS[i]], z: ziel[zuZ[i]] }));
+  // Die Kugel entsteht von unten nach oben, in der Reihenfolge der Spirale
+  L.p = kugel.map((k, i) => ({ k, w: wuerfel[i], z: ziel[zuZ[i]], e: .7 * i / PUNKTE }));
 }
 const eio = x => (x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
 function webLaufBild(zeit) {
   const L = web && web.lauf; if (!L) return;
-  if (!L.p) { L.t0 = Math.max(L.t0, zeit - HALT * 1000); return; }   // noch nicht gerechnet: das Signet läuft weiter
-  const T = (zeit - L.t0) / 1000 - HALT;
-  if (T < 0) return;
+  if (!L.p) { L.t0 = zeit; return; }   // noch nicht gerechnet
+  const T = (zeit - L.t0) / 1000;
   if (!L.an) { L.an = true; web.k.classList.add("raster", "baut"); }
-  const u1 = eio(klemm((T - .15) / .95)), u2 = eio(klemm((T - 1.45) / .85)), u3 = eio(klemm((T - 2.8) / .8));
-  const pr = klemm((T - .15) / 2.65), ry = Math.PI * 2 * eio(pr), rx = .42 * Math.sin(Math.PI * pr), c1 = Math.cos(ry), s1 = Math.sin(ry), c2 = Math.cos(rx), s2 = Math.sin(rx);
+  const u2 = eio(klemm((T - 1.45) / .85)), u3 = eio(klemm((T - 2.8) / .8));
+  const pr = klemm(T / 2.8), ry = Math.PI * 2 * eio(pr), rx = .42 * Math.sin(Math.PI * pr), c1 = Math.cos(ry), s1 = Math.sin(ry), c2 = Math.cos(rx), s2 = Math.sin(rx);
   const mx = misch(L.lx, L.zx, u2), my = misch(L.ly, L.zy, u2), sz = L.dpr * 2.4;
   const cx = web.cv.getContext("2d"); cx.setTransform(1, 0, 0, 1, 0, 0); cx.clearRect(0, 0, web.cv.width, web.cv.height); cx.fillStyle = "#fff";
-  const deck = klemm(T / .3) * (1 - klemm((T - 3.55) / .45));
+  const deck = 1 - klemm((T - 3.55) / .45);
   for (const q of L.p) {
-    const ox = misch(q.k[0] * L.R, q.w[0] * L.a, u2), oy = misch(q.k[1] * L.R, q.w[1] * L.a, u2), oz = misch(q.k[2] * L.R, q.w[2] * L.a, u2);
+    // Jeder Punkt erscheint und rückt dabei von innen auf die Oberfläche
+    const e = eio(klemm((T - q.e) / .5)); if (!e) continue;
+    const kr = misch(.82, 1, e), ox = misch(q.k[0] * L.R * kr, q.w[0] * L.a, u2), oy = misch(q.k[1] * L.R * kr, q.w[1] * L.a, u2), oz = misch(q.k[2] * L.R * kr, q.w[2] * L.a, u2);
     const x1 = ox * c1 + oz * s1, z1 = -ox * s1 + oz * c1, y1 = oy * c2 - z1 * s2, z2 = oy * s2 + z1 * c2, s = L.F / (L.F + z2);
-    let x = mx + x1 * s, y = my + y1 * s;
-    x = misch(misch(q.s[0], x, u1), q.z[0], u3); y = misch(misch(q.s[1], y, u1), q.z[1], u3);
+    const x = misch(mx + x1 * s, q.z[0], u3), y = misch(my + y1 * s, q.z[1], u3);
     const tiefe = .55 + .45 * klemm(.5 - z2 / (2.4 * L.R));
-    cx.globalAlpha = deck * misch(1, tiefe, Math.min(u1, 1 - u3));
+    cx.globalAlpha = deck * e * misch(1, tiefe, 1 - u3);
     cx.fillRect(x * L.dpr - sz / 2, y * L.dpr - sz / 2, sz, sz);
   }
   if (T > 3.35 && web.k.classList.contains("baut")) web.k.classList.remove("baut");
