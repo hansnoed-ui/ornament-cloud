@@ -966,7 +966,7 @@ async function bahnBauen() {
     bahn.titel.push({ sH, mesh, schatten, hoch: f.h * bahn.k, B: new THREE.Vector3(e[12], e[13], e[14]), X: new THREE.Vector3(e[0], e[1], e[2]),
       Y: new THREE.Vector3(e[4], e[5], e[6]), Z: new THREE.Vector3(e[8], e[9], e[10]), E: bahnPunkt(bahn.kapitel[i].s0 + .03) });
   });
-  // Auf der Bühne der Webseiten steht ein Laptop auf dem Band, auf dem jemand durch ornament.cloud geht (bis 30. Oktober 2026 das Signet).
+  // Auf der Bühne der Webseiten steht ein Laptop aus Linien auf dem Band: erst das Intro des Labs, dann ein Gang durch ornament.cloud (bis 30. Oktober 2026 das Signet).
   // Wie die Telefone ein feines Gitter, das der Krümmung des Bandes folgt; neu gezeichnet nur, wenn sich etwas bewegt und die Kamera in der Nähe ist
   bahn.signete = [];
   bilder.forEach((b, i) => {
@@ -982,9 +982,9 @@ async function bahnBauen() {
     const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
     m.material.userData.frueh = true; m.renderOrder = 3; m.frustumCulled = false; g.add(m);
     const mitte = bahnPunkt(s0 + (ly + lh / 2) * bahn.k, RAUM.w / 2 - (lx + lb / 2) * bahn.k, 0), neu = sek => { if (lt.zeichnen(sek)) tex.needsUpdate = true; };
-    neu(1);
-    // Die Seiten kommen als eigenes Bild nach: sobald es da ist, einmal neu zeichnen
-    if (!surfBild.complete) surfBild.addEventListener("load", () => neu(performance.now() / 1000), { once: true });
+    neu(null);
+    // Die Seiten kommen als eigenes Bild nach: sobald es da ist, einmal neu zeichnen (als Standbild, der Ablauf beginnt erst, wenn jemand hinsieht)
+    if (!surfBild.complete) surfBild.addEventListener("load", () => neu(null), { once: true });
     let zuletzt = -1;
     bahn.signete.push(sek => { if (sek - zuletzt < 1 / 15 || kamera.position.distanceTo(mitte) > 16) return; zuletzt = sek; neu(sek); });
   });
@@ -2294,60 +2294,93 @@ function handyLage(b, h, k = 1) {
   const ph = Math.min(h * .82, (b - 2 * luecke) / 3 / verh) * k, pb = ph * verh;
   return [-1, 0, 1].map(i => ({ x: b / 2 + i * (pb + luecke) - pb / 2, y: (h - ph) / 2, b: pb, h: ph }));
 }
-/* ---------- Webseiten im Raum: ein stilisierter Laptop, auf dem jemand durch ornament.cloud geht ----------
+/* ---------- Webseiten im Raum: ein Laptop aus weissen Linien, auf dem das Intro des Labs läuft und danach jemand durch ornament.cloud geht ----------
+   Das Intro ist das Video der Lab-Seite (9,4 s, 640 × 360); Schwarz wird durchsichtig, so stehen seine Linien direkt auf dem Grün des Bandes.
    Die Seiten sind Bildschirmfotos der Website (1280 px breit, oben 2400 px), verkleinert und untereinander in einem Bild; je Seite Pfad, Lage und Höhe.
    Jede Seite lädt mit einem feinen Strich, scrollt in zwei ruhigen Zügen hinunter, dann klickt der Zeiger und die nächste blendet auf */
-const SURF_BILD = "{{BILD}}gamma/bilder/surfen.webp", SURF_B = 520;
-const SURF_SEITEN = [["b/", 0, 975], ["b/apps/", 975, 975], ["b/zettel/", 1950, 975], ["b/werke/", 2925, 741], ["beta/lab/", 3926, 715], ["b/angebot/webdesign/", 4641, 975]];
-let surfBild = null;
-const LAPTOP_B = 340, LAPTOP_H = 212;
+const SURF_BILD = "{{BILD}}gamma/bilder/surfen.webp", SURF_INTRO = "{{BILD}}gamma/bilder/lab-intro.mp4", SURF_B = 520;
+const SURF_SEITEN = [["b/", 0, 975], ["b/apps/", 975, 975], ["b/zettel/", 1950, 975], ["b/werke/", 2925, 741], ["b/angebot/webdesign/", 3666, 975]];
+const LAPTOP_B = 340, LAPTOP_H = 212, SURF_IB = 640, SURF_IH = 360;
+let surfBild = null, surfVideo = null;
 function laptopBild(farbe, sk = 3) {
-  if (!surfBild) { surfBild = new Image(); surfBild.decoding = "async"; surfBild.src = SURF_BILD; }
+  if (!surfBild) {
+    surfBild = new Image(); surfBild.decoding = "async"; surfBild.src = SURF_BILD;
+    // Das Video steht unsichtbar im Dokument, sonst spielen es manche Telefone nicht ab
+    surfVideo = document.createElement("video"); surfVideo.muted = true; surfVideo.playsInline = true; surfVideo.preload = "auto";
+    surfVideo.setAttribute("muted", ""); surfVideo.setAttribute("playsinline", ""); surfVideo.setAttribute("aria-hidden", "true");
+    surfVideo.style.cssText = "position:fixed;left:0;top:0;width:2px;height:2px;opacity:0;pointer-events:none"; surfVideo.src = SURF_INTRO; document.body.append(surfVideo);
+  }
   const W = LAPTOP_B, H = LAPTOP_H, cv = document.createElement("canvas"); cv.width = W * sk; cv.height = H * sk;
   const cx = cv.getContext("2d"); cx.scale(sk, sk);
+  const iv = document.createElement("canvas"); iv.width = SURF_IB; iv.height = SURF_IH; const ix = iv.getContext("2d", { willReadFrequently: true });
   const rund = (x, y, b, h, r) => { cx.beginPath(); if (cx.roundRect) cx.roundRect(x, y, b, h, r); else cx.rect(x, y, b, h); };
   // Deckel mit Rahmen, darin der Schirm; unten das flache Unterteil, vorn breiter, mit der Mulde zum Aufklappen
   const DX = 22, DB = W - 2 * DX, DH = 190, R = 5, SX = DX + 7, SY = 8, SB = DB - 14, SH = DH - 15, LEISTE = 13;
   const IX = SX, IY = SY + LEISTE, IB = SB, IH = SH - LEISTE, P = 3.8, N = SURF_SEITEN.length;
+  let introAus = false, wache = 0, introDa = false;
+  surfVideo.addEventListener("error", () => { introAus = true; }, { once: true });
   const seite = (n, o, a) => {
     const [, y0, h] = SURF_SEITEN[n], s = IB / SURF_B, sh = IH / s;
     cx.globalAlpha = a; cx.drawImage(surfBild, 0, y0 + o * (h - sh), SURF_B, sh, IX, IY, IB, IH);
   };
+  // Ein Bild des Intros: Helligkeit wird Deckkraft, die Farbe bleibt (die blauen Punkte); das Schwarz des Films liegt bei etwa 12 bis 20 und fällt ganz weg
+  const introFassen = () => {
+    ix.clearRect(0, 0, SURF_IB, SURF_IH); ix.drawImage(surfVideo, 0, 0, SURF_IB, SURF_IH);
+    const d = ix.getImageData(0, 0, SURF_IB, SURF_IH), a = d.data;
+    for (let i = 0; i < a.length; i += 4) { const m = Math.max(a[i], a[i + 1], a[i + 2]); if (m < 28) { a[i + 3] = 0; continue; } const f = 255 / m; a[i] *= f; a[i + 1] *= f; a[i + 2] *= f; a[i + 3] = (m - 28) * 1.45; }
+    ix.putImageData(d, 0, 0); introDa = true;
+  };
+  const intro = a => { if (!introDa) return; const s = Math.min(IB / SURF_IB, IH / SURF_IH), b = SURF_IB * s, h = SURF_IH * s; cx.globalAlpha = a; cx.drawImage(iv, IX + (IB - b) / 2, IY + (IH - h) / 2, b, h); };
   const lauf = t => .4 * eio(klemm((t - .7) / 1)) + .5 * eio(klemm((t - 2) / 1));
   let zuletzt = "";
+  // Ablauf: das Intro dauert, so lange der Film läuft (höchstens 11 s), dann die Seiten; danach beginnt der Film von vorn. Ohne Film nur die Seiten
+  let phase = "intro", t0 = null;
   return { cv, W, H, zeichnen(sek) {
-    const nr = Math.floor(sek / P), n = ((nr % N) + N) % N, t = sek - nr * P, vor = (n + N - 1) % N, bereit = surfBild.complete && surfBild.naturalWidth > 0;
+    const still = sek === null, bereit = surfBild.complete && surfBild.naturalWidth > 0;
+    if (!still && t0 === null) t0 = sek;
+    if (introAus && phase === "intro") { phase = "seiten"; t0 = sek; }
+    if (!still && phase === "intro" && (surfVideo.ended || sek - t0 > 11)) { phase = "seiten"; t0 = sek; }
+    if (!still && phase === "seiten" && sek - t0 >= N * P) { t0 = sek; if (!introAus) { phase = "intro"; surfVideo.currentTime = 0; } }
+    const imIntro = !still && phase === "intro", tp = still ? 2.4 : sek - t0;
+    // Der Film läuft nur, solange jemand hinsieht: bleiben die Aufrufe aus, hält er nach kurzer Zeit an und läuft beim nächsten Mal weiter
+    if (imIntro) {
+      if (surfVideo.paused && !surfVideo.ended) surfVideo.play().catch(() => { introAus = true; });
+      clearTimeout(wache); wache = setTimeout(() => surfVideo.pause(), 1500);
+      if (surfVideo.readyState >= 2) introFassen();
+    } else if (!surfVideo.paused) surfVideo.pause();
+    const T = imIntro ? sek - t0 : 0, mitIntro = !introAus;
+    const nr = imIntro ? -1 : Math.floor(tp / P), n = Math.max(0, nr), t = imIntro ? 0 : tp - nr * P;
     // Zeiger: steht, wo er zuletzt geklickt hat, gleitet zur Ruhe und gegen Ende zum nächsten Link
     const z = (k, q, m) => .5 + .5 * Math.sin(m * k + q), ziel = m => [IX + IB * (.2 + .6 * z(2.3, 4, m)), IY + IH * (.22 + .4 * z(3.1, 0, m))], ruhe = [IX + IB * (.55 + .2 * z(1.7, 1, nr)), IY + IH * (.62 + .2 * z(1.1, 2, nr))];
     const [ax0, ay0] = ziel(nr - 1), [ax1, ay1] = ziel(nr), u1 = eio(klemm((t - .5) / 1)), u2 = eio(klemm((t - 2.9) / .5));
     const zx = misch(misch(ax0, ruhe[0], u1), ax1, u2), zy = misch(misch(ay0, ruhe[1], u1), ay1, u2), klick = klemm((t - 3.42) / .3);
-    const auf = eio(klemm(t / .4)), o = lauf(t);
-    const schluessel = `${bereit}|${n}|${Math.round(o * 400)}|${Math.round(auf * 20)}|${Math.round(zx * 2)}|${Math.round(zy * 2)}|${Math.round(klick * 10)}`;
+    const auf = imIntro ? 1 : eio(klemm(t / .4)), o = lauf(t);
+    const schluessel = imIntro ? "intro" + T : `${bereit}|${n}|${Math.round(o * 400)}|${Math.round(auf * 20)}|${Math.round(zx * 2)}|${Math.round(zy * 2)}|${Math.round(klick * 10)}`;
     if (schluessel === zuletzt) return false;
     zuletzt = schluessel;
-    cx.clearRect(0, 0, W, H);
-    // Unterteil
-    cx.fillStyle = "#0e0e0e"; cx.strokeStyle = farbe; cx.lineWidth = 1.2;
-    cx.beginPath(); cx.moveTo(DX - 4, DH); cx.lineTo(W - DX + 4, DH); cx.lineTo(W - 2, DH + 13); cx.quadraticCurveTo(W - 2, H - 2, W - 8, H - 2); cx.lineTo(8, H - 2); cx.quadraticCurveTo(2, H - 2, 2, DH + 13); cx.closePath(); cx.fill(); cx.stroke();
-    cx.globalAlpha = .55; cx.beginPath(); cx.moveTo(W / 2 - 22, DH + 1); cx.quadraticCurveTo(W / 2, DH + 6, W / 2 + 22, DH + 1); cx.stroke(); cx.globalAlpha = 1;
-    // Deckel und Schirm
-    rund(DX, 1, DB, DH, R); cx.fill(); cx.stroke();
-    cx.fillStyle = "#050505"; cx.fillRect(SX, SY, SB, SH);
-    cx.fillStyle = farbe; cx.globalAlpha = .5; cx.beginPath(); cx.arc(W / 2, 4.5, 1, 0, 7); cx.fill(); cx.globalAlpha = 1;
-    // Browserleiste: drei Punkte, Adressfeld, beim Laden ein feiner Strich
-    cx.fillStyle = "#161616"; cx.fillRect(SX, SY, SB, LEISTE);
-    cx.strokeStyle = "rgba(255,255,255,.55)"; cx.lineWidth = .6; for (let i = 0; i < 3; i++) { cx.beginPath(); cx.arc(SX + 7 + i * 6, SY + LEISTE / 2, 1.7, 0, 7); cx.stroke(); }
-    const fx = SX + 34, fb = SB - 68; cx.fillStyle = "rgba(255,255,255,.09)"; rund(fx, SY + 2.5, fb, LEISTE - 5, 4); cx.fill();
-    cx.fillStyle = "#fff"; cx.globalAlpha = .85; cx.font = `400 5.6px ${SCHIRM_SANS}`; cx.textAlign = "center"; cx.textBaseline = "middle"; if ("letterSpacing" in cx) cx.letterSpacing = ".2px";
-    cx.fillText("ornament.cloud/" + SURF_SEITEN[n][0], fx + fb / 2, SY + LEISTE / 2 + .3); cx.textAlign = "left"; cx.globalAlpha = 1;
-    if (auf < 1) { cx.fillStyle = "#ffffff"; cx.globalAlpha = .7 * (1 - auf); cx.fillRect(SX, SY + LEISTE - 1, SB * auf, 1); cx.globalAlpha = 1; }
-    // Die Seiten: die vorige steht noch, die neue blendet darüber auf
+    cx.clearRect(0, 0, W, H); cx.strokeStyle = farbe; cx.fillStyle = farbe;
+    // Nur Linien: Unterteil mit Mulde, Deckel, Schirm, Kamera
+    cx.lineWidth = 1.2; cx.beginPath(); cx.moveTo(DX - 4, DH); cx.lineTo(W - DX + 4, DH); cx.lineTo(W - 2, DH + 13); cx.quadraticCurveTo(W - 2, H - 2, W - 8, H - 2); cx.lineTo(8, H - 2); cx.quadraticCurveTo(2, H - 2, 2, DH + 13); cx.closePath(); cx.stroke();
+    cx.globalAlpha = .6; cx.beginPath(); cx.moveTo(W / 2 - 22, DH + 1); cx.quadraticCurveTo(W / 2, DH + 6, W / 2 + 22, DH + 1); cx.stroke(); cx.globalAlpha = 1;
+    rund(DX, 1, DB, DH, R); cx.stroke();
+    cx.lineWidth = .6; cx.globalAlpha = .7; cx.strokeRect(SX, SY, SB, SH); cx.beginPath(); cx.arc(W / 2, 4.5, 1, 0, 7); cx.stroke();
+    // Browserleiste: drei Punkte, Adressfeld, unten eine Linie; beim Laden ein feiner Strich
+    cx.beginPath(); cx.moveTo(SX, SY + LEISTE); cx.lineTo(SX + SB, SY + LEISTE); cx.stroke();
+    for (let i = 0; i < 3; i++) { cx.beginPath(); cx.arc(SX + 7 + i * 6, SY + LEISTE / 2, 1.7, 0, 7); cx.stroke(); }
+    const fx = SX + 34, fb = SB - 68; rund(fx, SY + 2.5, fb, LEISTE - 5, 4); cx.stroke();
+    cx.globalAlpha = .95; cx.font = `400 5.6px ${SCHIRM_SANS}`; cx.textAlign = "center"; cx.textBaseline = "middle"; if ("letterSpacing" in cx) cx.letterSpacing = ".2px";
+    cx.fillText("ornament.cloud/" + (imIntro ? "beta/lab/" : SURF_SEITEN[n][0]), fx + fb / 2, SY + LEISTE / 2 + .3); cx.textAlign = "left"; cx.globalAlpha = 1;
+    if (auf < 1) { cx.globalAlpha = .8 * (1 - auf); cx.fillRect(SX, SY + LEISTE - .5, SB * auf, 1); cx.globalAlpha = 1; }
+    // Inhalt: erst das Intro, dann die Seiten; die vorige (oder das letzte Bild des Intros) steht noch, die neue blendet darüber auf
     cx.save(); cx.beginPath(); cx.rect(IX, IY, IB, IH); cx.clip();
-    if (bereit) { if (auf < 1) seite(vor, lauf(P), 1); seite(n, o, auf); cx.globalAlpha = 1; }
-    // Zeiger mit Klick
-    if (klick > 0 && klick < 1) { cx.strokeStyle = "#fff"; cx.globalAlpha = .8 * (1 - klick); cx.lineWidth = .8; cx.beginPath(); cx.arc(zx, zy, 2 + 9 * klick, 0, 7); cx.stroke(); cx.globalAlpha = 1; }
-    cx.translate(zx, zy); cx.beginPath(); cx.moveTo(0, 0); cx.lineTo(0, 9); cx.lineTo(2.4, 6.8); cx.lineTo(4.3, 10.6); cx.lineTo(5.8, 9.9); cx.lineTo(4, 6.3); cx.lineTo(7, 6.1); cx.closePath();
-    cx.fillStyle = "#fff"; cx.fill(); cx.strokeStyle = "#000"; cx.lineWidth = .7; cx.stroke();
+    if (imIntro) intro(1);
+    else if (bereit) {
+      if (auf < 1) { if (nr === 0 && mitIntro) intro(1 - auf); else seite((n + N - 1) % N, lauf(P), 1); }
+      seite(n, o, auf); cx.globalAlpha = 1;
+      if (klick > 0 && klick < 1) { cx.strokeStyle = "#fff"; cx.globalAlpha = .8 * (1 - klick); cx.lineWidth = .8; cx.beginPath(); cx.arc(zx, zy, 2 + 9 * klick, 0, 7); cx.stroke(); cx.globalAlpha = 1; }
+      cx.translate(zx, zy); cx.beginPath(); cx.moveTo(0, 0); cx.lineTo(0, 9); cx.lineTo(2.4, 6.8); cx.lineTo(4.3, 10.6); cx.lineTo(5.8, 9.9); cx.lineTo(4, 6.3); cx.lineTo(7, 6.1); cx.closePath();
+      cx.fillStyle = "#fff"; cx.fill(); cx.strokeStyle = "#000"; cx.lineWidth = .7; cx.stroke();
+    }
     cx.restore();
     return true;
   } };
