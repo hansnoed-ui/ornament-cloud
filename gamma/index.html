@@ -2113,7 +2113,7 @@ const zustand = { y: null, yZiel: 0, u: 0, t: 0, s: 0, v: 0, dreh: 0, maus: { x:
 // Die Seite beginnt unten im Intro beim Signet; wer hinaufscrollt, sieht es zum Netz werden und kommt ganz oben zum blauen Zettel (Christian, 31. Oktober 2026).
 // Von oben: bis ZETTEL der Zettel, bis U_LOGO der Flug durchs Netz, bis U_START die Verwandlung des Signets (hier beginnt die Seite), danach geht es über das Band
 // Die Verwandlung (U_LOGO bis U_START) hat seit dem 31. Oktober abends gut 1,6-mal so viel Scrollweg wie zuerst, Zettel, Netz und Halt sind gleich lang (Christian: «noch etwas verlangsamen»)
-const ZETTEL = .1134, U_LOGO = .4796, U_START = .9118;
+const ZETTEL = .1134, U_LOGO = .4796, U_START = .9118, WOLKE_ENDE = .47;
 const S_START = () => (schmal() ? 4.8 : 4.2);   // so weit hinter dem Anfang steht die Kamera, wenn die Bahn erscheint
 // Höhe des Fensters nur bei neuer Breite übernehmen: die Adressleiste am Handy verschiebt so nichts
 let hoeheStabil = innerHeight, breiteStabil = innerWidth;
@@ -2299,8 +2299,9 @@ function bild(zeit) {
     // Netz
     netz.gruppe.rotation.y = ruhig ? 0 : zeit * .00002;
     const netzA = weich(.05, .22, t) * (1 - weich(.84, .91, t));
-    // Ganz oben beim blauen Zettel: das Netz wird zur Wolke
-    const wolke = ruhig ? 0 : 1 - weich(.008, ZETTEL - .015, zustand.u);
+    // Ganz oben beim blauen Zettel: das Netz wird zur Wolke. Es bleibt auf halbem Weg stehen, als dunstige Wolke, in der das Netz mit seinen Farben
+    // und Namen noch zu sehen ist (Christian, 31. Oktober 2026, 22:21Z: «die Wolke kann an dieser Stelle ihre endgültige Form finden»)
+    const wolke = ruhig ? 0 : WOLKE_ENDE * (1 - weich(.008, ZETTEL - .015, zustand.u));
     netz.wolke.value = wolke; netz.uhr.value = zeit / 1000;
     netz.gruppe.visible = netzA > 0;
     netz.gruppe.children.forEach(o => { if (o.material && o !== netz.quadrate && !o.userData.wolke) o.material.opacity = netzA * (o.isLineSegments ? .55 : 1); });
@@ -2867,11 +2868,12 @@ function handyLage(b, h, k = 1) {
 /* ---------- Websites im Raum: ein Laptop aus weissen Linien, auf dem feiner Punktstaub von Form zu Form fliesst ----------
    Nach dem Stil von ingrassiadaniel.it (Christian, 31. Oktober 2026; bis dahin das Intro des Labs und ein Gang durch ornament.cloud):
    einige tausend feine Punkte sammeln sich zu Christians Formen und Worten, lösen sich zu Staub und finden die nächste Form.
-   Formen: Lichtkugel, Signet, Zettelkasten-Netz, Band, liegende Acht, Wirbel; Worte: entwickeln, gestalten, vernetzen, ornament.cloud.
+   Formen: Lichtkugel, Zettelkasten-Netz, Band, liegende Acht, Wirbel; Worte: entwickeln, gestalten, vernetzen. Der Deckel ist schwarz.
    Jede Form steht etwa zwei Sekunden und dreht sich langsam, dann fliesst der Staub in gut zwei Sekunden weiter. Beim Scrollen wirbelt er etwas auf.
    Koordinaten des Schirms: x von −1 bis 1, y nach oben, z zum Betrachter */
 const LAPTOP_B = 340, LAPTOP_H = 252, STAUB_N = 4200, STAUB_HALT = 2.1, STAUB_FLUSS = 2.1;
-const STAUB_FOLGE = ["staub", "kugel", "signet", "entwickeln", "netz", "gestalten", "band", "vernetzen", "acht", "wirbel", "ornament.cloud"];
+// Ohne Signet und ohne Schriftzug (Christian, 31. Oktober 2026, 22:23Z: «ohne ornament cloud logo drin und auf schwarzem Bildschirm»)
+const STAUB_FOLGE = ["staub", "kugel", "entwickeln", "netz", "gestalten", "band", "vernetzen", "acht", "wirbel"];
 let staubFormen = null;
 function staubFormenBauen() {
   let saat = 7; const zf = () => (saat = (saat * 16807) % 2147483647) / 2147483647, gauss = () => Math.sqrt(-2 * Math.log(zf() + 1e-9)) * Math.cos(6.2832 * zf());
@@ -2892,17 +2894,8 @@ function staubFormenBauen() {
   };
   form("staub", () => [(zf() * 2 - 1) * 1.15, (zf() * 2 - 1) * .7, zf() * 2 - 1], { dreh: .04 });
   form("kugel", i => { const y = 1 - 2 * (i + .5) / N, r = Math.sqrt(1 - y * y), w = i * 2.39996, s = .42 * (1 - .05 * zf()); return [Math.cos(w) * r * s, y * s, Math.sin(w) * r * s]; }, { kipp: .35, dreh: .32 });
-  // Das Signet: die Schlaufe aus dem Logo (Limaçon mit innerer Schlaufe), auf die Höhe des Schirms gebracht
-  {
-    const roh = u => { const a = u * Math.PI * 2, r = .45 + Math.cos(a); return [1.2 * r * Math.cos(a) - .84, 1.2 * r * Math.sin(a)]; };
-    let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9; for (let i = 0; i < 400; i++) { const [x, y] = roh(i / 400); x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
-    const sk = .8 / (y1 - y0), mx = (x0 + x1) / 2, my = (y0 + y1) / 2;
-    staubFormen = staubFormen || {}; staubFormen.signetAuf = u => { const [x, y] = roh(u); return [(x - mx) * sk, (y - my) * sk]; };
-    const k = kurve(staubFormen.signetAuf);
-    form("signet", () => { const [x, y] = k(zf()); return [x + gauss() * .014, y + gauss() * .014, gauss() * .03]; }, { wiege: .45 });
-  }
   // Worte in der Schrift der Website, aus den Pixeln eines unsichtbaren Bildes
-  for (const wort of ["entwickeln", "gestalten", "vernetzen", "ornament.cloud"]) {
+  for (const wort of ["entwickeln", "gestalten", "vernetzen"]) {
     const c = document.createElement("canvas"), x = c.getContext("2d"), px = 120;
     x.font = `500 ${px}px "Instrument Sans", system-ui, sans-serif`; const b = Math.ceil(x.measureText(wort).width) + 20;
     c.width = b; c.height = 170; x.font = `500 ${px}px "Instrument Sans", system-ui, sans-serif`; x.fillStyle = "#fff"; x.textBaseline = "alphabetic"; x.fillText(wort, 10, 125);
@@ -2958,6 +2951,8 @@ function laptopBild(farbe, sk = 3) {
     [[2.3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2.7], .43, .53], [[1, 1, 1, 1.3, 5.4, 1.3, 1, 1, 1], .54, .65]];
   const viereck = (u0, u1, q0, q1) => { const a = ort(u0, q0), b = ort(u1, q0), c = ort(u1, q1), d = ort(u0, q1); rx.moveTo(a[0], a[1]); rx.lineTo(b[0], b[1]); rx.lineTo(c[0], c[1]); rx.lineTo(d[0], d[1]); rx.closePath(); };
   {
+    // Der Deckel ist schwarz, darauf die Linien und der Staub wie auf einem dunklen Bildschirm
+    rund(DX, 1, DB, DH, R); rx.fillStyle = "#000"; rx.fill();
     rx.strokeStyle = farbe; rx.fillStyle = farbe;
     rx.lineWidth = 1.2; rx.beginPath(); rx.moveTo(ul(0), UY); rx.lineTo(ur(0), UY); rx.lineTo(W - 2, UT); rx.quadraticCurveTo(W - 2, H - 2, W - 8, H - 2); rx.lineTo(8, H - 2); rx.quadraticCurveTo(2, H - 2, 2, UT); rx.closePath(); rx.stroke();
     rx.lineWidth = .6; rx.globalAlpha = .6; rx.beginPath(); rx.moveTo(4, UT + 1); rx.lineTo(W - 4, UT + 1); rx.moveTo(W / 2 - 16, H - 2); rx.quadraticCurveTo(W / 2, H - 5.5, W / 2 + 16, H - 2); rx.stroke();
@@ -2982,13 +2977,12 @@ function laptopBild(farbe, sk = 3) {
   };
   const A = [0, 0, 0], B = [0, 0, 0], STUFEN = 4, xs = new Float32Array(N), ys = new Float32Array(N), st = new Uint8Array(N);
   let t0 = null, zuletzt = -1, wind = 0;
-  const punktFarbe = "#f08a5d";
   return { cv, W, H, zeichnen(sek) {
     const still = sek === null;
     // Wer nach einer Weile wiederkommt, sieht den Ablauf von vorn: der Staub sammelt sich zuerst zur Kugel
     if (!still && (t0 === null || sek - zuletzt > 4)) t0 = sek;
     if (!still) zuletzt = sek;
-    const T = still ? (2 * (STAUB_HALT + STAUB_FLUSS) + .8) : (sek - t0) % ZYKLUS, ph = T / (STAUB_HALT + STAUB_FLUSS), k = Math.floor(ph) % F, tf = (ph - Math.floor(ph)) * (STAUB_HALT + STAUB_FLUSS) - STAUB_HALT;
+    const T = still ? (STAUB_HALT + STAUB_FLUSS + .8) : (sek - t0) % ZYKLUS, ph = T / (STAUB_HALT + STAUB_FLUSS), k = Math.floor(ph) % F, tf = (ph - Math.floor(ph)) * (STAUB_HALT + STAUB_FLUSS) - STAUB_HALT;
     const fa = S.formen[STAUB_FOLGE[k]], fb = S.formen[STAUB_FOLGE[(k + 1) % F]], tt = still ? 0 : sek - t0;
     // Beim Scrollen wirbelt der Staub ein wenig auf
     wind = misch(wind, klemm(Math.abs(zustand.v || 0) / 6), .15);
@@ -3009,12 +3003,6 @@ function laptopBild(farbe, sk = 3) {
     for (let j = 0; j < STUFEN; j++) {
       cx.globalAlpha = .22 + .78 * (j / (STUFEN - 1)) ** 1.3; const g = .55 + .1 * j, h = g / 2;
       for (let i = 0; i < N; i++) if (st[i] === j) cx.fillRect(xs[i] - h, ys[i] - h, g, g);
-    }
-    // Beim Signet läuft der rot-orange Punkt die Schlaufe entlang
-    const amSignet = STAUB_FOLGE[k] === "signet" ? 1 - weich(.1, .8, tf / STAUB_FLUSS) : STAUB_FOLGE[(k + 1) % F] === "signet" ? weich(.4, 1, tf / STAUB_FLUSS) : 0;
-    if (amSignet > 0) {
-      const u = (tt * .12) % 1, [px, py] = S.signetAuf(u), f = S.formen.signet, a = f.wiege * Math.sin(tt * .5), x1 = px * Math.cos(a), z1 = -px * Math.sin(a), g = 2.6 / (2.6 - z1);
-      cx.globalAlpha = amSignet; cx.fillStyle = punktFarbe; cx.beginPath(); cx.arc(MX + x1 * g * MASS, MY - py * g * MASS, 2.1, 0, 7); cx.fill();
     }
     cx.restore(); cx.globalAlpha = 1;
     return true;
