@@ -58,7 +58,7 @@ body.flach.nach-intro #welt, body.ohne-3d #welt { visibility: hidden; }
 }
 
 /* ---------- Intro: Text, Beschriftungen und Tafel über dem Raum ---------- */
-#intro { position: relative; z-index: 1; height: 575vh; pointer-events: none; }
+#intro { position: relative; z-index: 1; height: 625vh; pointer-events: none; }
 .intro-buehne { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
 /* Mindestens so hoch wie das Fenster: an einem Büro-PC mit Edge reichten Leinwand und Bühne unten 48 px zu wenig weit */
 body.raum-an .intro-buehne { position: fixed; left: 0; right: 0; top: 0; height: max(100svh, 100%); }
@@ -1775,7 +1775,7 @@ function logoBauen() {
   // Sie zeichnen nach dem schwarzen Schleier, der das Band beim Einblenden deckt
   const stoff = (m, reihe) => { m.envMap = logo.umgebung; m.fog = false; m.transparent = true; m.userData.reihe = reihe; return m; };
   const sRohr = stoff(new THREE.MeshPhysicalMaterial({ color: "#2f4236", metalness: 1, roughness: .15, clearcoat: 1, clearcoatRoughness: .05, iridescence: .35, iridescenceIOR: 1.3, envMapIntensity: .9 }), 2);
-  const sPunkte = stoff(new THREE.MeshPhysicalMaterial({ color: "#d9d6c6", metalness: 1, roughness: .18, clearcoat: 1, envMapIntensity: 1 }), 1);
+  const sPunkte = stoff(new THREE.MeshPhysicalMaterial({ color: "#d9d6c6", metalness: 1, roughness: .25, emissive: "#3a3832", envMapIntensity: .45 }), 1);   // gedämpft: hellere Punkte legen einen Hof um die Kugel (Christian)
   const sRot = stoff(new THREE.MeshPhysicalMaterial({ color: "#f08a5d", roughness: .15, clearcoat: 1, emissive: "#c2410c", emissiveIntensity: .35, envMapIntensity: 1 }), 3);
   const SEG = 400, RAD = 16, rohrGeo = new THREE.TubeGeometry(kurve, SEG, ROHR, RAD, true), rohr = new THREE.Mesh(rohrGeo, sRohr);
   const schlaufe = new THREE.Group(); schlaufe.add(rohr);
@@ -1831,11 +1831,12 @@ function logoBauen() {
   }
   const mtx = new THREE.Matrix4(), q = new THREE.Quaternion(), q0 = new THREE.Quaternion(), v = new THREE.Vector3(), w = new THREE.Vector3(), sk = new THREE.Vector3(), eu = new THREE.Euler();
   const zuSchlaufe = new THREE.Matrix4(), stoffe = [sRohr, sPunkte, sRot, sSchrift];
-  // s: gezeigte Sekunde des Intros, sek: Uhr (für das Kreisen der Kugel und den laufenden Punkt), flug: 0 bis 1 von der Kugel ins Netz
-  function stelle(s, sek, flug) {
+  // s: gezeigte Sekunde des Intros, lauf: Sekunde nach der Uhr (für die eine Drehung), sek: Uhr (Kreisen der Kugel, laufender Punkt), flug: 0 bis 1 von der Kugel ins Netz.
+  // Die Drehung folgt nur der Uhr: beim Scrollen zwischen Kugel und Signet dreht sich nichts, das war zu hektisch (Christian)
+  function stelle(s, lauf, sek, flug) {
     const vorn = io(an(s, 2, 5.6));
     schlaufe.rotation.set(.35 * (1 - vorn), .9 * (1 - vorn), 0);
-    ganzes.rotation.y = Math.PI * 2 * io(an(s, 5.6, 9.6)) + logo.drehGezeigt;
+    ganzes.rotation.y = Math.PI * 2 * io(an(lauf, 5.6, 9.6)) + logo.drehGezeigt;
     if (flug > 0) { halter.updateMatrixWorld(true); netz.gruppe.updateMatrixWorld(); zuSchlaufe.copy(schlaufe.matrixWorld).invert().multiply(netz.gruppe.matrixWorld); }
     const fluss = (s - 1.6) / 2.8, verschwinden = an(s, 4, 5);
     eu.set(.35, sek * .9, 0); q.setFromEuler(eu);
@@ -1884,12 +1885,13 @@ function logoBauen() {
     if (k > .97 && !ruhig) logo.dreh += dt * Math.PI * 2 / 16;
     else logo.dreh = misch(logo.dreh, vorn, 1 - Math.exp(-dt * 2.5));
     logo.drehGezeigt = vorn + (logo.dreh - vorn) * weich(.5, .97, k);
-    // Hinauf: erst steht es, dann wird es zur Kugel, dann fliegen die Punkte ins Netz, das dabei aufblendet
-    const p = ruhig ? 1 : klemm((zustand.u - U_LOGO) / (U_START - U_LOGO)), rueck = eio(1 - an(p, .45, .78)), flug = 1 - an(p, .05, .45);
+    // Hinauf: erst steht es, dann wird es über einen langen Weg gleichmässig zur Kugel, dann fliegen die Punkte ins Netz, das dabei aufblendet
+    const p = ruhig ? 1 : klemm((zustand.u - U_LOGO) / (U_START - U_LOGO)), rueck = gl(1 - an(p, .4, .88)), flug = 1 - an(p, .05, .4);
     halter.visible = flug < 1;
     if (!halter.visible) return;
+    // Ab 8,8 s ist die Schrift fertig; der Rest des Intros ist Drehung und Stehen, der Scrollweg beginnt darum dort
     const lauf = ruhig ? LOGO_DAUER : Math.min(sek - logo.beginn, LOGO_DAUER);
-    stelle(misch(lauf, 1.3, rueck), ruhig ? 0 : sek - logo.beginn, flug);
+    stelle(misch(Math.min(lauf, 8.8), 1.3, rueck), lauf, ruhig ? 0 : sek - logo.beginn, flug);
   };
 }
 
@@ -1899,7 +1901,7 @@ function platzMessen() { if (bahn.L) platz.style.height = Math.round(bahn.L / ba
 const zustand = { y: null, yZiel: 0, u: 0, t: 0, s: 0, v: 0, dreh: 0, maus: { x: 0, y: 0 }, halten: false };
 // Die Seite beginnt unten im Intro beim Signet; wer hinaufscrollt, sieht es zum Netz werden und kommt ganz oben zum blauen Zettel (Christian, 31. Oktober 2026).
 // Von oben: bis ZETTEL der Zettel, bis U_LOGO der Flug durchs Netz, bis U_START die Verwandlung des Signets (hier beginnt die Seite), danach geht es über das Band
-const ZETTEL = .15, U_LOGO = .632, U_START = .884;
+const ZETTEL = .135, U_LOGO = .571, U_START = .895;
 const S_START = () => (schmal() ? 4.8 : 4.2);   // so weit hinter dem Anfang steht die Kamera, wenn die Bahn erscheint
 // Höhe des Fensters nur bei neuer Breite übernehmen: die Adressleiste am Handy verschiebt so nichts
 let hoeheStabil = innerHeight, breiteStabil = innerWidth;
