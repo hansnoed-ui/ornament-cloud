@@ -1205,87 +1205,58 @@ void main() {
       if (sek - zuletzt < 1 / 24) return; zuletzt = sek; zeichne(performance.now() / 1000 - ZF.beginn);
     });
   });
-  // Auf der Bühne der Kunst steht im Raum ein Feld glänzender Säulen in Schwarz und Weiss, dicht an dicht über die ganze Fläche (nach «Pillars» von textures.dev,
-  // hier räumlich). Ihre Höhe folgt einem langsam fliessenden Feld, leicht vom Foto getragen; die Deckel zeigen das Foto in Schwarz und Weiss.
-  // Beim Wechsel zur Fläche sinken alle Säulen ausser denen im Bildrahmen des Fotos, deren Deckel Farbe annehmen; dort übernimmt die flache Seite
+  // Auf der Bühne der Kunst liegt im Raum ein Klecks Acrylfarbe auf Papier, nass glänzend und mit feinem Glitzer. Ein unsichtbarer Kamm zieht einen Bogen hindurch:
+  // Rillen bleiben zurück, vorne staut sich ein Wulst, und der Klecks dehnt sich in Zugrichtung. Dann verläuft die Farbe wieder, und der nächste Zug kommt aus einer anderen Richtung.
+  // Beim Wechsel zur Fläche erscheint im Bildrahmen das Foto und aussen wird es dunkel; dort übernimmt die flache Seite
   bilder.forEach((b, i) => {
     const l = b.lage.kunst; if (!l || !kunst) return;
     const s0 = bahn.kapitel[i].s0, ar = l.b / l.h, a = kunstAusschnitt(ar, kunst.fokus, kunst.format), R = kunstRahmen(a), [imF] = kunstLaden();
-    const textur = (im, farbig) => {
-      const t = new THREE.Texture(im); t.colorSpace = farbig ? THREE.SRGBColorSpace : THREE.NoColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy();
-      if (im.complete && im.naturalWidth) t.needsUpdate = true;
-      im.addEventListener("load", () => { t.needsUpdate = true; });
-      return t;
-    };
-    // Grund unter den Säulen: tiefes Schwarz statt Skizze
-    const geo = new THREE.PlaneGeometry(1, 1, 24, Math.max(6, Math.round(24 / ar))), pos = geo.attributes.position, v = new THREE.Vector3();
-    for (let j = 0; j < pos.count; j++) {
-      const u = pos.getX(j) + .5, w = .5 - pos.getY(j);
-      bahnPunkt(s0 + (l.y + w * l.h) * bahn.k, RAUM.w / 2 - (l.x + u * l.b) * bahn.k, .007, v); pos.setXYZ(j, v.x, v.y, v.z);
+    const foto = new THREE.Texture(imF); foto.colorSpace = THREE.SRGBColorSpace; foto.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    if (imF.complete && imF.naturalWidth) foto.needsUpdate = true;
+    imF.addEventListener("load", () => { foto.needsUpdate = true; });
+    // Die Fläche liegt auf dem Band; zu jedem Punkt die Richtungen der Bühne (rechts, oben) und die Normale des Bandes, für Licht und Glanz
+    const geo = new THREE.PlaneGeometry(1, 1, 40, Math.max(8, Math.round(40 / ar))), pos = geo.attributes.position, nor = geo.attributes.normal, n = pos.count;
+    const bx = new Float32Array(n * 3), by = new Float32Array(n * 3), v = new THREE.Vector3(), v1 = new THREE.Vector3(), v2 = new THREE.Vector3();
+    for (let j = 0; j < n; j++) {
+      const u = pos.getX(j) + .5, w = .5 - pos.getY(j), sj = s0 + (l.y + w * l.h) * bahn.k, q = RAUM.w / 2 - (l.x + u * l.b) * bahn.k;
+      bahnPunkt(sj, q, .008, v); pos.setXYZ(j, v.x, v.y, v.z);
+      bahnPunkt(sj, q - .01, .008, v1); bahnPunkt(sj, q + .01, .008, v2); v1.sub(v2).normalize(); bx.set([v1.x, v1.y, v1.z], 3 * j);
+      bahnPunkt(sj - .01, q, .008, v1); bahnPunkt(sj + .01, q, .008, v2); v1.sub(v2).normalize(); by.set([v1.x, v1.y, v1.z], 3 * j);
+      normale(sj, v); nor.setXYZ(j, v.x, v.y, v.z);
     }
-    const grund = new THREE.MeshBasicMaterial({ color: 0x050505, transparent: true, depthWrite: false, side: THREE.DoubleSide });
-    const m = new THREE.Mesh(geo, grund); grund.userData.frueh = true; m.renderOrder = 3; m.frustumCulled = false; g.add(m);
-    // Säulen in versetzten Reihen; jede steht senkrecht auf dem Band (x quer, y aus dem Band, z entlang)
-    const SP = 42, teil = l.b / SP, reihen = Math.max(4, Math.round(l.h / (teil * .866))), n = SP * reihen, rad = teil * bahn.k * .46;
-    const zyl = new THREE.CylinderGeometry(1, 1, 1, 20, 1).translate(0, .5, 0), iuv = new Float32Array(n * 2);
-    const M = new THREE.Matrix4(), P = new THREE.Vector3(), q1 = new THREE.Vector3(), q2 = new THREE.Vector3(), X = new THREE.Vector3(), N = new THREE.Vector3(), Z = new THREE.Vector3();
-    const uni = { foto: { value: textur(imF, true) }, zeit: { value: 0 }, deck: { value: 1 }, aus: { value: new THREE.Vector4(...a) }, seite: { value: new THREE.Vector2(ar, 1) },
-      rahmen: { value: new THREE.Vector4(...R) }, rm: { value: 0 }, hoch: { value: teil * bahn.k * 2.6 } };
-    const sStoff = new THREE.ShaderMaterial({ uniforms: uni, transparent: true,
-      vertexShader: `attribute vec2 iuv; uniform sampler2D foto; uniform vec4 aus; uniform vec2 seite; uniform float zeit, hoch;
-varying vec2 vf, vq; varying vec3 vn, vwn, vbn, vbx, vbz, vw; varying float vh, vton, vin; ${KUNST_GLSL.split("// Skizze und Foto")[0]}
+    geo.setAttribute("bx", new THREE.BufferAttribute(bx, 3)); geo.setAttribute("by", new THREE.BufferAttribute(by, 3));
+    const farbe = new THREE.Color(ACRYL_FARBE), [zug0, ruhe0] = ruhig ? [1, 1] : [0, 1];
+    const uni = { foto: { value: foto }, aus: { value: new THREE.Vector4(...a) }, rahmen: { value: new THREE.Vector4(...R) }, rm: { value: 0 }, deck: { value: 1 },
+      zeit: { value: 0 }, zug: { value: zug0 }, ruhe: { value: ruhe0 }, dreh: { value: 0 }, rb: { value: ar > 1.45 ? .36 : .33 }, seite: { value: new THREE.Vector2(ar, 1) },
+      farbe: { value: new THREE.Vector3(farbe.r, farbe.g, farbe.b) } };
+    const sAcryl = new THREE.ShaderMaterial({ uniforms: uni, transparent: true, depthWrite: false,
+      vertexShader: `attribute vec3 bx, by; varying vec2 vuv; varying vec3 vw, vX, vY, vN;
 void main() {
-  vf = aus.xy + iuv * aus.zw; vq = position.xz; vn = normal; vh = position.y;
-  vec2 q = iuv * seite;
-  float fl = smoothstep(.3, .72, kFluss(q, zeit)), hell = dot(texture2D(foto, vf).rgb, vec3(.3, .59, .11));
-  vin = kRahmen(iuv);
-  float h = hoch * (.06 + .94 * fl) * (.55 + .45 * hell);
-  h = mix(h, vin * hoch * .8, rm);
-  vton = mix(.02, .97, smoothstep(.36, .64, mix(hell, fl, .45)));   // klar Schwarz oder Weiss, wenig Grau
-  vec3 p = position; p.y *= h;
-  if (h < .002) p = vec3(0.);   // ganz gesunken: keine Säule
-  vec4 w = modelMatrix * instanceMatrix * vec4(p, 1.); vw = w.xyz;
-  vwn = mat3(modelMatrix * instanceMatrix) * normal; vbn = mat3(modelMatrix * instanceMatrix) * vec3(0., 1., 0.);
-  vbx = mat3(modelMatrix * instanceMatrix) * vec3(1., 0., 0.); vbz = mat3(modelMatrix * instanceMatrix) * vec3(0., 0., 1.);
+  vuv = vec2(uv.x, 1. - uv.y); vec4 w = modelMatrix * vec4(position, 1.); vw = w.xyz;
+  vX = mat3(modelMatrix) * bx; vY = mat3(modelMatrix) * by; vN = mat3(modelMatrix) * normal;
   gl_Position = projectionMatrix * viewMatrix * w;
 }`,
-      fragmentShader: `uniform sampler2D foto; uniform float deck, rm; varying vec2 vf, vq; varying vec3 vn, vwn, vbn, vbx, vbz, vw; varying float vh, vton, vin;
+      fragmentShader: KUNST_GLSL.split("// Skizze und Foto")[0] + ACRYL_GLSL + `
 void main() {
-  // Lack wie Klavierlack: zwei Lichtkästen über dem Band, einer längs, einer schräg; die Deckel sind leicht gewölbt, so fängt jeder Glanz
-  vec3 V = normalize(cameraPosition - vw), B = normalize(vbn), X = normalize(vbx), Z = normalize(vbz);
-  vec3 Nn = vn.y > .5 ? normalize(B + (X * vq.x + Z * vq.y) * .9) : normalize(vwn), R = reflect(-V, Nn);
-  vec3 L1 = normalize(B + Z * .8 + X * .25), L2 = normalize(B * .7 - Z * .3 - X * .9);
-  float dif = max(dot(Nn, L1), 0.), saum = pow(1. - abs(dot(Nn, V)), 3.);
-  float glanz = pow(max(dot(R, L1), 0.), 90.) * 1.3 + pow(max(dot(R, L2), 0.), 40.) * .45 + smoothstep(.55, 1., dot(R, B)) * .08;
-  vec3 c;
-  if (vn.y > .5) {
-    c = mix(vec3(vton), texture2D(foto, vf).rgb, rm * vin);   // Deckel: Schwarz und Weiss, im Bildrahmen beim Wechsel das Foto in Farbe
-    c = c * (.62 + .38 * dif) + glanz * (1. - .6 * rm * vin) + saum * .12;
-  } else c = vec3(.012) + vec3(.02) * dif * (.5 + .5 * vh) + glanz * .9 + saum * .1;
-  gl_FragColor = vec4(min(c, vec3(.97)), deck);
+  vec3 c = acryl(vuv);
+  // Wechsel zur Fläche: im Bildrahmen das Foto, aussen dunkel
+  c = mix(c, mix(vec3(.0015), texture2D(foto, aus.xy + vuv * aus.zw).rgb, kRahmen(vuv)), rm);
+  gl_FragColor = vec4(c, deck);
 }` });
-    sStoff.userData.frueh = true;
-    const saeulen = new THREE.InstancedMesh(zyl, sStoff, n);
-    let k = 0;
-    for (let r = 0; r < reihen; r++) for (let c = 0; c < SP; c++) {
-      const u = (c + (r % 2 ? .75 : .25)) / SP, w = (r + .5) / reihen, sj = s0 + (l.y + w * l.h) * bahn.k, q = RAUM.w / 2 - (l.x + u * l.b) * bahn.k;
-      bahnPunkt(sj, q, .007, P); bahnPunkt(sj, q - .01, .007, q1); bahnPunkt(sj, q + .01, .007, q2);
-      X.subVectors(q1, q2).normalize(); normale(sj, N); Z.crossVectors(X, N).normalize(); X.crossVectors(N, Z);
-      M.makeBasis(X.multiplyScalar(rad), N, Z.multiplyScalar(rad)).setPosition(P); saeulen.setMatrixAt(k, M);
-      iuv[2 * k] = u; iuv[2 * k + 1] = w; k++;
-    }
-    zyl.setAttribute("iuv", new THREE.InstancedBufferAttribute(iuv, 2));
-    saeulen.renderOrder = 4; saeulen.frustumCulled = false; g.add(saeulen);
-    saeulen.onBeforeRender = () => { uni.deck.value = sStoff.opacity; };
+    sAcryl.userData.frueh = true;
+    const m = new THREE.Mesh(geo, sAcryl); m.renderOrder = 3; m.frustumCulled = false; g.add(m);
+    m.onBeforeRender = () => { uni.deck.value = sAcryl.opacity; };
     const mitte = bahnPunkt(s0 + (l.y + l.h / 2) * bahn.k, RAUM.w / 2 - (l.x + l.b / 2) * bahn.k, 0);
     let beginn = null;
     bahn.signete.push(sek => {
-      uni.zeit.value = ruhig ? 0 : sek % 1000;
-      // Wechsel zur Fläche: die Säulen sammeln sich im Bildrahmen
       uni.rm.value = kunst.wechselAb ? weich(0, 1, klemm((performance.now() - kunst.wechselAb) / 600)) : 0;
-      // Die Skizze der flachen Seite zählt ab dem Moment, in dem die Kamera nahe kommt (so steht sie nach dem Wechsel schon teilweise)
+      // Die Farbe ruht, bis die Kamera nahe kommt; von da an ein Zug alle ACRYL_T Sekunden, jeder um 2,4 (gut 137°) weitergedreht
+      // (die Skizze der flachen Seite zählt ab demselben Moment, so steht sie nach dem Wechsel schon teilweise)
       if (beginn === null && kamera.position.distanceTo(mitte) < 15) beginn = sek;
-      if (beginn !== null) kunst.raumZug = 1.02 * eio(klemm((sek - beginn) / KUNST_ZUG));
+      if (beginn === null) return;
+      kunst.raumZug = 1.02 * eio(klemm((sek - beginn) / KUNST_ZUG));
+      const t = sek - beginn, [z, r] = acrylLauf(t % ACRYL_T);
+      uni.zeit.value = t % 1000; uni.zug.value = z; uni.ruhe.value = r; uni.dreh.value = Math.floor(t / ACRYL_T) * 2.4;
     });
   });
   figurenBauen(g);
@@ -3630,6 +3601,64 @@ vec3 kFarbe(sampler2D foto, sampler2D linien, vec2 uv, vec2 q, float auf, float 
   f = clamp(g + (f - g) * satt, 0., 1.);
   return mix(mix(grund, tinte, kreide * .9), f, auf);
 }`;
+// Acrylfarbe auf der Bühne der Kunst im Raum: ein Klecks auf Papier, durch den ein unsichtbarer Kamm einen Bogen zieht
+const ACRYL_GLSL = `
+uniform float zeit, zug, ruhe, dreh, deck, rb; uniform vec2 seite; uniform vec3 farbe; uniform sampler2D foto; uniform vec4 aus;
+varying vec2 vuv; varying vec3 vw, vX, vY, vN;
+// Der Kamm dreht um einen Punkt links unten ausserhalb des Kleckses; seine Zähne ziehen Kreisbögen
+const float H = .15, RAND = .1, PHI0 = -.14, PHI1 = 1.2, RHO0 = .56, DR = .19, ZAEHNE = 12.;
+const vec2 PIV = vec2(-1.25, -1.05);
+vec2 aDreh(vec2 p, float a) { float c = cos(a), s = sin(a); return vec2(c * p.x - s * p.y, s * p.x + c * p.y); }
+// Umriss des Kleckses (Halbmesser 1), leicht gewellt
+float aForm(vec2 p) { float a = atan(p.y, p.x); return length(p) - (1. + .035 * sin(3. * a + .7) + .02 * sin(5. * a + 2.1) + .008 * sin(11. * a + .3)); }
+// Vor dem Kamm wird die Farbe nach vorn geschoben: der Umriss dehnt sich in Zugrichtung
+float aUmriss(vec2 p, out float rho, out float th, out vec2 pS) {
+  vec2 d = aDreh(p, -dreh) - PIV; rho = length(d); th = atan(d.y, d.x);
+  float x = th - mix(PHI0, PHI1, zug), g = exp(-x * x / (x > 0. ? .08 : .3)), t = th - zug * ruhe * g * (.1 + .36 * smoothstep(1.1, 2.6, rho)) / max(rho, .6);
+  pS = aDreh(PIV + rho * vec2(cos(t), sin(t)), dreh);
+  return aForm(pS);
+}
+float aHoehe(vec2 p, out float dS) {
+  float rho, th; vec2 pS; dS = aUmriss(p, rho, th, pS);
+  float innen = smoothstep(0., -.04, dS);
+  float h = H * (1. - exp(-max(-dS, 0.) / RAND)) * (1. + .06 * (1. - dot(pS, pS))) + .012 * (kR(pS * 4.) - .5) * innen;
+  float phi = mix(PHI0, PHI1, zug), x = th - phi;
+  float band = smoothstep(RHO0 - DR * .7, RHO0 - DR * .4, rho) * (1. - smoothstep(RHO0 + (ZAEHNE - .6) * DR, RHO0 + (ZAEHNE - .3) * DR, rho));
+  float ritz = pow(.5 + .5 * cos(6.2832 * (rho - RHO0) / DR), 2.);
+  float tief = band * ruhe * smoothstep(PHI0 - .03, PHI0 + .1, th) * (1. - smoothstep(phi - .012, phi + .004, th));
+  h *= 1. - .84 * ritz * tief + .12 * (1. - ritz) * tief;
+  // Wulst vor dem Kamm: was die Zähne aus den Rillen nehmen, staut sich
+  float a = rho * x, wulst = smoothstep(-.014, .04, a) * exp(-max(a - .04, 0.) / .15);
+  h += H * 1.7 * (1. - exp(-rho * (phi - PHI0) * .9)) * wulst * band * ruhe * innen * (.93 + .1 * ritz);
+  return h;
+}
+vec3 acryl(vec2 uv) {
+  vec2 p = vec2((uv.x - .5) * seite.x, .5 - uv.y) / rb;
+  float e = .008, d0, d1, d2, h0 = aHoehe(p, d0), hx = aHoehe(p + vec2(e, 0.), d1), hy = aHoehe(p + vec2(0., e), d2);
+  vec3 nl = normalize(vec3(-(hx - h0) / e, -(hy - h0) / e, 1.));
+  vec3 X = normalize(vX), Y = normalize(vY), N = normalize(vN), V = normalize(cameraPosition - vw);
+  vec3 n = normalize(X * nl.x + Y * nl.y + N * nl.z);
+  vec3 L = normalize(-.5 * X + .6 * Y + .75 * N), L2 = normalize(.7 * X - .25 * Y + .6 * N), Hh = normalize(L + V);
+  float dif = max(dot(n, L), 0.), dif2 = max(dot(n, L2), 0.), nh = max(dot(n, Hh), 0.);
+  float glanz = pow(nh, 160.) * 1.3 + pow(nh, 20.) * .1, saum = pow(1. - max(dot(n, V), 0.), 4.);
+  // Farbe: wo sie dünn liegt (Rillen, Rand), satter und dunkler
+  vec3 alb = farbe * mix(.62, 1., smoothstep(0., H * .85, h0));
+  vec3 c = alb * (.4 + .6 * dif + .14 * dif2) + glanz * .85 + saum * .06;
+  // Glitzer: feine Plättchen mit eigener Neigung, die einzeln aufblitzen
+  vec2 gz = p * 70., gi = floor(gz), gf = fract(gz) - .5;
+  float r1 = kH(gi), r2 = kH(gi + 3.7), r3 = kH(gi + 9.1), punkt = smoothstep(.26, .08, length(gf - (vec2(r2, r3) - .5) * .45));
+  vec3 ng = normalize(nl + vec3((r2 - .5) * 1.3, (r3 - .5) * 1.3, 0.)), ngw = normalize(X * ng.x + Y * ng.y + N * ng.z);
+  c += punkt * (pow(max(dot(ngw, Hh), 0.), 110.) * 1.7 * (.5 + .5 * sin(zeit * 1.7 + r1 * 40.)) + step(.6, r1) * vec3(.1, .08, .09));
+  // Papier mit weichem Schatten nach rechts unten
+  float rr, tt; vec2 pp; float ds = aUmriss(p - vec2(.07, -.1), rr, tt, pp);
+  vec3 papier = vec3(.77, .75, .71) * (.93 + .07 * smoothstep(1.6, -1.2, p.x - p.y * .7));
+  papier *= 1. - .26 * (1. - smoothstep(-.2, .32, ds)) - .2 * smoothstep(.05, 0., d0);
+  float m = clamp(-d0 / max(fwidth(d0), 1e-4) + .5, 0., 1.);
+  return mix(papier, c, m);
+}`;
+const ACRYL_T = 12, ACRYL_FARBE = "#dc95a8";
+// Zug (0 bis 1) und Ruhe (1 = Rillen stehen, 0 = verlaufen) zur Zeit tc im Lauf von ACRYL_T Sekunden
+const acrylLauf = tc => [eio(klemm((tc - 1) / 4.4)), 1 - eio(klemm((tc - 8) / 2.8))];
 const kunst = (() => {
   const k = document.getElementById("k-kunst"); if (!k) return null;
   const bild = k.querySelector(".kunst-bild");
