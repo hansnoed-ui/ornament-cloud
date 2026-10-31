@@ -15,8 +15,22 @@ KOPF = """<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="ornament.cloud im Überblick: ein Netz aus 49 Strophen und 133 Personen, dann Webseiten, Apps, Kunst, Specials, Zettel und Social als Farbfelder auf einer Bahn im Raum.">
+<meta name="description" content="ornament.cloud im Überblick: ein Netz aus 49 Strophen und 133 Personen, dann Websites, Apps, Kunst, Specials, Zettel und Social als Farbfelder auf einer Bahn im Raum.">
 <meta name="robots" content="noindex">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ornament.cloud">
+<meta property="og:locale" content="de_CH">
+<meta property="og:url" content="https://ornament.cloud/gamma/">
+<meta property="og:title" content="ornament.cloud – Sechs Bereiche, ein Netz">
+<meta property="og:description" content="Websites, Apps, Kunst, Specials, Zettel und Social von Christian Strickler, als Bahn in einem Raum aus Licht.">
+<meta property="og:image" content="https://ornament.cloud/assets/kacheln/gamma.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Vorschaukarte von ornament.cloud Gamma: der Satz Sechs Bereiche, ein Netz und ein Punkt im Feld mit Fäden zu sechs anderen">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ornament.cloud – Sechs Bereiche, ein Netz">
+<meta name="twitter:description" content="Websites, Apps, Kunst, Specials, Zettel und Social von Christian Strickler, als Bahn in einem Raum aus Licht.">
+<meta name="twitter:image" content="https://ornament.cloud/assets/kacheln/gamma.png">
 <link rel="icon" href="../b/bilder/signet/signet.svg">"""
 web = html.replace("<!--KOPF-->", KOPF).replace("<!--SCHRIFTEN-->", '<link rel="stylesheet" href="../vendor/fonts/fonts.css">\n</head>\n<body>')
 web = web.replace("{{BILD}}", "../").replace("{{LINK}}", "../").replace("{{VENDOR}}", "../vendor/") + "\n</body>\n</html>\n"
