@@ -63,11 +63,9 @@ body.flach.nach-intro #welt, body.ohne-3d #welt { visibility: hidden; }
 /* Mindestens so hoch wie das Fenster: an einem Büro-PC mit Edge reichten Leinwand und Bühne unten 48 px zu wenig weit */
 body.raum-an .intro-buehne { position: fixed; left: 0; right: 0; top: 0; height: max(100svh, 100%); }
 .szene { position: absolute; inset: 0; }
-/* Text und Zeile hängen am kleinen Fenster (svh), von oben gemessen: so springen sie am Handy nicht, wenn die Adressleiste beim Scrollen verschwindet und die Bühne wächst */
-.intro-text { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); top: calc(100vh - 28px); top: calc(100svh - 28px - env(safe-area-inset-bottom, 0px)); transform: translateY(-100%);
-  display: flex; justify-content: space-between; align-items: end; gap: 20px; color: #fff; }
-.intro-text h1 { margin: 0; font-size: clamp(34px, 6vw, 84px); font-weight: 500; letter-spacing: -.04em; line-height: .95; text-wrap: balance; max-width: 13ch; }
-.intro-text p { margin: 0; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: rgba(255, 255, 255, .62); text-align: right; }
+/* Die Zeile hängt am kleinen Fenster (svh), von oben gemessen: so springt sie am Handy nicht, wenn die Adressleiste beim Scrollen verschwindet und die Bühne wächst.
+   Überschrift und Liste der Bereiche über dem Netz sind weg (Christian, 31. Oktober 2026); die Überschrift bleibt nur zum Vorlesen */
+.nur-vorlesen { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 .etiketten .st { font-size: 10.5px; color: rgba(255, 255, 255, .78); transition: opacity .4s; }
 .etiketten .st b { font-weight: 400; color: rgba(255, 255, 255, .45); margin-right: 6px; }
 .zeile { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); top: calc(100vh - 30px); top: calc(100svh - 30px - env(safe-area-inset-bottom, 0px)); transform: translateY(-100%); max-width: min(560px, calc(100% - 32px)); color: #fff; opacity: 0; transition: opacity .6s; pointer-events: none; }
@@ -122,11 +120,12 @@ body.zurueck .bahn { position: fixed; left: 0; right: 0; pointer-events: none; }
 /* ---------- Kapitel: je ein eigenes Layout, Haarlinien statt Kisten (wie der Neubau /b/).
    Das Band im Raum zeichnet genau diese Seiten nach; Grössen in cqi, damit Band und flache Seite gleich umbrechen. ---------- */
 .kapitel { container-type: inline-size; position: relative; background: var(--k); color: var(--kt); scroll-margin-top: 48px; }
-.k-innen { padding: clamp(40px, 8cqi, 68px) max(clamp(22px, 5.4cqi, 48px), env(safe-area-inset-right, 0px)) clamp(52px, 9cqi, 84px) max(clamp(22px, 5.4cqi, 48px), env(safe-area-inset-left, 0px)); }
+.k-innen { padding: clamp(54px, 10.5cqi, 89px) max(clamp(22px, 5.4cqi, 48px), env(safe-area-inset-right, 0px)) clamp(52px, 9cqi, 84px) max(clamp(22px, 5.4cqi, 48px), env(safe-area-inset-left, 0px)); }
 .kapitel a { color: inherit; text-decoration: none; }
 .kapitel img { display: block; }
-/* Titel in Grossbuchstaben, alle gleich gross (so gross wie «Webseiten»), weniger eng gesetzt (Christian, 30. Oktober 2026) */
-.kapitel h2 { margin: 0; font-size: clamp(34px, 7cqi, 62px); font-weight: 500; letter-spacing: -.015em; line-height: .88; text-transform: uppercase; }
+/* Titel in Grossbuchstaben, alle gleich gross (so gross wie «Webseiten»), weniger eng gesetzt (Christian, 30. Oktober 2026).
+   Seit dem 31. Oktober abends etwas kleiner (85 %) und mit mehr Luft zum oberen Rand des Kapitels */
+.kapitel h2 { margin: 0; font-size: clamp(29px, 6cqi, 53px); font-weight: 500; letter-spacing: -.015em; line-height: .88; text-transform: uppercase; }
 .kapitel h2 .wort, .kapitel h2 .bst { display: inline-block; }
 .kapitel h2 .wort { white-space: nowrap; }
 .marke-k, .kapitel .label { font: 500 11px/1.25 var(--sans); letter-spacing: .1em; text-transform: uppercase; color: var(--kg); }
@@ -159,7 +158,7 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 /* Der Kopf von Webseiten und Apps: links gross der Titel, darunter der Satz; rechts die drei Begriffe, je auf einer Zeile, klein und ohne Satzzeichen,
    ohne Marke darüber: so beziehen sie sich direkt auf den Titel. Ihre Mitte steht auf der Mitte des Titels
    (Innenabstand oben + halbe Zeile des Titels − halbe Höhe der drei Zeilen) */
-:is(.k-web, .k-apps, .k-kunst, .k-exp) .marke-k { position: absolute; top: calc(clamp(40px, 8cqi, 68px) + .43 * clamp(42px, 9cqi, 80px) - 1.68 * clamp(17px, 2.5cqi, 23px)); right: max(clamp(22px, 5.4cqi, 48px), env(safe-area-inset-right, 0px)); margin: 0; }
+:is(.k-web, .k-apps, .k-kunst, .k-exp) .marke-k { position: absolute; top: calc(clamp(54px, 10.5cqi, 89px) + .43 * clamp(36px, 7.7cqi, 68px) - 1.68 * clamp(17px, 2.5cqi, 23px)); right: max(clamp(22px, 5.4cqi, 48px), env(safe-area-inset-right, 0px)); margin: 0; }
 :is(.k-web, .k-apps, .k-kunst, .k-exp) .marke-k .zl { display: block; }
 :is(.k-web, .k-apps, .k-kunst, .k-exp) .marke-k .begriff { font: 500 clamp(17px, 2.5cqi, 23px)/1.12 var(--sans); letter-spacing: -.01em; text-transform: none; color: var(--kt); }
 :is(.k-web, .k-apps, .k-kunst, .k-exp) .leit { font-family: var(--sans); font-style: normal; font-weight: 400; font-size: clamp(19px, 3cqi, 26px); letter-spacing: -.015em; }   /* nüchtern statt kursiv */
@@ -317,9 +316,9 @@ body.flach .k-social:not(.gebaut) .kanal:not(.da) { opacity: 0; transform: trans
    Spalten 61,8 : 38,2, Abstände aus der Fibonacci-Reihe (8, 13, 21, 34, 55, 89; je zwei Nachbarn stehen im goldenen Schnitt), oben und unten 55 : 89 = 38 : 62,
    Leitsätze höchstens 61,8 % breit, Bühnen im goldenen Rechteck 1,618 : 1. Die festen Raster (7 × 7 Strophen, 3 × 3 Themen) und die Dreierreihen bleiben. */
 @container (min-width: 640px) {
-  .k-innen { padding: 55px max(55px, env(safe-area-inset-right, 0px)) 89px max(55px, env(safe-area-inset-left, 0px)); }
+  .k-innen { padding: 76px max(55px, env(safe-area-inset-right, 0px)) 89px max(55px, env(safe-area-inset-left, 0px)); }   /* oben seit 31. Oktober 76 statt 55: mehr Luft über dem Titel */
   .marke-k { margin-bottom: 21px; }
-  :is(.k-web, .k-apps, .k-kunst, .k-exp) .marke-k { top: calc(55px + .43 * clamp(42px, 9cqi, 80px) - 1.68 * clamp(17px, 2.5cqi, 23px)); right: max(55px, env(safe-area-inset-right, 0px)); }
+  :is(.k-web, .k-apps, .k-kunst, .k-exp) .marke-k { top: calc(76px + .43 * clamp(36px, 7.7cqi, 68px) - 1.68 * clamp(17px, 2.5cqi, 23px)); right: max(55px, env(safe-area-inset-right, 0px)); }
   .kapitel .leit { margin: 21px 0 55px; max-width: 61.8%; }
   .kapitel .weiter { margin-top: 34px; }
   .buehne { --ar: 1.618; margin: 21px 0 34px; }
@@ -419,10 +418,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
         <p class="satz"><small id="zug-kopf">Gezogen</small><span id="zug-satz">«Der Anschluss erfindet die Welt, die ihn im Nachhinein notwendig erscheinen lässt.»</span></p>
       </div>
     </div>
-    <div class="intro-text" id="intro-text">
-      <h1>Sechs Bereiche, ein Netz.</h1>
-      <p>Webseiten · Apps · Kunst · Specials · Zettel · Social<br><span id="zug-hinweis">Weiter nach unten</span></p>
-    </div>
+    <h1 class="nur-vorlesen">Sechs Bereiche, ein Netz.</h1>
   </div></div>
 </section>
 <div class="tip" id="tip" hidden></div>
@@ -669,7 +665,7 @@ function deckeln(m, px) {
 }
 
 const intro = document.getElementById("intro"), szene = document.getElementById("szene"), tip = document.getElementById("tip");
-const tafel = szene.querySelector(".tafel"), wort = tafel.querySelector(".wort"), spalte = tafel.querySelector(".spalte"), introText = document.getElementById("intro-text");
+const tafel = szene.querySelector(".tafel"), wort = tafel.querySelector(".wort"), spalte = tafel.querySelector(".spalte");
 const abschnitt = document.getElementById("bahn-abschnitt"), platz = document.getElementById("raum-platz"), bahnDom = document.getElementById("bahn");
 const steuer = document.getElementById("steuer"), zumRaum = document.getElementById("zum-raum"), zurFlaeche = document.getElementById("zur-flaeche"), zeiger = document.getElementById("zeiger"), kopfLeiste = document.querySelector(".kopf");
 // Glas der Acht: der Weichzeichner hinter der Acht folgt genau ihrer Form (Pfad in px, Steuerung ist 148 × 72 wie die viewBox)
@@ -684,7 +680,6 @@ const zugWort = document.getElementById("zug-wort");
 zugWort.textContent = ZUG[2];
 document.getElementById("zug-kopf").textContent = `Gezogen: Strophe ${ZUG[0]} · ${ZYKLEN[ZUG[1]]}`;
 document.getElementById("zug-satz").textContent = "«" + ZUG[3] + "»";
-document.getElementById("zug-hinweis").textContent = `Gezogen: Zettel ${ZUG[0]}, ${ZUG[2]}`;
 // Am Handy steht die Tafel unten, so hoch wie ihr Inhalt (Liste, Zahlen, gezogener Satz), höchstens 64 % des Fensters.
 // Die Spalte hat dort eine feste Breite, damit beim Aufziehen der Tafel nichts neu umbricht.
 function tafelHoehe() {
@@ -876,16 +871,61 @@ function netzBauen() {
   }
   netz.knoten = kn; netz.zug = kn.find(k => k.art === "strophe" && k.s === ZUG);
   const g = new THREE.Group();
-  // Linien
-  const lp = [], lc = [];
-  for (const [a, b, stark] of kanten) { lp.push(...a.p.toArray(), ...b.p.toArray()); const c = stark ? hdr(a.farbe, .55) : hdr("#8fb0ff", .3); lc.push(c.r, c.g, c.b, c.r, c.g, c.b); }
+  // Ganz oben, wo der blaue Zettel liegt, wird das Netz zu einem wolkenartigen Gewebe (Christian, 31. Oktober 2026). Jeder Knoten hat dafür einen Platz
+  // in einer Haufenwolke aus mehreren Wölbungen (meist nahe ihrer Haut), jede Kante ist in Stücke geteilt und legt sich als Bogen über die Wölbungen.
+  // Der Shader mischt Netz und Wolke (netz.wolke, 0 bis 1) und lässt die Wolke langsam atmen (netz.uhr)
+  // Das Netz liegt waagrecht (die Zyklen auf einem Kreis in x und z): die Wölbungen liegen darum rundum in der Fläche, Kuppeln steigen nach oben
+  const WOLKE = [[-1.3, -.05, .3, .52], [-.7, 0, -.65, .56], [0, .05, .75, .6], [.78, 0, -.45, .6], [1.38, -.05, .28, .5], [-.2, .08, -.05, .78],
+    [-.5, .5, .2, .5], [.42, .55, -.12, .52], [0, .88, .05, .42]];
+  const wm = new THREE.Vector3(), wr = new THREE.Vector3();
+  const wolkeVon = (p, h, ziel = new THREE.Vector3()) => {   // h: 0 in der Mitte einer Wölbung, 1 auf ihrer Haut
+    let best = WOLKE[0], bs = -1e9;
+    for (const w of WOLKE) { const s = 1 - wm.set(w[0], w[1], w[2]).distanceTo(p) / w[3]; if (s > bs) { bs = s; best = w; } }
+    wm.set(best[0], best[1], best[2]); wr.subVectors(p, wm); if (wr.lengthSq() < 1e-8) wr.set(0, 1, 0); wr.normalize();
+    ziel.copy(wm).addScaledVector(wr, best[3] * (.45 + .55 * h));
+    if (ziel.y < -.4) ziel.y = -.4 + (ziel.y + .4) * .2;   // flacher Boden
+    return ziel;
+  };
+  kn.forEach(k => { k.w = wolkeVon(k.p, Math.sqrt(z() + .5)); });
+  netz.wolke = { value: 0 }; netz.uhr = { value: 0 };
+  const WOLKE_GLSL = ["attribute vec3 wziel;\nuniform float wolke, uhr;\n",
+    "#include <begin_vertex>\n  transformed = mix(transformed, wziel + .025 * sin(uhr * .45 + wziel.yzx * 4.3), wolke * wolke * (3. - 2. * wolke));"];
+  const wolkig = (m, schluessel, punkte = false) => {
+    const vorher = m.onBeforeCompile;
+    m.onBeforeCompile = sh => {
+      if (vorher) vorher(sh);
+      sh.uniforms.wolke = netz.wolke; sh.uniforms.uhr = netz.uhr;
+      // In der Wolke werden die Fäden blass und silbrig (dicht übereinander leuchten sie sonst zu hell), die Punkte kleiner
+      sh.vertexShader = WOLKE_GLSL[0] + sh.vertexShader.replace("#include <begin_vertex>", WOLKE_GLSL[1])
+        .replace("#include <color_vertex>", "#include <color_vertex>\n  vColor.rgb = mix(vColor.rgb, vColor.rgb * .3 + vec3(.12, .14, .19), wolke);");
+      if (punkte) sh.vertexShader = sh.vertexShader.replace("#include <fog_vertex>", "gl_PointSize *= 1. - .6 * wolke;\n#include <fog_vertex>");
+    };
+    m.customProgramCacheKey = () => "netzwolke-" + schluessel;
+    return m;
+  };
+  // Linien, je Kante in zehn Stücke geteilt (gerade im Netz, als Bogen in der Wolke)
+  const lp = [], lc = [], lw = [], pa = new THREE.Vector3(), pb = new THREE.Vector3(), qa = new THREE.Vector3(), qb = new THREE.Vector3(), haut = new THREE.Vector3();
+  for (const [a, b, stark] of kanten) {
+    const c = stark ? hdr(a.farbe, .55) : hdr("#8fb0ff", .3), weit = .35 + .35 * (z() + .5);
+    const stelle = (t, np, wp) => {
+      np.lerpVectors(a.p, b.p, t); wp.lerpVectors(a.w, b.w, t);
+      const bogen = Math.sin(Math.PI * t); if (bogen > 1e-4) wp.lerp(wolkeVon(wp, 1, haut), bogen * weit);
+    };
+    for (let i = 0; i < 10; i++) {
+      stelle(i / 10, pa, qa); stelle((i + 1) / 10, pb, qb);
+      lp.push(...pa.toArray(), ...pb.toArray()); lw.push(...qa.toArray(), ...qb.toArray()); lc.push(c.r, c.g, c.b, c.r, c.g, c.b);
+    }
+  }
   const lg = new THREE.BufferGeometry(); lg.setAttribute("position", new THREE.Float32BufferAttribute(lp, 3)); lg.setAttribute("color", new THREE.Float32BufferAttribute(lc, 3));
-  g.add(new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: .45, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false })));
+  lg.setAttribute("wziel", new THREE.Float32BufferAttribute(lw, 3));
+  g.add(new THREE.LineSegments(lg, wolkig(new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: .45, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }), "linien")));
   // Punkte je Art
   const punkte = (liste, groesse, farbe) => {
-    const pos = [], col = []; liste.forEach(k => { pos.push(...k.p.toArray()); const c = farbe(k); col.push(c.r, c.g, c.b); });
+    const pos = [], col = [], wz = []; liste.forEach(k => { pos.push(...k.p.toArray()); wz.push(...k.w.toArray()); const c = farbe(k); col.push(c.r, c.g, c.b); });
     const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
-    const m = new THREE.Points(geo, deckeln(new THREE.PointsMaterial({ size: groesse, vertexColors: true, sizeAttenuation: true, transparent: true, depthWrite: false, toneMapped: false }), groesse > .06 ? 9 : 6)); g.add(m); return m;
+    geo.setAttribute("wziel", new THREE.Float32BufferAttribute(wz, 3));
+    const px = groesse > .06 ? 9 : 6;
+    const m = new THREE.Points(geo, wolkig(deckeln(new THREE.PointsMaterial({ size: groesse, vertexColors: true, sizeAttenuation: true, transparent: true, depthWrite: false, toneMapped: false }), px), "punkte" + px, true)); g.add(m); return m;
   };
   punkte(kn.filter(k => k.art === "person"), .022, () => hdr("#8fb0ff", .8));
   punkte(kn.filter(k => k.art === "strophe"), .05, k => hdr(k.farbe, .95));
@@ -979,20 +1019,21 @@ async function bahnBauen() {
   g.add(new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false })));
   // Am Anfang ist das Band an den Raum gebunden: ein niedriger Fries über die ganze Breite, hinter der oberen Kante, flach auf dem Boden der Trommel.
   // Zuerst ein Streifen Gewebe (Kettfäden mit Rauten), darüber verschränkte Bögen, in den Feldern abwechselnd die Re-entry-Schlaufe
-  // (r = b + cos t) und eine Rosette, oben kurze Fransen. Was weiter von der Kante weg ist, wird blasser und weht leicht (Shader, Uhr in bahn.wehen)
+  // (r = b + cos t) und eine Rosette; seit dem 31. Oktober abends darüber eine zweite Reihe (Flechtband und kleine Arkade), oben Ranken und kurze Fransen.
+  // Was weiter von der Kante weg ist, wird blasser und weht leicht (Shader, Uhr in bahn.wehen)
   {
-    const W2 = RAUM.w / 2, n = eng ? 26 : 40, m = eng ? 8 : 12, GW = .15, D = .56, hoehe = d => .004 + .1 * (d / D) ** 2;
+    const W2 = RAUM.w / 2, n = eng ? 26 : 40, m = eng ? 8 : 12, GW = .15, D = .9, DW = .56, hoehe = d => .004 + .1 * (d / D) ** 2;
     const fp = [], fc = [], fw = [], quer = new THREE.Vector3(), a = new THREE.Vector3(), b = new THREE.Vector3();
     const punkt = (q, d) => bahnPunkt(-d, q, hoehe(d));
     // Je Punkt: wie weit er weht (entlang der Normalen und etwas quer) und seine Phase, damit eine langsame Welle über den Fries läuft
     const wind = (q, d, k = 1) => {
-      const frei = klemm(d / D) ** 1.3 * k, nn = normale(-d); bahnPunkt(-d, q + .01, hoehe(d), a); bahnPunkt(-d, q, hoehe(d), b); quer.subVectors(a, b).normalize();
+      const frei = klemm(d / DW) ** 1.3 * k, nn = normale(-d); bahnPunkt(-d, q + .01, hoehe(d), a); bahnPunkt(-d, q, hoehe(d), b); quer.subVectors(a, b).normalize();
       return [nn.x * .045 * frei + quer.x * .02 * frei, nn.y * .045 * frei + quer.y * .02 * frei, nn.z * .045 * frei + quer.z * .02 * frei, d * 7 - q * 1.1];
     };
     const strich = (qa, da, qb, db, ha, hb, k) => {
       fp.push(...punkt(qa, da).toArray(), ...punkt(qb, db).toArray()); fc.push(ha, ha, ha * .97, hb, hb, hb * .97); fw.push(...wind(qa, da, k), ...wind(qb, db, k));
     };
-    const hell = d => .26 * (1 - klemm(d / D)) ** 1.2;
+    const hell = d => .26 * (1 - klemm(d / D)) ** 1.4;
     const zug = (pkte, h = 1, k = 1) => { for (let i = 0; i + 1 < pkte.length; i++) { const [qa, da] = pkte[i], [qb, db] = pkte[i + 1]; strich(qa, da, qb, db, h * hell(da), h * hell(db), k); } };
     // Gewebe: Kante und Abschluss als Schussfaden, dazwischen Kettfäden und zwei Reihen Rauten
     const kq = i => -W2 + RAUM.w * i / n;
@@ -1020,8 +1061,28 @@ async function bahnBauen() {
     const breite = Array.from({ length: 121 }, (_, i) => -W2 + RAUM.w * i / 120);
     for (const ph of [0, Math.PI]) zug(breite.map(q => [q, GW + .075 + .045 * Math.sin(q * Math.PI / fb + ph) + .008 * Math.sin(q * 5.3 + ph)]), .8, 2.6);
     zug(breite.map(q => [q, GW + BH * .62 + .035 * Math.sin(q * 1.3 + 1) + .022 * Math.sin(q * 3.7 + 2)]), .55, 3.2);
+    // Zweite Reihe: ein Flechtband aus zwei gegenläufigen Wellen mit Ringen in den Kreuzungen und einer Perlschnur darüber,
+    // dann eine kleinere verschränkte Arkade aus halben Feldern mit Ringen über den Scheiteln. Ranken und Fransen sitzen auf dieser Reihe
+    const G2 = GW + BH + .02, GH = .1, A2 = G2 + GH + .018, AH = .1, OBEN = A2 + AH, fein = Array.from({ length: 481 }, (_, i) => -W2 + RAUM.w * i / 480);
+    zug(breite.map(q => [q, G2]), .8); zug(breite.map(q => [q, G2 + GH]), .8);
+    for (const ph of [0, Math.PI]) zug(fein.map(q => [q, G2 + GH / 2 + GH * .38 * Math.sin((q + W2) * 2 * Math.PI / fb + ph)]), .9, 1.4);
+    zug(fein.map(q => [q, G2 + GH / 2 + GH * .16 * Math.sin((q + W2) * 6 * Math.PI / fb)]), .45, 1.8);
+    for (let j = 0; j <= 2 * m; j++) {
+      const q = -W2 + fb * j / 2; if (q < -W2 + .02 || q > W2 - .02) continue;
+      zug(Array.from({ length: 13 }, (_, k) => { const w = Math.PI * 2 * k / 12; return [q + .014 * Math.cos(w), G2 + GH / 2 + .014 * Math.sin(w)]; }), 1.1);
+    }
+    for (let j = 0; j < 6 * m; j++) {
+      const q = -W2 + fb * (j + .5) / 6;
+      zug(Array.from({ length: 9 }, (_, k) => { const w = Math.PI * 2 * k / 8; return [q + .005 * Math.cos(w), A2 - .009 + .005 * Math.sin(w)]; }), .7);
+    }
+    for (let j = -1; j < 2 * m; j++) {
+      const x0 = -W2 + fb * j / 2;
+      zug(Array.from({ length: 25 }, (_, k) => { const w = Math.PI * k / 24; return [x0 + fb / 2 * (1 - Math.cos(w)), A2 + AH * Math.sin(w)]; }).filter(([q]) => q >= -W2 - 1e-6 && q <= W2 + 1e-6), .9);
+      const qa = x0 + fb / 2;
+      if (qa > -W2 + .02 && qa < W2 - .02) zug(Array.from({ length: 11 }, (_, k) => { const w = Math.PI * 2 * k / 10; return [qa + .008 * Math.cos(w), OBEN + .014 + .008 * Math.sin(w)]; }), .9);
+    }
     for (const [j, sg] of (eng ? [[2, 1], [5, -1]] : [[2, 1], [6, -1], [9, 1]])) {
-      const q0 = fq(j) + fb * .5, d0 = GW + BH * .92, cq = q0 + sg * .035, cd = d0 + .1;
+      const q0 = fq(j) + fb * .5, d0 = OBEN - .01, cq = q0 + sg * .035, cd = d0 + .1;
       const stiel = Array.from({ length: 10 }, (_, k) => { const u = k / 9; return [q0 + sg * .035 * Math.sin(u * Math.PI / 2) + sg * .045 * u * u, d0 + .1 * Math.sin(u * Math.PI / 2)]; });
       const rolle = Array.from({ length: 40 }, (_, k) => { const u = k / 39, a = u * 2.4 * Math.PI, rr = .045 * (1 - .78 * u); return [cq + sg * rr * Math.cos(a), cd + rr * Math.sin(a)]; });
       zug([...stiel, ...rolle], .7, 2.2);
@@ -1029,7 +1090,7 @@ async function bahnBauen() {
     // Fransen über den Scheiteln der Bögen, jede mit einem kleinen Ring am Ende
     let saat = 7; const z = () => (saat = (saat * 16807) % 2147483647) / 2147483647;
     for (let j = 0; j <= m; j++) {
-      const q = fq(j), d0 = GW + BH, d1 = d0 + .06 + .06 * z();
+      const q = fq(j), d0 = OBEN + .03, d1 = d0 + .06 + .06 * z();
       zug([[q, d0], [q, d1]]);
       zug(Array.from({ length: 13 }, (_, k) => { const w = Math.PI * 2 * k / 12; return [q + .011 * Math.cos(w), d1 + .011 + .011 * Math.sin(w)]; }));
     }
@@ -1098,7 +1159,8 @@ async function bahnBauen() {
   bilder.forEach((b, i) => {
     const l = b.lage.surfen; if (!l) return;
     const s0 = bahn.kapitel[i].s0, farbe = getComputedStyle(kapitel[i]).color, A = LAPTOP_B / LAPTOP_H;
-    const lb = Math.min(l.b * .76, l.h * .9 * A), lh = lb / A, lx = l.x + (l.b - lb) / 2, ly = l.y + (l.h - lh) / 2;
+    const lb = Math.min(l.b * .57, l.h * .675 * A), lh = lb / A,   // seit 31. Oktober 25 % kleiner (Christian)
+      lx = l.x + (l.b - lb) / 2, ly = l.y + (l.h - lh) / 2;
     const lt = laptopBild(farbe), tex = new THREE.CanvasTexture(lt.cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
     const geo = new THREE.PlaneGeometry(1, 1, 8, 6), pos = geo.attributes.position, v = new THREE.Vector3();
     for (let j = 0; j < pos.count; j++) {
@@ -2010,9 +2072,6 @@ function kameraSetzen() {
 function introDom(t) {
   const eng = schmal();
   const u = zustand.u;
-  // Die Überschrift steht, sobald der Zettel hinaus ist und das Netz frei liegt, und geht mit dem Flug hinein.
-  // Sie ist weg (t .34), bevor unten die Zeile der Strophen einblendet: beide stehen am selben Ort (Christian sah sie übereinander)
-  introText.style.opacity = weich(ZETTEL - .05, ZETTEL, u) * (1 - weich(.3, .34, t));
   // Ganz oben liegt die Tafel in Blaupause (der blaue Zettel); nach unten gleitet sie hinaus, bevor der Flug ins Netz beginnt
   const auf = 1 - weich(ZETTEL - .1, ZETTEL - .02, u);
   const B = eng ? innerWidth : Math.min(innerWidth * .4, 560), dx = ((1 - auf) * B).toFixed(1);
@@ -2062,7 +2121,7 @@ function stropheZeigen(t) {
       neu.querySelector("small").textContent = `Strophe ${erste.k.s[0]} · ${ZYKLEN[erste.k.s[1]]} · ${erste.k.s[2]}`; neu.querySelector("q").textContent = erste.k.s[3];
       alt.classList.remove("an"); neu.classList.add("an");
     }
-    zeile.style.opacity = an * weich(.34, .38, t);   // erst wenn die Überschrift weg ist
+    zeile.style.opacity = an;
   } else zeile.style.opacity = 0;
 }
 
@@ -2091,7 +2150,9 @@ function bild(zeit) {
   document.body.classList.toggle("nach-intro", intro.getBoundingClientRect().bottom <= innerHeight * .2);
   const r = abschnitt.getBoundingClientRect(), drin = r.top < innerHeight * .3 && r.bottom > innerHeight * .5;
   steuer.classList.toggle("da", drin || (!flach && zustand.t > .97 && logo.ein > .5 && r.bottom > innerHeight * .5));
-  zeiger.classList.toggle("da", drin); kopfLeiste.classList.toggle("ohne-nav", drin);
+  // Im Netz und beim Zettel oben braucht es das Menü auch nicht (Christian, 31. Oktober 2026): es geht weg, sobald die Punkte ins Netz fliegen
+  const imNetz = !ruhig && zustand.u < U_LOGO + .4 * (U_START - U_LOGO);
+  zeiger.classList.toggle("da", drin); kopfLeiste.classList.toggle("ohne-nav", drin || imNetz);
   // aktives Kapitel
   let akt = 0;
   if (flach) kapitel.forEach((k, i) => { if (k.getBoundingClientRect().top < innerHeight * .4) akt = i; });
@@ -2105,6 +2166,9 @@ function bild(zeit) {
     // Netz
     netz.gruppe.rotation.y = ruhig ? 0 : zeit * .00002;
     const netzA = weich(.05, .22, t) * (1 - weich(.84, .91, t));
+    // Ganz oben beim blauen Zettel: das Netz wird zur Wolke
+    const wolke = ruhig ? 0 : 1 - weich(.008, ZETTEL - .015, zustand.u);
+    netz.wolke.value = wolke; netz.uhr.value = zeit / 1000;
     netz.gruppe.visible = netzA > 0;
     netz.gruppe.children.forEach(o => { if (o.material && o !== netz.quadrate) o.material.opacity = netzA * (o.isLineSegments ? .55 : 1); });
     const zuHub = weich(.06, .22, t), qp = netz.quadrate.geometry.attributes.position;
@@ -2114,7 +2178,7 @@ function bild(zeit) {
     netz.etiketten.forEach(({ k, el }) => {
       tmp.b.copy(k.p).applyMatrix4(netz.gruppe.matrixWorld).project(kamera);
       const sichtbar = tmp.b.z < 1 && netzA > .3 && t < .86;
-      el.style.opacity = sichtbar ? netzA : 0;
+      el.style.opacity = sichtbar ? netzA * (1 - wolke) : 0;
       if (sichtbar) el.style.transform = `translate(${((tmp.b.x + 1) / 2 * innerWidth + 10).toFixed(1)}px, ${((1 - tmp.b.y) / 2 * innerHeight - 14).toFixed(1)}px)`;
     });
     // Beim Flug durchs Netz: die nächsten Strophen mit Titel, die nächste mit ihrer Schlusszeile
