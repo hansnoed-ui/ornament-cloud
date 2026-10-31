@@ -1757,7 +1757,7 @@ void main() {
    darunter wird «ornament.cloud» aus Kästchen zu Buchstaben. Es dreht sich einmal und steht dann (Formen und Ablauf aus dem Logo-Thread, glas-logo/intro.js).
    Hinunter kommt das Band, und das Signet wird kleiner und dreht sich über dem Band, wo vorher der Planet stand.
    Hinauf bleibt es in der Mitte, wird wieder zur Lichtkugel, und deren Punkte fliegen ins Zettelkasten-Netz */
-const LOGO_DAUER = 10.5, LOGO_N = 520, ROHR = .036;
+const LOGO_DAUER = 10.5, LOGO_N = 520, ROHR = .03;
 const logo = { beginn: null, ein: 0, dreh: 0, drehGezeigt: 0, umgebung: null, stellen: null };
 function logoBauen() {
   const an = (x, a, b) => klemm((x - a) / (b - a)), gl = x => x * x * (3 - 2 * x), io = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
@@ -1778,6 +1778,22 @@ function logoBauen() {
   const sPunkte = stoff(new THREE.MeshPhysicalMaterial({ color: "#d9d6c6", metalness: 1, roughness: .25, emissive: "#3a3832", envMapIntensity: .45 }), 1);   // gedämpft: hellere Punkte legen einen Hof um die Kugel (Christian)
   const sRot = stoff(new THREE.MeshPhysicalMaterial({ color: "#f08a5d", roughness: .15, clearcoat: 1, emissive: "#c2410c", emissiveIntensity: .35, envMapIntensity: 1 }), 3);
   const SEG = 400, RAD = 16, rohrGeo = new THREE.TubeGeometry(kurve, SEG, ROHR, RAD, true), rohr = new THREE.Mesh(rohrGeo, sRohr);
+  // Das Rohr wächst mit einer feinen Spitze die Schlaufe entlang (Christian: eleganter als der harte Schnitt) und nimmt die Perlen auf, wo es vorbeikommt.
+  // Jeder Ring kennt seine Stelle auf der Schlaufe und ihre Mitte; vor der Spitze liegt er auf der Mitte, an der Spitze und am Anfang läuft er fein zu
+  {
+    const n = rohrGeo.attributes.position.count, bu = new Float32Array(n), mi = new Float32Array(n * 3), m = new THREE.Vector3();
+    for (let i = 0; i < n; i++) { const u = Math.floor(i / (RAD + 1)) / SEG; bu[i] = u; kurve.getPointAt(u % 1, m); mi.set([m.x, m.y, m.z], i * 3); }
+    rohrGeo.setAttribute("bahnU", new THREE.BufferAttribute(bu, 1)); rohrGeo.setAttribute("mitte", new THREE.BufferAttribute(mi, 3));
+  }
+  const rohrU = { vorn: { value: 0 }, anfang: { value: 1 } }, SPITZE = .07;
+  sRohr.onBeforeCompile = sh => {
+    Object.assign(sh.uniforms, rohrU);
+    sh.vertexShader = "attribute float bahnU;\nattribute vec3 mitte;\nuniform float vorn, anfang;\n" + sh.vertexShader.replace("#include <begin_vertex>",
+      `#include <begin_vertex>
+  float spitze = 1. - smoothstep(vorn - ${SPITZE.toFixed(3)}, vorn, bahnU), start = mix(1., smoothstep(0., ${SPITZE.toFixed(3)}, bahnU), anfang);
+  transformed = mitte + (transformed - mitte) * (spitze * start);`);
+  };
+  sRohr.customProgramCacheKey = () => "signetrohr";
   const schlaufe = new THREE.Group(); schlaufe.add(rohr);
   const punkt = new THREE.Mesh(new THREE.SphereGeometry(ROHR * 1.5, 32, 24), sRot); schlaufe.add(punkt);
   const traeger = new THREE.Group(); traeger.add(schlaufe); traeger.position.y = .32; traeger.scale.setScalar(.72);
@@ -1838,18 +1854,17 @@ function logoBauen() {
     schlaufe.rotation.set(.35 * (1 - vorn), .9 * (1 - vorn), 0);
     ganzes.rotation.y = Math.PI * 2 * io(an(lauf, 5.6, 9.6)) + logo.drehGezeigt;
     if (flug > 0) { halter.updateMatrixWorld(true); netz.gruppe.updateMatrixWorld(); zuSchlaufe.copy(schlaufe.matrixWorld).invert().multiply(netz.gruppe.matrixWorld); }
-    const fluss = (s - 1.6) / 2.8, verschwinden = an(s, 4, 5);
+    const fluss = (s - 1.6) / 2.8, zeichnen = io(an(s, 3.3, 5)), rohrVorn = zeichnen * (1 + SPITZE);
     eu.set(.35, sek * .9, 0); q.setFromEuler(eu);
     for (let i = 0; i < LOGO_N; i++) {
       const k = io(klemm((fluss - ziele[i].u * .9 * .35) / .65));
       v.copy(kugel[i]).applyQuaternion(q).lerp(ziele[i].p, k);
-      let gr = (1 - .35 * k) * (1 - gl(klemm((verschwinden - ziele[i].u * .5) / .5)));
+      let gr = (1 - .35 * k) * (1 - weich(-.01, SPITZE * .6, rohrVorn - SPITZE * .5 - ziele[i].u));   // vom Rohr aufgenommen
       if (flug > 0) { const f = io(klemm((flug - aufbruch[i] * .35) / .65)); v.lerp(w.copy(imNetz[i]).applyMatrix4(zuSchlaufe), f); gr *= 1 - .4 * f; }
       punkte.setMatrixAt(i, mtx.compose(v, q0, sk.setScalar(Math.max(gr, 1e-4))));
     }
-    punkte.instanceMatrix.needsUpdate = true; punkte.visible = verschwinden < 1;
-    const zeichnen = io(an(s, 3.3, 5));
-    rohr.visible = zeichnen > 0; rohrGeo.setDrawRange(0, Math.floor(zeichnen * SEG) * RAD * 6);
+    punkte.instanceMatrix.needsUpdate = true; punkte.visible = zeichnen < 1;
+    rohr.visible = zeichnen > 0; rohrU.vorn.value = rohrVorn; rohrU.anfang.value = 1 - weich(.85, 1, zeichnen);
     const pS = gl(an(s, 4.6, 5.1)); punkt.visible = pS > 0; punkt.scale.setScalar(Math.max(pS, 1e-4));
     punkt.position.copy(kurve.getPoint((Math.max(0, sek - 4.6) / 3.2) % 1));
     tafelM.visible = s * 30 - 92 > 57; if (tafelM.visible) schrift(s * 30 - 92);
@@ -1859,48 +1874,6 @@ function logoBauen() {
   // Am Handy etwas zur Seite gerückt, sonst stünde es rechts der Mitte
   const pA = new THREE.Vector3(), qA = new THREE.Quaternion(), pB = new THREE.Vector3(), qB = new THREE.Quaternion(), vor = new THREE.Vector3(), auf = new THREE.Vector3(), basis = new THREE.Matrix4();
   let bFuer = null, sB = 1;
-  // Fäden aus dem Fries (Christian, 31. Oktober 2026): Steigt die Schrift beim Hinunterscrollen über den Fries am Anfang des Bandes, zieht sie ein paar Fäden
-  // aus seinen Fransen. Sie dehnen sich, lösen sich einer nach dem anderen und schnellen zur Schrift zurück. Alles hängt am Scrollweg, hinauf läuft es rückwärts.
-  // frac misst den Weg der Schrift auf dem Bildschirm: 0, wo sie den Fries kreuzt, 1 an ihrem Platz über dem Band
-  const FN = 16, FS = 40, fPos = new Float32Array(FN * FS * 6), fFarbe = new Float32Array(FN * FS * 6), fGeo = new THREE.BufferGeometry();
-  fGeo.setAttribute("position", new THREE.BufferAttribute(fPos, 3).setUsage(THREE.DynamicDrawUsage)); fGeo.setAttribute("color", new THREE.BufferAttribute(fFarbe, 3).setUsage(THREE.DynamicDrawUsage));
-  const faeden = new THREE.LineSegments(fGeo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, fog: false, toneMapped: false }));
-  faeden.frustumCulled = false; faeden.renderOrder = 1e6 + .5; faeden.visible = false; welt.add(faeden);
-  // Ganz fein wie der Fries (Christian): sechs Bündel aus zwei oder drei dünnen Strängen, die sich umeinander winden, blass, und nur kurz
-  const fd = [], BUENDEL = [3, 2, 3, 3, 2, 3];
-  BUENDEL.forEach((n, b) => { const bx = misch(-.42, .42, b / 5) + (zf() - .5) * .06, bq = b / 5 - .5 + (zf() - .5) * .04, blos = .14 + .26 * zf();
-    for (let j = 0; j < n; j++) fd.push({ x: bx + (zf() - .5) * .05, q: bq + (zf() - .5) * .03, los: blos + .08 * zf(), ph: zf() * 6.28, h: .3 + .25 * zf(), dreh: zf() * 6.28, hell: .55 + .45 * zf() }); });
-  const GOLD = new THREE.Color(.3, .22, .12), SILBER = new THREE.Color(.34, .34, .32), fc = new THREE.Color();
-  const pa = new THREE.Vector3(), pb = new THREE.Vector3(), p0 = new THREE.Vector3(), p1 = new THREE.Vector3(), p2 = new THREE.Vector3(), nB = new THREE.Vector3(), ndc = new THREE.Vector3(), rest = new THREE.Vector3();
-  const bez = (t, ziel) => { const u = 1 - t; return ziel.set(0, 0, 0).addScaledVector(p0, u * u * u).addScaledVector(p1, 3 * u * u * t).addScaledVector(p2, 3 * u * t * t).addScaledVector(pa, t * t * t); };
-  const ba = new THREE.Vector3(), bb = new THREE.Vector3();
-  function faedenStellen(sek, roh) {
-    faeden.visible = !ruhig && !flach && roh > 0 && zustand.s <= S_START() + 1e-3 && halter.visible;
-    if (!faeden.visible) return;
-    halter.updateMatrixWorld(true);
-    rest.set(0, tafelM.position.y * sB, 0).applyQuaternion(qB).add(pB).project(kamera);
-    fUnten.set(0, -1, 0).applyQuaternion(halter.quaternion); fSeit.set(1, 0, 0).applyQuaternion(kamera.quaternion);
-    const DF = .43, HF = .004 + .1 * (DF / .56) ** 2;   // Höhe der Ringe an den Fransen über dem Boden der Trommel (wie im Fries)
-    fd.forEach((f, i) => {
-      tafelM.localToWorld(pa.set(f.x, -.03, 0)); bahnPunkt(-DF, -f.q * RAUM.w * .8, HF, pb); normale(-DF, nB);
-      const yb = ndc.copy(pb).project(kamera).y, frac = (ndc.copy(pa).project(kamera).y - yb) / Math.max(1e-3, rest.y - yb);
-      const e = klemm((frac - f.los) / .12), a = weich(0, .05, frac) * (1 - e) * f.hell, ee = eio(e), L = pa.distanceTo(pb), w = Math.sin(sek * .9 + f.ph) * .05 * L;
-      // gelöst schnellt das freie Ende zur Schrift zurück und der Faden wird kürzer
-      p0.copy(pb).lerp(ba.copy(pa).addScaledVector(fUnten, .12 * L), ee);
-      p1.copy(pb).addScaledVector(nB, f.h * L).addScaledVector(fSeit, w).lerp(bb.copy(pa).addScaledVector(fUnten, .06 * L), ee);
-      p2.copy(pa).addScaledVector(fUnten, .3 * L * (1 - .7 * ee)).addScaledVector(fSeit, -w);
-      // die Stränge eines Bündels winden sich umeinander
-      const wind = t => .012 * L * Math.sin(t * Math.PI) * Math.sin(t * 9 + f.dreh + sek * .6);
-      for (let k = 0; k < FS; k++) {
-        const o = (i * FS + k) * 6; bez(k / FS, ba).addScaledVector(fSeit, wind(k / FS)); bez((k + 1) / FS, bb).addScaledVector(fSeit, wind((k + 1) / FS));
-        fPos.set([ba.x, ba.y, ba.z, bb.x, bb.y, bb.z], o);
-        fc.copy(GOLD).lerp(SILBER, k / FS).multiplyScalar(a > 0 ? a : 0); fFarbe.set([fc.r, fc.g, fc.b], o);
-        fc.copy(GOLD).lerp(SILBER, (k + 1) / FS).multiplyScalar(a > 0 ? a : 0); fFarbe.set([fc.r, fc.g, fc.b], o + 3);
-      }
-    });
-    fGeo.attributes.position.needsUpdate = true; fGeo.attributes.color.needsUpdate = true;
-  }
-  const fUnten = new THREE.Vector3(), fSeit = new THREE.Vector3();
   // In jedem Bild: die Lage zwischen der Mitte des Bildschirms (am Anfang und darüber) und dem Platz über dem Band, dann der Stand des Intros
   logo.stellen = (zeit, dt) => {
     const eng = schmal(), sek = zeit / 1000;
@@ -1930,11 +1903,10 @@ function logoBauen() {
     // Hinauf: erst steht es, dann wird es über einen langen Weg gleichmässig zur Kugel, dann fliegen die Punkte ins Netz, das dabei aufblendet
     const p = ruhig ? 1 : klemm((zustand.u - U_LOGO) / (U_START - U_LOGO)), rueck = gl(1 - an(p, .4, .88)), flug = 1 - an(p, .05, .4);
     halter.visible = flug < 1;
-    if (!halter.visible) { faeden.visible = false; return; }
+    if (!halter.visible) return;
     // Ab 8,8 s ist die Schrift fertig; der Rest des Intros ist Drehung und Stehen, der Scrollweg beginnt darum dort
     const lauf = ruhig ? LOGO_DAUER : Math.min(sek - logo.beginn, LOGO_DAUER);
     stelle(misch(Math.min(lauf, 8.8), 1.3, rueck), lauf, ruhig ? 0 : sek - logo.beginn, flug);
-    faedenStellen(sek, roh);
   };
 }
 
