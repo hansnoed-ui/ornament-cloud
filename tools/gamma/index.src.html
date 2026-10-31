@@ -643,6 +643,7 @@ import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 
 const DATEN = /*DATEN*/null;
 // Bei jedem Besuch ein anderer Zettel; #zettel-12 zieht einen bestimmten
@@ -1280,7 +1281,7 @@ void main() {
   });
   figurenBauen(g);
   bahn.materialien = []; g.traverse(o => { if (o.material) bahn.materialien.push(o.material); });
-  welt.add(g); bahn.gruppe = g; bahn.nurSatellit = null;
+  welt.add(g); bahn.gruppe = g; bahn.nurSignet = null;
   vorUebersetzen();
   bahn.bereit = true;
   platzMessen();
@@ -1747,146 +1748,119 @@ void main() {
     }
   });
 
-  /* Im dunklen Raum vor dem Anfang der Bahn kreist ein Satellit um einen Planeten aus Punkten.
-     Die Umlaufbahn liegt schräg zum Blick, mit dem das Band erscheint; hinter dem Planeten verschwindet er, die letzte Strecke zieht eine feine Spur nach.
-     Farben: Land in Mint, Meer und Luftsaum blau, der Satellit in Senf wie Goldfolie, seine Segel blau */
-  {
-    const C = bahnPunkt(eng ? -2 : -1.4, eng ? .4 : -1, eng ? 2.6 : 1.8), sK = S_START() + (eng ? 2.4 : 1.7);
-    const V = C.clone().sub(bahnPunkt(sK, 0, eng ? 5.4 : 3)).normalize(), X = new THREE.Vector3().crossVectors(V, normale(sK)).normalize(), Y = new THREE.Vector3().crossVectors(X, V);
-    const q = new THREE.Quaternion().setFromAxisAngle(V, -.2), A = X.clone().applyQuaternion(q), B = Y.clone().multiplyScalar(Math.sin(.27)).addScaledVector(V, Math.cos(.27)).applyQuaternion(q);
-    const ro = eng ? 1.2 : 1.55, rg = eng ? .36 : .46, UMLAUF = 28;
-    const weiss = new THREE.Color(1, 1, 1), himmel = new THREE.Color("#8fb0ff"), senf = new THREE.Color("#e6b117"), segel = new THREE.Color("#5c86ff");
-    const linien = zeichne => {
-      const p = [], c = []; zeichne((a, b, h, f = weiss) => { p.push(a[0], a[1], a[2], b[0], b[1], b[2]); c.push(f.r * h, f.g * h, f.b * h, f.r * h, f.g * h, f.b * h); });
-      const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(p, 3)); geo.setAttribute("color", new THREE.Float32BufferAttribute(c, 3));
-      return new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false }));
-    };
-    const ring = (s, n, h, f, farbe) => { for (let i = 0; i < n; i++) s(f(i / n * Math.PI * 2), f((i + 1) / n * Math.PI * 2), h, farbe); };
-    // Der Planet: Achse etwas geneigt, er dreht sich langsam. Land, Meer und Polkappen kommen aus einem festen Rauschen, so sieht er bei jedem Besuch gleich aus.
-    // Die Sonne steht links vorn: Tag- und Nachtseite. Der Kern verdeckt die Rückseite und was hinter ihm vorbeizieht, ein feiner Luftsaum liegt um ihn
-    const kugel = new THREE.Group(); kugel.position.copy(C); kugel.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), Y.clone().applyAxisAngle(V, .38).normalize());
-    const sonne = { value: X.clone().multiplyScalar(-.85).addScaledVector(Y, .3).addScaledVector(V, -.38).normalize() };
-    const streu = (x, y, z) => { const t = Math.sin(x * 127.1 + y * 311.7 + z * 74.7) * 43758.5453; return t - Math.floor(t); };
-    const rauschen = (x, y, z) => {
-      const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z), u = x - xi, v = y - yi, w = z - zi, e = (a, b, c) => streu(xi + a, yi + b, zi + c);
-      const su = u * u * (3 - 2 * u), sv = v * v * (3 - 2 * v), sw = w * w * (3 - 2 * w);
-      return misch(misch(misch(e(0, 0, 0), e(1, 0, 0), su), misch(e(0, 1, 0), e(1, 1, 0), su), sv), misch(misch(e(0, 0, 1), e(1, 0, 1), su), misch(e(0, 1, 1), e(1, 1, 1), su), sv), sw);
-    };
-    const hoehe = (x, y, z) => {
-      // leicht verzogen, damit die Küsten nicht nach Würfelrauschen aussehen
-      const q = .45 * (rauschen(x * 1.3 + 5, y * 1.3, z * 1.3) - .5);
-      let h = 0, a = .5, f = 1.6; for (let o = 0; o < 5; o++) { h += a * rauschen((x + q) * f + 11.3, (y - q) * f + 4.1, (z + q) * f + 7.7); a *= .5; f *= 2.03; }
-      return h;
-    };
-    // Punkte gleichmässig auf der Kugel (Fibonacci), gut ein Drittel davon Land
-    const PN = eng ? 3200 : 5200, pk = [], hs = [];
-    for (let i = 0; i < PN; i++) { const y = 1 - 2 * (i + .5) / PN, r = Math.sqrt(1 - y * y), w = i * 2.399963; pk.push([r * Math.cos(w), y, r * Math.sin(w)]); hs.push(hoehe(...pk[i])); }
-    const kueste = [...hs].sort((a, b) => a - b)[Math.floor(PN * .66)], mint = new THREE.Color("#9fd4b4"), sand = new THREE.Color("#e8e0c2"), meer = new THREE.Color("#5c86ff");
-    const landP = [], landF = [], meerP = [], meerF = [], fb = new THREE.Color();
-    pk.forEach(([x, y, z], i) => {
-      const h = hs[i], eis = Math.abs(y) + .3 * (h - .5) > .87;
-      if (eis) fb.copy(weiss).multiplyScalar(.6);
-      else if (h > kueste) fb.copy(mint).lerp(sand, klemm((h - kueste) / .2)).multiplyScalar(.58 + .17 * klemm((h - kueste) / .1));
-      else fb.copy(meer).multiplyScalar(.06 + .14 * klemm(1 - (kueste - h) / .12));
-      const [pp, ff] = eis || h > kueste ? [landP, landF] : [meerP, meerF];
-      pp.push(x * rg, y * rg, z * rg); ff.push(fb.r, fb.g, fb.b);
-    });
-    // Die Punkte nehmen das Licht der Sonne an, auf der Nachtseite bleibt nur ein Hauch; zum Rand hin treten sie zurück, dort zeichnet der Luftsaum die Kante
-    const punkte = (p, f, gr) => {
-      const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(p, 3)); geo.setAttribute("color", new THREE.Float32BufferAttribute(f, 3));
-      const m = new THREE.PointsMaterial({ size: gr, vertexColors: true, transparent: true, depthWrite: false });
-      m.onBeforeCompile = sh => {
-        sh.uniforms.sonne = sonne;
-        sh.vertexShader = "uniform vec3 sonne;\n" + sh.vertexShader.replace("#include <fog_vertex>", `gl_PointSize = min(gl_PointSize, ${(7 * Math.min(devicePixelRatio || 1, 2)).toFixed(1)});
-  vColor *= (.08 + .92 * smoothstep(-.18, .32, dot(normalize(mat3(modelMatrix) * position), sonne))) * smoothstep(.02, .4, dot(normalize(mat3(modelViewMatrix) * position), -normalize(mvPosition.xyz)));
-#include <fog_vertex>`);
-      };
-      const o = new THREE.Points(geo, m); o.renderOrder = 10; return o;
-    };
-    const drehteil = new THREE.Group(); drehteil.add(punkte(meerP, meerF, eng ? .009 : .012), punkte(landP, landF, eng ? .015 : .02));
-    // Der Kern: Meer in tiefem Nachtblau, zur Nachtseite hin fast schwarz
-    const kern = new THREE.Mesh(new THREE.SphereGeometry(rg * .97, 48, 24), new THREE.ShaderMaterial({ uniforms: { sonne },
-      vertexShader: "varying vec3 vN; void main() { vN = mat3(modelMatrix) * normal; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }",
-      fragmentShader: "uniform vec3 sonne; varying vec3 vN; void main() { float t = smoothstep(-.2, .45, dot(normalize(vN), sonne)); gl_FragColor = vec4(mix(vec3(.0006, .0012, .004), vec3(.0045, .012, .05), t), 1.); }" }));
-    // Der Luftsaum: ein Hauch Himmelblau am Rand, auf der Tagseite stärker, nach aussen ausklingend
-    const saum = new THREE.Mesh(new THREE.SphereGeometry(rg * 1.12, 48, 24), new THREE.ShaderMaterial({ uniforms: { sonne, a: { value: 1 }, farbe: { value: himmel.clone().multiplyScalar(.3) } },
-      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
-      vertexShader: "varying vec3 vN, vV; void main() { vec4 w = modelMatrix * vec4(position, 1.); vN = mat3(modelMatrix) * normal; vV = cameraPosition - w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }",
-      fragmentShader: `uniform vec3 sonne, farbe; uniform float a; varying vec3 vN, vV;
-        void main() {
-          vec3 n = normalize(vN); float d = dot(n, normalize(vV)), r = sqrt(max(0., 1. - d * d)), r0 = ${(1 / 1.12).toFixed(4)};
-          float f = r < r0 ? .5 * pow(r / r0, 18.) : .8 * pow(clamp((1. - r) / (1. - r0), 0., 1.), 2.6);
-          gl_FragColor = vec4(farbe * f * (.2 + .8 * smoothstep(-.35, .5, dot(n, sonne))) * a, 1.);
-        }` }));
-    saum.renderOrder = 11; saum.onBeforeRender = () => { saum.material.uniforms.a.value = saum.material.opacity; };
-    kugel.add(drehteil, kern, saum); g.add(kugel);
-    // Die Umlaufbahn als ganz feine Linie; hinter dem Satelliten wird sie für ein Stück zur Spur
-    const NB = 180, bp = [];
-    for (let i = 0; i <= NB; i++) { const w = i / NB * Math.PI * 2; bp.push(C.clone().addScaledVector(A, ro * Math.cos(w)).addScaledVector(B, ro * Math.sin(w))); }
-    const umlauf = linien(s => { for (let i = 0; i < NB; i++) s(bp[i].toArray(), bp[i + 1].toArray(), 0); }), farben = umlauf.geometry.attributes.color;
-    g.add(umlauf);
-    // Der Satellit: Körper, zwei Sonnensegel mit je drei Feldern, die Schüssel zur Kugel hin, die Antenne nach aussen mit einem Licht
-    const sat = new THREE.Group(); sat.matrixAutoUpdate = false;
-    sat.add(linien(s => {
-      const k = .04, e = [[-k, -k, -k], [k, -k, -k], [k, k, -k], [-k, k, -k], [-k, -k, k], [k, -k, k], [k, k, k], [-k, k, k]];
-      for (const [a, b] of [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]]) s(e[a], e[b], .9, senf);
-      for (const sg of [-1, 1]) {
-        const x0 = sg * .065, x1 = sg * .25, hy = .045;
-        s([sg * k, 0, 0], [x0, 0, 0], .5);
-        s([x0, -hy, 0], [x1, -hy, 0], .8, segel); s([x0, hy, 0], [x1, hy, 0], .8, segel); s([x0, -hy, 0], [x0, hy, 0], .8, segel); s([x1, -hy, 0], [x1, hy, 0], .8, segel);
-        for (let j = 1; j < 3; j++) { const x = x0 + (x1 - x0) * j / 3; s([x, -hy, 0], [x, hy, 0], .5, segel); }
-      }
-      ring(s, 16, .7, w => [.035 * Math.cos(w), .035 * Math.sin(w), -.075], senf); s([0, 0, -k], [0, 0, -.075], .45);
-      for (let j = 0; j < 4; j++) { const w = j * Math.PI / 2 + .3; s([.035 * Math.cos(w), .035 * Math.sin(w), -.075], [0, 0, -.11], .3); }
-      s([0, 0, k], [0, 0, .1], .4);
-    }));
-    // Die Segel glänzen: tiefblaues Glas mit Zellen, ein Lichtstreif wandert langsam darüber, und wo die Sonne zur Kamera spiegelt, blitzt es kurz auf
-    const glanz = { t: { value: 0 }, a: { value: 1 }, sonne };
-    const segelStoff = new THREE.ShaderMaterial({ uniforms: glanz, transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending,
-      vertexShader: "varying vec2 vU; varying vec3 vN, vV; void main() { vU = uv; vec4 w = modelMatrix * vec4(position, 1.); vN = normalize(mat3(modelMatrix) * vec3(0., 0., 1.)); vV = cameraPosition - w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }",
-      fragmentShader: `uniform float t, a; uniform vec3 sonne; varying vec2 vU; varying vec3 vN, vV;
-        void main() {
-          vec3 v = normalize(vV), n = faceforward(vN, -v, vN), h = normalize(sonne + v);
-          float zelle = 1. - .55 * max(step(.94, fract(vU.x * 3.)), step(.9, fract(vU.y * 2.)));
-          float streif = exp(-pow((vU.x * 1.4 + vU.y * .6 - mod(t * .32, 3.4) + .7) * 9., 2.));
-          float blitz = pow(max(dot(n, h), 0.), 60.);
-          vec3 c = vec3(.03, .06, .2) * zelle + vec3(.5, .62, 1.) * .55 * streif + vec3(1., .96, .86) * 1.3 * blitz;
-          gl_FragColor = vec4(c * a, 1.);
-        }` });
-    for (const sg of [-1, 1]) {
-      const m = new THREE.Mesh(new THREE.PlaneGeometry(.185, .09), segelStoff); m.position.x = sg * .1575; if (sg < 0) m.rotation.z = Math.PI;
-      m.renderOrder = 12; m.onBeforeRender = () => { glanz.a.value = segelStoff.opacity; }; sat.add(m);
-    }
-    const lg = new THREE.BufferGeometry(); lg.setAttribute("position", new THREE.Float32BufferAttribute([0, 0, .1], 3));
-    const licht = new THREE.Points(lg, deckeln(new THREE.PointsMaterial({ size: .05, color: hdr("#ffa3d1", .9), transparent: true, depthWrite: false }), 5));
-    sat.add(licht); g.add(sat);
-    kugel.userData.immer = umlauf.userData.immer = sat.userData.immer = true;
-    M.identity(); rechtsW.copy(X); obenW.copy(Y);
-    const tP = new THREE.Vector3(), tT = new THREE.Vector3(), tR = new THREE.Vector3(), tY = new THREE.Vector3(), gross = new THREE.Vector3().setScalar(eng ? 1 : .9);
-    bahn.satellit = sek => {
-      const w = (sek / UMLAUF + .1) % 1 * Math.PI * 2;
-      tP.copy(C).addScaledVector(A, ro * Math.cos(w)).addScaledVector(B, ro * Math.sin(w));
-      tT.copy(A).multiplyScalar(-Math.sin(w)).addScaledVector(B, Math.cos(w)); tR.copy(tP).sub(C).normalize(); tY.crossVectors(tR, tT);
-      sat.matrix.makeBasis(tT, tY, tR).scale(gross).setPosition(tP); sat.matrixWorldNeedsUpdate = true;
-      drehteil.rotation.y = sek * .12; glanz.t.value = sek;
-      for (let i = 0; i < NB; i++) {
-        let d = w - (i + .5) / NB * Math.PI * 2; d -= Math.floor(d / (Math.PI * 2)) * Math.PI * 2;
-        // Die Spur in Senf, die übrige Bahn nur ein Hauch im Blau der Kugel (bis 30. Oktober 2026 gepunktet)
-        const f = d < 1.9 ? senf : himmel, h = d < 1.9 ? .06 + .64 * (1 - d / 1.9) ** 2 : .06;
-        farben.setXYZ(2 * i, f.r * h, f.g * h, f.b * h); farben.setXYZ(2 * i + 1, f.r * h, f.g * h, f.b * h);
-      }
-      farben.needsUpdate = true;
-      licht.material.userData.a = .2 + .8 * Math.max(0, 1 - (sek % 2.6) / .6);
-    };
-  }
+  // Vor dem Anfang der Bahn steht das Signet (bis 31. Oktober 2026 ein Planet aus Punkten mit einem Satelliten)
+  logoBauen(g, eng);
   const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(lp, 3)); geo.setAttribute("color", new THREE.Float32BufferAttribute(lc, 3));
   g.add(new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false })));
+}
+
+/* ---------- Am Anfang der Bahn: das Signet (Christian, 31. Oktober 2026; vorher Planet und Satellit) ----------
+   Hier beginnt die Seite. Eine Kugel aus Lichtpunkten fliesst auf die Schlaufe des Signets, die sich in dunklem, glänzendem Metall zeichnet;
+   darunter wird «ornament.cloud» aus Kästchen zu Buchstaben. Das Ganze dreht sich einmal und steht dann. Wer die Bahn hinunterscrollt,
+   dreht es zurück in die Kugel. Formen und Ablauf aus dem Logo-Thread (glas-logo/intro.js, 10,5 Sekunden) */
+const LOGO_DAUER = 10.5, LOGO_N = 520, LOGO_BAND = [7, 9.5];   // das Band blendet ein, während sich das Signet zu Ende dreht
+const logo = { beginn: null, ein: 0, gescrollt: false, umgebung: null };
+function logoBauen(g, eng) {
+  const an = (x, a, b) => klemm((x - a) / (b - a)), gl = x => x * x * (3 - 2 * x), io = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+  if (!logo.umgebung) { const pm = new THREE.PMREMGenerator(renderer); logo.umgebung = pm.fromScene(new RoomEnvironment(), .03).texture; pm.dispose(); }
+  // Die Schlaufe: Limaçon mit innerer Schlaufe, auf eine Kugelkappe gelegt, um die eigene Mitte gerückt und gleichmässig neu verteilt
+  const roh = [];
+  for (let i = 0; i < 400; i++) {
+    const u = i / 400 * Math.PI * 2, r = .45 + Math.cos(u), x = 1.2 * r * Math.cos(u) - .84, y = 1.2 * r * Math.sin(u), px = (x + .15) * .62, py = y * .62;
+    roh.push(new THREE.Vector3(px, py, Math.sqrt(Math.max(0, 1 - px * px - py * py))).normalize().multiplyScalar(1.035));
+  }
+  const gleich = new THREE.CatmullRomCurve3(roh, true).getSpacedPoints(400); gleich.pop();
+  const mitte = new THREE.Box3().setFromPoints(gleich).getCenter(new THREE.Vector3());
+  const kurve = new THREE.CatmullRomCurve3(gleich.map(p => p.sub(mitte)), true);
+  // Stoffe: die Schlaufe dunkel und glänzend wie im Logo-Thread, die Lichtpunkte hell metallen, der Punkt im Rot-Orange des Signets.
+  // Sie zeichnen nach dem schwarzen Schleier, der das Band beim Einblenden deckt: das Signet steht schon, während das Band noch kommt
+  const stoff = (m, reihe) => { m.envMap = logo.umgebung; m.fog = false; m.transparent = true; m.userData.logo = true; m.userData.reihe = reihe; return m; };
+  const sRohr = stoff(new THREE.MeshPhysicalMaterial({ color: "#2b3b31", metalness: .9, roughness: .22, clearcoat: 1, clearcoatRoughness: .1, iridescence: .3, iridescenceIOR: 1.3, envMapIntensity: .5 }), 2);
+  const sPunkte = stoff(new THREE.MeshPhysicalMaterial({ color: "#d9d6c6", metalness: 1, roughness: .18, clearcoat: 1, envMapIntensity: 1 }), 1);
+  const sRot = stoff(new THREE.MeshPhysicalMaterial({ color: "#f08a5d", roughness: .15, clearcoat: 1, emissive: "#c2410c", emissiveIntensity: .35, envMapIntensity: 1 }), 3);
+  const SEG = 400, RAD = 16, rohrGeo = new THREE.TubeGeometry(kurve, SEG, .05, RAD, true), rohr = new THREE.Mesh(rohrGeo, sRohr);
+  const schlaufe = new THREE.Group(); schlaufe.add(rohr);
+  const punkt = new THREE.Mesh(new THREE.SphereGeometry(.07, 32, 24), sRot); schlaufe.add(punkt);
+  const traeger = new THREE.Group(); traeger.add(schlaufe); traeger.position.y = .32; traeger.scale.setScalar(.72);
+  const ganzes = new THREE.Group(); ganzes.add(traeger);
+  // Die Lichtkugel: Punkte gleichmässig auf der Kugel, jeder hat seinen Platz auf der Schlaufe (nach dem Winkel um die Mitte geordnet)
+  const kugel = [];
+  for (let i = 0; i < LOGO_N; i++) { const y = 1 - 2 * (i + .5) / LOGO_N, r = Math.sqrt(1 - y * y), w = i * Math.PI * (3 - Math.sqrt(5)); kugel.push(new THREE.Vector3(Math.cos(w) * r, y, Math.sin(w) * r).multiplyScalar(.82)); }
+  const reihe = kugel.map((p, i) => i).sort((a, b) => Math.atan2(kugel[a].y, kugel[a].x) - Math.atan2(kugel[b].y, kugel[b].x));
+  const bahnP = kurve.getSpacedPoints(LOGO_N); bahnP.pop();
+  const ziele = []; reihe.forEach((ki, j) => { ziele[ki] = { p: bahnP[j], u: j / LOGO_N }; });
+  const punkte = new THREE.InstancedMesh(new THREE.SphereGeometry(.022, 14, 10), sPunkte, LOGO_N); punkte.frustumCulled = false; schlaufe.add(punkte);
+  // Der Schriftzug wie im Signet der Website: Kästchen werden zu Buchstaben, auf einer Tafel, die sich mit dem Signet dreht
+  const cv = document.createElement("canvas"); cv.width = 1080; cv.height = 200;
+  const cx = cv.getContext("2d"), schriftTex = new THREE.CanvasTexture(cv); schriftTex.colorSpace = THREE.SRGBColorSpace; schriftTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  const B = 2 * 4.6 * Math.tan(15 * Math.PI / 180), sSchrift = new THREE.MeshBasicMaterial({ map: schriftTex, transparent: true, side: THREE.DoubleSide, toneMapped: false, depthWrite: false, fog: false });
+  sSchrift.userData.logo = true; sSchrift.userData.reihe = 4;
+  const tafelM = new THREE.Mesh(new THREE.PlaneGeometry(B, B * 200 / 1080), sSchrift); tafelM.position.y = -.66; ganzes.add(tafelM);
+  let fAlt = null;
+  function schrift(f) {
+    f = Math.round(f * 2) / 2; if (f === fAlt || (f > 150 && fAlt > 150) || (f < 55 && fAlt !== null && fAlt < 55)) return; fAlt = f;
+    const NAME = "ornament.cloud", KASTEN = 46, ABSTAND = 4, GR = 44, SPERR = .14 * GR, TINTE = "#e6e4dc", PUNKT = "#f08a5d";
+    cx.clearRect(0, 0, 1080, 200); cx.font = `400 ${GR}px "Instrument Sans", system-ui, sans-serif`;
+    const zus = io(an(f, 128, 146)), br = [...NAME].map(z => misch(KASTEN, cx.measureText(z).width, zus)), ab = misch(ABSTAND, SPERR, zus);
+    const ges = br.reduce((p, q) => p + q, 0) + (NAME.length - 1) * ab, m = cx.measureText("o"), auf = m.fontBoundingBoxAscent || GR * .9, unt = m.fontBoundingBoxDescent || GR * .25;
+    const H = KASTEN * 1.3; let x = (1080 - ges) / 2;
+    [...NAME].forEach((z, i) => {
+      const w = br[i], mx = x + w / 2, my = 100;
+      const kasten = an(f, 58 + i * 2, 66 + i * 2), wird = gl(an(f, 78 + i * 3, 92 + i * 3)), ka = kasten * (1 - wird);
+      if (ka > 0) { const sc = misch(1, .55, wird), rr = misch(0, 16, wird); cx.save(); cx.translate(mx, my); cx.scale(sc, sc);
+        cx.beginPath(); cx.roundRect(-w / 2 + 1, -H / 2 + 1, w - 2, H - 2, Math.max(0, rr - 1));
+        cx.globalAlpha = ka * .06; cx.fillStyle = TINTE; cx.fill(); cx.globalAlpha = ka * .85; cx.lineWidth = 1.5; cx.strokeStyle = TINTE; cx.stroke(); cx.restore(); }
+      if (wird > 0) { const sc = misch(1.35, 1, wird), clip = misch(.5, 0, wird); cx.save(); cx.translate(mx, my); cx.scale(sc, sc);
+        cx.beginPath(); cx.rect(-w / 2 + w * clip, -H / 2 + H * clip, w * (1 - 2 * clip), H * (1 - 2 * clip)); cx.clip();
+        cx.globalAlpha = wird; cx.fillStyle = z === "." ? PUNKT : TINTE; cx.textAlign = "center"; cx.textBaseline = "alphabetic"; cx.fillText(z, 0, (auf - unt) / 2); cx.restore(); }
+      x += w + ab;
+    });
+    schriftTex.needsUpdate = true;
+  }
+  // Stand und Blickrichtung: dort, wo die Kamera am Anfang der Bahn hinschaut, über dem Band; die Vorderseite zur Kamera
+  const C = bahnPunkt(eng ? -2.2 : -1.4, eng ? .5 : 0, eng ? 2.1 : 1.25), sK = S_START() + (eng ? 2.4 : 1.7);
+  const V = C.clone().sub(bahnPunkt(sK, 0, eng ? 5.4 : 3)).normalize(), X = new THREE.Vector3().crossVectors(V, normale(sK)).normalize(), Y = new THREE.Vector3().crossVectors(X, V);
+  const halter = new THREE.Group(); halter.matrixAutoUpdate = false; halter.matrix.makeBasis(X, Y, V.clone().negate()).scale(new THREE.Vector3().setScalar(eng ? 1.3 : 1.4)).setPosition(C);
+  halter.add(ganzes); halter.userData.immer = true; g.add(halter);
+  [rohr, punkt, punkte, tafelM].forEach(o => { o.renderOrder = 1e6 + o.material.userData.reihe; });
+  const mtx = new THREE.Matrix4(), q = new THREE.Quaternion(), q0 = new THREE.Quaternion(), v = new THREE.Vector3(), sk = new THREE.Vector3(), eu = new THREE.Euler();
+  const stoffe = [sRohr, sPunkte, sRot, sSchrift];
+  // s: gezeigte Sekunde des Intros, sek: Uhr (für das Kreisen der Kugel und den laufenden Punkt), a: Deckkraft
+  function stelle(s, sek, a) {
+    const fluss = (s - 1.6) / 2.8, verschwinden = an(s, 4, 5);
+    eu.set(.35, sek * .9, 0); q.setFromEuler(eu);
+    for (let i = 0; i < LOGO_N; i++) {
+      const k = io(klemm((fluss - ziele[i].u * .9 * .35) / .65));
+      v.copy(kugel[i]).applyQuaternion(q).lerp(ziele[i].p, k);
+      sk.setScalar(Math.max((1 - .35 * k) * (1 - gl(klemm((verschwinden - ziele[i].u * .5) / .5))), 1e-4));
+      punkte.setMatrixAt(i, mtx.compose(v, q0, sk));
+    }
+    punkte.instanceMatrix.needsUpdate = true; punkte.visible = verschwinden < 1;
+    const zeichnen = io(an(s, 3.3, 5));
+    rohr.visible = zeichnen > 0; rohrGeo.setDrawRange(0, Math.floor(zeichnen * SEG) * RAD * 6);
+    const pS = gl(an(s, 4.6, 5.1)); punkt.visible = pS > 0; punkt.scale.setScalar(Math.max(pS, 1e-4));
+    punkt.position.copy(kurve.getPoint((Math.max(0, sek - 4.6) / 3.2) % 1));
+    const vorn = io(an(s, 2, 5.6));
+    schlaufe.rotation.set(.35 * (1 - vorn), .9 * (1 - vorn), 0);
+    ganzes.rotation.y = Math.PI * 2 * io(an(s, 5.6, 9.6));
+    tafelM.visible = s * 30 - 92 > 57; if (tafelM.visible) schrift(s * 30 - 92);
+    stoffe.forEach(m => { m.opacity = a; });
+  }
+  stelle(0, 0, 1);
+  // Das Intro beginnt mit dem ersten Bild; die Bahn hinunter läuft es zurück bis zur Kugel (gut eine Bildschirmhöhe weit)
+  bahn.logo = (sek, a) => {
+    if (logo.beginn === null) logo.beginn = sek;
+    const lauf = ruhig ? LOGO_DAUER : Math.min(sek - logo.beginn, LOGO_DAUER), zurueck = eio(klemm((zustand.s - S_START()) / (eng ? 4.2 : 3.4)));
+    stelle(misch(lauf, 1.3, zurueck), ruhig ? 0 : sek - logo.beginn, a);
+  };
 }
 
 function platzMessen() { if (bahn.L) platz.style.height = Math.round(bahn.L / bahn.k - innerHeight * .45) + "px"; }
 
 /* ---------- Kamera und Zeitachse ---------- */
-const zustand = { y: null, yZiel: 0, t: 0, s: 0, v: 0, dreh: 0, maus: { x: 0, y: 0 }, halten: false };
+const zustand = { y: null, yZiel: 0, u: 0, t: 0, s: 0, v: 0, dreh: 0, maus: { x: 0, y: 0 }, halten: false };
+// Die Seite beginnt unten im Intro beim Signet; wer hinaufscrollt, kommt ins Netz und ganz oben zum blauen Zettel (Christian, 31. Oktober 2026)
+const ZETTEL = .2;
 const S_START = () => (schmal() ? 4.8 : 4.2);   // so weit hinter dem Anfang steht die Kamera, wenn die Bahn erscheint
 // Höhe des Fensters nur bei neuer Breite übernehmen: die Adressleiste am Handy verschiebt so nichts
 let hoeheStabil = innerHeight, breiteStabil = innerWidth;
@@ -1901,7 +1875,10 @@ function zeitachse(dt) {
     zustand.y = misch(zustand.y, zustand.yZiel, 1 - Math.exp(-dt * rate));
     if (Math.abs(zustand.yZiel - zustand.y) < .5) zustand.y = zustand.yZiel;
   }
-  zustand.t = ruhig ? .84 : klemm((zustand.y - intro.offsetTop) / weg);
+  // Von oben: der blaue Zettel (bis ZETTEL), dann der Flug durchs Netz und hinaus zur Bahn. t ist die alte Zeitachse des Intros ab dem fertigen Netz
+  const u = klemm((zustand.y - intro.offsetTop) / weg);
+  zustand.u = ruhig ? 0 : u;
+  zustand.t = ruhig ? .84 : u < ZETTEL ? .22 : .22 + (u - ZETTEL) / (1 - ZETTEL) * .78;
   // Während des Wechsels in die flache Seite bleibt die Stelle auf der Bahn, auch wenn die Seite darunter schon flach liegt
   if (!zustand.halten) zustand.s = S_START() + (flach ? 0 : Math.max(0, zustand.y - ende) * bahn.k);
 }
@@ -1942,8 +1919,8 @@ function kameraSetzen() {
   }
   const iPos = tmp.a.set(Math.sin(winkel) * Math.cos(neig) * dist, Math.sin(neig) * dist, Math.cos(winkel) * Math.cos(neig) * dist).add(C);
   const iBlick = C;
-  // Seitlich versetzen, solange die Tafel links steht
-  const tf = weich(.6, .76, t) * (1 - weich(.86, .96, t));
+  // Seitlich versetzen, solange die Tafel links steht (seit 31. Oktober 2026 ganz oben)
+  const tf = 1 - weich(ZETTEL - .1, ZETTEL - .02, zustand.u);
   // Bahn: hinter dem Punkt s, über der Bahn, Blick zurück auf das, was gerade gelesen wird
   const bPos = bahnPunkt(s + hinten, 0, hoch, tmp.c);
   const bBlick = bahnPunkt(s - voraus, 0, .2, tmp.d);
@@ -1973,17 +1950,18 @@ function kameraSetzen() {
 /* ---------- Tafel und Intro-Text ---------- */
 function introDom(t) {
   const eng = schmal();
-  introText.style.opacity = 1 - weich(.03, .14, t);
-  // Die Tafel gleitet ruhig in Blaupause herein, ohne Farbschnitte,
-  // und geht am Ende auf demselben Weg wieder, während sich der Blick auf die Bahn senkt
-  const auf = weich(.6, .76, t) * (1 - weich(.86, .96, t));
+  const u = zustand.u;
+  // Die Überschrift steht, sobald der Zettel hinaus ist und das Netz frei liegt, und geht mit dem Flug hinein
+  introText.style.opacity = weich(ZETTEL - .05, ZETTEL, u) * (1 - weich(ZETTEL + .07, ZETTEL + .14, u));
+  // Ganz oben liegt die Tafel in Blaupause (der blaue Zettel); nach unten gleitet sie hinaus, bevor der Flug ins Netz beginnt
+  const auf = 1 - weich(ZETTEL - .1, ZETTEL - .02, u);
   const B = eng ? innerWidth : Math.min(innerWidth * .4, 560), dx = ((1 - auf) * B).toFixed(1);
   if (tafel.style.width !== B + "px") tafel.style.width = B + "px";
   tafel.style.visibility = auf > 0 ? "" : "hidden";
   tafel.style.transform = `translate3d(${-dx}px, 0, 0)`;
   zugWort.style.transform = `translate3d(${dx}px, 0, 0) rotate(180deg)`;
   spalte.style.transform = `translate3d(${dx}px, 0, 0)`;
-  spalte.style.opacity = weich(.72, .82, t) * (1 - weich(.84, .89, t));
+  spalte.style.opacity = 1 - weich(ZETTEL - .13, ZETTEL - .08, u);
   szene.style.visibility = t >= .999 ? "hidden" : "visible";
 }
 
@@ -2052,7 +2030,7 @@ function bild(zeit) {
   const imRaum = !flach || document.body.classList.contains("wechsel") || intro.getBoundingClientRect().bottom > 0;
   document.body.classList.toggle("nach-intro", intro.getBoundingClientRect().bottom <= innerHeight * .2);
   const r = abschnitt.getBoundingClientRect(), drin = r.top < innerHeight * .3 && r.bottom > innerHeight * .5;
-  steuer.classList.toggle("da", drin || (!flach && zustand.t > .97 && r.bottom > innerHeight * .5));
+  steuer.classList.toggle("da", drin || (!flach && zustand.t > .97 && logo.ein > .5 && r.bottom > innerHeight * .5));
   zeiger.classList.toggle("da", drin); kopfLeiste.classList.toggle("ohne-nav", drin);
   // aktives Kapitel
   let akt = 0;
@@ -2085,12 +2063,17 @@ function bild(zeit) {
     if (bahn.bereit) {
       // Erst wenn das Netz weg ist und die Kamera steht, kommt das Band, die Figuren und Linien daneben zuletzt.
       // Das Band selbst ist dabei deckend und ein schwarzer Schleier davor blendet ab: so sieht man nie durch halb durchsichtige Flächen hindurch.
-      const auf = ruhig ? 1 : weich(.935, .99, t), umher = ruhig ? 1 : weich(.955, 1, t);
-      bahn.gruppe.visible = auf > 0;
-      // Flach folgt auf das Intro die Seite selbst: im Raum darüber bleibt dann nur der Satellit, sonst stünde das Band ein zweites Mal über der Seite
-      const nurSatellit = flach && kipp.wert === 0 && !document.body.classList.contains("wechsel");
-      if (bahn.nurSatellit !== nurSatellit) { bahn.nurSatellit = nurSatellit; bahn.gruppe.children.forEach(o => { if (!o.userData.immer) o.visible = !nurSatellit; }); }
-      bahn.materialien.forEach(m => { m.opacity = (m.userData.frueh ? 1 : umher) * (m.userData.a ?? 1); });
+      // Am Anfang der Seite steht zuerst das Signet; das Band blendet darunter ein, wenn es sich gedreht hat, oder sobald man scrollt
+      if (logo.beginn !== null) logo.ein = Math.max(logo.ein, weich(LOGO_BAND[0], LOGO_BAND[1], zeit / 1000 - logo.beginn));
+      if (!logo.gescrollt && logo.startY !== undefined && Math.abs(scrollY - logo.startY) > 40) logo.gescrollt = true;
+      if (logo.gescrollt || ruhig) logo.ein = Math.min(1, logo.ein + dt / .7);
+      const sicht = ruhig ? 1 : weich(.935, .99, t), auf = sicht * logo.ein, umher = ruhig ? 1 : weich(.955, 1, t) * logo.ein;
+      bahn.gruppe.visible = sicht > 0;
+      // Flach folgt auf das Intro die Seite selbst: im Raum darüber bleibt dann nur das Signet, sonst stünde das Band ein zweites Mal über der Seite
+      const nurSignet = flach && kipp.wert === 0 && !document.body.classList.contains("wechsel");
+      if (bahn.nurSignet !== nurSignet) { bahn.nurSignet = nurSignet; bahn.gruppe.children.forEach(o => { if (!o.userData.immer) o.visible = !nurSignet; }); }
+      bahn.materialien.forEach(m => { if (!m.userData.logo) m.opacity = (m.userData.frueh ? 1 : umher) * (m.userData.a ?? 1); });
+      if (bahn.logo && bahn.gruppe.visible) bahn.logo(zeit / 1000, sicht);
       schleier.visible = bahn.gruppe.visible && auf < 1; schleier.material.uniforms.a.value = 1 - auf;
       // Titel liegen flacher, solange sie nah sind, und richten sich auf, während sie davonziehen
       const fuss = zustand.s + (schmal() ? 2.4 : 1.7);
@@ -2100,7 +2083,6 @@ function bild(zeit) {
       // Solange das Band nicht zu sehen ist (im Intro), rechnet nichts davon: sonst zeichneten Handys und ASCII-Fläche schon neben dem Netz und es ruckelte
       if (!ruhig && bahn.gruppe.visible) {
         bahn.signete.forEach(f => f(zeit / 1000));
-        if (bahn.satellit) bahn.satellit(zeit / 1000);
         if (bahn.wehen) bahn.wehen.value = zeit / 1000;
         if (bahn.ascii) bahn.ascii(zeit / 1000);
         bahn.flackern.forEach(f => f(zeit / 1000));
@@ -3823,6 +3805,10 @@ function groesse() {
   kamera.aspect = b / h; kamera.updateProjectionMatrix();
 }
 if (ok3d) {
+  // Die Seite beginnt beim Signet am Ende des Intros; ein Sprungziel wie #k-kunst bleibt, wie es ist
+  if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+  if (!ruhig && (!location.hash || /^#zettel-/.test(location.hash))) { scrollTo(0, intro.offsetTop + intro.offsetHeight - hoeheStabil); logo.startY = scrollY; }
+  else logo.ein = 1;
   welt = new THREE.Scene(); welt.background = new THREE.Color(0); welt.fog = new THREE.FogExp2(0x000000, .02);
   schleier = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({ uniforms: { a: { value: 1 } }, transparent: true, depthTest: false, depthWrite: false,
     vertexShader: "void main() { gl_Position = vec4(position.xy, 0., 1.); }", fragmentShader: "uniform float a; void main() { gl_FragColor = vec4(0., 0., 0., a); }" }));
