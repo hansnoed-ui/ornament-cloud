@@ -44,13 +44,12 @@ body.flach.nach-intro #welt, body.ohne-3d #welt { visibility: hidden; }
 .kopf .ausgabe i { font-style: normal; padding: 0 .42em; }
 .kopf .ausgabe i:first-child { padding-left: 0; }
 .kopf nav { display: flex; gap: 16px; margin-left: 10px; transition: opacity .4s; }
-/* Sobald links der Kapitelzeiger steht, braucht der Kopf das Menü nicht mehr: es bleiben die Marke und «Zur Website» */
+/* Sobald links der Kapitelzeiger steht, braucht der Kopf das Menü nicht mehr: es bleibt die Marke */
 .kopf.ohne-nav nav { opacity: 0; visibility: hidden; transition: opacity .4s, visibility 0s .4s; }
 .kopf nav a { text-decoration: none; color: rgba(255, 255, 255, .78); }
 .kopf nav a:hover { color: #fff; }
-.kopf .pille { margin-left: auto; background: #fff; color: #000; text-decoration: none; padding: 6px 13px; border-radius: 99px; font-weight: 500; white-space: nowrap; }
 @media (max-width: 900px) { .kopf nav { display: none; } }
-/* Am Handy reicht der Platz neben «Zur Website» nicht für eine Zeile: die Ausgabe steht klein unter dem Namen */
+/* Am Handy steht die Ausgabe klein unter dem Namen */
 @media (max-width: 420px) {
   .kopf .marke { display: grid; grid-template-columns: 24px auto; gap: 2px 9px; align-items: center; line-height: 1.15; }
   .kopf .marke img { grid-row: span 2; }
@@ -276,6 +275,11 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 .kanal .label { font-size: clamp(9px, 1.6cqi, 11px); }
 .kanal b { margin-top: clamp(12px, 3cqi, 30px); font-weight: 500; font-size: clamp(18px, 4.6cqi, 40px); letter-spacing: -.03em; line-height: 1; }
 .kanal .satz { font-family: var(--serif); font-style: italic; font-size: clamp(13px, 2.2cqi, 17px); line-height: 1.3; color: var(--kg); }
+/* Im Raum liegt auf der Bühne das Zeitfeld, flach wird daraus ein Haus; flach erscheinen die drei Karten erst, wenn ihr Kanal aus dem Haus getreten ist (.da),
+   danach bleiben sie (.gebaut). Im Band stehen sie immer */
+.zeitfeld { inset: 0; pointer-events: none; }
+.k-social .kanal { transition: opacity .7s ease-out, transform .7s ease-out, border-color .2s; }
+body.flach .k-social:not(.gebaut) .kanal:not(.da) { opacity: 0; transform: translateY(12px); }
 .feldchen { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; width: clamp(48px, 11cqi, 84px); justify-self: end; margin-top: clamp(10px, 2.4cqi, 22px); }
 .feldchen i { aspect-ratio: 1; border: 1px solid var(--kl); }
 .feldchen i.an { background: var(--ka); border-color: var(--ka); }
@@ -394,7 +398,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
   <nav aria-label="Bereiche">
     <a href="#k-web">Webseiten</a><a href="#k-apps">Apps</a><a href="#k-kunst">Kunst</a><a href="#k-experimente">Specials</a><a href="#k-zettel">Zettel</a><a href="#k-social">Social</a>
   </nav>
-  <a class="pille" href="{{LINK}}b/">Zur Website</a>
+  <!-- Der Knopf «Zur Website» ist weg (Christian, 30. Oktober 2026); zur Website führt die Marke links -->
 </header>
 
 <section id="intro" aria-label="Einstieg">
@@ -413,7 +417,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
       </div>
     </div>
     <div class="intro-text" id="intro-text">
-      <h1>Sieben Bereiche, ein Netz.</h1>
+      <h1>Sechs Bereiche, ein Netz.</h1>
       <p>Webseiten · Apps · Kunst · Specials · Zettel · Social<br><span id="zug-hinweis">Weiter nach unten</span></p>
     </div>
   </div></div>
@@ -541,7 +545,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
       <article class="kapitel k-exp" id="k-experimente" data-name="Specials"><div class="k-innen">
         <span class="marke-k"><span class="zl begriff">verweben</span><span class="zl begriff">schwingen</span><span class="zl begriff">drehen</span></span>
         <h2>Specials</h2>
-        <p class="leit">Bilder verwandeln, Räder drehen</p>
+        <p class="leit">Experimente im Browser.</p>
         <div class="buehne" role="img" aria-label="Ein doppeltes Farbrad; flach baut sich daraus eine Konstruktion auf: ein bewegtes Gewebe, Trauben, schwingende Saiten, kreisende Zeichen und zuletzt die Farben als Skulptur">
           <div class="exp-rad" data-exp></div>
           <canvas class="verwandlung" aria-hidden="true"></canvas>
@@ -567,6 +571,10 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
         <span class="marke-k">06 · jede Woche</span>
         <h2>Social</h2>
         <p class="leit">Ausgewählte Beiträge aus X, Facebook und Instagram, wöchentlich als Zettel gesammelt.</p>
+        <div class="buehne" role="img" aria-label="Ein Zeitfeld: um eine Sonne schnürt sich ein Band zur liegenden Acht, Regen fällt, ein Punkt zieht die Acht nach; flach wird daraus ein Haus, in dem sich Räume verschieben und aus dem die drei Kanäle hervortreten">
+          <div class="zeitfeld" data-zeitfeld></div>
+          <canvas class="verwandlung" aria-hidden="true"></canvas>
+        </div>
         <div class="kanaele">
           <a class="kanal" href="{{LINK}}b/zuletzt/"><span class="label">Zettel · Kanal</span><b>X</b><span class="satz">Beiträge, als Zettel abgelegt.</span><span class="feldchen" aria-hidden="true"></span></a>
           <a class="kanal" href="{{LINK}}b/zuletzt/"><span class="label">Zettel · Kanal</span><b>Facebook</b><span class="satz">Beiträge, als Zettel abgelegt.</span><span class="feldchen" aria-hidden="true"></span></a>
@@ -736,14 +744,14 @@ async function kapitelZeichnen(k, i, LW) {
   kl.querySelectorAll("img").forEach(im => { im.loading = "eager"; });
   kl.querySelectorAll(".k-netz").forEach(e => e.remove());
   // Im Raum zeigt die Seite ihren Anfang: Signet statt Raster, keine geöffnete Fläche
-  kl.classList.remove("raster", "baut", "zeigt-feld"); delete kl.dataset.feld;
+  kl.classList.remove("raster", "baut", "zeigt-feld"); kl.classList.add("gebaut"); delete kl.dataset.feld;
   kl.querySelectorAll('[aria-expanded="true"]').forEach(e => e.setAttribute("aria-expanded", "false"));
   huelle.append(kl); document.body.append(huelle);
   await Promise.all([...kl.querySelectorAll("img")].map(im => im.decode().catch(() => {})));
   const r0 = kl.getBoundingClientRect(), LH = Math.ceil(r0.height);
   const cv = document.createElement("canvas"); cv.width = Math.round(LW * skala); cv.height = Math.round(LH * skala);
   const cx = cv.getContext("2d"); cx.scale(skala, skala);
-  const lage = { titel: null, surfen: null, handys: null, kunst: null, exp: null, buehne: null }, range = document.createRange();
+  const lage = { titel: null, surfen: null, handys: null, kunst: null, exp: null, zeitfeld: null, buehne: null }, range = document.createRange();
   const leer = c => !c || c === "transparent" || /rgba?\(.*,\s*0\)$/.test(c);
   const schrift = cs => `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
   const oberlaenge = () => { const m = cx.measureText("Hg"); return m.fontBoundingBoxAscent ?? m.actualBoundingBoxAscent * 1.12; };
@@ -791,6 +799,7 @@ async function kapitelZeichnen(k, i, LW) {
     if (el.dataset && "handys" in el.dataset) lage.handys = { x, y, b, h };
     if (el.dataset && "kunst" in el.dataset) lage.kunst = { x, y, b, h };
     if (el.dataset && "exp" in el.dataset) lage.exp = { x, y, b, h };
+    if (el.dataset && "zeitfeld" in el.dataset) lage.zeitfeld = { x, y, b, h };
     if (el.classList.contains("buehne")) lage.buehne = { y, h };
     cx.save(); cx.globalAlpha = a;
     if (cs.mixBlendMode && cs.mixBlendMode !== "normal") cx.globalCompositeOperation = cs.mixBlendMode;
@@ -1159,6 +1168,31 @@ void main() {
     const m = new THREE.Mesh(geo, stoff); m.renderOrder = 3; m.frustumCulled = false; g.add(m);
     m.onBeforeRender = () => { uni.a.value = stoff.opacity; };
     bahn.signete.push(sek => { uni.zeit.value = ruhig ? 0 : sek % 1000; });
+  });
+  // Auf der Bühne von Social liegt das Zeitfeld: eine Leinwand, die der Krümmung des Bandes folgt. Es beginnt, sobald die Kamera in die Nähe kommt,
+  // und läuft danach weiter (etwa 24 Bilder in der Sekunde, nur in der Nähe); die flache Seite übernimmt es, wo es gerade steht
+  bilder.forEach((b, i) => {
+    const l = b.lage.zeitfeld; if (!l) return;
+    const s0 = bahn.kapitel[i].s0, sk = Math.min(1.6, 1200 / l.b), cv = document.createElement("canvas"); cv.width = Math.round(l.b * sk); cv.height = Math.round(l.h * sk);
+    const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    const geo = new THREE.PlaneGeometry(1, 1, 12, 10), pos = geo.attributes.position, v = new THREE.Vector3();
+    for (let j = 0; j < pos.count; j++) {
+      const u = pos.getX(j) + .5, w = .5 - pos.getY(j);
+      bahnPunkt(s0 + (l.y + w * l.h) * bahn.k, RAUM.w / 2 - (l.x + u * l.b) * bahn.k, .006, v); pos.setXYZ(j, v.x, v.y, v.z);
+    }
+    const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
+    m.material.userData.frueh = true; m.renderOrder = 3; m.frustumCulled = false; g.add(m);
+    const cx = cv.getContext("2d"), zeichne = T => { zfZeichnen(cx, l.b, l.h, sk, T); tex.needsUpdate = true; };
+    zeichne(ruhig ? 9.6 : 0);
+    const mitte = bahnPunkt(s0 + (l.y + l.h / 2) * bahn.k, RAUM.w / 2 - (l.x + l.b / 2) * bahn.k, 0);
+    let zuletzt = -1; const ndc = new THREE.Vector3();
+    bahn.signete.push(sek => {
+      if (kamera.position.distanceTo(mitte) > 16) return;
+      // Es beginnt erst, wenn die Mitte der Bühne gut im Bild steht, nicht schon im Vorbeifahren
+      if (ZF.beginn === null) { ndc.copy(mitte).project(kamera); if (ndc.z < 1 && Math.abs(ndc.x) < .8 && Math.abs(ndc.y) < .75) ZF.beginn = performance.now() / 1000; }
+      if (ZF.beginn === null) { if (zuletzt < 0) { zuletzt = 0; zeichne(0); } return; }
+      if (sek - zuletzt < 1 / 24) return; zuletzt = sek; zeichne(performance.now() / 1000 - ZF.beginn);
+    });
   });
   // Auf der Bühne der Kunst steht im Raum ein Feld glänzender Säulen in Schwarz und Weiss, dicht an dicht über die ganze Fläche (nach «Pillars» von textures.dev,
   // hier räumlich). Ihre Höhe folgt einem langsam fliessenden Feld, leicht vom Foto getragen; die Deckel zeigen das Foto in Schwarz und Weiss.
@@ -2011,6 +2045,7 @@ function bild(zeit) {
   if (web && flach) webLaufBild(zeit);
   if (apps && flach) appsLaufBild(zeit);
   if (exp && flach) expLaufBild(zeit);
+  if (soz && flach) sozLaufBild(zeit);
   if (kunst && flach) kunstLaufBild(zeit, dt);
   // Während des Wechsels zur flachen Seite läuft das Bild weiter, die Seite blendet darüber
   const imRaum = !flach || document.body.classList.contains("wechsel") || intro.getBoundingClientRect().bottom > 0;
@@ -2124,13 +2159,13 @@ function setzeFlach(f, id) {
   bahnDom.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 340, easing: "ease-in", fill: "forwards" }).finished.then(() => {
     document.body.classList.remove("zurueck"); bahnDom.style.top = "";
     bahnDom.getAnimations().forEach(a => a.cancel());
-    webZurueck(); appsZurueck(); expZurueck();
+    webZurueck(); appsZurueck(); expZurueck(); sozZurueck();
     wechselt = false;
   });
 }
 function flachSetzen(f, akt, effekt) {
   flach = f; document.body.classList.toggle("flach", f); zumRaum.setAttribute("aria-pressed", !f); zurFlaeche.setAttribute("aria-pressed", f); steuer.dataset.ansicht = f ? "flaeche" : "raum";
-  if (!f && !document.body.classList.contains("zurueck")) { webZurueck(); appsZurueck(); expZurueck(); }
+  if (!f && !document.body.classList.contains("zurueck")) { webZurueck(); appsZurueck(); expZurueck(); sozZurueck(); }
   if (f && !effekt) kipp.wert = kipp.von = kipp.nach = 0;
   const k = akt && document.getElementById(akt);
   if (k) { if (f) scrollTo({ top: fokusZiel(k), behavior: "auto" }); else zuKapitel(akt, true); }
@@ -2143,7 +2178,7 @@ function flachSetzen(f, akt, effekt) {
     bahnDom.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 460, easing: "ease-out" }).finished.then(() => {
       document.body.classList.remove("wechsel"); cvRaum.getAnimations().forEach(a => a.cancel());
       kipp.wert = kipp.von = kipp.nach = 0; zustand.halten = false; wechselt = false;
-      webPruefen(); appsPruefen(); expPruefen();
+      webPruefen(); appsPruefen(); expPruefen(); sozPruefen();
     });
     letzterEffekt = k; kapitelEffekt(k);
     if (kunst && k === kunst.k && kunst.wechselAb) kunst.rahmenAb = 1;
@@ -3093,6 +3128,370 @@ if (!ruhig && "IntersectionObserver" in window) {
   const filme = new IntersectionObserver(e => e.forEach(x => { if (x.isIntersecting) x.target.play().catch(() => {}); else x.target.pause(); }), { threshold: .25 });
   document.querySelectorAll(".exp-film video").forEach(v => filme.observe(v));
 }
+/* ---------- 06 Social: das Zeitfeld (nach Christians Video «Zeitfeld», 30. Oktober 2026) ----------
+   Im Raum liegt es auf der Bühne des Bandes: eine Sonne, um die sich ein orangefarbenes Band legt und zur liegenden Acht schnürt, dazu schräger Regen und glimmender Staub.
+   Dann verglüht das Band zu einer feinen Linie: Kiesel erscheinen, Kreise und eine Zeitleiste, ein Punkt zieht die Acht nach, und unten rechts, wo die Sonne
+   versunken ist, fällt der Regen senkrecht. Gezeichnet in Einheiten U (etwa die halbe kürzere Seite der Bühne) um die Mitte der Bühne, y nach unten ---------- */
+const ZF = { beginn: null, welt: null };
+const ZF_LAUF = 6.4, ZF_RUNDE = 6.5, ZF_ORANGE = "255, 138, 92", TAU = Math.PI * 2;   // ab wann der Punkt läuft, eine Runde in Sekunden
+// Die Acht (Lemniskate von Gerono, die rechte Schlaufe etwas grösser) und der Kreis um die Sonne, aus dem sie entsteht: m = 0 Kreis, 1 Acht.
+// t = 0 rechts aussen, π/2 die Kreuzung, π links aussen. Weil die linke Hälfte des Kreises gegenläufig zur linken Schlaufe liegt, wird sie unterwegs zur Spitze und schlägt dann zur Schlaufe um
+const ZF_ACHT = { x: -.1, y: .2, a: .78, b: .9, r: .36 };
+function zfAcht(t, m) {
+  const A = ZF_ACHT, c = Math.cos(t), s = Math.sin(t), k = 1 + .1 * c;
+  const gx = A.x + A.a * c * k, gy = A.y + A.b * s * c * k, kx = A.x + A.a * 1.1 - A.r + A.r * c, ky = A.y + A.r * s;
+  return [kx + (gx - kx) * m, ky + (gy - ky) * m];
+}
+function zfWelt() {
+  if (ZF.welt) return ZF.welt;
+  let z = 23; const zf = () => (z = (z * 16807) % 2147483647) / 2147483647;
+  const schraeg = [], senkrecht = [], staub = [], kiesel = [];
+  for (let i = 0; i < 120; i++) schraeg.push({ x: zf(), p: zf(), v: .07 + zf() * .06, l: .07 + zf() * .1, a: .14 + zf() * .24 });
+  for (let i = 0; i < 46; i++) senkrecht.push({ x: zf(), p: zf(), v: .3 + zf() * .3, l: .04 + zf() * .08, a: .35 + zf() * .5 });
+  for (let i = 0; i < 44; i++) staub.push({ r: .08 + Math.sqrt(zf()) * .62, w: zf() * TAU, v: (zf() - .5) * .14, g: .8 + zf() * 1.5, ph: zf() * TAU });
+  [[-.78, -.42, .13, .11], [-.45, -.34, .12, .1], [-.08, -.58, .135, .105], [.3, -.76, .13, .1], [.66, -.85, .145, .1]].forEach(([x, y, w, h]) =>
+    kiesel.push({ x, y, w, h, rot: (zf() - .5) * .7, n: 2.8 + zf() * .8, j1: zf() * TAU, j2: zf() * TAU, ph: zf() * TAU }));
+  return (ZF.welt = { schraeg, senkrecht, staub, kiesel });
+}
+// Der Umriss eines Kiesels (Superellipse mit leicht unruhigem Rand), oben links beginnend im Uhrzeigersinn; er schwebt ein wenig
+function zfKiesel(k, T, n = 48) {
+  const p = [], cr = Math.cos(k.rot), sr = Math.sin(k.rot), dy = .012 * Math.sin(T * .6 + k.ph);
+  for (let i = 0; i < n; i++) {
+    const w = -2.356 + i / n * TAU, c = Math.cos(w), s = Math.sin(w), r = 1 + .07 * Math.sin(2 * w + k.j1) + .05 * Math.sin(3 * w + k.j2);
+    const x = k.w * r * Math.sign(c) * Math.abs(c) ** (2 / k.n), y = k.h * r * Math.sign(s) * Math.abs(s) ** (2 / k.n);
+    p.push([k.x + x * cr - y * sr, k.y + dy + x * sr + y * cr]);
+  }
+  return p;
+}
+// Lage der Bühne: Einheit, Mitte, Zeitleiste
+function zfMass(b, h) { const U = Math.min(b, h) / 2 * .98; return { U, ox: b / 2, oy: h / 2, rw: Math.min(b / 2 / U - .12, .94), ly: .86 }; }
+// Wo die Sonne steht: erst in der rechten Schlaufe, dann sinkt sie nach unten rechts
+const zfSonne = T => { const w = eio(klemm((T - 4.6) / 3.6)); return [misch(ZF_ACHT.x + ZF_ACHT.a * 1.1 - ZF_ACHT.r, .52, w), misch(ZF_ACHT.y, .62, w), w]; };
+// Ein senkrechter Tropfen unten rechts: x, oben, unten, Deckkraft
+function zfTropfen(r, T, M, b, h) {
+  const xr = b / 2 / M.U - .04, x = misch(-.06, xr, r.x), y0 = -.3, y1 = h / 2 / M.U - .04, l = r.l, y = y0 + ((T * r.v + r.p) % 1) * (y1 - y0 + l);
+  const [sx, sy] = zfSonne(T), dichte = Math.exp(-((x - sx) ** 2 + (y - sy) ** 2) / .45);
+  return [x, Math.max(y0, y - l), Math.min(y1, y), r.a * (.25 + .75 * dichte) * weich(y0, y0 + .3, y)];
+}
+// o.aus blendet alles ab, o.ohne lässt weg, was flach zum Haus wird (Kiesel, Acht, Zeitleiste, die ersten 23 Tropfen)
+function zfZeichnen(cx, b, h, d, T, o = {}) {
+  const W = zfWelt(), M = zfMass(b, h), U = M.U, aus = 1 - (o.aus || 0), ohne = !!o.ohne;
+  const X = x => (M.ox + x * U) * d, Y = y => (M.oy + y * U) * d;
+  const or = a => `rgba(${ZF_ORANGE}, ${klemm(a)})`, ws = a => `rgba(236, 242, 240, ${klemm(a)})`;
+  cx.setTransform(1, 0, 0, 1, 0, 0); cx.clearRect(0, 0, cx.canvas.width, cx.canvas.height);
+  cx.lineCap = cx.lineJoin = "round"; cx.globalCompositeOperation = "lighter";
+  const m8 = eio(klemm((T - 1) / 3.4)), [sx, sy, sw] = zfSonne(T);
+  // Kreise im Hintergrund wie Umlaufbahnen, auf zweien kreist ein kleiner Mond
+  const kreisA = weich(5.4, 7.4, T) * aus;
+  if (kreisA > .003) {
+    cx.strokeStyle = `rgba(110, 172, 182, ${.13 * kreisA})`; cx.lineWidth = d;
+    [[-.12, .2, .62], [-.12, .2, .88], [-.12, .2, 1.14], [.28, .3, .7]].forEach(([x, y, r]) => { cx.beginPath(); cx.arc(X(x), Y(y), r * U * d, 0, TAU); cx.stroke(); });
+    cx.fillStyle = or(.7 * kreisA);
+    [[-.12, .2, .88, T * .11 + 2], [.28, .3, .7, -T * .08 + 4]].forEach(([x, y, r, w]) => { cx.beginPath(); cx.arc(X(x + Math.cos(w) * r), Y(y + Math.sin(w) * r), 1.7 * d, 0, TAU); cx.fill(); });
+  }
+  // Die Sonne: anfangs hell in der rechten Schlaufe, später ein mattes Glühen unten rechts
+  const sonneA = weich(0, 1.4, T) * misch(1, .26, sw) * aus;
+  if (sonneA > .003) {
+    const R = misch(.62, .5, sw) * U * d, g = cx.createRadialGradient(X(sx), Y(sy), 0, X(sx), Y(sy), R);
+    g.addColorStop(0, `rgba(255, 200, 165, ${misch(.95, .62, sw) * sonneA})`); g.addColorStop(.2, or(misch(.72, .5, sw) * sonneA)); g.addColorStop(.52, `rgba(205, 84, 46, ${.2 * sonneA})`); g.addColorStop(1, "rgba(150, 46, 26, 0)");
+    cx.fillStyle = g; cx.fillRect(X(sx) - R, Y(sy) - R, 2 * R, 2 * R);
+  }
+  // Schräger Regen über die ganze Bühne, anfangs dichter um die Sonne; unten rechts tritt er zurück, sobald es dort senkrecht regnet
+  const regenA = weich(.6, 2.2, T) * aus;
+  if (regenA > .003) {
+    const dx = .82, dy = .57, xl = -b / 2 / U - .6, xb = b / U + .6, ya = -h / 2 / U - .25, L = (h / U + .5) / dy;
+    cx.lineWidth = d;
+    for (const r of W.schraeg) {
+      const p = (T * r.v + r.p) % 1, x = xl + r.x * xb + dx * p * L, y = ya + dy * p * L;
+      const nah = 1 - klemm(Math.hypot(x - sx, y - sy) / 1.15), unten = sw * weich(-.15, .35, x) * weich(0, .45, y);
+      const a = r.a * regenA * Math.sin(Math.PI * p) * misch(.3 + .7 * nah, 1, weich(4, 7, T)) * (1 - .75 * unten);
+      if (a < .004) continue;
+      cx.strokeStyle = ws(a); cx.beginPath(); cx.moveTo(X(x - dx * r.l), Y(y - dy * r.l)); cx.lineTo(X(x), Y(y)); cx.stroke();
+    }
+  }
+  // Staub um die Sonne
+  const staubA = weich(.8, 2.2, T) * misch(1, .18, weich(5.2, 7.2, T)) * aus;
+  if (staubA > .003) for (const s of W.staub) {
+    const w = s.w + T * s.v, r = s.r * misch(1, 1.25, sw), a = staubA * (.45 + .55 * Math.sin(T * s.g + s.ph));
+    if (a < .01) continue;
+    cx.fillStyle = ws(a); cx.beginPath(); cx.arc(X(sx + Math.cos(w) * r + .04 * Math.sin(T * .3 + s.ph)), Y(sy + Math.sin(w) * r), (.7 + .45 * s.g) * d, 0, TAU); cx.fill();
+  }
+  // Das Band: eine Fläche, die sich verdreht (wechselnde Breite), mit einer hellen Kante
+  const bandA = weich(.3, 1.4, T) * (1 - weich(4.9, 6.3, T)) * aus;
+  if (bandA > .003) {
+    const N = 180, l = [], r = [];
+    for (let i = 0; i <= N; i++) {
+      const t = i / N * TAU, p = zfAcht(t, m8), q = zfAcht(t + .002, m8), nx = -(q[1] - p[1]), ny = q[0] - p[0], nl = Math.hypot(nx, ny) || 1;
+      const wb = .012 + .06 * (.5 + .5 * Math.sin(t + 2.4 + T * .35)) ** 2;
+      l.push([p[0] + nx / nl * wb / 2, p[1] + ny / nl * wb / 2]); r.push([p[0] - nx / nl * wb / 2, p[1] - ny / nl * wb / 2]);
+    }
+    cx.fillStyle = or(.26 * bandA); cx.beginPath(); l.forEach(([x, y], i) => i ? cx.lineTo(X(x), Y(y)) : cx.moveTo(X(x), Y(y))); for (let i = N; i >= 0; i--) cx.lineTo(X(r[i][0]), Y(r[i][1])); cx.closePath(); cx.fill();
+    cx.lineWidth = 1.4 * d; cx.strokeStyle = `rgba(255, 170, 130, ${klemm(.95 * bandA)})`; cx.beginPath(); l.forEach(([x, y], i) => i ? cx.lineTo(X(x), Y(y)) : cx.moveTo(X(x), Y(y))); cx.stroke();
+    cx.lineWidth = d; cx.strokeStyle = or(.3 * bandA); cx.beginPath(); r.forEach(([x, y], i) => i ? cx.lineTo(X(x), Y(y)) : cx.moveTo(X(x), Y(y))); cx.stroke();
+  }
+  // Die feine Acht, auf der später der Punkt läuft
+  const fein = weich(5, 6.6, T) * .16 * aus;
+  if (fein > .003 && !ohne) { cx.strokeStyle = `rgba(190, 180, 230, ${fein})`; cx.lineWidth = d; cx.beginPath(); for (let i = 0; i <= 160; i++) { const p = zfAcht(i / 160 * TAU, m8); i ? cx.lineTo(X(p[0]), Y(p[1])) : cx.moveTo(X(p[0]), Y(p[1])); } cx.stroke(); }
+  // Kiesel, einer nach dem andern gezogen
+  if (!ohne) W.kiesel.forEach((k, i) => {
+    const t0 = 5.3 + i * .14, a = weich(t0, t0 + 1.1, T) * .78 * aus, f = eio(klemm((T - t0) / 1.1));
+    if (a < .003) return;
+    const p = zfKiesel(k, T), n = Math.max(2, Math.round(f * p.length));
+    cx.strokeStyle = ws(a); cx.lineWidth = 1.2 * d; cx.beginPath();
+    for (let j = 0; j <= n && j <= p.length; j++) { const q = p[j % p.length]; j ? cx.lineTo(X(q[0]), Y(q[1])) : cx.moveTo(X(q[0]), Y(q[1])); }
+    cx.stroke();
+  });
+  // Senkrechter Regen unten rechts, jeder Tropfen mit einem Punkt am Ende
+  const sA = weich(5.6, 8.2, T) * aus;
+  if (sA > .003) W.senkrecht.forEach((r, j) => {
+    if (ohne && j < 23) return;
+    const [x, y0, y1, a0] = zfTropfen(r, T, M, b, h), a = a0 * sA; if (a < .004 || y1 <= y0) return;
+    cx.strokeStyle = ws(a); cx.lineWidth = d; cx.beginPath(); cx.moveTo(X(x), Y(y0)); cx.lineTo(X(x), Y(y1)); cx.stroke();
+    cx.fillStyle = ws(a); cx.beginPath(); cx.arc(X(x), Y(y1), .9 * d, 0, TAU); cx.fill();
+  });
+  // Der Punkt zieht die Acht nach: hinter ihm eine feine Linie, die hinten verlischt, vor ihm eine Spur aus Punkten
+  if (T > ZF_LAUF) {
+    const lauf = (T - ZF_LAUF) / ZF_RUNDE * TAU, t1 = Math.PI / 2 + lauf, spur = Math.min(lauf, TAU * .86), pA = weich(ZF_LAUF, ZF_LAUF + .5, T) * aus, voll = klemm(lauf / (TAU * .86));
+    const n = Math.max(1, Math.ceil(spur / .025)), stueck = 6;
+    cx.lineWidth = 1.2 * d;
+    for (let i = 0; i < n; i += stueck) {
+      const a = pA * .9 * misch(1, ((i + stueck / 2) / n) ** 1.3, voll); if (a < .004) continue;
+      cx.strokeStyle = ws(a); cx.beginPath();
+      for (let j = i; j <= Math.min(n, i + stueck); j++) { const p = zfAcht(t1 - spur + spur * j / n, 1); j > i ? cx.lineTo(X(p[0]), Y(p[1])) : cx.moveTo(X(p[0]), Y(p[1])); }
+      cx.stroke();
+    }
+    for (let k = 1; k <= 12; k++) { const p = zfAcht(t1 + k * .075, 1); cx.fillStyle = ws(pA * .7 * (1 - k / 13)); cx.beginPath(); cx.arc(X(p[0]), Y(p[1]), .9 * d, 0, TAU); cx.fill(); }
+    const p = zfAcht(t1, 1), g = cx.createRadialGradient(X(p[0]), Y(p[1]), 0, X(p[0]), Y(p[1]), 13 * d);
+    g.addColorStop(0, or(.55 * pA)); g.addColorStop(1, or(0)); cx.fillStyle = g; cx.fillRect(X(p[0]) - 13 * d, Y(p[1]) - 13 * d, 26 * d, 26 * d);
+    cx.strokeStyle = or(.35 * pA); cx.lineWidth = d; cx.beginPath(); cx.arc(X(p[0]), Y(p[1]), 8 * d, 0, TAU); cx.stroke();
+    cx.fillStyle = `rgba(255, 196, 160, ${pA})`; cx.beginPath(); cx.arc(X(p[0]), Y(p[1]), 3 * d, 0, TAU); cx.fill();
+  }
+  // Die Zeitleiste: feine Striche, jeder vierte länger; die Marke läuft mit dem Punkt
+  const lA = weich(5.8, 6.9, T) * aus;
+  if (lA > .003) {
+    if (!ohne) {
+      cx.strokeStyle = ws(.42 * lA); cx.lineWidth = d; cx.beginPath();
+      for (let k = 0; k <= 32; k++) { const x = -M.rw + 2 * M.rw * k / 32, hh = k % 4 ? .022 : .045; cx.moveTo(X(x), Y(M.ly - hh / 2)); cx.lineTo(X(x), Y(M.ly + hh / 2)); }
+      cx.stroke();
+    }
+    const fr = T > ZF_LAUF ? ((T - ZF_LAUF) / ZF_RUNDE) % 1 : 0;
+    cx.fillStyle = or(lA); cx.beginPath(); cx.arc(X(-M.rw + 2 * M.rw * fr), Y(M.ly), 2.4 * d, 0, TAU); cx.fill();
+  }
+  cx.globalCompositeOperation = "source-over";
+}
+
+/* ---------- Social flach: aus dem Zeitfeld wird ein Haus (nach der 3D-Ansicht des KKL Luzern, Christian 30. Oktober 2026) ----------
+   Die Kiesel werden Räume, der senkrechte Regen die Glasfassade, die Acht das Dach und die Zeitleiste die Kante des Sockels. Die Kamera dreht schräg von oben um das Haus,
+   die Räume verschieben sich; dann treten drei Räume nach vorn auf den Sockel und werden zu den Kanälen X, Facebook und Instagram, darunter erscheinen ihre Karten.
+   Welt-Einheiten: Sockel bei y = −1, Dach bei 0,86; das Haus reicht x ±1,7, z ±0,8, vorn ist +z ---------- */
+const soz = (() => {
+  const k = document.getElementById("k-social"); if (!k) return null;
+  return { k, buehne: k.querySelector(".buehne"), cv: k.querySelector(".verwandlung"), karten: [...k.querySelectorAll(".kanal")], lauf: null, sichtbar: false };
+})();
+const SOZ_ENDE = 9.6, SOZ_RAUS = 6.7, SOZ_KANAELE = ["X", "Facebook", "Instagram"], SOZ_BOEDEN = [-1, -.38, .24];
+// Ein Raum im Raster des Hauses: Feld f (0–3 von links), Geschoss g (0–2 von unten); die Kanäle stehen vorn auf dem Sockel
+const sozFeld = (f, g) => ({ x0: -1.64 + f * .85, x1: -.91 + f * .85, y0: SOZ_BOEDEN[g], y1: SOZ_BOEDEN[g] + .48, z0: -.58, z1: .5, f, g });
+const sozVorne = n => { const c = (n - 1) * 1.17; return { x0: c - .45, x1: c + .45, y0: -1, y1: -.62, z0: 1, z1: 1.4 }; };
+const sozMisch = (a, b, u) => ({ x0: misch(a.x0, b.x0, u), x1: misch(a.x1, b.x1, u), y0: misch(a.y0, b.y0, u), y1: misch(a.y1, b.y1, u), z0: misch(a.z0, b.z0, u), z1: misch(a.z1, b.z1, u) });
+// Wann welcher Raum wohin rückt. Drei treten nach vorn (erst aus dem Haus, dann hinunter auf den Sockel), die zwei übrigen rücken danach immer wieder weiter
+function sozPlan() {
+  const start = [[0, 1], [1, 1], [1, 2], [2, 2], [3, 2]].map(([f, g]) => sozFeld(f, g)), stand = start.slice(), zuege = start.map(() => []);
+  const zug = (i, t, ziel, d = 1) => { zuege[i].push({ t, d, ziel }); stand[i] = ziel; };
+  zug(1, 3.9, sozFeld(2, 1), .9); zug(4, 4.5, sozFeld(3, 1), .9); zug(0, 5.1, sozFeld(0, 0), .9); zug(2, 5.6, sozFeld(0, 2), .9); zug(3, 6.1, sozFeld(1, 2), .9);
+  [0, 1, 4].forEach((i, n) => { const v = sozVorne(n), t = SOZ_RAUS + n * .28; zug(i, t, { ...stand[i], z0: v.z0, z1: v.z1 }, .7); zug(i, t + .72, v, .7); });
+  let z = 5; const zf = () => (z = (z * 16807) % 2147483647) / 2147483647;
+  return { start, zuege, stand, kanal: [0, 1, 4], zf, naechster: SOZ_ENDE + .4, wer: 0 };
+}
+// Die zwei Räume im Haus rücken abwechselnd in ein freies Nachbarfeld
+function sozWeiter(P, T) {
+  while (P.naechster < T + 3) {
+    const i = [2, 3][P.wer++ % 2], j = i === 2 ? 3 : 2, a = P.stand[i], b = P.stand[j];
+    const frei = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([df, dg]) => [a.f + df, a.g + dg]).filter(([f, g]) => f >= 0 && f < 4 && g >= 0 && g < 3 && !(f === b.f && g === b.g));
+    const [f, g] = frei[Math.floor(P.zf() * frei.length)];
+    P.zuege[i].push({ t: P.naechster, d: 1.1, ziel: sozFeld(f, g) }); P.stand[i] = sozFeld(f, g);
+    P.naechster += 2.6;
+  }
+}
+function sozKiste(P, i, T) {
+  let k = P.start[i];
+  for (const z of P.zuege[i]) { if (T <= z.t) break; const u = eio(klemm((T - z.t) / z.d)); if (u < 1) return sozMisch(k, z.ziel, u); k = z.ziel; }
+  return k;
+}
+// Einen geschlossenen Umriss nach Länge gleichmässig neu abtasten
+function nachLaenge(p, n) {
+  const L = [0]; for (let i = 1; i <= p.length; i++) L.push(L[i - 1] + Math.hypot(p[i % p.length][0] - p[i - 1][0], p[i % p.length][1] - p[i - 1][1]));
+  const out = []; let j = 0;
+  for (let i = 0; i < n; i++) {
+    const s = L[p.length] * i / n; while (L[j + 1] < s) j++;
+    const u = (s - L[j]) / Math.max(1e-6, L[j + 1] - L[j]), a = p[j], b = p[(j + 1) % p.length];
+    out.push([misch(a[0], b[0], u), misch(a[1], b[1], u)]);
+  }
+  return out;
+}
+function sozRaster(sofort) {
+  if (!soz || soz.lauf) return;
+  const B = soz.buehne.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2);
+  soz.cv.width = Math.round(B.width * dpr); soz.cv.height = Math.round(B.height * dpr); soz.cv.style.visibility = "";
+  // Das Zeitfeld läuft weiter, wo es im Raum stand; wer gleich flach liest, sieht es schon mit Kieseln und Punkt
+  const tz = ZF.beginn === null ? 7.2 : Math.max(7.2, performance.now() / 1000 - ZF.beginn);
+  soz.lauf = { t0: null, zuletzt: 0, dpr, b: B.width, h: B.height, tz0: tz, plan: sozPlan(), karten: [], fest: !!(sofort || ruhig) };
+  sozKarten();
+  if (soz.lauf.fest) { sozZeichnen(SOZ_ENDE + 1.5, soz.lauf); soz.k.classList.add("gebaut"); }
+}
+// Wo die Karten unter der Bühne stehen (ihre Mitte), damit die Fäden der Kanäle dorthin laufen
+function sozKarten() {
+  const L = soz.lauf; if (!L) return;
+  const B = soz.buehne.getBoundingClientRect();
+  L.karten = soz.karten.map(k => { const r = k.getBoundingClientRect(); return r.left + r.width / 2 - B.left; });
+}
+function sozZurueck() {
+  if (!soz) return;
+  soz.lauf = null; soz.k.classList.remove("gebaut"); soz.karten.forEach(k => k.classList.remove("da"));
+  soz.cv.getContext("2d").clearRect(0, 0, soz.cv.width, soz.cv.height); soz.cv.style.visibility = "hidden";
+}
+function sozLaufBild(zeit) {
+  const L = soz && soz.lauf; if (!L || L.fest) return;
+  if (L.t0 === null) L.t0 = zeit;
+  const T = (zeit - L.t0) / 1000;
+  // Nach dem Aufbau rücken die Räume weiter, solange die Bühne zu sehen ist, mit etwa 30 Bildern in der Sekunde
+  if (T > SOZ_ENDE && (!soz.sichtbar || zeit - L.zuletzt < 1000 / 30)) return;
+  L.zuletzt = zeit;
+  const B = soz.buehne.getBoundingClientRect();
+  if (Math.abs(B.width - L.b) > 1 || Math.abs(B.height - L.h) > 1) { L.b = B.width; L.h = B.height; soz.cv.width = Math.round(L.b * L.dpr); soz.cv.height = Math.round(L.h * L.dpr); sozKarten(); }
+  sozZeichnen(T, L);
+  if (T > SOZ_ENDE && !soz.k.classList.contains("gebaut")) soz.k.classList.add("gebaut");
+}
+function sozZeichnen(T, L) {
+  const cx = soz.cv.getContext("2d"), d = L.dpr, b = L.b, h = L.h, P0 = L.plan;
+  sozWeiter(P0, T);
+  // Erst das Zeitfeld; was zum Haus wird, zeichnet weiter unten die Verwandlung
+  const m = eio(klemm((T - .35) / 1.85)), tz = L.tz0 + T;
+  if (m < 1) zfZeichnen(cx, b, h, d, tz, { aus: m, ohne: true });
+  else { cx.setTransform(1, 0, 0, 1, 0, 0); cx.clearRect(0, 0, soz.cv.width, soz.cv.height); }
+  cx.lineCap = cx.lineJoin = "round";
+  // Die Kamera: frontal wie eine Ansicht des Hauses, dann schräg von oben, einmal hinüber auf die andere Seite und zurück; danach wiegt sie leicht
+  const k1 = eio(klemm((T - 2.1) / 1.6)), k2 = eio(klemm((T - 3.7) / 3)), k3 = eio(klemm((T - SOZ_RAUS) / 1.5));
+  const th = misch(misch(misch(0, .62, k1), -.48, k2), .3, k3) + (T > SOZ_RAUS + 1.5 ? .07 * Math.sin((T - SOZ_RAUS - 1.5) * .22) : 0), ph = misch(misch(0, -.4, k1), -.32, k3);
+  const pers = k1, F = 7, S = Math.min(b * .86 / 4.3, h * .27), mx = b / 2, my = h * .47, yc = -.12;
+  const ct = Math.cos(th), st = Math.sin(th), cp = Math.cos(ph), sp = Math.sin(ph);
+  const P = (x, y, z) => {
+    z = -z; y -= yc; const x1 = x * ct - z * st, z1 = x * st + z * ct, y1 = y * cp - z1 * sp, z2 = y * sp + z1 * cp, f = F / Math.max(F * .2, F + z2 * pers);
+    return [(mx + x1 * f * S) * d, (my - y1 * f * S) * d, z2];
+  };
+  const ws = a => `rgba(236, 242, 240, ${klemm(a)})`, or = a => `rgba(${ZF_ORANGE}, ${klemm(a)})`;
+  const zug = (pts, zu) => { cx.beginPath(); pts.forEach((p, i) => i ? cx.lineTo(p[0], p[1]) : cx.moveTo(p[0], p[1])); if (zu) cx.closePath(); };
+  const flaeche = (pts, farbe) => { zug(pts, true); cx.fillStyle = farbe; cx.fill(); };
+  const strich = (a, b, farbe, lw = 1) => { cx.strokeStyle = farbe; cx.lineWidth = lw * d; cx.beginPath(); cx.moveTo(a[0], a[1]); cx.lineTo(b[0], b[1]); cx.stroke(); };
+  const viereck = (x0, x1, y, z0, z1) => [P(x0, y, z0), P(x1, y, z0), P(x1, y, z1), P(x0, y, z1)];
+  // Was nicht aus dem Zeitfeld hervorgeht, blendet ein, während die Kamera sich hebt
+  const hA = weich(1.4, 3.2, T), M = zfMass(b, h), W = zfWelt(), U = M.U, ZX = x => (M.ox + x * U) * d, ZY = y => (M.oy + y * U) * d;
+  const lerp = (a, c, u) => [misch(a[0], c[0], u), misch(a[1], c[1], u)];
+
+  // Hinten: Glas der Rückseite und der linken Seite, ganz fein
+  if (hA > .003) {
+    cx.lineWidth = d; cx.strokeStyle = ws(.08 * hA); cx.beginPath();
+    for (let x = -1.7; x <= 1.701; x += .2) { const a = P(x, -1, -.8), c = P(x, .86, -.8); cx.moveTo(a[0], a[1]); cx.lineTo(c[0], c[1]); }
+    for (let z = -.8; z <= .801; z += .2) { const a = P(-1.7, -1, z), c = P(-1.7, .86, z); cx.moveTo(a[0], a[1]); cx.lineTo(c[0], c[1]); }
+    cx.stroke();
+  }
+  // Der Sockel: helle Deckfläche, vorn eine Kante; die vordere obere Kante war die Zeitleiste
+  const sk = [P(-2.15, -1, 1.55), P(2.15, -1, 1.55)];
+  if (hA > .003) {
+    flaeche(viereck(-2.15, 2.15, -1, -1.25, 1.55), ws(.035 * hA));
+    cx.strokeStyle = ws(.32 * hA); cx.lineWidth = d; zug(viereck(-2.15, 2.15, -1, -1.25, 1.55), true); cx.stroke();
+    strich(P(-2.15, -1.12, 1.55), P(2.15, -1.12, 1.55), ws(.22 * hA)); strich(P(-2.15, -1, 1.55), P(-2.15, -1.12, 1.55), ws(.22 * hA)); strich(P(2.15, -1, 1.55), P(2.15, -1.12, 1.55), ws(.22 * hA));
+  }
+  if (m < 1) {
+    const a = [ZX(-M.rw), ZY(M.ly)], c = [ZX(M.rw), ZY(M.ly)];
+    strich(lerp(a, sk[0], m), lerp(c, sk[1], m), ws(misch(.42, .5, m)));
+    cx.strokeStyle = ws(.42 * (1 - m)); cx.lineWidth = d; cx.beginPath();
+    for (let k = 0; k <= 32; k++) { const u = k / 32, q = lerp([ZX(-M.rw + 2 * M.rw * u), ZY(M.ly)], lerp(sk[0], sk[1], u), m), hh = (k % 4 ? .011 : .022) * U * d * (1 - m); cx.moveTo(q[0], q[1] - hh); cx.lineTo(q[0], q[1] + hh); }
+    cx.stroke();
+  } else strich(sk[0], sk[1], ws(.5));
+  // Stützen an den Ecken und in der Mitte, Geschossplatten
+  if (hA > .003) {
+    for (const [x, z] of [[-1.7, -.8], [1.7, -.8], [-1.7, .8], [1.7, .8], [0, .8], [0, -.8]]) strich(P(x, -1, z), P(x, .86, z), ws(.26 * hA));
+    SOZ_BOEDEN.slice(1).forEach(y => {
+      flaeche(viereck(-1.7, 1.7, y, -.8, .8), ws(.03 * hA));
+      cx.strokeStyle = ws(.4 * hA); cx.lineWidth = d; zug(viereck(-1.7, 1.7, y, -.8, .8), true); cx.stroke();
+      strich(P(-1.7, y - .05, .8), P(1.7, y - .05, .8), ws(.22 * hA));
+    });
+  }
+  // Die Räume: durchscheinend orange, die Kanten kräftiger, auf dem Boden ein paar Punkte wie Tische; die Vorderseite war ein Kiesel
+  const kisten = [0, 1, 2, 3, 4].map(i => ({ i, k: sozKiste(P0, i, T) })).sort((a, c) => P(.5 * (c.k.x0 + c.k.x1), c.k.y0, .5 * (c.k.z0 + c.k.z1))[2] - P(.5 * (a.k.x0 + a.k.x1), a.k.y0, .5 * (a.k.z0 + a.k.z1))[2]);
+  const rA = weich(1.2, 2.6, T);
+  kisten.forEach(({ i, k }) => {
+    const { x0, x1, y0, y1, z0, z1 } = k, vorn = [P(x0, y1, z1), P(x1, y1, z1), P(x1, y0, z1), P(x0, y0, z1)];
+    if (rA > .003) {
+      flaeche(viereck(x0, x1, y1, z0, z1), or(.07 * rA)); flaeche([P(x1, y0, z0), P(x1, y1, z0), P(x1, y1, z1), P(x1, y0, z1)], or(.06 * rA)); flaeche(viereck(x0, x1, y0, z0, z1), or(.05 * rA));
+      cx.strokeStyle = or(.6 * rA); cx.lineWidth = d; cx.beginPath();
+      for (const [a, c] of [[[x0, y0, z0], [x1, y0, z0]], [[x0, y1, z0], [x1, y1, z0]], [[x0, y0, z0], [x0, y1, z0]], [[x1, y0, z0], [x1, y1, z0]],
+        [[x0, y0, z0], [x0, y0, z1]], [[x1, y0, z0], [x1, y0, z1]], [[x0, y1, z0], [x0, y1, z1]], [[x1, y1, z0], [x1, y1, z1]]]) { const p = P(...a), q = P(...c); cx.moveTo(p[0], p[1]); cx.lineTo(q[0], q[1]); }
+      cx.stroke();
+      cx.fillStyle = or(.55 * rA);
+      for (let u = 1; u < 4; u++) for (let w = 1; w < 3; w++) { const p = P(misch(x0, x1, u / 4), y0 + .005, misch(z0, z1, w / 3)); cx.beginPath(); cx.arc(p[0], p[1], 1.1 * d, 0, TAU); cx.fill(); }
+    }
+    if (m < 1) {
+      // Verwandlung: der Kiesel wird zur Vorderseite des Raums
+      const kp = nachLaenge(zfKiesel(W.kiesel[i], tz).map(([x, y]) => [ZX(x), ZY(y)]), 48), vp = nachLaenge(vorn, 48);
+      zug(kp.map((p, j) => lerp(p, vp[j], m)), true);
+      cx.strokeStyle = `rgba(${Math.round(misch(236, 255, m))}, ${Math.round(misch(242, 138, m))}, ${Math.round(misch(240, 92, m))}, ${misch(.78, .85, m)})`; cx.lineWidth = misch(1.2, 1, m) * d; cx.stroke();
+      if (m > .6) { cx.fillStyle = or(.13 * weich(.6, 1, m)); cx.fill(); }
+    } else { flaeche(vorn, or(.13)); cx.strokeStyle = or(.85); cx.lineWidth = d; zug(vorn, true); cx.stroke(); }
+  });
+  // Die Glasfassade vorn rechts und an der rechten Seite: das war der senkrechte Regen
+  const pfosten = [];
+  for (let k = 0; k < 12; k++) pfosten.push([.06 + k * .148, .8, 0]);
+  for (let k = 0; k < 11; k++) pfosten.push([1.7, .8 - k * .16, 1]);
+  pfosten.forEach(([x, z], j) => {
+    const a = P(x, .86, z), c = P(x, -1, z), al = z === .8 && x < 1.69 ? .24 : .17;
+    if (m < 1) {
+      const [tx, t0, t1, ta] = zfTropfen(W.senkrecht[j], tz, M, b, h), sA = weich(5.6, 8.2, tz) * ta;
+      strich(lerp([ZX(tx), ZY(t0)], a, m), lerp([ZX(tx), ZY(t1)], c, m), ws(misch(sA, al, m)));
+    } else strich(a, c, ws(al));
+  });
+  // Das Dach: eine weit ausladende Platte; ihre Vorderkante war die Acht
+  const dachVorn = [P(-1.95, .95, 1), P(1.95, .95, 1), P(1.95, .86, 1), P(-1.95, .86, 1)];
+  if (hA > .003) {
+    flaeche(viereck(-1.95, 1.95, .95, -1, 1), ws(.045 * hA));
+    cx.strokeStyle = ws(.5 * hA); cx.lineWidth = d; zug(viereck(-1.95, 1.95, .95, -1, 1), true); cx.stroke();
+    for (const [x, z] of [[-1.95, -1], [1.95, -1]]) strich(P(x, .86, z), P(x, .95, z), ws(.35 * hA));
+    strich(P(1.95, .86, -1), P(1.95, .86, 1), ws(.3 * hA));
+  }
+  if (m < 1) {
+    const ap = nachLaenge(Array.from({ length: 96 }, (_, i) => { const p = zfAcht(Math.PI * 1.25 + i / 96 * TAU, 1); return [ZX(p[0]), ZY(p[1])]; }), 64), dp = nachLaenge(dachVorn, 64);
+    zug(ap.map((p, j) => lerp(p, dp[j], m)), true); cx.strokeStyle = ws(misch(.5, .62, m)); cx.lineWidth = d; cx.stroke();
+  } else { flaeche(dachVorn, ws(.05)); cx.strokeStyle = ws(.62); cx.lineWidth = d; zug(dachVorn, true); cx.stroke(); }
+  // Marken wie Knöpfe auf den Räumen, kleine orange Quadrate mit einem Plus
+  const marke = (p, a) => {
+    const s = 5.5 * d; cx.fillStyle = or(.95 * a); cx.fillRect(p[0] - s, p[1] - s, 2 * s, 2 * s);
+    cx.strokeStyle = `rgba(16, 16, 16, ${a})`; cx.lineWidth = 1.2 * d; cx.beginPath(); cx.moveTo(p[0] - s * .5, p[1]); cx.lineTo(p[0] + s * .5, p[1]); cx.moveTo(p[0], p[1] - s * .5); cx.lineTo(p[0], p[1] + s * .5); cx.stroke();
+  };
+  const mA = weich(3.2, 4, T);
+  kisten.forEach(({ i, k }) => { if (mA > .003 && !P0.kanal.includes(i)) marke(P((k.x0 + k.x1) / 2, k.y1, k.z1), mA); });
+  // Die Kanäle: Name über dem Raum, eine Marke, und ein Faden hinunter zu ihrer Karte
+  cx.font = `500 ${13 * d}px ${getComputedStyle(soz.k).fontFamily}`; cx.textAlign = "center"; cx.textBaseline = "alphabetic";
+  P0.kanal.forEach((i, n) => {
+    const k = sozKiste(P0, i, T), t0 = SOZ_RAUS + n * .28 + 1.42, kopf = P((k.x0 + k.x1) / 2, k.y1, k.z1);
+    if (T < t0) { if (mA > .003) marke(kopf, mA); return; }
+    const a = weich(t0, t0 + .5, T), fuss = P((k.x0 + k.x1) / 2, k.y0, k.z1), ziel = [(L.karten[n] ?? b * (n + .5) / 3) * d, h * d], f = eio(klemm((T - t0) / .6));
+    strich(fuss, lerp(fuss, ziel, f), or(.5 * a));
+    marke(kopf, Math.max(mA, a));
+    cx.fillStyle = ws(.95 * a); cx.fillText(SOZ_KANAELE[n], kopf[0], kopf[1] - 12 * d);
+    if (f >= 1 && soz.karten[n] && !soz.karten[n].classList.contains("da")) soz.karten[n].classList.add("da");
+  });
+}
+function sozPruefen() {
+  if (!soz || !flach) return;
+  const r = soz.buehne.getBoundingClientRect(), h = Math.min(r.height, innerHeight) / 2;
+  if (r.top < innerHeight - h && r.bottom > h) sozRaster();
+}
+if (soz && ruhig) requestAnimationFrame(() => sozRaster(true));
+if (soz && "IntersectionObserver" in window) new IntersectionObserver(e => {
+  soz.sichtbar = e[0].isIntersecting;
+  if (flach && !wechselt && e[0].intersectionRatio >= .5) sozRaster();
+}, { threshold: [0, .5] }).observe(soz.buehne);
+addEventListener("resize", () => { if (soz && soz.lauf) { sozKarten(); if (soz.lauf.fest) { soz.lauf = null; sozRaster(true); } } });
 /* ---------- Kunst: ein Foto aus der Praxis, erst als Skizze ----------
    Vorgerechnet mit tools/gamma/kunst_linien.py: das bearbeitete Foto als WebP und die Skizze als verlustfreies WebP.
    In der Skizze ist Rot die Kreide, Grün der Zeitpunkt, an dem der Strich an dieser Stelle gezogen wird, Blau trennt Umrisse (hell) von Schraffur.
