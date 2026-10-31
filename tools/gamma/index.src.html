@@ -58,7 +58,7 @@ body.flach.nach-intro #welt, body.ohne-3d #welt { visibility: hidden; }
 }
 
 /* ---------- Intro: Text, Beschriftungen und Tafel über dem Raum ---------- */
-#intro { position: relative; z-index: 1; height: 625vh; pointer-events: none; }
+#intro { position: relative; z-index: 1; height: 725vh; pointer-events: none; }
 .intro-buehne { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
 /* Mindestens so hoch wie das Fenster: an einem Büro-PC mit Edge reichten Leinwand und Bühne unten 48 px zu wenig weit */
 body.raum-an .intro-buehne { position: fixed; left: 0; right: 0; top: 0; height: max(100svh, 100%); }
@@ -1729,7 +1729,7 @@ void main() {
    Hinunter kommt das Band, und das Signet wird kleiner und dreht sich über dem Band, wo vorher der Planet stand.
    Hinauf bleibt es in der Mitte, wird wieder zur Lichtkugel, und deren Punkte fliegen ins Zettelkasten-Netz */
 const LOGO_DAUER = 10.5, LOGO_N = 520, ROHR = .03;
-const logo = { beginn: null, ein: 0, dreh: 0, drehGezeigt: 0, umgebung: null, stellen: null };
+const logo = { hof: 0, beginn: null, ein: 0, dreh: 0, drehGezeigt: 0, umgebung: null, stellen: null };
 function logoBauen() {
   const an = (x, a, b) => klemm((x - a) / (b - a)), gl = x => x * x * (3 - 2 * x), io = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
   if (!logo.umgebung) { const pm = new THREE.PMREMGenerator(renderer); logo.umgebung = pm.fromScene(new RoomEnvironment(), .03).texture; pm.dispose(); }
@@ -1746,7 +1746,7 @@ function logoBauen() {
   // Sie zeichnen nach dem schwarzen Schleier, der das Band beim Einblenden deckt
   const stoff = (m, reihe) => { m.envMap = logo.umgebung; m.fog = false; m.transparent = true; m.userData.reihe = reihe; return m; };
   const sRohr = stoff(new THREE.MeshPhysicalMaterial({ color: "#2f4236", metalness: 1, roughness: .15, clearcoat: 1, clearcoatRoughness: .05, iridescence: .35, iridescenceIOR: 1.3, envMapIntensity: .9 }), 2);
-  const sPunkte = stoff(new THREE.MeshPhysicalMaterial({ color: "#d9d6c6", metalness: 1, roughness: .25, emissive: "#3a3832", envMapIntensity: .45 }), 1);   // gedämpft: hellere Punkte legen einen Hof um die Kugel (Christian)
+  const sPunkte = stoff(new THREE.MeshPhysicalMaterial({ color: "#d9d6c6", metalness: 1, roughness: .32, emissive: "#34322d", envMapIntensity: .38 }), 1);   // gedämpft: hellere Punkte legen einen Hof um die Kugel (Christian)
   const sRot = stoff(new THREE.MeshPhysicalMaterial({ color: "#f08a5d", roughness: .15, clearcoat: 1, emissive: "#c2410c", emissiveIntensity: .35, envMapIntensity: 1 }), 3);
   const SEG = 400, RAD = 16, rohrGeo = new THREE.TubeGeometry(kurve, SEG, ROHR, RAD, true), rohr = new THREE.Mesh(rohrGeo, sRohr);
   // Das Rohr wächst mit einer feinen Spitze die Schlaufe entlang (Christian: eleganter als der harte Schnitt) und nimmt die Perlen auf, wo es vorbeikommt.
@@ -1874,6 +1874,8 @@ function logoBauen() {
     // Hinauf: erst steht es, dann wird es über einen langen Weg gleichmässig zur Kugel, dann fliegen die Punkte ins Netz, das dabei aufblendet
     const p = ruhig ? 1 : klemm((zustand.u - U_LOGO) / (U_START - U_LOGO)), rueck = gl(1 - an(p, .4, .88)), flug = 1 - an(p, .05, .4);
     halter.visible = flug < 1;
+    // Solange Kugel oder Signet gross in der Mitte stehen, leuchtet der Schein (Bloom) nur schwach: sonst legt er einen Hof um sie (Christian)
+    logo.hof = halter.visible ? (1 - k) * (1 - flug) : 0;
     if (!halter.visible) return;
     // Ab 8,8 s ist die Schrift fertig; der Rest des Intros ist Drehung und Stehen, der Scrollweg beginnt darum dort
     const lauf = ruhig ? LOGO_DAUER : Math.min(sek - logo.beginn, LOGO_DAUER);
@@ -1887,7 +1889,8 @@ function platzMessen() { if (bahn.L) platz.style.height = Math.round(bahn.L / ba
 const zustand = { y: null, yZiel: 0, u: 0, t: 0, s: 0, v: 0, dreh: 0, maus: { x: 0, y: 0 }, halten: false };
 // Die Seite beginnt unten im Intro beim Signet; wer hinaufscrollt, sieht es zum Netz werden und kommt ganz oben zum blauen Zettel (Christian, 31. Oktober 2026).
 // Von oben: bis ZETTEL der Zettel, bis U_LOGO der Flug durchs Netz, bis U_START die Verwandlung des Signets (hier beginnt die Seite), danach geht es über das Band
-const ZETTEL = .135, U_LOGO = .571, U_START = .895;
+// Die Verwandlung (U_LOGO bis U_START) hat seit dem 31. Oktober abends gut 1,6-mal so viel Scrollweg wie zuerst, Zettel, Netz und Halt sind gleich lang (Christian: «noch etwas verlangsamen»)
+const ZETTEL = .1134, U_LOGO = .4796, U_START = .9118;
 const S_START = () => (schmal() ? 4.8 : 4.2);   // so weit hinter dem Anfang steht die Kamera, wenn die Bahn erscheint
 // Höhe des Fensters nur bei neuer Breite übernehmen: die Adressleiste am Handy verschiebt so nichts
 let hoeheStabil = innerHeight, breiteStabil = innerWidth;
@@ -2116,7 +2119,7 @@ function bild(zeit) {
           l.attr.setXYZ(0, misch(P[i * 3], P[i * 3 + 3], u), misch(P[i * 3 + 1], P[i * 3 + 4], u), misch(P[i * 3 + 2], P[i * 3 + 5], u)); l.attr.needsUpdate = true; });
       }
     }
-    bloom.strength = .38;
+    bloom.strength = .38 * (1 - .8 * logo.hof);
     composer.render(); gerendert = true;
   }
   requestAnimationFrame(bild);
