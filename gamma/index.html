@@ -153,7 +153,8 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 
 /* Farben: Webseiten Tannengrün, Apps Senf, Kunst Umbra (getöntes Papier, auf dem die Zeichnung in weisser Kreide steht), Experimente Petrol (#376E6F, Wunsch vom 30. Oktober 2026), Zettel Papier, Social Tinte, Angebot Tannengrün */
 .k-web { --k: #254e58; --kt: #ffffff; --kg: #ffffff; --kl: rgba(255, 255, 255, .26); --ka: #a6d8d2; }
-.k-apps { --k: #fadd26; --kt: #000000; --kg: rgba(0, 0, 0, .68); --kl: rgba(0, 0, 0, .22); --ka: #ffffff; }
+/* Apps wieder im Senf der Website (/b/apps/), Christian 31. Oktober 2026; vorher #fadd26 */
+.k-apps { --k: #e6b117; --kt: #000000; --kg: rgba(0, 0, 0, .68); --kl: rgba(0, 0, 0, .22); --ka: #ffffff; }
 .k-zettel { --k: #ffffff; --kt: #000000; --kg: #5f5f5f; --kl: #d6d6d6; --ka: #1d3fd6; }
 .k-social { --k: #101010; --kt: #ffffff; --kg: rgba(255, 255, 255, .62); --kl: rgba(255, 255, 255, .22); --ka: #8fb0ff; }
 .k-kunst { --k: #4f2232; --kt: #ffffff; --kg: rgba(255, 255, 255, .76); --kl: rgba(255, 255, 255, .26); --ka: #f1d6b8; }
@@ -660,8 +661,8 @@ const ZUG = (() => {
 })();
 const ZYKLEN = ["Operation", "Rekursion", "Adresse", "Koppelung", "Kunst", "Plattform", "Zukunft"];
 const ROEM = ["I", "II", "III", "IV", "V", "VI", "VII"];
-const KAPITELFARBEN = ["#4f8e9c", "#fadd26", "#a3546f", "#5fb3b4", "#ffffff", "#8fb0ff"];   // Quadrate im Intro: auf Schwarz sichtbar
-const LEUCHTFARBEN = ["#7cc4cc", "#fadd26", "#e08aa6", "#8fe0d8", "#d6dbe4", "#9aa6bd"];   // Kanten und Marken im Raum
+const KAPITELFARBEN = ["#4f8e9c", "#e6b117", "#a3546f", "#5fb3b4", "#ffffff", "#8fb0ff"];   // Quadrate im Intro: auf Schwarz sichtbar
+const LEUCHTFARBEN = ["#7cc4cc", "#e6b117", "#e08aa6", "#8fe0d8", "#d6dbe4", "#9aa6bd"];   // Kanten und Marken im Raum
 const ZYKLUSFARBEN = ["#ff5c9a", "#ffc21a", "#ff5a3c", "#ffffff", "#8fb0ff", "#3fd08e", "#ffa3d1"];
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const klemm = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
