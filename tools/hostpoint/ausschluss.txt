@@ -12,6 +12,7 @@ tools/
 tests/
 docs/
 README.md
+CLAUDE.md
 CNAME
 .well-known/
 logs/
