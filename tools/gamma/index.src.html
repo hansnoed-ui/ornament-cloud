@@ -58,7 +58,7 @@ body.flach.nach-intro #welt, body.ohne-3d #welt { visibility: hidden; }
 }
 
 /* ---------- Intro: Text, Beschriftungen und Tafel über dem Raum ---------- */
-#intro { position: relative; z-index: 1; height: 460vh; pointer-events: none; }
+#intro { position: relative; z-index: 1; height: 575vh; pointer-events: none; }
 .intro-buehne { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
 /* Mindestens so hoch wie das Fenster: an einem Büro-PC mit Edge reichten Leinwand und Bühne unten 48 px zu wenig weit */
 body.raum-an .intro-buehne { position: fixed; left: 0; right: 0; top: 0; height: max(100svh, 100%); }
@@ -1748,19 +1748,18 @@ void main() {
     }
   });
 
-  // Vor dem Anfang der Bahn steht das Signet (bis 31. Oktober 2026 ein Planet aus Punkten mit einem Satelliten)
-  logoBauen(g, eng);
   const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(lp, 3)); geo.setAttribute("color", new THREE.Float32BufferAttribute(lc, 3));
   g.add(new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false })));
 }
 
-/* ---------- Am Anfang der Bahn: das Signet (Christian, 31. Oktober 2026; vorher Planet und Satellit) ----------
-   Hier beginnt die Seite. Eine Kugel aus Lichtpunkten fliesst auf die Schlaufe des Signets, die sich in dunklem, glänzendem Metall zeichnet;
-   darunter wird «ornament.cloud» aus Kästchen zu Buchstaben. Das Ganze dreht sich einmal und steht dann. Wer die Bahn hinunterscrollt,
-   dreht es zurück in die Kugel. Formen und Ablauf aus dem Logo-Thread (glas-logo/intro.js, 10,5 Sekunden) */
-const LOGO_DAUER = 10.5, LOGO_N = 520, LOGO_BAND = [7, 9.5];   // das Band blendet ein, während sich das Signet zu Ende dreht
-const logo = { beginn: null, ein: 0, gescrollt: false, umgebung: null };
-function logoBauen(g, eng) {
+/* ---------- Das Signet (Christian, 31. Oktober 2026; vorher Planet und Satellit vor dem Anfang der Bahn) ----------
+   Hier beginnt die Seite: mitten im Bild fliesst eine Kugel aus Lichtpunkten auf die Schlaufe des Signets, die sich in dunklem, glänzendem Metall zeichnet;
+   darunter wird «ornament.cloud» aus Kästchen zu Buchstaben. Es dreht sich einmal und steht dann (Formen und Ablauf aus dem Logo-Thread, glas-logo/intro.js).
+   Hinunter kommt das Band, und das Signet wird kleiner und dreht sich über dem Band, wo vorher der Planet stand.
+   Hinauf bleibt es in der Mitte, wird wieder zur Lichtkugel, und deren Punkte fliegen ins Zettelkasten-Netz */
+const LOGO_DAUER = 10.5, LOGO_N = 520, ROHR = .036;
+const logo = { beginn: null, ein: 0, dreh: 0, drehGezeigt: 0, umgebung: null, stellen: null };
+function logoBauen() {
   const an = (x, a, b) => klemm((x - a) / (b - a)), gl = x => x * x * (3 - 2 * x), io = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
   if (!logo.umgebung) { const pm = new THREE.PMREMGenerator(renderer); logo.umgebung = pm.fromScene(new RoomEnvironment(), .03).texture; pm.dispose(); }
   // Die Schlaufe: Limaçon mit innerer Schlaufe, auf eine Kugelkappe gelegt, um die eigene Mitte gerückt und gleichmässig neu verteilt
@@ -1773,14 +1772,14 @@ function logoBauen(g, eng) {
   const mitte = new THREE.Box3().setFromPoints(gleich).getCenter(new THREE.Vector3());
   const kurve = new THREE.CatmullRomCurve3(gleich.map(p => p.sub(mitte)), true);
   // Stoffe: die Schlaufe dunkel und glänzend wie im Logo-Thread, die Lichtpunkte hell metallen, der Punkt im Rot-Orange des Signets.
-  // Sie zeichnen nach dem schwarzen Schleier, der das Band beim Einblenden deckt: das Signet steht schon, während das Band noch kommt
-  const stoff = (m, reihe) => { m.envMap = logo.umgebung; m.fog = false; m.transparent = true; m.userData.logo = true; m.userData.reihe = reihe; return m; };
-  const sRohr = stoff(new THREE.MeshPhysicalMaterial({ color: "#2b3b31", metalness: .9, roughness: .22, clearcoat: 1, clearcoatRoughness: .1, iridescence: .3, iridescenceIOR: 1.3, envMapIntensity: .5 }), 2);
+  // Sie zeichnen nach dem schwarzen Schleier, der das Band beim Einblenden deckt
+  const stoff = (m, reihe) => { m.envMap = logo.umgebung; m.fog = false; m.transparent = true; m.userData.reihe = reihe; return m; };
+  const sRohr = stoff(new THREE.MeshPhysicalMaterial({ color: "#2f4236", metalness: 1, roughness: .15, clearcoat: 1, clearcoatRoughness: .05, iridescence: .35, iridescenceIOR: 1.3, envMapIntensity: .9 }), 2);
   const sPunkte = stoff(new THREE.MeshPhysicalMaterial({ color: "#d9d6c6", metalness: 1, roughness: .18, clearcoat: 1, envMapIntensity: 1 }), 1);
   const sRot = stoff(new THREE.MeshPhysicalMaterial({ color: "#f08a5d", roughness: .15, clearcoat: 1, emissive: "#c2410c", emissiveIntensity: .35, envMapIntensity: 1 }), 3);
-  const SEG = 400, RAD = 16, rohrGeo = new THREE.TubeGeometry(kurve, SEG, .05, RAD, true), rohr = new THREE.Mesh(rohrGeo, sRohr);
+  const SEG = 400, RAD = 16, rohrGeo = new THREE.TubeGeometry(kurve, SEG, ROHR, RAD, true), rohr = new THREE.Mesh(rohrGeo, sRohr);
   const schlaufe = new THREE.Group(); schlaufe.add(rohr);
-  const punkt = new THREE.Mesh(new THREE.SphereGeometry(.07, 32, 24), sRot); schlaufe.add(punkt);
+  const punkt = new THREE.Mesh(new THREE.SphereGeometry(ROHR * 1.5, 32, 24), sRot); schlaufe.add(punkt);
   const traeger = new THREE.Group(); traeger.add(schlaufe); traeger.position.y = .32; traeger.scale.setScalar(.72);
   const ganzes = new THREE.Group(); ganzes.add(traeger);
   // Die Lichtkugel: Punkte gleichmässig auf der Kugel, jeder hat seinen Platz auf der Schlaufe (nach dem Winkel um die Mitte geordnet)
@@ -1794,7 +1793,7 @@ function logoBauen(g, eng) {
   const cv = document.createElement("canvas"); cv.width = 1080; cv.height = 200;
   const cx = cv.getContext("2d"), schriftTex = new THREE.CanvasTexture(cv); schriftTex.colorSpace = THREE.SRGBColorSpace; schriftTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
   const B = 2 * 4.6 * Math.tan(15 * Math.PI / 180), sSchrift = new THREE.MeshBasicMaterial({ map: schriftTex, transparent: true, side: THREE.DoubleSide, toneMapped: false, depthWrite: false, fog: false });
-  sSchrift.userData.logo = true; sSchrift.userData.reihe = 4;
+  sSchrift.userData.reihe = 4;
   const tafelM = new THREE.Mesh(new THREE.PlaneGeometry(B, B * 200 / 1080), sSchrift); tafelM.position.y = -.66; ganzes.add(tafelM);
   let fAlt = null;
   function schrift(f) {
@@ -1817,41 +1816,80 @@ function logoBauen(g, eng) {
     });
     schriftTex.needsUpdate = true;
   }
-  // Stand und Blickrichtung: dort, wo die Kamera am Anfang der Bahn hinschaut, über dem Band; die Vorderseite zur Kamera
-  const C = bahnPunkt(eng ? -2.2 : -1.4, eng ? .5 : 0, eng ? 2.1 : 1.25), sK = S_START() + (eng ? 2.4 : 1.7);
-  const V = C.clone().sub(bahnPunkt(sK, 0, eng ? 5.4 : 3)).normalize(), X = new THREE.Vector3().crossVectors(V, normale(sK)).normalize(), Y = new THREE.Vector3().crossVectors(X, V);
-  const halter = new THREE.Group(); halter.matrixAutoUpdate = false; halter.matrix.makeBasis(X, Y, V.clone().negate()).scale(new THREE.Vector3().setScalar(eng ? 1.3 : 1.4)).setPosition(C);
-  halter.add(ganzes); halter.userData.immer = true; g.add(halter);
+  const halter = new THREE.Group(); halter.add(ganzes); welt.add(halter);
   [rohr, punkt, punkte, tafelM].forEach(o => { o.renderOrder = 1e6 + o.material.userData.reihe; });
-  const mtx = new THREE.Matrix4(), q = new THREE.Quaternion(), q0 = new THREE.Quaternion(), v = new THREE.Vector3(), sk = new THREE.Vector3(), eu = new THREE.Euler();
-  const stoffe = [sRohr, sPunkte, sRot, sSchrift];
-  // s: gezeigte Sekunde des Intros, sek: Uhr (für das Kreisen der Kugel und den laufenden Punkt), a: Deckkraft
-  function stelle(s, sek, a) {
+  // Masse in Einheiten des Ganzen: Breite der Schlaufe, Höhe von der Schlaufe bis unter die Schrift und deren Mitte
+  const kasten = new THREE.Box3().setFromPoints(kurve.getSpacedPoints(200)), RING = (kasten.max.x - kasten.min.x + 2 * ROHR) * traeger.scale.x;
+  const oben = traeger.position.y + (kasten.max.y + ROHR) * traeger.scale.y, unten = tafelM.position.y - .05, MITTE = (oben + unten) / 2, BLOCK = oben - unten;
+  // Jeder Lichtpunkt hat einen Platz im Netz: einen Knoten oder eine Stelle auf einer Linie (im Raum des Netzes), und einen eigenen Aufbruch
+  let saat = 5; const zf = () => (saat = (saat * 16807) % 2147483647) / 2147483647;
+  const linien = netz.gruppe.children.find(o => o.isLineSegments).geometry.attributes.position, imNetz = [], aufbruch = [];
+  for (let i = 0; i < LOGO_N; i++) {
+    if (i % 5 < 2) imNetz.push(netz.knoten[Math.floor(zf() * netz.knoten.length)].p.clone());
+    else { const j = Math.floor(zf() * linien.count / 2) * 2; imNetz.push(new THREE.Vector3().fromBufferAttribute(linien, j).lerp(new THREE.Vector3().fromBufferAttribute(linien, j + 1), zf())); }
+    aufbruch.push(zf());
+  }
+  const mtx = new THREE.Matrix4(), q = new THREE.Quaternion(), q0 = new THREE.Quaternion(), v = new THREE.Vector3(), w = new THREE.Vector3(), sk = new THREE.Vector3(), eu = new THREE.Euler();
+  const zuSchlaufe = new THREE.Matrix4(), stoffe = [sRohr, sPunkte, sRot, sSchrift];
+  // s: gezeigte Sekunde des Intros, sek: Uhr (für das Kreisen der Kugel und den laufenden Punkt), flug: 0 bis 1 von der Kugel ins Netz
+  function stelle(s, sek, flug) {
+    const vorn = io(an(s, 2, 5.6));
+    schlaufe.rotation.set(.35 * (1 - vorn), .9 * (1 - vorn), 0);
+    ganzes.rotation.y = Math.PI * 2 * io(an(s, 5.6, 9.6)) + logo.drehGezeigt;
+    if (flug > 0) { halter.updateMatrixWorld(true); netz.gruppe.updateMatrixWorld(); zuSchlaufe.copy(schlaufe.matrixWorld).invert().multiply(netz.gruppe.matrixWorld); }
     const fluss = (s - 1.6) / 2.8, verschwinden = an(s, 4, 5);
     eu.set(.35, sek * .9, 0); q.setFromEuler(eu);
     for (let i = 0; i < LOGO_N; i++) {
       const k = io(klemm((fluss - ziele[i].u * .9 * .35) / .65));
       v.copy(kugel[i]).applyQuaternion(q).lerp(ziele[i].p, k);
-      sk.setScalar(Math.max((1 - .35 * k) * (1 - gl(klemm((verschwinden - ziele[i].u * .5) / .5))), 1e-4));
-      punkte.setMatrixAt(i, mtx.compose(v, q0, sk));
+      let gr = (1 - .35 * k) * (1 - gl(klemm((verschwinden - ziele[i].u * .5) / .5)));
+      if (flug > 0) { const f = io(klemm((flug - aufbruch[i] * .35) / .65)); v.lerp(w.copy(imNetz[i]).applyMatrix4(zuSchlaufe), f); gr *= 1 - .4 * f; }
+      punkte.setMatrixAt(i, mtx.compose(v, q0, sk.setScalar(Math.max(gr, 1e-4))));
     }
     punkte.instanceMatrix.needsUpdate = true; punkte.visible = verschwinden < 1;
     const zeichnen = io(an(s, 3.3, 5));
     rohr.visible = zeichnen > 0; rohrGeo.setDrawRange(0, Math.floor(zeichnen * SEG) * RAD * 6);
     const pS = gl(an(s, 4.6, 5.1)); punkt.visible = pS > 0; punkt.scale.setScalar(Math.max(pS, 1e-4));
     punkt.position.copy(kurve.getPoint((Math.max(0, sek - 4.6) / 3.2) % 1));
-    const vorn = io(an(s, 2, 5.6));
-    schlaufe.rotation.set(.35 * (1 - vorn), .9 * (1 - vorn), 0);
-    ganzes.rotation.y = Math.PI * 2 * io(an(s, 5.6, 9.6));
     tafelM.visible = s * 30 - 92 > 57; if (tafelM.visible) schrift(s * 30 - 92);
-    stoffe.forEach(m => { m.opacity = a; });
+    stoffe.forEach(m => { m.opacity = 1; }); sPunkte.opacity = 1 - weich(.75, 1, flug);
   }
-  stelle(0, 0, 1);
-  // Das Intro beginnt mit dem ersten Bild; die Bahn hinunter läuft es zurück bis zur Kugel (gut eine Bildschirmhöhe weit)
-  bahn.logo = (sek, a) => {
+  // Über dem Band: dort, wo vorher der Planet stand, über dem Anfang der Bahn, die Vorderseite zur Kamera.
+  // Am Handy etwas zur Seite gerückt, sonst stünde es rechts der Mitte
+  const pA = new THREE.Vector3(), qA = new THREE.Quaternion(), pB = new THREE.Vector3(), qB = new THREE.Quaternion(), vor = new THREE.Vector3(), auf = new THREE.Vector3(), basis = new THREE.Matrix4();
+  let bFuer = null, sB = 1;
+  // In jedem Bild: die Lage zwischen der Mitte des Bildschirms (am Anfang und darüber) und dem Platz über dem Band, dann der Stand des Intros
+  logo.stellen = (zeit, dt) => {
+    const eng = schmal(), sek = zeit / 1000;
     if (logo.beginn === null) logo.beginn = sek;
-    const lauf = ruhig ? LOGO_DAUER : Math.min(sek - logo.beginn, LOGO_DAUER), zurueck = eio(klemm((zustand.s - S_START()) / (eng ? 4.2 : 3.4)));
-    stelle(misch(lauf, 1.3, zurueck), ruhig ? 0 : sek - logo.beginn, a);
+    if (bFuer !== eng) {
+      bFuer = eng; sB = eng ? 1 : 1.2;
+      const C = bahnPunkt(eng ? -2.2 : -1.4, eng ? .5 : 0, eng ? 2.3 : 1.45), sK = S_START() + (eng ? 2.4 : 1.7);
+      const V = C.clone().sub(bahnPunkt(sK, 0, eng ? 5.4 : 3)).normalize(), X = new THREE.Vector3().crossVectors(V, normale(sK)).normalize(), Y = new THREE.Vector3().crossVectors(X, V);
+      qB.setFromRotationMatrix(basis.makeBasis(X, Y, V.negate())); pB.copy(C);
+    }
+    // Mitte: vier Einheiten vor der Kamera, die Schlaufe gut ein Viertel der Bildhöhe gross, Schlaufe und Schrift zusammen mittig unter dem Kopf
+    kamera.updateMatrixWorld();
+    const D = 4, proPx = 2 * D * Math.tan(kamera.fov * Math.PI / 360) / innerHeight;
+    const sA = Math.min(Math.min(innerHeight * .3, innerWidth * .46) * proPx / RING, (innerHeight - KOPF - 80) * proPx / BLOCK);
+    vor.set(0, 0, -1).applyQuaternion(kamera.quaternion); auf.set(0, 1, 0).applyQuaternion(kamera.quaternion);
+    pA.copy(kamera.position).addScaledVector(vor, D).addScaledVector(auf, -MITTE * sA - KOPF / 2 * proPx); qA.copy(kamera.quaternion);
+    // Hinunter: am Ende des Intros steht die Kamera still, das Signet geht an seinen Platz über dem Band, und das Band blendet darunter ein
+    const roh = ruhig ? 1 : klemm((zustand.u - U_START) / (1 - U_START)), k = eio(roh);
+    logo.ein = ruhig ? 1 : weich(.3, 1, roh);
+    halter.position.lerpVectors(pA, pB, k); halter.quaternion.slerpQuaternions(qA, qB, k); halter.scale.setScalar(misch(sA, sB, k));
+    // Über dem Band dreht es sich langsam wie vorher der Planet; auf dem Weg in die Mitte kehrt es zur Vorderseite zurück
+    // (vorn: die nächste ganze Umdrehung; unterwegs nimmt die Drehung mit dem Weg ab, darum steht es in der Mitte immer gerade)
+    const vorn = Math.round(logo.dreh / (Math.PI * 2)) * Math.PI * 2;
+    if (k > .97 && !ruhig) logo.dreh += dt * Math.PI * 2 / 16;
+    else logo.dreh = misch(logo.dreh, vorn, 1 - Math.exp(-dt * 2.5));
+    logo.drehGezeigt = vorn + (logo.dreh - vorn) * weich(.5, .97, k);
+    // Hinauf: erst steht es, dann wird es zur Kugel, dann fliegen die Punkte ins Netz, das dabei aufblendet
+    const p = ruhig ? 1 : klemm((zustand.u - U_LOGO) / (U_START - U_LOGO)), rueck = eio(1 - an(p, .45, .78)), flug = 1 - an(p, .05, .45);
+    halter.visible = flug < 1;
+    if (!halter.visible) return;
+    const lauf = ruhig ? LOGO_DAUER : Math.min(sek - logo.beginn, LOGO_DAUER);
+    stelle(misch(lauf, 1.3, rueck), ruhig ? 0 : sek - logo.beginn, flug);
   };
 }
 
@@ -1859,8 +1897,9 @@ function platzMessen() { if (bahn.L) platz.style.height = Math.round(bahn.L / ba
 
 /* ---------- Kamera und Zeitachse ---------- */
 const zustand = { y: null, yZiel: 0, u: 0, t: 0, s: 0, v: 0, dreh: 0, maus: { x: 0, y: 0 }, halten: false };
-// Die Seite beginnt unten im Intro beim Signet; wer hinaufscrollt, kommt ins Netz und ganz oben zum blauen Zettel (Christian, 31. Oktober 2026)
-const ZETTEL = .2;
+// Die Seite beginnt unten im Intro beim Signet; wer hinaufscrollt, sieht es zum Netz werden und kommt ganz oben zum blauen Zettel (Christian, 31. Oktober 2026).
+// Von oben: bis ZETTEL der Zettel, bis U_LOGO der Flug durchs Netz, bis U_START die Verwandlung des Signets (hier beginnt die Seite), danach geht es über das Band
+const ZETTEL = .15, U_LOGO = .632, U_START = .884;
 const S_START = () => (schmal() ? 4.8 : 4.2);   // so weit hinter dem Anfang steht die Kamera, wenn die Bahn erscheint
 // Höhe des Fensters nur bei neuer Breite übernehmen: die Adressleiste am Handy verschiebt so nichts
 let hoeheStabil = innerHeight, breiteStabil = innerWidth;
@@ -1875,10 +1914,10 @@ function zeitachse(dt) {
     zustand.y = misch(zustand.y, zustand.yZiel, 1 - Math.exp(-dt * rate));
     if (Math.abs(zustand.yZiel - zustand.y) < .5) zustand.y = zustand.yZiel;
   }
-  // Von oben: der blaue Zettel (bis ZETTEL), dann der Flug durchs Netz und hinaus zur Bahn. t ist die alte Zeitachse des Intros ab dem fertigen Netz
+  // t ist die alte Zeitachse des Intros ab dem fertigen Netz: .22 steht der Zettel, bis .84 der Flug durchs Netz, bei 1 die Kamera über dem Anfang der Bahn
   const u = klemm((zustand.y - intro.offsetTop) / weg);
   zustand.u = ruhig ? 0 : u;
-  zustand.t = ruhig ? .84 : u < ZETTEL ? .22 : .22 + (u - ZETTEL) / (1 - ZETTEL) * .78;
+  zustand.t = ruhig ? .84 : u < ZETTEL ? .22 : u < U_LOGO ? .22 + (u - ZETTEL) / (U_LOGO - ZETTEL) * .62 : .84 + klemm((u - U_LOGO) / (U_START - U_LOGO)) * .16;
   // Während des Wechsels in die flache Seite bleibt die Stelle auf der Bahn, auch wenn die Seite darunter schon flach liegt
   if (!zustand.halten) zustand.s = S_START() + (flach ? 0 : Math.max(0, zustand.y - ende) * bahn.k);
 }
@@ -2059,21 +2098,19 @@ function bild(zeit) {
     });
     // Beim Flug durchs Netz: die nächsten Strophen mit Titel, die nächste mit ihrer Schlusszeile
     stropheZeigen(t);
+    // Das Signet: mittig, über dem Band oder auf dem Weg ins Netz
+    if (logo.stellen) logo.stellen(zeit, dt);
     // Bahn
     if (bahn.bereit) {
       // Erst wenn das Netz weg ist und die Kamera steht, kommt das Band, die Figuren und Linien daneben zuletzt.
       // Das Band selbst ist dabei deckend und ein schwarzer Schleier davor blendet ab: so sieht man nie durch halb durchsichtige Flächen hindurch.
-      // Am Anfang der Seite steht zuerst das Signet; das Band blendet darunter ein, wenn es sich gedreht hat, oder sobald man scrollt
-      if (logo.beginn !== null) logo.ein = Math.max(logo.ein, weich(LOGO_BAND[0], LOGO_BAND[1], zeit / 1000 - logo.beginn));
-      if (!logo.gescrollt && logo.startY !== undefined && Math.abs(scrollY - logo.startY) > 40) logo.gescrollt = true;
-      if (logo.gescrollt || ruhig) logo.ein = Math.min(1, logo.ein + dt / .7);
+      // Am Anfang der Seite steht nur das Signet; das Band blendet ein, wenn man hinunterscrollt (logo.ein)
       const sicht = ruhig ? 1 : weich(.935, .99, t), auf = sicht * logo.ein, umher = ruhig ? 1 : weich(.955, 1, t) * logo.ein;
       bahn.gruppe.visible = sicht > 0;
-      // Flach folgt auf das Intro die Seite selbst: im Raum darüber bleibt dann nur das Signet, sonst stünde das Band ein zweites Mal über der Seite
+      // Flach folgt auf das Intro die Seite selbst: im Raum darüber bleibt dann nur das Signet (es hängt nicht an der Bahn), sonst stünde das Band ein zweites Mal über der Seite
       const nurSignet = flach && kipp.wert === 0 && !document.body.classList.contains("wechsel");
       if (bahn.nurSignet !== nurSignet) { bahn.nurSignet = nurSignet; bahn.gruppe.children.forEach(o => { if (!o.userData.immer) o.visible = !nurSignet; }); }
-      bahn.materialien.forEach(m => { if (!m.userData.logo) m.opacity = (m.userData.frueh ? 1 : umher) * (m.userData.a ?? 1); });
-      if (bahn.logo && bahn.gruppe.visible) bahn.logo(zeit / 1000, sicht);
+      bahn.materialien.forEach(m => { m.opacity = (m.userData.frueh ? 1 : umher) * (m.userData.a ?? 1); });
       schleier.visible = bahn.gruppe.visible && auf < 1; schleier.material.uniforms.a.value = 1 - auf;
       // Titel liegen flacher, solange sie nah sind, und richten sich auf, während sie davonziehen
       const fuss = zustand.s + (schmal() ? 2.4 : 1.7);
@@ -3805,10 +3842,9 @@ function groesse() {
   kamera.aspect = b / h; kamera.updateProjectionMatrix();
 }
 if (ok3d) {
-  // Die Seite beginnt beim Signet am Ende des Intros; ein Sprungziel wie #k-kunst bleibt, wie es ist
+  // Die Seite beginnt beim Signet kurz vor dem Ende des Intros (U_START), auch mit #zettel-… oder #k-… in der Adresse
   if ("scrollRestoration" in history) history.scrollRestoration = "manual";
-  if (!ruhig && (!location.hash || /^#(zettel-|k-)/.test(location.hash))) { scrollTo(0, intro.offsetTop + intro.offsetHeight - hoeheStabil); logo.startY = scrollY; }
-  else logo.ein = 1;
+  if (!ruhig && (!location.hash || /^#(zettel-|k-)/.test(location.hash))) scrollTo(0, intro.offsetTop + U_START * (intro.offsetHeight - hoeheStabil));
   welt = new THREE.Scene(); welt.background = new THREE.Color(0); welt.fog = new THREE.FogExp2(0x000000, .02);
   schleier = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({ uniforms: { a: { value: 1 } }, transparent: true, depthTest: false, depthWrite: false,
     vertexShader: "void main() { gl_Position = vec4(position.xy, 0., 1.); }", fragmentShader: "uniform float a; void main() { gl_FragColor = vec4(0., 0., 0., a); }" }));
@@ -3823,7 +3859,7 @@ if (ok3d) {
   raumMasse();
   netzBauen();
   vorUebersetzen(true);
-  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => bahnBauen()).catch(() => { flach = true; document.body.classList.add("flach"); });
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => { logoBauen(); return bahnBauen(); }).catch(() => { flach = true; document.body.classList.add("flach"); });
 } else {
   platz.style.height = "0px";
 }
