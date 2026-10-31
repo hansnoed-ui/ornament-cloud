@@ -11,7 +11,7 @@ const root = new URL("../", import.meta.url);
 const lies = (p) => readFileSync(new URL(p, root), "utf8");
 
 // seit 28. Oktober 2026 «Beta» statt «Lab»: aufklappbar (<details>), darin «Lab» und «Das 3. Rad», beide in einem neuen Fenster
-const BETA = [["Lab", "beta/lab/"], ["Das 3. Rad", "beta/drittes-rad/"]];
+const BETA = [["Lab", "beta/lab/"], ["Das 3. Rad", "beta/drittes-rad/"], ["Gamma", "gamma/"]];
 const MENU = [["Apps", "apps/"], ["Prompts", "masterprompts/"], ["Zettel", "zu-seiner-zeit/"], ["Social", "social-media/"], ["Art", "art/"], ["Beta", null]];   // «Beta» seit dem Abend des 28. Oktober 2026 ganz rechts   // «Lab» seit 27. Oktober 2026 (ornament.lab, öffnet in einem neuen Fenster), am selben Tag an die erste Stelle;   // seit 19. Oktober 2026 (abends) ohne «Web» (die Seite bleibt, nur nicht im Menü), dahinter «Art»;   // «Social» seit 19. Oktober 2026;   // seit 10. Oktober 2026 Kästchen mit Symbol (vorher die Wörter Zettelkasten, Apps, Masterprompts, Web)
 // Seiten mit dem Menü → Eintrag, der aktiv ist ([Ordner, aria-current]); null: keiner (die Seite hängt an keinem Menüpunkt)
 const MENUSEITEN = {   // OMNA COLOR (alpha/omna-color/, rad/) seit 20. Oktober 2026 mit dem Kopf der App statt des Menüs; ihre App-Seite app/ bleibt
@@ -70,7 +70,7 @@ test("Menü: sechs Kästchen mit Symbol und Namen (Lab, Apps, Prompts, Zettel, S
     const beta = nav[1].match(/<details class="menu-auf"><summary class="menu-item">(<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">[\s\S]*?<\/svg>)<span>Beta<\/span><\/summary><span class="menu-liste">([\s\S]*?)<\/span><\/details>\s*$/);
     assert.ok(beta, `${datei}: zuletzt «Beta» zum Aufklappen`);
     const unter = [...beta[2].matchAll(/<a href="([^"]+)" target="_blank" rel="noopener">([^<]+)<\/a>/g)];
-    assert.deepEqual(unter.map((u) => u[2]), BETA.map((b) => b[0]), `${datei}: unter «Beta» Lab und Das 3. Rad`);
+    assert.deepEqual(unter.map((u) => u[2]), BETA.map((b) => b[0]), `${datei}: unter «Beta» Lab, Das 3. Rad und Gamma`);
     for (const [i, u] of unter.entries()) {
       assert.equal(zielVon(u[1]).pathname, new URL(BETA[i][1], root).pathname, `${datei}: ${BETA[i][0]} führt nach ${BETA[i][1]}`);
       assert.ok(existsSync(new URL(BETA[i][1] + "index.html", root)), `${datei}: ${BETA[i][1]} gibt es`);
