@@ -1863,8 +1863,8 @@ function logoBauen() {
     const eng = schmal(), sek = zeit / 1000;
     if (logo.beginn === null) logo.beginn = sek;
     if (bFuer !== eng) {
-      bFuer = eng; sB = eng ? 1 : 1.2;
-      const C = bahnPunkt(eng ? -2.2 : -1.4, eng ? .5 : 0, eng ? 2.3 : 1.45), sK = S_START() + (eng ? 2.4 : 1.7);
+      bFuer = eng; sB = 1.1;
+      const C = bahnPunkt(eng ? -2.2 : -1.4, eng ? .5 : 0, eng ? 1.55 : 1.15), sK = S_START() + (eng ? 2.4 : 1.7);
       const V = C.clone().sub(bahnPunkt(sK, 0, eng ? 5.4 : 3)).normalize(), X = new THREE.Vector3().crossVectors(V, normale(sK)).normalize(), Y = new THREE.Vector3().crossVectors(X, V);
       qB.setFromRotationMatrix(basis.makeBasis(X, Y, V.negate())); pB.copy(C);
     }
