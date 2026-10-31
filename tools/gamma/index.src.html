@@ -58,7 +58,7 @@ body.flach.nach-intro #welt, body.ohne-3d #welt { visibility: hidden; }
 }
 
 /* ---------- Intro: Text, Beschriftungen und Tafel über dem Raum ---------- */
-#intro { position: relative; z-index: 1; height: 460vh; pointer-events: none; }
+#intro { position: relative; z-index: 1; height: 625vh; pointer-events: none; }
 .intro-buehne { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
 /* Mindestens so hoch wie das Fenster: an einem Büro-PC mit Edge reichten Leinwand und Bühne unten 48 px zu wenig weit */
 body.raum-an .intro-buehne { position: fixed; left: 0; right: 0; top: 0; height: max(100svh, 100%); }
@@ -142,16 +142,16 @@ body.zurueck .bahn { position: fixed; left: 0; right: 0; pointer-events: none; }
 .k-netz .etikett text { fill: var(--k); font: 500 10px var(--sans); letter-spacing: .08em; text-transform: uppercase; }
 body.flach.nach-intro.wechsel #welt { visibility: visible; }
 
-/* Farben: Webseiten Tannengrün, Apps Senf, Kunst Umbra (getöntes Papier, auf dem die Zeichnung in weisser Kreide steht), Specials Nachtblau (#18213a, seit 31. Oktober 2026), Zettel Papier, Social Tinte, Angebot Tannengrün */
-/* Webseiten wieder im Tannengrün der Startseite /b/ (Christian, 31. Oktober 2026; zwischendurch Petrol #254e58) */
-.k-web { --k: #1f4d3a; --kt: #ffffff; --kg: #ffffff; --kl: rgba(255, 255, 255, .26); --ka: #9fd4b4; }
+/* Farben: Webseiten Nachtblau, Apps Senf, Kunst Umbra (getöntes Papier, auf dem die Zeichnung in weisser Kreide steht), Specials Tannengrün (Webseiten und Specials am 31. Oktober 2026 getauscht), Zettel Papier, Social Tinte, Angebot Tannengrün */
+/* Webseiten im Nachtblau, mit Specials getauscht (Christian, 31. Oktober 2026; vorher Tannengrün #1f4d3a, zwischendurch Petrol #254e58) */
+.k-web { --k: #18213a; --kt: #ffffff; --kg: #ffffff; --kl: rgba(255, 255, 255, .26); --ka: #9fd4b4; }
 /* Apps wieder im Senf der Website (/b/apps/), Christian 31. Oktober 2026; vorher #fadd26 */
 .k-apps { --k: #e6b117; --kt: #000000; --kg: rgba(0, 0, 0, .68); --kl: rgba(0, 0, 0, .22); --ka: #ffffff; }
 .k-zettel { --k: #ffffff; --kt: #000000; --kg: #5f5f5f; --kl: #d6d6d6; --ka: #1d3fd6; }
 .k-social { --k: #101010; --kt: #ffffff; --kg: rgba(255, 255, 255, .62); --kl: rgba(255, 255, 255, .22); --ka: #8fb0ff; }
 .k-kunst { --k: #4f2232; --kt: #ffffff; --kg: rgba(255, 255, 255, .76); --kl: rgba(255, 255, 255, .26); --ka: #f1d6b8; }
-/* Specials im Nachtblau aus Christians Bild (31. Oktober 2026, vorher #376e6f) */
-.k-exp { --k: #18213a; --kt: #ffffff; --kg: rgba(255, 255, 255, .76); --kl: rgba(255, 255, 255, .28); --ka: #f6d69a; }
+/* Specials im Tannengrün, mit Webseiten getauscht (Christian, 31. Oktober 2026; vorher Nachtblau #18213a, davor #376e6f) */
+.k-exp { --k: #1f4d3a; --kt: #ffffff; --kg: rgba(255, 255, 255, .76); --kl: rgba(255, 255, 255, .28); --ka: #f6d69a; }
 .k-angebot { --k: #1f4d3a; --kt: #ffffff; --kg: rgba(255, 255, 255, .74); --kl: rgba(255, 255, 255, .26); --ka: #9fd4b4; }
 
 /* 01 Webseiten: oben der Titel und rechts die drei Begriffe, mittig das Signet auf einer ruhigen, einfarbigen Bühne, darunter drei Flächen mit ihrem Titel.
@@ -643,6 +643,7 @@ import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 
 const DATEN = /*DATEN*/null;
 // Bei jedem Besuch ein anderer Zettel; #zettel-12 zieht einen bestimmten
@@ -654,8 +655,8 @@ const ZUG = (() => {
 })();
 const ZYKLEN = ["Operation", "Rekursion", "Adresse", "Koppelung", "Kunst", "Plattform", "Zukunft"];
 const ROEM = ["I", "II", "III", "IV", "V", "VI", "VII"];
-const KAPITELFARBEN = ["#2f7a58", "#e6b117", "#a3546f", "#4d64b3", "#ffffff", "#8fb0ff"];   // Quadrate im Intro: auf Schwarz sichtbar
-const LEUCHTFARBEN = ["#5fcf95", "#e6b117", "#e08aa6", "#8ea2e8", "#d6dbe4", "#9aa6bd"];   // Kanten und Marken im Raum
+const KAPITELFARBEN = ["#4d64b3", "#e6b117", "#a3546f", "#2f7a58", "#ffffff", "#8fb0ff"];   // Quadrate im Intro: auf Schwarz sichtbar
+const LEUCHTFARBEN = ["#8ea2e8", "#e6b117", "#e08aa6", "#5fcf95", "#d6dbe4", "#9aa6bd"];   // Kanten und Marken im Raum
 const ZYKLUSFARBEN = ["#ff5c9a", "#ffc21a", "#ff5a3c", "#ffffff", "#8fb0ff", "#3fd08e", "#ffa3d1"];
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const klemm = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
@@ -1195,92 +1196,63 @@ void main() {
       if (sek - zuletzt < 1 / 24) return; zuletzt = sek; zeichne(performance.now() / 1000 - ZF.beginn);
     });
   });
-  // Auf der Bühne der Kunst steht im Raum ein Feld glänzender Säulen in Schwarz und Weiss, dicht an dicht über die ganze Fläche (nach «Pillars» von textures.dev,
-  // hier räumlich). Ihre Höhe folgt einem langsam fliessenden Feld, leicht vom Foto getragen; die Deckel zeigen das Foto in Schwarz und Weiss.
-  // Beim Wechsel zur Fläche sinken alle Säulen ausser denen im Bildrahmen des Fotos, deren Deckel Farbe annehmen; dort übernimmt die flache Seite
+  // Auf der Bühne der Kunst liegt im Raum ein Klecks Acrylfarbe auf Papier, nass glänzend und mit feinem Glitzer. Ein unsichtbarer Kamm zieht einen Bogen hindurch:
+  // Rillen bleiben zurück, vorne staut sich ein Wulst, und der Klecks dehnt sich in Zugrichtung. Dann verläuft die Farbe wieder, und der nächste Zug kommt aus einer anderen Richtung.
+  // Beim Wechsel zur Fläche erscheint im Bildrahmen das Foto und aussen wird es dunkel; dort übernimmt die flache Seite
   bilder.forEach((b, i) => {
     const l = b.lage.kunst; if (!l || !kunst) return;
     const s0 = bahn.kapitel[i].s0, ar = l.b / l.h, a = kunstAusschnitt(ar, kunst.fokus, kunst.format), R = kunstRahmen(a), [imF] = kunstLaden();
-    const textur = (im, farbig) => {
-      const t = new THREE.Texture(im); t.colorSpace = farbig ? THREE.SRGBColorSpace : THREE.NoColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy();
-      if (im.complete && im.naturalWidth) t.needsUpdate = true;
-      im.addEventListener("load", () => { t.needsUpdate = true; });
-      return t;
-    };
-    // Grund unter den Säulen: tiefes Schwarz statt Skizze
-    const geo = new THREE.PlaneGeometry(1, 1, 24, Math.max(6, Math.round(24 / ar))), pos = geo.attributes.position, v = new THREE.Vector3();
-    for (let j = 0; j < pos.count; j++) {
-      const u = pos.getX(j) + .5, w = .5 - pos.getY(j);
-      bahnPunkt(s0 + (l.y + w * l.h) * bahn.k, RAUM.w / 2 - (l.x + u * l.b) * bahn.k, .007, v); pos.setXYZ(j, v.x, v.y, v.z);
+    const foto = new THREE.Texture(imF); foto.colorSpace = THREE.SRGBColorSpace; foto.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    if (imF.complete && imF.naturalWidth) foto.needsUpdate = true;
+    imF.addEventListener("load", () => { foto.needsUpdate = true; });
+    // Die Fläche liegt auf dem Band; zu jedem Punkt die Richtungen der Bühne (rechts, oben) und die Normale des Bandes, für Licht und Glanz
+    const geo = new THREE.PlaneGeometry(1, 1, 40, Math.max(8, Math.round(40 / ar))), pos = geo.attributes.position, nor = geo.attributes.normal, n = pos.count;
+    const bx = new Float32Array(n * 3), by = new Float32Array(n * 3), v = new THREE.Vector3(), v1 = new THREE.Vector3(), v2 = new THREE.Vector3();
+    for (let j = 0; j < n; j++) {
+      const u = pos.getX(j) + .5, w = .5 - pos.getY(j), sj = s0 + (l.y + w * l.h) * bahn.k, q = RAUM.w / 2 - (l.x + u * l.b) * bahn.k;
+      bahnPunkt(sj, q, .008, v); pos.setXYZ(j, v.x, v.y, v.z);
+      bahnPunkt(sj, q - .01, .008, v1); bahnPunkt(sj, q + .01, .008, v2); v1.sub(v2).normalize(); bx.set([v1.x, v1.y, v1.z], 3 * j);
+      bahnPunkt(sj - .01, q, .008, v1); bahnPunkt(sj + .01, q, .008, v2); v1.sub(v2).normalize(); by.set([v1.x, v1.y, v1.z], 3 * j);
+      normale(sj, v); nor.setXYZ(j, v.x, v.y, v.z);
     }
-    const grund = new THREE.MeshBasicMaterial({ color: 0x050505, transparent: true, depthWrite: false, side: THREE.DoubleSide });
-    const m = new THREE.Mesh(geo, grund); grund.userData.frueh = true; m.renderOrder = 3; m.frustumCulled = false; g.add(m);
-    // Säulen in versetzten Reihen; jede steht senkrecht auf dem Band (x quer, y aus dem Band, z entlang)
-    const SP = 42, teil = l.b / SP, reihen = Math.max(4, Math.round(l.h / (teil * .866))), n = SP * reihen, rad = teil * bahn.k * .46;
-    const zyl = new THREE.CylinderGeometry(1, 1, 1, 20, 1).translate(0, .5, 0), iuv = new Float32Array(n * 2);
-    const M = new THREE.Matrix4(), P = new THREE.Vector3(), q1 = new THREE.Vector3(), q2 = new THREE.Vector3(), X = new THREE.Vector3(), N = new THREE.Vector3(), Z = new THREE.Vector3();
-    const uni = { foto: { value: textur(imF, true) }, zeit: { value: 0 }, deck: { value: 1 }, aus: { value: new THREE.Vector4(...a) }, seite: { value: new THREE.Vector2(ar, 1) },
-      rahmen: { value: new THREE.Vector4(...R) }, rm: { value: 0 }, hoch: { value: teil * bahn.k * 2.6 } };
-    const sStoff = new THREE.ShaderMaterial({ uniforms: uni, transparent: true,
-      vertexShader: `attribute vec2 iuv; uniform sampler2D foto; uniform vec4 aus; uniform vec2 seite; uniform float zeit, hoch;
-varying vec2 vf, vq; varying vec3 vn, vwn, vbn, vbx, vbz, vw; varying float vh, vton, vin; ${KUNST_GLSL.split("// Skizze und Foto")[0]}
+    geo.setAttribute("bx", new THREE.BufferAttribute(bx, 3)); geo.setAttribute("by", new THREE.BufferAttribute(by, 3));
+    const farbe = new THREE.Color(ACRYL_FARBE), [zug0, ruhe0] = ruhig ? [1, 1] : [0, 1];
+    const uni = { foto: { value: foto }, aus: { value: new THREE.Vector4(...a) }, rahmen: { value: new THREE.Vector4(...R) }, rm: { value: 0 }, deck: { value: 1 },
+      zeit: { value: 0 }, zug: { value: zug0 }, ruhe: { value: ruhe0 }, dreh: { value: 0 }, rb: { value: ar > 1.45 ? .36 : .33 }, seite: { value: new THREE.Vector2(ar, 1) },
+      farbe: { value: new THREE.Vector3(farbe.r, farbe.g, farbe.b) } };
+    const sAcryl = new THREE.ShaderMaterial({ uniforms: uni, transparent: true, depthWrite: false,
+      vertexShader: `attribute vec3 bx, by; varying vec2 vuv; varying vec3 vw, vX, vY, vN;
 void main() {
-  vf = aus.xy + iuv * aus.zw; vq = position.xz; vn = normal; vh = position.y;
-  vec2 q = iuv * seite;
-  float fl = smoothstep(.3, .72, kFluss(q, zeit)), hell = dot(texture2D(foto, vf).rgb, vec3(.3, .59, .11));
-  vin = kRahmen(iuv);
-  float h = hoch * (.06 + .94 * fl) * (.55 + .45 * hell);
-  h = mix(h, vin * hoch * .8, rm);
-  vton = mix(.02, .97, smoothstep(.36, .64, mix(hell, fl, .45)));   // klar Schwarz oder Weiss, wenig Grau
-  vec3 p = position; p.y *= h;
-  if (h < .002) p = vec3(0.);   // ganz gesunken: keine Säule
-  vec4 w = modelMatrix * instanceMatrix * vec4(p, 1.); vw = w.xyz;
-  vwn = mat3(modelMatrix * instanceMatrix) * normal; vbn = mat3(modelMatrix * instanceMatrix) * vec3(0., 1., 0.);
-  vbx = mat3(modelMatrix * instanceMatrix) * vec3(1., 0., 0.); vbz = mat3(modelMatrix * instanceMatrix) * vec3(0., 0., 1.);
+  vuv = vec2(uv.x, 1. - uv.y); vec4 w = modelMatrix * vec4(position, 1.); vw = w.xyz;
+  vX = mat3(modelMatrix) * bx; vY = mat3(modelMatrix) * by; vN = mat3(modelMatrix) * normal;
   gl_Position = projectionMatrix * viewMatrix * w;
 }`,
-      fragmentShader: `uniform sampler2D foto; uniform float deck, rm; varying vec2 vf, vq; varying vec3 vn, vwn, vbn, vbx, vbz, vw; varying float vh, vton, vin;
+      fragmentShader: KUNST_GLSL.split("// Skizze und Foto")[0] + ACRYL_GLSL + `
 void main() {
-  // Lack wie Klavierlack: zwei Lichtkästen über dem Band, einer längs, einer schräg; die Deckel sind leicht gewölbt, so fängt jeder Glanz
-  vec3 V = normalize(cameraPosition - vw), B = normalize(vbn), X = normalize(vbx), Z = normalize(vbz);
-  vec3 Nn = vn.y > .5 ? normalize(B + (X * vq.x + Z * vq.y) * .9) : normalize(vwn), R = reflect(-V, Nn);
-  vec3 L1 = normalize(B + Z * .8 + X * .25), L2 = normalize(B * .7 - Z * .3 - X * .9);
-  float dif = max(dot(Nn, L1), 0.), saum = pow(1. - abs(dot(Nn, V)), 3.);
-  float glanz = pow(max(dot(R, L1), 0.), 90.) * 1.3 + pow(max(dot(R, L2), 0.), 40.) * .45 + smoothstep(.55, 1., dot(R, B)) * .08;
-  vec3 c;
-  if (vn.y > .5) {
-    c = mix(vec3(vton), texture2D(foto, vf).rgb, rm * vin);   // Deckel: Schwarz und Weiss, im Bildrahmen beim Wechsel das Foto in Farbe
-    c = c * (.62 + .38 * dif) + glanz * (1. - .6 * rm * vin) + saum * .12;
-  } else c = vec3(.012) + vec3(.02) * dif * (.5 + .5 * vh) + glanz * .9 + saum * .1;
-  gl_FragColor = vec4(min(c, vec3(.97)), deck);
+  vec3 c = acryl(vuv);
+  // Wechsel zur Fläche: im Bildrahmen das Foto, aussen dunkel
+  c = mix(c, mix(vec3(.0015), texture2D(foto, aus.xy + vuv * aus.zw).rgb, kRahmen(vuv)), rm);
+  gl_FragColor = vec4(c, deck);
 }` });
-    sStoff.userData.frueh = true;
-    const saeulen = new THREE.InstancedMesh(zyl, sStoff, n);
-    let k = 0;
-    for (let r = 0; r < reihen; r++) for (let c = 0; c < SP; c++) {
-      const u = (c + (r % 2 ? .75 : .25)) / SP, w = (r + .5) / reihen, sj = s0 + (l.y + w * l.h) * bahn.k, q = RAUM.w / 2 - (l.x + u * l.b) * bahn.k;
-      bahnPunkt(sj, q, .007, P); bahnPunkt(sj, q - .01, .007, q1); bahnPunkt(sj, q + .01, .007, q2);
-      X.subVectors(q1, q2).normalize(); normale(sj, N); Z.crossVectors(X, N).normalize(); X.crossVectors(N, Z);
-      M.makeBasis(X.multiplyScalar(rad), N, Z.multiplyScalar(rad)).setPosition(P); saeulen.setMatrixAt(k, M);
-      iuv[2 * k] = u; iuv[2 * k + 1] = w; k++;
-    }
-    zyl.setAttribute("iuv", new THREE.InstancedBufferAttribute(iuv, 2));
-    saeulen.renderOrder = 4; saeulen.frustumCulled = false; g.add(saeulen);
-    saeulen.onBeforeRender = () => { uni.deck.value = sStoff.opacity; };
+    sAcryl.userData.frueh = true;
+    const m = new THREE.Mesh(geo, sAcryl); m.renderOrder = 3; m.frustumCulled = false; g.add(m);
+    m.onBeforeRender = () => { uni.deck.value = sAcryl.opacity; };
     const mitte = bahnPunkt(s0 + (l.y + l.h / 2) * bahn.k, RAUM.w / 2 - (l.x + l.b / 2) * bahn.k, 0);
     let beginn = null;
     bahn.signete.push(sek => {
-      uni.zeit.value = ruhig ? 0 : sek % 1000;
-      // Wechsel zur Fläche: die Säulen sammeln sich im Bildrahmen
       uni.rm.value = kunst.wechselAb ? weich(0, 1, klemm((performance.now() - kunst.wechselAb) / 600)) : 0;
-      // Die Skizze der flachen Seite zählt ab dem Moment, in dem die Kamera nahe kommt (so steht sie nach dem Wechsel schon teilweise)
+      // Die Farbe ruht, bis die Kamera nahe kommt; von da an ein Zug alle ACRYL_T Sekunden, jeder um 2,4 (gut 137°) weitergedreht
+      // (die Skizze der flachen Seite zählt ab demselben Moment, so steht sie nach dem Wechsel schon teilweise)
       if (beginn === null && kamera.position.distanceTo(mitte) < 15) beginn = sek;
-      if (beginn !== null) kunst.raumZug = 1.02 * eio(klemm((sek - beginn) / KUNST_ZUG));
+      if (beginn === null) return;
+      kunst.raumZug = 1.02 * eio(klemm((sek - beginn) / KUNST_ZUG));
+      const t = sek - beginn, [z, r] = acrylLauf(t % ACRYL_T);
+      uni.zeit.value = t % 1000; uni.zug.value = z; uni.ruhe.value = r; uni.dreh.value = Math.floor(t / ACRYL_T) * 2.4;
     });
   });
   figurenBauen(g);
   bahn.materialien = []; g.traverse(o => { if (o.material) bahn.materialien.push(o.material); });
-  welt.add(g); bahn.gruppe = g; bahn.nurSatellit = null;
+  welt.add(g); bahn.gruppe = g; bahn.nurSignet = null;
   vorUebersetzen();
   bahn.bereit = true;
   platzMessen();
@@ -1747,146 +1719,175 @@ void main() {
     }
   });
 
-  /* Im dunklen Raum vor dem Anfang der Bahn kreist ein Satellit um einen Planeten aus Punkten.
-     Die Umlaufbahn liegt schräg zum Blick, mit dem das Band erscheint; hinter dem Planeten verschwindet er, die letzte Strecke zieht eine feine Spur nach.
-     Farben: Land in Mint, Meer und Luftsaum blau, der Satellit in Senf wie Goldfolie, seine Segel blau */
-  {
-    const C = bahnPunkt(eng ? -2 : -1.4, eng ? .4 : -1, eng ? 2.6 : 1.8), sK = S_START() + (eng ? 2.4 : 1.7);
-    const V = C.clone().sub(bahnPunkt(sK, 0, eng ? 5.4 : 3)).normalize(), X = new THREE.Vector3().crossVectors(V, normale(sK)).normalize(), Y = new THREE.Vector3().crossVectors(X, V);
-    const q = new THREE.Quaternion().setFromAxisAngle(V, -.2), A = X.clone().applyQuaternion(q), B = Y.clone().multiplyScalar(Math.sin(.27)).addScaledVector(V, Math.cos(.27)).applyQuaternion(q);
-    const ro = eng ? 1.2 : 1.55, rg = eng ? .36 : .46, UMLAUF = 28;
-    const weiss = new THREE.Color(1, 1, 1), himmel = new THREE.Color("#8fb0ff"), senf = new THREE.Color("#e6b117"), segel = new THREE.Color("#5c86ff");
-    const linien = zeichne => {
-      const p = [], c = []; zeichne((a, b, h, f = weiss) => { p.push(a[0], a[1], a[2], b[0], b[1], b[2]); c.push(f.r * h, f.g * h, f.b * h, f.r * h, f.g * h, f.b * h); });
-      const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(p, 3)); geo.setAttribute("color", new THREE.Float32BufferAttribute(c, 3));
-      return new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false }));
-    };
-    const ring = (s, n, h, f, farbe) => { for (let i = 0; i < n; i++) s(f(i / n * Math.PI * 2), f((i + 1) / n * Math.PI * 2), h, farbe); };
-    // Der Planet: Achse etwas geneigt, er dreht sich langsam. Land, Meer und Polkappen kommen aus einem festen Rauschen, so sieht er bei jedem Besuch gleich aus.
-    // Die Sonne steht links vorn: Tag- und Nachtseite. Der Kern verdeckt die Rückseite und was hinter ihm vorbeizieht, ein feiner Luftsaum liegt um ihn
-    const kugel = new THREE.Group(); kugel.position.copy(C); kugel.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), Y.clone().applyAxisAngle(V, .38).normalize());
-    const sonne = { value: X.clone().multiplyScalar(-.85).addScaledVector(Y, .3).addScaledVector(V, -.38).normalize() };
-    const streu = (x, y, z) => { const t = Math.sin(x * 127.1 + y * 311.7 + z * 74.7) * 43758.5453; return t - Math.floor(t); };
-    const rauschen = (x, y, z) => {
-      const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z), u = x - xi, v = y - yi, w = z - zi, e = (a, b, c) => streu(xi + a, yi + b, zi + c);
-      const su = u * u * (3 - 2 * u), sv = v * v * (3 - 2 * v), sw = w * w * (3 - 2 * w);
-      return misch(misch(misch(e(0, 0, 0), e(1, 0, 0), su), misch(e(0, 1, 0), e(1, 1, 0), su), sv), misch(misch(e(0, 0, 1), e(1, 0, 1), su), misch(e(0, 1, 1), e(1, 1, 1), su), sv), sw);
-    };
-    const hoehe = (x, y, z) => {
-      // leicht verzogen, damit die Küsten nicht nach Würfelrauschen aussehen
-      const q = .45 * (rauschen(x * 1.3 + 5, y * 1.3, z * 1.3) - .5);
-      let h = 0, a = .5, f = 1.6; for (let o = 0; o < 5; o++) { h += a * rauschen((x + q) * f + 11.3, (y - q) * f + 4.1, (z + q) * f + 7.7); a *= .5; f *= 2.03; }
-      return h;
-    };
-    // Punkte gleichmässig auf der Kugel (Fibonacci), gut ein Drittel davon Land
-    const PN = eng ? 3200 : 5200, pk = [], hs = [];
-    for (let i = 0; i < PN; i++) { const y = 1 - 2 * (i + .5) / PN, r = Math.sqrt(1 - y * y), w = i * 2.399963; pk.push([r * Math.cos(w), y, r * Math.sin(w)]); hs.push(hoehe(...pk[i])); }
-    const kueste = [...hs].sort((a, b) => a - b)[Math.floor(PN * .66)], mint = new THREE.Color("#9fd4b4"), sand = new THREE.Color("#e8e0c2"), meer = new THREE.Color("#5c86ff");
-    const landP = [], landF = [], meerP = [], meerF = [], fb = new THREE.Color();
-    pk.forEach(([x, y, z], i) => {
-      const h = hs[i], eis = Math.abs(y) + .3 * (h - .5) > .87;
-      if (eis) fb.copy(weiss).multiplyScalar(.6);
-      else if (h > kueste) fb.copy(mint).lerp(sand, klemm((h - kueste) / .2)).multiplyScalar(.58 + .17 * klemm((h - kueste) / .1));
-      else fb.copy(meer).multiplyScalar(.06 + .14 * klemm(1 - (kueste - h) / .12));
-      const [pp, ff] = eis || h > kueste ? [landP, landF] : [meerP, meerF];
-      pp.push(x * rg, y * rg, z * rg); ff.push(fb.r, fb.g, fb.b);
-    });
-    // Die Punkte nehmen das Licht der Sonne an, auf der Nachtseite bleibt nur ein Hauch; zum Rand hin treten sie zurück, dort zeichnet der Luftsaum die Kante
-    const punkte = (p, f, gr) => {
-      const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(p, 3)); geo.setAttribute("color", new THREE.Float32BufferAttribute(f, 3));
-      const m = new THREE.PointsMaterial({ size: gr, vertexColors: true, transparent: true, depthWrite: false });
-      m.onBeforeCompile = sh => {
-        sh.uniforms.sonne = sonne;
-        sh.vertexShader = "uniform vec3 sonne;\n" + sh.vertexShader.replace("#include <fog_vertex>", `gl_PointSize = min(gl_PointSize, ${(7 * Math.min(devicePixelRatio || 1, 2)).toFixed(1)});
-  vColor *= (.08 + .92 * smoothstep(-.18, .32, dot(normalize(mat3(modelMatrix) * position), sonne))) * smoothstep(.02, .4, dot(normalize(mat3(modelViewMatrix) * position), -normalize(mvPosition.xyz)));
-#include <fog_vertex>`);
-      };
-      const o = new THREE.Points(geo, m); o.renderOrder = 10; return o;
-    };
-    const drehteil = new THREE.Group(); drehteil.add(punkte(meerP, meerF, eng ? .009 : .012), punkte(landP, landF, eng ? .015 : .02));
-    // Der Kern: Meer in tiefem Nachtblau, zur Nachtseite hin fast schwarz
-    const kern = new THREE.Mesh(new THREE.SphereGeometry(rg * .97, 48, 24), new THREE.ShaderMaterial({ uniforms: { sonne },
-      vertexShader: "varying vec3 vN; void main() { vN = mat3(modelMatrix) * normal; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }",
-      fragmentShader: "uniform vec3 sonne; varying vec3 vN; void main() { float t = smoothstep(-.2, .45, dot(normalize(vN), sonne)); gl_FragColor = vec4(mix(vec3(.0006, .0012, .004), vec3(.0045, .012, .05), t), 1.); }" }));
-    // Der Luftsaum: ein Hauch Himmelblau am Rand, auf der Tagseite stärker, nach aussen ausklingend
-    const saum = new THREE.Mesh(new THREE.SphereGeometry(rg * 1.12, 48, 24), new THREE.ShaderMaterial({ uniforms: { sonne, a: { value: 1 }, farbe: { value: himmel.clone().multiplyScalar(.3) } },
-      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
-      vertexShader: "varying vec3 vN, vV; void main() { vec4 w = modelMatrix * vec4(position, 1.); vN = mat3(modelMatrix) * normal; vV = cameraPosition - w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }",
-      fragmentShader: `uniform vec3 sonne, farbe; uniform float a; varying vec3 vN, vV;
-        void main() {
-          vec3 n = normalize(vN); float d = dot(n, normalize(vV)), r = sqrt(max(0., 1. - d * d)), r0 = ${(1 / 1.12).toFixed(4)};
-          float f = r < r0 ? .5 * pow(r / r0, 18.) : .8 * pow(clamp((1. - r) / (1. - r0), 0., 1.), 2.6);
-          gl_FragColor = vec4(farbe * f * (.2 + .8 * smoothstep(-.35, .5, dot(n, sonne))) * a, 1.);
-        }` }));
-    saum.renderOrder = 11; saum.onBeforeRender = () => { saum.material.uniforms.a.value = saum.material.opacity; };
-    kugel.add(drehteil, kern, saum); g.add(kugel);
-    // Die Umlaufbahn als ganz feine Linie; hinter dem Satelliten wird sie für ein Stück zur Spur
-    const NB = 180, bp = [];
-    for (let i = 0; i <= NB; i++) { const w = i / NB * Math.PI * 2; bp.push(C.clone().addScaledVector(A, ro * Math.cos(w)).addScaledVector(B, ro * Math.sin(w))); }
-    const umlauf = linien(s => { for (let i = 0; i < NB; i++) s(bp[i].toArray(), bp[i + 1].toArray(), 0); }), farben = umlauf.geometry.attributes.color;
-    g.add(umlauf);
-    // Der Satellit: Körper, zwei Sonnensegel mit je drei Feldern, die Schüssel zur Kugel hin, die Antenne nach aussen mit einem Licht
-    const sat = new THREE.Group(); sat.matrixAutoUpdate = false;
-    sat.add(linien(s => {
-      const k = .04, e = [[-k, -k, -k], [k, -k, -k], [k, k, -k], [-k, k, -k], [-k, -k, k], [k, -k, k], [k, k, k], [-k, k, k]];
-      for (const [a, b] of [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]]) s(e[a], e[b], .9, senf);
-      for (const sg of [-1, 1]) {
-        const x0 = sg * .065, x1 = sg * .25, hy = .045;
-        s([sg * k, 0, 0], [x0, 0, 0], .5);
-        s([x0, -hy, 0], [x1, -hy, 0], .8, segel); s([x0, hy, 0], [x1, hy, 0], .8, segel); s([x0, -hy, 0], [x0, hy, 0], .8, segel); s([x1, -hy, 0], [x1, hy, 0], .8, segel);
-        for (let j = 1; j < 3; j++) { const x = x0 + (x1 - x0) * j / 3; s([x, -hy, 0], [x, hy, 0], .5, segel); }
-      }
-      ring(s, 16, .7, w => [.035 * Math.cos(w), .035 * Math.sin(w), -.075], senf); s([0, 0, -k], [0, 0, -.075], .45);
-      for (let j = 0; j < 4; j++) { const w = j * Math.PI / 2 + .3; s([.035 * Math.cos(w), .035 * Math.sin(w), -.075], [0, 0, -.11], .3); }
-      s([0, 0, k], [0, 0, .1], .4);
-    }));
-    // Die Segel glänzen: tiefblaues Glas mit Zellen, ein Lichtstreif wandert langsam darüber, und wo die Sonne zur Kamera spiegelt, blitzt es kurz auf
-    const glanz = { t: { value: 0 }, a: { value: 1 }, sonne };
-    const segelStoff = new THREE.ShaderMaterial({ uniforms: glanz, transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending,
-      vertexShader: "varying vec2 vU; varying vec3 vN, vV; void main() { vU = uv; vec4 w = modelMatrix * vec4(position, 1.); vN = normalize(mat3(modelMatrix) * vec3(0., 0., 1.)); vV = cameraPosition - w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }",
-      fragmentShader: `uniform float t, a; uniform vec3 sonne; varying vec2 vU; varying vec3 vN, vV;
-        void main() {
-          vec3 v = normalize(vV), n = faceforward(vN, -v, vN), h = normalize(sonne + v);
-          float zelle = 1. - .55 * max(step(.94, fract(vU.x * 3.)), step(.9, fract(vU.y * 2.)));
-          float streif = exp(-pow((vU.x * 1.4 + vU.y * .6 - mod(t * .32, 3.4) + .7) * 9., 2.));
-          float blitz = pow(max(dot(n, h), 0.), 60.);
-          vec3 c = vec3(.03, .06, .2) * zelle + vec3(.5, .62, 1.) * .55 * streif + vec3(1., .96, .86) * 1.3 * blitz;
-          gl_FragColor = vec4(c * a, 1.);
-        }` });
-    for (const sg of [-1, 1]) {
-      const m = new THREE.Mesh(new THREE.PlaneGeometry(.185, .09), segelStoff); m.position.x = sg * .1575; if (sg < 0) m.rotation.z = Math.PI;
-      m.renderOrder = 12; m.onBeforeRender = () => { glanz.a.value = segelStoff.opacity; }; sat.add(m);
-    }
-    const lg = new THREE.BufferGeometry(); lg.setAttribute("position", new THREE.Float32BufferAttribute([0, 0, .1], 3));
-    const licht = new THREE.Points(lg, deckeln(new THREE.PointsMaterial({ size: .05, color: hdr("#ffa3d1", .9), transparent: true, depthWrite: false }), 5));
-    sat.add(licht); g.add(sat);
-    kugel.userData.immer = umlauf.userData.immer = sat.userData.immer = true;
-    M.identity(); rechtsW.copy(X); obenW.copy(Y);
-    const tP = new THREE.Vector3(), tT = new THREE.Vector3(), tR = new THREE.Vector3(), tY = new THREE.Vector3(), gross = new THREE.Vector3().setScalar(eng ? 1 : .9);
-    bahn.satellit = sek => {
-      const w = (sek / UMLAUF + .1) % 1 * Math.PI * 2;
-      tP.copy(C).addScaledVector(A, ro * Math.cos(w)).addScaledVector(B, ro * Math.sin(w));
-      tT.copy(A).multiplyScalar(-Math.sin(w)).addScaledVector(B, Math.cos(w)); tR.copy(tP).sub(C).normalize(); tY.crossVectors(tR, tT);
-      sat.matrix.makeBasis(tT, tY, tR).scale(gross).setPosition(tP); sat.matrixWorldNeedsUpdate = true;
-      drehteil.rotation.y = sek * .12; glanz.t.value = sek;
-      for (let i = 0; i < NB; i++) {
-        let d = w - (i + .5) / NB * Math.PI * 2; d -= Math.floor(d / (Math.PI * 2)) * Math.PI * 2;
-        // Die Spur in Senf, die übrige Bahn nur ein Hauch im Blau der Kugel (bis 30. Oktober 2026 gepunktet)
-        const f = d < 1.9 ? senf : himmel, h = d < 1.9 ? .06 + .64 * (1 - d / 1.9) ** 2 : .06;
-        farben.setXYZ(2 * i, f.r * h, f.g * h, f.b * h); farben.setXYZ(2 * i + 1, f.r * h, f.g * h, f.b * h);
-      }
-      farben.needsUpdate = true;
-      licht.material.userData.a = .2 + .8 * Math.max(0, 1 - (sek % 2.6) / .6);
-    };
-  }
   const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(lp, 3)); geo.setAttribute("color", new THREE.Float32BufferAttribute(lc, 3));
   g.add(new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false })));
+}
+
+/* ---------- Das Signet (Christian, 31. Oktober 2026; vorher Planet und Satellit vor dem Anfang der Bahn) ----------
+   Hier beginnt die Seite: mitten im Bild fliesst eine Kugel aus Lichtpunkten auf die Schlaufe des Signets, die sich in dunklem, glänzendem Metall zeichnet;
+   darunter wird «ornament.cloud» aus Kästchen zu Buchstaben. Es dreht sich einmal und steht dann (Formen und Ablauf aus dem Logo-Thread, glas-logo/intro.js).
+   Hinunter kommt das Band, und das Signet wird kleiner und dreht sich über dem Band, wo vorher der Planet stand.
+   Hinauf bleibt es in der Mitte, wird wieder zur Lichtkugel, und deren Punkte fliegen ins Zettelkasten-Netz */
+const LOGO_DAUER = 10.5, LOGO_N = 520, ROHR = .03;
+const logo = { beginn: null, ein: 0, dreh: 0, drehGezeigt: 0, umgebung: null, stellen: null };
+function logoBauen() {
+  const an = (x, a, b) => klemm((x - a) / (b - a)), gl = x => x * x * (3 - 2 * x), io = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+  if (!logo.umgebung) { const pm = new THREE.PMREMGenerator(renderer); logo.umgebung = pm.fromScene(new RoomEnvironment(), .03).texture; pm.dispose(); }
+  // Die Schlaufe: Limaçon mit innerer Schlaufe, auf eine Kugelkappe gelegt, um die eigene Mitte gerückt und gleichmässig neu verteilt
+  const roh = [];
+  for (let i = 0; i < 400; i++) {
+    const u = i / 400 * Math.PI * 2, r = .45 + Math.cos(u), x = 1.2 * r * Math.cos(u) - .84, y = 1.2 * r * Math.sin(u), px = (x + .15) * .62, py = y * .62;
+    roh.push(new THREE.Vector3(px, py, Math.sqrt(Math.max(0, 1 - px * px - py * py))).normalize().multiplyScalar(1.035));
+  }
+  const gleich = new THREE.CatmullRomCurve3(roh, true).getSpacedPoints(400); gleich.pop();
+  const mitte = new THREE.Box3().setFromPoints(gleich).getCenter(new THREE.Vector3());
+  const kurve = new THREE.CatmullRomCurve3(gleich.map(p => p.sub(mitte)), true);
+  // Stoffe: die Schlaufe dunkel und glänzend wie im Logo-Thread, die Lichtpunkte hell metallen, der Punkt im Rot-Orange des Signets.
+  // Sie zeichnen nach dem schwarzen Schleier, der das Band beim Einblenden deckt
+  const stoff = (m, reihe) => { m.envMap = logo.umgebung; m.fog = false; m.transparent = true; m.userData.reihe = reihe; return m; };
+  const sRohr = stoff(new THREE.MeshPhysicalMaterial({ color: "#2f4236", metalness: 1, roughness: .15, clearcoat: 1, clearcoatRoughness: .05, iridescence: .35, iridescenceIOR: 1.3, envMapIntensity: .9 }), 2);
+  const sPunkte = stoff(new THREE.MeshPhysicalMaterial({ color: "#d9d6c6", metalness: 1, roughness: .25, emissive: "#3a3832", envMapIntensity: .45 }), 1);   // gedämpft: hellere Punkte legen einen Hof um die Kugel (Christian)
+  const sRot = stoff(new THREE.MeshPhysicalMaterial({ color: "#f08a5d", roughness: .15, clearcoat: 1, emissive: "#c2410c", emissiveIntensity: .35, envMapIntensity: 1 }), 3);
+  const SEG = 400, RAD = 16, rohrGeo = new THREE.TubeGeometry(kurve, SEG, ROHR, RAD, true), rohr = new THREE.Mesh(rohrGeo, sRohr);
+  // Das Rohr wächst mit einer feinen Spitze die Schlaufe entlang (Christian: eleganter als der harte Schnitt) und nimmt die Perlen auf, wo es vorbeikommt.
+  // Jeder Ring kennt seine Stelle auf der Schlaufe und ihre Mitte; vor der Spitze liegt er auf der Mitte, an der Spitze und am Anfang läuft er fein zu
+  {
+    const n = rohrGeo.attributes.position.count, bu = new Float32Array(n), mi = new Float32Array(n * 3), m = new THREE.Vector3();
+    for (let i = 0; i < n; i++) { const u = Math.floor(i / (RAD + 1)) / SEG; bu[i] = u; kurve.getPointAt(u % 1, m); mi.set([m.x, m.y, m.z], i * 3); }
+    rohrGeo.setAttribute("bahnU", new THREE.BufferAttribute(bu, 1)); rohrGeo.setAttribute("mitte", new THREE.BufferAttribute(mi, 3));
+  }
+  const rohrU = { vorn: { value: 0 }, anfang: { value: 1 } }, SPITZE = .07;
+  sRohr.onBeforeCompile = sh => {
+    Object.assign(sh.uniforms, rohrU);
+    sh.vertexShader = "attribute float bahnU;\nattribute vec3 mitte;\nuniform float vorn, anfang;\n" + sh.vertexShader.replace("#include <begin_vertex>",
+      `#include <begin_vertex>
+  float spitze = 1. - smoothstep(vorn - ${SPITZE.toFixed(3)}, vorn, bahnU), start = mix(1., smoothstep(0., ${SPITZE.toFixed(3)}, bahnU), anfang);
+  transformed = mitte + (transformed - mitte) * (spitze * start);`);
+  };
+  sRohr.customProgramCacheKey = () => "signetrohr";
+  const schlaufe = new THREE.Group(); schlaufe.add(rohr);
+  const punkt = new THREE.Mesh(new THREE.SphereGeometry(ROHR * 1.5, 32, 24), sRot); schlaufe.add(punkt);
+  const traeger = new THREE.Group(); traeger.add(schlaufe); traeger.position.y = .32; traeger.scale.setScalar(.72);
+  const ganzes = new THREE.Group(); ganzes.add(traeger);
+  // Die Lichtkugel: Punkte gleichmässig auf der Kugel, jeder hat seinen Platz auf der Schlaufe (nach dem Winkel um die Mitte geordnet)
+  const kugel = [];
+  for (let i = 0; i < LOGO_N; i++) { const y = 1 - 2 * (i + .5) / LOGO_N, r = Math.sqrt(1 - y * y), w = i * Math.PI * (3 - Math.sqrt(5)); kugel.push(new THREE.Vector3(Math.cos(w) * r, y, Math.sin(w) * r).multiplyScalar(.82)); }
+  const reihe = kugel.map((p, i) => i).sort((a, b) => Math.atan2(kugel[a].y, kugel[a].x) - Math.atan2(kugel[b].y, kugel[b].x));
+  const bahnP = kurve.getSpacedPoints(LOGO_N); bahnP.pop();
+  const ziele = []; reihe.forEach((ki, j) => { ziele[ki] = { p: bahnP[j], u: j / LOGO_N }; });
+  const punkte = new THREE.InstancedMesh(new THREE.SphereGeometry(.022, 14, 10), sPunkte, LOGO_N); punkte.frustumCulled = false; schlaufe.add(punkte);
+  // Der Schriftzug wie im Signet der Website: Kästchen werden zu Buchstaben, auf einer Tafel, die sich mit dem Signet dreht
+  const cv = document.createElement("canvas"); cv.width = 1080; cv.height = 200;
+  const cx = cv.getContext("2d"), schriftTex = new THREE.CanvasTexture(cv); schriftTex.colorSpace = THREE.SRGBColorSpace; schriftTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  const B = 2 * 4.6 * Math.tan(15 * Math.PI / 180), sSchrift = new THREE.MeshBasicMaterial({ map: schriftTex, transparent: true, side: THREE.DoubleSide, toneMapped: false, depthWrite: false, fog: false });
+  sSchrift.userData.reihe = 4;
+  const tafelM = new THREE.Mesh(new THREE.PlaneGeometry(B, B * 200 / 1080), sSchrift); tafelM.position.y = -.66; ganzes.add(tafelM);
+  let fAlt = null;
+  function schrift(f) {
+    f = Math.round(f * 2) / 2; if (f === fAlt || (f > 150 && fAlt > 150) || (f < 55 && fAlt !== null && fAlt < 55)) return; fAlt = f;
+    const NAME = "ornament.cloud", KASTEN = 46, ABSTAND = 4, GR = 44, SPERR = .14 * GR, TINTE = "#e6e4dc", PUNKT = "#f08a5d";
+    cx.clearRect(0, 0, 1080, 200); cx.font = `400 ${GR}px "Instrument Sans", system-ui, sans-serif`;
+    const zus = io(an(f, 128, 146)), br = [...NAME].map(z => misch(KASTEN, cx.measureText(z).width, zus)), ab = misch(ABSTAND, SPERR, zus);
+    const ges = br.reduce((p, q) => p + q, 0) + (NAME.length - 1) * ab, m = cx.measureText("o"), auf = m.fontBoundingBoxAscent || GR * .9, unt = m.fontBoundingBoxDescent || GR * .25;
+    const H = KASTEN * 1.3; let x = (1080 - ges) / 2;
+    [...NAME].forEach((z, i) => {
+      const w = br[i], mx = x + w / 2, my = 100;
+      const kasten = an(f, 58 + i * 2, 66 + i * 2), wird = gl(an(f, 78 + i * 3, 92 + i * 3)), ka = kasten * (1 - wird);
+      if (ka > 0) { const sc = misch(1, .55, wird), rr = misch(0, 16, wird); cx.save(); cx.translate(mx, my); cx.scale(sc, sc);
+        cx.beginPath(); cx.roundRect(-w / 2 + 1, -H / 2 + 1, w - 2, H - 2, Math.max(0, rr - 1));
+        cx.globalAlpha = ka * .06; cx.fillStyle = TINTE; cx.fill(); cx.globalAlpha = ka * .85; cx.lineWidth = 1.5; cx.strokeStyle = TINTE; cx.stroke(); cx.restore(); }
+      if (wird > 0) { const sc = misch(1.35, 1, wird), clip = misch(.5, 0, wird); cx.save(); cx.translate(mx, my); cx.scale(sc, sc);
+        cx.beginPath(); cx.rect(-w / 2 + w * clip, -H / 2 + H * clip, w * (1 - 2 * clip), H * (1 - 2 * clip)); cx.clip();
+        cx.globalAlpha = wird; cx.fillStyle = z === "." ? PUNKT : TINTE; cx.textAlign = "center"; cx.textBaseline = "alphabetic"; cx.fillText(z, 0, (auf - unt) / 2); cx.restore(); }
+      x += w + ab;
+    });
+    schriftTex.needsUpdate = true;
+  }
+  const halter = new THREE.Group(); halter.add(ganzes); welt.add(halter);
+  [rohr, punkt, punkte, tafelM].forEach(o => { o.renderOrder = 1e6 + o.material.userData.reihe; });
+  // Masse in Einheiten des Ganzen: Breite der Schlaufe, Höhe von der Schlaufe bis unter die Schrift und deren Mitte
+  const kasten = new THREE.Box3().setFromPoints(kurve.getSpacedPoints(200)), RING = (kasten.max.x - kasten.min.x + 2 * ROHR) * traeger.scale.x;
+  const oben = traeger.position.y + (kasten.max.y + ROHR) * traeger.scale.y, unten = tafelM.position.y - .05, MITTE = (oben + unten) / 2, BLOCK = oben - unten;
+  // Jeder Lichtpunkt hat einen Platz im Netz: einen Knoten oder eine Stelle auf einer Linie (im Raum des Netzes), und einen eigenen Aufbruch
+  let saat = 5; const zf = () => (saat = (saat * 16807) % 2147483647) / 2147483647;
+  const linien = netz.gruppe.children.find(o => o.isLineSegments).geometry.attributes.position, imNetz = [], aufbruch = [];
+  for (let i = 0; i < LOGO_N; i++) {
+    if (i % 5 < 2) imNetz.push(netz.knoten[Math.floor(zf() * netz.knoten.length)].p.clone());
+    else { const j = Math.floor(zf() * linien.count / 2) * 2; imNetz.push(new THREE.Vector3().fromBufferAttribute(linien, j).lerp(new THREE.Vector3().fromBufferAttribute(linien, j + 1), zf())); }
+    aufbruch.push(zf());
+  }
+  const mtx = new THREE.Matrix4(), q = new THREE.Quaternion(), q0 = new THREE.Quaternion(), v = new THREE.Vector3(), w = new THREE.Vector3(), sk = new THREE.Vector3(), eu = new THREE.Euler();
+  const zuSchlaufe = new THREE.Matrix4(), stoffe = [sRohr, sPunkte, sRot, sSchrift];
+  // s: gezeigte Sekunde des Intros, lauf: Sekunde nach der Uhr (für die eine Drehung), sek: Uhr (Kreisen der Kugel, laufender Punkt), flug: 0 bis 1 von der Kugel ins Netz.
+  // Die Drehung folgt nur der Uhr: beim Scrollen zwischen Kugel und Signet dreht sich nichts, das war zu hektisch (Christian)
+  function stelle(s, lauf, sek, flug) {
+    const vorn = io(an(s, 2, 5.6));
+    schlaufe.rotation.set(.35 * (1 - vorn), .9 * (1 - vorn), 0);
+    ganzes.rotation.y = Math.PI * 2 * io(an(lauf, 5.6, 9.6)) + logo.drehGezeigt;
+    if (flug > 0) { halter.updateMatrixWorld(true); netz.gruppe.updateMatrixWorld(); zuSchlaufe.copy(schlaufe.matrixWorld).invert().multiply(netz.gruppe.matrixWorld); }
+    const fluss = (s - 1.6) / 2.8, zeichnen = io(an(s, 3.3, 5)), rohrVorn = zeichnen * (1 + SPITZE);
+    eu.set(.35, sek * .9, 0); q.setFromEuler(eu);
+    for (let i = 0; i < LOGO_N; i++) {
+      const k = io(klemm((fluss - ziele[i].u * .9 * .35) / .65));
+      v.copy(kugel[i]).applyQuaternion(q).lerp(ziele[i].p, k);
+      let gr = (1 - .35 * k) * (1 - weich(-.01, SPITZE * .6, rohrVorn - SPITZE * .5 - ziele[i].u));   // vom Rohr aufgenommen
+      if (flug > 0) { const f = io(klemm((flug - aufbruch[i] * .35) / .65)); v.lerp(w.copy(imNetz[i]).applyMatrix4(zuSchlaufe), f); gr *= 1 - .4 * f; }
+      punkte.setMatrixAt(i, mtx.compose(v, q0, sk.setScalar(Math.max(gr, 1e-4))));
+    }
+    punkte.instanceMatrix.needsUpdate = true; punkte.visible = zeichnen < 1;
+    rohr.visible = zeichnen > 0; rohrU.vorn.value = rohrVorn; rohrU.anfang.value = 1 - weich(.85, 1, zeichnen);
+    const pS = gl(an(s, 4.6, 5.1)); punkt.visible = pS > 0; punkt.scale.setScalar(Math.max(pS, 1e-4));
+    punkt.position.copy(kurve.getPoint((Math.max(0, sek - 4.6) / 3.2) % 1));
+    tafelM.visible = s * 30 - 92 > 57; if (tafelM.visible) schrift(s * 30 - 92);
+    stoffe.forEach(m => { m.opacity = 1; }); sPunkte.opacity = 1 - weich(.75, 1, flug);
+  }
+  // Über dem Band: dort, wo vorher der Planet stand, über dem Anfang der Bahn, die Vorderseite zur Kamera.
+  // Am Handy etwas zur Seite gerückt, sonst stünde es rechts der Mitte
+  const pA = new THREE.Vector3(), qA = new THREE.Quaternion(), pB = new THREE.Vector3(), qB = new THREE.Quaternion(), vor = new THREE.Vector3(), auf = new THREE.Vector3(), basis = new THREE.Matrix4();
+  let bFuer = null, sB = 1;
+  // In jedem Bild: die Lage zwischen der Mitte des Bildschirms (am Anfang und darüber) und dem Platz über dem Band, dann der Stand des Intros
+  logo.stellen = (zeit, dt) => {
+    const eng = schmal(), sek = zeit / 1000;
+    if (logo.beginn === null) logo.beginn = sek;
+    if (bFuer !== eng) {
+      bFuer = eng; sB = 1.1;
+      const C = bahnPunkt(eng ? -2.2 : -1.4, eng ? .5 : 0, eng ? 1.55 : 1.15), sK = S_START() + (eng ? 2.4 : 1.7);
+      const V = C.clone().sub(bahnPunkt(sK, 0, eng ? 5.4 : 3)).normalize(), X = new THREE.Vector3().crossVectors(V, normale(sK)).normalize(), Y = new THREE.Vector3().crossVectors(X, V);
+      qB.setFromRotationMatrix(basis.makeBasis(X, Y, V.negate())); pB.copy(C);
+    }
+    // Mitte: vier Einheiten vor der Kamera, die Schlaufe gut ein Viertel der Bildhöhe gross, Schlaufe und Schrift zusammen mittig unter dem Kopf
+    kamera.updateMatrixWorld();
+    const D = 4, proPx = 2 * D * Math.tan(kamera.fov * Math.PI / 360) / innerHeight;
+    const sA = Math.min(Math.min(innerHeight * .3, innerWidth * .46) * proPx / RING, (innerHeight - KOPF - 80) * proPx / BLOCK);
+    vor.set(0, 0, -1).applyQuaternion(kamera.quaternion); auf.set(0, 1, 0).applyQuaternion(kamera.quaternion);
+    pA.copy(kamera.position).addScaledVector(vor, D).addScaledVector(auf, -MITTE * sA - KOPF / 2 * proPx); qA.copy(kamera.quaternion);
+    // Hinunter: am Ende des Intros steht die Kamera still, das Signet geht an seinen Platz über dem Band, und das Band blendet darunter ein
+    const roh = ruhig ? 1 : klemm((zustand.u - U_START) / (1 - U_START)), k = eio(roh);
+    logo.ein = ruhig ? 1 : weich(.3, 1, roh);
+    halter.position.lerpVectors(pA, pB, k); halter.quaternion.slerpQuaternions(qA, qB, k); halter.scale.setScalar(misch(sA, sB, k));
+    // Über dem Band dreht es sich langsam wie vorher der Planet; auf dem Weg in die Mitte kehrt es zur Vorderseite zurück
+    // (vorn: die nächste ganze Umdrehung; unterwegs nimmt die Drehung mit dem Weg ab, darum steht es in der Mitte immer gerade)
+    const vorn = Math.round(logo.dreh / (Math.PI * 2)) * Math.PI * 2;
+    if (k > .97 && !ruhig) logo.dreh += dt * Math.PI * 2 / 16;
+    else logo.dreh = misch(logo.dreh, vorn, 1 - Math.exp(-dt * 2.5));
+    logo.drehGezeigt = vorn + (logo.dreh - vorn) * weich(.5, .97, k);
+    // Hinauf: erst steht es, dann wird es über einen langen Weg gleichmässig zur Kugel, dann fliegen die Punkte ins Netz, das dabei aufblendet
+    const p = ruhig ? 1 : klemm((zustand.u - U_LOGO) / (U_START - U_LOGO)), rueck = gl(1 - an(p, .4, .88)), flug = 1 - an(p, .05, .4);
+    halter.visible = flug < 1;
+    if (!halter.visible) return;
+    // Ab 8,8 s ist die Schrift fertig; der Rest des Intros ist Drehung und Stehen, der Scrollweg beginnt darum dort
+    const lauf = ruhig ? LOGO_DAUER : Math.min(sek - logo.beginn, LOGO_DAUER);
+    stelle(misch(Math.min(lauf, 8.8), 1.3, rueck), lauf, ruhig ? 0 : sek - logo.beginn, flug);
+  };
 }
 
 function platzMessen() { if (bahn.L) platz.style.height = Math.round(bahn.L / bahn.k - innerHeight * .45) + "px"; }
 
 /* ---------- Kamera und Zeitachse ---------- */
-const zustand = { y: null, yZiel: 0, t: 0, s: 0, v: 0, dreh: 0, maus: { x: 0, y: 0 }, halten: false };
+const zustand = { y: null, yZiel: 0, u: 0, t: 0, s: 0, v: 0, dreh: 0, maus: { x: 0, y: 0 }, halten: false };
+// Die Seite beginnt unten im Intro beim Signet; wer hinaufscrollt, sieht es zum Netz werden und kommt ganz oben zum blauen Zettel (Christian, 31. Oktober 2026).
+// Von oben: bis ZETTEL der Zettel, bis U_LOGO der Flug durchs Netz, bis U_START die Verwandlung des Signets (hier beginnt die Seite), danach geht es über das Band
+const ZETTEL = .135, U_LOGO = .571, U_START = .895;
 const S_START = () => (schmal() ? 4.8 : 4.2);   // so weit hinter dem Anfang steht die Kamera, wenn die Bahn erscheint
 // Höhe des Fensters nur bei neuer Breite übernehmen: die Adressleiste am Handy verschiebt so nichts
 let hoeheStabil = innerHeight, breiteStabil = innerWidth;
@@ -1901,7 +1902,10 @@ function zeitachse(dt) {
     zustand.y = misch(zustand.y, zustand.yZiel, 1 - Math.exp(-dt * rate));
     if (Math.abs(zustand.yZiel - zustand.y) < .5) zustand.y = zustand.yZiel;
   }
-  zustand.t = ruhig ? .84 : klemm((zustand.y - intro.offsetTop) / weg);
+  // t ist die alte Zeitachse des Intros ab dem fertigen Netz: .22 steht der Zettel, bis .84 der Flug durchs Netz, bei 1 die Kamera über dem Anfang der Bahn
+  const u = klemm((zustand.y - intro.offsetTop) / weg);
+  zustand.u = ruhig ? 0 : u;
+  zustand.t = ruhig ? .84 : u < ZETTEL ? .22 : u < U_LOGO ? .22 + (u - ZETTEL) / (U_LOGO - ZETTEL) * .62 : .84 + klemm((u - U_LOGO) / (U_START - U_LOGO)) * .16;
   // Während des Wechsels in die flache Seite bleibt die Stelle auf der Bahn, auch wenn die Seite darunter schon flach liegt
   if (!zustand.halten) zustand.s = S_START() + (flach ? 0 : Math.max(0, zustand.y - ende) * bahn.k);
 }
@@ -1942,8 +1946,8 @@ function kameraSetzen() {
   }
   const iPos = tmp.a.set(Math.sin(winkel) * Math.cos(neig) * dist, Math.sin(neig) * dist, Math.cos(winkel) * Math.cos(neig) * dist).add(C);
   const iBlick = C;
-  // Seitlich versetzen, solange die Tafel links steht
-  const tf = weich(.6, .76, t) * (1 - weich(.86, .96, t));
+  // Seitlich versetzen, solange die Tafel links steht (seit 31. Oktober 2026 ganz oben)
+  const tf = 1 - weich(ZETTEL - .1, ZETTEL - .02, zustand.u);
   // Bahn: hinter dem Punkt s, über der Bahn, Blick zurück auf das, was gerade gelesen wird
   const bPos = bahnPunkt(s + hinten, 0, hoch, tmp.c);
   const bBlick = bahnPunkt(s - voraus, 0, .2, tmp.d);
@@ -1973,17 +1977,18 @@ function kameraSetzen() {
 /* ---------- Tafel und Intro-Text ---------- */
 function introDom(t) {
   const eng = schmal();
-  introText.style.opacity = 1 - weich(.03, .14, t);
-  // Die Tafel gleitet ruhig in Blaupause herein, ohne Farbschnitte,
-  // und geht am Ende auf demselben Weg wieder, während sich der Blick auf die Bahn senkt
-  const auf = weich(.6, .76, t) * (1 - weich(.86, .96, t));
+  const u = zustand.u;
+  // Die Überschrift steht, sobald der Zettel hinaus ist und das Netz frei liegt, und geht mit dem Flug hinein
+  introText.style.opacity = weich(ZETTEL - .05, ZETTEL, u) * (1 - weich(ZETTEL + .07, ZETTEL + .14, u));
+  // Ganz oben liegt die Tafel in Blaupause (der blaue Zettel); nach unten gleitet sie hinaus, bevor der Flug ins Netz beginnt
+  const auf = 1 - weich(ZETTEL - .1, ZETTEL - .02, u);
   const B = eng ? innerWidth : Math.min(innerWidth * .4, 560), dx = ((1 - auf) * B).toFixed(1);
   if (tafel.style.width !== B + "px") tafel.style.width = B + "px";
   tafel.style.visibility = auf > 0 ? "" : "hidden";
   tafel.style.transform = `translate3d(${-dx}px, 0, 0)`;
   zugWort.style.transform = `translate3d(${dx}px, 0, 0) rotate(180deg)`;
   spalte.style.transform = `translate3d(${dx}px, 0, 0)`;
-  spalte.style.opacity = weich(.72, .82, t) * (1 - weich(.84, .89, t));
+  spalte.style.opacity = 1 - weich(ZETTEL - .13, ZETTEL - .08, u);
   szene.style.visibility = t >= .999 ? "hidden" : "visible";
 }
 
@@ -2052,7 +2057,7 @@ function bild(zeit) {
   const imRaum = !flach || document.body.classList.contains("wechsel") || intro.getBoundingClientRect().bottom > 0;
   document.body.classList.toggle("nach-intro", intro.getBoundingClientRect().bottom <= innerHeight * .2);
   const r = abschnitt.getBoundingClientRect(), drin = r.top < innerHeight * .3 && r.bottom > innerHeight * .5;
-  steuer.classList.toggle("da", drin || (!flach && zustand.t > .97 && r.bottom > innerHeight * .5));
+  steuer.classList.toggle("da", drin || (!flach && zustand.t > .97 && logo.ein > .5 && r.bottom > innerHeight * .5));
   zeiger.classList.toggle("da", drin); kopfLeiste.classList.toggle("ohne-nav", drin);
   // aktives Kapitel
   let akt = 0;
@@ -2081,15 +2086,18 @@ function bild(zeit) {
     });
     // Beim Flug durchs Netz: die nächsten Strophen mit Titel, die nächste mit ihrer Schlusszeile
     stropheZeigen(t);
+    // Das Signet: mittig, über dem Band oder auf dem Weg ins Netz
+    if (logo.stellen) logo.stellen(zeit, dt);
     // Bahn
     if (bahn.bereit) {
       // Erst wenn das Netz weg ist und die Kamera steht, kommt das Band, die Figuren und Linien daneben zuletzt.
       // Das Band selbst ist dabei deckend und ein schwarzer Schleier davor blendet ab: so sieht man nie durch halb durchsichtige Flächen hindurch.
-      const auf = ruhig ? 1 : weich(.935, .99, t), umher = ruhig ? 1 : weich(.955, 1, t);
-      bahn.gruppe.visible = auf > 0;
-      // Flach folgt auf das Intro die Seite selbst: im Raum darüber bleibt dann nur der Satellit, sonst stünde das Band ein zweites Mal über der Seite
-      const nurSatellit = flach && kipp.wert === 0 && !document.body.classList.contains("wechsel");
-      if (bahn.nurSatellit !== nurSatellit) { bahn.nurSatellit = nurSatellit; bahn.gruppe.children.forEach(o => { if (!o.userData.immer) o.visible = !nurSatellit; }); }
+      // Am Anfang der Seite steht nur das Signet; das Band blendet ein, wenn man hinunterscrollt (logo.ein)
+      const sicht = ruhig ? 1 : weich(.935, .99, t), auf = sicht * logo.ein, umher = ruhig ? 1 : weich(.955, 1, t) * logo.ein;
+      bahn.gruppe.visible = sicht > 0;
+      // Flach folgt auf das Intro die Seite selbst: im Raum darüber bleibt dann nur das Signet (es hängt nicht an der Bahn), sonst stünde das Band ein zweites Mal über der Seite
+      const nurSignet = flach && kipp.wert === 0 && !document.body.classList.contains("wechsel");
+      if (bahn.nurSignet !== nurSignet) { bahn.nurSignet = nurSignet; bahn.gruppe.children.forEach(o => { if (!o.userData.immer) o.visible = !nurSignet; }); }
       bahn.materialien.forEach(m => { m.opacity = (m.userData.frueh ? 1 : umher) * (m.userData.a ?? 1); });
       schleier.visible = bahn.gruppe.visible && auf < 1; schleier.material.uniforms.a.value = 1 - auf;
       // Titel liegen flacher, solange sie nah sind, und richten sich auf, während sie davonziehen
@@ -2100,7 +2108,6 @@ function bild(zeit) {
       // Solange das Band nicht zu sehen ist (im Intro), rechnet nichts davon: sonst zeichneten Handys und ASCII-Fläche schon neben dem Netz und es ruckelte
       if (!ruhig && bahn.gruppe.visible) {
         bahn.signete.forEach(f => f(zeit / 1000));
-        if (bahn.satellit) bahn.satellit(zeit / 1000);
         if (bahn.wehen) bahn.wehen.value = zeit / 1000;
         if (bahn.ascii) bahn.ascii(zeit / 1000);
         bahn.flackern.forEach(f => f(zeit / 1000));
@@ -3585,6 +3592,64 @@ vec3 kFarbe(sampler2D foto, sampler2D linien, vec2 uv, vec2 q, float auf, float 
   f = clamp(g + (f - g) * satt, 0., 1.);
   return mix(mix(grund, tinte, kreide * .9), f, auf);
 }`;
+// Acrylfarbe auf der Bühne der Kunst im Raum: ein Klecks auf Papier, durch den ein unsichtbarer Kamm einen Bogen zieht
+const ACRYL_GLSL = `
+uniform float zeit, zug, ruhe, dreh, deck, rb; uniform vec2 seite; uniform vec3 farbe; uniform sampler2D foto; uniform vec4 aus;
+varying vec2 vuv; varying vec3 vw, vX, vY, vN;
+// Der Kamm dreht um einen Punkt links unten ausserhalb des Kleckses; seine Zähne ziehen Kreisbögen
+const float H = .15, RAND = .1, PHI0 = -.14, PHI1 = 1.2, RHO0 = .56, DR = .19, ZAEHNE = 12.;
+const vec2 PIV = vec2(-1.25, -1.05);
+vec2 aDreh(vec2 p, float a) { float c = cos(a), s = sin(a); return vec2(c * p.x - s * p.y, s * p.x + c * p.y); }
+// Umriss des Kleckses (Halbmesser 1), leicht gewellt
+float aForm(vec2 p) { float a = atan(p.y, p.x); return length(p) - (1. + .035 * sin(3. * a + .7) + .02 * sin(5. * a + 2.1) + .008 * sin(11. * a + .3)); }
+// Vor dem Kamm wird die Farbe nach vorn geschoben: der Umriss dehnt sich in Zugrichtung
+float aUmriss(vec2 p, out float rho, out float th, out vec2 pS) {
+  vec2 d = aDreh(p, -dreh) - PIV; rho = length(d); th = atan(d.y, d.x);
+  float x = th - mix(PHI0, PHI1, zug), g = exp(-x * x / (x > 0. ? .08 : .3)), t = th - zug * ruhe * g * (.1 + .36 * smoothstep(1.1, 2.6, rho)) / max(rho, .6);
+  pS = aDreh(PIV + rho * vec2(cos(t), sin(t)), dreh);
+  return aForm(pS);
+}
+float aHoehe(vec2 p, out float dS) {
+  float rho, th; vec2 pS; dS = aUmriss(p, rho, th, pS);
+  float innen = smoothstep(0., -.04, dS);
+  float h = H * (1. - exp(-max(-dS, 0.) / RAND)) * (1. + .06 * (1. - dot(pS, pS))) + .012 * (kR(pS * 4.) - .5) * innen;
+  float phi = mix(PHI0, PHI1, zug), x = th - phi;
+  float band = smoothstep(RHO0 - DR * .7, RHO0 - DR * .4, rho) * (1. - smoothstep(RHO0 + (ZAEHNE - .6) * DR, RHO0 + (ZAEHNE - .3) * DR, rho));
+  float ritz = pow(.5 + .5 * cos(6.2832 * (rho - RHO0) / DR), 2.);
+  float tief = band * ruhe * smoothstep(PHI0 - .03, PHI0 + .1, th) * (1. - smoothstep(phi - .012, phi + .004, th));
+  h *= 1. - .84 * ritz * tief + .12 * (1. - ritz) * tief;
+  // Wulst vor dem Kamm: was die Zähne aus den Rillen nehmen, staut sich
+  float a = rho * x, wulst = smoothstep(-.014, .04, a) * exp(-max(a - .04, 0.) / .15);
+  h += H * 1.7 * (1. - exp(-rho * (phi - PHI0) * .9)) * wulst * band * ruhe * innen * (.93 + .1 * ritz);
+  return h;
+}
+vec3 acryl(vec2 uv) {
+  vec2 p = vec2((uv.x - .5) * seite.x, .5 - uv.y) / rb;
+  float e = .008, d0, d1, d2, h0 = aHoehe(p, d0), hx = aHoehe(p + vec2(e, 0.), d1), hy = aHoehe(p + vec2(0., e), d2);
+  vec3 nl = normalize(vec3(-(hx - h0) / e, -(hy - h0) / e, 1.));
+  vec3 X = normalize(vX), Y = normalize(vY), N = normalize(vN), V = normalize(cameraPosition - vw);
+  vec3 n = normalize(X * nl.x + Y * nl.y + N * nl.z);
+  vec3 L = normalize(-.5 * X + .6 * Y + .75 * N), L2 = normalize(.7 * X - .25 * Y + .6 * N), Hh = normalize(L + V);
+  float dif = max(dot(n, L), 0.), dif2 = max(dot(n, L2), 0.), nh = max(dot(n, Hh), 0.);
+  float glanz = pow(nh, 160.) * 1.3 + pow(nh, 20.) * .1, saum = pow(1. - max(dot(n, V), 0.), 4.);
+  // Farbe: wo sie dünn liegt (Rillen, Rand), satter und dunkler
+  vec3 alb = farbe * mix(.62, 1., smoothstep(0., H * .85, h0));
+  vec3 c = alb * (.4 + .6 * dif + .14 * dif2) + glanz * .85 + saum * .06;
+  // Glitzer: feine Plättchen mit eigener Neigung, die einzeln aufblitzen
+  vec2 gz = p * 70., gi = floor(gz), gf = fract(gz) - .5;
+  float r1 = kH(gi), r2 = kH(gi + 3.7), r3 = kH(gi + 9.1), punkt = smoothstep(.26, .08, length(gf - (vec2(r2, r3) - .5) * .45));
+  vec3 ng = normalize(nl + vec3((r2 - .5) * 1.3, (r3 - .5) * 1.3, 0.)), ngw = normalize(X * ng.x + Y * ng.y + N * ng.z);
+  c += punkt * (pow(max(dot(ngw, Hh), 0.), 110.) * 1.7 * (.5 + .5 * sin(zeit * 1.7 + r1 * 40.)) + step(.6, r1) * vec3(.1, .08, .09));
+  // Papier mit weichem Schatten nach rechts unten
+  float rr, tt; vec2 pp; float ds = aUmriss(p - vec2(.07, -.1), rr, tt, pp);
+  vec3 papier = vec3(.77, .75, .71) * (.93 + .07 * smoothstep(1.6, -1.2, p.x - p.y * .7));
+  papier *= 1. - .26 * (1. - smoothstep(-.2, .32, ds)) - .2 * smoothstep(.05, 0., d0);
+  float m = clamp(-d0 / max(fwidth(d0), 1e-4) + .5, 0., 1.);
+  return mix(papier, c, m);
+}`;
+const ACRYL_T = 12, ACRYL_FARBE = "#dc95a8";
+// Zug (0 bis 1) und Ruhe (1 = Rillen stehen, 0 = verlaufen) zur Zeit tc im Lauf von ACRYL_T Sekunden
+const acrylLauf = tc => [eio(klemm((tc - 1) / 4.4)), 1 - eio(klemm((tc - 8) / 2.8))];
 const kunst = (() => {
   const k = document.getElementById("k-kunst"); if (!k) return null;
   const bild = k.querySelector(".kunst-bild");
@@ -3823,6 +3888,9 @@ function groesse() {
   kamera.aspect = b / h; kamera.updateProjectionMatrix();
 }
 if (ok3d) {
+  // Die Seite beginnt beim Signet kurz vor dem Ende des Intros (U_START), auch mit #zettel-… oder #k-… in der Adresse
+  if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+  if (!ruhig && (!location.hash || /^#(zettel-|k-)/.test(location.hash))) scrollTo(0, intro.offsetTop + U_START * (intro.offsetHeight - hoeheStabil));
   welt = new THREE.Scene(); welt.background = new THREE.Color(0); welt.fog = new THREE.FogExp2(0x000000, .02);
   schleier = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({ uniforms: { a: { value: 1 } }, transparent: true, depthTest: false, depthWrite: false,
     vertexShader: "void main() { gl_Position = vec4(position.xy, 0., 1.); }", fragmentShader: "uniform float a; void main() { gl_FragColor = vec4(0., 0., 0., a); }" }));
@@ -3837,7 +3905,7 @@ if (ok3d) {
   raumMasse();
   netzBauen();
   vorUebersetzen(true);
-  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => bahnBauen()).catch(() => { flach = true; document.body.classList.add("flach"); });
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => { logoBauen(); return bahnBauen(); }).catch(() => { flach = true; document.body.classList.add("flach"); });
 } else {
   platz.style.height = "0px";
 }
