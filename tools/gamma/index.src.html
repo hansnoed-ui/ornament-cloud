@@ -2181,6 +2181,8 @@ function flachSetzen(f, akt, effekt) {
       webPruefen(); appsPruefen(); expPruefen(); sozPruefen();
     });
     letzterEffekt = k; kapitelEffekt(k);
+    // Die Specials zeichnen ihr Punktrad sofort auf die Seite, sonst blendet es beim Wechsel kurz aus (Christian, 31. Oktober 2026)
+    if (exp && k === exp.k) expPruefen();
     if (kunst && k === kunst.k && kunst.wechselAb) kunst.rahmenAb = 1;
   } else if (effekt) { kipp.wert = kipp.von = kipp.nach = 0; zustand.halten = false; wechselt = false; }
   // Auch über die Acht unten (rechts «Fläche») bekommt das Kapitel in der Mitte sein Netz; zurück im Raum zählt beim nächsten Mal wieder jedes Kapitel
@@ -3024,8 +3026,9 @@ function expZurueck() {
 }
 function expLaufBild(zeit) {
   const L = exp && exp.lauf; if (!L || L.fest) return;
-  if (L.t0 === null) L.t0 = zeit;
-  const T = (zeit - L.t0) / 1000;
+  // Während die Seite über dem Raum aufblendet, steht das Punktrad schon da und läuft weiter; die Konstruktion beginnt erst danach
+  if (L.t0 === null && !wechselt) L.t0 = zeit;
+  const T = L.t0 === null ? 0 : (zeit - L.t0) / 1000;
   // Nach dem Aufbau dreht es nur noch weiter, solange die Bühne zu sehen ist, und mit etwa 30 Bildern in der Sekunde
   if (T > EXP_ENDE && (!exp.sichtbar || zeit - L.zuletzt < 1000 / 30)) return;
   L.zuletzt = zeit;
