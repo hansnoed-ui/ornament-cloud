@@ -886,18 +886,31 @@ function netzBauen() {
     if (ziel.y < -.4) ziel.y = -.4 + (ziel.y + .4) * .2;   // flacher Boden
     return ziel;
   };
-  kn.forEach(k => { k.w = wolkeVon(k.p, Math.sqrt(z() + .5)); });
+  // Die Haut der Wolke in einer Richtung aus ihrer Mitte: der fernste Austritt aus einer der Wölbungen, unten flach.
+  // Die Knoten verteilen sich so über die ganze Kuppel (die mittleren oben, die äusseren seitlich), die Kanten laufen als Bögen über die Haut
+  const WM = new THREE.Vector3(0, .1, 0), hd = new THREE.Vector3(), hm = new THREE.Vector3();
+  const hautVon = (richtung, f = 1, ziel = new THREE.Vector3()) => {
+    hd.copy(richtung).normalize(); let t = .3;
+    for (const w of WOLKE) {
+      hm.set(w[0], w[1], w[2]).sub(WM); const b = hd.dot(hm), c = hm.lengthSq() - (w[3] * 1.1) ** 2, D = b * b - c;
+      if (D >= 0) t = Math.max(t, b + Math.sqrt(D));
+    }
+    ziel.copy(WM).addScaledVector(hd, t * f);
+    if (ziel.y < -.36) ziel.y = -.36 + (ziel.y + .36) * .15;
+    return ziel;
+  };
+  kn.forEach(k => { const q = Math.hypot(k.p.x, k.p.z); k.w = hautVon(new THREE.Vector3(k.p.x, Math.max(.08, .6 - .25 * q + 1.1 * k.p.y + .35 * z()), k.p.z), .9 + .12 * (z() + .5)); });
   netz.wolke = { value: 0 }; netz.uhr = { value: 0 };
   const WOLKE_GLSL = ["attribute vec3 wziel;\nuniform float wolke, uhr;\n",
     "#include <begin_vertex>\n  transformed = mix(transformed, wziel + .025 * sin(uhr * .45 + wziel.yzx * 4.3), wolke * wolke * (3. - 2. * wolke));"];
-  const wolkig = (m, schluessel, punkte = false) => {
+  const wolkig = (m, schluessel, punkte = false, farbe = true) => {
     const vorher = m.onBeforeCompile;
     m.onBeforeCompile = sh => {
       if (vorher) vorher(sh);
       sh.uniforms.wolke = netz.wolke; sh.uniforms.uhr = netz.uhr;
       // In der Wolke werden die Fäden blass und silbrig (dicht übereinander leuchten sie sonst zu hell), die Punkte kleiner
-      sh.vertexShader = WOLKE_GLSL[0] + sh.vertexShader.replace("#include <begin_vertex>", WOLKE_GLSL[1])
-        .replace("#include <color_vertex>", "#include <color_vertex>\n  vColor.rgb = mix(vColor.rgb, vColor.rgb * .3 + vec3(.12, .14, .19), wolke);");
+      sh.vertexShader = WOLKE_GLSL[0] + sh.vertexShader.replace("#include <begin_vertex>", WOLKE_GLSL[1]);
+      if (farbe) sh.vertexShader = sh.vertexShader.replace("#include <color_vertex>", "#include <color_vertex>\n  vColor.rgb = mix(vColor.rgb, vColor.rgb * .3 + vec3(.12, .14, .19), wolke);");
       if (punkte) sh.vertexShader = sh.vertexShader.replace("#include <fog_vertex>", "gl_PointSize *= 1. - .6 * wolke;\n#include <fog_vertex>");
     };
     m.customProgramCacheKey = () => "netzwolke-" + schluessel;
@@ -909,7 +922,7 @@ function netzBauen() {
     const c = stark ? hdr(a.farbe, .55) : hdr("#8fb0ff", .3), weit = .35 + .35 * (z() + .5);
     const stelle = (t, np, wp) => {
       np.lerpVectors(a.p, b.p, t); wp.lerpVectors(a.w, b.w, t);
-      const bogen = Math.sin(Math.PI * t); if (bogen > 1e-4) wp.lerp(wolkeVon(wp, 1, haut), bogen * weit);
+      const bogen = Math.sin(Math.PI * t); if (bogen > 1e-4) wp.lerp(hautVon(haut.subVectors(wp, WM), 1, haut), bogen * weit);
     };
     for (let i = 0; i < 10; i++) {
       stelle(i / 10, pa, qa); stelle((i + 1) / 10, pb, qb);
@@ -930,6 +943,118 @@ function netzBauen() {
   punkte(kn.filter(k => k.art === "person"), .022, () => hdr("#8fb0ff", .8));
   punkte(kn.filter(k => k.art === "strophe"), .05, k => hdr(k.farbe, .95));
   punkte(kn.filter(k => k.art === "zyklus"), .08, k => hdr(k.farbe, 1.2));
+  // Die Wolke selbst (Christian, 31. Oktober 2026 abends: «mehr einer realen Wolke gleichen, aber die Strukturen des Netzes noch zeigen»):
+  // weiche Ballen wie bei einer Haufenwolke auf den Wölbungen, darauf kleinere, oben hell, zum flachen Boden hin blaugrau.
+  // Jeder Ballen ist eine Scheibe, die wie eine Kugel von oben beleuchtet wird. Das Netz liegt als feines dunkles Geflecht darüber (adern)
+  {
+    const pos = [], gr = [], hl = [], sa = [], L = new THREE.Vector3(.35, 1, .3).normalize(), n = new THREE.Vector3(), n2 = new THREE.Vector3(), q = new THREE.Vector3(), q2 = new THREE.Vector3();
+    const ballen = (p, r, nrm) => {
+      const licht = Math.max(0, nrm.dot(L)), hoch = klemm((p.y + .4) / 1.5);
+      pos.push(p.x, Math.max(-.36, p.y), p.z); gr.push(r); hl.push(klemm(.18 + .42 * licht + .45 * hoch)); sa.push(z() + .5);
+    };
+    for (const w of WOLKE) {
+      const m = new THREE.Vector3(w[0], w[1], w[2]);
+      ballen(m, w[3] * .8, n.set(0, 1, 0));
+      for (let i = 0; i < 34; i++) {
+        n.set(z(), z() * .8 + .3, z()).normalize();   // eher nach oben und zur Seite, der Boden bleibt flach
+        q.copy(m).addScaledVector(n, w[3] * (.6 + .28 * (z() + .5)));
+        const r = w[3] * (.28 + .2 * (z() + .5));
+        ballen(q, r, n);
+        for (let j = 0; j < 2; j++) {
+          n2.set(z(), z() + .25, z()).multiplyScalar(1.4).add(n).normalize();
+          ballen(q2.copy(q).addScaledVector(n2, r * .78), r * (.36 + .2 * (z() + .5)), n2);
+        }
+      }
+    }
+    const N = gr.length, geo = new THREE.BufferGeometry(), ord = new Uint16Array(N);
+    for (let i = 0; i < N; i++) ord[i] = i;
+    geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute("groesse", new THREE.Float32BufferAttribute(gr, 1));
+    geo.setAttribute("hell", new THREE.Float32BufferAttribute(hl, 1)); geo.setAttribute("saat", new THREE.Float32BufferAttribute(sa, 1));
+    geo.setIndex(new THREE.BufferAttribute(ord, 1));
+    netz.wolkeSkala = { value: 400 };
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { wolke: netz.wolke, uhr: netz.uhr, skala: netz.wolkeSkala, oben: { value: new THREE.Color("#e6e9ee") }, unten: { value: new THREE.Color("#46516a") } },
+      vertexShader: `attribute float groesse, hell, saat;
+uniform float wolke, uhr, skala;
+varying float vHell, vA, vSaat;
+void main() {
+  vec3 p = position + .018 * sin(uhr * .3 + saat * 6.283 + position.zxy * 3.);
+  vec4 mv = modelViewMatrix * vec4(p, 1.);
+  float auf = smoothstep(.15, .95, wolke);
+  gl_PointSize = min(900., 2. * groesse * length(modelMatrix[0].xyz) * mix(.6, 1., auf) * skala / max(.1, -mv.z));
+  vHell = hell; vA = auf * auf; vSaat = saat;
+  gl_Position = projectionMatrix * mv;
+}`,
+      // Ein wenig Rauschen franst den Rand jedes Ballens aus und gibt ihm Struktur, sonst wirken sie wie Kugeln
+      fragmentShader: `uniform vec3 oben, unten;
+varying float vHell, vA, vSaat;
+float zuf(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float rau(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f); return mix(mix(zuf(i), zuf(i + vec2(1., 0.)), f.x), mix(zuf(i + vec2(0., 1.)), zuf(i + 1.), f.x), f.y); }
+void main() {
+  vec2 c = gl_PointCoord * 2. - 1.; c.y = -c.y;
+  float d2 = dot(c, c); if (d2 > 1.) discard;
+  float r = .5 * rau(c * 2.3 + vSaat * 17.) + .3 * rau(c * 5.1 + vSaat * 31.) + .2 * rau(c * 10.7 + vSaat * 7.);
+  float kante = 1. - d2 - .5 * (r - .5);
+  float l = .7 + .3 * dot(vec3(c, sqrt(1. - d2)), normalize(vec3(.2, .85, .5))) + .18 * (r - .5);
+  gl_FragColor = vec4(mix(unten, oben, clamp(vHell * l * 1.1, 0., 1.)), pow(clamp(kante, 0., 1.), 1.6) * .42 * vA);
+}`,
+      transparent: true, depthWrite: false
+    });
+    const ballenPunkte = new THREE.Points(geo, mat); ballenPunkte.userData.wolke = true; ballenPunkte.renderOrder = 1; ballenPunkte.frustumCulled = false; ballenPunkte.visible = false; g.add(ballenPunkte);
+    // Hinten zuerst: die Ballen werden nach ihrer Tiefe geordnet, solange die Wolke zu sehen ist
+    const tiefe = new Float32Array(N), reihe = Array.from({ length: N }, (_, i) => i);
+    netz.wolkeOrdnen = () => {
+      const e = ballenPunkte.modelViewMatrix.elements;
+      for (let i = 0; i < N; i++) tiefe[i] = e[2] * pos[i * 3] + e[6] * pos[i * 3 + 1] + e[10] * pos[i * 3 + 2];
+      reihe.sort((a, b) => tiefe[a] - tiefe[b]); ord.set(reihe); geo.index.needsUpdate = true;
+    };
+    netz.ballen = ballenPunkte;
+    // Die Adern: die Kanten des Netzes, dunkel über der Wolke; was hinter ihrer Mitte liegt, scheint nur schwach durch
+    netz.adernU = { deck: { value: 0 }, mitte: { value: 0 } };
+    const adern = new THREE.LineSegments(lg, new THREE.ShaderMaterial({
+      uniforms: { wolke: netz.wolke, uhr: netz.uhr, deck: netz.adernU.deck, mitte: netz.adernU.mitte, farbe: { value: new THREE.Color("#2c3752") } },
+      vertexShader: `attribute vec3 wziel;
+uniform float wolke, uhr, mitte;
+varying float vVorn;
+void main() {
+  vec3 p = mix(position, wziel + .025 * sin(uhr * .45 + wziel.yzx * 4.3), wolke * wolke * (3. - 2. * wolke));
+  vec4 mv = modelViewMatrix * vec4(p, 1.);
+  vVorn = clamp(.5 + (mv.z - mitte) * .3, 0., 1.);
+  gl_Position = projectionMatrix * mv;
+}`,
+      fragmentShader: `uniform vec3 farbe;
+uniform float deck;
+varying float vVorn;
+void main() { gl_FragColor = vec4(farbe, deck * mix(.1, 1., vVorn * vVorn)); }`,
+      transparent: true, depthWrite: false }));
+    adern.userData.wolke = true; adern.renderOrder = 2; adern.frustumCulled = false; g.add(adern); netz.adern = adern;
+    // Die Knoten der Strophen und Zyklen als kleine farbige Knötchen im Geflecht
+    {
+      const kk = kn.filter(k => k.art !== "person"), kp = [], kw = [], kc = [], kg = [];
+      kk.forEach(k => { kp.push(...k.p.toArray()); kw.push(...k.w.toArray()); const c = new THREE.Color(k.farbe).multiplyScalar(.75); kc.push(c.r, c.g, c.b); kg.push(k.art === "zyklus" ? 4.2 : 2.4); });
+      const kgeo = new THREE.BufferGeometry(); kgeo.setAttribute("position", new THREE.Float32BufferAttribute(kp, 3)); kgeo.setAttribute("wziel", new THREE.Float32BufferAttribute(kw, 3));
+      kgeo.setAttribute("farbe", new THREE.Float32BufferAttribute(kc, 3)); kgeo.setAttribute("gr", new THREE.Float32BufferAttribute(kg, 1));
+      const knoetchen = new THREE.Points(kgeo, new THREE.ShaderMaterial({
+        uniforms: { wolke: netz.wolke, uhr: netz.uhr, deck: netz.adernU.deck, mitte: netz.adernU.mitte, dichte: { value: renderer.getPixelRatio() } },
+        vertexShader: `attribute vec3 wziel, farbe;
+attribute float gr;
+uniform float wolke, uhr, mitte, dichte;
+varying vec3 vFarbe;
+varying float vVorn;
+void main() {
+  vec3 p = mix(position, wziel + .025 * sin(uhr * .45 + wziel.yzx * 4.3), wolke * wolke * (3. - 2. * wolke));
+  vec4 mv = modelViewMatrix * vec4(p, 1.);
+  vVorn = clamp(.5 + (mv.z - mitte) * .3, 0., 1.); vFarbe = farbe;
+  gl_PointSize = gr * dichte; gl_Position = projectionMatrix * mv;
+}`,
+        fragmentShader: `uniform float deck;
+varying vec3 vFarbe;
+varying float vVorn;
+void main() { vec2 c = gl_PointCoord * 2. - 1.; float d = dot(c, c); if (d > 1.) discard; gl_FragColor = vec4(vFarbe, deck * 1.4 * smoothstep(1., .5, d) * mix(.1, 1., vVorn * vVorn)); }`,
+        transparent: true, depthWrite: false }));
+      knoetchen.userData.wolke = true; knoetchen.renderOrder = 3; knoetchen.frustumCulled = false; g.add(knoetchen); netz.knoetchen = knoetchen;
+    }
+  }
   // Die Bereiche als Quadrate (Phase A)
   const qp = new Float32Array(KAPITELFARBEN.length * 3), qc = new Float32Array(KAPITELFARBEN.length * 3);
   KAPITELFARBEN.forEach((f, i) => { const c = hdr(f, 1); qc.set([c.r, c.g, c.b], i * 3); });
@@ -1153,7 +1278,7 @@ async function bahnBauen() {
     bahn.titel.push({ sH, mesh, schatten, hoch: f.h * bahn.k, B: new THREE.Vector3(e[12], e[13], e[14]), X: new THREE.Vector3(e[0], e[1], e[2]),
       Y: new THREE.Vector3(e[4], e[5], e[6]), Z: new THREE.Vector3(e[8], e[9], e[10]), E: bahnPunkt(bahn.kapitel[i].s0 + .03) });
   });
-  // Auf der Bühne der Webseiten steht ein Laptop aus Linien auf dem Band: erst das Intro des Labs, dann ein Gang durch ornament.cloud (bis 30. Oktober 2026 das Signet).
+  // Auf der Bühne der Websites steht ein Laptop aus Linien auf dem Band, auf dem Punktstaub von Form zu Form fliesst (seit 31. Oktober 2026; vorher Lab-Intro und Gang durch ornament.cloud, bis 30. Oktober das Signet).
   // Wie die Telefone ein feines Gitter, das der Krümmung des Bandes folgt; neu gezeichnet nur, wenn sich etwas bewegt und die Kamera in der Nähe ist
   bahn.signete = [];
   bilder.forEach((b, i) => {
@@ -1171,8 +1296,6 @@ async function bahnBauen() {
     m.material.userData.frueh = true; m.renderOrder = 3; m.frustumCulled = false; g.add(m);
     const mitte = bahnPunkt(s0 + (ly + lh / 2) * bahn.k, RAUM.w / 2 - (lx + lb / 2) * bahn.k, 0), neu = sek => { if (lt.zeichnen(sek)) tex.needsUpdate = true; };
     neu(null);
-    // Die Seiten kommen als eigenes Bild nach: sobald es da ist, einmal neu zeichnen (als Standbild, der Ablauf beginnt erst, wenn jemand hinsieht)
-    if (!surfBild.complete) surfBild.addEventListener("load", () => neu(null), { once: true });
     let zuletzt = -1;
     bahn.signete.push(sek => { if (sek - zuletzt < 1 / 15 || kamera.position.distanceTo(mitte) > 16) return; zuletzt = sek; neu(sek); });
   });
@@ -2171,7 +2294,9 @@ function bild(zeit) {
     const wolke = ruhig ? 0 : 1 - weich(.008, ZETTEL - .015, zustand.u);
     netz.wolke.value = wolke; netz.uhr.value = zeit / 1000;
     netz.gruppe.visible = netzA > 0;
-    netz.gruppe.children.forEach(o => { if (o.material && o !== netz.quadrate) o.material.opacity = netzA * (o.isLineSegments ? .55 : 1); });
+    netz.gruppe.children.forEach(o => { if (o.material && o !== netz.quadrate && !o.userData.wolke) o.material.opacity = netzA * (o.isLineSegments ? .55 : 1); });
+    netz.ballen.visible = netz.adern.visible = netz.knoetchen.visible = wolke > .002;
+    if (netz.ballen.visible) { netz.wolkeSkala.value = renderer.domElement.height * kamera.projectionMatrix.elements[5] / 2; netz.adernU.deck.value = netzA * .6 * weich(.3, 1, wolke); netz.adernU.mitte.value = tmp.c.set(0, .1, 0).applyMatrix4(netz.adern.modelViewMatrix).z; netz.wolkeOrdnen(); }
     const zuHub = weich(.06, .22, t), qp = netz.quadrate.geometry.attributes.position;
     for (let i = 0; i < KAPITELFARBEN.length; i++) { const w = i * Math.PI * 2 / KAPITELFARBEN.length + zeit * .00012; const h = netz.knoten[i % 7].p; qp.setXYZ(i, misch(Math.cos(w) * .55, h.x, zuHub), misch(Math.sin(w * 1.5 + 1) * .2, h.y, zuHub), misch(Math.sin(w) * .55, h.z, zuHub)); }
     qp.needsUpdate = true; netz.quadrate.material.opacity = 1 - zuHub;
@@ -2730,114 +2855,159 @@ function handyLage(b, h, k = 1) {
   const ph = Math.min(h * .82, (b - 2 * luecke) / 3 / verh) * k, pb = ph * verh;
   return [-1, 0, 1].map(i => ({ x: b / 2 + i * (pb + luecke) - pb / 2, y: (h - ph) / 2, b: pb, h: ph }));
 }
-/* ---------- Webseiten im Raum: ein Laptop aus weissen Linien, auf dem das Intro des Labs läuft und danach jemand durch ornament.cloud geht ----------
-   Das Intro ist das Video der Lab-Seite (9,4 s), auf die Figur zugeschnitten (560 × 322) und etwas langsamer; Schwarz wird durchsichtig, so stehen seine Linien direkt auf dem Grün des Bandes.
-   Die Seiten sind Bildschirmfotos der Website (1280 px breit, oben 2400 px), verkleinert und untereinander in einem Bild; je Seite Pfad, Lage und Höhe.
-   Jede Seite lädt mit einem feinen Strich, scrollt in zwei ruhigen Zügen hinunter, dann klickt der Zeiger und die nächste blendet auf */
-const SURF_BILD = "{{BILD}}gamma/bilder/surfen.webp", SURF_INTRO = "{{BILD}}gamma/bilder/lab-intro.mp4", SURF_B = 520;
-const SURF_SEITEN = [["b/", 0, 975], ["b/apps/", 975, 975], ["b/zettel/", 1950, 975], ["b/werke/", 2925, 741], ["b/angebot/webdesign/", 3666, 975]];
-// Der Film blendet ab 9 s aus; das Intro hält vorher an, auf dem Bild mit «ornament.lab»
-const LAPTOP_B = 340, LAPTOP_H = 252, SURF_IB = 560, SURF_IH = 322, INTRO_TEMPO = .85, INTRO_SCHLUSS = 8.9;
-let surfBild = null, surfVideo = null;
-function laptopBild(farbe, sk = 3) {
-  if (!surfBild) {
-    surfBild = new Image(); surfBild.decoding = "async"; surfBild.src = SURF_BILD;
-    // Das Video steht unsichtbar im Dokument, sonst spielen es manche Telefone nicht ab
-    surfVideo = document.createElement("video"); surfVideo.muted = true; surfVideo.playsInline = true; surfVideo.preload = "auto";
-    surfVideo.defaultPlaybackRate = surfVideo.playbackRate = INTRO_TEMPO;
-    surfVideo.setAttribute("muted", ""); surfVideo.setAttribute("playsinline", ""); surfVideo.setAttribute("aria-hidden", "true");
-    surfVideo.style.cssText = "position:fixed;left:0;top:0;width:2px;height:2px;opacity:0;pointer-events:none"; surfVideo.src = SURF_INTRO; document.body.append(surfVideo);
+/* ---------- Websites im Raum: ein Laptop aus weissen Linien, auf dem feiner Punktstaub von Form zu Form fliesst ----------
+   Nach dem Stil von ingrassiadaniel.it (Christian, 31. Oktober 2026; bis dahin das Intro des Labs und ein Gang durch ornament.cloud):
+   einige tausend feine Punkte sammeln sich zu Christians Formen und Worten, lösen sich zu Staub und finden die nächste Form.
+   Formen: Lichtkugel, Signet, Zettelkasten-Netz, Band, liegende Acht, Wirbel; Worte: entwickeln, gestalten, vernetzen, ornament.cloud.
+   Jede Form steht etwa zwei Sekunden und dreht sich langsam, dann fliesst der Staub in gut zwei Sekunden weiter. Beim Scrollen wirbelt er etwas auf.
+   Koordinaten des Schirms: x von −1 bis 1, y nach oben, z zum Betrachter */
+const LAPTOP_B = 340, LAPTOP_H = 252, STAUB_N = 4200, STAUB_HALT = 2.1, STAUB_FLUSS = 2.1;
+const STAUB_FOLGE = ["staub", "kugel", "signet", "entwickeln", "netz", "gestalten", "band", "vernetzen", "acht", "wirbel", "ornament.cloud"];
+let staubFormen = null;
+function staubFormenBauen() {
+  let saat = 7; const zf = () => (saat = (saat * 16807) % 2147483647) / 2147483647, gauss = () => Math.sqrt(-2 * Math.log(zf() + 1e-9)) * Math.cos(6.2832 * zf());
+  const N = STAUB_N, formen = {};
+  const form = (name, punkt, art = {}) => {
+    const p = new Float32Array(N * 3);
+    for (let i = 0; i < N; i++) { const q = punkt(i); p[i * 3] = q[0]; p[i * 3 + 1] = q[1]; p[i * 3 + 2] = q[2]; }
+    // Nach links und rechts geordnet: so fliesst der Staub ruhig von einer Form zur nächsten statt kreuz und quer
+    const reihe = Array.from({ length: N }, (_, i) => i).sort((a, b) => (p[a * 3] + .25 * p[a * 3 + 1]) - (p[b * 3] + .25 * p[b * 3 + 1]));
+    const q = new Float32Array(N * 3); reihe.forEach((j, i) => { q[i * 3] = p[j * 3]; q[i * 3 + 1] = p[j * 3 + 1]; q[i * 3 + 2] = p[j * 3 + 2]; });
+    formen[name] = { p: q, kipp: art.kipp || 0, dreh: art.dreh || 0, wiege: art.wiege || 0 };
+  };
+  // Eine Kurve gleichmässig nach ihrer Länge abtasten
+  const kurve = (f, n = 900) => {
+    const pts = [], len = [0];
+    for (let i = 0; i <= n; i++) { pts.push(f(i / n)); if (i) len.push(len[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1])); }
+    return u => { const ziel = u * len[n]; let lo = 0, hi = n; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (len[m] < ziel) lo = m; else hi = m; } return pts[lo]; };
+  };
+  form("staub", () => [(zf() * 2 - 1) * 1.15, (zf() * 2 - 1) * .7, zf() * 2 - 1], { dreh: .04 });
+  form("kugel", i => { const y = 1 - 2 * (i + .5) / N, r = Math.sqrt(1 - y * y), w = i * 2.39996, s = .42 * (1 - .05 * zf()); return [Math.cos(w) * r * s, y * s, Math.sin(w) * r * s]; }, { kipp: .35, dreh: .32 });
+  // Das Signet: die Schlaufe aus dem Logo (Limaçon mit innerer Schlaufe), auf die Höhe des Schirms gebracht
+  {
+    const roh = u => { const a = u * Math.PI * 2, r = .45 + Math.cos(a); return [1.2 * r * Math.cos(a) - .84, 1.2 * r * Math.sin(a)]; };
+    let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9; for (let i = 0; i < 400; i++) { const [x, y] = roh(i / 400); x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+    const sk = .8 / (y1 - y0), mx = (x0 + x1) / 2, my = (y0 + y1) / 2;
+    staubFormen = staubFormen || {}; staubFormen.signetAuf = u => { const [x, y] = roh(u); return [(x - mx) * sk, (y - my) * sk]; };
+    const k = kurve(staubFormen.signetAuf);
+    form("signet", () => { const [x, y] = k(zf()); return [x + gauss() * .014, y + gauss() * .014, gauss() * .03]; }, { wiege: .45 });
   }
+  // Worte in der Schrift der Website, aus den Pixeln eines unsichtbaren Bildes
+  for (const wort of ["entwickeln", "gestalten", "vernetzen", "ornament.cloud"]) {
+    const c = document.createElement("canvas"), x = c.getContext("2d"), px = 120;
+    x.font = `500 ${px}px "Instrument Sans", system-ui, sans-serif`; const b = Math.ceil(x.measureText(wort).width) + 20;
+    c.width = b; c.height = 170; x.font = `500 ${px}px "Instrument Sans", system-ui, sans-serif`; x.fillStyle = "#fff"; x.textBaseline = "alphabetic"; x.fillText(wort, 10, 125);
+    const d = x.getImageData(0, 0, c.width, c.height).data, voll = [];
+    for (let y = 0; y < c.height; y += 1) for (let xx = 0; xx < c.width; xx += 1) if (d[(y * c.width + xx) * 4 + 3] > 140) voll.push(xx, y);
+    const sk = Math.min(1.72 / b, .62 / 150), n = voll.length / 2;
+    form(wort, () => { const j = Math.floor(zf() * n); return [(voll[j * 2] + zf() - b / 2) * sk, (95 - voll[j * 2 + 1] - zf()) * sk, gauss() * .015]; }, { wiege: .14 });
+  }
+  // Das Netz wie der Zettelkasten: sieben Zyklen auf einem Ring, um jeden seine Strophen, dazu Fäden zu den Nachbarn; Staub auf den Knoten und entlang der Fäden
+  {
+    const kn = [], fa = [];
+    for (let i = 0; i < 7; i++) {
+      const w = i * Math.PI * 2 / 7, h = kn.length; kn.push([Math.cos(w) * .54, Math.sin(w * 2) * .09, Math.sin(w) * .54]);
+      for (let j = 0; j < 5; j++) { const v = w + (zf() - .5) * 1.1, r = .54 + (zf() - .4) * .38; kn.push([Math.cos(v) * r, kn[h][1] + (zf() - .5) * .34, Math.sin(v) * r]); fa.push([h, kn.length - 1]); }
+    }
+    for (let i = 0; i < 7; i++) { fa.push([i * 6, ((i + 1) % 7) * 6]); for (let j = 0; j < 2; j++) fa.push([i * 6 + 1 + Math.floor(zf() * 5), ((i + 1 + Math.floor(zf() * 2)) % 7) * 6 + 1 + Math.floor(zf() * 5)]); }
+    form("netz", () => {
+      if (zf() < .22) { const k = kn[Math.floor(zf() * kn.length)]; return [k[0] + gauss() * .016, k[1] + gauss() * .016, k[2] + gauss() * .016]; }
+      const f = fa[Math.floor(zf() * fa.length)], a = kn[f[0]], b = kn[f[1]], t = zf();
+      return [misch(a[0], b[0], t) + gauss() * .004, misch(a[1], b[1], t) + gauss() * .004, misch(a[2], b[2], t) + gauss() * .004];
+    }, { kipp: .42, dreh: .22 });
+  }
+  // Das Band: ein Streifen, der sich windet wie die Bahn der Website
+  form("band", () => {
+    const s = zf() * 2 - 1, w = zf() * 2 - 1, th = 3.1 * s + .5, cy = .17 * Math.sin(2.1 * s + .6), cz = .22 * Math.cos(1.6 * s);
+    return [s * 1.02, cy + w * .13 * Math.cos(th), cz + w * .13 * Math.sin(th)];
+  }, { dreh: 0, kipp: .15, wiege: .3 });
+  // Die liegende Acht wie bei Raum und Fläche
+  {
+    const k = kurve(u => { const t = u * Math.PI * 2, n = 1 + Math.sin(t) ** 2; return [.8 * Math.cos(t) / n, .8 * Math.sin(t) * Math.cos(t) / n]; });
+    form("acht", () => { const [x, y] = k(zf()); return [x + gauss() * .016, y + gauss() * .016, gauss() * .035]; }, { kipp: .45, wiege: .5 });
+  }
+  // Der Wirbel: eine Scheibe mit drei Armen, schräg von oben, sie dreht sich
+  form("wirbel", () => { const r = .58 * Math.sqrt(zf()), arm = Math.floor(zf() * 3), w = arm * 2.0944 + r * 6.2 + gauss() * .3 * (1.1 - r); return [Math.cos(w) * r, gauss() * .012, Math.sin(w) * r]; }, { kipp: 1.05, dreh: .45 });
+  // Je Punkt: Helligkeit, Verzögerung beim Fliessen und eine eigene Richtung, in die er als Staub ausweicht
+  const hell = new Float32Array(N), verz = new Float32Array(N), weg = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++) { const z = zf(); hell[i] = z < .55 ? .35 : z < .88 ? .65 : 1; verz[i] = zf(); const a = zf() * 6.2832, b = Math.acos(zf() * 2 - 1), l = .08 + .22 * zf(); weg.set([Math.sin(b) * Math.cos(a) * l, Math.cos(b) * l * .7, Math.sin(b) * Math.sin(a) * l], i * 3); }
+  staubFormen = Object.assign(staubFormen || {}, { formen, hell, verz, weg });
+  return staubFormen;
+}
+function laptopBild(farbe, sk = 3) {
+  const S = staubFormen && staubFormen.formen ? staubFormen : staubFormenBauen(), N = STAUB_N, F = STAUB_FOLGE.length, ZYKLUS = F * (STAUB_HALT + STAUB_FLUSS);
   const W = LAPTOP_B, H = LAPTOP_H, cv = document.createElement("canvas"); cv.width = W * sk; cv.height = H * sk;
   const cx = cv.getContext("2d"); cx.scale(sk, sk);
-  const iv = document.createElement("canvas"); iv.width = SURF_IB; iv.height = SURF_IH; const ix = iv.getContext("2d", { willReadFrequently: true });
-  const rund = (x, y, b, h, r) => { cx.beginPath(); if (cx.roundRect) cx.roundRect(x, y, b, h, r); else cx.rect(x, y, b, h); };
+  // Der Laptop selbst steht still: einmal auf eine eigene Leinwand gezeichnet, danach nur noch hineinkopiert
+  const rahmen = document.createElement("canvas"); rahmen.width = cv.width; rahmen.height = cv.height;
+  const rx = rahmen.getContext("2d"); rx.scale(sk, sk);
+  const rund = (x, y, b, h, r) => { rx.beginPath(); if (rx.roundRect) rx.roundRect(x, y, b, h, r); else rx.rect(x, y, b, h); };
   // Deckel mit Rahmen, darin der Schirm; davor das Unterteil, leicht von oben gesehen, mit Tasten und Tastfeld
   const DX = 22, DB = W - 2 * DX, DH = 190, R = 5, SX = DX + 7, SY = 8, SB = DB - 14, SH = DH - 15, LEISTE = 13;
   const UY = DH + 1, UT = H - 8, ul = q => misch(DX - 6, 2, q), ur = q => misch(W - DX + 6, W - 2, q), ort = (u, q) => [misch(ul(q), ur(q), u), misch(UY, UT, q)];
-  // Tastenreihen als Breitenanteile, von hinten nach vorn; dazu je Reihe Anfang und Ende in der Tiefe
   const REIHEN = [[[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2], .1, .2], [[1.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.5], .21, .31], [[1.8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2.2], .32, .42],
     [[2.3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2.7], .43, .53], [[1, 1, 1, 1.3, 5.4, 1.3, 1, 1, 1], .54, .65]];
-  const viereck = (u0, u1, q0, q1) => { const a = ort(u0, q0), b = ort(u1, q0), c = ort(u1, q1), d = ort(u0, q1); cx.moveTo(a[0], a[1]); cx.lineTo(b[0], b[1]); cx.lineTo(c[0], c[1]); cx.lineTo(d[0], d[1]); cx.closePath(); };
-  const tastatur = () => {
-    cx.beginPath();
-    for (const [teile, q0, q1] of REIHEN) {
-      const summe = teile.reduce((x, y) => x + y, 0), luft = .006; let u = .09;
-      for (const t of teile) { const b = .82 * t / summe; viereck(u + luft, u + b - luft, q0, q1); u += b; }
-    }
-    viereck(.37, .63, .72, .94); cx.stroke();
+  const viereck = (u0, u1, q0, q1) => { const a = ort(u0, q0), b = ort(u1, q0), c = ort(u1, q1), d = ort(u0, q1); rx.moveTo(a[0], a[1]); rx.lineTo(b[0], b[1]); rx.lineTo(c[0], c[1]); rx.lineTo(d[0], d[1]); rx.closePath(); };
+  {
+    rx.strokeStyle = farbe; rx.fillStyle = farbe;
+    rx.lineWidth = 1.2; rx.beginPath(); rx.moveTo(ul(0), UY); rx.lineTo(ur(0), UY); rx.lineTo(W - 2, UT); rx.quadraticCurveTo(W - 2, H - 2, W - 8, H - 2); rx.lineTo(8, H - 2); rx.quadraticCurveTo(2, H - 2, 2, UT); rx.closePath(); rx.stroke();
+    rx.lineWidth = .6; rx.globalAlpha = .6; rx.beginPath(); rx.moveTo(4, UT + 1); rx.lineTo(W - 4, UT + 1); rx.moveTo(W / 2 - 16, H - 2); rx.quadraticCurveTo(W / 2, H - 5.5, W / 2 + 16, H - 2); rx.stroke();
+    rx.lineWidth = .5; rx.globalAlpha = .5; rx.beginPath();
+    for (const [teile, q0, q1] of REIHEN) { const summe = teile.reduce((x, y) => x + y, 0), luft = .006; let u = .09; for (const t of teile) { const b = .82 * t / summe; viereck(u + luft, u + b - luft, q0, q1); u += b; } }
+    viereck(.37, .63, .72, .94); rx.stroke(); rx.globalAlpha = 1; rx.lineWidth = 1.2;
+    rund(DX, 1, DB, DH, R); rx.stroke();
+    rx.lineWidth = .6; rx.globalAlpha = .7; rx.strokeRect(SX, SY, SB, SH); rx.beginPath(); rx.arc(W / 2, 4.5, 1, 0, 7); rx.stroke();
+    // Browserleiste: drei Punkte und das Adressfeld
+    rx.beginPath(); rx.moveTo(SX, SY + LEISTE); rx.lineTo(SX + SB, SY + LEISTE); rx.stroke();
+    for (let i = 0; i < 3; i++) { rx.beginPath(); rx.arc(SX + 7 + i * 6, SY + LEISTE / 2, 1.7, 0, 7); rx.stroke(); }
+    const fx = SX + 34, fb = SB - 68; rund(fx, SY + 2.5, fb, LEISTE - 5, 4); rx.stroke();
+    rx.globalAlpha = .95; rx.font = `400 5.6px ${SCHIRM_SANS}`; rx.textAlign = "center"; rx.textBaseline = "middle"; if ("letterSpacing" in rx) rx.letterSpacing = ".2px";
+    rx.fillText("ornament.cloud", fx + fb / 2, SY + LEISTE / 2 + .3); rx.globalAlpha = 1;
+  }
+  const IX = SX, IY = SY + LEISTE, IB = SB, IH = SH - LEISTE, MX = IX + IB / 2, MY = IY + IH / 2, MASS = IB / 2 * .9;
+  const lage = (f, t, i, aus) => {
+    // Punkt i der Form f zur Zeit t: gekippt um x, gedreht oder gewiegt um y
+    const p = f.p, a = f.dreh * t + f.wiege * Math.sin(t * .5), ca = Math.cos(a), sa = Math.sin(a), ck = Math.cos(f.kipp), sk2 = Math.sin(f.kipp);
+    const x = p[i * 3], y = p[i * 3 + 1], z = p[i * 3 + 2], x1 = x * ca + z * sa, z1 = -x * sa + z * ca;
+    aus[0] = x1; aus[1] = y * ck - z1 * sk2; aus[2] = y * sk2 + z1 * ck;
   };
-  const IX = SX, IY = SY + LEISTE, IB = SB, IH = SH - LEISTE, P = 3.8, N = SURF_SEITEN.length;
-  let introAus = false, wache = 0, introDa = false;
-  surfVideo.addEventListener("error", () => { introAus = true; }, { once: true });
-  const seite = (n, o, a) => {
-    const [, y0, h] = SURF_SEITEN[n], s = IB / SURF_B, sh = IH / s;
-    cx.globalAlpha = a; cx.drawImage(surfBild, 0, y0 + o * (h - sh), SURF_B, sh, IX, IY, IB, IH);
-  };
-  // Ein Bild des Intros: Helligkeit wird Deckkraft, die Farbe bleibt (die blauen Punkte); das Schwarz des Films liegt bei etwa 12 bis 20 und fällt ganz weg
-  const introFassen = () => {
-    ix.clearRect(0, 0, SURF_IB, SURF_IH); ix.drawImage(surfVideo, 0, 0, SURF_IB, SURF_IH);
-    const d = ix.getImageData(0, 0, SURF_IB, SURF_IH), a = d.data;
-    for (let i = 0; i < a.length; i += 4) { const m = Math.max(a[i], a[i + 1], a[i + 2]); if (m < 28) { a[i + 3] = 0; continue; } const f = 255 / m; a[i] *= f; a[i + 1] *= f; a[i + 2] *= f; a[i + 3] = (m - 28) * 1.45; }
-    ix.putImageData(d, 0, 0); introDa = true;
-  };
-  // Die Figur füllt den Schirm nicht ganz: rundherum bleibt etwas Grün (Wunsch vom 30. Oktober 2026, «etwas kleiner»)
-  const intro = a => { if (!introDa) return; const s = Math.min(IB / SURF_IB, IH / SURF_IH) * .78, b = SURF_IB * s, h = SURF_IH * s; cx.globalAlpha = a; cx.drawImage(iv, IX + (IB - b) / 2, IY + (IH - h) / 2, b, h); };
-  const lauf = t => .4 * eio(klemm((t - .7) / 1)) + .5 * eio(klemm((t - 2) / 1));
-  let zuletzt = "";
-  // Ablauf: das Intro dauert, so lange der Film läuft, und sein letztes Bild bleibt noch kurz stehen (zusammen höchstens 16 s), dann die Seiten; danach beginnt der Film von vorn. Ohne Film nur die Seiten
-  let phase = "intro", t0 = null, ende = null;
+  const A = [0, 0, 0], B = [0, 0, 0], STUFEN = 4, xs = new Float32Array(N), ys = new Float32Array(N), st = new Uint8Array(N);
+  let t0 = null, zuletzt = -1, wind = 0;
+  const punktFarbe = "#f08a5d";
   return { cv, W, H, zeichnen(sek) {
-    const still = sek === null, bereit = surfBild.complete && surfBild.naturalWidth > 0;
-    if (!still && t0 === null) t0 = sek;
-    if (introAus && phase === "intro") { phase = "seiten"; t0 = sek; }
-    if (!still && phase === "intro") {
-      if (ende === null && (surfVideo.ended || surfVideo.currentTime >= INTRO_SCHLUSS)) { ende = sek; surfVideo.pause(); }
-      if ((ende !== null && sek - ende > 1.8) || sek - t0 > 16) { phase = "seiten"; t0 = sek; ende = null; }
+    const still = sek === null;
+    // Wer nach einer Weile wiederkommt, sieht den Ablauf von vorn: der Staub sammelt sich zuerst zur Kugel
+    if (!still && (t0 === null || sek - zuletzt > 4)) t0 = sek;
+    if (!still) zuletzt = sek;
+    const T = still ? (2 * (STAUB_HALT + STAUB_FLUSS) + .8) : (sek - t0) % ZYKLUS, ph = T / (STAUB_HALT + STAUB_FLUSS), k = Math.floor(ph) % F, tf = (ph - Math.floor(ph)) * (STAUB_HALT + STAUB_FLUSS) - STAUB_HALT;
+    const fa = S.formen[STAUB_FOLGE[k]], fb = S.formen[STAUB_FOLGE[(k + 1) % F]], tt = still ? 0 : sek - t0;
+    // Beim Scrollen wirbelt der Staub ein wenig auf
+    wind = misch(wind, klemm(Math.abs(zustand.v || 0) / 6), .15);
+    cx.clearRect(0, 0, W, H); cx.drawImage(rahmen, 0, 0, W, H);
+    cx.save(); cx.beginPath(); cx.rect(IX, IY, IB, IH); cx.clip(); cx.fillStyle = farbe;
+    for (let i = 0; i < N; i++) {
+      lage(fa, tt, i, A);
+      let e = 0;
+      if (tf > 0) { e = klemm((tf - S.verz[i] * .45 * STAUB_FLUSS) / (.55 * STAUB_FLUSS)); e = e < .5 ? 4 * e * e * e : 1 - Math.pow(-2 * e + 2, 3) / 2; }
+      if (e > 0) { lage(fb, tt, i, B); A[0] = misch(A[0], B[0], e); A[1] = misch(A[1], B[1], e); A[2] = misch(A[2], B[2], e); }
+      const s = Math.sin(Math.PI * e) * 1.1 + wind * .5;
+      if (s > 0) { A[0] += S.weg[i * 3] * s; A[1] += S.weg[i * 3 + 1] * s; A[2] += S.weg[i * 3 + 2] * s; }
+      const f = 2.6 / (2.6 - A[2]);
+      xs[i] = MX + A[0] * f * MASS; ys[i] = MY - A[1] * f * MASS;
+      st[i] = Math.min(STUFEN - 1, Math.floor(S.hell[i] * (.62 + .38 * klemm((A[2] + 1) / 2)) * STUFEN));
     }
-    if (!still && phase === "seiten" && sek - t0 >= N * P) { t0 = sek; if (!introAus) { phase = "intro"; surfVideo.playbackRate = INTRO_TEMPO; surfVideo.currentTime = 0; } }
-    const imIntro = !still && phase === "intro", tp = still ? 2.4 : sek - t0;
-    // Der Film läuft nur, solange jemand hinsieht: bleiben die Aufrufe aus, hält er nach kurzer Zeit an und läuft beim nächsten Mal weiter
-    if (imIntro && ende === null) {
-      if (surfVideo.paused && !surfVideo.ended) surfVideo.play().catch(() => { introAus = true; });
-      clearTimeout(wache); wache = setTimeout(() => surfVideo.pause(), 1500);
-      if (surfVideo.readyState >= 2) introFassen();
-    } else if (!surfVideo.paused) surfVideo.pause();
-    const T = imIntro ? sek - t0 : 0, mitIntro = !introAus;
-    const nr = imIntro ? -1 : Math.floor(tp / P), n = Math.max(0, nr), t = imIntro ? 0 : tp - nr * P;
-    // Zeiger: steht, wo er zuletzt geklickt hat, gleitet zur Ruhe und gegen Ende zum nächsten Link
-    const z = (k, q, m) => .5 + .5 * Math.sin(m * k + q), ziel = m => [IX + IB * (.2 + .6 * z(2.3, 4, m)), IY + IH * (.22 + .4 * z(3.1, 0, m))], ruhe = [IX + IB * (.55 + .2 * z(1.7, 1, nr)), IY + IH * (.62 + .2 * z(1.1, 2, nr))];
-    const [ax0, ay0] = ziel(nr - 1), [ax1, ay1] = ziel(nr), u1 = eio(klemm((t - .5) / 1)), u2 = eio(klemm((t - 2.9) / .5));
-    const zx = misch(misch(ax0, ruhe[0], u1), ax1, u2), zy = misch(misch(ay0, ruhe[1], u1), ay1, u2), klick = klemm((t - 3.42) / .3);
-    const auf = imIntro ? 1 : eio(klemm(t / .4)), o = lauf(t);
-    const schluessel = imIntro ? "intro" + T : `${bereit}|${n}|${Math.round(o * 400)}|${Math.round(auf * 20)}|${Math.round(zx * 2)}|${Math.round(zy * 2)}|${Math.round(klick * 10)}`;
-    if (schluessel === zuletzt) return false;
-    zuletzt = schluessel;
-    cx.clearRect(0, 0, W, H); cx.strokeStyle = farbe; cx.fillStyle = farbe;
-    // Nur Linien: Unterteil mit Vorderkante, Tasten und Tastfeld, Deckel, Schirm, Kamera
-    cx.lineWidth = 1.2; cx.beginPath(); cx.moveTo(ul(0), UY); cx.lineTo(ur(0), UY); cx.lineTo(W - 2, UT); cx.quadraticCurveTo(W - 2, H - 2, W - 8, H - 2); cx.lineTo(8, H - 2); cx.quadraticCurveTo(2, H - 2, 2, UT); cx.closePath(); cx.stroke();
-    cx.lineWidth = .6; cx.globalAlpha = .6; cx.beginPath(); cx.moveTo(4, UT + 1); cx.lineTo(W - 4, UT + 1); cx.moveTo(W / 2 - 16, H - 2); cx.quadraticCurveTo(W / 2, H - 5.5, W / 2 + 16, H - 2); cx.stroke();
-    cx.lineWidth = .5; cx.globalAlpha = .5; tastatur(); cx.globalAlpha = 1; cx.lineWidth = 1.2;
-    rund(DX, 1, DB, DH, R); cx.stroke();
-    cx.lineWidth = .6; cx.globalAlpha = .7; cx.strokeRect(SX, SY, SB, SH); cx.beginPath(); cx.arc(W / 2, 4.5, 1, 0, 7); cx.stroke();
-    // Browserleiste: drei Punkte, Adressfeld, unten eine Linie; beim Laden ein feiner Strich
-    cx.beginPath(); cx.moveTo(SX, SY + LEISTE); cx.lineTo(SX + SB, SY + LEISTE); cx.stroke();
-    for (let i = 0; i < 3; i++) { cx.beginPath(); cx.arc(SX + 7 + i * 6, SY + LEISTE / 2, 1.7, 0, 7); cx.stroke(); }
-    const fx = SX + 34, fb = SB - 68; rund(fx, SY + 2.5, fb, LEISTE - 5, 4); cx.stroke();
-    cx.globalAlpha = .95; cx.font = `400 5.6px ${SCHIRM_SANS}`; cx.textAlign = "center"; cx.textBaseline = "middle"; if ("letterSpacing" in cx) cx.letterSpacing = ".2px";
-    cx.fillText("ornament.cloud/" + (imIntro ? "beta/lab/" : SURF_SEITEN[n][0]), fx + fb / 2, SY + LEISTE / 2 + .3); cx.textAlign = "left"; cx.globalAlpha = 1;
-    if (auf < 1) { cx.globalAlpha = .8 * (1 - auf); cx.fillRect(SX, SY + LEISTE - .5, SB * auf, 1); cx.globalAlpha = 1; }
-    // Inhalt: erst das Intro, dann die Seiten; die vorige (oder das letzte Bild des Intros) steht noch, die neue blendet darüber auf
-    cx.save(); cx.beginPath(); cx.rect(IX, IY, IB, IH); cx.clip();
-    if (imIntro) intro(1);
-    else if (bereit) {
-      if (auf < 1) { if (nr === 0 && mitIntro) intro(1 - auf); else seite((n + N - 1) % N, lauf(P), 1); }
-      seite(n, o, auf); cx.globalAlpha = 1;
-      if (klick > 0 && klick < 1) { cx.strokeStyle = "#fff"; cx.globalAlpha = .8 * (1 - klick); cx.lineWidth = .8; cx.beginPath(); cx.arc(zx, zy, 2 + 9 * klick, 0, 7); cx.stroke(); cx.globalAlpha = 1; }
-      cx.translate(zx, zy); cx.beginPath(); cx.moveTo(0, 0); cx.lineTo(0, 9); cx.lineTo(2.4, 6.8); cx.lineTo(4.3, 10.6); cx.lineTo(5.8, 9.9); cx.lineTo(4, 6.3); cx.lineTo(7, 6.1); cx.closePath();
-      cx.fillStyle = "#fff"; cx.fill(); cx.strokeStyle = "#000"; cx.lineWidth = .7; cx.stroke();
+    // In wenigen Stufen der Helligkeit gezeichnet, die helleren etwas grösser
+    for (let j = 0; j < STUFEN; j++) {
+      cx.globalAlpha = .22 + .78 * (j / (STUFEN - 1)) ** 1.3; const g = .55 + .1 * j, h = g / 2;
+      for (let i = 0; i < N; i++) if (st[i] === j) cx.fillRect(xs[i] - h, ys[i] - h, g, g);
     }
-    cx.restore();
+    // Beim Signet läuft der rot-orange Punkt die Schlaufe entlang
+    const amSignet = STAUB_FOLGE[k] === "signet" ? 1 - weich(.1, .8, tf / STAUB_FLUSS) : STAUB_FOLGE[(k + 1) % F] === "signet" ? weich(.4, 1, tf / STAUB_FLUSS) : 0;
+    if (amSignet > 0) {
+      const u = (tt * .12) % 1, [px, py] = S.signetAuf(u), f = S.formen.signet, a = f.wiege * Math.sin(tt * .5), x1 = px * Math.cos(a), z1 = -px * Math.sin(a), g = 2.6 / (2.6 - z1);
+      cx.globalAlpha = amSignet; cx.fillStyle = punktFarbe; cx.beginPath(); cx.arc(MX + x1 * g * MASS, MY - py * g * MASS, 2.1, 0, 7); cx.fill();
+    }
+    cx.restore(); cx.globalAlpha = 1;
     return true;
   } };
 }
