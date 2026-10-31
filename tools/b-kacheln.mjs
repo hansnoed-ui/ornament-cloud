@@ -147,6 +147,7 @@ const ALT = [
   { datei: "social-media/kacheln/social-media.png", kicker: "Zettelkasten", titel: "Social Media", satz: "Ausgewählte Beiträge aus X, Facebook und Instagram." },
   { datei: "social-media/kacheln/schlagworte.png", kicker: "Social Media · Register", titel: "Schlagworte", satz: "Die Schlagworte im Zettelkasten «Social Media»." },
   { datei: "assets/kacheln/lab.png", kicker: "ORNAMENT LAB · Alpha", titel: "ornament.lab", satz: "Erzeugen · Beobachten · Weiterführen", serif: true, fuss: "ornament.cloud/alpha/lab", feld: feldSvg({ hier: 25, nah: [3, 13, 23, 36, 40, 46] }) },   // seit 25. Oktober 2026 (Wunsch: «Vorschaukarte für social media vom lab»)
+  { datei: "assets/kacheln/gamma.png", kicker: "ornament.cloud · Gamma", titel: "Sechs Bereiche, ein Netz.", titelGroesse: 66, titelBreite: 22, satz: "Websites, Apps, Kunst, Specials, Zettel und Social von Christian Strickler.", fuss: "ornament.cloud/gamma", feld: feldSvg({ hier: 25, nah: [1, 7, 19, 31, 43, 49] }) },   // seit 31. Oktober 2026 (SEO-Check: Gamma hatte keine Vorschaukarte)
   { datei: "social-media/kacheln/autorinnen.png", kicker: "Social Media · Register", titel: "Autor:innen", satz: "Die Autor:innen im Zettelkasten «Social Media»." },
 ];
 
