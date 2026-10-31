@@ -2010,8 +2010,9 @@ function kameraSetzen() {
 function introDom(t) {
   const eng = schmal();
   const u = zustand.u;
-  // Die Überschrift steht, sobald der Zettel hinaus ist und das Netz frei liegt, und geht mit dem Flug hinein
-  introText.style.opacity = weich(ZETTEL - .05, ZETTEL, u) * (1 - weich(ZETTEL + .07, ZETTEL + .14, u));
+  // Die Überschrift steht, sobald der Zettel hinaus ist und das Netz frei liegt, und geht mit dem Flug hinein.
+  // Sie ist weg (t .34), bevor unten die Zeile der Strophen einblendet: beide stehen am selben Ort (Christian sah sie übereinander)
+  introText.style.opacity = weich(ZETTEL - .05, ZETTEL, u) * (1 - weich(.3, .34, t));
   // Ganz oben liegt die Tafel in Blaupause (der blaue Zettel); nach unten gleitet sie hinaus, bevor der Flug ins Netz beginnt
   const auf = 1 - weich(ZETTEL - .1, ZETTEL - .02, u);
   const B = eng ? innerWidth : Math.min(innerWidth * .4, 560), dx = ((1 - auf) * B).toFixed(1);
@@ -2061,7 +2062,7 @@ function stropheZeigen(t) {
       neu.querySelector("small").textContent = `Strophe ${erste.k.s[0]} · ${ZYKLEN[erste.k.s[1]]} · ${erste.k.s[2]}`; neu.querySelector("q").textContent = erste.k.s[3];
       alt.classList.remove("an"); neu.classList.add("an");
     }
-    zeile.style.opacity = an;
+    zeile.style.opacity = an * weich(.34, .38, t);   // erst wenn die Überschrift weg ist
   } else zeile.style.opacity = 0;
 }
 
