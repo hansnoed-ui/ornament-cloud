@@ -211,7 +211,8 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 .fi-fragen li, .fi-liste li { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0 10px; border-bottom: 1px solid var(--kl); font-size: clamp(15px, 2.2cqi, 18px); }
 .fi-fragen li span, .fi-liste li span { font-size: 12.5px; color: var(--kg); text-align: right; }
 .fi .weiter { margin-top: 4px; justify-self: start; }
-.fi-zu { margin-top: auto; align-self: flex-start; padding: 8px 0; border: 0; background: none; color: var(--ka); font: 500 13.5px var(--sans); cursor: pointer; }
+/* «Schliessen» mit 44 px Tippfläche, damit man es am Handy sicher trifft (Christian, 31. Oktober 2026) */
+.fi-zu { margin-top: auto; align-self: flex-start; display: inline-flex; align-items: center; min-height: 44px; padding: 0; border: 0; background: none; color: var(--ka); font: 500 13.5px var(--sans); cursor: pointer; }
 .k-web.raster .logo, .k-web.baut .logo, .k-web.zeigt-feld .logo { opacity: 0; }
 .k-web.raster:not(.baut):not(.zeigt-feld) .themen { visibility: visible; opacity: 1; transition: opacity .6s; }
 :is(.k-web, .k-apps, .k-kunst, .k-exp).zeigt-feld .feld-inhalt { visibility: visible; opacity: 1; transition: opacity .45s; }
@@ -2271,7 +2272,7 @@ function bild(zeit) {
   introDom(zustand.t);
   // Wer nach oben bis zum Signet zurückkehrt, sieht die Seiten beim nächsten Hinunterscrollen wieder im Raum, auch wenn er vorher flach gelesen hat
   // (Christian, 31. Oktober 2026: früher erst im Netz). Umgeschaltet wird, sobald die flache Seite unten ganz aus dem Bild ist
-  if (flach && !wechselt && ok3d && bahn.bereit && intro.getBoundingClientRect().bottom > innerHeight * (ruhig ? 1.6 : 1.08)) flachSetzen(false);
+  if (flach && !wechselt && ok3d && !raumVerloren && bahn.bereit && intro.getBoundingClientRect().bottom > innerHeight * (ruhig ? 1.6 : 1.08)) flachSetzen(false);
   // Webseiten flach: die Punkte der Verwandlung
   if (web && flach) webLaufBild(zeit);
   if (apps && flach) appsLaufBild(zeit);
@@ -3875,6 +3876,9 @@ if (kunst) {
   for (const t of ["pointerleave", "pointercancel"]) kunst.bild.addEventListener(t, () => { kunst.zeiger = null; });
   kunst.bild.addEventListener("pointerup", e => { if (e.pointerType !== "mouse") kunst.zeiger = null; });
   if ("IntersectionObserver" in window) new IntersectionObserver(e => { kunst.sichtbar = e[0].isIntersecting; }, { threshold: 0 }).observe(kunst.buehne);
+  // Gibt das Handy den Grafikspeicher frei (etwa beim Wechsel in eine andere App), wartet das Bild und baut sich danach neu auf, statt schwarz zu bleiben
+  kunst.cv.addEventListener("webglcontextlost", e => { e.preventDefault(); kunst.verloren = true; if (kunst.gl) kunst.gl = null; });
+  kunst.cv.addEventListener("webglcontextrestored", () => { kunst.verloren = false; });
 }
 function kunstGL() {
   const K = kunst, gl = K.cv.getContext("webgl2", { antialias: false, alpha: false }) || K.cv.getContext("webgl", { antialias: false, alpha: false });
@@ -3974,7 +3978,7 @@ function kunstSpur(w, h) {
 }
 function kunstLaufBild(zeit, dt) {
   const K = kunst;
-  if (!K || !K.sichtbar || K.k.classList.contains("zeigt-feld") || K.gl === false) return;
+  if (!K || !K.sichtbar || K.verloren || K.k.classList.contains("zeigt-feld") || K.gl === false) return;
   const r = K.bild.getBoundingClientRect(); if (r.width < 2 || r.height < 2) return;
   if (!K.gl) {
     try { kunstGL(); } catch (e) { K.gl = false; console.warn(e); }
@@ -4060,7 +4064,7 @@ addEventListener("pointermove", e => {
 }, { passive: true });
 
 /* ---------- Start ---------- */
-let mass = { b: 0, h: 0 }, gerendert = false;
+let mass = { b: 0, h: 0 }, gerendert = false, raumVerloren = false, raumWarten = 0;
 // Auf schwacher Grafik: braucht ein Bild im Schnitt länger als 30 ms, rechnet der Raum mit weniger Pixeln (höchstens zweimal),
 // damit Bewegung und Scrollen flüssig bleiben
 const leistung = { faktor: 1, schnitt: 0, lang: 0 };
@@ -4108,6 +4112,23 @@ if (ok3d) {
   composer.addPass(new RenderPass(welt, kamera));
   bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth / 2, innerHeight / 2), .38, .35, 1.0); composer.addPass(bloom);
   composer.addPass(new OutputPass());
+  // Gibt das Handy den Grafikspeicher frei (etwa beim Wechsel in eine andere App), baut three.js den Raum beim Zurückkommen selbst wieder auf.
+  // Nur die Spiegelung im Metall des Signets ist ein gerechnetes Bild und muss neu entstehen. Kommt der Raum nicht bald zurück, zeigt die Seite die Fläche
+  const cvWelt = renderer.domElement;
+  cvWelt.addEventListener("webglcontextlost", () => {
+    raumVerloren = true;
+    clearTimeout(raumWarten); raumWarten = setTimeout(() => { if (raumVerloren && !flach) flachSetzen(true); }, 3000);
+  });
+  cvWelt.addEventListener("webglcontextrestored", () => {
+    raumVerloren = false; clearTimeout(raumWarten);
+    const alt = logo.umgebung;
+    if (alt) {
+      const pm = new THREE.PMREMGenerator(renderer); logo.umgebung = pm.fromScene(new RoomEnvironment(), .03).texture; pm.dispose();
+      welt.traverse(o => [].concat(o.material || []).forEach(m => { if (m.envMap === alt) { m.envMap = logo.umgebung; m.needsUpdate = true; } }));
+      alt.dispose();
+    }
+    vorUebersetzen(false);
+  });
   groesse();
   raumMasse();
   netzBauen();
