@@ -126,6 +126,8 @@ body.zurueck .bahn { position: fixed; left: 0; right: 0; pointer-events: none; }
 /* Titel in Grossbuchstaben, alle gleich gross (so gross wie «Websites», bis 31. Oktober 2026 «Webseiten»), weniger eng gesetzt (Christian, 30. Oktober 2026).
    Seit dem 31. Oktober abends etwas kleiner (85 %) und mit mehr Luft zum oberen Rand des Kapitels */
 .kapitel h2 { margin: 0; font-size: clamp(29px, 6cqi, 53px); font-weight: 500; letter-spacing: -.015em; line-height: .88; text-transform: uppercase; }
+/* Ohne Untertitel (Christian, 31. Oktober 2026, 22:35Z: «alle Untertitel der Seiten weg»): der Titel hält selbst den Abstand zum Inhalt */
+.kapitel h2 { margin-bottom: clamp(30px, 6cqi, 52px); }
 .kapitel h2 .wort, .kapitel h2 .bst { display: inline-block; }
 .kapitel h2 .wort { white-space: nowrap; }
 .marke-k, .kapitel .label { font: 500 11px/1.25 var(--sans); letter-spacing: .1em; text-transform: uppercase; color: var(--kg); }
@@ -320,6 +322,7 @@ body.flach .k-social:not(.gebaut) .kanal:not(.da) { opacity: 0; transform: trans
   .marke-k { margin-bottom: 21px; }
   :is(.k-web, .k-apps, .k-kunst, .k-exp) .marke-k { top: calc(76px + .43 * clamp(36px, 7.7cqi, 68px) - 1.68 * clamp(17px, 2.5cqi, 23px)); right: max(55px, env(safe-area-inset-right, 0px)); }
   .kapitel .leit { margin: 21px 0 55px; max-width: 61.8%; }
+  .kapitel h2 { margin-bottom: 55px; }
   .kapitel .weiter { margin-top: 34px; }
   .buehne { --ar: 1.618; margin: 21px 0 34px; }
   .fi-satz { max-width: 61.8%; }
@@ -429,7 +432,6 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
       <article class="kapitel k-web" id="k-web" data-name="Websites"><div class="k-innen">
         <span class="marke-k"><span class="zl begriff">entwickeln</span><span class="zl begriff">gestalten</span><span class="zl begriff">vernetzen</span></span>
         <h2>Websites</h2>
-        <p class="leit">Schnell und praktisch.</p>
         <div class="buehne">
           <div class="logo"><canvas aria-hidden="true"></canvas></div>
           <div class="surfen" data-surfen></div>
@@ -468,7 +470,6 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
       <article class="kapitel k-apps" id="k-apps" data-name="Apps"><div class="k-innen">
         <span class="marke-k"><span class="zl begriff">fokussieren</span><span class="zl begriff">entspannen</span><span class="zl begriff">spielen</span></span>
         <h2>Apps</h2>
-        <p class="leit">Kleine Werkzeuge zum Ausprobieren.</p>
         <div class="buehne">
           <div class="handys" data-handys></div>
           <div class="app-zeilen" aria-label="Sieben Apps in drei Zeilen">
@@ -507,7 +508,6 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
       <article class="kapitel k-kunst" id="k-kunst" data-name="Kunst"><div class="k-innen">
         <span class="marke-k"><span class="zl begriff">herstellen</span><span class="zl begriff">vermitteln</span><span class="zl begriff">kuratieren</span></span>
         <h2>Kunst</h2>
-        <p class="leit">Werke, Gespräche, Räume.</p>
         <div class="buehne">
           <div class="kunst-bild" data-kunst data-fokus=".48" data-format="1.5" data-rahmen=".35 .435 .094 .138" role="img" aria-label="Ausstellung in einem Raum mit rauen Steinwänden und hellem Holzboden: an der linken Wand ein blaues und ein gelb-schwarzes Bild, an der rechten ein hohes dunkelblaues Bild, zwei Winterbilder und ein grosses Bild mit Mond über Wolken; zuerst als Zeichnung, unter dem Zeiger erscheint das Foto"><canvas aria-hidden="true"></canvas></div>
           <p class="kunst-hinweis" aria-hidden="true" data-nur-flach>Darüberfahren zeigt das Foto</p>
@@ -544,7 +544,6 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
       <article class="kapitel k-exp" id="k-experimente" data-name="Specials"><div class="k-innen">
         <span class="marke-k"><span class="zl begriff">verweben</span><span class="zl begriff">schwingen</span><span class="zl begriff">drehen</span></span>
         <h2>Specials</h2>
-        <p class="leit">Experimente im Browser.</p>
         <div class="buehne" role="img" aria-label="Ein Rad aus Tausenden weisser Punkte, die sich zu Speichen, Spiralen und Ringen ordnen; flach sammeln sie sich zu einem doppelten Rad, und daraus baut sich eine Konstruktion auf: ein bewegtes Gewebe, Trauben, schwingende Saiten, kreisende Zeichen und zuletzt die Farben als Skulptur">
           <div class="exp-rad" data-exp></div>
           <canvas class="verwandlung" aria-hidden="true"></canvas>
@@ -558,7 +557,6 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
       <article class="kapitel k-zettel" id="k-zettel" data-name="Zettel"><div class="k-innen">
         <span class="marke-k">05 · Zu seiner Zeit</span>
         <h2>Zettel</h2>
-        <p class="leit">Plateaus zu Operation, Kunst, Gesellschaft und künstlicher Kommunikation.</p>
         <div class="zettel-feld">
           <div class="zyklen" id="zyklen"></div>
           <div class="strophe" id="strophe" aria-live="polite"></div>
@@ -569,7 +567,6 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
       <article class="kapitel k-social" id="k-social" data-name="Social"><div class="k-innen">
         <span class="marke-k">06 · jede Woche</span>
         <h2>Social</h2>
-        <p class="leit">Ausgewählte Beiträge aus X, Facebook und Instagram, wöchentlich als Zettel gesammelt.</p>
         <div class="buehne" role="img" aria-label="Ein Zeitfeld: um eine Sonne schnürt sich ein Band zur liegenden Acht, Regen fällt, ein Punkt zieht die Acht nach; flach wird daraus ein Haus, in dem sich Räume verschieben und aus dem die drei Kanäle hervortreten">
           <div class="zeitfeld" data-zeitfeld></div>
           <canvas class="verwandlung" aria-hidden="true"></canvas>
