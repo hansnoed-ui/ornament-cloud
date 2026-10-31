@@ -2137,8 +2137,9 @@ function bild(zeit) {
   if (!ruhig) zustand.dreh += dt * .08 * (1 - weich(.5, .6, zustand.t));
   zustand.v = misch(zustand.v, (zustand.s - sAlt) / Math.max(dt, 1e-3), .2);
   introDom(zustand.t);
-  // Wer ganz nach oben bis zum Zettel zurückkehrt, sieht die Seiten beim nächsten Hinunterscrollen wieder im Raum, auch wenn er vorher flach gelesen hat
-  if (flach && !wechselt && ok3d && bahn.bereit && (ruhig ? intro.getBoundingClientRect().bottom > innerHeight * 1.6 : zustand.t < .9)) flachSetzen(false);
+  // Wer nach oben bis zum Signet zurückkehrt, sieht die Seiten beim nächsten Hinunterscrollen wieder im Raum, auch wenn er vorher flach gelesen hat
+  // (Christian, 31. Oktober 2026: früher erst im Netz). Umgeschaltet wird, sobald die flache Seite unten ganz aus dem Bild ist
+  if (flach && !wechselt && ok3d && bahn.bereit && intro.getBoundingClientRect().bottom > innerHeight * (ruhig ? 1.6 : 1.08)) flachSetzen(false);
   // Webseiten flach: die Punkte der Verwandlung
   if (web && flach) webLaufBild(zeit);
   if (apps && flach) appsLaufBild(zeit);
