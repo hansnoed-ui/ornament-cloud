@@ -149,7 +149,8 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
 .k-zettel { --k: #ffffff; --kt: #000000; --kg: #5f5f5f; --kl: #d6d6d6; --ka: #1d3fd6; }
 .k-social { --k: #101010; --kt: #ffffff; --kg: rgba(255, 255, 255, .62); --kl: rgba(255, 255, 255, .22); --ka: #8fb0ff; }
 .k-kunst { --k: #4f2232; --kt: #ffffff; --kg: rgba(255, 255, 255, .76); --kl: rgba(255, 255, 255, .26); --ka: #f1d6b8; }
-.k-exp { --k: #376e6f; --kt: #ffffff; --kg: rgba(255, 255, 255, .76); --kl: rgba(255, 255, 255, .28); --ka: #f6d69a; }
+/* Specials im Nachtblau aus Christians Bild (31. Oktober 2026, vorher #376e6f) */
+.k-exp { --k: #18213a; --kt: #ffffff; --kg: rgba(255, 255, 255, .76); --kl: rgba(255, 255, 255, .28); --ka: #f6d69a; }
 .k-angebot { --k: #1f4d3a; --kt: #ffffff; --kg: rgba(255, 255, 255, .74); --kl: rgba(255, 255, 255, .26); --ka: #9fd4b4; }
 
 /* 01 Webseiten: oben der Titel und rechts die drei Begriffe, mittig das Signet auf einer ruhigen, einfarbigen Bühne, darunter drei Flächen mit ihrem Titel.
@@ -224,7 +225,7 @@ body.flach.nach-intro.wechsel #welt { visibility: visible; }
   .flaechen { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
-/* 04 Experimente (30. Oktober 2026): Lab und Das dritte Rad. Im Raum irisiert auf der Bühne ein doppeltes, gegenläufiges Farbrad;
+/* 04 Experimente (30. Oktober 2026): Lab und Das dritte Rad. Im Raum dreht auf der Bühne ein Punktrad (seit 31. Oktober 2026, vorher ein irisierendes Farbrad);
    flach baut sich daraus eine Konstruktion auf (Gewebe, Trauben, Schwingungen, dann Zeichen und Farben als Skulptur). Darunter zwei Karten */
 .exp-rad { inset: 0; pointer-events: none; }
 .exp-karten { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(12px, 3cqi, 21px); border-top: 1px solid var(--kt); padding-top: clamp(14px, 3cqi, 21px); }
@@ -547,7 +548,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
         <span class="marke-k"><span class="zl begriff">verweben</span><span class="zl begriff">schwingen</span><span class="zl begriff">drehen</span></span>
         <h2>Specials</h2>
         <p class="leit">Experimente im Browser.</p>
-        <div class="buehne" role="img" aria-label="Ein doppeltes Farbrad; flach baut sich daraus eine Konstruktion auf: ein bewegtes Gewebe, Trauben, schwingende Saiten, kreisende Zeichen und zuletzt die Farben als Skulptur">
+        <div class="buehne" role="img" aria-label="Ein Rad aus Tausenden weisser Punkte, die sich zu Speichen, Spiralen und Ringen ordnen; flach sammeln sie sich zu einem doppelten Rad, und daraus baut sich eine Konstruktion auf: ein bewegtes Gewebe, Trauben, schwingende Saiten, kreisende Zeichen und zuletzt die Farben als Skulptur">
           <div class="exp-rad" data-exp></div>
           <canvas class="verwandlung" aria-hidden="true"></canvas>
         </div>
@@ -652,8 +653,8 @@ const ZUG = (() => {
 })();
 const ZYKLEN = ["Operation", "Rekursion", "Adresse", "Koppelung", "Kunst", "Plattform", "Zukunft"];
 const ROEM = ["I", "II", "III", "IV", "V", "VI", "VII"];
-const KAPITELFARBEN = ["#4f8e9c", "#e6b117", "#a3546f", "#5fb3b4", "#ffffff", "#8fb0ff"];   // Quadrate im Intro: auf Schwarz sichtbar
-const LEUCHTFARBEN = ["#7cc4cc", "#e6b117", "#e08aa6", "#8fe0d8", "#d6dbe4", "#9aa6bd"];   // Kanten und Marken im Raum
+const KAPITELFARBEN = ["#4f8e9c", "#e6b117", "#a3546f", "#4d64b3", "#ffffff", "#8fb0ff"];   // Quadrate im Intro: auf Schwarz sichtbar
+const LEUCHTFARBEN = ["#7cc4cc", "#e6b117", "#e08aa6", "#8ea2e8", "#d6dbe4", "#9aa6bd"];   // Kanten und Marken im Raum
 const ZYKLUSFARBEN = ["#ff5c9a", "#ffc21a", "#ff5a3c", "#ffffff", "#8fb0ff", "#3fd08e", "#ffa3d1"];
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const klemm = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
@@ -1131,45 +1132,42 @@ async function bahnBauen() {
       bahn.signete.push(sek => { if (sek - zuletzt < 1 / 15 || kamera.position.distanceTo(mitte) > 14) return; zuletzt = sek; hb.zeichnen(sek + s1); tex.needsUpdate = true; });
     });
   });
-  // Auf der Bühne der Experimente irisiert im Raum ein doppeltes Farbrad: zwei Ringe aus zwölf Farben drehen gegeneinander (wie Das dritte Rad und OMNA COLOR),
-  // darüber liegt ein Schimmer wie auf einer dünnen Schicht, der mit dem Blickwinkel und der Zeit durch das Spektrum wandert
+  // Auf der Bühne der Specials dreht im Raum das Punktrad (bis 31. Oktober 2026 ein doppeltes, irisierendes Farbrad). Die Punkte rechnet die Grafikkarte:
+  // jeder kennt seinen Platz in der Scheibe, die Lage auf dem gekrümmten Band folgt bahnPunkt. Kleine Punkte bleiben mindestens 1,6 Pixel gross und werden dafür blasser
   bilder.forEach((b, i) => {
     const l = b.lage.exp; if (!l) return;
-    // Das Rad füllt drei Viertel der Bühne (bis 31. Oktober 2026 gut neun Zehntel; Christian: «etwas kleiner»)
-    const s0 = bahn.kapitel[i].s0, dm = Math.min(l.b, l.h) * .76, lx = l.x + (l.b - dm) / 2, ly = l.y + (l.h - dm) / 2;
-    const geo = new THREE.PlaneGeometry(1, 1, 24, 24), pos = geo.attributes.position, v = new THREE.Vector3();
-    for (let j = 0; j < pos.count; j++) {
-      const u = pos.getX(j) + .5, w = .5 - pos.getY(j);
-      bahnPunkt(s0 + (ly + w * dm) * bahn.k, RAUM.w / 2 - (lx + u * dm) * bahn.k, .006, v); pos.setXYZ(j, v.x, v.y, v.z);
-    }
-    const uni = { zeit: { value: 0 }, a: { value: 1 } };
-    const stoff = new THREE.ShaderMaterial({ uniforms: uni, transparent: true, depthWrite: false, side: THREE.DoubleSide,
-      vertexShader: "varying vec2 vUv; varying vec3 vw; void main() { vUv = uv; vec4 w = modelMatrix * vec4(position, 1.); vw = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }",
-      fragmentShader: `uniform float zeit, a; varying vec2 vUv; varying vec3 vw;
-vec3 spektrum(float t) { return .5 + .5 * cos(6.28318 * (t + vec3(0., .33, .67))); }
-float ring(float r, float r0, float r1, float aa) { return smoothstep(r0 - aa, r0 + aa, r) * (1. - smoothstep(r1 - aa, r1 + aa, r)); }
+    const P = mdPunkte(), n = P.length, D = Math.min(l.b, l.h) * MD_D, lage = new Float32Array(n * 4), art = new Float32Array(n * 3);
+    P.forEach((q, j) => { lage.set([q.u, q.jx, q.jy, q.w0], j * 4); art.set([q.i, q.g, q.a], j * 3); });
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(n * 3), 3));
+    geo.setAttribute("lage", new THREE.BufferAttribute(lage, 4)); geo.setAttribute("art", new THREE.BufferAttribute(art, 3));
+    const uni = { v: { value: 0 }, dreh: { value: 0 }, a: { value: 1 }, hoehe: { value: 800 }, R: { value: RAUM.R }, drift: { value: RAUM.drift },
+      mitte: { value: new THREE.Vector2(bahn.kapitel[i].s0 + (l.y + l.h / 2) * bahn.k, RAUM.w / 2 - (l.x + l.b / 2) * bahn.k) }, rad: { value: D / 2 * bahn.k }, e: { value: D * MD_E * bahn.k } };
+    const stoff = new THREE.ShaderMaterial({ uniforms: uni, transparent: true, depthWrite: false,
+      vertexShader: `attribute vec4 lage; attribute vec3 art; uniform float v, dreh, hoehe, R, drift, rad, e; uniform vec2 mitte; varying float va, vr;
 void main() {
-  vec2 p = vUv * 2. - 1.; float r = length(p), aa = fwidth(r) * .75, w = atan(p.y, p.x);
-  float deck = ring(r, .6, .97, aa) + ring(r, .25, .56, aa);
-  if (deck < .002) discard;
-  float aussen = step(.58, r), dreh = mix(-zeit * .23, zeit * .16, aussen);
-  // zwölf Felder je Ring mit feinen Fugen; die Breite der Fuge aus der Ableitung von p, damit an der Naht von atan keine Linie entsteht
-  float ww = (w + dreh) / 6.28318 * 12., f = fract(ww), seg = floor(ww), fw = length(fwidth(p)) / max(r, .01) * 1.91;
-  float fuge = smoothstep(0., .035 + fw, f) * smoothstep(1., .965 - fw, f);
-  vec3 grund = spektrum(seg / 12. + mix(.5, 0., aussen));
-  grund = mix(vec3(dot(grund, vec3(.33))), grund, mix(.75, .9, aussen));
-  // Irisieren: der Ton der dünnen Schicht hängt vom Blickwinkel auf das gekrümmte Band ab, dazu wandert ein Glanz um jeden Ring
-  vec3 N = normalize(cross(dFdx(vw), dFdy(vw))), V = normalize(cameraPosition - vw);
-  float nv = abs(dot(N, V));
-  vec3 film = spektrum(nv * 1.8 + r * 1.6 - w * .32 + zeit * .07);
-  float glanz = pow(max(0., cos(w - zeit * .5 + 3.14159 * (1. - aussen))), 24.) * smoothstep(.2, .9, r);
-  vec3 c = mix(grund, film, .42 + .2 * (1. - nv)) + film * glanz * .35 + vec3(glanz * .1);
-  gl_FragColor = vec4(c, deck * fuge * a);
+  float w = lage.w + art.x * v + dreh, c = cos(w), sn = sin(w), qx = lage.x + lage.y;
+  // Platz in der Scheibe (x nach rechts, y nach unten wie auf der Seite), dann aufs Band wie bahnPunkt
+  vec2 p = vec2(c * qx - sn * lage.z, sn * qx + c * lage.z) * rad;
+  float s = mitte.x + p.y, quer = mitte.y - p.x, th = s / R;
+  vec3 n = vec3(0., cos(th), sin(th)), t = normalize(vec3(drift, n.z, -n.y)), sd = normalize(cross(t, n));
+  vec4 mv = modelViewMatrix * vec4(vec3(drift * s, R - R * n.y, -R * n.z) + sd * quer + n * .008, 1.);
+  gl_Position = projectionMatrix * mv;
+  float d = art.y * e * projectionMatrix[1][1] * hoehe / max(-mv.z, .01);   // Durchmesser in Pixeln: Radius mal Brennweite mal halbe Höhe, doppelt
+  va = art.z * min(1., d * d / 2.56); d = max(d, 1.6);
+  vr = d * .5; gl_PointSize = d + 1.;
+}`,
+      fragmentShader: `uniform float a; varying float va, vr;
+void main() {
+  float r = length(gl_PointCoord - .5) * (vr * 2. + 1.), f = clamp(vr + .5 - r, 0., 1.);
+  if (f <= 0.) discard;
+  gl_FragColor = vec4(vec3(1.), f * va * a);
 }` });
     stoff.userData.frueh = true;
-    const m = new THREE.Mesh(geo, stoff); m.renderOrder = 3; m.frustumCulled = false; g.add(m);
-    m.onBeforeRender = () => { uni.a.value = stoff.opacity; };
-    bahn.signete.push(sek => { uni.zeit.value = ruhig ? 0 : sek % 1000; });
+    const m = new THREE.Points(geo, stoff); m.renderOrder = 3; m.frustumCulled = false; g.add(m);
+    const gr = new THREE.Vector2();
+    m.onBeforeRender = () => { uni.a.value = stoff.opacity; uni.hoehe.value = renderer.getDrawingBufferSize(gr).y; };
+    bahn.signete.push(() => { const t = mdUhr(); uni.v.value = mdVersatz(t); uni.dreh.value = mdDreh(t); });
   });
   // Auf der Bühne von Social liegt das Zeitfeld: eine Leinwand, die der Krümmung des Bandes folgt. Es beginnt, sobald die Kamera in die Nähe kommt,
   // und läuft danach weiter (etwa 24 Bilder in der Sekunde, nur in der Nähe); die flache Seite übernimmt es, wo es gerade steht
@@ -2958,6 +2956,28 @@ const exp = (() => {
   const k = document.getElementById("k-experimente"); if (!k) return null;
   return { k, buehne: k.querySelector(".buehne"), cv: k.querySelector(".verwandlung"), lauf: null, welt: null, sichtbar: false };
 })();
+// Das Punktrad der Specials im Raum (nach Christians Video vom 31. Oktober 2026): dreitausend weisse Punkte in einer Scheibe, gesetzt wie die Samen
+// einer Sonnenblume (jeder um den goldenen Winkel weiter) und leicht verzittert, damit es Staub bleibt. Der Winkel pendelt langsam um den goldenen;
+// so ordnet sich der Staub für Augenblicke zu Speichen, Spiralen und Ringen und löst sich wieder auf. Aussen wird es dünner und feiner
+const MD_N = 3000, MD_G = (3 - Math.sqrt(5)) / 2, MD_D = .76, MD_E = .0026;   // Anzahl, goldener Winkel in Umdrehungen, Durchmesser zur Bühne, Punktmass zum Durchmesser
+let mdListe = null;
+function mdPunkte() {
+  if (mdListe) return mdListe;
+  let z = 29; const zf = () => (z = (z * 16807) % 2147483647) / 2147483647;
+  // u: Abstand von der Mitte (Rand = 1), jx/jy: Zittern, w0: Winkel, i: wie stark der Punkt dem Pendeln folgt, g: Grösse, a: Deckkraft
+  mdListe = [{ i: 0, u: 0, jx: 0, jy: 0, w0: 0, g: 4.2, a: 1 }];
+  for (let k = 0; k < 10; k++) mdListe.push({ i: 0, u: .05, jx: 0, jy: 0, w0: k * Math.PI / 5, g: .55, a: .9 });   // ein feiner Kranz um die Mitte
+  for (let i = 0; i < MD_N; i++) {
+    const u0 = Math.sqrt((i + 7) / (MD_N + 7)), u = u0 * (1 + .09 * weich(.7, 1, u0)) / 1.09, h = zf(), rand = 1 - weich(.74, 1, u0);
+    const g = h < .64 ? .5 + .45 * zf() : h < .94 ? 1 + .7 * zf() : 1.9 + 1.1 * zf(), zw = zf() * Math.PI * 2, zr = Math.sqrt(zf()) * .022;
+    mdListe.push({ i, u, jx: Math.cos(zw) * zr, jy: Math.sin(zw) * zr, w0: (i * MD_G % 1) * Math.PI * 2, g: g * (.45 + .55 * rand), a: .35 + .65 * rand });
+  }
+  return mdListe;
+}
+// Abweichung vom goldenen Winkel (im Bogenmass) und Drehung des Ganzen zur Zeit t in Sekunden; Raum und Fläche lesen dieselbe Uhr
+const mdVersatz = t => (2.6e-4 * Math.sin(t * Math.PI * 2 / 52) + 1e-4 * Math.sin(t * Math.PI * 2 / 19 + 1)) * Math.PI * 2;
+const mdDreh = t => t * .04;
+const mdUhr = () => ruhig ? 0 : performance.now() / 1000;
 const EXP_ENDE = 10.2;
 // Die Zeichen im Wechsel: Planetenzeichen (Feld ±5,6) und Grundformen von ORNA (Feld ±1)
 const EXP_ZEICHEN = (() => {
@@ -3016,7 +3036,7 @@ function expLaufBild(zeit) {
 function expZeichnen(T, L) {
   const W = exp.welt, cx = exp.cv.getContext("2d"), d = L.dpr, farbe = L.farbe, TAU = Math.PI * 2;
   cx.setTransform(1, 0, 0, 1, 0, 0); cx.clearRect(0, 0, exp.cv.width, exp.cv.height); cx.lineCap = cx.lineJoin = "round";
-  // Die Kamera: erst frontal auf das Rad, so gross wie im Raum, dann schräg von oben und langsam im Kreis
+  // Die Kamera: erst frontal auf das Rad, so gross wie das Punktrad im Raum, dann schräg von oben und langsam im Kreis
   const k1 = eio(klemm((T - .9) / 1.6));
   const th = .5 * k1 + .12 * Math.max(0, T - 2.5), ph = -.36 * k1, pers = k1, F = 6, ty = -.4 * k1;
   const S = misch(.38 * Math.min(L.b, L.h) / 1.08, Math.min(L.b / 6.2, L.h / 4.9), k1), mx = L.b / 2, my = L.h / 2;
@@ -3045,7 +3065,7 @@ function expZeichnen(T, L) {
     cx.stroke();
   }
   // Die zwei Ringe des Rades (Umriss, zwölf Felder), gegenläufig; sie legen sich hin und sinken auf das Gewebe, wo später die Skulptur steht
-  const lieg = eio(klemm((T - 1.1) / 1.3)), al = lieg * Math.PI / 2, ringA = .9 - .6 * weich(7, 8.5, T);
+  const lieg = eio(klemm((T - 1.1) / 1.3)), al = lieg * Math.PI / 2, ringA = (.9 - .6 * weich(7, 8.5, T)) * weich(.45, 1.25, T);
   if (ringA > 0) {
     stil(ringA, 1.1);
     const RP = (r, w) => { const x = r * Math.cos(w), y = r * Math.sin(w); return [x, y * Math.cos(al) - 1.15 * lieg, y * Math.sin(al)]; };
@@ -3055,6 +3075,23 @@ function expZeichnen(T, L) {
       for (let i = 0; i < 12; i++) { const w = i * TAU / 12 + dreh; zug([RP(r0, w), RP(r1, w)]); }
     }
     cx.stroke();
+  }
+  // Am Anfang steht das Punktrad aus dem Raum, gleich gross und zur selben Uhr. Der Staub sammelt sich auf den vier Kreisen des Rades,
+  // das an seiner Stelle aufscheint, und verlischt, während es sich hinlegt (die Scheibe hat aussen den Radius 1,08 wie der äussere Ring)
+  const aus = 1 - weich(.55, 1.5, T);
+  if (aus > 0) {
+    const sam = eio(klemm(T / 1.25)), tm = mdUhr(), v = mdVersatz(tm), dr = mdDreh(tm), kreise = [.36, .66, .78, 1.08], ca = Math.cos(al), sa = Math.sin(al);
+    cx.fillStyle = farbe;
+    for (const q of mdPunkte()) {
+      const w = q.w0 + q.i * v + dr, c = Math.cos(w), sn = Math.sin(w), qx = q.u + q.jx;
+      let x = (c * qx - sn * q.jy) * 1.08, y = (sn * qx + c * q.jy) * 1.08;   // wie auf der Seite: y nach unten
+      const r = Math.hypot(x, y);
+      if (r > 1e-4) { let zr = kreise[0]; for (const k of kreise) if (Math.abs(k - r) < Math.abs(zr - r)) zr = k; const f = misch(r, zr, sam) / r; x *= f; y *= f; }
+      const p = P(x, -y * ca - 1.15 * lieg, -y * sa), rr = q.g * MD_E * 2.16 * (1 - .45 * sam) * p[3] * S * d, al2 = q.a * aus;
+      if (rr < .8) { cx.globalAlpha = al2 * rr * rr / .64; cx.fillRect(p[0] - .8, p[1] - .8, 1.6, 1.6); }
+      else { cx.globalAlpha = al2; cx.beginPath(); cx.arc(p[0], p[1], rr, 0, TAU); cx.fill(); }
+    }
+    cx.globalAlpha = 1;
   }
   // Schwingungen: fünf Saiten hinter der Mitte in stehenden Wellen, um die Mitte ein Ring, der mitschwingt
   if (T > 3.6) {
