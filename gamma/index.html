@@ -3816,7 +3816,7 @@ function groesse() {
 if (ok3d) {
   // Die Seite beginnt beim Signet am Ende des Intros; ein Sprungziel wie #k-kunst bleibt, wie es ist
   if ("scrollRestoration" in history) history.scrollRestoration = "manual";
-  if (!ruhig && (!location.hash || /^#zettel-/.test(location.hash))) { scrollTo(0, intro.offsetTop + intro.offsetHeight - hoeheStabil); logo.startY = scrollY; }
+  if (!ruhig && (!location.hash || /^#(zettel-|k-)/.test(location.hash))) { scrollTo(0, intro.offsetTop + intro.offsetHeight - hoeheStabil); logo.startY = scrollY; }
   else logo.ein = 1;
   welt = new THREE.Scene(); welt.background = new THREE.Color(0); welt.fog = new THREE.FogExp2(0x000000, .02);
   schleier = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({ uniforms: { a: { value: 1 } }, transparent: true, depthTest: false, depthWrite: false,
