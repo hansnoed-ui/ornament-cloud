@@ -317,16 +317,17 @@ body.flach .k-social:not(.gebaut) .kanal:not(.da) { opacity: 0; transform: trans
 .feldchen i { aspect-ratio: 1; border: 1px solid var(--kl); }
 .feldchen i.an { background: var(--ka); border-color: var(--ka); }
 
-/* 03 Kunst: auf der Bühne ein Foto aus der Praxis als geometrische Zeichnung in weisser Kreide auf Umbra; wo man darüberfährt oder tippt, kriecht das Foto hervor
-   und bleibt als verblassende Spur. Gezeichnet mit WebGL auf einer eigenen Leinwand; im Raum steht dort ein Feld glänzender Säulen in Schwarz und Weiss */
-/* Das Foto ist quer (3:2): am Handy ist die Bühne der Kunst darum nicht ganz quadratisch */
+/* 03 Kunst: flach läuft auf der Bühne ein Video aus der Praxis (Christian, 1. November 2026: «anstatt des fotos hier ein video für kunst, flache ansicht»),
+   leise und in Schlaufe, nur solange es zu sehen ist. Im Raum steht dort ein Feld glänzender Säulen in Schwarz und Weiss, ihre Deckel zeigen ein Foto aus der Praxis;
+   kommt man aus dem Raum, setzt die Leinwand darüber den Effekt kurz fort (Säulen im Bildrahmen wachsen zum Foto zusammen) und blendet dann ins Video */
 .k-kunst .buehne { --ar: 1.3; }
 @container (min-width: 640px) { .k-kunst .buehne { --ar: 1.618; } }   /* wie alle Bühnen im goldenen Rechteck */
-.kunst-bild { inset: 0; transition: opacity .5s; touch-action: pan-y; cursor: crosshair; }
-.kunst-bild canvas { display: block; width: 100%; height: 100%; }
+.kunst-bild { inset: 0; overflow: hidden; transition: opacity .5s; touch-action: pan-y; }
+.kunst-bild > * { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+.kunst-bild video { object-fit: cover; }
+.kunst-bild canvas { opacity: 0; transition: opacity 1.2s ease-in-out; pointer-events: none; }
+.kunst-bild.uebergang canvas { opacity: 1; transition: none; }
 .k-kunst.zeigt-feld .kunst-bild { opacity: 0; pointer-events: none; }
-.kunst-hinweis { position: absolute; right: 0; top: calc(100% + 7px); margin: 0; font: 500 10.5px/1.2 var(--sans); letter-spacing: .08em; text-transform: uppercase; color: var(--kg); pointer-events: none; transition: opacity .6s; }
-.kunst-hinweis.weg, .k-kunst.zeigt-feld .kunst-hinweis { opacity: 0; }
 .k-kunst .feld:nth-child(1) { background: rgba(255, 255, 255, .04); }
 .k-kunst .feld:nth-child(2) { background: rgba(255, 255, 255, .075); }
 .k-kunst .feld:nth-child(3) { background: rgba(255, 255, 255, .11); }
@@ -540,8 +541,7 @@ body.flach .zeiger a { color: var(--leise); } body.flach .zeiger a.aktiv { color
         <h2>Kunst</h2>
         <p class="leit">Werke, Gespräche, Räume.</p>
         <div class="buehne">
-          <div class="kunst-bild" data-kunst data-fokus=".48" data-format="1.5" data-rahmen=".35 .435 .094 .138" role="img" aria-label="Ausstellung in einem Raum mit rauen Steinwänden und hellem Holzboden: an der linken Wand ein blaues und ein gelb-schwarzes Bild, an der rechten ein hohes dunkelblaues Bild, zwei Winterbilder und ein grosses Bild mit Mond über Wolken; zuerst als Zeichnung, unter dem Zeiger erscheint das Foto"><canvas aria-hidden="true"></canvas></div>
-          <p class="kunst-hinweis" aria-hidden="true" data-nur-flach>Darüberfahren zeigt das Foto</p>
+          <div class="kunst-bild" data-kunst data-fokus=".48" data-format="1.5" data-rahmen=".35 .435 .094 .138" role="img" aria-label="Video: gerahmte Werke liegen dicht an dicht auf einem hellen Holzboden, bunte Zeichnungen, Malerei, ein Gesicht, ein heller Kreis; die Kamera gleitet langsam darüber"><video data-nur-flach data-src="../gamma/bilder/kunst-video.mp4?v=1" poster="../gamma/bilder/kunst-video.webp?v=1" muted loop playsinline disablepictureinpicture preload="none" aria-hidden="true"></video><canvas aria-hidden="true"></canvas></div>
           <div class="feld-inhalt">
             <section class="fi" data-feld="vermittlung" hidden>
               <span class="label">Vermittlung</span>
@@ -2299,7 +2299,7 @@ function bild(zeit) {
   if (apps && flach) appsLaufBild(zeit);
   if (exp && flach) expLaufBild(zeit);
   if (soz && flach) sozLaufBild(zeit);
-  if (kunst && flach) kunstLaufBild(zeit, dt);
+  if (kunst) { if (flach) kunstLaufBild(zeit, dt); else kunstVideo(); }
   // Während des Wechsels zur flachen Seite läuft das Bild weiter, die Seite blendet darüber
   const imRaum = !flach || document.body.classList.contains("wechsel") || intro.getBoundingClientRect().bottom > 0;
   document.body.classList.toggle("nach-intro", intro.getBoundingClientRect().bottom <= innerHeight * .2);
@@ -3829,8 +3829,11 @@ if (soz && "IntersectionObserver" in window) new IntersectionObserver(e => {
   if (flach && !wechselt && e[0].intersectionRatio >= .5) sozRaster();
 }, { threshold: [0, .5] }).observe(soz.buehne);
 addEventListener("resize", () => { if (soz && soz.lauf) { sozKarten(); if (soz.lauf.fest) { soz.lauf = null; sozRaster(true); } } });
-/* ---------- Kunst: ein Foto aus der Praxis, erst als Skizze ----------
-   Vorgerechnet mit tools/gamma/kunst_linien.py: das bearbeitete Foto als WebP und die Skizze als verlustfreies WebP.
+/* ---------- Kunst: flach ein Video aus der Praxis, im Raum ein Foto unter Säulen ----------
+   Das Video bereitet tools/gamma/kunst_video.sh auf (ruhig geführt, Schlaufe ohne Sprung). Es wird erst geholt, wenn die flache Seite der Kunst naht,
+   und läuft nur, solange die Bühne zu sehen ist; wer weniger Bewegung wünscht, startet es selbst.
+   Foto und Skizze vorgerechnet mit tools/gamma/kunst_linien.py: das bearbeitete Foto als WebP und die Skizze als verlustfreies WebP.
+   Flach zeichnet die Leinwand nur noch den Übergang aus dem Raum, danach blendet sie ins Video.
    In der Skizze ist Rot die Kreide, Grün der Zeitpunkt, an dem der Strich an dieser Stelle gezogen wird, Blau trennt Umrisse (hell) von Schraffur.
    Eine einzige weiche Fläche zeigt das Foto: in der Mitte ganz, zum Rand hin verläuft es und wird blasser, vom Rauschen leicht unregelmässig.
    Flach folgt sie dem Zeiger oder dem Finger; sonst wandert sie langsam. Im Raum wandert sie auf derselben Bahn über die Skizze auf dem Band
@@ -3882,21 +3885,20 @@ vec3 kFarbe(sampler2D foto, sampler2D linien, vec2 uv, vec2 q, float auf, float 
 const kunst = (() => {
   const k = document.getElementById("k-kunst"); if (!k) return null;
   const bild = k.querySelector(".kunst-bild");
-  return { k, bild, cv: bild.querySelector("canvas"), buehne: k.querySelector(".buehne"), hinweis: k.querySelector(".kunst-hinweis"), fokus: parseFloat(bild.dataset.fokus) || .5,
+  return { k, bild, cv: bild.querySelector("canvas"), video: bild.querySelector("video"), buehne: k.querySelector(".buehne"), fokus: parseFloat(bild.dataset.fokus) || .5,
     format: parseFloat(bild.dataset.format) || 1, rahmen: (bild.dataset.rahmen || ".5 .5 .1 .1").split(" ").map(Number),
     felder: [...k.querySelectorAll(".feld")], inhalte: [...k.querySelectorAll(".fi")], gl: null, sichtbar: false, t0: null, raumZug: 0, zug: 0, licht: null, zeiger: null, tipp: null,
     wechselAb: 0, rahmenAb: 0, rahmenSeit: 0, rm: 0, sl: 0 };
 })();
 if (kunst) {
   kunst.stopp = () => {}; felderVerbinden(kunst);
-  if (matchMedia("(hover: none)").matches) kunst.hinweis.textContent = "Tippen zeigt das Foto";
-  const lage = e => { const r = kunst.bild.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height }; };
-  const weg = () => kunst.hinweis.classList.add("weg");
-  kunst.bild.addEventListener("pointermove", e => { kunst.zeiger = lage(e); if (e.pointerType === "mouse") weg(); });
-  kunst.bild.addEventListener("pointerdown", e => { kunst.tipp = { ...lage(e), t: performance.now() }; weg(); });
-  for (const t of ["pointerleave", "pointercancel"]) kunst.bild.addEventListener(t, () => { kunst.zeiger = null; });
-  kunst.bild.addEventListener("pointerup", e => { if (e.pointerType !== "mouse") kunst.zeiger = null; });
-  if ("IntersectionObserver" in window) new IntersectionObserver(e => { kunst.sichtbar = e[0].isIntersecting; }, { threshold: 0 }).observe(kunst.buehne);
+  if (ruhig) kunst.video.controls = true;   // weniger Bewegung gewünscht: das Video steht still, bis man es selbst startet
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(e => { kunst.sichtbar = e[0].isIntersecting; }, { threshold: 0 }).observe(kunst.buehne);
+    // Etwa eine Bildschirmhöhe vor der Bühne holen, aber nur in der Fläche: der Raum braucht das Video nicht
+    new IntersectionObserver(e => { kunst.nah = e[0].isIntersecting; if (flach) kunstVideoHolen(); }, { rootMargin: "100% 0px" }).observe(kunst.buehne);
+  } else kunst.sichtbar = kunst.nah = true;
+  document.addEventListener("visibilitychange", kunstVideo);
   // Gibt das Handy den Grafikspeicher frei (etwa beim Wechsel in eine andere App), wartet das Bild und baut sich danach neu auf, statt schwarz zu bleiben
   kunst.cv.addEventListener("webglcontextlost", e => { e.preventDefault(); kunst.verloren = true; if (kunst.gl) kunst.gl = null; });
   kunst.cv.addEventListener("webglcontextrestored", () => { kunst.verloren = false; });
@@ -3997,14 +3999,33 @@ function kunstSpur(w, h) {
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   return G.spur = { w: sw, h: sh, t, f, i: 0 };
 }
+function kunstVideoHolen() {
+  const v = kunst.video;
+  if (!kunst.nah || v.getAttribute("src")) return;
+  v.preload = ruhig ? "metadata" : "auto"; v.src = v.dataset.src;
+  let n = 0;   // bricht das Netz kurz ab, bis zu dreimal neu holen
+  v.addEventListener("error", () => { if (++n <= 3) setTimeout(() => { v.src = v.dataset.src + "&neu=" + n; }, 1500 * n); });
+}
+// Läuft nur flach, solange die Bühne zu sehen ist und kein Feld darüber liegt; im Raum, verdeckt oder im Hintergrund hält es an
+function kunstVideo() {
+  const K = kunst, v = K && K.video; if (!v) return;
+  const soll = flach && !ruhig && K.sichtbar && !document.hidden && !K.k.classList.contains("zeigt-feld");
+  if (soll) { kunstVideoHolen(); if (v.paused && v.getAttribute("src") && !K.startet) { K.startet = true; v.play().catch(() => {}).finally(() => { K.startet = false; }); } }
+  else if (!v.paused && !ruhig) v.pause();
+}
 function kunstLaufBild(zeit, dt) {
   const K = kunst;
-  if (!K || !K.sichtbar || K.verloren || K.k.classList.contains("zeigt-feld") || K.gl === false) return;
+  if (!K) return;
+  kunstVideo();
+  // Die Leinwand zeichnet nur den Übergang aus dem Raum: Säulen im Bildrahmen, die zum Foto zusammenwachsen, dann blendet sie ins Video
+  if (!K.rahmenAb && !K.rahmenSeit) return;
+  if (K.verloren || K.k.classList.contains("zeigt-feld") || K.gl === false) { K.bild.classList.remove("uebergang"); K.rahmenAb = K.rahmenSeit = 0; return; }
+  if (!K.sichtbar) return;   // gleich nach dem Wechsel weiss der Beobachter noch nicht, dass die Bühne zu sehen ist
   const r = K.bild.getBoundingClientRect(); if (r.width < 2 || r.height < 2) return;
   if (!K.gl) {
     try { kunstGL(); } catch (e) { K.gl = false; console.warn(e); }
-    // Ohne WebGL steht das Foto selbst auf der Bühne
-    if (!K.gl) { K.bild.style.background = `url("${KUNST_FOTO}") center ${K.fokus * 100}% / cover`; K.hinweis.hidden = true; return; }
+    if (!K.gl) { K.bild.classList.remove("uebergang"); K.rahmenAb = K.rahmenSeit = 0; return; }   // ohne WebGL gleich das Video
+    return;   // Aufbau und Übersetzen der Shader können dauern: der Übergang beginnt erst im nächsten Bild, sonst ist er schon halb vorbei
   }
   const dpr = Math.min(devicePixelRatio || 1, 2), W = Math.round(r.width * dpr), H = Math.round(r.height * dpr);
   if (K.cv.width !== W || K.cv.height !== H) { K.cv.width = W; K.cv.height = H; }
@@ -4016,8 +4037,11 @@ function kunstLaufBild(zeit, dt) {
   }
   // Eben aus dem Raum gewechselt: im Bildrahmen stehen zuerst noch die Säulen (Christian, 30. Oktober 2026: den Effekt in der Fläche kurz fortsetzen),
   // nach 1,2 s wachsen sie zum Foto zusammen, ab 2,3 s löst sich der Rahmen in die weiche Fläche auf, die weiterwandert
-  if (K.rahmenAb) { K.rahmenAb = 0; K.rahmenSeit = zeit; K.rm = 1; K.licht = kunstRahmenLicht(kunstRahmen(kunstAusschnitt(r.width / r.height, K.fokus, K.format)), r.width / r.height); }
+  if (K.rahmenAb) { K.rahmenAb = 0; K.rahmenSeit = zeit; K.rm = 1; K.bild.classList.add("uebergang"); K.licht = kunstRahmenLicht(kunstRahmen(kunstAusschnitt(r.width / r.height, K.fokus, K.format)), r.width / r.height); }
   const seitRahmen = K.rahmenSeit ? (zeit - K.rahmenSeit) / 1000 : 99;
+  // Sind die Säulen zum Foto zusammengewachsen (nach 2,1 s), blendet die Leinwand in 1,2 s ins Video; danach ruht sie
+  if (seitRahmen > 2.2) K.bild.classList.remove("uebergang");
+  if (seitRahmen > 3.6) { K.rahmenSeit = 0; return; }
   K.sl = 1 - eio(klemm((seitRahmen - 1.2) / .9)); K.rm = 1 - eio(klemm((seitRahmen - 2.3) / 1.4));
   const T = (zeit - K.t0) / 1000, L = K.licht, tippt = K.tipp && zeit - K.tipp.t < 4500;
   // Ziel der Fläche: der Zeiger, sonst die Stelle, die getippt wurde, sonst ihre ruhige Bahn. Solange die Skizze entsteht, ist sie aus
