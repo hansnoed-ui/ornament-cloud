@@ -23,6 +23,7 @@ const AUSNAHMEN = [
   ["«PHORMA II», steht für sich wie PHORMA I (17. Oktober 2026); ihre App-Seite app/ trägt die Navigation (21. Oktober 2026)", /^alpha\/phorma-ii\/(?!app\/)/],
   ["«PHORMA III», das Gewebe aus PHORMA II, steht für sich wie PHORMA I und II (18. Oktober 2026); ihre App-Seite app/ trägt die Navigation (19. Oktober 2026)", /^alpha\/phorma-iii\/(?!app\/)/],
   ["«Hochrendern», Videos auf der eigenen Grafikkarte hochrechnen, steht für sich wie PHORMA (19. Oktober 2026)", /^alpha\/hochrendern\//],
+  ["«This is not a Zettelkasten», Partikel-Animation im Vollbild, steht für sich wie PHORMA (1. November 2026)", /^alpha\/not-a-zettelkasten\//],
   ["Beispiele der Skills für Claude (.claude/skills/), keine Seiten der Website (16. Oktober 2026)", /^\.claude\//],
   ["ORNA (Rad, Feld und die App-Abschriften) mit dem Kopf der App statt der Kopfleiste (20. Oktober 2026, zweisprachig)", /^portfolio\/nebeneinander-nacheinander\//],
   ["OMNA COLOR mit dem Kopf der App statt der Kopfleiste: Signet, d · e, Weg in den Neubau (20. Oktober 2026, «auch alle downloadbaren Apps re-designen, auch doppelsprachig»); ihre App-Seite app/ trägt die Navigation", /^alpha\/omna-color\/(?!app\/)/],
