@@ -1,11 +1,11 @@
 // «Kunst» – Oberfläche: Liste, Notiz mit Querverweisen, Schlagwortseiten, lokaler Graph, Markieren (bis 4), Werkbank mit Montage.
 // Adressen: #b=<Kennung> öffnet einen Beitrag, #w=<Schlagwort> eine Schlagwortseite. Markierte Beiträge und der Entwurf bleiben auf dem Gerät.
-import { BEITRAEGE } from "./beitraege.js?v=1";
-import { JEV } from "./jev.js?v=1";
+import { BEITRAEGE } from "./beitraege.js?v=2";
+import { JEV } from "./jev.js?v=2";
 import { stamm } from "../drittes-rad/engine.js";
 import {
   MAX_MARKIERT, bestand, schlagwoerterVon, verwandte, montage, zuordnung, adresse, titelBegegnung, nameVon, norm,
-} from "./verknuepfung.js?v=1";
+} from "./verknuepfung.js?v=2";
 
 const $ = (s) => document.querySelector(s);
 const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
@@ -17,7 +17,7 @@ const speicher = {
 const B = bestand(BEITRAEGE);
 const N = BEITRAEGE.length;
 const datum = (d) => { const [j, m, t] = String(d).split("-"); return t ? `${+t}.${+m}.${j}` : d; };
-const titel = (b) => { const z = b.t.trim().split(/\n|(?<=[.!?…])\s/)[0].replace(/\s+/g, " "); return z.length > 72 ? z.slice(0, 70).trimEnd() + " …" : z || "(ohne Text)"; };
+const titel = (b) => { const z = (b.t.trim().replace(/^(?:#[\p{L}\p{N}_]+[\s,]*)+/u, "").trim() || b.t.trim()).split(/\n|(?<=[.!?…])\s/)[0].replace(/\s+/g, " "); return z.length > 72 ? z.slice(0, 70).trimEnd() + " …" : z || "(ohne Text)"; };
 const wortName = (st) => B.name(st);
 
 let zustand = { reiter: "beitraege", jahr: null, suche: "", offen: null, wort: null };

@@ -18,7 +18,7 @@ export function saetze(t) {
   return String(t)
     .split(/\n+/)
     .flatMap((z) => z.split(/(?<=[.!?…])\s+(?=[„«»"(\p{Lu}\d])/u))
-    .map((s) => s.replace(/(\s*#[\p{L}\p{N}_]+)+\s*$/u, "").trim())
+    .map((s) => s.replace(/^(#[\p{L}\p{N}_]+\s*)+/u, "").replace(/(\s*#[\p{L}\p{N}_]+)+\s*$/u, "").trim())
     .filter((s) => s.length >= 12 && !/^(https?:\/\/\S+|(#[\p{L}\p{N}_]+\s*)+)$/u.test(s));
 }
 

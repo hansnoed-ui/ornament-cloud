@@ -3,7 +3,7 @@
 // Die Seite ruft jev nie auf und sendet nichts; markiert jemand bis zu vier Beiträge, zählt sie diese Werte zusammen.
 // jev ist ein Beurteiler (Wahrscheinlichkeit je Auswahl), kein Texter (api.typesafe.ai, POST /v1/systemone).
 //
-//   node --experimental-strip-types --no-warnings tools/build-jev-kunst.ts            voller Lauf: ein Aufruf je Beitrag (zwei Fragen)
+//   node --experimental-strip-types --no-warnings tools/build-jev-kunst.ts            voller Lauf: zwei Aufrufe je Beitrag (Zettel und Konstellationen in zwei Hälften, dann eine Stichwahl)
 //   node --experimental-strip-types --no-warnings tools/build-jev-kunst.ts --probe    drei Beispiele ansehen, nichts schreiben
 //
 // Zugang: Läuft ein Proxy, der den Schlüssel einsetzt, genügt NODE_USE_ENV_PROXY=1; sonst TYPESAFE_API_KEY setzen
@@ -52,10 +52,15 @@ export async function main(argv: string[]) {
   if (!BEITRAEGE.length) { console.log("Keine Beiträge in alpha/kunst/beitraege.js – nichts zu tun."); return; }
 
   const optZ = Object.fromEntries(STROPHEN.map((s: any, j: number) => [`z${j}`, `Zettel ${s.n} «${s.t}»: ${s.b}`]));
-  const optK = Object.fromEntries(KONSTELLATIONEN.map((c: any, j: number) => [`k${j}`, `${nameVon(c.artistId)} × ${nameVon(c.theoristId)}: ${kurz(ersterSatz(c.text), 150)}`]));
+  // jev nimmt höchstens 255 Optionen je Frage: die 326 Konstellationen in zwei Hälften fragen, dann die besten vier jeder Hälfte gegeneinander (Stichwahl)
+  const textK = (j: number) => { const c = KONSTELLATIONEN[j]; return `${nameVon(c.artistId)} × ${nameVon(c.theoristId)}: ${kurz(ersterSatz(c.text), 150)}`; };
+  const haelfte = Math.ceil(KONSTELLATIONEN.length / 2);
+  const optK = (von: number, bis: number) => Object.fromEntries(KONSTELLATIONEN.slice(von, bis).map((_: any, n: number) => [`k${von + n}`, textK(von + n)]));
+  const frK = (criteria: Record<string, string>) => ({ type: "choice", instructions: "Welche Begegnung aus ORNA (eine Künstlerin oder ein Künstler und eine Theoretikerin oder ein Theoretiker) passt gedanklich am besten zu diesem Beitrag über Kunst?", criteria });
   const fragen = {
     z: { type: "choice", instructions: "Welcher Zettel aus dem Zettelkasten «Zu seiner Zeit» steht diesem Beitrag über Kunst gedanklich am nächsten?", criteria: optZ },
-    k: { type: "choice", instructions: "Welche Begegnung aus ORNA (eine Künstlerin oder ein Künstler und eine Theoretikerin oder ein Theoretiker) passt gedanklich am besten zu diesem Beitrag über Kunst?", criteria: optK },
+    ka: frK(optK(0, haelfte)),
+    kb: frK(optK(haelfte, KONSTELLATIONEN.length)),
   };
 
   const auftraege = BEITRAEGE.map((b: any) => ({ k: `${b.i}:${pruef(b.t)}`, i: b.i, zustand: { beitrag: kurz(b.t, TEXT_MAX), datum: b.d } }));
@@ -70,9 +75,12 @@ export async function main(argv: string[]) {
     while (todo.length) {
       const a = todo.shift()!;
       const r = await frage(a.zustand, fragen);
-      const top = (probs: Record<string, number>) => Object.entries(probs).sort((x, y) => y[1] - x[1]).slice(0, LISTE).map(([key, p]) => [Number(key.slice(1)), Math.round(p * 1000) / 1000]);
-      const eintrag = { k: a.k, modell: r.model, z: top(r.answers.z.probabilities), kk: top(r.answers.k.probabilities) };
-      fertig.set(a.k, eintrag); ein += r.usage?.input_tokens ?? 0; aus += r.usage?.output_tokens ?? 0;
+      const top = (probs: Record<string, number>, n = LISTE) => Object.entries(probs).sort((x, y) => y[1] - x[1]).slice(0, n).map(([key, p]) => [Number(key.slice(1)), Math.round(p * 1000) / 1000]);
+      const kandidaten = [...top(r.answers.ka.probabilities, 4), ...top(r.answers.kb.probabilities, 4)].map(([j]) => j as number);
+      const r2 = await frage(a.zustand, { kf: frK(Object.fromEntries(kandidaten.map((j) => [`k${j}`, textK(j)]))) });
+      const eintrag = { k: a.k, modell: r.model, z: top(r.answers.z.probabilities), kk: top(r2.answers.kf.probabilities) };
+      fertig.set(a.k, eintrag);
+      for (const x of [r, r2]) { ein += x.usage?.input_tokens ?? 0; aus += x.usage?.output_tokens ?? 0; }
       if (probe) console.log(a.i, kurz(a.zustand.beitrag, 90), "\n   Zettel:", eintrag.z.slice(0, 3).map(([j, p]: any) => `${STROPHEN[j].t} ${p}`).join(" | "), "\n   ORNA:", eintrag.kk.slice(0, 3).map(([j, p]: any) => `${nameVon(KONSTELLATIONEN[j].artistId)} × ${nameVon(KONSTELLATIONEN[j].theoristId)} ${p}`).join(" | "));
       else appendFileSync(CACHE, JSON.stringify(eintrag) + "\n");
       if (++erledigt % 25 === 0) console.log(`  ${erledigt} fertig, ${ein} Eingabe-Token`);

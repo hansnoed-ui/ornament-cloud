@@ -1,12 +1,12 @@
 # «Kunst» (alpha/kunst/): jev schätzt einmal je freigegebenem Beitrag ein, welcher Zettel und welche ORNA-Konstellation ihm am nächsten stehen,
-# und legt das Ergebnis in alpha/kunst/jev.js ab (tools/build-jev-kunst.ts). Läuft, wenn sich alpha/kunst/beitraege.js ändert, und von Hand.
+# und legt das Ergebnis in alpha/kunst/jev.js ab (tools/build-jev-kunst.ts). Läuft, wenn sich alpha/kunst/beitraege.js oder das Werkzeug ändert, und von Hand.
 # Braucht das Secret TYPESAFE_API_KEY (dasselbe wie für jev im ORNAMENT LAB); fehlt es, tut der Workflow nichts und die Seite wählt nach der Regel.
-# Der Workflow schreibt jev.js zurück auf den Branch, auf dem er läuft. Kosten: ein Aufruf je Beitrag, bei rund 900 Beiträgen etwa 0,5 $.
+# Der Workflow schreibt jev.js zurück auf den Branch, auf dem er läuft. Kosten: zwei Aufrufe je Beitrag, bei rund 900 Beiträgen etwa 0,5 $.
 name: jev Kunst
 
 on:
   push:
-    paths: [alpha/kunst/beitraege.js]
+    paths: [alpha/kunst/beitraege.js, tools/build-jev-kunst.ts]
   workflow_dispatch:
 
 concurrency:
