@@ -1076,6 +1076,8 @@ void main() { vec2 c = gl_PointCoord * 2. - 1.; float d = dot(c, c); if (d > 1.)
 }
 
 async function bahnBauen() {
+  // Wird während des Bauens neu gebaut (andere Breite), hört der ältere Lauf beim nächsten Halt auf
+  const nr = bahn.baunr = (bahn.baunr || 0) + 1, veraltet = () => nr !== bahn.baunr;
   if (bahn.gruppe) { welt.remove(bahn.gruppe); bahn.gruppe.traverse(o => { o.geometry?.dispose(); o.material?.map?.dispose(); o.material?.dispose(); }); }
   bahn.bereit = false;
   const eng = schmal(), LW = eng ? 430 : 820;
@@ -1085,7 +1087,7 @@ async function bahnBauen() {
   const bilder = [];
   // Zwischen zwei Kapiteln kommt je ein Bild zum Zug, damit das Netz im Intro weiterläuft, während die Seiten gezeichnet werden
   const luft = () => new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
-  for (let i = 0; i < kapitel.length; i++) { if (i) await luft(); bilder.push(await kapitelZeichnen(kapitel[i], i, LW)); }
+  for (let i = 0; i < kapitel.length; i++) { if (i) { await luft(); if (veraltet()) return; } bilder.push(await kapitelZeichnen(kapitel[i], i, LW)); }
   const g = new THREE.Group(); let s = 0;
   bahn.stuecke = [];
   const kachelH = Math.min(renderer.capabilities.maxTextureSize, 4096);
@@ -1283,6 +1285,7 @@ async function bahnBauen() {
     bahn.titel.push({ sH, mesh, schatten, hoch: f.h * bahn.k, B: new THREE.Vector3(e[12], e[13], e[14]), X: new THREE.Vector3(e[0], e[1], e[2]),
       Y: new THREE.Vector3(e[4], e[5], e[6]), Z: new THREE.Vector3(e[8], e[9], e[10]), E: bahnPunkt(bahn.kapitel[i].s0 + .03) });
   });
+  await luft(); if (veraltet()) return;   // zwischen den schweren Teilen je ein Bild Luft
   // Auf der Bühne der Websites steht ein Laptop aus Linien auf dem Band, auf dem Punktstaub von Form zu Form fliesst (seit 31. Oktober 2026; vorher Lab-Intro und Gang durch ornament.cloud, bis 30. Oktober das Signet).
   // Wie die Telefone ein feines Gitter, das der Krümmung des Bandes folgt; neu gezeichnet nur, wenn sich etwas bewegt und die Kamera in der Nähe ist
   bahn.signete = [];
@@ -1304,6 +1307,7 @@ async function bahnBauen() {
     let zuletzt = -1;
     bahn.signete.push(sek => { if (sek - zuletzt < 1 / 15 || kamera.position.distanceTo(mitte) > 16) return; zuletzt = sek; neu(sek); });
   });
+  await luft(); if (veraltet()) return;   // zwischen den schweren Teilen je ein Bild Luft
   // Auf der Bühne der Apps liegen drei Telefone auf dem Band: The Fictory, OMNA COLOR, PHORMA III, kleiner als auf der flachen Seite.
   // Jedes ist ein feines Gitter, das der Krümmung des Bandes folgt; die Bildschirme laufen mit etwa fünfzehn Bildern in der Sekunde, solange die Kamera in der Nähe ist
   bilder.forEach((b, i) => {
@@ -1324,6 +1328,7 @@ async function bahnBauen() {
       bahn.signete.push(sek => { if (sek - zuletzt < 1 / 15 || kamera.position.distanceTo(mitte) > 14) return; zuletzt = sek; hb.zeichnen(sek + s1); tex.needsUpdate = true; });
     });
   });
+  await luft(); if (veraltet()) return;   // zwischen den schweren Teilen je ein Bild Luft
   // Auf der Bühne der Specials dreht im Raum das Punktrad (bis 31. Oktober 2026 ein doppeltes, irisierendes Farbrad). Die Punkte rechnet die Grafikkarte:
   // jeder kennt seinen Platz in der Scheibe, die Lage auf dem gekrümmten Band folgt bahnPunkt. Kleine Punkte bleiben mindestens 1,6 Pixel gross und werden dafür blasser
   bilder.forEach((b, i) => {
@@ -1386,6 +1391,7 @@ void main() {
       if (sek - zuletzt < 1 / 24) return; zuletzt = sek; zeichne(performance.now() / 1000 - ZF.beginn);
     });
   });
+  await luft(); if (veraltet()) return;   // zwischen den schweren Teilen je ein Bild Luft
   // Auf der Bühne der Kunst steht im Raum ein Feld glänzender Säulen in Schwarz und Weiss, dicht an dicht über die ganze Fläche (nach «Pillars» von textures.dev,
   // hier räumlich). Ihre Höhe folgt einem langsam fliessenden Feld, leicht vom Foto getragen; die Deckel zeigen das Foto in Schwarz und Weiss.
   // Beim Wechsel zur Fläche blendet die Seite mit dem Video direkt darüber
@@ -1457,10 +1463,16 @@ void main() {
     saeulen.onBeforeRender = () => { uni.deck.value = sStoff.opacity; };
     bahn.signete.push(sek => { uni.zeit.value = ruhig ? 0 : sek % 1000; });
   });
+  await luft(); if (veraltet()) return;
   figurenBauen(g);
   bahn.materialien = []; g.traverse(o => { if (o.material) bahn.materialien.push(o.material); });
   welt.add(g); bahn.gruppe = g; bahn.nurSignet = null;
   vorUebersetzen();
+  // Alle Bilder des Bandes; solange es verdeckt ist, kommen sie eines je Bild auf die Grafikkarte (siehe bild)
+  bahn.hochladen = []; const gesehen = new Set();
+  g.traverse(o => [].concat(o.material || []).forEach(m => [m.map, ...Object.values(m.uniforms || {}).map(u => u && u.value)].forEach(t => {
+    if (t && t.isTexture && !gesehen.has(t)) { gesehen.add(t); bahn.hochladen.push(t); }
+  })));
   bahn.bereit = true;
   platzMessen();
 }
@@ -2090,6 +2102,21 @@ function logoBauen() {
   };
 }
 
+// Das Band entsteht erst, wenn das Signet fertig gedreht hat (Christian, 1. November 2026: «die gamma seite stockt jedesmal bei der anfangs animation»):
+// Kapitel zeichnen, Laptop und Telefone bauen hielt sonst die Animation an. Sofort, wer vorher scrollt, in die Fläche wechselt,
+// mit einer Adresse wie #k-kunst kommt oder weniger Bewegung wünscht
+const BAND_AB = 9.8;
+function bandBauenSpaeter() {
+  const y0 = scrollY;
+  return new Promise(fertig => {
+    const warte = () => {
+      const lauf = logo.beginn === null ? 0 : performance.now() / 1000 - logo.beginn;
+      if (ruhig || flach || location.hash || lauf > BAND_AB || Math.abs(scrollY - y0) > 40) fertig(bahnBauen());
+      else requestAnimationFrame(warte);
+    };
+    warte();
+  });
+}
 function platzMessen() { if (bahn.L) platz.style.height = Math.round(bahn.L / bahn.k - innerHeight * .45) + "px"; }
 
 /* ---------- Kamera und Zeitachse ---------- */
@@ -2311,7 +2338,10 @@ function bild(zeit) {
       // Das Band selbst ist dabei deckend und ein schwarzer Schleier davor blendet ab: so sieht man nie durch halb durchsichtige Flächen hindurch.
       // Am Anfang der Seite steht nur das Signet; das Band blendet ein, wenn man hinunterscrollt (logo.ein)
       const sicht = ruhig ? 1 : weich(.935, .99, t), auf = sicht * logo.ein, umher = ruhig ? 1 : weich(.955, 1, t) * logo.ein;
-      bahn.gruppe.visible = sicht > 0;
+      // Ganz hinter dem schwarzen Schleier (am Anfang beim Signet) wird das Band nicht gezeichnet: das kostete jedes Bild der Anfangsanimation Zeit.
+      // Beim Wechsel in die Fläche und zurück bleibt es da
+      bahn.gruppe.visible = sicht > 0 && (auf > 0 || kipp.wert > 0 || wechselt);
+      if (!bahn.gruppe.visible && bahn.hochladen && bahn.hochladen.length && renderer.initTexture) renderer.initTexture(bahn.hochladen.shift());
       // Flach folgt auf das Intro die Seite selbst: im Raum darüber bleibt dann nur das Signet (es hängt nicht an der Bahn), sonst stünde das Band ein zweites Mal über der Seite
       const nurSignet = flach && kipp.wert === 0 && !document.body.classList.contains("wechsel");
       if (bahn.nurSignet !== nurSignet) { bahn.nurSignet = nurSignet; bahn.gruppe.children.forEach(o => { if (!o.userData.immer) o.visible = !nurSignet; }); }
@@ -2647,7 +2677,7 @@ const schirmKopf = (cx, name) => {
 // ziehen Spuren und setzen sich wieder zusammen
 const fictory = cx => {
   const B = SCHIRM_B - 8, H = SCHIRM_H - 36, x0 = 4, y0 = 24, bild = document.createElement("canvas"); bild.width = B * 2; bild.height = H * 2;
-  const b = bild.getContext("2d"); b.scale(2, 2);
+  const b = bild.getContext("2d", { willReadFrequently: true }); b.scale(2, 2);   // wird gelesen: im Speicher, sonst wartet das Auslesen auf die Grafikkarte
   const flaeche = (farbe, pkt) => { b.fillStyle = farbe; b.beginPath(); pkt.forEach(([u, v], n) => (n ? b.lineTo(B * u, H * v) : b.moveTo(B * u, H * v))); b.fill(); };
   // Das Bild in der Art der Beispiele: Himmel, Meer, Sonne, ein blauer Körper mit roten Zacken und hellen Augen, ein Haus, Erde, schwarze Figuren
   b.fillStyle = "#cfcdc4"; b.fillRect(0, 0, B, H);
@@ -2879,7 +2909,7 @@ function staubFormenBauen() {
   form("kugel", i => { const y = 1 - 2 * (i + .5) / N, r = Math.sqrt(1 - y * y), w = i * 2.39996, s = .42 * (1 - .05 * zf()); return [Math.cos(w) * r * s, y * s, Math.sin(w) * r * s]; }, { kipp: .35, dreh: .32 });
   // Worte in der Schrift der Website, aus den Pixeln eines unsichtbaren Bildes
   for (const wort of ["entwickeln", "gestalten", "vernetzen"]) {
-    const c = document.createElement("canvas"), x = c.getContext("2d"), px = 120;
+    const c = document.createElement("canvas"), x = c.getContext("2d", { willReadFrequently: true }), px = 120;   // wird gelesen: im Speicher statt auf der Grafikkarte
     x.font = `500 ${px}px "Instrument Sans", system-ui, sans-serif`; const b = Math.ceil(x.measureText(wort).width) + 20;
     c.width = b; c.height = 170; x.font = `500 ${px}px "Instrument Sans", system-ui, sans-serif`; x.fillStyle = "#fff"; x.textBaseline = "alphabetic"; x.fillText(wort, 10, 125);
     const d = x.getImageData(0, 0, c.width, c.height).data, voll = [];
@@ -3959,7 +3989,8 @@ if (ok3d) {
   raumMasse();
   netzBauen();
   vorUebersetzen(true);
-  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => { logoBauen(); return bahnBauen(); }).catch(() => { flach = true; document.body.classList.add("flach"); });
+  // Die Stoffe des Signets gleich übersetzen, nicht erst, wenn Rohr, Punkt und Schrift zum ersten Mal erscheinen: das liess die Animation nach der Lichtkugel stocken
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => { logoBauen(); vorUebersetzen(true); return bandBauenSpaeter(); }).catch(() => { flach = true; document.body.classList.add("flach"); });
 } else {
   platz.style.height = "0px";
 }
