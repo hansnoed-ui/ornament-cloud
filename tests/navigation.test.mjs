@@ -29,6 +29,7 @@ const AUSNAHMEN = [
   ["OMNA COLOR mit dem Kopf der App statt der Kopfleiste: Signet, d · e, Weg in den Neubau (20. Oktober 2026, «auch alle downloadbaren Apps re-designen, auch doppelsprachig»); ihre App-Seite app/ trägt die Navigation", /^alpha\/omna-color\/(?!app\/)/],
   ["The Fictory mit dem Kopf der App statt der Kopfleiste (21. Oktober 2026, zweisprachig); ihre App-Seite app/ trägt die Navigation", /^alpha\/the-fictory\/(?!app\/)/],
   ["Die Redaktion von «Social Media» im Neubau (22. Oktober 2026, «im neuen design am neuen ort»): ihr Formular src/b/redaktion.html und die Weiterleitung an der alten Adresse", /^(social-media\/redaktion\/index|src\/b\/redaktion)\.html$/],
+  ["«Kunst», Hypertext der Facebook-Beiträge mit eigener Kopfzeile, steht für sich, nur per Direktlink (1. November 2026)", /^alpha\/kunst\//],
   ["ORNAMENT LAB 0.1 mit eigener Oberfläche, steht für sich, nur per Direktlink (23. Oktober 2026; alpha/lab/README.md)", /^alpha\/lab\//],
   ["Der Neubau unter b/ mit eigener Kopfzeile (20. Oktober 2026, docs/superpowers/specs/2026-10-20-b-neubau-design.md); eigene Tests in tests/b.test.mjs", /^b\//],
 ];

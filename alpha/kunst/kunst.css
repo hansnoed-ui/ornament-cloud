@@ -1,0 +1,134 @@
+/* «Kunst» – Hypertext. Schwarz und weiss in echter Umkehr, Haarlinien, keine Farbe (Wunsch: «obsidian style aber sauber schwarz/weiss»). */
+:root {
+  --papier: #ffffff; --tinte: #000000; --leise: #5c5c5c; --linie: #d9d9d9; --flaeche: #f4f4f4; --markiert: #000000; --auf-markiert: #ffffff;
+  --sans: "Instrument Sans", system-ui, sans-serif; --serif: "Newsreader", Georgia, serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-modus="hell"]) { --papier: #000000; --tinte: #ffffff; --leise: #a3a3a3; --linie: #2e2e2e; --flaeche: #111111; --markiert: #ffffff; --auf-markiert: #000000; color-scheme: dark; }
+}
+:root[data-modus="dunkel"] { --papier: #000000; --tinte: #ffffff; --leise: #a3a3a3; --linie: #2e2e2e; --flaeche: #111111; --markiert: #ffffff; --auf-markiert: #000000; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { background: var(--papier); color: var(--tinte); font: 15px/1.5 var(--sans); display: flex; flex-direction: column; }
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+.leise { color: var(--leise); }
+.klein { font-size: 0.72rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--leise); margin: 1.4rem 0 0.5rem; }
+:focus-visible { outline: 1px solid var(--tinte); outline-offset: 2px; }
+
+.kopf { display: flex; align-items: center; gap: 14px; padding: 10px 16px; border-bottom: 1px solid var(--linie); }
+.marke { text-decoration: none; font-weight: 500; }
+.kopf-titel { flex: 1; font-family: var(--serif); font-size: 1.1rem; }
+.knopf, .knopf-klein { border: 1px solid var(--tinte); background: none; border-radius: 999px; cursor: pointer; }
+.knopf { padding: 8px 18px; background: var(--tinte); color: var(--papier); }
+.knopf-klein { padding: 4px 12px; min-height: 32px; }
+.knopf:hover, .knopf-klein:hover { background: var(--tinte); color: var(--papier); }
+.knopf:hover { background: var(--papier); color: var(--tinte); }
+.nur-schmal { display: none; }
+#modus { width: 34px; height: 34px; padding: 0; display: inline-grid; place-items: center; }
+#modus svg { width: 16px; height: 16px; }
+
+.raum { flex: 1; min-height: 0; display: grid; grid-template-columns: 300px minmax(0, 1fr) 320px; }
+.links, .rechts { min-height: 0; overflow: auto; padding: 12px 16px 80px; }
+.links { border-right: 1px solid var(--linie); display: flex; flex-direction: column; }
+.rechts { border-left: 1px solid var(--linie); }
+.mitte { min-height: 0; overflow: auto; padding: 32px clamp(16px, 5vw, 64px) 120px; outline: none; }
+
+.suche input { width: 100%; padding: 8px 10px; border: 1px solid var(--linie); background: var(--papier); color: var(--tinte); font: inherit; border-radius: 0; }
+.reiter { display: flex; gap: 0; margin: 10px 0 6px; border-bottom: 1px solid var(--linie); }
+.reiter button { flex: 1; padding: 6px 0; border: 0; background: none; cursor: pointer; color: var(--leise); border-bottom: 1px solid transparent; margin-bottom: -1px; }
+.reiter button[aria-selected="true"] { color: var(--tinte); border-bottom-color: var(--tinte); }
+.jahre { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0 8px; }
+.jahre button { border: 1px solid var(--linie); background: none; padding: 1px 7px; font-size: 0.78rem; cursor: pointer; border-radius: 999px; }
+.jahre button[aria-pressed="true"] { background: var(--tinte); color: var(--papier); border-color: var(--tinte); }
+.liste { list-style: none; margin: 0; padding: 0; }
+.liste li { display: flex; align-items: baseline; gap: 6px; }
+.liste a { flex: 1; display: block; padding: 5px 6px; text-decoration: none; border-radius: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.liste a:hover { background: var(--flaeche); }
+.liste a[aria-current="page"] { background: var(--tinte); color: var(--papier); }
+.liste .datum, .liste .zahl { font-size: 0.75rem; color: var(--leise); font-variant-numeric: tabular-nums; }
+.liste a[aria-current="page"] .datum { color: inherit; opacity: 0.7; }
+.marker { width: 18px; height: 18px; flex: none; border: 1px solid var(--tinte); background: none; border-radius: 50%; cursor: pointer; padding: 0; font-size: 0.65rem; line-height: 16px; }
+.marker[aria-pressed="true"] { background: var(--markiert); color: var(--auf-markiert); }
+.marker:disabled { opacity: 0.3; cursor: not-allowed; }
+.anzahl { font-size: 0.8rem; margin-top: 8px; }
+
+.notiz-kopf { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; color: var(--leise); font-size: 0.85rem; }
+.notiz h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(1.6rem, 3vw, 2.2rem); line-height: 1.2; margin: 0.4rem 0 1.4rem; max-width: 34em; }
+.notiz .text { font-family: var(--serif); font-size: 1.15rem; line-height: 1.65; max-width: 36em; white-space: pre-wrap; overflow-wrap: anywhere; }
+.wl { text-decoration: none; border-bottom: 1px solid var(--leise); cursor: pointer; }
+.wl:hover { border-bottom-color: var(--tinte); background: var(--flaeche); }
+.notiz-knoepfe { margin: 1.6rem 0 0; display: flex; gap: 8px; flex-wrap: wrap; }
+.blaettern { margin-top: 3rem; display: flex; justify-content: space-between; gap: 12px; font-size: 0.9rem; }
+.blaettern a { text-decoration: none; color: var(--leise); }
+.blaettern a:hover { color: var(--tinte); }
+
+.wortseite h1 { font-family: var(--serif); font-weight: 400; font-size: 2rem; margin: 0.2rem 0 0.4rem; }
+.treffer { list-style: none; padding: 0; margin: 1.5rem 0 0; max-width: 40em; }
+.treffer li { padding: 14px 0; border-top: 1px solid var(--linie); }
+.treffer a { text-decoration: none; }
+.treffer .auszug { font-family: var(--serif); margin: 4px 0 0; }
+.treffer mark { background: var(--tinte); color: var(--papier); padding: 0 2px; }
+.balken { display: flex; align-items: flex-end; gap: 3px; height: 44px; margin: 1rem 0 0; }
+.balken span { flex: 1; max-width: 26px; background: var(--tinte); min-height: 1px; position: relative; }
+.balken-jahre { display: flex; gap: 3px; font-size: 0.65rem; color: var(--leise); }
+.balken-jahre span { flex: 1; max-width: 26px; text-align: center; }
+
+#graph { width: 100%; height: auto; aspect-ratio: 32 / 26; border: 1px solid var(--linie); display: block; cursor: pointer; touch-action: manipulation; }
+.verweise { list-style: none; margin: 0; padding: 0; }
+.verweise li { padding: 7px 0; border-bottom: 1px solid var(--linie); }
+.verweise a { text-decoration: none; display: block; }
+.verweise .warum { display: block; font-size: 0.78rem; color: var(--leise); }
+.marken { display: flex; flex-wrap: wrap; gap: 5px; margin: 0; }
+.marken a { text-decoration: none; border: 1px solid var(--linie); border-radius: 999px; padding: 1px 9px; font-size: 0.82rem; }
+.marken a:hover { border-color: var(--tinte); }
+
+.leiste { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); display: flex; align-items: center; gap: 16px; padding: 8px 8px 8px 18px; background: var(--papier); border: 1px solid var(--tinte); border-radius: 999px; max-width: calc(100vw - 32px); }
+.leiste[hidden] { display: none; }
+.leiste-knoepfe { display: flex; gap: 6px; }
+
+.werkbank { width: min(1100px, calc(100vw - 32px)); max-height: calc(100vh - 32px); padding: 0; border: 1px solid var(--tinte); background: var(--papier); color: var(--tinte); }
+.werkbank::backdrop { background: color-mix(in srgb, var(--papier) 70%, transparent); }
+.werkbank-kopf { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; border-bottom: 1px solid var(--linie); }
+.werkbank-kopf h2 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: 1.4rem; }
+.werkbank-raum { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: 0; }
+.spalte-quellen { padding: 4px 20px 20px; border-right: 1px solid var(--linie); max-height: 70vh; overflow: auto; }
+.spalte-text { padding: 16px 20px 20px; }
+.quellen { list-style: none; padding: 0; margin: 0; }
+.quellen li { padding: 10px 0; border-bottom: 1px solid var(--linie); font-family: var(--serif); font-size: 0.95rem; }
+.quellen b { font-family: var(--sans); font-weight: 500; display: inline-block; width: 1.4em; }
+.hinweis { font-size: 0.85rem; margin: 0 0 8px; }
+#entwurf { width: 100%; padding: 12px; border: 1px solid var(--linie); background: var(--papier); color: var(--tinte); font: 1.05rem/1.6 var(--serif); resize: vertical; border-radius: 0; }
+#entwurf:focus { border-color: var(--tinte); outline: none; }
+.werkbank-knoepfe { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0 0; }
+.zuordnung { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 18px; }
+.karte { border: 1px solid var(--linie); padding: 12px 14px; }
+.karte .art { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--leise); display: flex; justify-content: space-between; gap: 8px; }
+.karte .quelle { border: 1px solid var(--tinte); border-radius: 999px; padding: 0 7px; letter-spacing: 0; text-transform: none; color: var(--tinte); }
+.karte h4 { margin: 6px 0 4px; font-family: var(--serif); font-weight: 400; font-size: 1.15rem; }
+.karte p { margin: 4px 0 0; font-size: 0.88rem; }
+.karte .grund { color: var(--leise); }
+
+.leer { max-width: 32em; font-family: var(--serif); font-size: 1.15rem; }
+
+@media (max-width: 1100px) {
+  .raum { grid-template-columns: 280px minmax(0, 1fr); }
+  .rechts { grid-column: 2; border-left: 0; border-top: 1px solid var(--linie); overflow: visible; padding-bottom: 100px; }
+  .mitte { overflow: visible; }
+  .raum { overflow: auto; }
+  .links { grid-row: span 2; }
+}
+@media (max-width: 760px) {
+  .nur-schmal { display: inline-block; }
+  .raum { display: block; overflow: auto; }
+  .links { display: none; border-right: 0; border-bottom: 1px solid var(--linie); max-height: 60vh; }
+  .links.offen { display: flex; }
+  .mitte { padding: 20px 16px 40px; }
+  .rechts { border-top: 1px solid var(--linie); }
+  .werkbank-raum, .zuordnung { grid-template-columns: 1fr; }
+  .spalte-quellen { border-right: 0; border-bottom: 1px solid var(--linie); max-height: 30vh; }
+  .leiste { gap: 8px; padding-left: 12px; font-size: 0.85rem; }
+}
+@media (prefers-reduced-motion: no-preference) { .liste a, .marker, .knopf, .knopf-klein { transition: background 0.12s, color 0.12s; } }
