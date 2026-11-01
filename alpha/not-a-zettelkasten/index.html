@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>This is not a Zettelkasten – Ornament Cloud · Alpha</title>
+  <!--
+    Alpha-Bereich: öffentlich erreichbar, nicht in der Sitemap, für Suchmaschinen gesperrt (REGELN §14).
+    Animation vom 1. November 2026 (Wunsch: «eine Animation inklusive langsamen Farbwechseln und verschieden Wolkenformen und setze
+    dazwischen (immer nur eins auf mal) this / is / not / a / Zettelkasten»; danach «nur ein Drittel der Längen, wildere Formen»).
+    Partikelwolken (Attraktoren, Torusknoten, Explosion, Ranken, Splitter …) wechseln mit je einem Wort, die Farben gleiten durch sieben Klimas.
+    Steht für sich wie PHORMA (Ausnahme in tests/navigation.test.mjs). Lädt nichts von aussen: three.js aus vendor/three, Schrift im Ordner.
+    Zum Herunterladen, 4 : 5 ohne Schrift: this-is-not-a-zettelkasten-4x5.mp4 (1080 × 1350, 30 fps, 33 s, ohne Ton) und .gif (432 × 540, 12 fps, Schlaufe).
+  -->
+  <meta name="robots" content="noindex">
+  <meta name="description" content="This is not a Zettelkasten: Partikelwolken wechseln Form und Farbe, dazwischen ein Wort nach dem anderen.">
+  <meta name="theme-color" content="#0b090a">
+<style>
+@font-face { font-family: "Cormorant Garamond"; font-style: italic; font-weight: 500; font-display: block; src: url(cormorant-garamond-latin-500-italic.woff2) format("woff2"); }
+
+/* Layout: a full-bleed stage, nothing else. One tiny caption bottom-left. Single dark look; the colour drifts in script. */
+:root {
+  color-scheme: dark;
+  --bg: #0b090a;
+  --ink-faint: rgba(242, 236, 230, 0.34);
+  --line: rgba(242, 236, 230, 0.14);
+  --f-mono: ui-monospace, "SF Mono", Menlo, monospace;
+}
+html, body { height: 100%; }
+body { background-color: var(--bg); overflow: hidden; }
+#bg { position: fixed; inset: 0; pointer-events: none; }
+#stage { position: fixed; inset: 0; width: 100%; height: 100%; display: block; cursor: pointer; touch-action: manipulation; }
+.cap { position: fixed; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; gap: 16px; pointer-events: none;
+  padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  font-family: var(--f-mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); }
+.cap span:last-child { text-align: right; }
+.cap a { pointer-events: auto; color: inherit; text-decoration: none; border-bottom: 1px solid var(--line); }
+.cap a:hover, .cap a:focus-visible { color: rgba(242, 236, 230, 0.7); }
+</style>
+
+</head>
+<body>
+<div id="bg"></div>
+<canvas id="stage" aria-label="Partikelwolken wechseln langsam Form und Farbe; dazwischen erscheinen nacheinander die Wörter this, is, not, a, Zettelkasten. Klicken pausiert."></canvas>
+<div class="cap"><span><a href="../../">ornament.cloud</a> · 4 : 5 als <a href="this-is-not-a-zettelkasten-4x5.mp4" download>MP4</a> · <a href="this-is-not-a-zettelkasten-4x5.gif" download>GIF</a></span><span id="state">Klick: Pause</span></div>
+
+<script src="../../vendor/three/three.min.js"></script>
+<script>
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const N = innerWidth < 700 ? 16000 : 26000;
+
+// ---------- palette: slow, continuous drift through these climates ----------
+const PAL = [
+  { bg: [74, 18, 25],  a: [216, 52, 74],  b: [255, 211, 217] }, // glut
+  { bg: [90, 35, 64],  a: [240, 163, 195], b: [255, 240, 246] }, // rosa
+  { bg: [29, 58, 92],  a: [143, 182, 230], b: [255, 255, 255] }, // frost
+  { bg: [31, 65, 72],  a: [231, 185, 58],  b: [255, 242, 184] }, // gold auf petrol
+  { bg: [49, 69, 47],  a: [134, 180, 90],  b: [240, 255, 216] }, // blatt
+  { bg: [77, 51, 36],  a: [224, 112, 46],  b: [255, 224, 196] }, // kupfer
+  { bg: [52, 40, 72],  a: [170, 140, 235], b: [244, 236, 255] }  // violett
+];
+const PAL_SECONDS = 11; // one climate to the next
+function palAt(t) {
+  const f = (t / PAL_SECONDS) % PAL.length, i = Math.floor(f), k = f - i;
+  const s = k * k * (3 - 2 * k), A = PAL[i], B = PAL[(i + 1) % PAL.length];
+  const L = (x, y) => x.map((v, j) => v + (y[j] - v) * s);
+  return { bg: L(A.bg, B.bg), a: L(A.a, B.a), b: L(A.b, B.b) };
+}
+
+// ---------- three ----------
+const canvas = document.getElementById("stage");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+camera.position.set(0, 0.2, 9);
+const group = new THREE.Group(); scene.add(group);
+
+const pos = new Float32Array(N * 3), from = new Float32Array(N * 3), to = new Float32Array(N * 3);
+const seed = new Float32Array(N), delay = new Float32Array(N), size = new Float32Array(N);
+for (let i = 0; i < N; i++) {
+  seed[i] = Math.random(); delay[i] = Math.random();
+  size[i] = Math.random() < 0.025 ? 2.4 + Math.random() * 2 : 0.6 + Math.random() * 1.1;
+}
+const geo = new THREE.BufferGeometry();
+geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+geo.setAttribute("aSeed", new THREE.BufferAttribute(seed, 1));
+geo.setAttribute("aSize", new THREE.BufferAttribute(size, 1));
+const mat = new THREE.ShaderMaterial({
+  transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+  uniforms: { uTime: { value: 0 }, uA: { value: new THREE.Color() }, uB: { value: new THREE.Color() }, uPx: { value: renderer.getPixelRatio() }, uScale: { value: 1 } },
+  vertexShader: `
+    attribute float aSeed; attribute float aSize;
+    uniform float uTime, uPx, uScale; varying float vSpark; varying float vMix;
+    void main(){
+      vec4 mv = modelViewMatrix * vec4(position,1.0);
+      float tw = sin(uTime*(1.2+aSeed*3.5) + aSeed*40.0);
+      vSpark = smoothstep(0.86, 1.0, tw) * step(0.72, aSeed);
+      vMix = aSeed;
+      gl_PointSize = aSize * uPx * uScale * (1.0 + vSpark*2.2) * (9.0 / -mv.z) * 2.2;
+      gl_Position = projectionMatrix * mv;
+    }`,
+  fragmentShader: `
+    uniform vec3 uA, uB; varying float vSpark; varying float vMix;
+    void main(){
+      float d = length(gl_PointCoord - 0.5);
+      float a = pow(smoothstep(0.5, 0.0, d), 1.6) * (0.5 + vSpark*0.9);
+      vec3 c = mix(uA * (0.5 + vMix*0.65), uB, vSpark*0.85 + smoothstep(0.92,1.0,vMix)*0.35);
+      gl_FragColor = vec4(c * a, a);
+    }`
+});
+group.add(new THREE.Points(geo, mat));
+
+// ---------- shapes ----------
+const R = Math.random, TAU = Math.PI * 2;
+function gauss() { return (R() + R() + R() + R() - 2) / 2; }
+function fill(fn) { const o = new Float32Array(N * 3); for (let i = 0; i < N; i++) { const p = fn(i); o[i*3] = p[0]; o[i*3+1] = p[1]; o[i*3+2] = p[2]; } return o; }
+// soft, cloud-like forms: every point gets a little fuzz
+const fz = (p, s) => [p[0] + gauss() * s, p[1] + gauss() * s, p[2] + gauss() * s];
+// precomputed attractor paths
+function lorenzPts() { const o = []; let x = 0.1, y = 0, z = 0; for (let i = 0; i < 60000; i++) { const dt = 0.005; const dx = 10 * (y - x), dy = x * (28 - z) - y, dz = x * y - 8 / 3 * z; x += dx * dt; y += dy * dt; z += dz * dt; if (i > 500) o.push([x, y, z]); } return o; }
+function cliffordPts() { const o = []; let x = 0.1, y = 0.1; const a = -1.7, b = 1.8, c = -1.9, d = -0.4; for (let i = 0; i < 60000; i++) { const nx = Math.sin(a * y) + c * Math.cos(a * x), ny = Math.sin(b * x) + d * Math.cos(b * y); x = nx; y = ny; o.push([x, y]); } return o; }
+const LOR = lorenzPts(), CLF = cliffordPts();
+const CLOUDS = [
+  () => fill(() => { // Lorenz-Attraktor
+    const p = LOR[R() * LOR.length | 0]; return fz([p[0] * 0.11, (p[2] - 25) * 0.09, p[1] * 0.07], 0.025); }),
+  () => fill(() => { // Clifford-Attraktor, aufgefaltet
+    const p = CLF[R() * CLF.length | 0]; return fz([p[0] * 1.15, p[1] * 1.15, Math.sin(p[0] * 2 + p[1] * 3) * 0.6], 0.02); }),
+  () => fill(() => { // Torusknoten 3:7
+    const t = R() * TAU, r = 1.3 + 0.55 * Math.cos(7 * t);
+    return fz([r * Math.cos(3 * t), 0.55 * Math.sin(7 * t) * 1.4, r * Math.sin(3 * t)], 0.07); }),
+  () => fill(() => { // Explosion: Strahlen
+    const u = R() * 2 - 1, th = R() * TAU, s = Math.sqrt(1 - u * u), ray = (R() * 140 | 0);
+    const ru = ((ray * 0.618) % 1) * 2 - 1, rth = ray * 2.399, rs = Math.sqrt(1 - ru * ru), r = Math.pow(R(), 1.8) * 3.1;
+    const core = R() < 0.25; const d = core ? [s * Math.cos(th), u, s * Math.sin(th)] : [rs * Math.cos(rth), ru, rs * Math.sin(rth)];
+    const rr = core ? 0.45 * Math.cbrt(R()) : r; return fz([d[0] * rr * 1.2, d[1] * rr * 0.8, d[2] * rr], core ? 0.03 : 0.015 + r * 0.02); }),
+  () => fill(i => { // Ranken: Zufallswege aus der Mitte
+    const w = i % 90; let x = 0, y = 0, z = 0; const steps = (R() * 160 | 0); let a = w * 2.399, b = (w * 0.618 % 1) * Math.PI - Math.PI / 2;
+    for (let k = 0; k < steps; k++) { a += Math.sin(w * 13.7 + k * 0.11) * 0.18; b += Math.cos(w * 7.3 + k * 0.09) * 0.14; x += Math.cos(a) * Math.cos(b) * 0.022; y += Math.sin(b) * 0.018; z += Math.sin(a) * Math.cos(b) * 0.022; }
+    return fz([x, y, z], 0.015); }),
+  () => fill(() => { // Splitter
+    const k = R() * 26 | 0, cx = Math.sin(k * 12.9) * 2.2, cy = Math.sin(k * 78.2) * 1.1, cz = Math.sin(k * 37.7) * 1.4;
+    const ax = k * 0.7, ay = k * 1.3, u = R() - 0.5, v = (R() - 0.5) * (0.5 - Math.abs(u)) * 2;
+    const px = u * 0.9, py = v * 0.9; return [cx + px * Math.cos(ay), cy + py * Math.cos(ax) + px * 0.2, cz + px * Math.sin(ay) + py * Math.sin(ax)]; }),
+  () => fill(() => { // Krone: Spritzer mit Zacken
+    const a = R() * TAU, spikes = 23, sp = Math.pow(Math.abs(Math.cos(a * spikes / 2)), 14), h = R();
+    const r = 1.4 + h * 0.5 + sp * 0.5 * h; return fz([r * Math.cos(a), -0.9 + h * (0.6 + sp * 2.4), r * Math.sin(a)], 0.03); }),
+  () => fill(() => { // Wirbelsturm, verdreht
+    const h = R(), a = R() * TAU + h * 16, r = 0.12 + h * h * 2.0 + Math.sin(h * 20) * 0.15;
+    return fz([r * Math.cos(a) + Math.sin(h * 6) * 0.5, h * 3.6 - 1.8, r * Math.sin(a)], 0.03 + h * 0.05); }),
+  () => fill(() => { // Doppelhelix, gestaucht
+    const t = R() * 2 - 1, side = R() < 0.5 ? 0 : Math.PI, a = t * 9 + side, rung = R() < 0.18;
+    const r = rung ? (R() * 2 - 1) * 0.7 : 0.7; return fz([t * 2.8, Math.cos(a) * r, Math.sin(a) * r], 0.035); }),
+  () => fill(() => { // Supernova: Schalen
+    const shell = [0.5, 1.2, 2.1][R() * 3 | 0], u = R() * 2 - 1, th = R() * TAU, s = Math.sqrt(1 - u * u);
+    const wob = 1 + 0.18 * Math.sin(th * 5 + u * 7); return fz([s * Math.cos(th) * shell * wob * 1.2, u * shell * wob * 0.85, s * Math.sin(th) * shell * wob], 0.04); })
+];
+
+const off = document.createElement("canvas"); const octx = off.getContext("2d", { willReadFrequently: true });
+function word(w) {
+  const W = 1400, H = 360; off.width = W; off.height = H;
+  octx.clearRect(0, 0, W, H); octx.fillStyle = "#fff"; octx.textAlign = "center"; octx.textBaseline = "middle";
+  let fs = 300; const font = s => `italic 500 ${s}px "Cormorant Garamond", Georgia, serif`;
+  octx.font = font(fs); const mw = octx.measureText(w).width; if (mw > W * 0.94) { fs *= (W * 0.94) / mw; octx.font = font(fs); }
+  octx.fillText(w, W / 2, H / 2);
+  const img = octx.getImageData(0, 0, W, H).data, hits = [];
+  for (let y = 0; y < H; y += 2) for (let x = 0; x < W; x += 2) if (img[(y * W + x) * 4 + 3] > 140) hits.push(x, y);
+  // short words stay large but not huge; long words fill the width
+  const glyphW = Math.min(W * 0.94, mw * (fs / 300)) || W;
+  const k = Math.min(7.0, 1.6 + w.length * 0.62) / glyphW;
+  const cnt = hits.length / 2;
+  return fill(() => {
+    const j = (R() * cnt | 0) * 2;
+    let p = [(hits[j] - W / 2) * k + (R() - 0.5) * k * 3, -(hits[j + 1] - H / 2) * k + (R() - 0.5) * k * 3 + 0.1, (R() - 0.5) * 0.25];
+    if (R() < 0.06) p = [p[0] + gauss() * 1.4, p[1] + gauss() * 0.9, p[2] + gauss() * 1.2];
+    return p;
+  });
+}
+
+// ---------- score ----------
+const WORDS = ["this", "is", "not", "a", "Zettelkasten"];
+let steps = [], cloudOrder = [];
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = R() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function buildScore() {
+  cloudOrder = shuffle(CLOUDS.slice());
+  steps = [];
+  WORDS.forEach((w, i) => { steps.push({ kind: "cloud", make: cloudOrder[i % cloudOrder.length] }); steps.push({ kind: "word", make: () => word(w) }); });
+}
+buildScore();
+const MORPH = reduced ? 0.01 : 1.2, HOLD = { cloud: 1.4, word: 2.6 };
+let stepI = -1, tMorph = 0, holdLeft = 0, paused = false, clock = 0, rotY = 0;
+
+function next() {
+  stepI++;
+  if (stepI >= steps.length) { buildScore(); stepI = 0; }
+  const s = steps[stepI];
+  from.set(pos); to.set(s.make());
+  for (let i = 0; i < N; i++) delay[i] = R();
+  tMorph = 0; holdLeft = HOLD[s.kind];
+}
+
+function easeIO(x) { return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; }
+
+canvas.addEventListener("click", () => { paused = !paused; document.getElementById("state").textContent = paused ? "Klick: weiter" : "Klick: Pause"; });
+
+function resize() {
+  const w = innerWidth, h = innerHeight;
+  renderer.setSize(w, h, false); camera.aspect = w / h;
+  camera.position.z = Math.max(9, 3.95 / (0.3443 * w / h));
+  camera.updateProjectionMatrix();
+  mat.uniforms.uScale.value = Math.min(1.2, Math.max(0.7, h / 900)) * Math.sqrt(camera.position.z / 9);
+}
+addEventListener("resize", resize); resize();
+
+const bgEl = document.getElementById("bg");
+let last = performance.now();
+function frame(now) {
+  let dt = Math.max(0, Math.min(0.05, (now - last) / 1000)); last = now;
+  if (paused) dt = 0;
+  clock += dt; const t = clock;
+  mat.uniforms.uTime.value = t;
+
+  // timeline
+  if (tMorph < 1) tMorph = Math.min(1, tMorph + dt / MORPH);
+  else if ((holdLeft -= dt) <= 0) next();
+
+  const word = steps[stepI].kind === "word";
+  for (let i = 0; i < N; i++) {
+    const i3 = i * 3, s = seed[i];
+    const lp = Math.min(1, Math.max(0, (tMorph - delay[i] * 0.25) / 0.75));
+    const q = easeIO(lp), sw = Math.sin(q * Math.PI) * (0.6 + s * 1.6);
+    let x = from[i3] + (to[i3] - from[i3]) * q + Math.cos(s * 31 + t * 0.6) * sw * 0.6;
+    let y = from[i3+1] + (to[i3+1] - from[i3+1]) * q + Math.sin(s * 17 + t * 0.4) * sw * 0.3;
+    let z = from[i3+2] + (to[i3+2] - from[i3+2]) * q + Math.sin(s * 31 + t * 0.6) * sw * 0.6;
+    // clouds breathe more than words
+    const br = (word ? 0.016 : 0.04) + (s > 0.93 ? 0.12 : 0);
+    pos[i3] = x + Math.sin(t * 0.5 + s * 90) * br;
+    pos[i3+1] = y + Math.cos(t * 0.45 + s * 70) * br;
+    pos[i3+2] = z + Math.sin(t * 0.4 + s * 50) * br;
+  }
+  geo.attributes.position.needsUpdate = true;
+
+  // colour drift
+  const p = palAt(t);
+  mat.uniforms.uA.value.setRGB(p.a[0] / 255, p.a[1] / 255, p.a[2] / 255);
+  mat.uniforms.uB.value.setRGB(p.b[0] / 255, p.b[1] / 255, p.b[2] / 255);
+  const [r, g, b] = p.bg.map(v => v | 0), [r2, g2, b2] = p.bg.map(v => v * 0.16 | 0);
+  bgEl.style.background = `radial-gradient(120% 80% at 50% 46%, rgb(${r},${g},${b}) 0%, rgb(${r2},${g2},${b2}) 72%)`;
+
+  // clouds turn slowly; words face the viewer
+  if (!reduced) rotY += dt * (word ? 0.12 : 0.55);
+  const targetY = word ? Math.round(rotY / TAU) * TAU + Math.sin(t * 0.3) * 0.18 : rotY;
+  group.rotation.y += (targetY - group.rotation.y) * (word ? 0.03 : 1);
+  if (!word) group.rotation.y = rotY; else rotY = group.rotation.y;
+  group.rotation.x = 0.12 + Math.sin(t * 0.2) * 0.05;
+
+  renderer.render(scene, camera);
+  requestAnimationFrame(frame);
+}
+
+// start from a cloud
+pos.set(CLOUDS[0]());
+const fontReady = document.fonts && document.fonts.load ? document.fonts.load('italic 500 100px "Cormorant Garamond"').catch(() => {}) : Promise.resolve();
+Promise.race([fontReady, new Promise(r => setTimeout(r, 1500))]).then(() => { next(); requestAnimationFrame(frame); });
+</script>
+</body>
+</html>
