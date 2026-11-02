@@ -1,7 +1,7 @@
 # «Kunst» (alpha/kunst/): jev schätzt einmal je freigegebenem Beitrag ein, welcher Zettel und welche ORNA-Konstellation ihm am nächsten stehen,
 # und legt das Ergebnis in alpha/kunst/jev.js ab (tools/build-jev-kunst.ts). Läuft, wenn sich alpha/kunst/beitraege.js oder das Werkzeug ändert, und von Hand.
 # Braucht das Secret TYPESAFE_API_KEY (dasselbe wie für jev im ORNAMENT LAB); fehlt es, tut der Workflow nichts und die Seite wählt nach der Regel.
-# Der Workflow schreibt jev.js zurück auf den Branch, auf dem er läuft. Kosten: zwei Aufrufe je Beitrag, bei rund 900 Beiträgen etwa 0,5 $.
+# Der Workflow schreibt jev.js zurück auf den Branch, auf dem er läuft. Kosten: zwei Aufrufe je neuem Beitrag, etwa 0,08 Cent je Beitrag (925 Beiträge rund 0,75 $).
 name: jev Kunst
 
 on:
@@ -25,11 +25,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      # Bewertungen früherer Läufe wiederverwenden: jev fragt nur Beiträge, deren Text neu ist (Schlüssel: Kennung und Prüfsumme des Texts)
+      - uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/jev-kunst
+          key: jev-kunst-${{ github.run_id }}
+          restore-keys: jev-kunst-
       - name: Bewerten
         env:
           TYPESAFE_API_KEY: ${{ secrets.TYPESAFE_API_KEY }}
+          TMPDIR: ${{ runner.temp }}/jev-kunst
         run: |
           if [ -z "$TYPESAFE_API_KEY" ]; then echo "::notice::Kein Secret TYPESAFE_API_KEY – jev bleibt aus, die Seite wählt nach der Regel."; exit 0; fi
+          mkdir -p "$TMPDIR"
           node --experimental-strip-types --no-warnings tools/build-jev-kunst.ts
       - name: jev.js zurückschreiben
         run: |

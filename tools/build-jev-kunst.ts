@@ -56,9 +56,9 @@ export async function main(argv: string[]) {
   const textK = (j: number) => { const c = KONSTELLATIONEN[j]; return `${nameVon(c.artistId)} × ${nameVon(c.theoristId)}: ${kurz(ersterSatz(c.text), 150)}`; };
   const haelfte = Math.ceil(KONSTELLATIONEN.length / 2);
   const optK = (von: number, bis: number) => Object.fromEntries(KONSTELLATIONEN.slice(von, bis).map((_: any, n: number) => [`k${von + n}`, textK(von + n)]));
-  const frK = (criteria: Record<string, string>) => ({ type: "choice", instructions: "Welche Begegnung aus ORNA (eine Künstlerin oder ein Künstler und eine Theoretikerin oder ein Theoretiker) passt gedanklich am besten zu diesem Beitrag über Kunst?", criteria });
+  const frK = (criteria: Record<string, string>) => ({ type: "choice", instructions: "Welche Begegnung aus ORNA (eine Künstlerin oder ein Künstler und eine Theoretikerin oder ein Theoretiker) passt gedanklich am besten zu diesem Beitrag?", criteria });
   const fragen = {
-    z: { type: "choice", instructions: "Welcher Zettel aus dem Zettelkasten «Zu seiner Zeit» steht diesem Beitrag über Kunst gedanklich am nächsten?", criteria: optZ },
+    z: { type: "choice", instructions: "Welcher Zettel aus dem Zettelkasten «Zu seiner Zeit» steht diesem Beitrag gedanklich am nächsten?", criteria: optZ },
     ka: frK(optK(0, haelfte)),
     kb: frK(optK(haelfte, KONSTELLATIONEN.length)),
   };
@@ -66,6 +66,12 @@ export async function main(argv: string[]) {
   const auftraege = BEITRAEGE.map((b: any) => ({ k: `${b.i}:${pruef(b.t)}`, i: b.i, zustand: { beitrag: kurz(b.t, TEXT_MAX), datum: b.d } }));
   const fertig = new Map<string, any>();
   if (existsSync(CACHE)) for (const z of readFileSync(CACHE, "utf8").split("\n")) if (z.trim()) { const j = JSON.parse(z); fertig.set(j.k, j); }
+  // Werte aus dem bisherigen jev.js übernehmen (gleiche Kennung, gleiche Bestände von Zetteln und Konstellationen), damit jev nur Neues bewertet
+  try {
+    const { JEV: alt } = await import(new URL("alpha/kunst/jev.js", ROOT).href);
+    const pruefsummeJetzt = pruef(JSON.stringify([STROPHEN.map((s: any) => s.s), KONSTELLATIONEN.map((c: any) => c.id)]));
+    if (alt?.gueltig && alt.pruefsumme === pruefsummeJetzt) for (const a of auftraege) if (!fertig.has(a.k) && alt.z[a.i] && alt.k[a.i]) fertig.set(a.k, { k: a.k, modell: alt.modell, z: alt.z[a.i], kk: alt.k[a.i] });
+  } catch {}
   let todo = auftraege.filter((a: any) => !fertig.has(a.k));
   if (probe) todo = todo.slice(0, 3);
   console.log(`${auftraege.length} Beiträge, ${fertig.size} im Zwischenspeicher, ${todo.length} offen`);

@@ -4,6 +4,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import * as V from "../alpha/kunst/verknuepfung.js";
+import { THEMEN, themenVon } from "../alpha/kunst/themen.js";
 
 const beispiel = JSON.parse(readFileSync(new URL("fixtures/kunst/beispiel.json", import.meta.url), "utf8")).map((b) => ({ i: b.id, d: b.date, t: b.text }));
 const B = V.bestand(beispiel);
@@ -59,4 +60,16 @@ test("Seite: noindex, nicht in der Sitemap, eigene Kopfzeile, Module mit Version
   assert.match(html, /<meta name="robots" content="noindex">/);
   assert.ok(!readFileSync(new URL("../sitemap.xml", import.meta.url), "utf8").includes("/alpha/kunst/"));
   assert.match(html, /kunst\.js\?v=\d+/);
+});
+
+test("Themen: Kunst, Kommunikation, Wahrnehmung, psychisches System, Psyche, Gesellschaft, auch in Zusammensetzungen", () => {
+  assert.deepEqual(THEMEN.map((t) => t.slug), ["kunst", "kommunikation", "wahrnehmung", "psychisches-system", "psyche", "gesellschaft"]);
+  assert.deepEqual(themenVon("Konzeptkunst und Gesellschaftskonzepte"), ["kunst", "gesellschaft"]);
+  assert.deepEqual(themenVon("Das psychische System nimmt wahr, die Psyche wahrnehmend"), ["wahrnehmung", "psychisches-system", "psyche"]);
+  assert.deepEqual(themenVon("psychedelisch"), []);
+});
+
+test("Jeder Beitrag auf der Seite gehört zu mindestens einem Thema", async () => {
+  const { BEITRAEGE } = await import("../alpha/kunst/beitraege.js");
+  for (const b of BEITRAEGE) assert.ok(!b.th || b.th.length > 0, b.i);
 });
