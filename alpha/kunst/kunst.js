@@ -121,7 +121,7 @@ function zeigeBeitrag(id) {
   zustand.offen = id; zustand.wort = null;
   const vor = BEITRAEGE[i - 1], nach = BEITRAEGE[i + 1];
   $("#ansicht").innerHTML = `<article class="notiz">
-    <p class="notiz-kopf"><time datetime="${b.d}">${datum(b.d)}</time><span>Beitrag ${i + 1} von ${N}</span>${(b.th ?? []).map((sl) => `<button type="button" class="thema-marke" data-thema-setzen="${sl}">${esc(themaName.get(sl) ?? sl)}</button>`).join("")}</p>
+    <p class="notiz-kopf"><time datetime="${b.d}">${datum(b.d)}</time><span>Beitrag ${i + 1} von ${N}</span>${(b.th ?? []).map((sl) => `<button type="button" class="thema-marke" data-thema-setzen="${sl}">${esc(themaName.get(sl) ?? sl)}</button>`).join("")}<a class="schliessen" href="#" aria-label="Schliessen, zurück zum Anfang" title="Schliessen (Esc)">×</a></p>
     <h1>${esc(titel(b))}</h1>
     <div class="text">${verlinkt(b.t)}</div>
     <p class="notiz-knoepfe" id="notiz-knoepfe"></p>
@@ -155,7 +155,7 @@ function zeigeWort(st) {
     return muster ? roh.replace(muster, "<mark>$1</mark>") : roh;
   };
   $("#ansicht").innerHTML = `<section class="wortseite">
-    <p class="notiz-kopf">Schlagwort</p>
+    <p class="notiz-kopf">Schlagwort<a class="schliessen" href="#" aria-label="Schliessen, zurück zum Anfang" title="Schliessen (Esc)">×</a></p>
     <h1>${esc(wortName(st))}</h1>
     <p class="leise">${l.length} Beiträge</p>
     <div class="balken" aria-hidden="true">${proJahr.map((n, k) => `<span style="height:${Math.round((n / max) * 100)}%" title="${jahre[k]}: ${n}"></span>`).join("")}</div>
@@ -194,6 +194,11 @@ function route() {
   else zeigeStart();
 }
 addEventListener("hashchange", route);
+// Esc schliesst Beitrag oder Schlagwort und führt zum Anfang (ausser ein Dialog ist offen oder man tippt)
+addEventListener("keydown", (e) => {
+  if (e.key !== "Escape" || document.querySelector("dialog[open]") || /^(INPUT|TEXTAREA)$/.test(document.activeElement?.tagName)) return;
+  if (location.hash.length > 1) location.hash = "";
+});
 
 // ---------- Lokaler Graph ----------
 let graph = { knoten: [], kanten: [] };
