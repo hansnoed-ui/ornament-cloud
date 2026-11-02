@@ -114,6 +114,21 @@ function verlinkt(t) {
 }
 
 // ---------- Ansichten ----------
+// Zurück zur Übersicht (Wunsch vom 2. November 2026: «diesen wegklicken/schliessen können, um wieder an die Anfangsauswahl zu kommen»):
+// ✕ in der Kopfzeile eines Beitrags oder Schlagworts, Escape, oder «Hypertext» oben. Die Zurück-Taste des Browsers führt wieder zum Beitrag.
+const SCHLIESSEN = `<a class="schliessen" href="./" data-schliessen aria-label="Schliessen, zurück zur Übersicht" title="Schliessen (Esc)">✕</a>`;
+function zurUebersicht() {
+  if (location.hash) history.pushState(null, "", location.pathname + location.search);
+  zeigeStart();
+  $("#mitte").scrollTop = 0;
+}
+document.addEventListener("click", (e) => { const k = e.target.closest("[data-schliessen]"); if (!k) return; e.preventDefault(); zurUebersicht(); });
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Escape" || !(zustand.offen || zustand.wort) || document.querySelector("dialog[open]")) return;
+  if (e.target.closest && e.target.closest("input, textarea")) return;
+  zurUebersicht();
+});
+
 function zeigeBeitrag(id) {
   const i = B.nr.get(id);
   if (i === undefined) return zeigeStart();
@@ -121,7 +136,7 @@ function zeigeBeitrag(id) {
   zustand.offen = id; zustand.wort = null;
   const vor = BEITRAEGE[i - 1], nach = BEITRAEGE[i + 1];
   $("#ansicht").innerHTML = `<article class="notiz">
-    <p class="notiz-kopf"><time datetime="${b.d}">${datum(b.d)}</time><span>Beitrag ${i + 1} von ${N}</span>${(b.th ?? []).map((sl) => `<button type="button" class="thema-marke" data-thema-setzen="${sl}">${esc(themaName.get(sl) ?? sl)}</button>`).join("")}</p>
+    <p class="notiz-kopf"><time datetime="${b.d}">${datum(b.d)}</time><span>Beitrag ${i + 1} von ${N}</span>${(b.th ?? []).map((sl) => `<button type="button" class="thema-marke" data-thema-setzen="${sl}">${esc(themaName.get(sl) ?? sl)}</button>`).join("")}${SCHLIESSEN}</p>
     <h1>${esc(titel(b))}</h1>
     <div class="text">${verlinkt(b.t)}</div>
     <p class="notiz-knoepfe" id="notiz-knoepfe"></p>
@@ -155,7 +170,7 @@ function zeigeWort(st) {
     return muster ? roh.replace(muster, "<mark>$1</mark>") : roh;
   };
   $("#ansicht").innerHTML = `<section class="wortseite">
-    <p class="notiz-kopf">Schlagwort</p>
+    <p class="notiz-kopf">Schlagwort${SCHLIESSEN}</p>
     <h1>${esc(wortName(st))}</h1>
     <p class="leise">${l.length} Beiträge</p>
     <div class="balken" aria-hidden="true">${proJahr.map((n, k) => `<span style="height:${Math.round((n / max) * 100)}%" title="${jahre[k]}: ${n}"></span>`).join("")}</div>

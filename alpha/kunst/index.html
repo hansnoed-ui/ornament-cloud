@@ -16,7 +16,7 @@
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
   <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
-  <link rel="stylesheet" href="kunst.css?v=3">
+  <link rel="stylesheet" href="kunst.css?v=4">
   <script>
     // Modus vor dem ersten Anstrich setzen (gemerkt pro Gerät, sonst wie das Gerät)
     try { const m = localStorage.getItem("ornament.kunst.modus"); if (m === "hell" || m === "dunkel") document.documentElement.dataset.modus = m; } catch (e) {}
@@ -25,7 +25,7 @@
 <body>
   <header class="kopf">
     <a class="marke" href="/b/">Ornament Cloud</a>
-    <span class="kopf-titel">Hypertext <span class="leise nur-breit">· Kunst, Kommunikation, Wahrnehmung, Psyche, Gesellschaft</span></span>
+    <span class="kopf-titel"><a class="kopf-start" href="./" data-schliessen title="Zur Übersicht">Hypertext</a> <span class="leise nur-breit">· Kunst, Kommunikation, Wahrnehmung, Psyche, Gesellschaft</span></span>
     <button class="knopf-klein nur-schmal" id="liste-auf" type="button" aria-controls="seite-links" aria-expanded="false">Beiträge</button>
     <button class="knopf-klein" id="modus" type="button" aria-label="Hell oder dunkel"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor"/><path d="M8 1a7 7 0 0 1 0 14z" fill="currentColor"/></svg></button>
   </header>
@@ -91,6 +91,6 @@
     </div>
   </dialog>
 
-  <script type="module" src="kunst.js?v=3"></script>
+  <script type="module" src="kunst.js?v=4"></script>
 </body>
 </html>
