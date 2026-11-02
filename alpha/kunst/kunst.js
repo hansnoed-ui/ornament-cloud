@@ -1,11 +1,12 @@
 // «Kunst» – Oberfläche: Liste, Notiz mit Querverweisen, Schlagwortseiten, lokaler Graph, Markieren (bis 4), Werkbank mit Montage.
 // Adressen: #b=<Kennung> öffnet einen Beitrag, #w=<Schlagwort> eine Schlagwortseite. Markierte Beiträge und der Entwurf bleiben auf dem Gerät.
-import { BEITRAEGE } from "./beitraege.js?v=2";
-import { JEV } from "./jev.js?v=2";
+import { BEITRAEGE } from "./beitraege.js?v=3";
+import { JEV } from "./jev.js?v=3";
 import { stamm } from "../drittes-rad/engine.js";
+import { THEMEN } from "./themen.js?v=3";
 import {
   MAX_MARKIERT, bestand, schlagwoerterVon, verwandte, montage, zuordnung, adresse, titelBegegnung, nameVon, norm,
-} from "./verknuepfung.js?v=2";
+} from "./verknuepfung.js?v=3";
 
 const $ = (s) => document.querySelector(s);
 const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
@@ -20,7 +21,10 @@ const datum = (d) => { const [j, m, t] = String(d).split("-"); return t ? `${+t}
 const titel = (b) => { const z = (b.t.trim().replace(/^(?:#[\p{L}\p{N}_]+[\s,]*)+/u, "").trim() || b.t.trim()).split(/\n|(?<=[.!?…])\s/)[0].replace(/\s+/g, " "); return z.length > 72 ? z.slice(0, 70).trimEnd() + " …" : z || "(ohne Text)"; };
 const wortName = (st) => B.name(st);
 
-let zustand = { reiter: "beitraege", jahr: null, suche: "", offen: null, wort: null };
+let zustand = { reiter: "beitraege", thema: null, jahr: null, suche: "", offen: null, wort: null };
+const themaName = new Map(THEMEN.map((t) => [t.slug, t.name]));
+const imThema = (b) => !zustand.thema || (b.th ?? ["kunst"]).includes(zustand.thema);
+const imFilter = (b) => imThema(b) && (!zustand.jahr || b.d.startsWith(zustand.jahr));
 let markiert = speicher.lies("markiert", []).filter((i) => B.nr.has(i)).slice(0, MAX_MARKIERT);
 let seed = speicher.lies("seed", 1);
 
@@ -35,6 +39,11 @@ $("#modus").addEventListener("click", () => {
 
 // ---------- Liste ----------
 const jahre = [...new Set(BEITRAEGE.map((b) => b.d.slice(0, 4)))].sort();
+function themenKnoepfe() {
+  const zahl = (slug) => BEITRAEGE.filter((b) => (b.th ?? ["kunst"]).includes(slug)).length;
+  $("#themen").innerHTML = [null, ...THEMEN.map((t) => t.slug).filter((sl) => zahl(sl))].map((sl) => `<button type="button" data-thema="${sl ?? ""}" aria-pressed="${zustand.thema === sl}">${sl ? `${esc(themaName.get(sl))} <span class="zahl">${zahl(sl)}</span>` : "Alle Themen"}</button>`).join("");
+}
+$("#themen").addEventListener("click", (e) => { const k = e.target.closest("button"); if (!k) return; zustand.thema = k.dataset.thema || null; themenKnoepfe(); zeichneListe(); });
 function jahresKnoepfe() {
   $("#jahre").innerHTML = [null, ...jahre].map((j) => `<button type="button" data-jahr="${j ?? ""}" aria-pressed="${zustand.jahr === j}">${j ?? "Alle"}</button>`).join("");
 }
@@ -44,7 +53,7 @@ function trifft(b, q) { if (!q) return true; const t = norm(b.t); return q.split
 function zeichneListe() {
   const q = norm(zustand.suche.trim());
   if (zustand.reiter === "beitraege") {
-    const treffer = BEITRAEGE.map((b, i) => [b, i]).filter(([b]) => (!zustand.jahr || b.d.startsWith(zustand.jahr)) && trifft(b, q));
+    const treffer = BEITRAEGE.map((b, i) => [b, i]).filter(([b]) => imFilter(b) && trifft(b, q));
     $("#liste").innerHTML = treffer.map(([b]) => {
       const m = markiert.includes(b.i);
       const voll = !m && markiert.length >= MAX_MARKIERT;
@@ -53,7 +62,7 @@ function zeichneListe() {
     }).join("");
     $("#anzahl").textContent = `${treffer.length} von ${N} Beiträgen`;
   } else {
-    let woerter = [...B.schlagwoerter].map(([st, l]) => [st, zustand.jahr ? l.filter((i) => BEITRAEGE[i].d.startsWith(zustand.jahr)).length : l.length]).filter(([st, n]) => n > 0 && (!q || norm(wortName(st)).includes(q)));
+    let woerter = [...B.schlagwoerter].map(([st, l]) => [st, zustand.jahr || zustand.thema ? l.filter((i) => imFilter(BEITRAEGE[i])).length : l.length]).filter(([st, n]) => n > 0 && (!q || norm(wortName(st)).includes(q)));
     woerter.sort((a, b) => b[1] - a[1] || wortName(a[0]).localeCompare(wortName(b[0]), "de"));
     $("#liste").innerHTML = woerter.map(([st, n]) => `<li><a href="#w=${encodeURIComponent(st)}" ${zustand.wort === st ? 'aria-current="page"' : ""}>${esc(wortName(st))}</a><span class="zahl">${n}</span></li>`).join("");
     $("#anzahl").textContent = `${woerter.length} Schlagwörter`;
@@ -67,6 +76,7 @@ for (const [id, r] of [["#reiter-beitraege", "beitraege"], ["#reiter-woerter", "
   zeichneListe();
 });
 document.addEventListener("click", (e) => { const k = e.target.closest("[data-markieren]"); if (k) markieren(k.dataset.markieren); });
+document.addEventListener("click", (e) => { const k = e.target.closest("[data-thema-setzen]"); if (!k) return; zustand.thema = k.dataset.themaSetzen; zustand.reiter = "beitraege"; $("#reiter-beitraege").setAttribute("aria-selected", true); $("#reiter-woerter").setAttribute("aria-selected", false); themenKnoepfe(); zeichneListe(); if (matchMedia("(max-width: 760px)").matches) { $("#seite-links").classList.add("offen"); $("#liste-auf").setAttribute("aria-expanded", "true"); } });
 
 // schmale Bildschirme: Liste ein- und ausblenden
 $("#liste-auf").addEventListener("click", () => { const o = $("#seite-links").classList.toggle("offen"); $("#liste-auf").setAttribute("aria-expanded", o); });
@@ -111,7 +121,7 @@ function zeigeBeitrag(id) {
   zustand.offen = id; zustand.wort = null;
   const vor = BEITRAEGE[i - 1], nach = BEITRAEGE[i + 1];
   $("#ansicht").innerHTML = `<article class="notiz">
-    <p class="notiz-kopf"><time datetime="${b.d}">${datum(b.d)}</time><span>Beitrag ${i + 1} von ${N}</span></p>
+    <p class="notiz-kopf"><time datetime="${b.d}">${datum(b.d)}</time><span>Beitrag ${i + 1} von ${N}</span>${(b.th ?? []).map((sl) => `<button type="button" class="thema-marke" data-thema-setzen="${sl}">${esc(themaName.get(sl) ?? sl)}</button>`).join("")}</p>
     <h1>${esc(titel(b))}</h1>
     <div class="text">${verlinkt(b.t)}</div>
     <p class="notiz-knoepfe" id="notiz-knoepfe"></p>
@@ -167,8 +177,8 @@ function zeigeStart() {
     const top = [...B.schlagwoerter].sort((a, b) => b[1].length - a[1].length).slice(0, 40);
     $("#ansicht").innerHTML = `<section class="wortseite">
       <p class="notiz-kopf">${N} Beiträge · ${datum(BEITRAEGE[0].d).split(".").pop()}–${datum(BEITRAEGE[N - 1].d).split(".").pop()}</p>
-      <h1>Kunst</h1>
-      <p class="leer">Facebook-Beiträge mit dem Stichwort «Kunst», verknüpft über ihre Schlagwörter. Öffne einen Beitrag, folge den unterstrichenen Wörtern, markiere bis zu vier Beiträge und montiere daraus einen neuen.</p>
+      <h1>Kunst, Kommunikation, Wahrnehmung, Psyche, Gesellschaft</h1>
+      <p class="leer">Facebook-Beiträge zu Kunst, Kommunikation, Wahrnehmung, psychischem System, Psyche und Gesellschaft, verknüpft über ihre Schlagwörter. Oben links wählst du ein Thema. Öffne einen Beitrag, folge den unterstrichenen Wörtern, markiere bis zu vier Beiträge und montiere daraus einen neuen.</p>
       <p class="marken" style="margin-top:1.5rem">${top.map(([st, l]) => `<a href="#w=${encodeURIComponent(st)}">${esc(wortName(st))} <span class="leise">${l.length}</span></a>`).join("")}</p>
     </section>`;
   }
@@ -304,6 +314,7 @@ $("#laden").addEventListener("click", () => {
 werkbank.addEventListener("close", () => { $("#meldung").textContent = ""; });
 
 // ---------- Start ----------
+themenKnoepfe();
 jahresKnoepfe();
 zeichneLeiste();
 route();

@@ -3,20 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Kunst – Hypertext · Ornament Cloud · Alpha</title>
+  <title>Kunst, Kommunikation, Gesellschaft – Hypertext · Ornament Cloud · Alpha</title>
   <!--
     Alpha-Bereich: öffentlich erreichbar, nicht in der Sitemap, für Suchmaschinen gesperrt (REGELN §14).
     «Kunst» steht für sich, nur per Direktlink (Wunsch von Christian, 1. November 2026; Ausnahme in tests/navigation.test.mjs):
-    alle freigegebenen Facebook-Beiträge mit dem Stichwort «Kunst» als Hypertext im Stil von Obsidian, schwarz und weiss, hell und dunkel.
+    alle freigegebenen Facebook-Beiträge zu den Themen in themen.js (Kunst seit 1. November, Kommunikation, Wahrnehmung, psychisches System, Psyche und Gesellschaft seit 2. November 2026) als Hypertext im Stil von Obsidian, schwarz und weiss, hell und dunkel.
     Bis zu vier Beiträge markieren, daraus eine Montage machen und weiterschreiben; dazu ein Zettel aus «Zu seiner Zeit» und eine ORNA-Begegnung.
     Logik: verknuepfung.js, Oberfläche: kunst.js, Daten: beitraege.js (tools/build-kunst.mjs), jev.js (tools/build-jev-kunst.ts).
   -->
   <meta name="robots" content="noindex">
-  <meta name="description" content="Facebook-Beiträge von Christian Strickler zum Stichwort Kunst als Hypertext: verknüpft über Schlagwörter, markieren, montieren, weiterschreiben.">
+  <meta name="description" content="Facebook-Beiträge von Christian Strickler zu Kunst, Kommunikation, Wahrnehmung, Psyche und Gesellschaft als Hypertext: verknüpft über Schlagwörter, markieren, montieren, weiterschreiben.">
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
   <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
-  <link rel="stylesheet" href="kunst.css?v=2">
+  <link rel="stylesheet" href="kunst.css?v=3">
   <script>
     // Modus vor dem ersten Anstrich setzen (gemerkt pro Gerät, sonst wie das Gerät)
     try { const m = localStorage.getItem("ornament.kunst.modus"); if (m === "hell" || m === "dunkel") document.documentElement.dataset.modus = m; } catch (e) {}
@@ -25,7 +25,7 @@
 <body>
   <header class="kopf">
     <a class="marke" href="/b/">Ornament Cloud</a>
-    <span class="kopf-titel">Kunst <span class="leise">· Hypertext</span></span>
+    <span class="kopf-titel">Hypertext <span class="leise nur-breit">· Kunst, Kommunikation, Wahrnehmung, Psyche, Gesellschaft</span></span>
     <button class="knopf-klein nur-schmal" id="liste-auf" type="button" aria-controls="seite-links" aria-expanded="false">Beiträge</button>
     <button class="knopf-klein" id="modus" type="button" aria-label="Hell oder dunkel"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor"/><path d="M8 1a7 7 0 0 1 0 14z" fill="currentColor"/></svg></button>
   </header>
@@ -39,6 +39,7 @@
         <button role="tab" id="reiter-beitraege" aria-selected="true" type="button">Beiträge</button>
         <button role="tab" id="reiter-woerter" aria-selected="false" type="button">Schlagwörter</button>
       </div>
+      <div class="jahre themen" id="themen" aria-label="Nach Thema filtern"></div>
       <div class="jahre" id="jahre" aria-label="Nach Jahr filtern"></div>
       <ol class="liste" id="liste"></ol>
       <p class="anzahl leise" id="anzahl"></p>
@@ -90,6 +91,6 @@
     </div>
   </dialog>
 
-  <script type="module" src="kunst.js?v=2"></script>
+  <script type="module" src="kunst.js?v=3"></script>
 </body>
 </html>

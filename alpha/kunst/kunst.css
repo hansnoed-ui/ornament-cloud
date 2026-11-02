@@ -122,6 +122,7 @@ button { font: inherit; color: inherit; }
 }
 @media (max-width: 760px) {
   .nur-schmal { display: inline-block; }
+  .nur-breit { display: none; }
   .raum { display: block; overflow: auto; }
   .links { display: none; border-right: 0; border-bottom: 1px solid var(--linie); max-height: 60vh; }
   .links.offen { display: flex; }
@@ -132,3 +133,7 @@ button { font: inherit; color: inherit; }
   .leiste { gap: 8px; padding-left: 12px; font-size: 0.85rem; }
 }
 @media (prefers-reduced-motion: no-preference) { .liste a, .marker, .knopf, .knopf-klein { transition: background 0.12s, color 0.12s; } }
+.themen { padding-bottom: 8px; border-bottom: 1px solid var(--linie); }
+.themen .zahl, .jahre .zahl { font-size: 0.7rem; opacity: 0.7; }
+.thema-marke { border: 1px solid var(--linie); background: none; border-radius: 999px; padding: 0 8px; font-size: 0.78rem; cursor: pointer; color: var(--leise); }
+.thema-marke:hover { border-color: var(--tinte); color: var(--tinte); }
