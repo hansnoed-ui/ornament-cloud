@@ -28,27 +28,27 @@ export const EFFEKTE = {
   },
 
   partikel: {
-    name: "Partikel", herkunft: "Zettelkasten: Teilchen lösen sich zur Wolke und setzen das Bild wieder zusammen",
-    regler: [r("Wolke", .8), r("Punktgrösse", .45), r("Glitzer", .5), r("Kugel", .3)],
+    name: "Partikel", herkunft: "Zettelkasten: Teilchen lösen sich zur Wolke in der Grösse des Bildes und setzen es wieder zusammen",
+    // seit 4. November 2026 zieht sich die Wolke nicht mehr zur Kugel zusammen (Wunsch: «bei der wolke soll sich das bild nicht
+    // zusammenziehen sondern die dimension behalten»): jedes Teilchen treibt von seinem Platz aus im Strömungsfeld, mit etwas Tiefe
+    regler: [r("Wolke", .8), r("Punktgrösse", .45), r("Glitzer", .5), r("Streuung", .5)],
     punkte: (w, a) => ({ cols: 400, rows: Math.round(400 / a) }),
     glsl: `void punkt(int id, out vec2 pos, out vec4 col, out float size){
   float i = float(id); vec2 g = vec2(mod(i, uCols), floor(i / uCols));
   vec2 j = h22(g + uSeed * 13.1), uv0 = (g + j) / vec2(uCols, uRows);
   vec4 c = Ql(uv0, .5);
   float s = h12(g * 1.37 + 4.1 + uSeed);
-  // läuft durch (Wunsch vom 3. November 2026: «ohne dass das ausgangsbild etwas länger stehen bleibt»): kein Warten im Bild,
-  // die Teilchen kehren um, sobald es steht; der Exponent unter 1 hält die Geschwindigkeit an der Schlaufennaht über null
+  // läuft durch: die Teilchen kehren um, sobald das Bild steht (Exponent unter 1, Geschwindigkeit an der Naht über null)
   float k = pow(.5 - .5 * cos(uPhi), .5 + s * .5) * P0;
-  float w = TAU * s * 7.;
-  vec3 tk = vec3((.6 + .25 * cos(3. * w)) * cos(2. * w), (.6 + .25 * cos(3. * w)) * sin(2. * w), .25 * sin(3. * w));
-  float th = j.x * TAU, ph = acos(2. * j.y - 1.);
-  vec3 sp = vec3(sin(ph) * cos(th), sin(ph) * sin(th), cos(ph)) * (.55 + .35 * pow(h12(g + 9.), 3.));
-  vec3 q = mix(tk, sp, P3) + .05 * vec3(ln(g * .013, .8), ln(g * .013 + 5., .8), 0.);
-  q.xz = rot(uPhi) * q.xz; q.yz = rot(.4) * q.yz;
-  pos = mix(P(uv0) + .006 * vec2(ln(g * .02, .9), ln(g * .02 + 3., .9)), q.xy * .46 / (1. + .3 * q.z), k);   // auch im Bild zittern die Teilchen leise
+  vec2 p0 = P(uv0);
+  vec2 drift = vec2(ln(p0 * 2.2 + s * .3, .8), ln(p0 * 2.2 + 7. + s * .3, .8)) * (.06 + .2 * P3);
+  vec2 wirbel = lcurl(p0 * 1.5 + 3., .7) * .025 * P3;
+  float z = (s - .5) * 2.;
+  vec2 wolke = (p0 + drift + wirbel) * (1. + .1 * z * P3);    // Tiefe: leichte Perspektive, die Grösse bleibt
+  pos = mix(p0 + .006 * vec2(ln(g * .02, .9), ln(g * .02 + 3., .9)), wolke, k);
   float tw = pow(.5 + .5 * sin(uPhi * float(2 + int(s * 5.)) + s * 60.), 6.) * P2;
-  col = vec4(c.rgb * (.85 + tw * 1.6 + k * .3), 1.);
-  size = mix(1.5, 6., P1) * uRes.y / 1350. * (1. + tw * .8);
+  col = vec4(c.rgb * (.85 + tw * 1.6 + k * .3) * (1. - .25 * k * max(z, 0.)), 1.);
+  size = mix(1.5, 6., P1) * uRes.y / 1350. * (1. + tw * .8) * (1. + .3 * k * z);
 }`,
   },
 
