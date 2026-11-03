@@ -15,7 +15,7 @@ const ROH = {
   fragmente: [
     ["Glut und Staub", "schwarz", [E("partikel", [.9, .45, .7, .3])]],
     ["Tuschewirbel", "schwarz", [E("fluid", [.9, .35, .6])]],
-    ["Archiv", "schwarz", [E("scan", [.8, .6, .5, .6])]],
+    ["Funkeln", "schwarz", [E("glitzer", [.8, .7, .8, .5])]],
     ["Tropfen", "schwarz", [E("metaballs", [.45, .6, .5, .4])]],
     ["Linsen", "schwarz", [E("linsen", [.55, .55, .75, .6], "normal", 1, "bild", 2)]],
     ["Horizont", "schwarz", [E("horizont", [.75, .55, .5, .6]), E("bild", [.5, .3, 0, .2], "bildschirm", .15)]],
@@ -41,7 +41,7 @@ const ROH = {
     ["Sternstaub", "schwarz", [E("partikel", [.8, .35, .7, .75])]],
     ["Spiralarme", "schwarz", [E("wirbel", [.5, .7, .6, .7], "normal", 1, "bild", 5)]],
     ["Nachtlinien", "schwarz", [E("linien", [.6, .7, .6, 1])]],
-    ["Scan", "schwarz", [E("scan", [.7, .7, .6, .4])]],
+    ["Holo", "schwarz", [E("holo", [.7, .5, .5, .3])]],
     ["Blase im Strudel", "schwarz", [E("bild", [.5, .4]), E("seifenblase", [.65, .8, .6, 1], "normal", 1, "unten")]],
     ["Rauch über dem Horizont", "schwarz", [E("horizont", [.85, .65, .5, .6]), E("tinte", [.6, .5, .8, .5], "bildschirm", .45)]],
   ],

@@ -1,4 +1,4 @@
-// «Animationen» – Browser-Test (Playwright, Chromium mit SwiftShader): alle 16 Effekte übersetzen, die 27 Werke zeichnen etwas,
+// «Animationen» – Browser-Test (Playwright, Chromium mit SwiftShader): alle 15 Effekte übersetzen, die 27 Werke zeichnen etwas,
 // die vier Ansichten wechseln, Mischpult mischt neu und schreibt die Mischung in die Adresse, kein seitliches Scrollen auf dem Handy,
 // die Schlaufe hat keine Naht.
 //   NODE_PATH=$(npm root -g) node tests/animations.e2e.mjs
@@ -66,14 +66,19 @@ await check("die Schlaufe schliesst: vom letzten zum ersten Bild springt es nich
 
 await check("Ansichten wechseln, Reel läuft weiter, Mischpult mischt neu und merkt sich die Mischung", async () => {
   const { ctx, page, fehler } = await oeffne({ width: 1300, height: 900 }, "#w=frida-4");
-  await page.getByRole("button", { name: "Pause" }).click();   // sonst läuft das Reel in der langsamen Software-Grafik nach 12 s weiter
-  assert.match(await page.locator("#reel-titel").textContent(), /Frida \/ 04 Seifenblase/);
+  await page.getByRole("button", { name: "Pause" }).click();   // angehalten, damit das Reel in der langsamen Software-Grafik nicht weiterläuft
+  const nr = () => page.evaluate(() => window.animationen.WERKE[window.animationen.S.reel].id);
+  assert.match(await nr(), /^frida-\d$/, "die Adresse #w=frida-4 öffnet Frida");
+  await page.getByRole("button", { name: "(2)" }).click();
+  assert.equal(await nr(), "frida-1");
+  assert.match(await page.locator("#reel-titel").textContent(), /Frida \/ 01 Op-Art/);
   await page.getByRole("button", { name: "Weiter" }).click();
-  assert.match(await page.locator("#reel-titel").textContent(), /05/);
+  assert.equal(await nr(), "frida-2");
   await page.click('[data-ansicht="werke"]');
   assert.equal(await page.locator(".kachel").count(), 27);
   await page.locator(".kachel").nth(20).click();
   assert.ok(await page.locator("#reel").isVisible());
+  assert.equal(await nr(), "strudel-3", "die Kachel öffnet ihr Werk im Reel");
   await page.click('[data-ansicht="mischpult"]');
   await page.getByRole("button", { name: "Neu mischen" }).click();
   await page.waitForTimeout(300);

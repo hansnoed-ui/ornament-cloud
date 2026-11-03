@@ -84,8 +84,9 @@ export const EFFEKTE = {
   vec2 b = vec2(u.x - (fx - .5) / N * 1.4 * s, u.y + .01 * s * sin(fx * PI));
   float ca = .004 * s + .008 * s * abs(fx - .5);
   vec3 c = vec3(Q(b + vec2(ca, 0)).r, Q(b).g, Q(b - vec2(ca, 0)).b);
-  c += P3 * s * (.5 * pow(1. - abs(fx - .5) * 2., 10.) - .18 * smoothstep(.3, .5, abs(fx - .5)));
-  c += P3 * P0 * s * .25 * pow(max(0., 1. - abs(lfbm(p * 6., .9)) * 4.), 6.);
+  // Licht der Rillen nur als Faktor auf das Bild: Dunkles bleibt dunkel, keine weissen Streifen und Schlieren
+  // (Rückmeldung vom 3. November 2026: «die weissen streifen und schlieren im hintergrund stören»)
+  c *= 1. + P3 * s * (.3 * pow(1. - abs(fx - .5) * 2., 6.) - .2 * smoothstep(.3, .5, abs(fx - .5)));
   return vec4(clamp(c, 0., 1.), 1.);
 }`,
   },
@@ -108,36 +109,6 @@ export const EFFEKTE = {
   float rad = mix(.12, .52, clamp(max(lum(im), .2) * (.4 + P3 * 1.4), 0., 1.));
   float aa = 1.5 * N / uRes.y, m = smoothstep(rad + aa, rad - aa, length(g - cell));
   return vec4(im * m, m);
-}`,
-  },
-
-  scan: {
-    name: "Scan", herkunft: "Collage «digitales Herbarium»: Scanbalken mit Pixel-Glitches, Koralle/Petrol, Rahmen mit Eckpunkten",
-    regler: [r("Farbe", .8), r("Glitch", .6), r("Balken", .5), r("Raster", .5)],
-    glsl: `vec4 effekt(vec2 uv){
-  vec3 TEAL = vec3(14., 150., 162.) / 255., DT = vec3(8., 78., 90.) / 255., SAL = vec3(246., 178., 158.) / 255.;
-  float x = uT * 2., pass = floor(x), by = 1.15 - fract(x) * 1.3, dy = uv.y - by;
-  float band = exp(-dy * dy / (.0008 + .004 * P2)), k = uRes.y / 1350.;
-  float row = floor(uv.y * uRes.y / (6. * k)), fr = floor(uT * 90.);
-  float gl = P1 * band * step(.5, h12(vec2(row, fr) + uSeed));
-  vec2 u = uv; u.x += (h12(vec2(row * 1.7, fr)) - .5) * .12 * gl;
-  float bs = mix(4., 36., h12(vec2(floor(uv.y * 20.), fr))) * k / uRes.y;
-  vec2 bq = vec2(bs / A(), bs);
-  u = mix(u, (floor(u / bq) + .5) * bq, step(.3, P1 * band));
-  vec3 c = Q(u).rgb; float L = lum(c);
-  vec3 gm = L < .5 ? mix(DT, TEAL, L * 2.) : mix(TEAL, SAL, L * 2. - 1.);
-  float gescannt = step(0., dy);
-  c = mix(c, gm, mix(gescannt, 1. - gescannt, mod(pass, 2.)) * P0);
-  c += band * .35 * vec3(.9, 1., 1.);
-  vec2 hp = uv * uRes / (7. * k);
-  c = mix(c, c * .8, smoothstep(.32, .22, length(fract(hp) - .5)) * P3 * .6);
-  vec2 lo = (.08 + h22(vec2(pass, 3.) + uSeed) * .45) * uRes, hi = min(lo / uRes + .2 + h22(vec2(pass, 7.) + uSeed) * .3, vec2(.94)) * uRes;
-  vec2 pp = uv * uRes;
-  float innen = step(lo.x + k, pp.x) * step(pp.x, hi.x - k) * step(lo.y + k, pp.y) * step(pp.y, hi.y - k);
-  float aussen = step(lo.x - k, pp.x) * step(pp.x, hi.x + k) * step(lo.y - k, pp.y) * step(pp.y, hi.y + k);
-  float cd = min(min(length(pp - lo), length(pp - hi)), min(length(pp - vec2(lo.x, hi.y)), length(pp - vec2(hi.x, lo.y))));
-  c = mix(c, vec3(.07), max(aussen - innen, smoothstep(6. * k, 4. * k, cd)) * P3);
-  return vec4(clamp(c, 0., 1.), 1.);
 }`,
   },
 
@@ -338,19 +309,29 @@ vec4 effekt(vec2 uv){
   },
 
   tinte: {
-    name: "Alkoholtinte", herkunft: "infinite mantra (Blüten): das Bild fliesst als Lasur, dunkle Tintenränder",
+    name: "Alkoholtinte", herkunft: "infinite mantra (Blüten): das Bild fliesst, darüber durchscheinende Farbschleier mit haarfeinen Tintenrändern",
+    // seit 3. November 2026 neu (Rückmeldung: «die alkohol tinte ist noch etwas plump»): statt dicker Höhenlinien drei Schleier,
+    // deren Farbe aus dem Bild kommt; an ihren Rändern sammelt sich die Tinte, die Kante selbst ist haarfein
     regler: [r("Fluss", .7), r("Ränder", .6), r("Lasur", .7), r("Massstab", .4)],
     glsl: `vec4 effekt(vec2 uv){
-  vec2 p = P(uv); float sc = mix(.8, 3., P3);
-  vec2 q1 = p + vec2(lfbm(p * sc, .7), lfbm(p * sc + 5.2, .7)) * .12 * P0;
-  vec2 q2 = q1 + vec2(lfbm(q1 * sc * 1.7 + 2., .9), lfbm(q1 * sc * 1.7 + 8., .9)) * .06 * P0;
-  vec3 c1 = Ql(UV(q1), 1.).rgb, c2 = Ql(UV(q2), 0.).rgb;
-  float la = mix(.35, 1., P2);
-  vec3 col = mix(vec3(1.), c1, la) * mix(vec3(1.), c2, la);
-  float f = lfbm(q2 * sc * 1.3, .8) * 5.;
-  float e = abs(fract(f) - .5), rand = 1. - smoothstep(0., fwidth(f) * 1.5 + .03, e);
-  col = mix(col, c2 * c2 * .6, rand * P1);
-  return vec4(mix(col, col * col, .25), 1.);
+  vec2 p = P(uv), q = p; float sc = mix(.8, 3., P3);
+  for (int i = 0; i < 4; i++) q -= lcurl(q * sc * .8, .5) * .025 * P0 / sc;   // das Bild fliesst in langen Schlieren
+  vec3 bild = Ql(UV(q), .5).rgb;
+  vec3 col = mix(vec3(1.), bild, mix(.55, 1., P2));
+  for (int j = 0; j < 3; j++){
+    float fj = float(j);
+    vec2 qj = q * sc * (1. + fj * .45) + fj * 7.3;
+    qj += lcurl(qj * .7, .7 + fj * .1) * .35 * P0;
+    float e = lfbm(qj, .8) + (lum(bild) - .5) * .6 - (fj * .12 - .05), aa = fwidth(e) + 1e-4;
+    float schleier = smoothstep(-aa, aa, e);
+    float saum = schleier * exp(-e / (.05 + .03 * fj));        // die Tinte sammelt sich am Rand
+    float linie = exp(-pow(e / (aa * 1.2), 2.));                 // haarfeine Kante
+    vec3 farbe = Ql(UV(q + fj * .03), 2.5).rgb;
+    col *= mix(vec3(1.), mix(vec3(1.), farbe, .4), schleier * .7 * P2);
+    col *= mix(vec3(1.), farbe * farbe * .8 + .05, saum * .5 * P1);
+    col = mix(col, farbe * farbe * .45, linie * .75 * P1);
+  }
+  return vec4(col, 1.);
 }`,
   },
 };
