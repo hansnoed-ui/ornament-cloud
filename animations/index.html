@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Animationen – Ornament Cloud</title>
+<!--
+Animationen (Wunsch vom 3. November 2026): «Bau auf ornament.cloud eine neue Seite /animations. Sie soll mit meinen Bildern und den bisher
+nachgebauten Effekten neue Effekte zusammensetzen» – alle Effekte als Bausteine mit Reglern, bis zu drei Ebenen mit Mischmodus und Deckkraft,
+«neu mischen», schwarz-weiss, hell und dunkel, Handy; dazu «aus jedem Bild 9 verschiedene Animationen zur Ansicht und zum Download».
+Gestaltung nach den Portfolios lisovskiy.work (grosse Grotesk, gestreutes Kachelraster) und ijpowell.co.uk (Kopfzeile mit Ansichten, Reel
+in der Mitte, Zähler unten). Steht für sich wie PHORMA (Ausnahme in tests/navigation.test.mjs), noindex, nicht in der Sitemap, bis zur Freigabe.
+Rechnet alles im Browser (WebGL 2, motor.js), das MP4 (1080 × 1350, 30 fps, 12 s, nahtlose Schlaufe) mit WebCodecs und mp4-muxer aus vendor/.
+-->
+<meta name="robots" content="noindex">
+<meta name="description" content="Drei Bilder, sechzehn Effekte, drei Ebenen: Animationen zum Ansehen, Mischen und Herunterladen.">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="../vendor/fonts/fonts.css">
+<style>
+:root {
+  --bg: #fff; --ink: #000; --mute: rgba(0, 0, 0, .45); --line: rgba(0, 0, 0, .14); --chip: #efefef; --buehne: #000;
+  --font: "Instrument Sans", Helvetica, Arial, sans-serif;
+  --rand: 14px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #000; --ink: #fff; --mute: rgba(255, 255, 255, .5); --line: rgba(255, 255, 255, .16); --chip: #161616; --buehne: #0d0d0d; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); color: var(--ink); font: 400 17px/1.25 var(--font); -webkit-text-size-adjust: 100%; }
+body { margin: 0; min-height: 100svh; background: var(--bg); }
+a { color: inherit; }
+button, select, input { font: inherit; color: inherit; }
+button { background: none; border: 0; padding: 0; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.leise { color: var(--mute); }
+
+/* Kopfzeile wie ijpowell: links Name, Mitte Zeile, rechts Ansichten mit Kreisen */
+.kopf { position: sticky; top: 0; z-index: 5; display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline; gap: 16px;
+  padding: calc(var(--rand) + env(safe-area-inset-top, 0px)) var(--rand) var(--rand); background: var(--bg); }
+.marke { font-weight: 500; text-decoration: none; letter-spacing: -.01em; }
+.zeile { margin: 0; text-align: center; }
+.ansichten { justify-self: end; display: flex; gap: 14px; }
+.ansichten button { display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
+.ansichten button::before { content: ""; width: .7em; height: .7em; border-radius: 50%; border: 1.3px solid currentColor; }
+.ansichten button[aria-pressed="true"]::before { background: currentColor; }
+.ansicht[hidden] { display: none !important; }
+
+/* Reel */
+#reel { display: grid; grid-template-rows: 1fr auto; min-height: calc(100svh - 52px); }
+.buehne { display: grid; place-items: center; padding: 24px var(--rand); }
+.rahmen { position: relative; background: var(--buehne); height: min(66svh, calc((100vw - 2 * var(--rand)) * 1.25)); aspect-ratio: 4 / 5; }
+.rahmen canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: pointer; }
+.reel-fuss { display: grid; grid-template-columns: 1fr auto 1fr; align-items: end; gap: 16px; padding: 0 var(--rand) calc(var(--rand) + env(safe-area-inset-bottom, 0px)); }
+.zaehler { margin: 0 0 8px; display: flex; gap: 2px; }
+.zaehler button { color: var(--mute); }
+.zaehler button[aria-pressed="true"] { color: var(--ink); }
+.karte { display: flex; gap: 12px; align-items: center; background: var(--chip); padding: 4px 16px 4px 4px; max-width: 420px; }
+.karte canvas { width: 44px; height: 55px; display: block; background: var(--buehne); flex: none; }
+.karte b { font-weight: 400; color: var(--mute); }
+.uhr { margin: 0; font-variant-numeric: tabular-nums; text-align: center; }
+.aktionen { margin: 0; justify-self: end; text-align: right; }
+.aktionen button:hover, .marke:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* Werke wie lisovskiy: grosse Zeile links, Bilder als Wortstapel rechts, darunter das gestreute Raster */
+#werke { padding: 0 var(--rand) 80px; }
+.werke-kopf { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 4px 0 72px; }
+.gross { font-size: clamp(30px, 3.4vw, 46px); font-weight: 500; line-height: 1; letter-spacing: -.035em; margin: 0; }
+.stapel { list-style: none; margin: 0; padding: 0; }
+.stapel button { font-size: clamp(30px, 3.4vw, 46px); font-weight: 500; line-height: 1; letter-spacing: -.035em; text-align: left; }
+.stapel button[aria-pressed="false"] { color: var(--mute); }
+.streu { display: grid; grid-template-columns: repeat(8, 1fr); gap: 28px; }
+.kachel { display: block; text-decoration: none; transition: opacity .25s; }
+.kachel canvas { display: block; width: 100%; aspect-ratio: 4 / 5; height: auto; background: var(--buehne); }
+.kachel span { display: block; font-size: 13px; margin-top: 6px; color: var(--mute); }
+.kachel:hover span, .kachel:focus-visible span { color: var(--ink); }
+.streu.gefiltert .kachel:not(.an) { opacity: .12; }
+
+/* Mischpult */
+#mischpult { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 28px; padding: 8px var(--rand) 60px; align-items: start; }
+.pult-buehne { position: sticky; top: 64px; display: grid; justify-items: center; gap: 10px; }
+.pult-buehne .rahmen { height: min(78svh, calc((100vw - 2 * var(--rand)) * 1.25)); }
+.pult { display: grid; gap: 22px; }
+.gruppe { display: grid; gap: 8px; }
+.gruppe > h2, .ebene legend { font-size: 13px; font-weight: 500; letter-spacing: .02em; color: var(--mute); margin: 0; padding: 0; }
+.wahl { display: flex; flex-wrap: wrap; gap: 6px; }
+.wahl button, .knopf { border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; }
+.wahl button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.knopf:hover, .wahl button:hover { border-color: var(--ink); }
+.knopf.voll { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.ebene { border: 0; border-top: 1px solid var(--line); padding: 14px 0 0; margin: 0; display: grid; gap: 10px; }
+.ebene.aus .regeln { opacity: .35; }
+.ebene-kopf { display: flex; align-items: center; gap: 10px; }
+.ebene-kopf legend { flex: 1; float: left; }
+.ebene-kopf button { color: var(--mute); }
+.ebene-kopf button:hover { color: var(--ink); }
+.ebene-kopf button:disabled { opacity: .3; cursor: default; }
+.regeln { display: grid; gap: 8px; }
+.zeile2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+select { width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 0; padding: 6px 8px; }
+label.regler { display: grid; grid-template-columns: 96px 1fr 34px; gap: 10px; align-items: center; font-size: 14px; }
+label.regler output { font-variant-numeric: tabular-nums; color: var(--mute); text-align: right; }
+input[type="range"] { width: 100%; accent-color: var(--ink); }
+.tasten { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* Info wie lisovskiy: drei Listen nebeneinander */
+#info { padding: 4px var(--rand) 80px; }
+.spalten { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 72px; }
+.spalten h2 { font-size: 17px; font-weight: 500; margin: 0 0 14px; }
+.spalten ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.spalten li span { display: block; color: var(--mute); font-size: 14px; }
+
+.export { position: fixed; right: var(--rand); bottom: calc(var(--rand) + env(safe-area-inset-bottom, 0px)); z-index: 9; background: var(--ink); color: var(--bg);
+  padding: 10px 14px; display: flex; gap: 14px; align-items: center; font-variant-numeric: tabular-nums; }
+.export[hidden] { display: none; }
+.export button { text-decoration: underline; text-underline-offset: 3px; }
+.meldung { padding: 40px var(--rand); }
+
+@media (max-width: 900px) {
+  .zeile { display: none; }
+  .kopf { grid-template-columns: auto 1fr; }
+  #mischpult { grid-template-columns: 1fr; }
+  .pult-buehne { position: static; }
+  .pult-buehne .rahmen { height: auto; width: 100%; max-width: 520px; }
+  .streu { grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .spalten { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  :root { --rand: 16px; }
+  html { font-size: 15px; }
+  .kopf { grid-template-columns: 1fr; gap: 6px; }
+  .ansichten { justify-self: start; gap: 12px; }
+  .werke-kopf { grid-template-columns: 1fr; margin-bottom: 44px; }
+  .rahmen { height: auto; width: 100%; }
+  #reel { min-height: 0; }
+  .buehne { padding: 12px var(--rand) 18px; }
+  .reel-fuss { grid-template-columns: 1fr auto; padding-bottom: 28px; }
+  .reel-fuss > div { grid-column: 1 / -1; }
+  .aktionen { text-align: right; }
+  .uhr { text-align: left; }
+  .streu { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+}
+</style>
+</head>
+<body>
+<header class="kopf">
+  <a class="marke" href="../">ornament.cloud</a>
+  <p class="zeile">Animationen — drei Bilder, sechzehn Effekte, drei Ebenen</p>
+  <nav class="ansichten" aria-label="Ansicht">
+    <button type="button" data-ansicht="reel" aria-pressed="true">Reel</button>
+    <button type="button" data-ansicht="werke" aria-pressed="false">Werke</button>
+    <button type="button" data-ansicht="mischpult" aria-pressed="false">Mischpult</button>
+    <button type="button" data-ansicht="info" aria-pressed="false">Info</button>
+  </nav>
+</header>
+
+<main>
+  <section id="reel" class="ansicht" aria-label="Reel">
+    <div class="buehne"><div class="rahmen"><canvas id="reel-bild" role="img" aria-label="Animation"></canvas></div></div>
+    <div class="reel-fuss">
+      <div>
+        <p class="zaehler" id="reel-zaehler"></p>
+        <div class="karte"><canvas id="reel-mini" width="88" height="110" aria-hidden="true"></canvas><span id="reel-titel"></span></div>
+      </div>
+      <p class="uhr" id="reel-uhr">00:00,0 / 00:12</p>
+      <p class="aktionen"><button type="button" id="reel-zurueck">Zurück</button>, <button type="button" id="reel-weiter">Weiter</button>, <button type="button" id="reel-pause">Pause</button>,<br><button type="button" id="reel-mischen">Ins Mischpult</button>, <button type="button" id="reel-mp4">MP4 laden</button></p>
+    </div>
+  </section>
+
+  <section id="werke" class="ansicht" aria-label="Werke" hidden>
+    <div class="werke-kopf">
+      <p class="gross">Drei Bilder,<br>27 Animationen</p>
+      <ul class="stapel" id="werke-bilder"></ul>
+    </div>
+    <div class="streu" id="werke-raster"></div>
+  </section>
+
+  <section id="mischpult" class="ansicht" aria-label="Mischpult" hidden>
+    <div class="pult-buehne">
+      <div class="rahmen"><canvas id="pult-bild" role="img" aria-label="Gemischte Animation"></canvas></div>
+      <p class="uhr leise" id="pult-uhr">00:00,0 / 00:12</p>
+    </div>
+    <form class="pult" id="pult" onsubmit="return false">
+      <div class="gruppe"><h2>Bild</h2><div class="wahl" id="pult-bilder"></div></div>
+      <div class="gruppe"><h2>Grund</h2><div class="wahl" id="pult-grund"></div></div>
+      <div id="pult-ebenen"></div>
+      <div class="tasten">
+        <button type="button" class="knopf voll" id="pult-zufall">Neu mischen</button>
+        <button type="button" class="knopf" id="pult-mp4">MP4 laden</button>
+        <button type="button" class="knopf" id="pult-link">Link kopieren</button>
+      </div>
+    </form>
+  </section>
+
+  <section id="info" class="ansicht" aria-label="Info" hidden>
+    <p class="gross">Bilder von Christian Strickler,<br>Effekte als Bausteine,<br>bis zu drei Ebenen übereinander.</p>
+    <div class="spalten">
+      <div><h2>Bilder</h2><ul id="info-bilder"></ul></div>
+      <div><h2>Effekte</h2><ul id="info-effekte"></ul></div>
+      <div><h2>Ebenen</h2><ul>
+        <li>Normal<span>die Ebene deckt, so weit ihre Deckkraft reicht</span></li>
+        <li>Multiplizieren<span>dunkelt ab, Weiss bleibt unsichtbar</span></li>
+        <li>Differenz<span>zieht ab, gleiche Farben werden schwarz</span></li>
+        <li>Bildschirm<span>hellt auf, Schwarz bleibt unsichtbar</span></li>
+        <li>Überlagern<span>Kontrast: Helles heller, Dunkles dunkler</span></li>
+        <li>Quelle<span>jeder Effekt nimmt das Bild oder die Ebenen darunter</span></li>
+        <li>MP4<span>1080 × 1350, 30 Bilder pro Sekunde, 12 Sekunden, nahtlose Schlaufe, im Browser gerechnet</span></li>
+      </ul></div>
+    </div>
+  </section>
+</main>
+
+<div class="export" id="export" hidden><span id="export-text">MP4 · 0 %</span><button type="button" id="export-stop">Abbrechen</button></div>
+<script type="module" src="seite.js"></script>
+</body>
+</html>
