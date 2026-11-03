@@ -13,7 +13,7 @@ const E = (effekt, werte = [], modus = "normal", deckkraft = 1, quelle = "bild",
 
 const ROH = {
   fragmente: [
-    ["Glut und Staub", "schwarz", [E("partikel", [.9, .45, .7, .3])]],
+    ["Glut und Staub", "schwarz", [E("partikel", [.9, .45, .7, .65])]],
     ["Tuschewirbel", "schwarz", [E("fluid", [.9, .35, .6])]],
     ["Funkeln", "schwarz", [E("glitzer", [.8, .7, .8, .5])]],
     ["Tropfen", "schwarz", [E("metaballs", [.45, .6, .5, .4])]],
