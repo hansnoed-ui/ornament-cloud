@@ -36,14 +36,16 @@ export const EFFEKTE = {
   vec2 j = h22(g + uSeed * 13.1), uv0 = (g + j) / vec2(uCols, uRows);
   vec4 c = Ql(uv0, .5);
   float s = h12(g * 1.37 + 4.1 + uSeed);
-  float k = smoothstep(0., 1., (.5 - .5 * cos(uPhi)) * 1.6 - s * .6) * P0;
+  // läuft durch (Wunsch vom 3. November 2026: «ohne dass das ausgangsbild etwas länger stehen bleibt»): kein Warten im Bild,
+  // die Teilchen kehren um, sobald es steht; der Exponent unter 1 hält die Geschwindigkeit an der Schlaufennaht über null
+  float k = pow(.5 - .5 * cos(uPhi), .5 + s * .5) * P0;
   float w = TAU * s * 7.;
   vec3 tk = vec3((.6 + .25 * cos(3. * w)) * cos(2. * w), (.6 + .25 * cos(3. * w)) * sin(2. * w), .25 * sin(3. * w));
   float th = j.x * TAU, ph = acos(2. * j.y - 1.);
   vec3 sp = vec3(sin(ph) * cos(th), sin(ph) * sin(th), cos(ph)) * (.55 + .35 * pow(h12(g + 9.), 3.));
   vec3 q = mix(tk, sp, P3) + .05 * vec3(ln(g * .013, .8), ln(g * .013 + 5., .8), 0.);
   q.xz = rot(uPhi) * q.xz; q.yz = rot(.4) * q.yz;
-  pos = mix(P(uv0), q.xy * .46 / (1. + .3 * q.z), k);
+  pos = mix(P(uv0) + .006 * vec2(ln(g * .02, .9), ln(g * .02 + 3., .9)), q.xy * .46 / (1. + .3 * q.z), k);   // auch im Bild zittern die Teilchen leise
   float tw = pow(.5 + .5 * sin(uPhi * float(2 + int(s * 5.)) + s * 60.), 6.) * P2;
   col = vec4(c.rgb * (.85 + tw * 1.6 + k * .3), 1.);
   size = mix(1.5, 6., P1) * uRes.y / 1350. * (1. + tw * .8);
@@ -77,10 +79,10 @@ export const EFFEKTE = {
     name: "Wasserglas", herkunft: "Paper Shaders: Wasser, dann geriffeltes Glas, Stärke 0 → max → 0",
     regler: [r("Wasser", .6), r("Rillen", .4), r("Stärke", .8), r("Licht", .5)],
     glsl: `vec4 effekt(vec2 uv){
-  float s = P2 * (.25 + .75 * (.5 - .5 * cos(uPhi)));
+  float s = P2 * (.55 + .45 * (.5 - .5 * cos(uPhi)));
   vec2 p = P(uv);
   vec2 u = uv + vec2(lfbm(p * 2.5, .7), lfbm(p * 2.5 + 7.3, .7)) * .06 * s * P0;
-  float N = mix(5., 34., P1), fx = fract(u.x * N);
+  float N = mix(5., 34., P1), fx = fract(u.x * N + uT);   // die Rillen gleiten um eine Rille pro Schlaufe
   vec2 b = vec2(u.x - (fx - .5) / N * 1.4 * s, u.y + .01 * s * sin(fx * PI));
   float ca = .004 * s + .008 * s * abs(fx - .5);
   vec3 c = vec3(Q(b + vec2(ca, 0)).r, Q(b).g, Q(b - vec2(ca, 0)).b);
@@ -118,7 +120,7 @@ export const EFFEKTE = {
     glsl: `vec4 effekt(vec2 uv){
   float sc = mix(1.2, 5., P1);
   vec2 q = P(uv);
-  float st = .054 * P0 * (.5 - .5 * cos(uPhi)) / sc;
+  float st = .054 * P0 * (.8 + .2 * (.5 - .5 * cos(uPhi))) / sc;   // die Strömung hört nie ganz auf, sie atmet nur
   for (int i = 0; i < 6; i++) q -= lcurl(q * sc, .6) * st;
   vec2 d = UV(q) - uv; float k = P2 * .5;
   return vec4(Q(uv + d * (1. + k)).r, Q(uv + d).g, Q(uv + d * (1. - k)).b, 1.);

@@ -64,6 +64,21 @@ await check("die Schlaufe schliesst: vom letzten zum ersten Bild springt es nich
   await ctx.close();
 });
 
+await check("läuft durch: am Schlaufenrand bewegt sich jedes Werk mindestens ein Drittel so viel wie sonst (kein stehendes Ausgangsbild)", async () => {
+  const { ctx, page } = await oeffne();
+  const lahm = await page.evaluate(() => {
+    const { motor, WERKE } = window.animationen, gl = motor.gl, dt = 1 / 30;
+    const lesen = (t, s) => { motor.zeichnen(s, t, 64, 80); const p = new Uint8Array(64 * 80 * 4); gl.readPixels(0, 0, 64, 80, gl.RGBA, gl.UNSIGNED_BYTE, p); return p; };
+    const d = (s, t) => { const a = lesen(t, s), b = lesen(t + dt, s); let x = 0; for (let i = 0; i < a.length; i++) x += Math.abs(a[i] - b[i]); return x / a.length; };
+    return WERKE.map((w) => {
+      const v = [1.5, 3, 4.5, 6, 7.5, 9, 10.5].map((t) => d(w.stapel, t)).sort((a, b) => a - b), median = v[3];
+      return { id: w.id, rand: +(Math.min(d(w.stapel, 0), d(w.stapel, 12 - dt)) / Math.max(median, .05)).toFixed(2) };
+    }).filter((r) => r.rand < .33);
+  });
+  assert.deepEqual(lahm, []);
+  await ctx.close();
+});
+
 await check("Ansichten wechseln, Reel läuft weiter, Mischpult mischt neu und merkt sich die Mischung", async () => {
   const { ctx, page, fehler } = await oeffne({ width: 1300, height: 900 }, "#w=frida-4");
   await page.getByRole("button", { name: "Pause" }).click();   // angehalten, damit das Reel in der langsamen Software-Grafik nicht weiterläuft
@@ -107,6 +122,29 @@ await check("Eigenes Bild: hochladen, mischen, ersetzen; es steht nicht im Link"
   const zweite = await ctx.newPage(); await zweite.goto(page.url().replace(/#.*/, "") + "#" + new URL(page.url()).hash.slice(1), { timeout: 120000 });
   await zweite.waitForFunction(() => document.documentElement.classList.contains("bereit"), null, { timeout: 120000 });
   assert.equal(await zweite.evaluate(() => window.animationen.S.mix.bild), "fragmente", "ohne das Bild fällt der Link auf das erste Bild zurück");
+  assert.deepEqual(fehler, []);
+  await ctx.close();
+});
+
+await check("Pause hält Reel und Mischpult an (auch per Leertaste); Standbild lädt ein PNG in 1080 × 1350", async () => {
+  const { ctx, page, fehler } = await oeffne({ width: 1300, height: 900 }, "#mischpult");
+  await page.getByRole("button", { name: "Pause" }).click();
+  await page.waitForTimeout(800);   // das nächste gezeichnete Bild trägt die angehaltene Zeit
+  const a = await page.locator("#pult-uhr").textContent(); await page.waitForTimeout(1500);
+  assert.equal(await page.locator("#pult-uhr").textContent(), a, "die Zeit steht");
+  await page.click('[data-ansicht="reel"]');
+  assert.equal(await page.locator("#reel-pause").textContent(), "Abspielen", "Reel ist mit angehalten");
+  await page.evaluate(() => document.activeElement?.blur());   // auf einem Knopf löst die Leertaste den Knopf aus, wie üblich
+  await page.keyboard.press("Space");
+  assert.equal(await page.locator("#reel-pause").textContent(), "Pause", "Leertaste spielt wieder ab");
+  await page.keyboard.press("Space");
+  const [download] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: "Standbild" }).click()]);
+  assert.match(download.suggestedFilename(), /^ornament-animation-fragmente-01-glut-und-staub-\d\ds\d-4x5\.png$/);
+  const datei = await download.path();
+  const { readFileSync } = await import("node:fs");
+  const kopf = readFileSync(datei);
+  assert.equal(kopf.subarray(1, 4).toString(), "PNG");
+  assert.deepEqual([kopf.readUInt32BE(16), kopf.readUInt32BE(20)], [1080, 1350]);
   assert.deepEqual(fehler, []);
   await ctx.close();
 });

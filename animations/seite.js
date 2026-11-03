@@ -92,11 +92,33 @@ function pause(an) {
   if (an === S.laeuft) return;
   if (an) S.t0 = performance.now() - S.tPause * 1000; else S.tPause = zeit() % DAUER;
   S.laeuft = an;
-  $("reel-pause").textContent = an ? "Pause" : "Abspielen";
+  pauseText();
 }
+// Pause gilt für Reel und Mischpult zugleich; auch die Leertaste und ein Klick auf die Animation im Mischpult
+// (Wunsch vom 4. November 2026: «einen stopp der animation und die möglichkeit des downloads eines standbildes»)
+const pauseText = () => { for (const id of ["reel-pause", "pult-pause"]) $(id).textContent = S.laeuft ? "Pause" : "Abspielen"; };
 $("reel-pause").addEventListener("click", () => pause(!S.laeuft));
-$("reel-pause").textContent = S.laeuft ? "Pause" : "Abspielen";
+$("pult-pause").addEventListener("click", () => pause(!S.laeuft));
+$("pult-bild").addEventListener("click", () => pause(!S.laeuft));
+addEventListener("keydown", (e) => {
+  if (e.code !== "Space" || e.target.closest("input, select, textarea, button, a")) return;
+  if (S.ansicht !== "reel" && S.ansicht !== "mischpult") return;
+  e.preventDefault(); pause(!S.laeuft);
+});
+pauseText();
 $("reel-mischen").addEventListener("click", () => { S.mix = kopie(WERKE[S.reel].stapel); ansicht("mischpult"); });
+// Standbild: das Bild, das gerade zu sehen ist, als PNG in 1080 × 1350
+function standbild(stapel, name) {
+  const t = zeit() % DAUER;
+  motor.zeichnen(stapel, t, 1080, 1350);
+  motor.leinwand.toBlob((blob) => {
+    if (!blob) return;
+    const a = el("a", { href: URL.createObjectURL(blob), download: `ornament-animation-${name}-${zwei(Math.floor(t))}s${Math.floor((t % 1) * 10)}-4x5.png` });
+    document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60_000);
+  }, "image/png");
+}
+$("reel-bildpng").addEventListener("click", () => { const w = WERKE[S.reel]; standbild(w.stapel, `${w.bild}-${zwei(w.nr)}-${slug(w.titel)}`); });
+$("pult-bildpng").addEventListener("click", () => standbild(S.mix, `${S.mix.bild === EIGEN ? "eigenes-bild" : S.mix.bild}-mischung`));
 $("reel-mp4").addEventListener("click", () => { const w = WERKE[S.reel]; herunterladen(w.stapel, `${w.bild}-${zwei(w.nr)}-${slug(w.titel)}`); });
 
 // ——— Werke: gestreutes Raster ———
