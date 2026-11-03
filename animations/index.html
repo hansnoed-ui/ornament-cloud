@@ -89,6 +89,9 @@ button { background: none; border: 0; padding: 0; cursor: pointer; }
 .wahl button, .knopf { border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; }
 .wahl button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .knopf:hover, .wahl button:hover { border-color: var(--ink); }
+.wahl .hochladen { border-style: dashed; }
+.hinweis { margin: 0; font-size: 13px; }
+.rahmen.ziehen { outline: 2px dashed var(--ink); outline-offset: 6px; }
 .knopf.voll { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .ebene { border: 0; border-top: 1px solid var(--line); padding: 14px 0 0; margin: 0; display: grid; gap: 10px; }
 .ebene.aus .regeln { opacity: .35; }
@@ -183,7 +186,9 @@ input[type="range"] { width: 100%; accent-color: var(--ink); }
       <p class="uhr leise" id="pult-uhr">00:00,0 / 00:12</p>
     </div>
     <form class="pult" id="pult" onsubmit="return false">
-      <div class="gruppe"><h2>Bild</h2><div class="wahl" id="pult-bilder"></div></div>
+      <div class="gruppe"><h2>Bild</h2><div class="wahl" id="pult-bilder"></div>
+        <input type="file" id="pult-datei" accept="image/*" hidden>
+        <p class="hinweis leise" id="pult-meldung">Eigene Bilder bleiben in deinem Browser, nichts wird hochgeladen. Auch per Ziehen auf die Bühne.</p></div>
       <div class="gruppe"><h2>Grund</h2><div class="wahl" id="pult-grund"></div></div>
       <div id="pult-ebenen"></div>
       <div class="tasten">
@@ -206,6 +211,7 @@ input[type="range"] { width: 100%; accent-color: var(--ink); }
         <li>Bildschirm<span>hellt auf, Schwarz bleibt unsichtbar</span></li>
         <li>Überlagern<span>Kontrast: Helles heller, Dunkles dunkler</span></li>
         <li>Quelle<span>jeder Effekt nimmt das Bild oder die Ebenen darunter</span></li>
+        <li>Eigenes Bild<span>im Mischpult hochladen oder auf die Bühne ziehen; es bleibt im Browser und wird nirgends gespeichert</span></li>
         <li>MP4<span>1080 × 1350, 30 Bilder pro Sekunde, 12 Sekunden, nahtlose Schlaufe, im Browser gerechnet</span></li>
       </ul></div>
     </div>

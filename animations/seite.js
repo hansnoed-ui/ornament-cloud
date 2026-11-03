@@ -15,7 +15,8 @@ const zwei = (n) => String(n).padStart(2, "0");
 const uhrText = (t) => `00:${zwei(Math.floor(t))},${Math.floor((t % 1) * 10)} / 00:${zwei(DAUER)}`;
 const MODUS_NAMEN = { normal: "Normal", multiplizieren: "Multiplizieren", differenz: "Differenz", bildschirm: "Bildschirm", ueberlagern: "Überlagern" };
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
-const bildName = (id) => BILDER.find((b) => b.id === id)?.name ?? id;
+const EIGEN = "eigen";   // das eigene Bild im Mischpult: bleibt im Browser, wird nirgends hochgeladen
+const bildName = (id) => id === EIGEN ? "Eigenes Bild" : BILDER.find((b) => b.id === id)?.name ?? id;
 const kopie = (o) => JSON.parse(JSON.stringify(o));
 
 let motor;
@@ -62,7 +63,7 @@ function ausAdresse() {
   const h = decodeURIComponent(location.hash.slice(1));
   if (h.startsWith("w=")) { const i = WERKE.findIndex((w) => w.id === h.slice(2)); if (i >= 0) S.reel = i; return "reel"; }
   if (h.startsWith("m=")) {
-    try { const m = JSON.parse(decodeURIComponent(escape(atob(h.slice(2))))); if (BILDER.some((b) => b.id === m.bild) && Array.isArray(m.ebenen)) S.mix = m; } catch { /* alter Link */ }
+    try { const m = JSON.parse(decodeURIComponent(escape(atob(h.slice(2))))); if ((BILDER.some((b) => b.id === m.bild) || m.bild === EIGEN) && Array.isArray(m.ebenen)) S.mix = { ...m, bild: m.bild === EIGEN ? BILDER[0].id : m.bild }; } catch { /* alter Link */ }   // ein eigenes Bild steht nicht im Link
     return "mischpult";
   }
   return ["reel", "werke", "mischpult", "info"].includes(h) ? h : "reel";
@@ -143,7 +144,9 @@ function pultAufbauen() {
   const m = S.mix;
   while (m.ebenen.length < 3) m.ebenen.push(leer());
   $("pult-bilder").replaceChildren(...BILDER.map((b) => el("button", { type: "button", "aria-pressed": String(m.bild === b.id), text: b.name,
-    onclick: () => { m.bild = b.id; pultAufbauen(); adresse(); } })));
+    onclick: () => { m.bild = b.id; pultAufbauen(); adresse(); } })),
+    ...(motor.hatBild(EIGEN) ? [el("button", { type: "button", "aria-pressed": String(m.bild === EIGEN), text: "Eigenes Bild", onclick: () => { m.bild = EIGEN; pultAufbauen(); adresse(); } })] : []),
+    el("button", { type: "button", class: "hochladen", text: motor.hatBild(EIGEN) ? "Anderes Bild …" : "Bild hochladen …", onclick: () => $("pult-datei").click() }));
   $("pult-grund").replaceChildren(...["schwarz", "weiss"].map((g) => el("button", { type: "button", "aria-pressed": String(m.grund === g), text: g === "schwarz" ? "Schwarz" : "Weiss",
     onclick: () => { m.grund = g; pultAufbauen(); adresse(); } })));
   $("pult-ebenen").replaceChildren(...m.ebenen.map((e, i) => ebeneFeld(e, i)));
@@ -187,8 +190,38 @@ function regler(name, wert, setzen) {
   ein.addEventListener("change", adresse);
   return el("label", { class: "regler" }, el("span", { text: name }), ein, aus);
 }
-$("pult-zufall").addEventListener("click", () => { S.mix = zufall(); pultAufbauen(); adresse(); });
-$("pult-mp4").addEventListener("click", () => herunterladen(S.mix, `${S.mix.bild}-mischung`));
+$("pult-zufall").addEventListener("click", () => {
+  const eigen = S.mix.bild === EIGEN;
+  S.mix = zufall();
+  if (eigen) S.mix.bild = EIGEN;   // mit eigenem Bild mischt «Neu mischen» nur die Effekte neu
+  pultAufbauen(); adresse();
+});
+
+// Eigenes Bild: Datei wählen oder auf die Bühne ziehen; verkleinert auf höchstens 1600 px, bleibt im Browser
+async function eigenesBild(datei) {
+  if (!datei || !datei.type.startsWith("image/")) { pultMeldung("Das ist kein Bild. Möglich sind JPEG, PNG, WebP oder GIF."); return; }
+  pultMeldung("Bild wird geladen …");
+  try {
+    const roh = await createImageBitmap(datei, { imageOrientation: "from-image" });
+    const k = Math.min(1, 1600 / Math.max(roh.width, roh.height));
+    const c = el("canvas"); c.width = Math.round(roh.width * k); c.height = Math.round(roh.height * k);
+    c.getContext("2d").drawImage(roh, 0, 0, c.width, c.height); roh.close?.();
+    const blob = await new Promise((ok) => c.toBlob(ok, "image/jpeg", .92));
+    const url = URL.createObjectURL(blob);
+    await motor.bildLaden(EIGEN, url);
+    URL.revokeObjectURL(url);
+    S.mix.bild = EIGEN;
+    pultAufbauen(); adresse();
+    pultMeldung(`${datei.name} · ${c.width} × ${c.height} · bleibt in diesem Browser`);
+  } catch (f) { pultMeldung(`Das Bild liess sich nicht öffnen: ${f.message ?? f}`); }
+}
+const pultMeldung = (text) => { $("pult-meldung").textContent = text; };
+$("pult-datei").addEventListener("change", (e) => { eigenesBild(e.target.files[0]); e.target.value = ""; });
+const buehne = $("pult-bild").parentElement;
+buehne.addEventListener("dragover", (e) => { e.preventDefault(); buehne.classList.add("ziehen"); });
+buehne.addEventListener("dragleave", () => buehne.classList.remove("ziehen"));
+buehne.addEventListener("drop", (e) => { e.preventDefault(); buehne.classList.remove("ziehen"); eigenesBild(e.dataTransfer.files[0]); });
+$("pult-mp4").addEventListener("click", () => herunterladen(S.mix, `${S.mix.bild === EIGEN ? "eigenes-bild" : S.mix.bild}-mischung`));
 $("pult-link").addEventListener("click", async () => {
   adresse();
   try { await navigator.clipboard.writeText(location.href); $("pult-link").textContent = "Kopiert"; } catch { $("pult-link").textContent = "Link in der Adresszeile"; }

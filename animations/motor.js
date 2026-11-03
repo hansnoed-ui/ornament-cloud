@@ -135,6 +135,7 @@ export function motorErstellen() {
   const bilder = new Map();
   async function bildLaden(schluessel, url) {
     const img = new Image(); img.decoding = "async"; img.src = url; await img.decode();
+    if (bilder.has(schluessel)) gl.deleteTexture(bilder.get(schluessel).tex);   // ein neues eigenes Bild ersetzt das alte
     const tex = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, tex);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
