@@ -403,3 +403,100 @@ p { margin: 0; }
   .fusszeile .rechts a { flex: 1; }
   .fusszeile .rechts a:first-child { border-left: 0; }
 }
+
+/* ───────── Signet im Einstieg (inline, damit es sich zeichnen kann) ───────── */
+.signet-gross { position: relative; z-index: 1; width: min(46vh, 520px, 70vw); height: auto; overflow: visible; }
+.signet-gross .s-flaeche { fill: color-mix(in srgb, var(--akzent) 14%, transparent); }
+.signet-gross .s-linie { fill: none; stroke: var(--tinte); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1 1; }
+.signet-gross .s-punkt { fill: var(--akzent); display: none; }
+.signet-gross .s-punkt-ruhe { fill: var(--akzent); }
+.kreuz-x, .kreuz-y { display: none; }
+
+/* ───────── Bewegung (nur mit Skript und ohne «weniger Bewegung») ───────── */
+.bewegt .signet-gross .s-linie { stroke-dashoffset: 1; }
+.bewegt .signet-gross .s-flaeche, .bewegt .signet-gross .s-punkt-ruhe { opacity: 0; }
+.bewegt .einstieg.bereit .s-linie { stroke-dashoffset: 0; transition: stroke-dashoffset 1.6s cubic-bezier(.65,0,.35,1); }
+.bewegt .einstieg.bereit .s-flaeche { opacity: 1; transition: opacity .8s 1.2s; }
+.bewegt .einstieg.bereit .s-punkt-ruhe { opacity: 1; transition: opacity .3s 1.5s; }
+.bewegt .einstieg.laeuft .s-punkt-ruhe { display: none; }
+.bewegt .einstieg.laeuft .s-punkt { display: inline; }
+
+/* Ladezähler über dem Einstieg */
+.lade { display: none; }
+.bewegt .einstieg.laedt .lade, .bewegt .einstieg.geladen .lade { display: grid; position: absolute; inset: 0; z-index: 5; background: var(--papier); place-items: end start; padding: 0 var(--innen) 16px; }
+.lade-zahl { font: 600 clamp(64px, 12vw, 180px)/0.85 var(--display); letter-spacing: -0.04em; color: var(--tinte); }
+.bewegt .einstieg.geladen .lade { animation: lade-weg .7s cubic-bezier(.7,0,.2,1) forwards; }
+@keyframes lade-weg { to { clip-path: inset(0 0 100% 0); } }
+.bewegt .einstieg .einstieg-bild::before { transform: scaleY(0); transform-origin: top; }
+.bewegt .einstieg .einstieg-bild::after { transform: scaleX(0); transform-origin: left; }
+.bewegt .einstieg.bereit .einstieg-bild::before, .bewegt .einstieg.bereit .einstieg-bild::after { transform: none; transition: transform 1.1s cubic-bezier(.65,0,.35,1); }
+.bewegt .einstieg .koord, .bewegt .einstieg .meta > *, .bewegt .einstieg .liste-boot li { opacity: 0; }
+.bewegt .einstieg.bereit .koord { opacity: 1; transition: opacity .4s .9s; }
+.bewegt .einstieg.bereit .meta > * { opacity: 1; transition: opacity .2s calc(.5s + var(--z, 0) * 40ms); }
+.bewegt .einstieg.bereit .liste-boot li { opacity: 1; transition: opacity .15s; }
+.bewegt .einstieg.bereit .liste-boot li:nth-child(1) { transition-delay: .7s } .bewegt .einstieg.bereit .liste-boot li:nth-child(2) { transition-delay: .82s }
+.bewegt .einstieg.bereit .liste-boot li:nth-child(3) { transition-delay: .94s } .bewegt .einstieg.bereit .liste-boot li:nth-child(4) { transition-delay: 1.06s }
+.bewegt .einstieg.bereit .liste-boot li:nth-child(5) { transition-delay: 1.18s } .bewegt .einstieg.bereit .liste-boot li:nth-child(6) { transition-delay: 1.3s }
+.bewegt .einstieg.bereit .liste-boot li:nth-child(7) { transition-delay: 1.42s }
+.bewegt .einstieg.bereit .liste-boot li:last-child a::after { content: "_"; margin-left: 4px; color: var(--akzent); animation: blinken 1s steps(1) infinite 1.6s; }
+@keyframes blinken { 50% { opacity: 0; } }
+
+/* Fadenkreuz folgt der Maus */
+.zielt .kreuz-x, .zielt .kreuz-y { display: block; position: absolute; z-index: 2; background: var(--akzent); pointer-events: none; opacity: .55; }
+.zielt .kreuz-x { left: 0; right: 0; top: 0; height: 1px; }
+.zielt .kreuz-y { top: 0; bottom: 0; left: 0; width: 1px; }
+.zielt .koord.mitte { left: 0; top: 0; white-space: nowrap; pointer-events: none; }
+.einstieg-bild.zielt { cursor: crosshair; }
+
+/* Wörter steigen aus einer Maske */
+.wortweise .w { display: inline-block; overflow: hidden; vertical-align: top; padding: 0.12em 0 0.06em; margin: -0.12em 0 -0.06em; }
+.wortweise .w > span { display: inline-block; transform: translateY(105%); }
+.wortweise.sicht .w > span { transform: none; transition: transform .8s cubic-bezier(.2,.75,.2,1) calc(var(--i, 0) * 45ms); }
+.einstieg h1.wortweise .w > span { transition-delay: calc(.35s + var(--i, 0) * 60ms); }
+.satz-gross.wortweise .w { color: var(--blass); transition: color .35s; }
+.satz-gross.wortweise .w.dunkel, .satz-gross.wortweise b .w { color: var(--tinte); }
+
+/* Blöcke: von unten einblenden, in Gruppen gestaffelt */
+.bewegt .auf { opacity: 0; transform: translateY(18px); }
+.bewegt .auf.sicht { opacity: 1; transform: none; transition: opacity .7s cubic-bezier(.2,.7,.2,1) calc(var(--i, 0) * 90ms), transform .7s cubic-bezier(.2,.7,.2,1) calc(var(--i, 0) * 90ms); }
+.bewegt .karte.auf, .bewegt .app.auf, .bewegt .zahlen > div.auf, .bewegt .fuss-raster > .auf { transform: none; }
+
+/* Zeichen ziehen sich nach */
+.bewegt .karte-bild .zeichen *, .bewegt .app h3 .zeichen * { stroke-dasharray: 1; stroke-dashoffset: 1; }
+.bewegt .karte-bild.sicht .zeichen *, .bewegt .app.sicht h3 .zeichen * { stroke-dashoffset: 0; transition: stroke-dashoffset 1.2s cubic-bezier(.65,0,.35,1) calc(.2s + var(--i, 0) * 90ms); }
+.karte:hover .karte-bild .zeichen * , .app:hover h3 .zeichen * { animation: nachziehen .8s cubic-bezier(.65,0,.35,1); }
+@keyframes nachziehen { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+.karte-bild .zeichen *, .app h3 .zeichen * { vector-effect: none; }
+.karte .karte-bild .zeichen { stroke-width: 0.32; }
+.app h3 .zeichen { stroke-width: 1.3; }
+
+/* Bilder öffnen sich wie ein Vorhang */
+.bewegt .r-bild img, .bewegt .split-bild img, .bewegt .app-bild, .bewegt .mit-bild img { clip-path: inset(0 0 100% 0); }
+.bewegt .r-bild.sicht img, .bewegt .split-bild.sicht img, .bewegt .app.sicht .app-bild, .bewegt .mit-bild.sicht img { clip-path: inset(0 0 0 0); transition: clip-path 1.1s cubic-bezier(.65,0,.35,1) .1s; }
+.bewegt .r-bild { background-size: 32px 0, 0 32px; }
+.bewegt .r-bild.sicht { background-size: 32px 32px; transition: background-size .9s cubic-bezier(.65,0,.35,1); }
+
+/* Feld der 49 Zettel: Zelle für Zelle */
+.bewegt .feld a, .bewegt .feld .zyklus { opacity: 0; }
+.bewegt .feld.sicht a, .bewegt .feld.sicht .zyklus { opacity: 1; transition: opacity .35s calc(var(--i, 0) * 35ms), background-color .2s, color .2s; }
+.leitsatz.neu { animation: leitsatz .5s cubic-bezier(.2,.7,.2,1); }
+@keyframes leitsatz { from { opacity: 0; transform: translateY(8px); } }
+
+/* Wortmarke im Fuss zeichnet sich */
+.bewegt .wortmarke text { stroke-dasharray: 600; stroke-dashoffset: 600; }
+.bewegt .wortmarke.sicht text { stroke-dashoffset: 0; transition: stroke-dashoffset 2.6s cubic-bezier(.65,0,.35,1); }
+
+/* Kopf: Schatten beim Scrollen, Hover-Linie in der Navigation */
+.kopf { transition: box-shadow .3s; }
+.kopf.gerollt { box-shadow: 0 1px 0 var(--linie), 0 8px 24px -18px rgba(0,0,0,.35); }
+.kopf-nav a { position: relative; text-decoration: none !important; }
+.kopf-nav a::after { content: ""; position: absolute; left: 0; right: 0; bottom: -4px; height: 1px; background: var(--akzent); transform: scaleX(0); transform-origin: right; transition: transform .35s cubic-bezier(.65,0,.35,1); }
+.kopf-nav a:hover::after { transform: scaleX(1); transform-origin: left; }
+.knopf > span + span { transition: transform .3s; }
+.knopf:hover > span + span { transform: translateX(3px); }
+.mit-text details .weg { animation: aufklappen .45s cubic-bezier(.2,.7,.2,1); }
+@keyframes aufklappen { from { opacity: 0; transform: translateY(-6px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

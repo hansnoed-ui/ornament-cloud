@@ -69,6 +69,15 @@ beitraege = []
 for m in re.finditer(r'<article class="beitrag">\s*<p class="wer"><img src="([^"]+)"[^>]*><span>([^<]+)</span><span>([^<]+)</span></p>\s*<p class="text">(.*?)</p>\s*<p class="klein"><a href="([^"]+)">([^<]+)</a></p>', B, re.S):
     beitraege.append(dict(avatar=m.group(1), wer=m.group(2), wo=m.group(3), text=m.group(4), href=m.group(5), beleg=m.group(6)))
 
+sig = (WURZEL / "b/bilder/signet/signet.svg").read_text(encoding="utf-8")
+sig_flaeche = suche(r'<path d="([^"]+)" fill="rgba', sig).group(1)
+sig_linie = suche(r'<path d="([^"]+)" fill="none"', sig).group(1)
+sig_punkt = suche(r'<circle cx="([^"]+)" cy="([^"]+)"', sig).groups()
+signet_gross = (f'<svg class="signet-gross" viewBox="0 0 1200 1200" role="img" aria-label="Das Signet von ornament.cloud, gezeichnet: die Re-entry-Schlaufe mit dem Punkt, der sie abläuft">'
+                f'<path class="s-flaeche" d="{sig_flaeche}"/><path id="s-linie" class="s-linie" d="{sig_linie}" pathLength="1"/>'
+                f'<circle class="s-punkt" r="16" cx="0" cy="0"><animateMotion id="s-lauf" dur="16s" repeatCount="indefinite" begin="indefinite" rotate="0"><mpath href="#s-linie"/></animateMotion></circle>'
+                f'<circle class="s-punkt-ruhe" r="16" cx="{sig_punkt[0]}" cy="{sig_punkt[1]}"/></svg>')
+
 titel_satz = suche(r'<h1 class="titel" id="einstieg-titel">([^<]+)<small>([^<]+)</small></h1>')
 einstieg_satz = suche(r'<p class="einstieg-satz">([^<]+)</p>').group(1)
 liste = suche(r'<h2 id="liste-titel">([^<]+)</h2>\s*<p>([^<]+)</p>\s*<p class="knopfreihe"><a class="knopf" href="([^"]+)">([^<]+)</a><a class="knopf still" href="([^"]+)">([^<]+)</a>')
@@ -106,8 +115,10 @@ einstieg = f'''<section class="rahmen feld-zeile einstieg" aria-labelledby="eins
   <div class="einstieg-bild">
     <span class="koord o-l">[0,0]</span>
     <span class="koord o-r">Re-entry · Schlaufe mit Punkt</span>
-    <img src="../b/bilder/signet/signet.svg" alt="Das Signet von ornament.cloud, gezeichnet: die Re-entry-Schlaufe mit dem Punkt, der sie abläuft" width="1200" height="1200" class="signet-bild" data-dunkel="../b/bilder/signet/signet-dunkel.svg">
-    <span class="koord mitte">X:49 · Y:07</span>
+    {signet_gross}
+    <span class="kreuz-x" aria-hidden="true"></span><span class="kreuz-y" aria-hidden="true"></span>
+    <span class="koord mitte" aria-hidden="true">X:49 · Y:07</span>
+    <span class="lade" aria-hidden="true"><span class="lade-zahl">0%</span></span>
     <span class="koord u-l">Made in Switzerland</span>
   </div>
   <div class="einstieg-fuss">
@@ -130,7 +141,7 @@ split = f'''<section class="rahmen feld-zeile split" aria-label="Theorie, die ma
       <p><a class="knopf" href="#zettel"><span>Zum Zettelkasten</span><span aria-hidden="true">{pfeil}</span></a></p>
     </div>
     <div class="leiste"><p class="etikett">In Zahlen</p><p class="etikett">[4]</p></div>
-    <div class="zahlen"><div><b>49</b><span>Zettel</span></div><div><b>07</b><span>Apps</span></div><div><b>04</b><span>Prüfraster</span></div><div><b>04</b><span>Leistungen</span></div></div>
+    <div class="zahlen"><div><b data-zahl="49">49</b><span>Zettel</span></div><div><b data-zahl="7">07</b><span>Apps</span></div><div><b data-zahl="4">04</b><span>Prüfraster</span></div><div><b data-zahl="4">04</b><span>Leistungen</span></div></div>
     <p class="kurzzeile">Diese Seite lädt nichts von aussen: keine Cookies, keine Werbung, keine Tracker.</p>
   </div>
 </section>'''
@@ -235,34 +246,7 @@ fuss = f'''<footer class="rahmen fuss">
   <div class="fusszeile"><p class="etikett">© 2026 Christian Strickler · Diese Seite lädt nichts von aussen</p><p class="rechts"><a href="../impressum/">Impressum und Datenschutz</a><a href="../b/">Zur Website /b/</a></p></div>
 </footer>'''
 
-skript = '''<script>
-/* Zufälliger Zettel und dunkle Zeichnungen; ohne Skript bleibt Zettel 1 stehen. Lädt nichts nach. */
-(function () {
-  var daten = JSON.parse(document.getElementById("zettel-daten").textContent);
-  var satz = document.querySelector(".zettel-satz"), feld = document.querySelector(".feld");
-  var knopf = satz.querySelector(".nochmal"), jetzt = 0;
-  function zeige(i) {
-    var z = daten[i]; jetzt = i;
-    satz.querySelector(".titelzeile .n").textContent = "Zettel " + (z.n < 10 ? "0" : "") + z.n;
-    satz.querySelector(".titelzeile .t").textContent = z.t;
-    satz.querySelector(".leitsatz").textContent = z.l;
-    satz.querySelector(".lesen").href = "../b/zettel/" + z.s + "/";
-    feld.querySelectorAll("a").forEach(function (a) { a.classList.toggle("an", +a.dataset.n === z.n); });
-  }
-  function zufall() { var i; do { i = Math.floor(Math.random() * daten.length); } while (i === jetzt && daten.length > 1); zeige(i); }
-  knopf.hidden = false; knopf.addEventListener("click", zufall);
-  if (matchMedia("(hover: hover)").matches) feld.querySelectorAll("a").forEach(function (a) {
-    a.addEventListener("mouseenter", function () { zeige(+a.dataset.n - 1); });
-    a.addEventListener("focus", function () { zeige(+a.dataset.n - 1); });
-  });
-  zufall();
-  var dunkel = matchMedia("(prefers-color-scheme: dark)");
-  function bilder() { document.querySelectorAll("img[data-dunkel]").forEach(function (img) {
-    if (!img.dataset.hell) img.dataset.hell = img.getAttribute("src");
-    img.src = dunkel.matches ? img.dataset.dunkel : img.dataset.hell; }); }
-  bilder(); dunkel.addEventListener && dunkel.addEventListener("change", bilder);
-})();
-</script>'''
+skript = '<script>' + (WURZEL / 'tools/delta/bewegung.js').read_text(encoding='utf-8') + '</script>'
 
 seite = f'''<!doctype html>
 <html lang="de-CH">
@@ -279,7 +263,7 @@ seite = f'''<!doctype html>
 <link rel="icon" href="../b/bilder/signet/signet.svg" type="image/svg+xml">
 <link rel="preload" href="../vendor/fonts/inter-display-600-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="../vendor/fonts/fonts.css">
-<link rel="stylesheet" href="delta.css?v=1">
+<link rel="stylesheet" href="delta.css?v=2">
 </head>
 <body>
 <!-- Erzeugt von tools/delta/build.py aus b/index.html; nicht von Hand ändern. -->
