@@ -64,6 +64,21 @@ await check("die Schlaufe schliesst: vom letzten zum ersten Bild springt es nich
   await ctx.close();
 });
 
+await check("läuft durch: am Schlaufenrand bewegt sich jedes Werk mindestens ein Drittel so viel wie sonst (kein stehendes Ausgangsbild)", async () => {
+  const { ctx, page } = await oeffne();
+  const lahm = await page.evaluate(() => {
+    const { motor, WERKE } = window.animationen, gl = motor.gl, dt = 1 / 30;
+    const lesen = (t, s) => { motor.zeichnen(s, t, 64, 80); const p = new Uint8Array(64 * 80 * 4); gl.readPixels(0, 0, 64, 80, gl.RGBA, gl.UNSIGNED_BYTE, p); return p; };
+    const d = (s, t) => { const a = lesen(t, s), b = lesen(t + dt, s); let x = 0; for (let i = 0; i < a.length; i++) x += Math.abs(a[i] - b[i]); return x / a.length; };
+    return WERKE.map((w) => {
+      const v = [1.5, 3, 4.5, 6, 7.5, 9, 10.5].map((t) => d(w.stapel, t)).sort((a, b) => a - b), median = v[3];
+      return { id: w.id, rand: +(Math.min(d(w.stapel, 0), d(w.stapel, 12 - dt)) / Math.max(median, .05)).toFixed(2) };
+    }).filter((r) => r.rand < .33);
+  });
+  assert.deepEqual(lahm, []);
+  await ctx.close();
+});
+
 await check("Ansichten wechseln, Reel läuft weiter, Mischpult mischt neu und merkt sich die Mischung", async () => {
   const { ctx, page, fehler } = await oeffne({ width: 1300, height: 900 }, "#w=frida-4");
   await page.getByRole("button", { name: "Pause" }).click();   // angehalten, damit das Reel in der langsamen Software-Grafik nicht weiterläuft
