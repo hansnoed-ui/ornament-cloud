@@ -263,7 +263,7 @@ seite = f'''<!doctype html>
 <link rel="icon" href="../b/bilder/signet/signet.svg" type="image/svg+xml">
 <link rel="preload" href="../vendor/fonts/inter-display-600-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="../vendor/fonts/fonts.css">
-<link rel="stylesheet" href="delta.css?v=2">
+<link rel="stylesheet" href="delta.css?v=3">
 </head>
 <body>
 <!-- Erzeugt von tools/delta/build.py aus b/index.html; nicht von Hand ändern. -->
