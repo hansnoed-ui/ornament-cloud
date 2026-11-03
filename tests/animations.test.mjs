@@ -35,7 +35,7 @@ test("jede Ebene: bekannter Effekt, Mischmodus, Deckkraft, Regler im Bereich", (
 });
 
 test("Effekte: Regler zwischen 0 und 1, höchstens sechs, Shader mit effekt() oder punkt()", () => {
-  assert.equal(Object.keys(EFFEKTE).length, 16);
+  assert.equal(Object.keys(EFFEKTE).length, 15);   // Scan entfernt am 3. November 2026 («der scan kann weg»)
   for (const [id, e] of Object.entries(EFFEKTE)) {
     assert.ok(e.regler.length >= 1 && e.regler.length <= 6, id);
     for (const r of e.regler) assert.ok(r.wert >= 0 && r.wert <= 1, `${id}: ${r.name}`);
