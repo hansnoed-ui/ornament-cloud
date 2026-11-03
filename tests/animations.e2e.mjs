@@ -87,6 +87,24 @@ await check("Ansichten wechseln, Reel läuft weiter, Mischpult mischt neu und me
   await ctx.close();
 });
 
+await check("Eigenes Bild: hochladen, mischen, ersetzen; es steht nicht im Link", async () => {
+  const { ctx, page, fehler } = await oeffne({ width: 1300, height: 900 }, "#mischpult");
+  await page.setInputFiles("#pult-datei", new URL("animations/bilder/strudel.jpg", root).pathname.replace(/^\/([A-Za-z]:)/, "$1"));
+  await page.waitForFunction(() => window.animationen.S.mix.bild === "eigen", null, { timeout: 60000 });
+  assert.match(await page.locator("#pult-meldung").textContent(), /strudel\.jpg · 1281 × 1600 · bleibt in diesem Browser/);
+  assert.equal(await page.getByRole("button", { name: "Eigenes Bild", exact: true }).getAttribute("aria-pressed"), "true");
+  await page.getByRole("button", { name: "Neu mischen" }).click();
+  assert.equal(await page.evaluate(() => window.animationen.S.mix.bild), "eigen", "Neu mischen behält das eigene Bild");
+  await page.setInputFiles("#pult-datei", new URL("animations/bilder/frida.jpg", root).pathname.replace(/^\/([A-Za-z]:)/, "$1"));
+  await page.waitForFunction(() => /frida\.jpg/.test(document.getElementById("pult-meldung").textContent), null, { timeout: 60000 });
+  await page.click('[data-ansicht="info"]');
+  const zweite = await ctx.newPage(); await zweite.goto(page.url().replace(/#.*/, "") + "#" + new URL(page.url()).hash.slice(1), { timeout: 120000 });
+  await zweite.waitForFunction(() => document.documentElement.classList.contains("bereit"), null, { timeout: 120000 });
+  assert.equal(await zweite.evaluate(() => window.animationen.S.mix.bild), "fragmente", "ohne das Bild fällt der Link auf das erste Bild zurück");
+  assert.deepEqual(fehler, []);
+  await ctx.close();
+});
+
 await check("Handy: kein seitliches Scrollen in allen Ansichten", async () => {
   const { ctx, page } = await oeffne({ width: 360, height: 760 });
   for (const a of ["reel", "werke", "mischpult", "info"]) {
