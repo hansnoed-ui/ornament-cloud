@@ -126,6 +126,29 @@ await check("Eigenes Bild: hochladen, mischen, ersetzen; es steht nicht im Link"
   await ctx.close();
 });
 
+await check("Pause hält Reel und Mischpult an (auch per Leertaste); Standbild lädt ein PNG in 1080 × 1350", async () => {
+  const { ctx, page, fehler } = await oeffne({ width: 1300, height: 900 }, "#mischpult");
+  await page.getByRole("button", { name: "Pause" }).click();
+  await page.waitForTimeout(800);   // das nächste gezeichnete Bild trägt die angehaltene Zeit
+  const a = await page.locator("#pult-uhr").textContent(); await page.waitForTimeout(1500);
+  assert.equal(await page.locator("#pult-uhr").textContent(), a, "die Zeit steht");
+  await page.click('[data-ansicht="reel"]');
+  assert.equal(await page.locator("#reel-pause").textContent(), "Abspielen", "Reel ist mit angehalten");
+  await page.evaluate(() => document.activeElement?.blur());   // auf einem Knopf löst die Leertaste den Knopf aus, wie üblich
+  await page.keyboard.press("Space");
+  assert.equal(await page.locator("#reel-pause").textContent(), "Pause", "Leertaste spielt wieder ab");
+  await page.keyboard.press("Space");
+  const [download] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: "Standbild" }).click()]);
+  assert.match(download.suggestedFilename(), /^ornament-animation-fragmente-01-glut-und-staub-\d\ds\d-4x5\.png$/);
+  const datei = await download.path();
+  const { readFileSync } = await import("node:fs");
+  const kopf = readFileSync(datei);
+  assert.equal(kopf.subarray(1, 4).toString(), "PNG");
+  assert.deepEqual([kopf.readUInt32BE(16), kopf.readUInt32BE(20)], [1080, 1350]);
+  assert.deepEqual(fehler, []);
+  await ctx.close();
+});
+
 await check("Handy: kein seitliches Scrollen in allen Ansichten", async () => {
   const { ctx, page } = await oeffne({ width: 360, height: 760 });
   for (const a of ["reel", "werke", "mischpult", "info"]) {

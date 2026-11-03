@@ -168,7 +168,7 @@ input[type="range"] { width: 100%; accent-color: var(--ink); }
         <div class="karte"><canvas id="reel-mini" width="88" height="110" aria-hidden="true"></canvas><span id="reel-titel"></span></div>
       </div>
       <p class="uhr" id="reel-uhr">00:00,0 / 00:12</p>
-      <p class="aktionen"><button type="button" id="reel-zurueck">Zurück</button>, <button type="button" id="reel-weiter">Weiter</button>, <button type="button" id="reel-pause">Pause</button>,<br><button type="button" id="reel-mischen">Ins Mischpult</button>, <button type="button" id="reel-mp4">MP4 laden</button></p>
+      <p class="aktionen"><button type="button" id="reel-zurueck">Zurück</button>, <button type="button" id="reel-weiter">Weiter</button>, <button type="button" id="reel-pause">Pause</button>,<br><button type="button" id="reel-mischen">Ins Mischpult</button>, <button type="button" id="reel-bildpng">Standbild</button>, <button type="button" id="reel-mp4">MP4 laden</button></p>
     </div>
   </section>
 
@@ -193,6 +193,8 @@ input[type="range"] { width: 100%; accent-color: var(--ink); }
       <div id="pult-ebenen"></div>
       <div class="tasten">
         <button type="button" class="knopf voll" id="pult-zufall">Neu mischen</button>
+        <button type="button" class="knopf" id="pult-pause">Pause</button>
+        <button type="button" class="knopf" id="pult-bildpng">Standbild</button>
         <button type="button" class="knopf" id="pult-mp4">MP4 laden</button>
         <button type="button" class="knopf" id="pult-link">Link kopieren</button>
       </div>
@@ -212,6 +214,7 @@ input[type="range"] { width: 100%; accent-color: var(--ink); }
         <li>Überlagern<span>Kontrast: Helles heller, Dunkles dunkler</span></li>
         <li>Quelle<span>jeder Effekt nimmt das Bild oder die Ebenen darunter</span></li>
         <li>Eigenes Bild<span>im Mischpult hochladen oder auf die Bühne ziehen; es bleibt im Browser und wird nirgends gespeichert</span></li>
+        <li>Standbild<span>PNG, 1080 × 1350, genau das Bild, das gerade zu sehen ist, auch angehalten (Leertaste oder Pause)</span></li>
         <li>MP4<span>1080 × 1350, 30 Bilder pro Sekunde, 12 Sekunden, nahtlose Schlaufe, im Browser gerechnet</span></li>
       </ul></div>
     </div>
