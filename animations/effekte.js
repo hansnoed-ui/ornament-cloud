@@ -92,12 +92,16 @@ export const EFFEKTE = {
 
   wirbel: {
     name: "Wirbel", herkunft: "Punktbild: Punkte wirbeln über die ganze Fläche zu Spiralarmen und zurück",
-    regler: [r("Raster", .45), r("Wirbel", .6), r("Arme", .5), r("Punktgrösse", .6)],
+    regler: [r("Raster", .45), r("Wirbel", .6), r("Arme", .5), r("Punktgrösse", .6), r("Drehungen", .5)],
     glsl: `vec4 effekt(vec2 uv){
   vec2 p = P(uv); float rr = length(p), th = atan(p.y, p.x), env = .5 - .5 * cos(uPhi);
   float arme = floor(2. + P2 * 4.);
   float r2 = rr * (1. + .18 * P2 * env * sin(arme * th + rr * 8.));
-  vec2 ps = rot(P1 * env * 5. / (rr + .25)) * vec2(cos(th), sin(th)) * r2;
+  // Drehungen: unter einem Drittel wickelt sich der Wirbel auf und wieder ab (vor und zurück), sonst steht er
+  // und dreht sich als Ganzes ein- oder zweimal pro Schlaufe (Wunsch vom 3. November 2026: «kann er eine ganze Drehung machen?»)
+  float n = floor(P4 * 2.999);
+  float tw = n < .5 ? env : .85;
+  vec2 ps = rot(P1 * tw * 5. / (rr + .25) + n * uPhi) * vec2(cos(th), sin(th)) * r2;
   float N = mix(28., 110., P0);
   vec2 g = ps * N, cell = floor(g) + .5;
   vec3 im = Ql(UV(cell / N), 1.).rgb;
