@@ -156,11 +156,14 @@ export const EFFEKTE = {
 
   zebra: {
     name: "Op-Art-Zebra", herkunft: "Op-Art: Streifen biegen sich über dem Relief des Bildes",
-    regler: [r("Streifen", .5), r("Relief", .6), r("Drehung", .5), r("Lesbarkeit", .7), r("Farbakzent", .5)],
+    regler: [r("Streifen", .5), r("Relief", .6), r("Schwenk", .5), r("Lesbarkeit", .7), r("Farbakzent", .5), r("Drehungen", .5)],
     glsl: `vec4 effekt(vec2 uv){
   vec3 c = Ql(uv, 0.).rgb;
   float h = lum(Ql(uv, 4.5).rgb), L = lum(Ql(uv, 1.5).rgb);
-  float ang = .5 + P2 * 1.3 * sin(uPhi);
+  // Drehungen wie beim Wirbel: unter einem Drittel schwenken die Streifen hin und her (Schwenk), sonst drehen sie sich
+  // ein- oder zweimal ganz pro Schlaufe (Wunsch vom 3. November 2026: «auch bei Op-Art-Zebra bitte eine ganze drehung»)
+  float n = floor(P5 * 2.999);
+  float ang = .5 + (n < .5 ? P2 * 1.3 * sin(uPhi) : n * uPhi);
   float per = mix(80., 12., P0), k = P1 * (.6 + .4 * (.5 - .5 * cos(2. * uPhi))) * 6.;
   float ph = dot(P(uv), vec2(cos(ang), sin(ang))) * per + k * h * 3.;
   float t = abs(fract(ph) - .5) * 2., aa = fwidth(ph) * 2.4;
@@ -192,29 +195,31 @@ export const EFFEKTE = {
   },
 
   tusche: {
-    name: "Tuscheblasen", herkunft: "Infinite Mantra: durchscheinende Tuscheblasen, dunkler Rand, Kern, Adern",
-    regler: [r("Anzahl", .5), r("Grösse", .5), r("Atmen", .6), r("Tusche", .7), r("Sepia", 0)],
+    name: "Tuscheblasen", herkunft: "Infinite Mantra: farblose Blasen wölben, drehen und brechen das Bild darunter",
+    // seit 3. November 2026 ohne eigene Farbe (Wunsch: «ich möchte dass sie das bild darunter transformieren, aber selber farblos bleiben»):
+    // Membran als Linse, Kern dreht, Adern wellen, Rand bricht nach aussen; die Kontur hellt oder dunkelt nur, in Grau
+    regler: [r("Anzahl", .5), r("Grösse", .5), r("Atmen", .6), r("Verzerrung", .7), r("Kontur", .25)],
     glsl: `${BLASE}
 vec4 effekt(vec2 uv){
-  vec2 p = P(uv);
-  vec3 base = Q(uv).rgb;
-  base = mix(base, base * vec3(241., 232., 221.) / 255., .3);
-  float ab = 0.; int n = int(mix(4., 14., P0));
+  vec2 p = P(uv), off = vec2(0.);
+  float kontur = 0.; int n = int(mix(4., 14., P0));
   for (int i = 0; i < 14; i++){
     if (i >= n) break;
     vec2 c; float R; blase(i, P1, P2, c, R);
     vec2 v = (p - c) / R; float d = length(v);
-    if (d > 1.05) continue;
-    float fi = float(i), innen = step(d, 1.);
-    float rand = smoothstep(.82, .98, d) * (1. - smoothstep(.98, 1.04, d));
-    vec2 kc = vec2(cos(fi * 2.3 + uPhi), sin(fi * 2.3 + uPhi)) * .35;
-    float kern = exp(-dot(v - kc, v - kc) * 7.) * .9;
-    float ader = smoothstep(.06, 0., abs(ln(v * 2.5 + fi, .5))) * .35;
-    float spr = step(.985, h12(floor(p * uRes.y / 3.) + fi)) * .8;
-    ab += innen * ((1. - d * d) * .35 + kern + ader + spr) + rand * 1.2;
+    if (d > 1.15) continue;
+    float fi = float(i), innen = 1. - smoothstep(.96, 1.04, d);
+    vec2 o = -v * R * (1. - d * d) * .45 * innen;                                   // Linse: zur Mitte hin vergrössert
+    vec2 kc = vec2(cos(fi * 2.3 + uPhi), sin(fi * 2.3 + uPhi)) * .35, w = v - kc;
+    float kern = exp(-dot(w, w) * 6.);
+    o += (rot(1.8 * kern * sin(uPhi + fi)) * w - w) * R * innen;                    // Kern: dreht das Bild
+    o += vec2(ln(v * 2.5 + fi, .5), ln(v * 2.5 + fi + 4., .5)) * R * .06 * innen;   // Adern: feine Wellen
+    float rand = exp(-pow((d - 1.) * 14., 2.));
+    o += normalize(v + 1e-5) * R * .08 * rand;                                       // Rand: Brechung nach aussen
+    off += o; kontur += rand;
   }
-  vec3 tinte = mix(vec3(.9, .72, .28), vec3(.3, .6, .95), P4);
-  return vec4(base * exp(-ab * P3 * 1.4 * tinte), 1.);
+  vec3 col = Q(UV(p + off * P3 * 1.4)).rgb;
+  return vec4(col * (1. - P4 * .45 * clamp(kontur, 0., 1.)), 1.);
 }`,
   },
 
