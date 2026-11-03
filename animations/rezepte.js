@@ -29,7 +29,7 @@ const ROH = {
     ["Mosaiktropfen", "schwarz", [E("metaballs", [.7, .45, .4, .5])]],
     ["Seifenblase", "schwarz", [E("seifenblase", [.82, .7, .5, .35])]],
     ["Linien", "weiss", [E("linien", [.55, .75, .5, .1])]],
-    ["Tuscheblasen", "weiss", [E("tusche", [.5, .5, .6, .7, 0])]],
+    ["Tuscheblasen", "schwarz", [E("tusche", [.5, .55, .6, .8, .25])]],
     ["Fliessende Streifen", "schwarz", [E("fluid", [.8, .4, .5]), E("zebra", [.55, .5, .4, .8, .9], "multiplizieren", .65, "unten")]],
     ["Wirbel", "schwarz", [E("wirbel", [.55, .6, .5, .7])]],
     ["Holo-Frida", "schwarz", [E("holo", [.78, .45, .6, .6]), E("partikel", [.6, .35, .8, .7], "bildschirm", .4)]],

@@ -66,6 +66,7 @@ await check("die Schlaufe schliesst: vom letzten zum ersten Bild springt es nich
 
 await check("Ansichten wechseln, Reel läuft weiter, Mischpult mischt neu und merkt sich die Mischung", async () => {
   const { ctx, page, fehler } = await oeffne({ width: 1300, height: 900 }, "#w=frida-4");
+  await page.getByRole("button", { name: "Pause" }).click();   // sonst läuft das Reel in der langsamen Software-Grafik nach 12 s weiter
   assert.match(await page.locator("#reel-titel").textContent(), /Frida \/ 04 Seifenblase/);
   await page.getByRole("button", { name: "Weiter" }).click();
   assert.match(await page.locator("#reel-titel").textContent(), /05/);
