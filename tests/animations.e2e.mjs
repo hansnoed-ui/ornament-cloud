@@ -79,6 +79,23 @@ await check("läuft durch: am Schlaufenrand bewegt sich jedes Werk mindestens ei
   await ctx.close();
 });
 
+await check("Durchlauf über 30 s (4. November 2026): jedes Werk schliesst die Schlaufe und bewegt sich am Rand", async () => {
+  const { ctx, page } = await oeffne();
+  const schlecht = await page.evaluate(() => {
+    const { motor, WERKE } = window.animationen, gl = motor.gl, dt = 1 / 30, D = 30;
+    const lesen = (t, s) => { motor.zeichnen(s, t, 64, 80); const p = new Uint8Array(64 * 80 * 4); gl.readPixels(0, 0, 64, 80, gl.RGBA, gl.UNSIGNED_BYTE, p); return p; };
+    const mittel = (a, b) => { let d = 0; for (let i = 0; i < a.length; i++) d += Math.abs(a[i] - b[i]); return d / a.length; };
+    return WERKE.map((w) => {
+      const s = { ...w.stapel, durchlauf: true, dauer: D };
+      const letztes = lesen(D - dt, s), erstes = lesen(0, s), zweites = lesen(dt, s), vorletztes = lesen(D - 2 * dt, s), mitte = lesen(D / 2, s), mitte2 = lesen(D / 2 + dt, s);
+      const naht = mittel(letztes, erstes), normal = Math.max(mittel(erstes, zweites), mittel(vorletztes, letztes), mittel(mitte, mitte2));
+      return { id: w.id, naht: +naht.toFixed(2), normal: +normal.toFixed(2) };
+    }).filter((r) => r.naht > r.normal * 3 + 1.5);
+  });
+  assert.deepEqual(schlecht, []);
+  await ctx.close();
+});
+
 await check("Ansichten wechseln, Reel läuft weiter, Mischpult mischt neu und merkt sich die Mischung", async () => {
   const { ctx, page, fehler } = await oeffne({ width: 1300, height: 900 }, "#w=frida-4");
   await page.getByRole("button", { name: "Pause" }).click();   // angehalten, damit das Reel in der langsamen Software-Grafik nicht weiterläuft
