@@ -83,25 +83,31 @@ function bildZeigen(an) {
   $("reel-ohnebild").setAttribute("aria-pressed", String(S.ohneBild));
   if (S.ansicht === "mischpult") pultAufbauen();
   for (const { w, c } of kacheln) malen(c, w.stapel, S.dauer * .35, [240, 300]);
-  malen($("reel-mini"), WERKE[S.reel].stapel, S.dauer * .35, [88, 110]);
+  malen($("reel-mini"), WERKE[(S.reel + 1) % WERKE.length].stapel, S.dauer * .35, [96, 120]);
   adresse();
 }
 
 // ——— Reel ———
+const effektNamen = (stapel) => stapel.ebenen.filter((e) => !e.aus && EFFEKTE[e.effekt]).map((e) => EFFEKTE[e.effekt].name).join(" + ");
 function reelZeigen(i, { neuStart = true } = {}) {
   S.reel = (i + WERKE.length) % WERKE.length;
-  const w = WERKE[S.reel];
+  const w = WERKE[S.reel], n = WERKE[(S.reel + 1) % WERKE.length];
   if (neuStart) { S.t0 = performance.now(); S.tPause = ruhig ? S.dauer * .35 : 0; }
   $("reel-titel").replaceChildren(el("b", { text: `${bildName(w.bild)} / ` }), `${zwei(w.nr)} ${w.titel}`);
+  $("reel-effekte").textContent = effektNamen(w.stapel);
+  $("reel-grund").textContent = w.stapel.grund === "weiss" ? "Weiss" : "Schwarz";
+  $("reel-stand").textContent = `${zwei(S.reel + 1)} / ${WERKE.length}`;
+  $("reel-naechstes-titel").textContent = `${bildName(n.bild)} ${zwei(n.nr)} — ${n.titel}`;
   for (const b of $("reel-zaehler").querySelectorAll("button")) b.setAttribute("aria-pressed", String(b.dataset.bild === w.bild));
-  malen($("reel-mini"), w.stapel, S.dauer * .35, [88, 110]);
+  malen($("reel-mini"), n.stapel, S.dauer * .35, [96, 120]);   // die kleine Vorschau zeigt das nächste Werk
   if (S.ansicht === "reel") adresse();
 }
 BILDER.forEach((b, i) => {
-  if (i) $("reel-zaehler").append(",");
-  $("reel-zaehler").append(el("button", { type: "button", "data-bild": b.id, title: b.name, "aria-pressed": "false", text: `(${i + 1})`,
-    onclick: () => reelZeigen(WERKE.findIndex((w) => w.bild === b.id)) }));
+  $("reel-zaehler").append(el("button", { type: "button", "data-bild": b.id, "aria-label": `(${i + 1}) ${b.name}`, "aria-pressed": "false",
+    onclick: () => reelZeigen(WERKE.findIndex((w) => w.bild === b.id)) }, el("small", { text: zwei(i + 1) }), b.name));
 });
+$("reel-naechstes").addEventListener("click", () => reelZeigen(S.reel + 1));
+const laengeText = () => { $("reel-laenge").textContent = `${S.dauer} s, ${S.durchlauf ? "Durchlauf" : "hin und zurück"}`; };
 $("reel-ohnebild").addEventListener("click", () => bildZeigen(S.ohneBild));
 // ——— Bewegung: hin und zurück oder Durchlauf, Länge der Schlaufe ———
 // Wunsch vom 4. November 2026: «einen schalter, der die animation, sagen wir 30 sekunden einfach weiterlaufen lässt, anstatt den effekt
@@ -112,9 +118,10 @@ function bewegung({ durchlauf = S.durchlauf, dauer = S.dauer } = {}) {
   if (!S.laeuft) S.tPause = t % S.dauer; else S.t0 = performance.now() - (t % S.dauer) * 1000;
   $("reel-durchlauf").textContent = S.durchlauf ? "Hin und zurück" : "Durchlauf";
   $("reel-durchlauf").setAttribute("aria-pressed", String(S.durchlauf));
+  laengeText();
   if (S.ansicht === "mischpult") pultAufbauen();
   for (const { w, c } of kacheln) malen(c, w.stapel, DAUER * .35, [240, 300]);
-  malen($("reel-mini"), WERKE[S.reel].stapel, DAUER * .35, [88, 110]);
+  malen($("reel-mini"), WERKE[(S.reel + 1) % WERKE.length].stapel, DAUER * .35, [96, 120]);
   adresse();
 }
 $("reel-durchlauf").addEventListener("click", () => bewegung({ durchlauf: !S.durchlauf }));
@@ -134,7 +141,9 @@ $("reel-pause").addEventListener("click", () => pause(!S.laeuft));
 $("pult-pause").addEventListener("click", () => pause(!S.laeuft));
 $("pult-bild").addEventListener("click", () => pause(!S.laeuft));
 addEventListener("keydown", (e) => {
-  if (e.code !== "Space" || e.target.closest("input, select, textarea, button, a")) return;
+  if (e.target.closest("input, select, textarea")) return;
+  if (S.ansicht === "reel" && (e.code === "ArrowRight" || e.code === "ArrowLeft")) { e.preventDefault(); reelZeigen(S.reel + (e.code === "ArrowRight" ? 1 : -1)); return; }   // Pfeiltasten blättern
+  if (e.code !== "Space" || e.target.closest("button, a")) return;
   if (S.ansicht !== "reel" && S.ansicht !== "mischpult") return;
   e.preventDefault(); pause(!S.laeuft);
 });
@@ -155,23 +164,30 @@ $("pult-bildpng").addEventListener("click", () => standbild(S.mix, `${S.mix.bild
 $("reel-mp4").addEventListener("click", () => { const w = WERKE[S.reel]; herunterladen(w.stapel, `${w.bild}-${zwei(w.nr)}-${slug(w.titel)}`); });
 
 // ——— Werke: gestreutes Raster ———
+// Kacheln in drei Grössen, je Zeile zwei bis drei, zufällig über die Spalten verteilt (fester Startwert, damit es bei jedem Besuch gleich liegt)
 const raster = $("werke-raster");
 function streuen() {
-  const spalten = innerWidth <= 640 ? 3 : innerWidth <= 900 ? 4 : 8;   // wie im CSS; die Ansicht kann beim Aufruf versteckt sein
+  const spalten = innerWidth <= 720 ? 4 : innerWidth <= 1180 ? 8 : 12;   // wie im CSS; die Ansicht kann beim Aufruf versteckt sein
+  const [breiten, jeZeile] = spalten === 4 ? [[2, 2, 3], [1, 2]] : spalten === 8 ? [[2, 2, 3, 3], [2, 3, 3]] : [[2, 2, 2, 3, 3], [3, 4, 4]];
   let zufallsZahl = 7;
   const zz = () => (zufallsZahl = (zufallsZahl * 9301 + 49297) % 233280) / 233280;
+  const wahl = (a) => a[Math.floor(zz() * a.length)];
   let zeile = 1, rest = [...raster.children];
   while (rest.length) {
-    const n = Math.min(rest.length, spalten <= 3 ? 1 + Math.floor(zz() * 2) : 2 + Math.floor(zz() * 2));
-    const frei = [...Array(spalten).keys()].sort(() => zz() - .5).slice(0, n).sort((a, b) => a - b);
-    for (const s of frei) { const k = rest.shift(); k.style.gridRow = zeile; k.style.gridColumn = s + 1; }
+    let n = Math.min(rest.length, wahl(jeZeile)), b;
+    do { b = Array.from({ length: n }, () => wahl(breiten)); n--; } while (b.reduce((s, x) => s + x, 0) > spalten && n > 0);
+    let frei = spalten - b.reduce((s, x) => s + x, 0), start = 0;
+    for (const w of b) {
+      const luecke = Math.floor(zz() * (frei + 1)); frei -= luecke; start += luecke;
+      const k = rest.shift(); k.style.gridRow = zeile; k.style.gridColumn = `${start + 1} / span ${w}`; start += w;
+    }
     zeile++;
   }
 }
 const kacheln = WERKE.map((w, i) => {
   const c = el("canvas", { width: 240, height: 300, "aria-hidden": "true" });
   const a = el("a", { class: "kachel", href: `#w=${w.id}`, "data-bild": w.bild, "aria-label": `${bildName(w.bild)}, ${w.titel}` },
-    c, el("span", { text: `${bildName(w.bild)} ${zwei(w.nr)} — ${w.titel}` }));
+    c, el("span", {}, el("b", { class: "nr", text: zwei(w.nr) }), w.titel, el("small", { text: bildName(w.bild) })));
   a.addEventListener("click", (e) => { e.preventDefault(); ansicht("reel", { verlauf: false }); reelZeigen(i); });
   const an = () => { if (!ruhig) S.live = { c, stapel: w.stapel, t0: performance.now() }; };
   const aus = () => { if (S.live?.c === c) { S.live = null; malen(c, w.stapel, S.dauer * .35, [240, 300]); } };
@@ -183,12 +199,12 @@ const kacheln = WERKE.map((w, i) => {
 let filter = null;
 const bilderListe = $("werke-bilder");
 for (const b of [...BILDER, { id: null, name: "Alle" }]) {
-  const knopf = el("button", { type: "button", "aria-pressed": String(b.id === null), text: b.name, onclick: () => {
+  const knopf = el("button", { type: "button", "aria-pressed": String(b.id === null), onclick: () => {
     filter = b.id;
     for (const k of bilderListe.querySelectorAll("button")) k.setAttribute("aria-pressed", String(k === knopf));
     raster.classList.toggle("gefiltert", !!filter);
     for (const k of raster.children) k.classList.toggle("an", k.dataset.bild === filter);
-  } });
+  } }, el("small", { text: b.id ? zwei(BILDER.indexOf(b) + 1) : "" }), b.name, el("small", { class: "leise", text: b.id ? "" : String(WERKE.length) }));
   bilderListe.append(el("li", {}, knopf));
 }
 addEventListener("resize", streuen);
@@ -299,10 +315,10 @@ async function herunterladen(stapel, name) {
   if (S.export) return;
   const stand = { abbrechen: false };
   S.export = stand;
-  $("export").hidden = false; $("export-text").textContent = "MP4 · 0 %";
+  $("export").hidden = false; $("export-text").textContent = "MP4 · 0 %"; $("export").style.setProperty("--p", 0);
   try {
     const erg = await videoErstellen(motor, kopie(mit(stapel)), {
-      fortschritt: (p) => { $("export-text").textContent = `MP4 · ${Math.round(p * 100)} %`; },
+      fortschritt: (p) => { $("export-text").textContent = `MP4 · ${Math.round(p * 100)} %`; $("export").style.setProperty("--p", p); },
       abbruch: () => stand.abbrechen,
     });
     if (erg) {
@@ -326,10 +342,12 @@ function bild() {
     const tt = zeit() % S.dauer;
     malen($("reel-bild"), WERKE[S.reel].stapel, tt);
     $("reel-uhr").textContent = uhrText(tt);
+    $("reel").style.setProperty("--p", tt / S.dauer);   // die Fortschrittslinie unter der Bühne
   } else if (S.ansicht === "mischpult") {
     const tt = t % S.dauer;
     malen($("pult-bild"), S.mix, tt);
     $("pult-uhr").textContent = uhrText(tt);
+    $("mischpult").style.setProperty("--p", tt / S.dauer);
   } else if (S.ansicht === "werke" && S.live) {
     malen(S.live.c, S.live.stapel, ((performance.now() - S.live.t0) / 1000) % S.dauer, [240, 300]);
   }
@@ -344,6 +362,7 @@ streuen();
 for (const { w, c } of kacheln) malen(c, w.stapel, S.dauer * .35, [240, 300]);
 const start = ausAdresse();
 $("reel-durchlauf").textContent = S.durchlauf ? "Hin und zurück" : "Durchlauf"; $("reel-durchlauf").setAttribute("aria-pressed", String(S.durchlauf));
+laengeText();
 reelZeigen(S.reel);
 ansicht(start, { verlauf: false });
 document.documentElement.classList.add("bereit");
