@@ -13,6 +13,9 @@ gesichert werden und werden abgelegt mit ersteller name (und sehr nice präsenti
 knopf soll gut sichtbar sein», «eine tolle vorschaukachel für social media»): zwei Ansichten, Mischpult und Info. Das Bild bringt der Besucher
 mit (hochladen oder auf die Bühne ziehen); «Werk sichern» legt Bild und Mischung mit Titel und Name in werke.php ab, die Werke stehen darunter
 im gestreuten Raster, lebendig beim Darüberfahren, und lassen sich ins Mischpult laden. Gestaltung nach DESIGN.md in diesem Ordner.
+Seit 4. November 2026 (spät, Wunsch: «die farben und schriften der website etwas cooler machen und nicht in diesem claude classic design»):
+kalte Palette (Blauschwarz, Kaltweiss, ein Akzent in Säuregrün) und neue Schriften (Bricolage Grotesque, Geist, Geist Mono) statt Warmweiss, Koralle,
+Instrument Sans und Newsreader kursiv; die Form der Seite bleibt.
 Steht für sich wie PHORMA (Ausnahme in tests/navigation.test.mjs), noindex, nicht in der Sitemap, bis zur Freigabe.
 Rechnet alles im Browser (WebGL 2, motor.js), das MP4 (1080 × 1350, 30 fps, 12 s, nahtlose Schlaufe) mit WebCodecs und mp4-muxer aus vendor/.
 -->
@@ -27,27 +30,28 @@ Rechnet alles im Browser (WebGL 2, motor.js), das MP4 (1080 × 1350, 30 fps, 12 
 <meta property="og:image" content="https://ornament.cloud/animations/og-animationen.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Animationen auf ornament.cloud: links das Wort «Animationen» mit orangem Punkt, rechts sechs Effekte aus Höhenlinien, Strömung, Druckraster und Voxeln auf Schwarz.">
+<meta property="og:image:alt" content="Animationen auf ornament.cloud: links das Wort «Animationen» mit gelbgrünem Punkt, rechts sechs Effekte aus Höhenlinien, Strömung, Druckraster und Voxeln auf Schwarz.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Animationen">
 <meta name="twitter:description" content="Dein Bild, siebenundzwanzig Effekte, drei Ebenen: Animationen mischen, als MP4 laden und als Werk mit deinem Namen sichern.">
 <meta name="twitter:image" content="https://ornament.cloud/animations/og-animationen.jpg">
 <meta name="color-scheme" content="dark light">
-<meta name="theme-color" content="#0b090a" media="(prefers-color-scheme: dark)">
-<meta name="theme-color" content="#f2efea" media="(prefers-color-scheme: light)">
-<link rel="stylesheet" href="../vendor/fonts/fonts.css">
+<meta name="theme-color" content="#08090c" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#eceef2" media="(prefers-color-scheme: light)">
+<link rel="stylesheet" href="../vendor/fonts/animationen.css">
 <style>
 /* ---------- Tokens (DESIGN.md) ---------- */
 :root {
-  --grund: #0b090a; --flaeche: #141112; --buehne: #000; --tinte: #f2ece6; --leise: rgba(242, 236, 230, .56); --linie: rgba(242, 236, 230, .16); --akzent: #f08a5d;
-  --sans: "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --serif: Newsreader, "Iowan Old Style", Georgia, serif;
+  --grund: #08090c; --flaeche: #11131a; --buehne: #000; --tinte: #e9ecf2; --leise: rgba(233, 236, 242, .56); --linie: rgba(233, 236, 242, .14); --akzent: #c9ff3d; --dunkel: #08090c;
+  --sans: Geist, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --display: "Bricolage Grotesque", Geist, system-ui, sans-serif;
+  --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --rand: 24px; --breit: 1680px; --kopf: 60px;
   --dauer: 240ms;
   color-scheme: dark;
 }
 @media (prefers-color-scheme: light) {
-  :root { --grund: #f2efea; --flaeche: #fff; --buehne: #0b090a; --tinte: #121010; --leise: rgba(18, 16, 16, .56); --linie: rgba(18, 16, 16, .16); --akzent: #c2410c; color-scheme: light; }
+  :root { --grund: #eceef2; --flaeche: #fff; --buehne: #08090c; --tinte: #0e1016; --leise: rgba(14, 16, 22, .6); --linie: rgba(14, 16, 22, .16); --akzent: #3a7000; color-scheme: light; }
 }
 @media (prefers-reduced-motion: reduce) { :root { --dauer: 0ms; } }
 /* Format der Bühne: 4:5, 1:1 oder 16:9 (PR #615), gesetzt als data-format auf <html> */
@@ -68,9 +72,10 @@ button { background: none; border: 0; padding: 0; cursor: pointer; border-radius
 :focus-visible { outline: 2px solid var(--akzent); outline-offset: 3px; }
 .leise { color: var(--leise); }
 .etikett, .ansichten small, .kachel .nr, .gruppe > h2, .ebene legend, .kolophon dt, .spalten h2, .stand, .werke-kopf small
-  { font-size: 11px; line-height: 1.3; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--leise); }
-.uhr, .stand, output, .kachel .nr, .ansichten small { font-variant-numeric: tabular-nums; }
-.gross i { font-family: var(--serif); font-style: italic; font-weight: 300; letter-spacing: -.01em; }
+  { font-family: var(--mono); font-size: 11px; line-height: 1.3; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--leise); }
+.uhr, .stand, output, .kachel .nr, .kachel small, .kachel .loeschen, .ansichten small, .spalten li::before, .export-zeile { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+/* das eine Gegenwort in den grossen Zeilen: keine kursive Serife mehr, sondern leicht und im Akzent */
+.gross i, .leer .satz i, .meldung i { font-style: normal; font-weight: 300; color: var(--akzent); }
 .ansicht { animation: auftauchen var(--dauer) ease-out; }
 .ansicht[hidden] { display: none !important; }
 @keyframes auftauchen { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
@@ -86,6 +91,7 @@ button { background: none; border: 0; padding: 0; cursor: pointer; border-radius
 .kurz { display: none; }
 .ansichten { justify-self: end; display: flex; gap: 4px; }
 .ansichten button { display: inline-flex; align-items: baseline; gap: 8px; min-height: 44px; padding: 0 12px; font-weight: 500; color: var(--leise); position: relative; }
+.ansichten small { font-size: 11px; letter-spacing: .06em; }
 .ansichten button:hover { color: var(--tinte); }
 .ansichten button[aria-pressed="true"] { color: var(--tinte); }
 .ansichten button[aria-pressed="true"] small { color: var(--akzent); }
@@ -109,10 +115,10 @@ button { background: none; border: 0; padding: 0; cursor: pointer; border-radius
 .wahl button[aria-pressed="true"] { background: var(--tinte); color: var(--grund); border-color: var(--tinte); }
 .wahl .hochladen { border-style: dashed; }
 .knopf.voll { background: var(--tinte); color: var(--grund); border-color: var(--tinte); }
-.knopf.voll:hover { background: var(--akzent); border-color: var(--akzent); color: #0b090a; }
+.knopf.voll:hover { background: var(--akzent); border-color: var(--akzent); color: var(--dunkel); }
 .knopf.gross { min-height: 52px; padding: 10px 26px; font-size: 17px; font-weight: 500; }
 .knopf.gross .kreis { width: 10px; height: 10px; border-radius: 50%; background: var(--akzent); flex: none; }
-.knopf.voll:hover .kreis { background: #0b090a; }
+.knopf.voll:hover .kreis { background: var(--dunkel); }
 .knopf.leise { border-color: transparent; color: var(--leise); padding-left: 6px; padding-right: 6px; }
 .knopf.leise:hover { color: var(--tinte); }
 .knopf:disabled, .wahl button:disabled { opacity: .35; cursor: default; }
@@ -132,17 +138,17 @@ input[type="text"]::placeholder { color: var(--leise); }
 .pult-buehne .rahmen canvas { cursor: pointer; }
 .rahmen.ohne canvas { visibility: hidden; }
 /* leere Bühne: Aufforderung, ein Bild zu bringen */
-.leer { position: absolute; inset: 0; display: none; place-content: center; justify-items: center; text-align: center; gap: 12px; padding: 32px; color: #f2ece6; }
-.leer::before { content: ""; position: absolute; inset: 16px; border: 1px dashed rgba(242, 236, 230, .3); pointer-events: none; }
+.leer { position: absolute; inset: 0; display: none; place-content: center; justify-items: center; text-align: center; gap: 12px; padding: 32px; color: #e9ecf2; }
+.leer::before { content: ""; position: absolute; inset: 16px; border: 1px dashed rgba(233, 236, 242, .3); pointer-events: none; }
 .rahmen.ohne .leer { display: grid; }
 .leer p { margin: 0; max-width: 28ch; text-wrap: balance; }
-.leer .satz { font-size: 22px; line-height: 1.25; letter-spacing: -.01em; }
-.leer .satz i { font-family: var(--serif); font-style: italic; font-weight: 300; }
-.leer .knopf { color: #f2ece6; border-color: rgba(242, 236, 230, .4); margin-top: 8px; }
-.leer .knopf:hover { border-color: #f2ece6; }
-.leer .hinweis { color: rgba(242, 236, 230, .56); }
+.leer .satz { font-family: var(--display); font-size: 26px; font-weight: 500; line-height: 1.15; letter-spacing: -.02em; }
+.leer .satz i { color: #c9ff3d; }
+.leer .knopf { color: #e9ecf2; border-color: rgba(233, 236, 242, .4); margin-top: 8px; }
+.leer .knopf:hover { border-color: #e9ecf2; }
+.leer .hinweis { color: rgba(233, 236, 242, .56); }
 .pult-leiste { display: grid; grid-template-columns: auto 1fr auto; gap: 16px; align-items: center; width: 100%; max-width: 900px; }
-.uhr { margin: 0; font-size: 15px; }
+.uhr { margin: 0; font-size: 13px; }
 .stand { margin: 0; }
 .pult-haupt { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; width: 100%; max-width: 900px; }
 .pult { display: grid; gap: 28px; }
@@ -177,7 +183,7 @@ input[type="range"]:focus-visible { outline: none; }
 .werke-kopf { display: grid; grid-template-columns: 1fr auto; gap: 32px; align-items: end; padding: 0 0 40px; border-bottom: 1px solid var(--linie); margin-bottom: 40px; }
 .werke-kopf small { display: block; margin-bottom: 12px; }
 .werke-kopf p { margin: 0; max-width: 36ch; font-size: 15px; text-align: right; text-wrap: balance; }
-.gross { font-size: clamp(40px, 6.4vw, 104px); font-weight: 500; line-height: .95; letter-spacing: -.035em; margin: 0; text-wrap: balance; }
+.gross { font-family: var(--display); font-optical-sizing: auto; font-size: clamp(40px, 6.4vw, 104px); font-weight: 600; line-height: .95; letter-spacing: -.03em; margin: 0; text-wrap: balance; }
 .streu { display: grid; grid-template-columns: repeat(12, 1fr); gap: 32px 24px; }
 .streu:empty { display: none; }
 .kachel { display: grid; text-decoration: none; transition: opacity .25s; }
@@ -190,8 +196,7 @@ input[type="range"]:focus-visible { outline: none; }
 .kachel .loeschen:hover { color: var(--akzent); }
 .kachel:hover .nr, .kachel:focus-within .nr { color: var(--akzent); }
 .kachel:hover .titel { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
-.meldung { margin: 0; padding: 48px 0; max-width: 48ch; font-size: 22px; line-height: 1.3; letter-spacing: -.01em; text-wrap: balance; }
-.meldung i { font-family: var(--serif); font-style: italic; font-weight: 300; }
+.meldung { margin: 0; padding: 48px 0; max-width: 48ch; font-family: var(--display); font-size: 24px; font-weight: 500; line-height: 1.2; letter-spacing: -.015em; text-wrap: balance; }
 .meldung[hidden] { display: none; }
 
 /* ---------- Info ---------- */
@@ -340,7 +345,7 @@ input[type="range"]:focus-visible { outline: none; }
       <div><dt>Technik</dt><dd>WebGL 2 im Browser, jeder Effekt ein Shader. MP4 mit WebCodecs in 4:5, 1:1 oder 16:9, 30 Bilder pro Sekunde.</dd></div>
       <div><dt>Schlaufe</dt><dd>12, 30 oder 60 Sekunden, nahtlos: das letzte Bild geht ins erste über.</dd></div>
       <div><dt>Werke</dt><dd>«Werk sichern» legt Bild und Mischung mit Titel und Name auf ornament.cloud ab, sichtbar für alle. Löschen kann es der Browser, der es gesichert hat.</dd></div>
-      <div><dt>Schrift</dt><dd>Instrument Sans und Newsreader, lokal eingebunden. Keine Dienste von aussen.</dd></div>
+      <div><dt>Schrift</dt><dd>Bricolage Grotesque, Geist und Geist Mono, lokal eingebunden. Keine Dienste von aussen.</dd></div>
     </dl>
     <div class="spalten">
       <div><h2>So geht es</h2><ol>
