@@ -83,3 +83,11 @@ test("Durchlauf (4. November 2026): Motor kennt uLauf, Länge 12/30/60 s, Schalt
   assert.equal(dauerVon({}), 12); assert.equal(dauerVon({ dauer: 30 }), 30); assert.equal(dauerVon({ dauer: 7 }), 12);
   assert.match(html, /id="reel-durchlauf"/); assert.match(html, /id="pult-lauf"/); assert.match(html, /id="pult-laenge"/);
 });
+
+test("Format (4. November 2026): 4:5, 1:1, 16:9 in Reel und Mischpult, Standbild und MP4 in der Grösse des Formats", () => {
+  const seite = lies("animations/seite.js"), html = lies("animations/index.html");
+  assert.match(html, /id="pult-format"/); assert.match(html, /id="reel-format"/);
+  assert.match(html, /:root\[data-format="16x9"\]/);
+  for (const g of ["1080, 1350", "1080, 1080", "1920, 1080"]) assert.ok(seite.includes(`gross: [${g}]`), g);
+  assert.match(seite, /breite, hoehe,/);
+});
