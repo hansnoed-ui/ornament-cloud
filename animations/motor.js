@@ -3,7 +3,9 @@
 // Schlaufe ab (phi = 2π·t/DAUER, ganzzahlige Frequenzen): Bild N ist wieder Bild 0, und das MP4 entsteht Bild für Bild.
 import { EFFEKTE } from "./effekte.js";
 
-export const DAUER = 12, FPS = 30;
+export const DAUER = 12, FPS = 30, LAENGEN = [12, 30, 60];
+/** Länge der Schlaufe eines Stapels in Sekunden (Vorgabe 12) */
+export const dauerVon = (stapel) => LAENGEN.includes(stapel?.dauer) ? stapel.dauer : DAUER;
 export const MODI = { normal: 0, multiplizieren: 1, differenz: 2, bildschirm: 3, ueberlagern: 4 };
 
 // Hash ohne Sinus (Dave Hoskins, MIT) und Gradientenrauschen; «ln» läuft auf einem Kreis durch die Zeit und schliesst so die Schlaufe.
@@ -11,7 +13,7 @@ const KOPF = `#version 300 es
 precision highp float; precision highp int;
 uniform sampler2D uBild, uUnten;
 uniform vec2 uRes, uFit;
-uniform float uPhi, uT, uSeed, uQuelle, uLod, uCols, uRows, uZeigen;
+uniform float uPhi, uT, uSeed, uQuelle, uLod, uCols, uRows, uZeigen, uLauf, uPsi, uL;
 uniform float uP[6];
 #define PI 3.14159265
 #define TAU 6.28318531
@@ -47,7 +49,13 @@ float gn(vec3 p){
   return 1.6 * mix(mix(mix(G(vec3(0,0,0)), G(vec3(1,0,0)), u.x), mix(G(vec3(0,1,0)), G(vec3(1,1,0)), u.x), u.y),
                    mix(mix(G(vec3(0,0,1)), G(vec3(1,0,1)), u.x), mix(G(vec3(0,1,1)), G(vec3(1,1,1)), u.x), u.y), u.z);
 }
-float ln(vec2 p, float r){ return gn(vec3(p.x + uSeed * 7.31, p.y + r * cos(uPhi), r * sin(uPhi) + uSeed * 3.7)); }
+// «Durchlauf» (Wunsch vom 4. November 2026: «die Animation, sagen wir 30 sekunden einfach weiterlaufen lässt, anstatt den effekt hin und
+// zurück zu bewegen»): uPhi läuft in Zyklen von rund 12 s (eine ganze Zahl pro Schlaufe), das Rauschen dagegen einmal um einen grösseren
+// Kreis über die ganze Schlaufe (uPsi, Radius × uL), es wiederholt sich also nicht und fliesst gleich schnell. HZ hält ein Hin-und-zurück
+// auf dem vollen Wert, PD schaltet ein Pendeln ab.
+float HZ(float e){ return mix(e, 1., uLauf); }
+float PD(float s){ return s * (1. - uLauf); }
+float ln(vec2 p, float r){ r *= uL; return gn(vec3(p.x + uSeed * 7.31, p.y + r * cos(uPsi), r * sin(uPsi) + uSeed * 3.7)); }
 float lfbm(vec2 p, float r){ float s = 0., a = .5; for (int i = 0; i < 4; i++){ s += a * ln(p, r); p = p * 2.03 + vec2(1.7, 9.2); a *= .5; } return s; }
 vec2 lcurl(vec2 p, float r){ float e = .02, n = ln(p, r); return vec2(ln(p + vec2(0, e), r) - n, -(ln(p + vec2(e, 0), r) - n)) / e; }
 `;
@@ -168,7 +176,8 @@ export function motorErstellen() {
     const a = b / h, ab = bild.b / bild.h;
     const fit = a > ab ? [1, ab / a] : [a / ab, 1];
     const lod = Math.max(0, Math.log2((bild.h * fit[1]) / h));
-    const tt = ((t % DAUER) + DAUER) % DAUER / DAUER;
+    const D = dauerVon(stapel), zyklen = Math.max(1, Math.round(D / DAUER));
+    const tt = ((t % D) + D) % D / D, tz = (tt * zyklen) % 1;
     gl.viewport(0, 0, b, h);
     gl.bindFramebuffer(gl.FRAMEBUFFER, acc[0].fb);
     const g = GRUND[stapel.grund] ?? GRUND.schwarz;
@@ -183,7 +192,7 @@ export function motorErstellen() {
       gl.useProgram(pr.p);
       textur(pr, "uBild", 0, bild.tex); textur(pr, "uUnten", 1, acc[i].tex);
       fp(pr, "uRes", b, h); fp(pr, "uFit", fit[0], fit[1]); fp(pr, "uLod", lod);
-      fp(pr, "uPhi", tt * Math.PI * 2); fp(pr, "uT", tt); fp(pr, "uSeed", e.seed ?? 0); fp(pr, "uQuelle", e.quelle === "unten" ? 1 : 0); fp(pr, "uZeigen", stapel.ohneBild ? 0 : 1);
+      fp(pr, "uPhi", tz * Math.PI * 2); fp(pr, "uT", tz); fp(pr, "uPsi", tt * Math.PI * 2); fp(pr, "uL", D / DAUER); fp(pr, "uLauf", stapel.durchlauf ? 1 : 0); fp(pr, "uSeed", e.seed ?? 0); fp(pr, "uQuelle", e.quelle === "unten" ? 1 : 0); fp(pr, "uZeigen", stapel.ohneBild ? 0 : 1);
       const w = def.regler.map((r, k) => e.werte?.[k] ?? r.wert);
       gl.uniform1fv(pr.ort("uP[0]"), Float32Array.from({ length: 6 }, (_, k) => w[k] ?? 0));
       if (def.punkte) {
@@ -230,7 +239,7 @@ async function konfiguration(b, h) {
 }
 
 export async function videoErstellen(motor, stapel, { breite = 1080, hoehe = 1350, fortschritt = () => {}, abbruch = () => false } = {}) {
-  const n = DAUER * FPS;
+  const n = dauerVon(stapel) * FPS;
   const cfg = await konfiguration(breite, hoehe);
   if (cfg) {
     const { Muxer, ArrayBufferTarget } = await import("../vendor/mp4-muxer-5.2.2/mp4-muxer.js");
@@ -267,9 +276,9 @@ export async function videoErstellen(motor, stapel, { breite = 1080, hoehe = 135
   await new Promise((ok) => {
     const schritt = () => {
       const t = (performance.now() - t0) / 1000;
-      if (t >= DAUER || abbruch()) { ok(); return; }
+      if (t >= dauerVon(stapel) || abbruch()) { ok(); return; }
       motor.zeichnen(stapel, t, breite, hoehe); ctx.drawImage(motor.leinwand, 0, 0);
-      fortschritt(t / DAUER); requestAnimationFrame(schritt);
+      fortschritt(t / dauerVon(stapel)); requestAnimationFrame(schritt);
     };
     schritt();
   });

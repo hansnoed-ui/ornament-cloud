@@ -74,3 +74,12 @@ test("Bild zeigen: aus (4. November 2026): Motor setzt uZeigen, Ql zeigt ein Ras
   assert.match(seite, /-ohne-bild/);
   for (const id of ["partikel", "metaballs", "wirbel", "zebra", "linien", "linsen", "glitzer", "tinte", "pinsel", "raster", "relief", "hoehenlinien", "stroemung", "roentgen", "montage", "entrauschen", "echo", "aquarell", "voxel", "sortieren", "vertigo", "strahlen"]) assert.match(EFFEKTE[id].glsl, /Kl\(/, id);
 });
+
+test("Durchlauf (4. November 2026): Motor kennt uLauf, Länge 12/30/60 s, Schalter in Reel und Mischpult", async () => {
+  const motor = lies("animations/motor.js"), html = lies("animations/index.html");
+  assert.match(motor, /uLauf/); assert.match(motor, /float HZ\(float e\)/);
+  const { LAENGEN, dauerVon } = await import(new URL("animations/motor.js", root).href);
+  assert.deepEqual(LAENGEN, [12, 30, 60]);
+  assert.equal(dauerVon({}), 12); assert.equal(dauerVon({ dauer: 30 }), 30); assert.equal(dauerVon({ dauer: 7 }), 12);
+  assert.match(html, /id="reel-durchlauf"/); assert.match(html, /id="pult-lauf"/); assert.match(html, /id="pult-laenge"/);
+});

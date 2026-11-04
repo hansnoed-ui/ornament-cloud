@@ -1,6 +1,6 @@
 // Animationen – die Seite: Reel (eine Animation nach der anderen), Werke (alle 27 im gestreuten Raster, beim Darüberfahren lebendig),
 // Mischpult (Bild, Grund, drei Ebenen) und Info. Ein Motor zeichnet für alle; die sichtbare Leinwand übernimmt sein Bild.
-import { motorErstellen, videoErstellen, DAUER, MODI } from "./motor.js";
+import { motorErstellen, videoErstellen, DAUER, LAENGEN, MODI } from "./motor.js";
 import { EFFEKTE, EFFEKT_IDS } from "./effekte.js";
 import { BILDER, WERKE, zufall } from "./rezepte.js";
 
@@ -12,7 +12,8 @@ const el = (tag, attr = {}, ...kinder) => {
   return e;
 };
 const zwei = (n) => String(n).padStart(2, "0");
-const uhrText = (t) => `00:${zwei(Math.floor(t))},${Math.floor((t % 1) * 10)} / 00:${zwei(DAUER)}`;
+const mmss = (t) => `${zwei(Math.floor(t / 60))}:${zwei(Math.floor(t % 60))}`;
+const uhrText = (t) => `${mmss(t)},${Math.floor((t % 1) * 10)} / ${mmss(S.dauer)}`;
 const MODUS_NAMEN = { normal: "Normal", multiplizieren: "Multiplizieren", differenz: "Differenz", bildschirm: "Bildschirm", ueberlagern: "Überlagern" };
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const EIGEN = "eigen";   // das eigene Bild im Mischpult: bleibt im Browser, wird nirgends hochgeladen
@@ -30,9 +31,10 @@ const S = {
   ansicht: "reel", reel: 0, laeuft: !ruhig, t0: performance.now(), tPause: DAUER * .35,
   mix: kopie(WERKE[0].stapel), live: null, export: null,
   ohneBild: false,   // «Bild zeigen: aus» gilt für Reel, Werke und Mischpult zugleich
+  durchlauf: false, dauer: DAUER,   // «Durchlauf» statt hin und zurück, Länge der Schlaufe (12, 30 oder 60 s), ebenfalls für alles
 };
-const mit = (stapel) => S.ohneBild ? { ...stapel, ohneBild: true } : stapel;
-const ohne = () => S.ohneBild ? "-ohne-bild" : "";
+const mit = (stapel) => ({ ...stapel, ohneBild: S.ohneBild || undefined, durchlauf: S.durchlauf || undefined, dauer: S.dauer });
+const ohne = () => (S.ohneBild ? "-ohne-bild" : "") + (S.durchlauf ? "-durchlauf" : "") + (S.dauer !== DAUER ? `-${S.dauer}s` : "");
 const zeit = () => S.laeuft ? (performance.now() - S.t0) / 1000 : S.tPause;
 
 // ——— Leinwand passend zur Anzeige (Bildschirmdichte, höchstens 1080 breit) ———
@@ -59,14 +61,14 @@ function ansicht(name, { verlauf = true } = {}) {
 function adresse() {
   let h = S.ansicht;
   if (S.ansicht === "reel") h = `w=${WERKE[S.reel].id}`;
-  if (S.ansicht === "mischpult") h = `m=${btoa(unescape(encodeURIComponent(JSON.stringify({ ...S.mix, ohneBild: S.ohneBild || undefined })))).replace(/=+$/, "")}`;
+  if (S.ansicht === "mischpult") h = `m=${btoa(unescape(encodeURIComponent(JSON.stringify({ ...S.mix, ohneBild: S.ohneBild || undefined, durchlauf: S.durchlauf || undefined, dauer: S.dauer !== DAUER ? S.dauer : undefined })))).replace(/=+$/, "")}`;
   history.replaceState(null, "", `#${h}`);
 }
 function ausAdresse() {
   const h = decodeURIComponent(location.hash.slice(1));
   if (h.startsWith("w=")) { const i = WERKE.findIndex((w) => w.id === h.slice(2)); if (i >= 0) S.reel = i; return "reel"; }
   if (h.startsWith("m=")) {
-    try { const m = JSON.parse(decodeURIComponent(escape(atob(h.slice(2))))); if ((BILDER.some((b) => b.id === m.bild) || m.bild === EIGEN) && Array.isArray(m.ebenen)) { S.ohneBild = !!m.ohneBild; delete m.ohneBild; S.mix = { ...m, bild: m.bild === EIGEN ? BILDER[0].id : m.bild }; } } catch { /* alter Link */ }   // ein eigenes Bild steht nicht im Link
+    try { const m = JSON.parse(decodeURIComponent(escape(atob(h.slice(2))))); if ((BILDER.some((b) => b.id === m.bild) || m.bild === EIGEN) && Array.isArray(m.ebenen)) { S.ohneBild = !!m.ohneBild; S.durchlauf = !!m.durchlauf; S.dauer = LAENGEN.includes(m.dauer) ? m.dauer : DAUER; delete m.ohneBild; delete m.durchlauf; delete m.dauer; S.mix = { ...m, bild: m.bild === EIGEN ? BILDER[0].id : m.bild }; } } catch { /* alter Link */ }   // ein eigenes Bild steht nicht im Link
     return "mischpult";
   }
   return ["reel", "werke", "mischpult", "info"].includes(h) ? h : "reel";
@@ -80,8 +82,8 @@ function bildZeigen(an) {
   $("reel-ohnebild").textContent = S.ohneBild ? "Bild zeigen" : "Bild ausblenden";
   $("reel-ohnebild").setAttribute("aria-pressed", String(S.ohneBild));
   if (S.ansicht === "mischpult") pultAufbauen();
-  for (const { w, c } of kacheln) malen(c, w.stapel, DAUER * .35, [240, 300]);
-  malen($("reel-mini"), WERKE[S.reel].stapel, DAUER * .35, [88, 110]);
+  for (const { w, c } of kacheln) malen(c, w.stapel, S.dauer * .35, [240, 300]);
+  malen($("reel-mini"), WERKE[S.reel].stapel, S.dauer * .35, [88, 110]);
   adresse();
 }
 
@@ -89,10 +91,10 @@ function bildZeigen(an) {
 function reelZeigen(i, { neuStart = true } = {}) {
   S.reel = (i + WERKE.length) % WERKE.length;
   const w = WERKE[S.reel];
-  if (neuStart) { S.t0 = performance.now(); S.tPause = ruhig ? DAUER * .35 : 0; }
+  if (neuStart) { S.t0 = performance.now(); S.tPause = ruhig ? S.dauer * .35 : 0; }
   $("reel-titel").replaceChildren(el("b", { text: `${bildName(w.bild)} / ` }), `${zwei(w.nr)} ${w.titel}`);
   for (const b of $("reel-zaehler").querySelectorAll("button")) b.setAttribute("aria-pressed", String(b.dataset.bild === w.bild));
-  malen($("reel-mini"), w.stapel, DAUER * .35, [88, 110]);
+  malen($("reel-mini"), w.stapel, S.dauer * .35, [88, 110]);
   if (S.ansicht === "reel") adresse();
 }
 BILDER.forEach((b, i) => {
@@ -101,12 +103,27 @@ BILDER.forEach((b, i) => {
     onclick: () => reelZeigen(WERKE.findIndex((w) => w.bild === b.id)) }));
 });
 $("reel-ohnebild").addEventListener("click", () => bildZeigen(S.ohneBild));
+// ——— Bewegung: hin und zurück oder Durchlauf, Länge der Schlaufe ———
+// Wunsch vom 4. November 2026: «einen schalter, der die animation, sagen wir 30 sekunden einfach weiterlaufen lässt, anstatt den effekt
+// hin und zurück zu bewegen»; die Schlaufe bleibt geschlossen, das MP4 hat die gewählte Länge
+function bewegung({ durchlauf = S.durchlauf, dauer = S.dauer } = {}) {
+  const t = zeit() % S.dauer;
+  S.durchlauf = durchlauf; S.dauer = dauer;
+  if (!S.laeuft) S.tPause = t % S.dauer; else S.t0 = performance.now() - (t % S.dauer) * 1000;
+  $("reel-durchlauf").textContent = S.durchlauf ? "Hin und zurück" : "Durchlauf";
+  $("reel-durchlauf").setAttribute("aria-pressed", String(S.durchlauf));
+  if (S.ansicht === "mischpult") pultAufbauen();
+  for (const { w, c } of kacheln) malen(c, w.stapel, DAUER * .35, [240, 300]);
+  malen($("reel-mini"), WERKE[S.reel].stapel, DAUER * .35, [88, 110]);
+  adresse();
+}
+$("reel-durchlauf").addEventListener("click", () => bewegung({ durchlauf: !S.durchlauf }));
 $("reel-weiter").addEventListener("click", () => reelZeigen(S.reel + 1));
 $("reel-zurueck").addEventListener("click", () => reelZeigen(S.reel - 1));
 $("reel-bild").addEventListener("click", () => reelZeigen(S.reel + 1));
 function pause(an) {
   if (an === S.laeuft) return;
-  if (an) S.t0 = performance.now() - S.tPause * 1000; else S.tPause = zeit() % DAUER;
+  if (an) S.t0 = performance.now() - S.tPause * 1000; else S.tPause = zeit() % S.dauer;
   S.laeuft = an;
   pauseText();
 }
@@ -125,7 +142,7 @@ pauseText();
 $("reel-mischen").addEventListener("click", () => { S.mix = kopie(WERKE[S.reel].stapel); ansicht("mischpult"); });
 // Standbild: das Bild, das gerade zu sehen ist, als PNG in 1080 × 1350
 function standbild(stapel, name) {
-  const t = zeit() % DAUER;
+  const t = zeit() % S.dauer;
   motor.zeichnen(mit(stapel), t, 1080, 1350);
   motor.leinwand.toBlob((blob) => {
     if (!blob) return;
@@ -157,7 +174,7 @@ const kacheln = WERKE.map((w, i) => {
     c, el("span", { text: `${bildName(w.bild)} ${zwei(w.nr)} — ${w.titel}` }));
   a.addEventListener("click", (e) => { e.preventDefault(); ansicht("reel", { verlauf: false }); reelZeigen(i); });
   const an = () => { if (!ruhig) S.live = { c, stapel: w.stapel, t0: performance.now() }; };
-  const aus = () => { if (S.live?.c === c) { S.live = null; malen(c, w.stapel, DAUER * .35, [240, 300]); } };
+  const aus = () => { if (S.live?.c === c) { S.live = null; malen(c, w.stapel, S.dauer * .35, [240, 300]); } };
   a.addEventListener("pointerenter", an); a.addEventListener("focus", an);
   a.addEventListener("pointerleave", aus); a.addEventListener("blur", aus);
   raster.append(a);
@@ -187,6 +204,10 @@ function pultAufbauen() {
     el("button", { type: "button", class: "hochladen", text: motor.hatBild(EIGEN) ? "Anderes Bild …" : "Bild hochladen …", onclick: () => $("pult-datei").click() }));
   $("pult-zeigen").replaceChildren(...[[false, "An"], [true, "Aus"]].map(([aus, text]) => el("button", { type: "button", "aria-pressed": String(S.ohneBild === aus), text,
     onclick: () => bildZeigen(!aus) })));
+  $("pult-lauf").replaceChildren(...[[false, "Hin und zurück"], [true, "Durchlauf"]].map(([d, text]) => el("button", { type: "button", "aria-pressed": String(S.durchlauf === d), text,
+    onclick: () => bewegung({ durchlauf: d }) })));
+  $("pult-laenge").replaceChildren(...LAENGEN.map((d) => el("button", { type: "button", "aria-pressed": String(S.dauer === d), text: `${d} s`,
+    onclick: () => bewegung({ dauer: d }) })));
   $("pult-grund").replaceChildren(...["schwarz", "weiss"].map((g) => el("button", { type: "button", "aria-pressed": String(m.grund === g), text: g === "schwarz" ? "Schwarz" : "Weiss",
     onclick: () => { m.grund = g; pultAufbauen(); adresse(); } })));
   $("pult-ebenen").replaceChildren(...m.ebenen.map((e, i) => ebeneFeld(e, i)));
@@ -301,16 +322,16 @@ function bild() {
   if (S.export || document.hidden) return;
   const t = zeit();
   if (S.ansicht === "reel") {
-    if (S.laeuft && t >= DAUER) reelZeigen(S.reel + 1);
-    const tt = zeit() % DAUER;
+    if (S.laeuft && t >= S.dauer) reelZeigen(S.reel + 1);
+    const tt = zeit() % S.dauer;
     malen($("reel-bild"), WERKE[S.reel].stapel, tt);
     $("reel-uhr").textContent = uhrText(tt);
   } else if (S.ansicht === "mischpult") {
-    const tt = t % DAUER;
+    const tt = t % S.dauer;
     malen($("pult-bild"), S.mix, tt);
     $("pult-uhr").textContent = uhrText(tt);
   } else if (S.ansicht === "werke" && S.live) {
-    malen(S.live.c, S.live.stapel, ((performance.now() - S.live.t0) / 1000) % DAUER, [240, 300]);
+    malen(S.live.c, S.live.stapel, ((performance.now() - S.live.t0) / 1000) % S.dauer, [240, 300]);
   }
 }
 
@@ -320,8 +341,9 @@ const fehler = motor.pruefen();
 if (fehler.length) console.error(fehler.join("\n"));
 window.animationen = { motor, WERKE, S, fehler };
 streuen();
-for (const { w, c } of kacheln) malen(c, w.stapel, DAUER * .35, [240, 300]);
+for (const { w, c } of kacheln) malen(c, w.stapel, S.dauer * .35, [240, 300]);
 const start = ausAdresse();
+$("reel-durchlauf").textContent = S.durchlauf ? "Hin und zurück" : "Durchlauf"; $("reel-durchlauf").setAttribute("aria-pressed", String(S.durchlauf));
 reelZeigen(S.reel);
 ansicht(start, { verlauf: false });
 document.documentElement.classList.add("bereit");
