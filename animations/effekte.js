@@ -32,10 +32,12 @@ export const EFFEKTE = {
     // seit 4. November 2026 zieht sich die Wolke nicht mehr zur Kugel zusammen (Wunsch: «bei der wolke soll sich das bild nicht
     // zusammenziehen sondern die dimension behalten»): jedes Teilchen treibt von seinem Platz aus im Strömungsfeld, mit etwas Tiefe
     regler: [r("Wolke", .8), r("Punktgrösse", .45), r("Glitzer", .5), r("Streuung", .5)],
-    punkte: (w, a) => ({ cols: 400, rows: Math.round(400 / a) }),
+    // randlos (Wunsch vom 4. November 2026: «gar keine schwarzen Ränder, das Bild soll immer vollständig gefüllt sein»): die Teilchen
+    // liegen auch in einem Saum rund um das Bild (RAND je Seite), der beim Treiben die Ränder nachfüllt; Dichte im Bild wie bisher
+    punkte: (w, a) => ({ cols: Math.round(400 * 1.7), rows: Math.round(400 / a * 1.7) }),
     glsl: `void punkt(int id, out vec2 pos, out vec4 col, out float size){
   float i = float(id); vec2 g = vec2(mod(i, uCols), floor(i / uCols));
-  vec2 j = h22(g + uSeed * 13.1), uv0 = (g + j) / vec2(uCols, uRows);
+  vec2 j = h22(g + uSeed * 13.1), uv0 = (g + j) / vec2(uCols, uRows) * 1.7 - .35;   // RAND = .35
   vec4 c = Ql(uv0, .5); float Lk = lum(Kl(uv0, .5).rgb);
   if (uZeigen < .5) c = vec4(vec3(.95, .925, .9), 1.);   // ohne Bild: helle Teilchen, die Grösse kommt aus dem Bild
   float s = h12(g * 1.37 + 4.1 + uSeed);
