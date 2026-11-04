@@ -37,13 +37,19 @@ const S = {
   mix: zufall(), live: null, export: null,
   ohneBild: false,   // «Bild zeigen: aus»: das Bild steuert die Effekte nur noch
   durchlauf: false, dauer: DAUER,   // «Durchlauf» statt hin und zurück, Länge der Schlaufe (12, 30 oder 60 s)
+  format: "4x5",   // Seitenverhältnis 4:5, 1:1 oder 16:9 (PR #615, Wunsch: «alle animationen umstellbar auf 4:5, 1:1, 16:9»); steht in der gesicherten Mischung
   bildBlob: null, bildName: "",   // das eigene Bild als JPEG (für «Werk sichern»), bleibt im Browser
   werk: null,   // das zuletzt ins Mischpult geladene gesicherte Werk
   werke: [], eigene: {}, dienst: false,   // alle gesicherten Werke; die eigenen mit ihrem Schlüssel (zum Löschen); ob werke.php antwortet
 };
 try { S.eigene = JSON.parse(gemerkt("animationen.eigene") || "{}"); } catch { S.eigene = {}; }
-const mit = (stapel) => ({ ...stapel, ohneBild: S.ohneBild || undefined, durchlauf: S.durchlauf || undefined, dauer: S.dauer });
+const mit = (stapel) => ({ ...stapel, ohneBild: S.ohneBild || undefined, durchlauf: S.durchlauf || undefined, dauer: S.dauer, format: S.format !== "4x5" ? S.format : undefined });
 const ohne = () => (S.ohneBild ? "-ohne-bild" : "") + (S.durchlauf ? "-durchlauf" : "") + (S.dauer !== DAUER ? `-${S.dauer}s` : "");
+// Format: Seitenverhältnis (Breite/Höhe) und Grösse für Standbild und MP4
+const FORMATE = { "4x5": { name: "4:5", ar: 4 / 5, gross: [1080, 1350] }, "1x1": { name: "1:1", ar: 1, gross: [1080, 1080] }, "16x9": { name: "16:9", ar: 16 / 9, gross: [1920, 1080] } };
+const fmt = () => FORMATE[S.format] ?? FORMATE["4x5"];
+const arVon = (stapel) => (FORMATE[stapel?.format] ?? FORMATE["4x5"]).ar;   // jedes gesicherte Werk in seinem Format
+const kachelGr = (stapel) => [240, Math.round(240 / arVon(stapel))];
 const zeit = () => S.laeuft ? (performance.now() - S.t0) / 1000 : S.tPause;
 const hatBild = () => motor.hatBild(S.mix.bild);
 
@@ -51,12 +57,12 @@ const hatBild = () => motor.hatBild(S.mix.bild);
 function aufloesung(c, max = 1080) {
   const r = c.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2);
   const b = Math.max(40, Math.min(max, Math.round(r.width * d)));
-  return [b, Math.round(b * 1.25)];
+  return [b, Math.round(b / fmt().ar)];
 }
-function malen(c, stapel, t, [b, h] = aufloesung(c)) {
+function malen(c, stapel, t, [b, h] = aufloesung(c), huelle = mit) {
   if (!motor.hatBild(stapel.bild)) return;
   if (c.width !== b || c.height !== h) { c.width = b; c.height = h; }
-  motor.zeichnen(mit(stapel), t, b, h);
+  motor.zeichnen(huelle(stapel), t, b, h);
   c.getContext("2d").drawImage(motor.leinwand, 0, 0, b, h);
 }
 
@@ -71,7 +77,7 @@ function ansicht(name, { verlauf = true } = {}) {
 function adresse() {
   let h = S.ansicht;
   if (S.ansicht === "mischpult") {
-    const m = { ...S.mix, ohneBild: S.ohneBild || undefined, durchlauf: S.durchlauf || undefined, dauer: S.dauer !== DAUER ? S.dauer : undefined };
+    const m = { ...S.mix, ohneBild: S.ohneBild || undefined, durchlauf: S.durchlauf || undefined, dauer: S.dauer !== DAUER ? S.dauer : undefined, format: S.format !== "4x5" ? S.format : undefined };
     if (m.bild.startsWith("w:")) m.werk = m.bild.slice(2);   // ein gesichertes Werk steht mit seiner Kennung im Link
     delete m.bild;   // ein eigenes Bild steht nicht im Link
     h = `m=${btoa(unescape(encodeURIComponent(JSON.stringify(m)))).replace(/=+$/, "")}`;
@@ -86,9 +92,9 @@ function ausAdresse() {
     try {
       const m = JSON.parse(decodeURIComponent(escape(atob(h.slice(2)))));
       if (Array.isArray(m.ebenen)) {
-        S.ohneBild = !!m.ohneBild; S.durchlauf = !!m.durchlauf; S.dauer = LAENGEN.includes(m.dauer) ? m.dauer : DAUER;
+        S.ohneBild = !!m.ohneBild; S.durchlauf = !!m.durchlauf; S.dauer = LAENGEN.includes(m.dauer) ? m.dauer : DAUER; if (FORMATE[m.format]) S.format = m.format;
         const werk = typeof m.werk === "string" ? m.werk : null;
-        delete m.ohneBild; delete m.durchlauf; delete m.dauer; delete m.werk;
+        delete m.ohneBild; delete m.durchlauf; delete m.dauer; delete m.werk; delete m.format;
         S.mix = { ...m, bild: werk ? `w:${werk}` : EIGEN, grund: m.grund === "weiss" ? "weiss" : "schwarz" };
         return { ansicht: "mischpult", werk };
       }
@@ -111,6 +117,12 @@ function bewegung({ durchlauf = S.durchlauf, dauer = S.dauer } = {}) {
   if (!S.laeuft) S.tPause = t % S.dauer; else S.t0 = performance.now() - (t % S.dauer) * 1000;
   standText(); pultAufbauen(); kachelnMalen(); adresse();
 }
+// ——— Format: 4:5, 1:1, 16:9 für Bühne, Standbild und MP4; das Bild füllt das Format immer ganz (zugeschnitten) ———
+function formatSetzen(f) {
+  if (!FORMATE[f]) return;
+  S.format = f; document.documentElement.dataset.format = f;
+  pultAufbauen(); adresse();
+}
 function pause(an) {
   if (an === S.laeuft) return;
   if (an) S.t0 = performance.now() - S.tPause * 1000; else S.tPause = zeit() % S.dauer;
@@ -126,11 +138,11 @@ addEventListener("keydown", (e) => {
 // Standbild: das Bild, das gerade zu sehen ist, als PNG in 1080 × 1350
 function standbild() {
   if (!hatBild()) { pultMeldung("Zuerst ein Bild wählen."); return; }
-  const t = zeit() % S.dauer;
-  motor.zeichnen(mit(S.mix), t, 1080, 1350);
+  const t = zeit() % S.dauer, [gb, gh] = fmt().gross;
+  motor.zeichnen(mit(S.mix), t, gb, gh);
   motor.leinwand.toBlob((blob) => {
     if (!blob) return;
-    const a = el("a", { href: URL.createObjectURL(blob), download: `ornament-animation-${werkName()}${ohne()}-${zwei(Math.floor(t))}s${Math.floor((t % 1) * 10)}-4x5.png` });
+    const a = el("a", { href: URL.createObjectURL(blob), download: `ornament-animation-${werkName()}${ohne()}-${zwei(Math.floor(t))}s${Math.floor((t % 1) * 10)}-${S.format}.png` });
     document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60_000);
   }, "image/png");
 }
@@ -150,6 +162,8 @@ function pultAufbauen() {
   $("buehne").classList.toggle("ohne", !hatBild());
   $("pult-zeigen").replaceChildren(...[[false, "An"], [true, "Aus"]].map(([aus, text]) => el("button", { type: "button", "aria-pressed": String(S.ohneBild === aus), text,
     onclick: () => bildZeigen(!aus) })));
+  $("pult-format").replaceChildren(...Object.entries(FORMATE).map(([k, f]) => el("button", { type: "button", "aria-pressed": String(S.format === k), text: f.name,
+    onclick: () => formatSetzen(k) })));
   $("pult-lauf").replaceChildren(...[[false, "Hin und zurück"], [true, "Durchlauf"]].map(([d, text]) => el("button", { type: "button", "aria-pressed": String(S.durchlauf === d), text,
     onclick: () => bewegung({ durchlauf: d }) })));
   $("pult-laenge").replaceChildren(...LAENGEN.map((d) => el("button", { type: "button", "aria-pressed": String(S.dauer === d), text: `${d} s`,
@@ -247,7 +261,7 @@ async function sichern() {
   try {
     let blob = S.bildBlob;
     if (S.mix.bild !== EIGEN) blob = await (await fetch(S.werk.bild, { cache: "force-cache" })).blob();   // ein gesichertes Werk weitergemischt: sein Bild noch einmal holen
-    const stapel = mit(S.mix); delete stapel.bild;
+    const stapel = mit(S.mix); delete stapel.bild;   // mit Format, Länge, Durchlauf und «Bild zeigen»
     const f = new FormData();
     f.append("bild", blob, "bild.jpg"); f.append("titel", titel); f.append("name", name); f.append("stapel", JSON.stringify(stapel)); f.append("schutz", $("sichern-schutz").value);
     const r = await fetch(DIENST, { method: "POST", body: f });
@@ -290,7 +304,9 @@ function galerie() {
   streuen();
 }
 function kachel(w, nr) {
-  const c = el("canvas", { width: 240, height: 300, role: "img", "aria-label": `${w.titel || "Ohne Titel"} von ${w.name}`, tabindex: "0" });
+  const [kb, kh] = kachelGr(w.stapel);
+  const c = el("canvas", { width: kb, height: kh, role: "img", "aria-label": `${w.titel || "Ohne Titel"} von ${w.name}`, tabindex: "0" });
+  c.style.aspectRatio = `${kb} / ${kh}`;
   const text = el("span", { class: "text" }, el("b", { class: "nr", text: zwei(nr) }), el("span", { class: "titel", text: w.titel || "Ohne Titel" }), el("small", { text: `von ${w.name} · ${datum(w.zeit)}` }));
   if (S.eigene[w.id]) text.append(el("button", { type: "button", class: "loeschen", text: "Löschen", onclick: () => loeschen(w) }));
   const a = el("article", { class: "kachel", "data-id": w.id }, c, text);
@@ -298,33 +314,35 @@ function kachel(w, nr) {
   const oeffnen = () => werkOeffnen(w);
   c.addEventListener("click", oeffnen); c.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); oeffnen(); } });
   const an = () => { if (!ruhig && k.geladen) S.live = { c, stapel: stapelVon(w), t0: performance.now() }; };
-  const aus = () => { if (S.live?.c === c) { S.live = null; malen(c, stapelVon(w), S.dauer * .35, [240, 300]); } };
+  const aus = () => { if (S.live?.c === c) { S.live = null; malen(c, stapelVon(w), DAUER * .35, kachelGr(w.stapel), wieEs); } };
   a.addEventListener("pointerenter", an); c.addEventListener("focus", an);
   a.addEventListener("pointerleave", aus); c.addEventListener("blur", aus);
   // das Bild erst holen, wenn die Kachel in die Nähe des Fensters kommt
   k.beobachter = new IntersectionObserver((eintraege) => {
     if (!eintraege.some((e) => e.isIntersecting)) return;
     k.beobachter.disconnect();
-    bildHolen(w).then(() => { k.geladen = true; malen(c, stapelVon(w), S.dauer * .35, [240, 300]); }).catch(() => {});
+    bildHolen(w).then(() => { k.geladen = true; malen(c, stapelVon(w), DAUER * .35, kachelGr(w.stapel), wieEs); }).catch(() => {});
   }, { rootMargin: "400px" });
   k.beobachter.observe(a);
   kacheln.set(w.id, k);
   return a;
 }
 const stapelVon = (w) => ({ ...w.stapel, bild: werkBild(w) });
+const wieEs = (stapel) => stapel;   // Kacheln zeichnen das Werk mit seinen eigenen Schaltern (Format, Länge, Bild zeigen), nicht mit denen des Pults
 const holend = new Map();
 function bildHolen(w) {
   if (motor.hatBild(werkBild(w))) return Promise.resolve();
   if (!holend.has(w.id)) holend.set(w.id, motor.bildLaden(werkBild(w), w.bild).finally(() => holend.delete(w.id)));
   return holend.get(w.id);
 }
-function kachelnMalen() { for (const k of kacheln.values()) if (k.geladen) malen(k.c, stapelVon(k.w), S.dauer * .35, [240, 300]); }
+function kachelnMalen() { for (const k of kacheln.values()) if (k.geladen) malen(k.c, stapelVon(k.w), DAUER * .35, kachelGr(k.w.stapel), wieEs); }
 async function werkOeffnen(w) {
   try { await bildHolen(w); } catch { pultMeldung("Das Bild dieses Werks liess sich nicht laden."); return; }
   const s = kopie(w.stapel);
-  S.ohneBild = !!s.ohneBild; S.durchlauf = !!s.durchlauf; S.dauer = LAENGEN.includes(s.dauer) ? s.dauer : DAUER;
-  delete s.ohneBild; delete s.durchlauf; delete s.dauer;
+  S.ohneBild = !!s.ohneBild; S.durchlauf = !!s.durchlauf; S.dauer = LAENGEN.includes(s.dauer) ? s.dauer : DAUER; S.format = FORMATE[s.format] ? s.format : "4x5";
+  delete s.ohneBild; delete s.durchlauf; delete s.dauer; delete s.format;
   S.werk = w; S.mix = { ...s, bild: werkBild(w) };
+  document.documentElement.dataset.format = S.format;
   S.t0 = performance.now(); S.tPause = S.dauer * .35;
   standText();
   ansicht("mischpult", { verlauf: false }); pultAufbauen(); adresse();
@@ -372,12 +390,14 @@ async function herunterladen(stapel, name) {
   S.export = stand;
   $("export").hidden = false; $("export-text").textContent = "MP4 · 0 %"; $("export").style.setProperty("--p", 0);
   try {
+    const [breite, hoehe] = fmt().gross;
     const erg = await videoErstellen(motor, kopie(mit(stapel)), {
+      breite, hoehe,
       fortschritt: (p) => { $("export-text").textContent = `MP4 · ${Math.round(p * 100)} %`; $("export").style.setProperty("--p", p); },
       abbruch: () => stand.abbrechen,
     });
     if (erg) {
-      const a = el("a", { href: URL.createObjectURL(erg.blob), download: `ornament-animation-${name}${ohne()}-4x5.${erg.endung}` });
+      const a = el("a", { href: URL.createObjectURL(erg.blob), download: `ornament-animation-${name}${ohne()}-${S.format}.${erg.endung}` });
       document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60_000);
     }
   } catch (f) {
@@ -397,7 +417,7 @@ function bild() {
     $("pult-uhr").textContent = uhrText(tt);
     $("mischpult").style.setProperty("--p", tt / S.dauer);   // die Fortschrittslinie unter der Bühne
   }
-  if (S.live) malen(S.live.c, S.live.stapel, ((performance.now() - S.live.t0) / 1000) % S.dauer, [240, 300]);
+  if (S.live) malen(S.live.c, S.live.stapel, ((performance.now() - S.live.t0) / 1000) % DAUER, kachelGr(S.live.stapel), wieEs);
 }
 
 // ——— Start ———
@@ -414,6 +434,7 @@ if (start.werk) {
     else { S.werk = w; try { await bildHolen(w); } catch { /* ohne Bild bleibt die Bühne leer */ } }
   }
 }
+document.documentElement.dataset.format = S.format;
 pultAufbauen();
 ansicht(start.ansicht, { verlauf: false });
 document.documentElement.classList.add("bereit");

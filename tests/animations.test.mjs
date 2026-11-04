@@ -105,3 +105,12 @@ test("Werke sichern (4. November 2026): werke.php mit Herkunft, Grenzen und Schl
   assert.ok(lies("tools/hostpoint/ausschluss.txt").split(/\r?\n/).includes("animations/werke/"), "rsync --delete darf die Werke nicht löschen");
   assert.ok(lies(".gitignore").split(/\r?\n/).includes("animations/werke/"));
 });
+
+test("Format (4. November 2026, PR #615): 4:5, 1:1, 16:9 im Mischpult, Standbild und MP4 in der Grösse des Formats, Format in der gesicherten Mischung", () => {
+  const seite = lies("animations/seite.js"), html = lies("animations/index.html"), php = lies("animations/werke.php");
+  assert.match(html, /id="pult-format"/);
+  assert.match(html, /:root\[data-format="16x9"\]/);
+  for (const g of ["1080, 1350", "1080, 1080", "1920, 1080"]) assert.ok(seite.includes(`gross: [${g}]`), g);
+  assert.match(seite, /breite, hoehe,/);
+  assert.match(php, /const FORMATE = \['4x5', '1x1', '16x9'\];/);
+});

@@ -50,6 +50,10 @@ Rechnet alles im Browser (WebGL 2, motor.js), das MP4 (1080 × 1350, 30 fps, 12 
   :root { --grund: #f2efea; --flaeche: #fff; --buehne: #0b090a; --tinte: #121010; --leise: rgba(18, 16, 16, .56); --linie: rgba(18, 16, 16, .16); --akzent: #c2410c; color-scheme: light; }
 }
 @media (prefers-reduced-motion: reduce) { :root { --dauer: 0ms; } }
+/* Format der Bühne: 4:5, 1:1 oder 16:9 (PR #615), gesetzt als data-format auf <html> */
+:root { --ar: 4 / 5; }
+:root[data-format="1x1"] { --ar: 1; }
+:root[data-format="16x9"] { --ar: 16 / 9; }
 
 /* ---------- Grund ---------- */
 * { box-sizing: border-box; }
@@ -88,7 +92,7 @@ button { background: none; border: 0; padding: 0; cursor: pointer; border-radius
 .ansichten button[aria-pressed="true"]::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 6px; height: 1px; background: var(--tinte); }
 
 /* ---------- gemeinsame Bausteine ---------- */
-.rahmen { position: relative; background: var(--buehne); aspect-ratio: 4 / 5; }
+.rahmen { position: relative; background: var(--buehne); aspect-ratio: var(--ar); }
 .rahmen canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .rahmen.ziehen { outline: 1px dashed var(--akzent); outline-offset: 8px; }
 .fortschritt { position: relative; height: 1px; background: var(--linie); overflow: hidden; }
@@ -124,7 +128,7 @@ input[type="text"]::placeholder { color: var(--leise); }
 #mischpult { padding: 0 var(--rand); }
 .pult-raster { display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 64px; padding: 32px 0 72px; align-items: start; }
 .pult-buehne { position: sticky; top: calc(var(--kopf) + 24px); display: grid; justify-items: center; gap: 16px; }
-.pult-buehne .rahmen { height: min(calc(100svh - var(--kopf) - 150px), 900px); max-width: 100%; }
+.pult-buehne .rahmen { width: min(100%, calc(min(100svh - var(--kopf) - 150px, 900px) * (var(--ar)))); }
 .pult-buehne .rahmen canvas { cursor: pointer; }
 .rahmen.ohne canvas { visibility: hidden; }
 /* leere Bühne: Aufforderung, ein Bild zu bringen */
@@ -137,10 +141,10 @@ input[type="text"]::placeholder { color: var(--leise); }
 .leer .knopf { color: #f2ece6; border-color: rgba(242, 236, 230, .4); margin-top: 8px; }
 .leer .knopf:hover { border-color: #f2ece6; }
 .leer .hinweis { color: rgba(242, 236, 230, .56); }
-.pult-leiste { display: grid; grid-template-columns: auto 1fr auto; gap: 16px; align-items: center; width: 100%; max-width: var(--buehnenbreite, 720px); }
+.pult-leiste { display: grid; grid-template-columns: auto 1fr auto; gap: 16px; align-items: center; width: 100%; max-width: 900px; }
 .uhr { margin: 0; font-size: 15px; }
 .stand { margin: 0; }
-.pult-haupt { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; width: 100%; max-width: var(--buehnenbreite, 720px); }
+.pult-haupt { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; width: 100%; max-width: 900px; }
 .pult { display: grid; gap: 28px; }
 select { width: 100%; background: var(--flaeche) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23999' stroke-width='1.4'/%3E%3C/svg%3E") no-repeat right 12px center;
   border: 1px solid var(--linie); border-radius: 0; padding: 9px 32px 9px 12px; font-size: 15px; appearance: none; -webkit-appearance: none; min-height: 40px; }
@@ -177,7 +181,7 @@ input[type="range"]:focus-visible { outline: none; }
 .streu { display: grid; grid-template-columns: repeat(12, 1fr); gap: 32px 24px; }
 .streu:empty { display: none; }
 .kachel { display: grid; text-decoration: none; transition: opacity .25s; }
-.kachel canvas { display: block; width: 100%; aspect-ratio: 4 / 5; height: auto; background: var(--buehne); cursor: pointer; }
+.kachel canvas { display: block; width: 100%; aspect-ratio: 4 / 5; height: auto; background: var(--buehne); cursor: pointer; }   /* jedes Werk in seinem Format, gesetzt in seite.js */
 .kachel .text { display: grid; grid-template-columns: auto 1fr auto; gap: 2px 10px; margin-top: 10px; font-size: 13px; line-height: 1.35; color: var(--leise); align-items: baseline; }
 .kachel .nr { padding-top: 2px; }
 .kachel .titel { color: var(--tinte); }
@@ -221,8 +225,8 @@ input[type="range"]:focus-visible { outline: none; }
   .kopf-innen { grid-template-columns: auto 1fr; }
   .pult-raster { grid-template-columns: 1fr; gap: 32px; padding-top: 24px; justify-items: center; }
   .pult-buehne { position: static; width: 100%; }
-  .pult-buehne .rahmen { height: auto; width: 100%; max-width: 560px; }
-  .pult-leiste, .pult-haupt { max-width: 560px; }
+  .pult-buehne .rahmen { width: min(100%, calc(72svh * (var(--ar))), 760px); }
+  .pult-leiste, .pult-haupt { max-width: 760px; }
   .pult { max-width: 560px; width: 100%; }
   .streu { grid-template-columns: repeat(8, 1fr); gap: 24px 16px; }
   .kolophon { grid-template-columns: repeat(2, 1fr); }
@@ -243,7 +247,7 @@ input[type="range"]:focus-visible { outline: none; }
   .ansichten button small { font-size: 10px; }
   .ansichten button[aria-pressed="true"]::after { display: none; }
   .pult-raster { padding-top: 16px; gap: 24px; }
-  .pult-buehne .rahmen { max-width: none; }
+  .pult-buehne .rahmen { width: 100%; }
   .pult-leiste, .pult-haupt { max-width: none; }
   .pult-haupt .knopf.gross { flex: 1 1 100%; }
   .leer .satz { font-size: 19px; }
@@ -296,6 +300,8 @@ input[type="range"]:focus-visible { outline: none; }
           <p class="hinweis leise" id="pult-meldung">Dein Bild bleibt in deinem Browser. Erst «Werk sichern» legt es mit der Mischung auf ornament.cloud ab.</p></div>
         <div class="gruppe"><h2>Bild zeigen</h2><div class="wahl" id="pult-zeigen"></div>
           <p class="hinweis leise">Aus: das Bild steuert die Effekte nur noch, zu sehen ist nur der Effekt.</p></div>
+        <div class="gruppe"><h2>Format</h2><div class="wahl" id="pult-format"></div>
+          <p class="hinweis leise">Das Bild füllt jedes Format ganz aus. Gilt auch für Standbild und MP4 (1080 × 1350, 1080 × 1080, 1920 × 1080).</p></div>
         <div class="gruppe"><h2>Bewegung</h2><div class="wahl" id="pult-lauf"></div>
           <div class="wahl" id="pult-laenge"></div>
           <p class="hinweis leise">Durchlauf: der Effekt läuft weiter, statt hin und zurück zu gehen. Die Länge gilt auch fürs MP4.</p></div>
@@ -331,7 +337,7 @@ input[type="range"]:focus-visible { outline: none; }
   <section id="info" class="ansicht" aria-label="Info" hidden>
     <p class="gross">Dein Bild, siebenundzwanzig Effekte,<br>bis zu drei <i>Ebenen</i> übereinander.</p>
     <dl class="kolophon">
-      <div><dt>Technik</dt><dd>WebGL 2 im Browser, jeder Effekt ein Shader. MP4 mit WebCodecs, 1080 × 1350, 30 Bilder pro Sekunde.</dd></div>
+      <div><dt>Technik</dt><dd>WebGL 2 im Browser, jeder Effekt ein Shader. MP4 mit WebCodecs in 4:5, 1:1 oder 16:9, 30 Bilder pro Sekunde.</dd></div>
       <div><dt>Schlaufe</dt><dd>12, 30 oder 60 Sekunden, nahtlos: das letzte Bild geht ins erste über.</dd></div>
       <div><dt>Werke</dt><dd>«Werk sichern» legt Bild und Mischung mit Titel und Name auf ornament.cloud ab, sichtbar für alle. Löschen kann es der Browser, der es gesichert hat.</dd></div>
       <div><dt>Schrift</dt><dd>Instrument Sans und Newsreader, lokal eingebunden. Keine Dienste von aussen.</dd></div>
@@ -342,8 +348,9 @@ input[type="range"]:focus-visible { outline: none; }
         <li>Neu mischen<span>würfelt eine bis drei Ebenen aus den Effekten; jeder Regler lässt sich danach von Hand stellen</span></li>
         <li>Bild zeigen: aus<span>das Bild steuert nur noch Helligkeit, Kanten und Farben, sichtbar bleibt der Effekt</span></li>
         <li>Durchlauf<span>statt hin und zurück läuft der Effekt weiter, 12, 30 oder 60 Sekunden</span></li>
-        <li>Pause und Standbild<span>Leertaste oder Klick auf die Bühne hält an; Standbild lädt genau dieses Bild als PNG</span></li>
-        <li>MP4 laden<span>1080 × 1350, nahtlose Schlaufe, im Browser gerechnet</span></li>
+        <li>Format<span>4:5, 1:1 oder 16:9; das Bild füllt das Format ganz, auch im Standbild und MP4</span></li>
+        <li>Pause und Standbild<span>Leertaste oder Klick auf die Bühne hält an; Standbild lädt genau dieses Bild als PNG im gewählten Format</span></li>
+        <li>MP4 laden<span>1080 × 1350, 1080 × 1080 oder 1920 × 1080, nahtlose Schlaufe, im Browser gerechnet</span></li>
         <li>Werk sichern<span>mit Titel und Name; es erscheint unten bei den Werken und bekommt einen Link</span></li>
       </ol></div>
       <div><h2>Effekte</h2><ol id="info-effekte"></ol></div>

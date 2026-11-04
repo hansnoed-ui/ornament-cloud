@@ -87,6 +87,13 @@ await check("leere Bühne: fordert ein Bild, Sichern und MP4 warten; mit Bild ze
   assert.notEqual(await page.evaluate(() => JSON.stringify(window.animationen.S.mix)), vorher);
   assert.match(page.url(), /#m=/);
   assert.equal(await page.evaluate(() => window.animationen.S.mix.bild), "eigen", "Neu mischen behält das Bild");
+  // Format 16:9 (PR #615): die Bühne wird breit, die Leinwand rechnet im Seitenverhältnis, das Format steht im Link
+  await page.getByRole("button", { name: "16:9", exact: true }).click();
+  await page.waitForTimeout(400);
+  assert.equal(await page.evaluate(() => document.documentElement.dataset.format), "16x9");
+  const [cb, ch, rb, rh] = await page.evaluate(() => { const c = document.getElementById("pult-bild"), r = c.getBoundingClientRect(); return [c.width, c.height, r.width, r.height]; });
+  assert.ok(Math.abs(cb / ch - 16 / 9) < .02, `Leinwand ${cb} × ${ch}`); assert.ok(Math.abs(rb / rh - 16 / 9) < .02, `Bühne ${rb} × ${rh}`);
+  assert.match(decodeURIComponent(escape(atob(decodeURIComponent(page.url().split("#m=")[1])))), /"format":"16x9"/);
   assert.deepEqual(fehler, []);
   await ctx.close();
 });

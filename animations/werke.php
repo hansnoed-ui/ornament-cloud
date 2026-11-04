@@ -24,6 +24,7 @@ const MAX_WERKE = 2000;
 const JE_STUNDE = 6;
 const MODI = ['normal', 'multiplizieren', 'differenz', 'bildschirm', 'ueberlagern'];
 const LAENGEN = [12, 30, 60];
+const FORMATE = ['4x5', '1x1', '16x9'];
 
 $test = PHP_SAPI === 'cli-server';   // php -S in den Tests: Herkunft und Ordner aus der Umgebung, nie auf dem Webspace
 $herkunft = ($test && getenv('ANIMATIONEN_HERKUNFT')) ? (string)getenv('ANIMATIONEN_HERKUNFT') : HERKUNFT;
@@ -73,6 +74,7 @@ function stapelPruefen(mixed $s): ?array {
   if (!empty($s['ohneBild'])) $out['ohneBild'] = true;
   if (!empty($s['durchlauf'])) $out['durchlauf'] = true;
   if (isset($s['dauer']) && in_array($s['dauer'], LAENGEN, true)) $out['dauer'] = (int)$s['dauer'];
+  if (isset($s['format']) && in_array($s['format'], FORMATE, true)) $out['format'] = $s['format'];
   return $out;
 }
 function werkLesen(string $ordner, string $id): ?array {
