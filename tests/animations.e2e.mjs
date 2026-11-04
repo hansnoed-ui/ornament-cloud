@@ -1,4 +1,4 @@
-// «Animationen» – Browser-Test (Playwright, Chromium mit SwiftShader): alle 15 Effekte übersetzen, die 27 Werke zeichnen etwas,
+// «Animationen» – Browser-Test (Playwright, Chromium mit SwiftShader): alle 24 Effekte übersetzen, die 27 Werke zeichnen etwas,
 // die vier Ansichten wechseln, Mischpult mischt neu und schreibt die Mischung in die Adresse, kein seitliches Scrollen auf dem Handy,
 // die Schlaufe hat keine Naht.
 //   NODE_PATH=$(npm root -g) node tests/animations.e2e.mjs

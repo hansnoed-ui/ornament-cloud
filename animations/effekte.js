@@ -1,7 +1,8 @@
 // Animationen – die Effekte als Bausteine. Jeder ist eine Funktion der Zeit in der Schlaufe (uPhi, uT) und liest seine Quelle mit
 // Q(uv): das Bild (bildfüllend) oder die Ebenen darunter. Regler laufen von 0 bis 1 (uP[0] … uP[5]).
 // Herkunft: die nachgebauten Effekte aus dem Projekt «Animations» (Python, Desktop «claude social media/Animations», UEBERGABE.md)
-// und drei Referenzvideos vom 3. November 2026 (holotx, incrprl.dsgn, infinite mantra), hier neu als Shader für den Browser.
+// und drei Referenzvideos vom 3. November 2026 (holotx, incrprl.dsgn, infinite mantra), hier neu als Shader für den Browser;
+// seit 4. November 2026 ohne Seifenblase und Holo-Kugel, dafür Effekte, die stark aus der Bildinformation schöpfen (am Ende der Liste).
 
 const r = (name, wert) => ({ name, wert });
 
@@ -11,6 +12,21 @@ void blase(int i, float groesse, float atmen, out vec2 c, out float R){
   float fi = float(i); vec2 h = h22(vec2(fi, 3.) + uSeed), k = h22(vec2(fi, 11.) + uSeed);
   c = (h - .5) * vec2(A() * .92, .92) + .07 * vec2(cos(uPhi + k.x * TAU), sin(uPhi * (1. + floor(k.y * 2.)) + h.x * TAU));
   R = mix(.07, .22, k.x) * mix(.6, 1.7, groesse) * (1. + atmen * .14 * sin(uPhi * (1. + floor(h.y * 2.)) + fi));
+}`;
+
+// Bild als Gelände: Helligkeit als Höhe, ihr Gradient je Einheit in P (Kanten) und die Strömung entlang der Konturen
+// (Senkrechte zum Gradienten, quellenfrei), in flachen Stellen von einem langsamen Rauschwirbel geführt
+const FELD = `
+float hoehe(vec2 uv, float l){ return lum(Kl(uv, l).rgb); }
+vec2 feldG(vec2 uv, float l, float px){
+  float e = px / uRes.y;
+  return vec2(hoehe(uv + vec2(e / A(), 0.), l) - hoehe(uv - vec2(e / A(), 0.), l),
+              hoehe(uv + vec2(0., e), l) - hoehe(uv - vec2(0., e), l)) / (2. * e);
+}
+vec2 strom(vec2 uv, float l, float px, float wirbel){
+  vec2 g = feldG(uv, l, px), t = vec2(-g.y, g.x);
+  float a = ln(P(uv) * 1.8, .6) * TAU;
+  return normalize(t + (.4 + wirbel * 4.) * vec2(cos(a), sin(a)) + 1e-4);
 }`;
 
 export const EFFEKTE = {
@@ -250,52 +266,6 @@ vec4 effekt(vec2 uv){
 }`,
   },
 
-  seifenblase: {
-    name: "Seifenblase", herkunft: "Rauch-Glasblase (Logo): schillernde Haut, Rauch im Innern, das Bild gebrochen",
-    regler: [r("Grösse", .7), r("Schillern", .7), r("Rauch", .5), r("Umgebung", .35)],
-    glsl: `vec4 effekt(vec2 uv){
-  vec2 p = P(uv), c = vec2(0., .02 + .02 * sin(uPhi));
-  float R = mix(.18, .46, P0);
-  vec2 v = (p - c) / R; float d = length(v);
-  vec3 bg = Q(uv).rgb * P3;
-  if (d > 1.06) return vec4(bg, 1.);
-  float z = sqrt(max(0., 1. - d * d));
-  vec3 innen = Q(UV(c + rot(uPhi) * v * R * (.55 + .35 * z))).rgb;
-  vec3 film = .5 + .5 * cos(TAU * (lfbm(v * 1.6, .8) * .8 + d * 1.4 + vec3(0., .33, .67)));
-  float fres = pow(1. - z, 2.5);
-  vec2 sv = v * 2.2; sv += lcurl(sv, .8) * .25;
-  float rauch = smoothstep(.15, .7, lfbm(sv, .9) + .2) * P2;
-  vec3 col = mix(bg, innen, .65 + .35 * z);
-  col = col * (1. - .3 * fres) + film * fres * P1 * 1.2 + rauch * film * .35 * (.4 + .6 * z);
-  vec2 g1 = v - vec2(-.42, .45), g2 = v - vec2(.35, -.4);
-  col += .8 * exp(-dot(g1, g1) * 40.) + .4 * exp(-dot(g2, g2) * 60.);
-  float rand = smoothstep(.93, 1., d) * smoothstep(1.06, 1., d);
-  return vec4(clamp(mix(bg, col, smoothstep(1.03, .99, d)) + film * rand * P1 * .6, 0., 1.), 1.);
-}`,
-  },
-
-  holo: {
-    name: "Holo-Kugel", herkunft: "holotx: das Bild auf einer leuchtenden, körnigen Kugel, die pulsiert und sich dreht",
-    regler: [r("Grösse", .6), r("Puls", .5), r("Körnung", .5), r("Blau", .5)],
-    glsl: `vec4 effekt(vec2 uv){
-  vec2 p = P(uv);
-  float R = mix(.16, .44, P0) * (1. + P1 * .18 * sin(uPhi));
-  vec2 v = p / R; float d = length(v);
-  vec3 blau = vec3(.35, .52, 1.);
-  float korn = h12(floor(uv * uRes) + floor(uT * 360.) * 1.37) - .5;
-  if (d > 1.){ float gl = exp(-(d - 1.) * 18.) * .45; return vec4(blau * gl, gl); }
-  float z = sqrt(1. - d * d);
-  vec3 n = vec3(v, z); n.xz = rot(uPhi) * n.xz; n.yz = rot(.35) * n.yz;
-  vec2 su = vec2(abs(fract(atan(n.x, n.z) / TAU + .5) * 2. - 1.), asin(clamp(n.y, -1., 1.)) / PI + .5);
-  su += lcurl(n.xy * 2.2 + n.z, .8) * .03;
-  vec3 im = Ql(su, 1.).rgb;
-  vec3 col = mix(im, blau * (.25 + 1.3 * lum(im)), P3) * (.55 + .45 * z);
-  col += blau * pow(1. - z, 2.) * .9 + korn * P2 * .35;
-  float m = smoothstep(1., .985, d);
-  return vec4(clamp(col, 0., 1.) * m + blau * .45 * (1. - m), m + .45 * (1. - m));
-}`,
-  },
-
   horizont: {
     name: "Horizont", herkunft: "incrprl.dsgn: über einer Lichtlinie steigt das Bild als Rauch auf, Körnung und Strahlen",
     regler: [r("Höhe", .6), r("Breite", .5), r("Körnung", .5), r("Strahlen", .5)],
@@ -340,6 +310,350 @@ vec4 effekt(vec2 uv){
     col = mix(col, farbe * farbe * .45, linie * .75 * P1);
   }
   return vec4(col, 1.);
+}`,
+  },
+  // ——— fünf Effekte aus der Bildinformation (Wunsch vom 4. November 2026: Seifenblase und Holo-Kugel weg, dafür Effekte, die stark
+  // mit dem Bild arbeiten und es auch bei «Bild zeigen: aus» klar lesbar machen). Sie lesen Helligkeit als Höhe, ihren Gradienten als
+  // Kanten und Strömung (die Senkrechte zum Gradienten folgt den Konturen und ist quellenfrei) und die Farben als Druckauszüge.
+
+  pinsel: {
+    name: "Pinselstrom", herkunft: "Line Integral Convolution: Pinselstriche fliessen den Konturen des Bildes entlang, dunkel heisst mehr Tusche",
+    regler: [r("Strichlänge", .55), r("Fluss", .3), r("Korn", .4), r("Kontrast", .55), r("Wirbel", .35)],
+    glsl: `${FELD}
+float korn(vec2 x, float cell){
+  vec2 c = x / cell, i = floor(c), f = c - i; f = f * f * (3. - 2. * f);
+  return mix(mix(h12(i + uSeed * 9.), h12(i + vec2(1, 0) + uSeed * 9.), f.x), mix(h12(i + vec2(0, 1) + uSeed * 9.), h12(i + 1. + uSeed * 9.), f.x), f.y);
+}
+vec4 effekt(vec2 uv){
+  float k = uRes.y / 1350., lg = mix(12., 46., P0) * k, cell = mix(1.4, 4.5, P2) * k, st = lg / 12.;
+  float m = 1. + floor(P1 * 2.999);    // eine bis drei Wellen laufen pro Schlaufe durch jeden Strich
+  vec2 x0 = uv * uRes; float sum = 0., ws = 0.; vec3 cs = vec3(0.);
+  for (int s = -1; s <= 1; s += 2){
+    vec2 x = x0;
+    for (int i = 0; i < 12; i++){
+      float a = float(s) * (float(i) + .5) / 12.;                       // Lage im Strich, −1 … 1
+      float w = .5 + .5 * cos(PI * a);                                   // Hann-Fenster: der Strich läuft weich aus
+      float welle = 1. + .8 * cos(TAU * (a * 1.5 - uT * m));           // die Welle wandert den Strich entlang
+      vec2 u = x / uRes;
+      sum += w * welle * korn(x, cell); ws += w * welle;
+      cs += w * Kl(u, 1.).rgb;
+      x += float(s) * st * strom(u, 2.5, 4., P4);
+    }
+  }
+  float r = clamp((sum / ws - .5) * mix(2.5, 7., P3) + .5, 0., 1.);
+  vec3 farbe = cs / (12. * 2. * .5);                                    // Farbe, entlang des Strichs verwischt
+  float D = 1. - lum(farbe);
+  vec3 papier = vec3(.95, .925, .9), tusche = vec3(.06, .05, .06);
+  vec3 aus = mix(papier, tusche, clamp(D * 1.35 + (.5 - r) * 1.1 - .12, 0., 1.));   // ohne Bild: Tusche auf Papier
+  vec3 an = farbe * (.45 + 1.1 * r);
+  return vec4(clamp(mix(aus, an, uZeigen), 0., 1.), 1.);
+}`,
+  },
+
+  raster: {
+    name: "Druckraster", herkunft: "Halbton: vier gedrehte Raster wie im Offsetdruck, Punkte verschmelzen als Distanzfelder im Dunkeln und atmen in Wellen",
+    regler: [r("Raster", .45), r("Drehung", .5), r("Welle", .5), r("Verschmelzen", .5), r("Negativ", 0)],
+    glsl: `float smin(float a, float b, float k){ float h = max(k - abs(a - b), 0.) / k; return min(a, b) - h * h * k * .25; }
+// Deckung eines Rasters: Kanal ch (0 Helligkeit, 1–3 Cyan/Magenta/Gelb, 4–6 Rot/Grün/Blau, 7 Schwarz), Winkel ang, N Zellen je Bildhöhe
+float schirm(vec2 p, float ang, float N, int ch){
+  mat2 R = rot(ang); vec2 q = R * p * N, ci = floor(q);
+  float d = 1e3, lod = max(0., log2(uRes.y / N) - 1.), sk = mix(.02, .45, P3);
+  for (int y = -1; y <= 1; y++) for (int x = -1; x <= 1; x++){
+    vec2 c = ci + vec2(x, y) + .5, pc = transpose(R) * (c / N);
+    vec3 im = Kl(UV(pc), lod).rgb; float L = lum(im), K = 1. - max(im.r, max(im.g, im.b));
+    vec3 cmy = (1. - im - K) / max(1. - K, .05);
+    float v = ch == 0 ? 1. - L : ch == 1 ? cmy.x : ch == 2 ? cmy.y : ch == 3 ? cmy.z : ch == 4 ? im.r : ch == 5 ? im.g : ch == 6 ? im.b : ch == 7 ? K : L;
+    float rr = .62 * sqrt(clamp(v, 0., 1.)) * (1. + P2 * .22 * sin(uPhi - length(pc) * 9.));   // Welle von der Mitte aus
+    if (rr > .02) d = smin(d, length(q - c) - rr, sk);
+  }
+  float aa = N / uRes.y;
+  return smoothstep(aa, -aa, d);
+}
+vec4 effekt(vec2 uv){
+  vec2 p = P(uv); float N = mix(150., 40., P0);
+  // Drehung: unter einem Drittel pendelt das Raster, sonst dreht es eine Viertel- oder halbe Drehung pro Schlaufe (das Raster ist
+  // vierfach symmetrisch, darum schliesst die Schlaufe)
+  float n = floor(P1 * 2.999), a0 = n < .5 ? .25 * sin(uPhi) : n * uPhi / 4.;
+  vec3 papier = vec3(.95, .925, .9), nacht = vec3(.043, .035, .039), col;
+  if (P4 < .5){
+    if (uZeigen < .5) col = mix(papier, vec3(.06, .05, .06), schirm(p, a0 + .785, N, 0));   // ohne Bild: ein schwarzes Raster
+    else {
+      col = papier;
+      col *= 1. - schirm(p, a0 + .262, N, 1) * vec3(1., .32, .06);   // Cyan 15°
+      col *= 1. - schirm(p, a0 + 1.309, N, 2) * vec3(.07, 1., .45);  // Magenta 75°
+      col *= 1. - schirm(p, a0, N, 3) * vec3(.0, .07, 1.);           // Gelb 0°
+      col *= 1. - schirm(p, a0 + .785, N, 7) * .97;                  // Schwarz 45°
+    }
+  } else {
+    if (uZeigen < .5) col = mix(nacht, papier, schirm(p, a0 + .785, N, 8));                  // ohne Bild: helle Punkte auf Schwarz
+    else col = nacht + vec3(schirm(p, a0 + .262, N, 4), schirm(p, a0 + 1.309, N, 5), schirm(p, a0, N, 6)) * .95;   // Licht: Rot, Grün, Blau
+  }
+  return vec4(col, 1.);
+}`,
+  },
+
+  relief: {
+    name: "Relief", herkunft: "2.5D: Helligkeit als Tiefe, das Bild wird zum Relief, die Kamera schwebt (Parallaxe) und ein Licht kreist darüber",
+    regler: [r("Tiefe", .55), r("Parallaxe", .45), r("Lichthöhe", .45), r("Glanz", .4), r("Material", .2)],
+    glsl: `${FELD}
+float H(vec2 uv){ return .45 * hoehe(uv, 1.) + .35 * hoehe(uv, 2.5) + .2 * hoehe(uv, 4.5); }
+vec4 effekt(vec2 uv){
+  vec2 cam = vec2(cos(uPhi), .6 * sin(uPhi)) * mix(0., .05, P1), u = uv;
+  for (int i = 0; i < 5; i++) u = uv - cam * (H(u) - .5) / vec2(A(), 1.);   // Parallaxe: Nahes verschiebt sich stärker
+  float e = 2.5 / uRes.y;
+  vec2 g = vec2(H(u + vec2(e / A(), 0.)) - H(u - vec2(e / A(), 0.)), H(u + vec2(0., e)) - H(u - vec2(0., e))) / (2. * e);
+  vec3 n = normalize(vec3(-g * mix(.004, .05, P0), 1.));
+  float la = uPhi + .7;
+  vec3 Ld = normalize(vec3(cos(la), sin(la), mix(.25, 1.2, P2)));
+  float dif = max(dot(n, Ld), 0.), hoch = H(u);
+  float ao = clamp(1. - (hoehe(u, 5.) - hoehe(u, 1.5)) * 1.6, .35, 1.);   // Mulden bekommen weniger Licht
+  float spec = pow(max(dot(n, normalize(Ld + vec3(0., 0., 1.))), 0.), mix(6., 90., P3)) * P3 * 1.4;
+  vec3 gips = vec3(.93, .9, .86), metall = vec3(.78, .6, .38);
+  vec3 alb = uZeigen > .5 ? Ql(u, 0.).rgb : mix(gips, metall * (.55 + .45 * hoch), P4);   // ohne Bild: Gips oder Metall
+  vec3 sc = mix(vec3(1.), metall * 1.3 + .2, P4 * (1. - uZeigen));
+  vec3 col = alb * (.16 + .95 * dif) * ao + sc * spec;
+  return vec4(clamp(col, 0., 1.), 1.);
+}`,
+  },
+
+  hoehenlinien: {
+    name: "Höhenlinien", herkunft: "Topografie: die Helligkeit als Gelände, Höhenlinien steigen langsam bergauf, jede vierte kräftiger",
+    regler: [r("Linien", .45), r("Steigen", .3), r("Strich", .4), r("Wellen", .3), r("Flächen", .35)],
+    glsl: `${FELD}
+vec4 effekt(vec2 uv){
+  vec2 p = P(uv);
+  float h = .6 * hoehe(uv, 1.5) + .4 * hoehe(uv, 3.5) + lfbm(p * 2.5, .7) * .05 * P3;
+  float N = mix(8., 46., P0), sp = 4. * floor(1. + P1 * 1.999);   // vier oder acht Linien pro Schlaufe: die kräftigen schliessen an
+  float f = h * N - uT * sp, fr = fract(f), aa = max(fwidth(f), 1e-4);
+  float d = min(fr, 1. - fr) / aa, k = uRes.y / 1350.;
+  float idx = mod(floor(f + .5), 4.), w = mix(.5, 1.8, P2) * k * (idx < .5 ? 2.4 : 1.);
+  float linie = clamp(w - d + .5, 0., 1.);
+  float band = mod(floor(f), 2.) * .5 + .5 * h;                         // Höhenstufen als leise Flächen
+  vec3 nacht = vec3(.043, .035, .039), papier = vec3(.95, .925, .9);
+  vec3 aus = mix(nacht + papier * band * .16 * P4, papier, linie * (.65 + .35 * step(idx, .5)));
+  vec3 im = Ql(uv, 0.).rgb;
+  vec3 an = mix(im * (.22 + .3 * P4 * band), mix(im, vec3(1.), .35), linie);
+  return vec4(mix(aus, an, uZeigen), 1.);
+}`,
+  },
+
+  stroemung: {
+    name: "Strömung", herkunft: "Flow Field: Lichtteilchen ziehen mit Schweif den Konturen des Bildes nach, wo Kanten sind, sammeln sie sich",
+    regler: [r("Dichte", .5), r("Tempo", .4), r("Punktgrösse", .35), r("Wirbel", .3), r("Kanten", .6)],
+    mischung: "add",
+    // die Zahl der Teilchen folgt der Bildhöhe (kleine Vorschauen rechnen weniger), je Teilchen acht Punkte für den Schweif
+    punkte: (w, a, h) => { const c = Math.max(40, Math.round((110 + 100 * w[0]) * Math.sqrt(Math.min(1, h / 1000)))); return { cols: c * 8, rows: Math.round(c / a) }; },
+    glsl: `${FELD}
+void punkt(int id, out vec2 pos, out vec4 col, out float size){
+  float i = float(id), cx = uCols / 8., xx = mod(i, uCols), j = mod(xx, 8.);
+  vec2 g = vec2(floor(xx / 8.), floor(i / uCols));
+  float h = h12(g * 1.31 + uSeed), m = 2. + floor(P1 * 2.999);           // zwei bis vier Leben pro Schlaufe
+  float zz = uT * m + h, u = fract(zz), cyc = mod(floor(zz), m);         // das Leben n und n + m sind dasselbe: die Schlaufe schliesst
+  vec2 sp = (g + h22(g + cyc * 17.3 + uSeed)) / vec2(cx, uRows);
+  vec3 c0 = Kl(sp, 1.).rgb; float L0 = lum(c0), ek = length(feldG(sp, 1.5, 3.));
+  float wgt = mix(.25 + .75 * (1. - L0), smoothstep(1., 14., ek), P4);  // wo Teilchen entstehen: im Dunklen oder an Kanten
+  pos = vec2(9.); col = vec4(0.); size = 0.;
+  if (h12(g * 2.7 + cyc * 3.1 + 5.) > wgt) return;
+  float age = max(u - j * .022, 0.), steps = age * 18.;
+  vec2 q = P(sp), sl = vec2(.18 / 18.);
+  for (int k = 0; k < 18; k++){
+    float dt = clamp(steps - float(k), 0., 1.);
+    if (dt <= 0.) break;
+    q += dt * sl * strom(UV(q), 1.5, 3., P3);
+  }
+  pos = q;
+  float a = sin(PI * u) * (1. - j / 8.) * (age > 0. ? 1. : 0.);
+  vec3 c = uZeigen > .5 ? min(c0 * 1.4 + .05, 1.) : vec3(.95, .925, .9);   // ohne Bild: helles Licht, die Form kommt aus dem Bild
+  col = vec4(c * a * 1.2, a);
+  size = mix(1.5, 5., P2) * uRes.y / 1350. * (1. - j / 12.) + .6;
+}`,
+  },
+  // ——— drei weitere nach Christians Stichworten vom 4. November 2026: «röntgen/laserscan, krasse montagen, absolut aktuelle prozess-visualisierung»
+
+  roentgen: {
+    name: "Röntgen-Scan", herkunft: "Röntgen und LiDAR: das Bild durchleuchtet (Dichte und Kanten), ein Laser fährt darüber und hinterlässt Höhenprofile",
+    regler: [r("Durchleuchtung", .6), r("Scanlinien", .5), r("Höhe", .5), r("Spur", .5), r("Farbe", .3)],
+    glsl: `${FELD}
+vec4 effekt(vec2 uv){
+  float k = uRes.y / 1350.;
+  float L = hoehe(uv, 1.), det = hoehe(uv, .5) - hoehe(uv, 3.5), ek = length(feldG(uv, 1., 2.));
+  float xr = clamp(.05 + .5 * pow(L, 1.3) + (1.6 * abs(det) + smoothstep(2., 30., ek) * .45) * (.4 + P0), 0., 1.);
+  vec3 film = vec3(.5, .8, 1.) * xr;
+  if (uZeigen > .5) film = mix(film, Ql(uv, 1.).rgb * (.35 + xr), P4);
+  film += (h12(floor(uv * uRes) + floor(uT * 360.)) - .5) * .05;      // Filmkorn
+  // Laser: fährt hinunter und wieder hinauf; hinter ihm bleiben Höhenprofile (Scanlinien, um die Bildhöhe nach oben verschoben)
+  float ly = mix(-.06, 1.06, .5 + .5 * cos(uPhi)), dv = -sin(uPhi), hinter = (uv.y - ly) * sign(dv) * -1.;
+  float spur = exp(-max(hinter, 0.) / mix(.08, .7, P3)) * step(0., hinter) * smoothstep(0., .25, abs(dv));
+  float sp = mix(16., 5., P1) * k, amp = mix(4., 46., P2) * k, ypx = uv.y * uRes.y, r0 = floor(ypx / sp), prof = 0.; vec3 pc = vec3(0.);
+  for (int j = 0; j < 9; j++){
+    float yr = (r0 - float(j)) * sp; vec2 u = vec2(uv.x, yr / uRes.y);
+    float hh = .6 * hoehe(u, 1.5) + .4 * hoehe(u, 3.);
+    float d = abs(ypx - yr - hh * amp), l = clamp(1.1 * k + .4 - d, 0., 1.);
+    if (l > prof){ prof = l; pc = uZeigen > .5 ? Kl(u, 1.).rgb : vec3(.55, 1., .85); }
+  }
+  vec3 laser = vec3(1., .16, .1);
+  float dy = (uv.y - ly) * uRes.y / k;
+  float strahl = exp(-dy * dy * .5) + .35 * exp(-abs(dy) / 22.);
+  vec3 col = film * (1. - .75 * spur) + pc * prof * spur * 1.8 + laser * strahl * 1.2 + vec3(1.) * exp(-dy * dy * 2.) * .8;
+  col *= 1. - .35 * dot(P(uv), P(uv));                                // Vignette
+  return vec4(clamp(col, 0., 1.), 1.);
+}`,
+  },
+
+  montage: {
+    name: "Montage", herkunft: "Quadtree-Collage: das Bild zerfällt dort in kleine Kacheln, wo es viel Detail hat; Kacheln verrutschen, drehen, spiegeln und glitchen",
+    regler: [r("Teilung", .5), r("Verrutschen", .5), r("Drehen", .4), r("Glitch", .4), r("Fugen", .5)],
+    glsl: `${FELD}
+vec4 effekt(vec2 uv){
+  vec2 p = P(uv); float sz = .5, lv = 0.; vec2 c = floor(p / sz) * sz;
+  float thr = mix(.3, .035, P0) * (1. + .45 * sin(uPhi));            // die Teilung atmet: Kacheln teilen und schliessen sich
+  for (int i = 0; i < 6; i++){
+    vec2 m = c + sz * .5; float lq = max(0., log2(sz * .5 * uRes.y) - 1.), q = sz * .25;
+    float a = hoehe(UV(m + vec2(-q, -q)), lq), b = hoehe(UV(m + vec2(q, -q)), lq), e = hoehe(UV(m + vec2(-q, q)), lq), d = hoehe(UV(m + vec2(q, q)), lq);
+    if (max(max(a, b), max(e, d)) - min(min(a, b), min(e, d)) < thr) break;
+    sz *= .5; c = floor(p / sz) * sz; lv += 1.;
+  }
+  vec2 h = h22(c * 37.1 + lv * 3.3 + uSeed), f = (p - c) / sz - .5, m = c + sz * .5;
+  float an = step(1. - P2 * .6, h.y) * floor(fract(uT * 2. + h.x) * 4.) * PI * .5;   // Vierteldrehungen, hart geschnitten
+  f = rot(an) * f; if (h.x > .8) f.x = -f.x;
+  float sl = pow(.5 + .5 * sin(uPhi + h.x * TAU), 3.);
+  vec2 src = m + f * sz * mix(1., .6, step(.7, h.x)) + (h - .5) * sz * 3. * P1 * sl;
+  vec3 col;
+  if (uZeigen > .5){
+    float gl = step(1. - P3 * .5, h22(c * 5.7 + floor(uT * 6.)).x), ca = .01 * gl;
+    col = vec3(Ql(UV(src + vec2(ca, 0)), 0.).r, Ql(UV(src), 0.).g, Ql(UV(src - vec2(ca, 0)), 0.).b);
+    if (h.y < P3 * .25) col = vec3(lum(col));                        // manche Kacheln grau, manche negativ
+    else if (h.y < P3 * .4) col = 1. - col;
+  } else {
+    // ohne Bild: jede Kachel schraffiert, Dichte aus dem Ton des Bildes an ihrer Quelle, Winkel je Kachel
+    float t = hoehe(UV(src), max(0., log2(sz * uRes.y) - 2.)), per = max(7. * uRes.y / 1350., 3.);
+    vec2 dir = vec2(cos(h.x * PI), sin(h.x * PI));
+    float s = abs(fract(dot(p * uRes.y, dir) / per) - .5) * 2.;
+    col = mix(vec3(.043, .035, .039), vec3(.95, .925, .9), smoothstep(.12, 0., s - floor(t * 4. + .5) / 4. * .95));
+  }
+  vec2 fr = min((p - c), sz - (p - c)) * uRes.y; float fuge = clamp(mix(0., 2.5, P4) * uRes.y / 1350. - min(fr.x, fr.y) + .5, 0., 1.);
+  col = mix(col, vec3(.043, .035, .039), fuge);
+  return vec4(col, 1.);
+}`,
+  },
+
+  entrauschen: {
+    name: "Entrauschen", herkunft: "Diffusionsmodell: aus reinem Rauschen entsteht das Bild Schritt für Schritt, grob zuerst (latente Blöcke), dann fein, und zerfällt wieder",
+    regler: [r("Rauschen", .9), r("Blöcke", .6), r("Haltezeit", .5), r("Körnung", .3), r("Fortschritt", 1)],
+    glsl: `vec4 effekt(vec2 uv){
+  float env = .5 - .5 * cos(uPhi), pr = smoothstep(0., mix(1., .5, P2), env), N = 40.;
+  float st = floor(pr * N) / N;                                        // vierzig Entrauschungsschritte hin, vierzig zurück
+  float k = uRes.y / 1350.; vec2 px = uv * uRes;
+  float B = exp2(floor(mix(5.5, 0., pow(st, .6)) * P1 + .5)) * k;     // latente Blöcke: 32, 16, 8 … 1 Pixel
+  vec2 bc = (floor(px / B) + .5) * B / uRes;
+  vec3 x0 = Kl(bc, log2(max(B, 1.)) + mix(3., 0., st)).rgb;           // die Vorhersage wird schärfer
+  float g = mix(1., 4., P3) * k;
+  vec2 nq = floor(px / g) * .73; float rr = 6.;                     // Rauschen, das auf einem Kreis durch die Zeit läuft: es flimmert und schliesst
+  vec3 eps = vec3(ln(nq, rr), ln(nq + 31.7, rr), ln(nq + 63.1, rr)) * 1.9;
+  float a = st;                                                        // Signalanteil wie in einem linearen Zeitplan
+  vec3 x = sqrt(a) * (x0 * 2. - 1.) + sqrt(1. - a) * eps * P0;
+  vec3 col = clamp(x * .5 + .5, 0., 1.);
+  if (uZeigen < .5){                                                   // ohne Bild: 1-Bit-Tusche, das Motiv entsteht als Streuraster
+    float v = lum(col);
+    col = mix(vec3(.043, .035, .039), vec3(.95, .925, .9), step(h12(floor(px / max(g, 1.)) + 7.), v));
+  }
+  // Fortschritt: ein Balken mit vierzig Strichen am unteren Rand
+  float by = px.y / k;
+  if (P4 > .5 && by > 26. && by < 30. && uv.x > .08 && uv.x < .92){
+    float xx = (uv.x - .08) / .84, tick = step(.15, fract(xx * N));
+    col = mix(col * .4, vec3(.95, .925, .9), step(xx, st) * tick * .9 + .1);
+  }
+  return vec4(col, 1.);
+}`,
+  },
+  // ——— und drei aus Christians Listen vom 4. November 2026 (TouchDesigner-Bausteine und Bildeffekte): Feedback/Transform/Bloom,
+  // Watercolor Bleed und Instancing (Geometry COMP mit Box SOP)
+
+  echo: {
+    name: "Echo", herkunft: "Feedback-Schleife: das Bild hinterlässt gezoomte, gedrehte Echos, die einer kreisenden Mitte nachziehen, dazu Bloom",
+    regler: [r("Echos", .6), r("Kreisen", .5), r("Zoom", .5), r("Drall", .6), r("Bloom", .5)],
+    // ohne Rückkopplungspuffer gerechnet: Echo k ist das Bild zur Zeit t − k·Δ, k-mal transformiert, so bleibt die Schlaufe geschlossen
+    glsl: `${FELD}
+vec4 effekt(vec2 uv){
+  vec2 p = P(uv); vec3 acc = vec3(0.); int n = int(mix(3., 14., P0));
+  vec3 papier = vec3(.95, .925, .9);
+  for (int k = 0; k < 14; k++){
+    if (k >= n) break;
+    float fk = float(k), ph = uPhi - fk * .22;
+    vec2 c = .14 * P1 * vec2(cos(ph), sin(2. * ph));
+    vec2 q = c + rot(fk * (P3 - .5) * .16) * (p - c) / pow(mix(1., 1.09, P2), fk);
+    vec2 uq = UV(q);
+    vec3 im = Kl(uq, .5).rgb; float L = lum(im);
+    float kante = smoothstep(2., 22., length(feldG(uq, 1., 2.)));
+    vec3 tint = .5 + .5 * cos(TAU * (fk / float(n) * .8 + vec3(0., .33, .67) + uT));   // jedes Echo verschiebt den Farbton
+    vec3 src = uZeigen > .5 ? (k == 0 ? Ql(uq, 0.).rgb : im * smoothstep(.3, .8, max(L, sat(im))) * mix(vec3(1.), tint, .6))
+                            : kante * (k == 0 ? papier : mix(papier, tint, .7));         // ohne Bild: die Konturen als Echos
+    float w = pow(mix(.55, .86, P0), fk);
+    acc = max(acc, src * w);
+  }
+  vec3 b = uZeigen > .5 ? max(Kl(uv, 4.).rgb - .45, 0.) + max(Kl(uv, 2.5).rgb - .6, 0.)
+                        : vec3(smoothstep(2., 14., length(feldG(uv, 3.5, 6.)))) * .35;
+  acc += b * P4 * 1.6;
+  return vec4(clamp(acc, 0., 1.), 1.);
+}`,
+  },
+
+  aquarell: {
+    name: "Aquarell", herkunft: "Watercolor Bleed: das Bild in Lasuren, die nass ineinanderlaufen, Pigment sammelt sich am Rand, Papierkörnung",
+    regler: [r("Nässe", .6), r("Lasuren", .45), r("Ränder", .6), r("Körnung", .5), r("Pigment", .3)],
+    glsl: `vec4 effekt(vec2 uv){
+  vec2 p = P(uv), px = uv * uRes;
+  vec2 w = vec2(lfbm(p * 2.6, .7), lfbm(p * 2.6 + 5.2, .7)) * .035 * P0;   // die Farbe läuft aus
+  vec2 u = uv + w + vec2(lfbm(p * 9., .9), lfbm(p * 9. + 2.7, .9)) * .006 * P0;
+  vec3 c = Kl(u, 2.).rgb; float L = lum(c);
+  float lv = mix(3., 8., P1), e = (1. - L) * lv + lfbm(p * 7. + 3., .8) * .5 * P0;
+  float st = floor(e), f = fract(e), dk = clamp(st, 0., lv) / lv;            // Deckung der Lasur in Stufen
+  float rand = exp(-(1. - f) * 12.) * P2 * step(.5, e);                       // Pigment sammelt sich an der Kante zur helleren Stufe
+  float korn = (gn(vec3(px / (2.2 * uRes.y / 1350.), uSeed)) * .5 + h12(floor(px)) - .5) * P3;
+  vec3 papier = vec3(.96, .94, .9) * (1. - .04 * P3 * gn(vec3(px * .02, 7.)));
+  vec3 pig = uZeigen > .5 ? mix(c, Kl(u, 4.).rgb, .3) : mix(vec3(.16, .22, .42), vec3(.42, .25, .16), P4);   // ohne Bild: eine Farbe (Indigo bis Sepia)
+  vec3 sattTon = pig / max(lum(pig), .05) * .55;
+  vec3 pc = uZeigen > .5 ? mix(pig, sattTon, .25) : pig;
+  float dicht = clamp(dk * (1. + .25 * korn) + rand * .35, 0., 1.);
+  vec3 col = papier * mix(vec3(1.), pc / max(papier, .05), dicht);           // subtraktiv auf Papier
+  return vec4(clamp(col, 0., 1.), 1.);
+}`,
+  },
+
+  voxel: {
+    name: "Voxel", herkunft: "Instancing: das Bild als Feld aus tausenden Quadern, die Höhe aus der Helligkeit, eine Welle läuft durch, die Kamera schwenkt",
+    regler: [r("Raster", .45), r("Neigung", .5), r("Schwenk", .5), r("Höhe", .5), r("Welle", .5)],
+    glsl: `float vH(vec2 cell, float N, float Hm, out vec3 alb){
+  vec2 m = (cell + .5) / N; vec3 im = Kl(UV(m), max(0., log2(uRes.y / N) - .5)).rgb; alb = im;
+  float inb = step(abs(m.x), A() * .5) * step(abs(m.y), .5);
+  return inb * Hm * (.04 + .96 * pow(lum(im), 1.1)) * (1. + P4 * .35 * sin(uPhi - length(m) * 9.));
+}
+vec4 effekt(vec2 uv){
+  vec2 p = P(uv); float N = mix(28., 120., P0), Hm = mix(.03, .22, P3);
+  float el = mix(1.3, .62, P1), az = -PI * .5 + P2 * .45 * sin(uPhi);
+  vec3 v = vec3(cos(el) * cos(az), cos(el) * sin(az), sin(el));
+  vec3 rr = normalize(cross(vec3(0., 0., 1.), v)), up = cross(v, rr);
+  vec3 ro = rr * p.x * 1.02 + up * p.y * (1.02 / max(sin(el) + .25 * cos(el), .3)) + v * 2., rd = -v;
+  rd.xy += 1e-5;
+  float t = (Hm * 1.4 - ro.z) / rd.z; vec3 pos = ro + rd * t;
+  vec2 cell = floor(pos.xy * N), stp = sign(rd.xy), tD = abs(1. / (rd.xy * N));
+  vec2 tM = t + ((cell + max(stp, 0.)) / N - pos.xy) / rd.xy;
+  float tE = t; int ax = -1; vec3 nrm = vec3(0., 0., 1.), alb = vec3(0.); float hit = 0., th = 0., hh = 0.;
+  for (int i = 0; i < 200; i++){
+    float h = vH(cell, N, Hm, alb), tX = min(tM.x, tM.y);
+    if (ro.z + rd.z * tE <= h){ th = tE; nrm = ax == 0 ? vec3(-stp.x, 0., 0.) : ax == 1 ? vec3(0., -stp.y, 0.) : vec3(0., 0., 1.); hit = 1.; hh = h; break; }
+    if (ro.z + rd.z * tX <= h){ th = (h - ro.z) / rd.z; nrm = vec3(0., 0., 1.); hit = 1.; hh = h; break; }
+    if (tM.x < tM.y){ cell.x += stp.x; tE = tM.x; tM.x += tD.x; ax = 0; } else { cell.y += stp.y; tE = tM.y; tM.y += tD.y; ax = 1; }
+  }
+  vec3 nacht = vec3(.043, .035, .039);
+  if (hit < .5) return vec4(nacht, 1.);
+  vec3 hp = ro + rd * th; vec2 lc = fract(hp.xy * N);
+  vec3 Ld = normalize(vec3(.5 * cos(uPhi * .0 + .8), .4, .8));
+  float dif = max(dot(nrm, Ld), 0.), ao = .55 + .45 * clamp(hp.z / max(hh, 1e-4), 0., 1.);
+  float fuge = nrm.z > .5 ? smoothstep(.0, .08, min(min(lc.x, 1. - lc.x), min(lc.y, 1. - lc.y))) : 1.;
+  vec3 a = uZeigen > .5 ? Ql(UV((cell + .5) / N), 0.).rgb : vec3(.95, .925, .9) * (.5 + .5 * hh / Hm);   // ohne Bild: weisse Quader, die Höhe erzählt das Bild
+  vec3 col = a * (.22 + .85 * dif) * ao * (.75 + .25 * fuge);
+  return vec4(clamp(col, 0., 1.), 1.);
 }`,
   },
 };
