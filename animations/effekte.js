@@ -632,7 +632,7 @@ vec4 effekt(vec2 uv){
 }
 vec4 effekt(vec2 uv){
   vec2 p = P(uv); float N = mix(28., 120., P0), Hm = mix(.03, .22, P3);
-  float el = mix(1.3, .62, P1), az = -PI * .5 + uLauf * uPhi + PD(P2 * .45 * sin(uPhi));   // Durchlauf: die Kamera umkreist das Feld
+  float el = mix(1.3, .62, P1), az = -PI * .5 + P2 * .45 * (uLauf > .5 ? ln(vec2(.7, 1.9), .35) : sin(uPhi));   // Durchlauf: die Kamera treibt ruhig im Rauschen (Rückmeldung vom 4. November 2026: «das voxel dreht sich jetzt unstoppbar»), Schwenk 0 steht still
   vec3 v = vec3(cos(el) * cos(az), cos(el) * sin(az), sin(el));
   vec3 rr = normalize(cross(vec3(0., 0., 1.), v)), up = cross(v, rr);
   vec3 ro = rr * p.x * 1.02 + up * p.y * (1.02 / max(sin(el) + .25 * cos(el), .3)) + v * 2., rd = -v;
