@@ -7,7 +7,7 @@ ein einziger Akzent. Die Animationen sind das Bild, alles andere ist Beschriftun
 lisovskiy.work (grosse Grotesk, gestreutes Kachelraster) und ijpowell.co.uk (Kopfzeile mit Ansichten, Reel in der Mitte,
 Zähler unten). Schrift und Farben kamen zuerst von der Logo-Referenz ornament.cloud/gamma (Warmweiss, Koralle, Instrument Sans,
 Newsreader kursiv); am 4. November spät wollte Christian sie «etwas cooler … und nicht in diesem claude classic design». Seither: kalte Palette
-(Blauschwarz, Kaltweiss, ein Akzent in Säuregrün) und drei Schriften (Bricolage Grotesque, Geist, Geist Mono). Die Form der Seite blieb.
+(Blauschwarz, Kaltweiss, ein Akzent in Säuregrün); die Schrift nach zweitem Feedback Hanken Grotesk, die Knöpfe leicht abgerundet. Die Form der Seite blieb.
 Die Richtung ist nicht mit UXKIN an fremden Seiten geprüft (nicht verbunden), sondern aus dem Projekt und diesen Referenzen abgeleitet.
 
 ## Farbe
@@ -31,15 +31,14 @@ Akzent hell 5,2 : 1, `--leise` 5,6 : 1 dunkel und 4,5 : 1 hell.
 
 ## Schrift
 
-Drei Schriften, alle lokal aus `vendor/fonts/animationen.css` als variable Schnitte (latin, latin-ext):
+Zwei Schriften, lokal aus `vendor/fonts/animationen.css` als variable Schnitte (latin, latin-ext). Christians Richtung (4. November, spät):
+«irgendetwas richtung helvetica now». Helvetica Now ist nicht frei; die nächste freie Verwandte ist **Hanken Grotesk** (neutrale Grotesk mit
+geschlossenen Formen, eng in gross). Geprüft gegen Inter (optische Grösse), Schibsted Grotesk, Archivo und Instrument Sans.
 
-- `--display`: **Bricolage Grotesque** 600 für die grossen Zeilen (`font-optical-sizing: auto`, Laufweite −.03em), 500 für die Aufforderung
-  auf der leeren Bühne und die Meldung bei den Werken. Das eine Gegenwort in den grossen Zeilen («Werke *12*», «drei *Ebenen*») steht nicht mehr
-  kursiv in einer Serife, sondern in Schnitt 300 und im Akzent.
-- `--sans`: **Geist** 400 und 500 für Lauftext, Bedienung, Marke, Ansichten.
-- `--mono`: **Geist Mono** 500 für alle Beschriftungen (Versalien, 11 px, Laufweite .08em), für Nummern und laufende Zahlen (Uhr, Zähler,
-  Reglerwerte, Werk-Nummern, Listenzahlen, Exportzeile) mit `font-variant-numeric: tabular-nums`.
-- Stufen (px / Zeilenhöhe): 11/1.3 Beschriftung · 13/1.4 Zweitzeile und Uhr · 15/1.45 Bedienung · 17/1.4 Lauftext · 22/1.25 Zwischentitel ·
+- `--sans` (= `--display`): **Hanken Grotesk**. 400 Lauftext, 500 Bedienung und Knöpfe, 600 grosse Zeilen (Laufweite −.04em), Haupttaste und
+  Beschriftungen (Versalien, 11 px, Laufweite .1em). Das eine Gegenwort in den grossen Zeilen («Werke *12*», «drei *Ebenen*») steht in 300 und im Akzent.
+- `--mono`: **Geist Mono** nur für laufende Zahlen: Uhr, Schlaufenzeile, Reglerwerte, Exportzeile (`font-variant-numeric: tabular-nums`).
+- Stufen (px / Zeilenhöhe): 11/1.3 Beschriftung · 13/1.4 Zweitzeile und Uhr · 14/1.2 Knöpfe · 15/1.45 Bedienung · 17/1.4 Lauftext · 22/1.25 Zwischentitel ·
   26/1.15 Aufforderung · Grosse Zeile `clamp(40px, 6.4vw, 104px)` / .95.
 - Nichts kursiv. Keine Schrift von aussen.
 
@@ -51,8 +50,14 @@ Drei Schriften, alle lokal aus `vendor/fonts/animationen.css` als variable Schni
 
 ## Form
 
-- Radius 0 für Bühne, Karten, Felder und Haarlinien. Pillen (999 px) nur für Schalter in Gruppen.
-- Ein Rahmen, 1 px `--linie`; aktiv wird er `--tinte`.
+- Radius 0 für Bühne, Karten und Haarlinien. Knöpfe, Schalter, Felder und Auswahllisten `--radius` 6 px, die Haupttaste und die Exportbox 8 px
+  (Christian, 4. November spät: «die button nur leicht abgerundet und cooler», «minimal designte knöpfe … mit einem individuellen touch, also natürlich alle
+  auf der seite gleich»). Keine Pillen mehr.
+- **Ein Knopf, überall gleich:** flach, ohne Fläche, 1 px `--linie`, Schrift 14 px / 500 in `--leise`. Darüberfahren: Rahmen und Schrift `--tinte`.
+  **An** (`aria-pressed`): Rahmen `--tinte`, und der Punkt der Marke wächst in 180 ms vor dem Wort (6 px, Akzent); nichts wird gefüllt. Das ist der
+  individuelle Touch der Seite: derselbe Punkt steht in «ornament.cloud», auf der Haupttaste und an der aktiven Ansicht.
+  Ausnahmen: die Haupttaste «Neu mischen» ist gefüllt (`--tinte`, Punkt immer da, beim Darüberfahren Akzentfläche), leise Tasten (Pause, Standbild, Link)
+  haben keinen Rahmen und bekommen Fläche und Rahmen erst beim Darüberfahren.
 
 ## Bausteine
 
@@ -60,7 +65,7 @@ Drei Schriften, alle lokal aus `vendor/fonts/animationen.css` als variable Schni
   Auf dem Handy wandern die Ansichten in eine feste Leiste am unteren Rand (Daumenweite), der Kopf behält nur die Marke.
 - **Mischpult**: Bühne links (klebt beim Rollen), darunter Uhr, Fortschrittslinie und Schlaufe, dann die Haupttaste **«Neu mischen»** (gefüllt, mit
   Akzentpunkt, 52 px hoch) und daneben «MP4 laden». Ohne Bild zeigt die Bühne die Aufforderung (gestrichelter Rahmen, Satz mit kursivem Wort,
-  «Bild wählen …»). Pult rechts 400 px: Gruppen mit Versalbeschriftung, Schalter als Pillen, Ebenen als Karten mit Haarlinie, dünne Regler mit
+  «Bild wählen …»). Pult rechts 400 px: Gruppen mit Versalbeschriftung, Schalter als flache Knöpfe mit 6 px Radius, Ebenen als Karten mit Haarlinie, dünne Regler mit
   Wert rechts, leise Tasten (Pause, Standbild, Link), zuunterst «Werk sichern» mit Titel und Name.
 - **Werke**: unter dem Mischpult, von einer Haarlinie getrennt: grosse Zeile «Werke» mit der Anzahl leicht und im Akzent, daneben ein Satz,
   darunter das gestreute Raster mit drei Kachelgrössen (12 Spalten, Tablet 8, Handy 4). Beschriftung: Nummer, Titel, darunter leise
