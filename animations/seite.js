@@ -29,7 +29,10 @@ try { motor = motorErstellen(); } catch (f) {
 const S = {
   ansicht: "reel", reel: 0, laeuft: !ruhig, t0: performance.now(), tPause: DAUER * .35,
   mix: kopie(WERKE[0].stapel), live: null, export: null,
+  ohneBild: false,   // «Bild zeigen: aus» gilt für Reel, Werke und Mischpult zugleich
 };
+const mit = (stapel) => S.ohneBild ? { ...stapel, ohneBild: true } : stapel;
+const ohne = () => S.ohneBild ? "-ohne-bild" : "";
 const zeit = () => S.laeuft ? (performance.now() - S.t0) / 1000 : S.tPause;
 
 // ——— Leinwand passend zur Anzeige (Bildschirmdichte, höchstens 1080 breit) ———
@@ -40,7 +43,7 @@ function aufloesung(c, max = 1080) {
 }
 function malen(c, stapel, t, [b, h] = aufloesung(c)) {
   if (c.width !== b || c.height !== h) { c.width = b; c.height = h; }
-  motor.zeichnen(stapel, t, b, h);
+  motor.zeichnen(mit(stapel), t, b, h);
   c.getContext("2d").drawImage(motor.leinwand, 0, 0, b, h);
 }
 
@@ -56,19 +59,31 @@ function ansicht(name, { verlauf = true } = {}) {
 function adresse() {
   let h = S.ansicht;
   if (S.ansicht === "reel") h = `w=${WERKE[S.reel].id}`;
-  if (S.ansicht === "mischpult") h = `m=${btoa(unescape(encodeURIComponent(JSON.stringify(S.mix)))).replace(/=+$/, "")}`;
+  if (S.ansicht === "mischpult") h = `m=${btoa(unescape(encodeURIComponent(JSON.stringify({ ...S.mix, ohneBild: S.ohneBild || undefined })))).replace(/=+$/, "")}`;
   history.replaceState(null, "", `#${h}`);
 }
 function ausAdresse() {
   const h = decodeURIComponent(location.hash.slice(1));
   if (h.startsWith("w=")) { const i = WERKE.findIndex((w) => w.id === h.slice(2)); if (i >= 0) S.reel = i; return "reel"; }
   if (h.startsWith("m=")) {
-    try { const m = JSON.parse(decodeURIComponent(escape(atob(h.slice(2))))); if ((BILDER.some((b) => b.id === m.bild) || m.bild === EIGEN) && Array.isArray(m.ebenen)) S.mix = { ...m, bild: m.bild === EIGEN ? BILDER[0].id : m.bild }; } catch { /* alter Link */ }   // ein eigenes Bild steht nicht im Link
+    try { const m = JSON.parse(decodeURIComponent(escape(atob(h.slice(2))))); if ((BILDER.some((b) => b.id === m.bild) || m.bild === EIGEN) && Array.isArray(m.ebenen)) { S.ohneBild = !!m.ohneBild; delete m.ohneBild; S.mix = { ...m, bild: m.bild === EIGEN ? BILDER[0].id : m.bild }; } } catch { /* alter Link */ }   // ein eigenes Bild steht nicht im Link
     return "mischpult";
   }
   return ["reel", "werke", "mischpult", "info"].includes(h) ? h : "reel";
 }
 for (const b of document.querySelectorAll("[data-ansicht]")) b.addEventListener("click", () => ansicht(b.dataset.ansicht));
+
+// ——— Bild zeigen: an/aus ———
+// aus: das Bild steuert die Effekte nur noch (Helligkeit, Relief, Farben), zu sehen ist es nicht mehr (Wunsch vom 4. November 2026)
+function bildZeigen(an) {
+  S.ohneBild = !an;
+  $("reel-ohnebild").textContent = S.ohneBild ? "Bild zeigen" : "Bild ausblenden";
+  $("reel-ohnebild").setAttribute("aria-pressed", String(S.ohneBild));
+  if (S.ansicht === "mischpult") pultAufbauen();
+  for (const { w, c } of kacheln) malen(c, w.stapel, DAUER * .35, [240, 300]);
+  malen($("reel-mini"), WERKE[S.reel].stapel, DAUER * .35, [88, 110]);
+  adresse();
+}
 
 // ——— Reel ———
 function reelZeigen(i, { neuStart = true } = {}) {
@@ -85,6 +100,7 @@ BILDER.forEach((b, i) => {
   $("reel-zaehler").append(el("button", { type: "button", "data-bild": b.id, title: b.name, "aria-pressed": "false", text: `(${i + 1})`,
     onclick: () => reelZeigen(WERKE.findIndex((w) => w.bild === b.id)) }));
 });
+$("reel-ohnebild").addEventListener("click", () => bildZeigen(S.ohneBild));
 $("reel-weiter").addEventListener("click", () => reelZeigen(S.reel + 1));
 $("reel-zurueck").addEventListener("click", () => reelZeigen(S.reel - 1));
 $("reel-bild").addEventListener("click", () => reelZeigen(S.reel + 1));
@@ -110,10 +126,10 @@ $("reel-mischen").addEventListener("click", () => { S.mix = kopie(WERKE[S.reel].
 // Standbild: das Bild, das gerade zu sehen ist, als PNG in 1080 × 1350
 function standbild(stapel, name) {
   const t = zeit() % DAUER;
-  motor.zeichnen(stapel, t, 1080, 1350);
+  motor.zeichnen(mit(stapel), t, 1080, 1350);
   motor.leinwand.toBlob((blob) => {
     if (!blob) return;
-    const a = el("a", { href: URL.createObjectURL(blob), download: `ornament-animation-${name}-${zwei(Math.floor(t))}s${Math.floor((t % 1) * 10)}-4x5.png` });
+    const a = el("a", { href: URL.createObjectURL(blob), download: `ornament-animation-${name}${ohne()}-${zwei(Math.floor(t))}s${Math.floor((t % 1) * 10)}-4x5.png` });
     document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60_000);
   }, "image/png");
 }
@@ -169,6 +185,8 @@ function pultAufbauen() {
     onclick: () => { m.bild = b.id; pultAufbauen(); adresse(); } })),
     ...(motor.hatBild(EIGEN) ? [el("button", { type: "button", "aria-pressed": String(m.bild === EIGEN), text: "Eigenes Bild", onclick: () => { m.bild = EIGEN; pultAufbauen(); adresse(); } })] : []),
     el("button", { type: "button", class: "hochladen", text: motor.hatBild(EIGEN) ? "Anderes Bild …" : "Bild hochladen …", onclick: () => $("pult-datei").click() }));
+  $("pult-zeigen").replaceChildren(...[[false, "An"], [true, "Aus"]].map(([aus, text]) => el("button", { type: "button", "aria-pressed": String(S.ohneBild === aus), text,
+    onclick: () => bildZeigen(!aus) })));
   $("pult-grund").replaceChildren(...["schwarz", "weiss"].map((g) => el("button", { type: "button", "aria-pressed": String(m.grund === g), text: g === "schwarz" ? "Schwarz" : "Weiss",
     onclick: () => { m.grund = g; pultAufbauen(); adresse(); } })));
   $("pult-ebenen").replaceChildren(...m.ebenen.map((e, i) => ebeneFeld(e, i)));
@@ -262,12 +280,12 @@ async function herunterladen(stapel, name) {
   S.export = stand;
   $("export").hidden = false; $("export-text").textContent = "MP4 · 0 %";
   try {
-    const erg = await videoErstellen(motor, kopie(stapel), {
+    const erg = await videoErstellen(motor, kopie(mit(stapel)), {
       fortschritt: (p) => { $("export-text").textContent = `MP4 · ${Math.round(p * 100)} %`; },
       abbruch: () => stand.abbrechen,
     });
     if (erg) {
-      const a = el("a", { href: URL.createObjectURL(erg.blob), download: `ornament-animation-${name}-4x5.${erg.endung}` });
+      const a = el("a", { href: URL.createObjectURL(erg.blob), download: `ornament-animation-${name}${ohne()}-4x5.${erg.endung}` });
       document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60_000);
     }
   } catch (f) {

@@ -11,7 +11,7 @@ const KOPF = `#version 300 es
 precision highp float; precision highp int;
 uniform sampler2D uBild, uUnten;
 uniform vec2 uRes, uFit;
-uniform float uPhi, uT, uSeed, uQuelle, uLod, uCols, uRows;
+uniform float uPhi, uT, uSeed, uQuelle, uLod, uCols, uRows, uZeigen;
 uniform float uP[6];
 #define PI 3.14159265
 #define TAU 6.28318531
@@ -24,7 +24,16 @@ uniform float uP[6];
 float A(){ return uRes.x / uRes.y; }
 vec2 P(vec2 uv){ return (uv - .5) * vec2(A(), 1.); }
 vec2 UV(vec2 p){ return p / vec2(A(), 1.) + .5; }
-vec4 Ql(vec2 uv, float l){ return uQuelle > .5 ? textureLod(uUnten, clamp(uv, 0., 1.), 0.) : textureLod(uBild, (uv - .5) * uFit + .5, uLod + l); }
+// «Bild zeigen: aus» (Wunsch vom 4. November 2026: «dass sich der Effekt aufs Bild bezieht aber dieses nicht zeigt»):
+// Kl liest immer das Bild (Steuerkarte für Helligkeit, Relief, Farben), Ql zeigt statt des Bildes ein neutrales Haarlinien-Raster E,
+// an dem sich Verzerrungen, Linsen und Strömungen weiter ablesen lassen
+vec4 Kl(vec2 uv, float l){ return uQuelle > .5 ? textureLod(uUnten, clamp(uv, 0., 1.), 0.) : textureLod(uBild, (uv - .5) * uFit + .5, uLod + l); }
+vec4 E(vec2 uv){
+  float k = uRes.y / 1350., d = abs(fract(uv.y * uRes.y / (9. * k)) - .5) * 9. * k;
+  float l = clamp(1.1 * k + .6 - d, 0., 1.);
+  return vec4(mix(vec3(.043, .035, .039), vec3(.95, .925, .9), l * .8), 1.);
+}
+vec4 Ql(vec2 uv, float l){ return (uZeigen > .5 || uQuelle > .5) ? Kl(uv, l) : E(uv); }
 vec4 Q(vec2 uv){ return Ql(uv, 0.); }
 float lum(vec3 c){ return dot(c, vec3(.299, .587, .114)); }
 float sat(vec3 c){ return max(c.r, max(c.g, c.b)) - min(c.r, min(c.g, c.b)); }
@@ -174,7 +183,7 @@ export function motorErstellen() {
       gl.useProgram(pr.p);
       textur(pr, "uBild", 0, bild.tex); textur(pr, "uUnten", 1, acc[i].tex);
       fp(pr, "uRes", b, h); fp(pr, "uFit", fit[0], fit[1]); fp(pr, "uLod", lod);
-      fp(pr, "uPhi", tt * Math.PI * 2); fp(pr, "uT", tt); fp(pr, "uSeed", e.seed ?? 0); fp(pr, "uQuelle", e.quelle === "unten" ? 1 : 0);
+      fp(pr, "uPhi", tt * Math.PI * 2); fp(pr, "uT", tt); fp(pr, "uSeed", e.seed ?? 0); fp(pr, "uQuelle", e.quelle === "unten" ? 1 : 0); fp(pr, "uZeigen", stapel.ohneBild ? 0 : 1);
       const w = def.regler.map((r, k) => e.werte?.[k] ?? r.wert);
       gl.uniform1fv(pr.ort("uP[0]"), Float32Array.from({ length: 6 }, (_, k) => w[k] ?? 0));
       if (def.punkte) {

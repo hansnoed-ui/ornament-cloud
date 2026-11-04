@@ -168,7 +168,7 @@ input[type="range"] { width: 100%; accent-color: var(--ink); }
         <div class="karte"><canvas id="reel-mini" width="88" height="110" aria-hidden="true"></canvas><span id="reel-titel"></span></div>
       </div>
       <p class="uhr" id="reel-uhr">00:00,0 / 00:12</p>
-      <p class="aktionen"><button type="button" id="reel-zurueck">Zurück</button>, <button type="button" id="reel-weiter">Weiter</button>, <button type="button" id="reel-pause">Pause</button>,<br><button type="button" id="reel-mischen">Ins Mischpult</button>, <button type="button" id="reel-bildpng">Standbild</button>, <button type="button" id="reel-mp4">MP4 laden</button></p>
+      <p class="aktionen"><button type="button" id="reel-zurueck">Zurück</button>, <button type="button" id="reel-weiter">Weiter</button>, <button type="button" id="reel-pause">Pause</button>, <button type="button" id="reel-ohnebild" aria-pressed="false">Bild ausblenden</button>,<br><button type="button" id="reel-mischen">Ins Mischpult</button>, <button type="button" id="reel-bildpng">Standbild</button>, <button type="button" id="reel-mp4">MP4 laden</button></p>
     </div>
   </section>
 
@@ -189,6 +189,8 @@ input[type="range"] { width: 100%; accent-color: var(--ink); }
       <div class="gruppe"><h2>Bild</h2><div class="wahl" id="pult-bilder"></div>
         <input type="file" id="pult-datei" accept="image/*" hidden>
         <p class="hinweis leise" id="pult-meldung">Eigene Bilder bleiben in deinem Browser, nichts wird hochgeladen. Auch per Ziehen auf die Bühne.</p></div>
+      <div class="gruppe"><h2>Bild zeigen</h2><div class="wahl" id="pult-zeigen"></div>
+        <p class="hinweis leise">Aus: das Bild steuert die Effekte nur noch, zu sehen ist nur der Effekt.</p></div>
       <div class="gruppe"><h2>Grund</h2><div class="wahl" id="pult-grund"></div></div>
       <div id="pult-ebenen"></div>
       <div class="tasten">
