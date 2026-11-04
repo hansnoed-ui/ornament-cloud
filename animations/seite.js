@@ -1,9 +1,9 @@
 // Animationen – die Seite: Mischpult (das eigene Bild, Grund, drei Ebenen, Schalter, Sichern) mit den gesicherten Werken darunter
 // (gestreutes Raster, beim Darüberfahren lebendig, Klick lädt ins Mischpult) und Info. Ein Motor zeichnet für alles; die sichtbare
 // Leinwand übernimmt sein Bild. Seit 4. November 2026 ohne Reel, Beispielbilder und vorgefertigte Werke.
-import { motorErstellen, videoErstellen, DAUER, LAENGEN, MODI } from "./motor.js";
-import { EFFEKTE, EFFEKT_IDS } from "./effekte.js";
-import { zufall, EIGEN } from "./rezepte.js";
+import { motorErstellen, videoErstellen, DAUER, LAENGEN, MODI } from "./motor.js?v=2";
+import { EFFEKTE, EFFEKT_IDS } from "./effekte.js?v=2";
+import { zufall, EIGEN } from "./rezepte.js?v=2";
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, attr = {}, ...kinder) => {
@@ -261,7 +261,9 @@ async function sichern() {
   try {
     let blob = S.bildBlob;
     if (S.mix.bild !== EIGEN) blob = await (await fetch(S.werk.bild, { cache: "force-cache" })).blob();   // ein gesichertes Werk weitergemischt: sein Bild noch einmal holen
-    const stapel = mit(S.mix); delete stapel.bild;   // mit Format, Länge, Durchlauf und «Bild zeigen»
+    const stapel = mit(S.mix); delete stapel.bild;   // mit Format, Länge, Durchlauf und «Bild zeigen», ohne leere Ebenen
+    stapel.ebenen = stapel.ebenen.filter((e) => e.effekt && EFFEKTE[e.effekt]);
+    if (!stapel.ebenen.length) { sichernMeldung("Zuerst einen Effekt wählen, sonst gibt es nichts zu sichern."); return; }
     const f = new FormData();
     f.append("bild", blob, "bild.jpg"); f.append("titel", titel); f.append("name", name); f.append("stapel", JSON.stringify(stapel)); f.append("schutz", $("sichern-schutz").value);
     const r = await fetch(DIENST, { method: "POST", body: f });

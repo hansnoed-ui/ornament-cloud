@@ -133,6 +133,7 @@ await check("Werk sichern: mit Titel und Name abgelegt, erscheint bei den Werken
   assert.equal(speicher.werke.length, 1);
   assert.equal(speicher.werke[0].name, "Testerin"); assert.equal(speicher.werke[0].titel, "Probe am Abend");
   assert.ok(Array.isArray(speicher.werke[0].stapel.ebenen) && !("bild" in speicher.werke[0].stapel), "die Mischung ohne den Bildschlüssel");
+  assert.ok(speicher.werke[0].stapel.ebenen.length >= 1 && speicher.werke[0].stapel.ebenen.every((e) => e.effekt), "keine leere Ebene in der gesicherten Mischung");
   assert.ok(speicher.bilder.values().next().value.subarray(0, 2).equals(Buffer.from([0xff, 0xd8])), "das Bild kommt als JPEG an");
   assert.match(page.url(), /#w=[a-f0-9]{10}$/);
   assert.equal(await page.locator(".kachel").count(), 1);
