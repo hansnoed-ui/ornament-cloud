@@ -31,17 +31,22 @@ const S = {
   ansicht: "reel", reel: 0, laeuft: !ruhig, t0: performance.now(), tPause: DAUER * .35,
   mix: kopie(WERKE[0].stapel), live: null, export: null,
   ohneBild: false,   // «Bild zeigen: aus» gilt für Reel, Werke und Mischpult zugleich
-  durchlauf: false, dauer: DAUER,   // «Durchlauf» statt hin und zurück, Länge der Schlaufe (12, 30 oder 60 s), ebenfalls für alles
+  durchlauf: false, dauer: DAUER,
+  format: "4x5",   // Seitenverhältnis 4:5, 1:1 oder 16:9 (Wunsch vom 4. November 2026: «alle animationen umstellbar auf 4:5, 1:1, 16:9»)   // «Durchlauf» statt hin und zurück, Länge der Schlaufe (12, 30 oder 60 s), ebenfalls für alles
 };
 const mit = (stapel) => ({ ...stapel, ohneBild: S.ohneBild || undefined, durchlauf: S.durchlauf || undefined, dauer: S.dauer });
 const ohne = () => (S.ohneBild ? "-ohne-bild" : "") + (S.durchlauf ? "-durchlauf" : "") + (S.dauer !== DAUER ? `-${S.dauer}s` : "");
+// Format: Seitenverhältnis (Breite/Höhe) und Grösse für Standbild und MP4
+const FORMATE = { "4x5": { name: "4:5", ar: 4 / 5, gross: [1080, 1350] }, "1x1": { name: "1:1", ar: 1, gross: [1080, 1080] }, "16x9": { name: "16:9", ar: 16 / 9, gross: [1920, 1080] } };
+const fmt = () => FORMATE[S.format] ?? FORMATE["4x5"];
+const kachelGr = () => [240, Math.round(240 / fmt().ar)], miniGr = () => [88, Math.round(88 / fmt().ar)];
 const zeit = () => S.laeuft ? (performance.now() - S.t0) / 1000 : S.tPause;
 
 // ——— Leinwand passend zur Anzeige (Bildschirmdichte, höchstens 1080 breit) ———
 function aufloesung(c, max = 1080) {
   const r = c.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2);
   const b = Math.max(40, Math.min(max, Math.round(r.width * d)));
-  return [b, Math.round(b * 1.25)];
+  return [b, Math.round(b / fmt().ar)];
 }
 function malen(c, stapel, t, [b, h] = aufloesung(c)) {
   if (c.width !== b || c.height !== h) { c.width = b; c.height = h; }
@@ -61,14 +66,14 @@ function ansicht(name, { verlauf = true } = {}) {
 function adresse() {
   let h = S.ansicht;
   if (S.ansicht === "reel") h = `w=${WERKE[S.reel].id}`;
-  if (S.ansicht === "mischpult") h = `m=${btoa(unescape(encodeURIComponent(JSON.stringify({ ...S.mix, ohneBild: S.ohneBild || undefined, durchlauf: S.durchlauf || undefined, dauer: S.dauer !== DAUER ? S.dauer : undefined })))).replace(/=+$/, "")}`;
+  if (S.ansicht === "mischpult") h = `m=${btoa(unescape(encodeURIComponent(JSON.stringify({ ...S.mix, ohneBild: S.ohneBild || undefined, durchlauf: S.durchlauf || undefined, dauer: S.dauer !== DAUER ? S.dauer : undefined, format: S.format !== "4x5" ? S.format : undefined })))).replace(/=+$/, "")}`;
   history.replaceState(null, "", `#${h}`);
 }
 function ausAdresse() {
   const h = decodeURIComponent(location.hash.slice(1));
   if (h.startsWith("w=")) { const i = WERKE.findIndex((w) => w.id === h.slice(2)); if (i >= 0) S.reel = i; return "reel"; }
   if (h.startsWith("m=")) {
-    try { const m = JSON.parse(decodeURIComponent(escape(atob(h.slice(2))))); if ((BILDER.some((b) => b.id === m.bild) || m.bild === EIGEN) && Array.isArray(m.ebenen)) { S.ohneBild = !!m.ohneBild; S.durchlauf = !!m.durchlauf; S.dauer = LAENGEN.includes(m.dauer) ? m.dauer : DAUER; delete m.ohneBild; delete m.durchlauf; delete m.dauer; S.mix = { ...m, bild: m.bild === EIGEN ? BILDER[0].id : m.bild }; } } catch { /* alter Link */ }   // ein eigenes Bild steht nicht im Link
+    try { const m = JSON.parse(decodeURIComponent(escape(atob(h.slice(2))))); if ((BILDER.some((b) => b.id === m.bild) || m.bild === EIGEN) && Array.isArray(m.ebenen)) { S.ohneBild = !!m.ohneBild; S.durchlauf = !!m.durchlauf; S.dauer = LAENGEN.includes(m.dauer) ? m.dauer : DAUER; if (FORMATE[m.format]) S.format = m.format; delete m.ohneBild; delete m.durchlauf; delete m.dauer; delete m.format; S.mix = { ...m, bild: m.bild === EIGEN ? BILDER[0].id : m.bild }; } } catch { /* alter Link */ }   // ein eigenes Bild steht nicht im Link
     return "mischpult";
   }
   return ["reel", "werke", "mischpult", "info"].includes(h) ? h : "reel";
@@ -82,8 +87,8 @@ function bildZeigen(an) {
   $("reel-ohnebild").textContent = S.ohneBild ? "Bild zeigen" : "Bild ausblenden";
   $("reel-ohnebild").setAttribute("aria-pressed", String(S.ohneBild));
   if (S.ansicht === "mischpult") pultAufbauen();
-  for (const { w, c } of kacheln) malen(c, w.stapel, S.dauer * .35, [240, 300]);
-  malen($("reel-mini"), WERKE[S.reel].stapel, S.dauer * .35, [88, 110]);
+  for (const { w, c } of kacheln) malen(c, w.stapel, S.dauer * .35, kachelGr());
+  malen($("reel-mini"), WERKE[S.reel].stapel, S.dauer * .35, miniGr());
   adresse();
 }
 
@@ -94,7 +99,7 @@ function reelZeigen(i, { neuStart = true } = {}) {
   if (neuStart) { S.t0 = performance.now(); S.tPause = ruhig ? S.dauer * .35 : 0; }
   $("reel-titel").replaceChildren(el("b", { text: `${bildName(w.bild)} / ` }), `${zwei(w.nr)} ${w.titel}`);
   for (const b of $("reel-zaehler").querySelectorAll("button")) b.setAttribute("aria-pressed", String(b.dataset.bild === w.bild));
-  malen($("reel-mini"), w.stapel, S.dauer * .35, [88, 110]);
+  malen($("reel-mini"), w.stapel, S.dauer * .35, miniGr());
   if (S.ansicht === "reel") adresse();
 }
 BILDER.forEach((b, i) => {
@@ -113,11 +118,22 @@ function bewegung({ durchlauf = S.durchlauf, dauer = S.dauer } = {}) {
   $("reel-durchlauf").textContent = S.durchlauf ? "Hin und zurück" : "Durchlauf";
   $("reel-durchlauf").setAttribute("aria-pressed", String(S.durchlauf));
   if (S.ansicht === "mischpult") pultAufbauen();
-  for (const { w, c } of kacheln) malen(c, w.stapel, DAUER * .35, [240, 300]);
-  malen($("reel-mini"), WERKE[S.reel].stapel, DAUER * .35, [88, 110]);
+  for (const { w, c } of kacheln) malen(c, w.stapel, DAUER * .35, kachelGr());
+  malen($("reel-mini"), WERKE[S.reel].stapel, DAUER * .35, miniGr());
   adresse();
 }
 $("reel-durchlauf").addEventListener("click", () => bewegung({ durchlauf: !S.durchlauf }));
+// ——— Format: 4:5, 1:1, 16:9 für Reel, Werke, Mischpult, Standbild und MP4; das Bild füllt das Format immer ganz (zugeschnitten) ———
+function formatSetzen(f) {
+  if (!FORMATE[f]) return;
+  S.format = f; document.documentElement.dataset.format = f;
+  $("reel-format").textContent = `Format ${fmt().name}`;
+  if (S.ansicht === "mischpult") pultAufbauen();
+  for (const { w, c } of kacheln) malen(c, w.stapel, DAUER * .35, kachelGr());
+  malen($("reel-mini"), WERKE[S.reel].stapel, DAUER * .35, miniGr());
+  adresse();
+}
+$("reel-format").addEventListener("click", () => { const k = Object.keys(FORMATE); formatSetzen(k[(k.indexOf(S.format) + 1) % k.length]); });
 $("reel-weiter").addEventListener("click", () => reelZeigen(S.reel + 1));
 $("reel-zurueck").addEventListener("click", () => reelZeigen(S.reel - 1));
 $("reel-bild").addEventListener("click", () => reelZeigen(S.reel + 1));
@@ -143,10 +159,11 @@ $("reel-mischen").addEventListener("click", () => { S.mix = kopie(WERKE[S.reel].
 // Standbild: das Bild, das gerade zu sehen ist, als PNG in 1080 × 1350
 function standbild(stapel, name) {
   const t = zeit() % S.dauer;
-  motor.zeichnen(mit(stapel), t, 1080, 1350);
+  const [gb, gh] = fmt().gross;
+  motor.zeichnen(mit(stapel), t, gb, gh);
   motor.leinwand.toBlob((blob) => {
     if (!blob) return;
-    const a = el("a", { href: URL.createObjectURL(blob), download: `ornament-animation-${name}${ohne()}-${zwei(Math.floor(t))}s${Math.floor((t % 1) * 10)}-4x5.png` });
+    const a = el("a", { href: URL.createObjectURL(blob), download: `ornament-animation-${name}${ohne()}-${zwei(Math.floor(t))}s${Math.floor((t % 1) * 10)}-${S.format}.png` });
     document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60_000);
   }, "image/png");
 }
@@ -174,7 +191,7 @@ const kacheln = WERKE.map((w, i) => {
     c, el("span", { text: `${bildName(w.bild)} ${zwei(w.nr)} — ${w.titel}` }));
   a.addEventListener("click", (e) => { e.preventDefault(); ansicht("reel", { verlauf: false }); reelZeigen(i); });
   const an = () => { if (!ruhig) S.live = { c, stapel: w.stapel, t0: performance.now() }; };
-  const aus = () => { if (S.live?.c === c) { S.live = null; malen(c, w.stapel, S.dauer * .35, [240, 300]); } };
+  const aus = () => { if (S.live?.c === c) { S.live = null; malen(c, w.stapel, S.dauer * .35, kachelGr()); } };
   a.addEventListener("pointerenter", an); a.addEventListener("focus", an);
   a.addEventListener("pointerleave", aus); a.addEventListener("blur", aus);
   raster.append(a);
@@ -206,6 +223,8 @@ function pultAufbauen() {
     onclick: () => bildZeigen(!aus) })));
   $("pult-lauf").replaceChildren(...[[false, "Hin und zurück"], [true, "Durchlauf"]].map(([d, text]) => el("button", { type: "button", "aria-pressed": String(S.durchlauf === d), text,
     onclick: () => bewegung({ durchlauf: d }) })));
+  $("pult-format").replaceChildren(...Object.entries(FORMATE).map(([k, f]) => el("button", { type: "button", "aria-pressed": String(S.format === k), text: f.name,
+    onclick: () => formatSetzen(k) })));
   $("pult-laenge").replaceChildren(...LAENGEN.map((d) => el("button", { type: "button", "aria-pressed": String(S.dauer === d), text: `${d} s`,
     onclick: () => bewegung({ dauer: d }) })));
   $("pult-grund").replaceChildren(...["schwarz", "weiss"].map((g) => el("button", { type: "button", "aria-pressed": String(m.grund === g), text: g === "schwarz" ? "Schwarz" : "Weiss",
@@ -301,12 +320,14 @@ async function herunterladen(stapel, name) {
   S.export = stand;
   $("export").hidden = false; $("export-text").textContent = "MP4 · 0 %";
   try {
+    const [breite, hoehe] = fmt().gross;
     const erg = await videoErstellen(motor, kopie(mit(stapel)), {
+      breite, hoehe,
       fortschritt: (p) => { $("export-text").textContent = `MP4 · ${Math.round(p * 100)} %`; },
       abbruch: () => stand.abbrechen,
     });
     if (erg) {
-      const a = el("a", { href: URL.createObjectURL(erg.blob), download: `ornament-animation-${name}${ohne()}-4x5.${erg.endung}` });
+      const a = el("a", { href: URL.createObjectURL(erg.blob), download: `ornament-animation-${name}${ohne()}-${S.format}.${erg.endung}` });
       document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60_000);
     }
   } catch (f) {
@@ -331,7 +352,7 @@ function bild() {
     malen($("pult-bild"), S.mix, tt);
     $("pult-uhr").textContent = uhrText(tt);
   } else if (S.ansicht === "werke" && S.live) {
-    malen(S.live.c, S.live.stapel, ((performance.now() - S.live.t0) / 1000) % S.dauer, [240, 300]);
+    malen(S.live.c, S.live.stapel, ((performance.now() - S.live.t0) / 1000) % S.dauer, kachelGr());
   }
 }
 
@@ -341,8 +362,9 @@ const fehler = motor.pruefen();
 if (fehler.length) console.error(fehler.join("\n"));
 window.animationen = { motor, WERKE, S, fehler };
 streuen();
-for (const { w, c } of kacheln) malen(c, w.stapel, S.dauer * .35, [240, 300]);
+for (const { w, c } of kacheln) malen(c, w.stapel, S.dauer * .35, kachelGr());
 const start = ausAdresse();
+formatSetzen(S.format);
 $("reel-durchlauf").textContent = S.durchlauf ? "Hin und zurück" : "Durchlauf"; $("reel-durchlauf").setAttribute("aria-pressed", String(S.durchlauf));
 reelZeigen(S.reel);
 ansicht(start, { verlauf: false });
