@@ -2,7 +2,7 @@
 
 Stand: 4. November 2026. Gilt nur für diese Seite; die Website selbst folgt `styles.css`.
 
-Richtung: ein Werkzeug, das wie die Seite eines Designstudios aussieht. Wenig Farbe, viel Luft, feine Linien, grosse Zeile,
+Richtung: ein Werkzeug, das wie die Seite eines Designstudios aussieht. Zwei Ansichten (Mischpult, Info), keine Beispielbilder, kein Name des Betreibers; die Werke der Besucher sind die Galerie. Wenig Farbe, viel Luft, feine Linien, grosse Zeile,
 ein einziger Akzent. Die Animationen sind das Bild, alles andere ist Beschriftung. Vorbilder, die Christian genannt hat:
 lisovskiy.work (grosse Grotesk, gestreutes Kachelraster) und ijpowell.co.uk (Kopfzeile mit Ansichten, Reel in der Mitte,
 Zähler unten); Schrift und Farben kommen von der Logo-Referenz ornament.cloud/gamma. Die Richtung ist nicht mit UXKIN
@@ -45,16 +45,18 @@ Keine Verläufe, kein Glas, keine Schatten. Der Akzent steht nie auf Flächen, n
 
 ## Bausteine
 
-- **Kopf**: Marke links («ornament.cloud», Punkt im Akzent), Zeile in der Mitte, rechts die vier Ansichten mit Nummer; die aktive trägt den Akzentpunkt.
+- **Kopf**: Marke links («ornament.cloud», Punkt im Akzent), Zeile in der Mitte, rechts die zwei Ansichten mit Nummer; die aktive trägt den Akzentpunkt.
   Auf dem Handy wandern die Ansichten in eine feste Leiste am unteren Rand (Daumenweite), der Kopf behält nur die Marke.
-- **Reel**: links Beschriftung des Werks (Nummer, Bild, Effekt, Grund, Länge), Mitte die Bühne, rechts die Handlungen in drei Gruppen
-  (Wiedergabe, Ansicht, Laden). Darunter eine Fortschrittslinie über die ganze Breite, links die Uhr, rechts der Zähler «02 / 27».
-  Pfeiltasten blättern, die Leertaste hält an.
-- **Werke**: grosse Zeile links, die drei Bilder als Wortstapel rechts, darunter das gestreute Raster mit drei Kachelgrössen.
-  Beschriftung: Nummer und Titel, darunter leise das Bild.
-- **Mischpult**: Bühne links (klebt beim Rollen), Pult rechts 400 px. Gruppen mit Versalbeschriftung, Schalter als Pillen in einer Reihe,
-  Ebenen als Karten mit Haarlinie, dünne Regler mit Wert rechts. Eine Haupttaste (MP4 laden, gefüllt), «Neu mischen» mit Rahmen, der Rest leise.
-- **Info**: grosse Zeile, darunter Kolophon (Technik, Bilder, Jahr) und drei nummerierte Listen mit Haarlinien.
-- **Fuss**: Haarlinie, eine Zeile: zurück zur Website, Bilder von Christian Strickler, alles im Browser gerechnet.
+- **Mischpult**: Bühne links (klebt beim Rollen), darunter Uhr, Fortschrittslinie und Schlaufe, dann die Haupttaste **«Neu mischen»** (gefüllt, mit
+  Akzentpunkt, 52 px hoch) und daneben «MP4 laden». Ohne Bild zeigt die Bühne die Aufforderung (gestrichelter Rahmen, Satz mit kursivem Wort,
+  «Bild wählen …»). Pult rechts 400 px: Gruppen mit Versalbeschriftung, Schalter als Pillen, Ebenen als Karten mit Haarlinie, dünne Regler mit
+  Wert rechts, leise Tasten (Pause, Standbild, Link), zuunterst «Werk sichern» mit Titel und Name.
+- **Werke**: unter dem Mischpult, von einer Haarlinie getrennt: grosse Zeile «Werke» mit der Anzahl in Newsreader kursiv, daneben ein Satz,
+  darunter das gestreute Raster mit drei Kachelgrössen (12 Spalten, Tablet 8, Handy 4). Beschriftung: Nummer, Titel, darunter leise
+  «von Name · Datum»; eigene Werke mit «Löschen». Darüberfahren lässt die Animation laufen, Klick lädt sie ins Mischpult.
+- **Info**: grosse Zeile, Kolophon (Technik, Schlaufe, Werke, Schrift), drei nummerierte Listen (So geht es, Effekte, Ebenen) mit Haarlinien.
+- **Fuss**: Haarlinie, eine Zeile: zurück zur Website, Hinweis auf die Namen der Werke, alles im Browser gerechnet.
+- **Vorschaukarte** (`og-animationen.jpg`, 1200 × 630, `tools/animations-og.mjs`): links «Animationen.» und *Mischpult*, rechts sechs Effekte
+  ohne Bild als Kacheln, getrennt durch Haarlinien.
 - **Zustände**: Hover unterstreicht oder kehrt um, Fokus ist ein 2-px-Ring im Akzent, Gedrücktes ist gefüllt (`aria-pressed`), Abgeschaltetes hat 35 % Deckkraft.
-  Ansichten blenden in 240 ms ein; mit `prefers-reduced-motion` sofort. Touch-Ziele mindestens 44 px hoch.
+  Meldungen beim Sichern stehen unter der Taste (Erfolg im Akzent). Ansichten blenden in 240 ms ein; mit `prefers-reduced-motion` sofort. Touch-Ziele mindestens 44 px hoch.

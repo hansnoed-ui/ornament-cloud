@@ -1,68 +1,80 @@
-// «Animationen» (animations/, 3. November 2026): drei Bilder, neun Animationen je Bild, jede Ebene mit bekanntem Effekt und Mischmodus,
-// die Seite lädt nichts von aussen, ist noindex und nicht in der Sitemap.
+// «Animationen» (animations/, 3. November 2026; seit 4. November 2026 nur Mischpult und Info, ohne Beispielbilder, mit gesicherten Werken):
+// die Effekte sind vollständig, «Neu mischen» liefert gültige Mischungen, die Seite lädt nichts von aussen, ist noindex und nicht in der
+// Sitemap, trägt die Vorschaukarte, und die Ablage der Werke (werke.php) hat ihre Grenzen.
 //   node --test tests/animations.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync } from "node:fs";
 
 const root = new URL("../", import.meta.url);
 const lies = (p) => readFileSync(new URL(p, root), "utf8");
-const { EFFEKTE } = await import(new URL("animations/effekte.js", root).href);
-const { MODI, DAUER, FPS } = await import(new URL("animations/motor.js", root).href);
-const { BILDER, WERKE, zufall } = await import(new URL("animations/rezepte.js", root).href);
+const { EFFEKTE, EFFEKT_IDS } = await import(new URL("animations/effekte.js", root).href);
+const { MODI, DAUER, FPS, LAENGEN, dauerVon } = await import(new URL("animations/motor.js", root).href);
+const { zufall, EIGEN } = await import(new URL("animations/rezepte.js", root).href);
 
-test("drei Bilder, je neun Animationen", () => {
-  assert.equal(BILDER.length, 3);
-  for (const b of BILDER) {
-    assert.ok(existsSync(new URL(`animations/${b.url}`, root)), b.url);
-    assert.equal(WERKE.filter((w) => w.bild === b.id).length, 9, b.id);
-  }
-  assert.equal(new Set(WERKE.map((w) => w.id)).size, 27);
-});
-
-test("jede Ebene: bekannter Effekt, Mischmodus, Deckkraft, Regler im Bereich", () => {
-  for (const w of WERKE) {
-    assert.ok(w.stapel.ebenen.length >= 1 && w.stapel.ebenen.length <= 3, w.id);
-    for (const e of w.stapel.ebenen) {
-      assert.ok(EFFEKTE[e.effekt], `${w.id}: ${e.effekt}`);
-      assert.ok(e.modus in MODI, `${w.id}: ${e.modus}`);
-      assert.ok(e.deckkraft > 0 && e.deckkraft <= 1);
-      assert.ok(["bild", "unten"].includes(e.quelle));
-      assert.ok(e.werte.length <= EFFEKTE[e.effekt].regler.length, `${w.id}: zu viele Werte für ${e.effekt}`);
-      for (const v of e.werte) assert.ok(v >= 0 && v <= 1);
-    }
-  }
-});
-
-test("Effekte: Regler zwischen 0 und 1, höchstens sechs, Shader mit effekt() oder punkt()", () => {
+test("Effekte: 27, Regler zwischen 0 und 1, höchstens sechs, Shader mit effekt() oder punkt(), jeder mit Name und Herkunft", () => {
   // Scan entfernt am 3. November 2026 («der scan kann weg»); Seifenblase und Holo-Kugel am 4. November 2026 ersetzt durch vierzehn Effekte aus der Bildinformation
   assert.equal(Object.keys(EFFEKTE).length, 27);
+  assert.deepEqual(EFFEKT_IDS, Object.keys(EFFEKTE));
   for (const [id, e] of Object.entries(EFFEKTE)) {
+    assert.ok(e.name && e.herkunft, id);
     assert.ok(e.regler.length >= 1 && e.regler.length <= 6, id);
     for (const r of e.regler) assert.ok(r.wert >= 0 && r.wert <= 1, `${id}: ${r.name}`);
     assert.match(e.glsl, e.punkte ? /void punkt\(int id/ : /vec4 effekt\(vec2 uv\)/, id);
   }
 });
 
-test("neu mischen: eine bis drei verschiedene Effekte, erste Ebene normal", () => {
+test("neu mischen: eine bis drei verschiedene Effekte, erste Ebene normal, das Bild bleibt", () => {
+  assert.equal(EIGEN, "eigen");
   for (let i = 0; i < 200; i++) {
     const m = zufall();
-    assert.ok(BILDER.some((b) => b.id === m.bild));
+    assert.equal(m.bild, EIGEN);
+    assert.ok(["schwarz", "weiss"].includes(m.grund));
     assert.ok(m.ebenen.length >= 1 && m.ebenen.length <= 3);
     assert.equal(new Set(m.ebenen.map((e) => e.effekt)).size, m.ebenen.length);
     assert.equal(m.ebenen[0].modus, "normal");
+    for (const e of m.ebenen) {
+      assert.ok(EFFEKTE[e.effekt], e.effekt);
+      assert.ok(e.modus in MODI);
+      assert.ok(e.deckkraft > 0 && e.deckkraft <= 1);
+      assert.ok(["bild", "unten"].includes(e.quelle));
+      assert.equal(e.werte.length, EFFEKTE[e.effekt].regler.length);
+      for (const v of e.werte) assert.ok(v >= 0 && v <= 1);
+    }
   }
+  assert.equal(zufall(Math.random, "w:abc").bild, "w:abc", "ein gesichertes Werk als Bild bleibt beim Mischen");
 });
 
-test("Schlaufe von 12 s mit 30 Bildern pro Sekunde", () => {
+test("Schlaufe von 12 s mit 30 Bildern pro Sekunde, Längen 12/30/60", () => {
   assert.equal(DAUER, 12); assert.equal(FPS, 30);
+  assert.deepEqual(LAENGEN, [12, 30, 60]);
+  assert.equal(dauerVon({}), 12); assert.equal(dauerVon({ dauer: 30 }), 30); assert.equal(dauerVon({ dauer: 7 }), 12);
 });
 
-test("Seite: noindex, nicht in der Sitemap, nichts von aussen", () => {
+test("Seite: noindex, nicht in der Sitemap, nichts von aussen, zwei Ansichten, keine Beispielbilder, kein Name des Betreibers", () => {
   const html = lies("animations/index.html");
   assert.match(html, /<meta name="robots" content="noindex">/);
   assert.ok(!lies("sitemap.xml").includes("/animations/"));
   for (const f of ["index.html", "seite.js", "motor.js", "effekte.js", "rezepte.js"]) assert.doesNotMatch(lies(`animations/${f}`), /(src|href)=["']https?:|import\(["']https?:|from ["']https?:/, f);
+  const ansichten = [...html.matchAll(/data-ansicht="([a-z]+)"/g)].map((m) => m[1]);
+  assert.deepEqual(ansichten, ["mischpult", "info"], "nur Mischpult und Info (4. November 2026)");
+  assert.ok(!html.includes("Christian Strickler"), "kein Name des Betreibers auf der Seite (4. November 2026)");
+  assert.ok(!existsSync(new URL("animations/bilder", root)) || readdirSync(new URL("animations/bilder", root)).length === 0, "keine Beispielbilder (4. November 2026)");
+  for (const id of ["pult-bild", "pult-leer", "pult-waehlen", "pult-datei", "pult-zufall", "pult-mp4", "pult-zeigen", "pult-lauf", "pult-laenge", "pult-grund", "pult-ebenen", "pult-pause", "pult-bildpng", "pult-link",
+    "sichern-titel", "sichern-name", "sichern-schutz", "pult-sichern", "sichern-meldung", "werke-raster", "werke-anzahl", "werke-meldung", "info-effekte", "export"]) assert.ok(html.includes(`id="${id}"`), id);
+  assert.match(html, /id="pult-zufall"[^>]*>[\s\S]{0,80}Neu mischen/, "«Neu mischen» ist die Haupttaste unter der Bühne");
+  assert.ok(html.indexOf('id="pult-zufall"') < html.indexOf('id="pult-mp4"'));
+});
+
+test("Teilen: die Seite trägt die Vorschaukarte (Open Graph und X) mit absoluten Adressen; das Bild erzeugt tools/animations-og.mjs", () => {
+  const html = lies("animations/index.html");
+  const m = new Map([...html.matchAll(/<meta (?:property|name)="([^"]+)" content="([^"]*)">/g)].map((x) => [x[1], x[2]]));
+  assert.equal(m.get("og:url"), "https://ornament.cloud/animations/");
+  assert.equal(m.get("og:title"), "Animationen");
+  assert.equal(m.get("og:image"), "https://ornament.cloud/animations/og-animationen.jpg");
+  assert.equal(m.get("twitter:card"), "summary_large_image");
+  assert.ok(existsSync(new URL("animations/og-animationen.jpg", root)), "animations/og-animationen.jpg fehlt (NODE_PATH=$(npm root -g) node tools/animations-og.mjs)");
+  assert.ok(lies("tools/animations-og.mjs").includes("og-animationen.jpg"));
 });
 
 test("Bild zeigen: aus (4. November 2026): Motor setzt uZeigen, Ql zeigt ein Raster, Kl liest weiter das Bild", () => {
@@ -70,16 +82,26 @@ test("Bild zeigen: aus (4. November 2026): Motor setzt uZeigen, Ql zeigt ein Ras
   assert.match(motor, /uniform float [^;]*uZeigen/);
   assert.match(motor, /vec4 Kl\(vec2 uv, float l\)/);
   assert.match(motor, /stapel\.ohneBild \? 0 : 1/);
-  assert.match(html, /id="reel-ohnebild"/); assert.match(html, /id="pult-zeigen"/);
+  assert.match(html, /id="pult-zeigen"/);
   assert.match(seite, /-ohne-bild/);
   for (const id of ["partikel", "metaballs", "wirbel", "zebra", "linien", "linsen", "glitzer", "tinte", "pinsel", "raster", "relief", "hoehenlinien", "stroemung", "roentgen", "montage", "entrauschen", "echo", "aquarell", "voxel", "sortieren", "vertigo", "strahlen"]) assert.match(EFFEKTE[id].glsl, /Kl\(/, id);
 });
 
-test("Durchlauf (4. November 2026): Motor kennt uLauf, Länge 12/30/60 s, Schalter in Reel und Mischpult", async () => {
+test("Durchlauf (4. November 2026): Motor kennt uLauf und HZ(), Schalter und Länge im Mischpult", () => {
   const motor = lies("animations/motor.js"), html = lies("animations/index.html");
   assert.match(motor, /uLauf/); assert.match(motor, /float HZ\(float e\)/);
-  const { LAENGEN, dauerVon } = await import(new URL("animations/motor.js", root).href);
-  assert.deepEqual(LAENGEN, [12, 30, 60]);
-  assert.equal(dauerVon({}), 12); assert.equal(dauerVon({ dauer: 30 }), 30); assert.equal(dauerVon({ dauer: 7 }), 12);
-  assert.match(html, /id="reel-durchlauf"/); assert.match(html, /id="pult-lauf"/); assert.match(html, /id="pult-laenge"/);
+  assert.match(html, /id="pult-lauf"/); assert.match(html, /id="pult-laenge"/);
+});
+
+test("Werke sichern (4. November 2026): werke.php mit Herkunft, Grenzen und Schlüssel; der Ordner der Werke bleibt beim Deploy und im Repository aussen vor", () => {
+  const php = lies("animations/werke.php"), seite = lies("animations/seite.js");
+  assert.match(php, /^<\?php/);
+  assert.match(php, /const HERKUNFT = 'https:\/\/ornament\.cloud';/);
+  for (const k of ["MAX_BILD", "MAX_SEITE", "MAX_NAME", "MAX_TITEL", "MAX_STAPEL", "MAX_WERKE", "JE_STUNDE"]) assert.match(php, new RegExp(`const ${k} = `), k);
+  assert.match(php, /HTTP_ORIGIN/); assert.match(php, /random_bytes/); assert.match(php, /hash\('sha256', \$schluessel\)/); assert.match(php, /hash_equals/);
+  assert.match(php, /getimagesize/); assert.match(php, /'schutz'/);
+  assert.doesNotMatch(php, /\beval\(|\bexec\(|\bshell_exec\(|\bsystem\(/);
+  assert.match(seite, /werke\.php/); assert.match(seite, /FormData/); assert.match(seite, /aktion: "loeschen"/);
+  assert.ok(lies("tools/hostpoint/ausschluss.txt").split(/\r?\n/).includes("animations/werke/"), "rsync --delete darf die Werke nicht löschen");
+  assert.ok(lies(".gitignore").split(/\r?\n/).includes("animations/werke/"));
 });

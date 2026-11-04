@@ -7,3 +7,6 @@ tools/hochrendern/__pycache__/
 
 # Arbeitsdateien des Skills design-taste-frontend (.claude/skills/), werden nicht eingecheckt
 .taste-skill/
+
+# Animationen: gesicherte Werke entstehen auf dem Server (animations/werke.php), lokal nur beim Testen
+animations/werke/
