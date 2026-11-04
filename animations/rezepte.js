@@ -20,7 +20,7 @@ const ROH = {
     ["Linsen", "schwarz", [E("linsen", [.55, .55, .75, .6], "normal", 1, "bild", 2)]],
     ["Horizont", "schwarz", [E("horizont", [.75, .55, .5, .6]), E("bild", [.5, .3, 0, .2], "bildschirm", .15)]],
     ["Pinselstrom", "weiss", [E("pinsel", [.6, .3, .4, .55, .35])]],
-    ["Gegenstreifen", "schwarz", [E("bild", [.4, .3]), E("zebra", [.45, .7, .5, .6, 0], "differenz", .85)]],
+    ["Dolly-Zoom", "schwarz", [E("vertigo", [.6, .5, .5, .4])]],
     ["Tinte unter Glas", "schwarz", [E("tinte", [.7, .5, .8, .4]), E("wasserglas", [.5, .22, .7, .5], "normal", 1, "unten")]],
   ],
   frida: [
@@ -36,14 +36,14 @@ const ROH = {
   ],
   strudel: [
     ["Wasserglas", "schwarz", [E("wasserglas", [.6, .5, .9, .6])]],
-    ["Sog", "schwarz", [E("fluid", [1, .3, .7])]],
+    ["Pixel Sorting", "schwarz", [E("sortieren", [.5, .55, 0, .5, .4])]],
     ["Lasur", "weiss", [E("tinte", [.75, .6, .7, .45])]],
     ["Voxel", "schwarz", [E("voxel", [.45, .5, .5, .5, .5])]],
     ["Spiralarme", "schwarz", [E("wirbel", [.5, .7, .6, .7], "normal", 1, "bild", 5)]],
     ["Entrauschen", "schwarz", [E("entrauschen", [.9, .6, .5, .3, 1])]],
     ["Höhenlinien", "schwarz", [E("hoehenlinien", [.5, .3, .4, .3, .35])]],
     ["Strömung", "schwarz", [E("stroemung", [.55, .4, .35, .3, .6])]],
-    ["Rauch über dem Horizont", "schwarz", [E("horizont", [.85, .65, .5, .6]), E("tinte", [.6, .5, .8, .5], "bildschirm", .45)]],
+    ["Lichtstrahlen", "schwarz", [E("strahlen", [.65, .5, .5, .65, .5])]],
   ],
 };
 

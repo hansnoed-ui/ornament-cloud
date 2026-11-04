@@ -656,6 +656,89 @@ vec4 effekt(vec2 uv){
   return vec4(clamp(col, 0., 1.), 1.);
 }`,
   },
+  // ——— Nachtrag vom 4. November 2026 (Christians Liste «KI & Algorithmische Transformationen»): Pixel Sorting, Dolly-Zoom, Lichtstrahlen
+
+  sortieren: {
+    name: "Pixel Sorting", herkunft: "Glitch: Pixelreihen in einem Helligkeitsfenster werden nach Helligkeit sortiert und ziehen sich wie schmelzende Daten in die Länge",
+    regler: [r("Fenster", .5), r("Länge", .55), r("Richtung", 0), r("Wandern", .5), r("Kontrast", .4)],
+    glsl: `vec4 effekt(vec2 uv){
+  float k = uRes.y / 1350., ang = P2 * PI * .5;            // 0 senkrecht, 1 waagrecht
+  vec2 dir = vec2(sin(ang), cos(ang)) / uRes;              // ein Pixel in Sortierrichtung, in uv
+  float mitte = .5 + .18 * sin(uPhi) * P3, br = mix(.12, .45, P0);
+  float lo = mitte - br, hi = mitte + br;                  // das Fenster wandert durch die Helligkeiten
+  float Lmax = mix(40., 520., P1) * k * (.75 + .25 * cos(uPhi)), st = Lmax / 40.;
+  float L0 = lum(Kl(uv, .5).rgb);
+  vec3 bild = Ql(uv, 0.).rgb, nacht = vec3(.043, .035, .039);
+  if (L0 < lo || L0 > hi) return vec4(uZeigen > .5 ? bild : nacht, 1.);
+  float a = 0., b = 0.;                                    // die Spanne finden, in der alle Pixel im Fenster liegen
+  for (int i = 1; i <= 40; i++){ float l = lum(Kl(uv - dir * st * float(i), .5).rgb); if (l < lo || l > hi) break; a = float(i); }
+  for (int i = 1; i <= 40; i++){ float l = lum(Kl(uv + dir * st * float(i), .5).rgb); if (l < lo || l > hi) break; b = float(i); }
+  if (a + b < 1.) return vec4(uZeigen > .5 ? bild : nacht, 1.);
+  float ls[24]; vec3 cs[24];                               // 24 Proben der Spanne, dann das Quantil an meiner Stelle
+  for (int j = 0; j < 24; j++){ vec2 q = uv + dir * st * mix(-a, b, (float(j) + .5) / 24.); cs[j] = Kl(q, .5).rgb; ls[j] = lum(cs[j]); }
+  float f = a / (a + b), ziel = f * 23.; int best = 0; float bd = 1e3;
+  for (int j = 0; j < 24; j++){
+    float rang = 0.; for (int m = 0; m < 24; m++) rang += ls[m] < ls[j] || (ls[m] == ls[j] && m < j) ? 1. : 0.;
+    float d = abs(rang - ziel); if (d < bd){ bd = d; best = j; }
+  }
+  vec3 c = cs[best]; float v = ls[best];
+  c = (c - .5) * (1. + P4) + .5;
+  vec3 aus = mix(nacht, vec3(.95, .925, .9), clamp((v - lo) / (hi - lo) * (1. + P4) - P4 * .5, 0., 1.));   // ohne Bild: nur die sortierten Strähnen
+  return vec4(clamp(uZeigen > .5 ? c : aus, 0., 1.), 1.);
+}`,
+  },
+
+  vertigo: {
+    name: "Dolly-Zoom", herkunft: "Vertigo-Effekt: Helligkeit als Tiefe; der Vordergrund bleibt gleich gross, der Hintergrund fährt heran und weg, mit Zoomschlieren",
+    regler: [r("Zoom", .6), r("Vordergrund", .5), r("Schlieren", .5), r("Kante", .4)],
+    glsl: `float tief(vec2 uv){ return smoothstep(mix(.15, .7, P1) - .06, mix(.15, .7, P1) + .06, .6 * lum(Kl(uv, 2.5).rgb) + .4 * lum(Kl(uv, 4.5).rgb)); }
+vec4 effekt(vec2 uv){
+  vec2 p = P(uv); float z = P0 * .45 * sin(uPhi), vz = cos(uPhi);
+  float fg = tief(uv);
+  vec3 hg = vec3(0.); float n = 0.;
+  for (int i = 0; i < 8; i++){                             // Hintergrund: skaliert um die Mitte, Schlieren in Zoomrichtung
+    float s = 1. / (1. + z + P2 * .04 * vz * (float(i) / 7. - .5) * P0);
+    vec2 q = p * s; float g = 1. - tief(UV(q)) * .97; hg += Ql(UV(q), .5).rgb * g; n += g;
+  }
+  hg /= max(n, 1e-3);
+  vec3 vor = uZeigen > .5 ? Ql(uv, 0.).rgb : vec3(.95, .925, .9) * (.75 + .25 * lum(Kl(uv, 1.).rgb));   // ohne Bild: helle Silhouette vor dem zoomenden Raster
+  vec3 col = mix(hg * (1. - .25 * abs(z)), vor, fg);
+  float kante = fg * (1. - fg) * 4.;
+  col += kante * P3 * .5 * vec3(.95, .925, .9);
+  return vec4(clamp(col, 0., 1.), 1.);
+}`,
+  },
+
+  strahlen: {
+    name: "Lichtstrahlen", herkunft: "God Rays: helle Bildteile werfen wabernde Lichtstrahlen in den Raum, darin schwebt Staub in drei Tiefen",
+    regler: [r("Strahlen", .65), r("Wabern", .5), r("Staub", .5), r("Schwelle", .5), r("Bild", .5)],
+    glsl: `vec4 effekt(vec2 uv){
+  vec2 lp = vec2(.5 + .22 * cos(uPhi), .78 + .08 * sin(2. * uPhi));     // die Lichtquelle zieht einen kleinen Kreis
+  vec2 d = (uv - lp) / 40. * mix(.6, 1., P0); vec2 q = uv; float dec = 1., acc = 0.;
+  float thr = mix(.25, .8, P3);
+  for (int i = 0; i < 40; i++){
+    q -= d;
+    float m = smoothstep(thr, thr + .25, lum(Kl(q, 2.).rgb));
+    m *= .75 + .5 * P1 * (ln(q * vec2(9., 2.) + 3., .8) * .5 + .5);    // wabern
+    acc += m * dec; dec *= .955;
+  }
+  acc *= mix(.02, .07, P0);
+  vec3 licht = vec3(1., .9, .72);
+  vec3 grund = uZeigen > .5 ? Ql(uv, 0.).rgb * mix(.25, 1., P4) : vec3(.043, .035, .039) + licht * smoothstep(thr, thr + .25, lum(Kl(uv, 1.5).rgb)) * .18;
+  vec3 col = grund + licht * acc;
+  float staub = 0.;                                                       // Staub in drei Tiefen, sichtbar im Licht
+  for (int l = 0; l < 3; l++){
+    float fl = float(l), cs = (14. + fl * 9.) * uRes.y / 1350.;
+    vec2 off = vec2(cos(uPhi + fl * 2.), sin(uPhi * (1. + fl) + fl)) * (8. + fl * 5.) * uRes.y / 1350.;
+    vec2 g = (uv * uRes + off) / cs, ci = floor(g), j = h22(ci + fl * 31. + uSeed);
+    vec2 f = g - ci - .2 - .6 * j;
+    float r = (.05 + .07 * j.x) * (1. - fl * .25);
+    staub += smoothstep(r, r * .3, length(f)) * step(1. - P2 * .7, j.y) * (1. - fl * .3);
+  }
+  col += licht * staub * (.15 + acc * 2.5) * P2;
+  return vec4(clamp(col, 0., 1.), 1.);
+}`,
+  },
 };
 
 export const EFFEKT_IDS = Object.keys(EFFEKTE);
