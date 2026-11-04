@@ -63,3 +63,13 @@ test("Seite: noindex, nicht in der Sitemap, nichts von aussen", () => {
   assert.ok(!lies("sitemap.xml").includes("/animations/"));
   for (const f of ["index.html", "seite.js", "motor.js", "effekte.js", "rezepte.js"]) assert.doesNotMatch(lies(`animations/${f}`), /(src|href)=["']https?:|import\(["']https?:|from ["']https?:/, f);
 });
+
+test("Bild zeigen: aus (4. November 2026): Motor setzt uZeigen, Ql zeigt ein Raster, Kl liest weiter das Bild", () => {
+  const motor = lies("animations/motor.js"), seite = lies("animations/seite.js"), html = lies("animations/index.html");
+  assert.match(motor, /uniform float [^;]*uZeigen/);
+  assert.match(motor, /vec4 Kl\(vec2 uv, float l\)/);
+  assert.match(motor, /stapel\.ohneBild \? 0 : 1/);
+  assert.match(html, /id="reel-ohnebild"/); assert.match(html, /id="pult-zeigen"/);
+  assert.match(seite, /-ohne-bild/);
+  for (const id of ["partikel", "metaballs", "wirbel", "zebra", "linien", "linsen", "glitzer", "tinte"]) assert.match(EFFEKTE[id].glsl, /Kl\(/, id);
+});

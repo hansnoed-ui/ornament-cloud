@@ -36,7 +36,8 @@ export const EFFEKTE = {
     glsl: `void punkt(int id, out vec2 pos, out vec4 col, out float size){
   float i = float(id); vec2 g = vec2(mod(i, uCols), floor(i / uCols));
   vec2 j = h22(g + uSeed * 13.1), uv0 = (g + j) / vec2(uCols, uRows);
-  vec4 c = Ql(uv0, .5);
+  vec4 c = Ql(uv0, .5); float Lk = lum(Kl(uv0, .5).rgb);
+  if (uZeigen < .5) c = vec4(vec3(.95, .925, .9), 1.);   // ohne Bild: helle Teilchen, die Grösse kommt aus dem Bild
   float s = h12(g * 1.37 + 4.1 + uSeed);
   // läuft durch: die Teilchen kehren um, sobald das Bild steht (Exponent unter 1, Geschwindigkeit an der Naht über null)
   float k = pow(.5 - .5 * cos(uPhi), .5 + s * .5) * P0;
@@ -48,7 +49,7 @@ export const EFFEKTE = {
   pos = mix(p0 + .006 * vec2(ln(g * .02, .9), ln(g * .02 + 3., .9)), wolke, k);
   float tw = pow(.5 + .5 * sin(uPhi * float(2 + int(s * 5.)) + s * 60.), 6.) * P2;
   col = vec4(c.rgb * (.85 + tw * 1.6 + k * .3) * (1. - .25 * k * max(z, 0.)), 1.);
-  size = mix(1.5, 6., P1) * uRes.y / 1350. * (1. + tw * .8) * (1. + .3 * k * z);
+  size = mix(1.5, 6., P1) * uRes.y / 1350. * (1. + tw * .8) * (1. + .3 * k * z) * (uZeigen > .5 ? 1. : .15 + 1.6 * Lk * Lk);
 }`,
   },
 
@@ -61,12 +62,13 @@ export const EFFEKTE = {
   float f = 0.; vec3 cs = vec3(0.);
   for (int y = -2; y <= 2; y++) for (int x = -2; x <= 2; x++){
     vec2 c = ci + vec2(x, y), h = h22(c + uSeed * 3.7);
-    vec3 im = Ql(UV((c + .5) / N), 1.).rgb;
-    float v = max(lum(im), sat(im));
+    vec3 im = Kl(UV((c + .5) / N), 1.).rgb;
+    float v = uZeigen > .5 ? max(lum(im), sat(im)) : smoothstep(.5, .9, 1. - lum(im)) + sat(im);   // ohne Bild: Tropfen sammeln sich im Dunklen
+    if (uZeigen < .5) im = vec3(.95, .925, .9);   // ohne Bild: Tropfen aus dem Bild geformt, aber einfarbig
     float fx = floor(1. + h.x * 2.), fy = floor(1. + h.y * 2.);
     vec2 m = c + .5 + P1 * .8 * vec2(cos(uPhi * fx + h.x * TAU), sin(uPhi * fy + h.y * TAU));
     float rr = (.18 + .5 * v) * (1. + P2 * (h.y - .5) * 1.8) * (1. + .25 * P2 * sin(uPhi * fx + h.y * 9.));
-    vec2 d = q - m; float w = rr * rr / (dot(d, d) + .02) * step(.04, v);
+    vec2 d = q - m; float w = rr * rr / (dot(d, d) + .02) * (uZeigen > .5 ? step(.04, v) : smoothstep(.15, .45, v));
     f += w; cs += im * w;
   }
   vec3 col = cs / max(f, 1e-4);
@@ -107,8 +109,9 @@ export const EFFEKTE = {
   vec2 ps = rot(P1 * tw * 5. / (rr + .25) + n * uPhi) * vec2(cos(th), sin(th)) * r2;
   float N = mix(28., 110., P0);
   vec2 g = ps * N, cell = floor(g) + .5;
-  vec3 im = Ql(UV(cell / N), 1.).rgb;
+  vec3 im = Kl(UV(cell / N), 1.).rgb;
   float rad = mix(.12, .52, clamp(max(lum(im), .2) * (.4 + P3 * 1.4), 0., 1.));
+  if (uZeigen < .5) im = vec3(.95, .925, .9);
   float aa = 1.5 * N / uRes.y, m = smoothstep(rad + aa, rad - aa, length(g - cell));
   return vec4(im * m, m);
 }`,
@@ -132,7 +135,7 @@ export const EFFEKTE = {
     regler: [r("Streifen", .5), r("Relief", .6), r("Schwenk", .5), r("Lesbarkeit", .7), r("Farbakzent", .5), r("Drehungen", .5)],
     glsl: `vec4 effekt(vec2 uv){
   vec3 c = Ql(uv, 0.).rgb;
-  float h = lum(Ql(uv, 4.5).rgb), L = lum(Ql(uv, 1.5).rgb);
+  float h = lum(Kl(uv, 4.5).rgb), L = lum(Kl(uv, 1.5).rgb);
   // Drehungen wie beim Wirbel: unter einem Drittel schwenken die Streifen hin und her (Schwenk), sonst drehen sie sich
   // ein- oder zweimal ganz pro Schlaufe (Wunsch vom 3. November 2026: «auch bei Op-Art-Zebra bitte eine ganze drehung»)
   float n = floor(P5 * 2.999);
@@ -140,9 +143,9 @@ export const EFFEKTE = {
   float per = mix(80., 12., P0), k = P1 * (.6 + .4 * (.5 - .5 * cos(2. * uPhi))) * 6.;
   float ph = dot(P(uv), vec2(cos(ang), sin(ang))) * per + k * h * 3.;
   float t = abs(fract(ph) - .5) * 2., aa = fwidth(ph) * 2.4;
-  float duty = mix(.5, clamp(1. - L, .08, .92), P3);
+  float duty = mix(.5, clamp(1. - L, .08, .92), P3 * uZeigen);   // ohne Bild: gleich breite Streifen, das Motiv nur im Relief
   vec3 col = vec3(smoothstep(duty - aa, duty + aa, t));
-  col = mix(col, c, smoothstep(.22, .45, sat(c)) * P4);
+  col = mix(col, c, smoothstep(.22, .45, sat(c)) * P4 * uZeigen);
   return vec4(col, 1.);
 }`,
   },
@@ -158,10 +161,12 @@ export const EFFEKTE = {
   vec2 p0 = P(uv0);
   vec2 d = vec2(ln(p0 * 3. + vec2(0., y * .37), .8), ln(p0 * 3. + vec2(9.1, y * .37), .8));
   pos = p0 + d * s * .22 * (.5 + P2) + vec2(s * .04, 0.);
-  vec4 c = Ql(uv0, 1.5);
+  vec4 c = Kl(uv0, 1.5);
+  if (uZeigen < .5) c.rgb = vec3(lum(c.rgb));
   float L = lum(c.rgb), D = smoothstep(.1, .9, P3 > .5 ? L : 1. - L);   // dicker heisst dunkler (bei weisser Tinte heller)
   size = max(1., uRes.y / uRows * .9 * (.12 + .95 * D) * (1. - .55 * s));
-  vec3 tinte = P3 < .5 ? mix(vec3(0.), c.rgb, P3 * 2.) : mix(c.rgb, vec3(1.), P3 * 2. - 1.);
+  vec3 ct = uZeigen > .5 ? c.rgb : vec3(step(.5, P3));   // ohne Bild: reine Tinte, nur die Strichstärke kommt aus dem Bild
+  vec3 tinte = P3 < .5 ? mix(vec3(0.), ct, P3 * 2.) : mix(ct, vec3(1.), P3 * 2. - 1.);
   float al = 1. - .6 * s;
   col = vec4(tinte * al, al);
 }`,
@@ -211,7 +216,7 @@ vec4 effekt(vec2 uv){
     float w = smoothstep(1., .55, d), mag = mix(1., .62 + .25 * d * d, P2), ca = .012 * P2 * d;
     vec2 pr = c + (pb - c) * mag, dir = normalize(v + 1e-5);
     vec3 lins = vec3(Q(UV(pr + dir * ca)).r, Q(UV(pr)).g, Q(UV(pr - dir * ca)).b);
-    vec3 hof = Ql(UV(c), 3.).rgb * pow(1. - d, 2.) * .5;
+    vec3 hof = Kl(UV(c), 3.).rgb * pow(1. - d, 2.) * (uZeigen > .5 ? .5 : 1.1);   // die Linse leuchtet in der Farbe des Bildes
     col = mix(col, 1. - (1. - lins) * (1. - hof), w);
   }
   return vec4(col, 1.);
@@ -230,16 +235,17 @@ vec4 effekt(vec2 uv){
     q = c + rot(P0 * .65 * sin(uPhi + fi * 1.3) * g) * v * (1. - P1 * .07 * sin(2. * uPhi + fi) * g);
   }
   q.x += P1 * .012 * sin(uPhi) * uv.y;
-  vec3 col = Q(UV(q)).rgb; float L = lum(col);
+  vec3 kc = Kl(UV(q), 0.).rgb, col = uZeigen > .5 ? kc : vec3(.043, .035, .039); float L = lum(kc);   // ohne Bild: Glitzer auf dunklem Grund
   float cs = 18. * uRes.y / 1350.;
   vec2 g = uv * uRes / cs, ci = floor(g), f = fract(g) - .5 - (h22(ci) - .5) * .5;
   float h = h12(ci + uSeed * 5.);
   float tw = pow(max(0., sin(uPhi * float(1 + int(h * 4.)) + h * 50.)), 24.);
-  float an = step(h12(ci * 1.7 + 2.), P2 * .5 * (.2 + L + sat(col)));
+  float an = step(h12(ci * 1.7 + 2.), P2 * (uZeigen > .5 ? .5 * (.2 + L + sat(kc)) : .1 + 4. * abs(L - lum(Kl(UV(q), 4.).rgb)) + sat(kc)));   // ohne Bild: Glitzer sitzt auf Kanten und Farbe
   float stern = exp(-length(f) * 14.) + .6 * (exp(-abs(f.x) * 40.) * exp(-abs(f.y) * 6.) + exp(-abs(f.y) * 40.) * exp(-abs(f.x) * 6.));
-  col += mix(vec3(1., .86, .55), vec3(1., .72, .84), h22(ci + 3.).x) * stern * tw * an * 1.6;
+  vec3 gc = mix(vec3(1., .86, .55), vec3(1., .72, .84), h22(ci + 3.).x);
+  col += gc * stern * tw * an * 1.6 + (1. - uZeigen) * gc * exp(-length(f) * 12.) * an * .55;   // ohne Bild glimmt jedes Korn leicht
   float dd = dot(uv, vec2(.7071)) - (uT * 2.4 - .7);
-  col += P3 * .35 * exp(-dd * dd * 60.) * (.3 + L);
+  col += P3 * .35 * exp(-dd * dd * 60.) * (.3 + L) * (uZeigen > .5 ? 1. : .25);
   return vec4(clamp(col, 0., 1.), 1.);
 }`,
   },
@@ -299,7 +305,7 @@ vec4 effekt(vec2 uv){
   vec2 rr = (p - vec2(cx, 0.)) / vec2(mix(.08, .4, P1), mix(.05, .35, P0) * (.35 + .65 * env));
   vec2 w = rr + lcurl(rr * 1.3, .8) * .35;
   float m = smoothstep(.25, .75, lfbm(w * 1.4, .8) + .75 - length(w) * .75) * mix(.55, 1., step(0., p.y));
-  float L = pow(lum(Q(uv).rgb), .8);
+  float L = uZeigen > .5 ? pow(lum(Q(uv).rgb), .8) : .55;   // ohne Bild: reiner Rauch
   float px = abs(p.y) * uRes.y;
   float linie = (exp(-px * px / (1.2 * k * k)) * .9 + exp(-px / (6. * k)) * .12) * (.55 + .45 * smoothstep(1., 0., abs(p.x - cx) / (.6 * A())));
   float ang = 1. + .4 * sin(uPhi * 2.);
@@ -318,17 +324,17 @@ vec4 effekt(vec2 uv){
     glsl: `vec4 effekt(vec2 uv){
   vec2 p = P(uv), q = p; float sc = mix(.8, 3., P3);
   for (int i = 0; i < 4; i++) q -= lcurl(q * sc * .8, .5) * .025 * P0 / sc;   // das Bild fliesst in langen Schlieren
-  vec3 bild = Ql(UV(q), .5).rgb;
+  vec3 bild = uZeigen > .5 ? Ql(UV(q), .5).rgb : vec3(1.), steuer = Kl(UV(q), .5).rgb;   // ohne Bild: weisses Papier, Schleier aus dem Bild
   vec3 col = mix(vec3(1.), bild, mix(.55, 1., P2));
   for (int j = 0; j < 3; j++){
     float fj = float(j);
     vec2 qj = q * sc * (1. + fj * .45) + fj * 7.3;
     qj += lcurl(qj * .7, .7 + fj * .1) * .35 * P0;
-    float e = lfbm(qj, .8) + (lum(bild) - .5) * .6 - (fj * .12 - .05), aa = fwidth(e) + 1e-4;
+    float e = lfbm(qj, .8) + (lum(steuer) - .5) * .6 - (fj * .12 - .05), aa = fwidth(e) + 1e-4;
     float schleier = smoothstep(-aa, aa, e);
     float saum = schleier * exp(-e / (.05 + .03 * fj));        // die Tinte sammelt sich am Rand
     float linie = exp(-pow(e / (aa * 1.2), 2.));                 // haarfeine Kante
-    vec3 farbe = Ql(UV(q + fj * .03), 2.5).rgb;
+    vec3 farbe = Kl(UV(q + fj * .03), 2.5).rgb;
     col *= mix(vec3(1.), mix(vec3(1.), farbe, .4), schleier * .7 * P2);
     col *= mix(vec3(1.), farbe * farbe * .8 + .05, saum * .5 * P1);
     col = mix(col, farbe * farbe * .45, linie * .75 * P1);
