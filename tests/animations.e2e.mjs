@@ -1,10 +1,12 @@
-// «Animationen» – Browser-Test (Playwright, Chromium mit SwiftShader): alle 27 Effekte übersetzen, die 27 Werke zeichnen etwas,
-// die vier Ansichten wechseln, Mischpult mischt neu und schreibt die Mischung in die Adresse, kein seitliches Scrollen auf dem Handy,
-// die Schlaufe hat keine Naht.
+// «Animationen» – Browser-Test (Playwright, Chromium mit SwiftShader): alle 27 Effekte übersetzen und zeichnen mit einem eigenen Bild etwas,
+// die Schlaufe hat keine Naht, die leere Bühne fordert ein Bild, «Neu mischen» schreibt die Mischung in die Adresse, «Werk sichern» legt
+// das Werk ab (werke.php hier vorgetäuscht), es erscheint bei den Werken, lässt sich über #w=ID öffnen und wieder löschen, Pause und Standbild,
+// kein seitliches Scrollen auf dem Handy.
 //   NODE_PATH=$(npm root -g) node tests/animations.e2e.mjs
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import { join } from "node:path";
+import { readFileSync } from "node:fs";
 
 const require = createRequire(import.meta.url);
 let playwright;
@@ -14,164 +16,191 @@ const root = new URL("../", import.meta.url);
 const { startServer } = await import(new URL("tools/serve-orma.mjs", root).href);
 const server = await startServer(0);
 const base = `http://localhost:${server.address().port}/animations/`;
+const BILD = new URL("alpha/drittes-rad/og-drittes-rad.jpg", root).pathname.replace(/^\/([A-Za-z]:)/, "$1");   // irgendein JPEG aus dem Repository als eigenes Bild
 const browser = await chromium.launch({ args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"] });
 const ergebnisse = [];
 async function check(name, fn) {
   try { await fn(); ergebnisse.push(true); console.log("ok  ", name); }
   catch (e) { ergebnisse.push(false); console.log("FAIL", name, "\n     ", e.message.split("\n").slice(0, 6).join("\n      ")); }
 }
-async function oeffne(viewport = { width: 1300, height: 900 }, hash = "") {
+
+// werke.php vorgetäuscht: eine Ablage im Speicher je Browserkontext; das Bild aus dem Formular wird unter werke/ID.jpg wieder ausgeliefert
+function ablage() {
+  const werke = [], bilder = new Map();
+  const teil = (buf, name) => {   // ein Feld aus multipart/form-data
+    const kopf = Buffer.from(`name="${name}"`);
+    const i = buf.indexOf(kopf); if (i < 0) return null;
+    const a = buf.indexOf("\r\n\r\n", i) + 4, grenze = buf.subarray(0, buf.indexOf("\r\n")), b = buf.indexOf(grenze, a) - 2;
+    return buf.subarray(a, b);
+  };
+  return {
+    werke, bilder,
+    async route(route, request) {
+      const url = new URL(request.url());
+      if (/\/werke\/[a-f0-9]+\.jpg$/.test(url.pathname)) { const b = bilder.get(url.pathname.split("/").pop()); return b ? route.fulfill({ status: 200, contentType: "image/jpeg", body: b }) : route.fulfill({ status: 404 }); }
+      if (request.method() === "GET") return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ werke: [...werke].reverse(), anzahl: werke.length }) });
+      if ((request.headers()["content-type"] || "").startsWith("application/json")) {
+        const d = JSON.parse(request.postData());
+        const i = werke.findIndex((w) => w.id === d.id && w.schluessel === d.schluessel);
+        if (i < 0) return route.fulfill({ status: 403, contentType: "application/json", body: '{"fehler":"Der Schlüssel passt nicht."}' });
+        werke.splice(i, 1);
+        return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ geloescht: true }) });
+      }
+      const buf = request.postDataBuffer();
+      const name = teil(buf, "name")?.toString("utf8"), titel = teil(buf, "titel")?.toString("utf8"), stapel = JSON.parse(teil(buf, "stapel").toString("utf8")), bild = teil(buf, "bild");
+      if (!name) return route.fulfill({ status: 400, contentType: "application/json", body: '{"fehler":"Bitte einen Namen angeben."}' });
+      const id = (werke.length + 1).toString(16).padStart(10, "a"), schluessel = "f".repeat(32);
+      bilder.set(`${id}.jpg`, bild);
+      const werk = { id, titel, name, zeit: new Date().toISOString(), bild: `werke/${id}.jpg`, breite: 1200, hoehe: 630, stapel };
+      werke.push({ ...werk, schluessel });
+      return route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify({ id, schluessel, werk }) });
+    },
+  };
+}
+async function oeffne(viewport = { width: 1300, height: 900 }, hash = "", speicher = ablage()) {
   const ctx = await browser.newContext({ viewport });
+  await ctx.route(/werke\.php|\/werke\/[a-f0-9]+\.jpg$/, (route, request) => speicher.route(route, request));
   const page = await ctx.newPage();
   const fehler = [];
   page.on("pageerror", (e) => fehler.push(e.message));
   page.on("console", (m) => { if (m.type() === "error") fehler.push(m.text()); });
   await page.goto(base + hash, { timeout: 120000 });
   await page.waitForFunction(() => document.documentElement.classList.contains("bereit"), null, { timeout: 120000 });
-  return { ctx, page, fehler };
+  return { ctx, page, fehler, speicher };
 }
+const bildBringen = async (page) => { await page.setInputFiles("#pult-datei", BILD); await page.waitForFunction(() => window.animationen.motor.hatBild("eigen"), null, { timeout: 60000 }); };
 
-await check("alle Effekte übersetzen, jedes Werk zeichnet ein sichtbares Bild, keine Fehler", async () => {
+await check("leere Bühne: fordert ein Bild, Sichern und MP4 warten; mit Bild zeichnet die Bühne, «Neu mischen» ändert Mischung und Adresse", async () => {
   const { ctx, page, fehler } = await oeffne();
   assert.deepEqual(await page.evaluate(() => window.animationen.fehler), []);
-  const leer = await page.evaluate(() => {
-    const { motor, WERKE } = window.animationen, gl = motor.gl, px = new Uint8Array(64 * 80 * 4);
-    return WERKE.filter((w) => {
-      motor.zeichnen(w.stapel, 4.2, 64, 80);
-      gl.readPixels(0, 0, 64, 80, gl.RGBA, gl.UNSIGNED_BYTE, px);
-      let min = 255, max = 0; for (let i = 0; i < px.length; i += 4) { const v = px[i] + px[i + 1] + px[i + 2]; min = Math.min(min, v); max = Math.max(max, v); }
-      return max - min < 30;
-    }).map((w) => w.id);
-  });
-  assert.deepEqual(leer, [], "Werke ohne Bild");
+  assert.ok(await page.locator("#pult-leer").isVisible(), "die leere Bühne zeigt die Aufforderung");
+  assert.ok(await page.locator("#pult-sichern").isDisabled(), "ohne Bild kein Sichern");
+  assert.match(await page.locator("#werke-meldung").textContent(), /Noch keine Werke/);
+  await bildBringen(page);
+  assert.ok(!(await page.locator("#pult-leer").isVisible()));
+  await page.waitForTimeout(600);
+  const hell = await page.evaluate(() => { const c = document.getElementById("pult-bild"), d = c.getContext("2d").getImageData(0, 0, c.width, c.height).data; let s = 0; for (let i = 0; i < d.length; i += 4) s += d[i] + d[i + 1] + d[i + 2]; return s / (d.length / 4); });
+  assert.ok(hell > 3, `die Bühne zeigt etwas (${hell})`);
+  const vorher = await page.evaluate(() => JSON.stringify(window.animationen.S.mix));
+  await page.getByRole("button", { name: "Neu mischen" }).click();
+  await page.waitForTimeout(200);
+  assert.notEqual(await page.evaluate(() => JSON.stringify(window.animationen.S.mix)), vorher);
+  assert.match(page.url(), /#m=/);
+  assert.equal(await page.evaluate(() => window.animationen.S.mix.bild), "eigen", "Neu mischen behält das Bild");
+  // Format 16:9 (PR #615): die Bühne wird breit, die Leinwand rechnet im Seitenverhältnis, das Format steht im Link
+  await page.getByRole("button", { name: "16:9", exact: true }).click();
+  await page.waitForTimeout(400);
+  assert.equal(await page.evaluate(() => document.documentElement.dataset.format), "16x9");
+  const [cb, ch, rb, rh] = await page.evaluate(() => { const c = document.getElementById("pult-bild"), r = c.getBoundingClientRect(); return [c.width, c.height, r.width, r.height]; });
+  assert.ok(Math.abs(cb / ch - 16 / 9) < .02, `Leinwand ${cb} × ${ch}`); assert.ok(Math.abs(rb / rh - 16 / 9) < .02, `Bühne ${rb} × ${rh}`);
+  assert.match(decodeURIComponent(escape(atob(decodeURIComponent(page.url().split("#m=")[1])))), /"format":"16x9"/);
   assert.deepEqual(fehler, []);
   await ctx.close();
 });
 
-await check("die Schlaufe schliesst: vom letzten zum ersten Bild springt es nicht stärker als von Bild zu Bild", async () => {
+await check("alle 27 Effekte zeichnen mit dem eigenen Bild ein sichtbares Bild, und die Schlaufe schliesst ohne Naht", async () => {
   const { ctx, page } = await oeffne();
-  const schlecht = await page.evaluate(() => {
-    const { motor, WERKE } = window.animationen, gl = motor.gl, dt = 1 / 30;
+  await bildBringen(page);
+  const ids = await page.evaluate(async () => (await import("./effekte.js")).EFFEKT_IDS);
+  const probleme = await page.evaluate((ids) => {
+    const { motor } = window.animationen, gl = motor.gl, dt = 1 / 30;
     const lesen = (t, s) => { motor.zeichnen(s, t, 64, 80); const p = new Uint8Array(64 * 80 * 4); gl.readPixels(0, 0, 64, 80, gl.RGBA, gl.UNSIGNED_BYTE, p); return p; };
     const mittel = (a, b) => { let d = 0; for (let i = 0; i < a.length; i++) d += Math.abs(a[i] - b[i]); return d / a.length; };
-    return WERKE.map((w) => {
-      const letztes = lesen(12 - dt, w.stapel), erstes = lesen(0, w.stapel), zweites = lesen(dt, w.stapel), vorletztes = lesen(12 - 2 * dt, w.stapel);
+    return ids.flatMap((id) => {
+      const s = { bild: "eigen", grund: "schwarz", ebenen: [{ effekt: id, werte: [], modus: "normal", deckkraft: 1, quelle: "bild", seed: 0 }] };
+      const px = lesen(4.2, s); let min = 255, max = 0; for (let i = 0; i < px.length; i += 4) { const v = px[i] + px[i + 1] + px[i + 2]; min = Math.min(min, v); max = Math.max(max, v); }
+      const letztes = lesen(12 - dt, s), erstes = lesen(0, s), zweites = lesen(dt, s), vorletztes = lesen(12 - 2 * dt, s);
       const naht = mittel(letztes, erstes), normal = Math.max(mittel(erstes, zweites), mittel(vorletztes, letztes));
-      return { id: w.id, naht: +naht.toFixed(2), normal: +normal.toFixed(2) };
-    }).filter((r) => r.naht > r.normal * 3 + 1.5);
-  });
-  assert.deepEqual(schlecht, []);
+      const aus = [];
+      if (max - min < 30) aus.push(`${id}: leer`);
+      if (naht > normal * 3 + 1.5) aus.push(`${id}: Naht ${naht.toFixed(2)} gegen ${normal.toFixed(2)}`);
+      return aus;
+    });
+  }, ids);
+  assert.deepEqual(probleme, []);
   await ctx.close();
 });
 
-await check("läuft durch: am Schlaufenrand bewegt sich jedes Werk mindestens ein Drittel so viel wie sonst (kein stehendes Ausgangsbild)", async () => {
-  const { ctx, page } = await oeffne();
-  const lahm = await page.evaluate(() => {
-    const { motor, WERKE } = window.animationen, gl = motor.gl, dt = 1 / 30;
-    const lesen = (t, s) => { motor.zeichnen(s, t, 64, 80); const p = new Uint8Array(64 * 80 * 4); gl.readPixels(0, 0, 64, 80, gl.RGBA, gl.UNSIGNED_BYTE, p); return p; };
-    const d = (s, t) => { const a = lesen(t, s), b = lesen(t + dt, s); let x = 0; for (let i = 0; i < a.length; i++) x += Math.abs(a[i] - b[i]); return x / a.length; };
-    return WERKE.map((w) => {
-      const v = [1.5, 3, 4.5, 6, 7.5, 9, 10.5].map((t) => d(w.stapel, t)).sort((a, b) => a - b), median = v[3];
-      return { id: w.id, rand: +(Math.min(d(w.stapel, 0), d(w.stapel, 12 - dt)) / Math.max(median, .05)).toFixed(2) };
-    }).filter((r) => r.rand < .33);
-  });
-  assert.deepEqual(lahm, []);
-  await ctx.close();
-});
-
-await check("Durchlauf über 30 s (4. November 2026): jedes Werk schliesst die Schlaufe und bewegt sich am Rand", async () => {
-  const { ctx, page } = await oeffne();
-  const schlecht = await page.evaluate(() => {
-    const { motor, WERKE } = window.animationen, gl = motor.gl, dt = 1 / 30, D = 30;
-    const lesen = (t, s) => { motor.zeichnen(s, t, 64, 80); const p = new Uint8Array(64 * 80 * 4); gl.readPixels(0, 0, 64, 80, gl.RGBA, gl.UNSIGNED_BYTE, p); return p; };
-    const mittel = (a, b) => { let d = 0; for (let i = 0; i < a.length; i++) d += Math.abs(a[i] - b[i]); return d / a.length; };
-    return WERKE.map((w) => {
-      const s = { ...w.stapel, durchlauf: true, dauer: D };
-      const letztes = lesen(D - dt, s), erstes = lesen(0, s), zweites = lesen(dt, s), vorletztes = lesen(D - 2 * dt, s), mitte = lesen(D / 2, s), mitte2 = lesen(D / 2 + dt, s);
-      const naht = mittel(letztes, erstes), normal = Math.max(mittel(erstes, zweites), mittel(vorletztes, letztes), mittel(mitte, mitte2));
-      return { id: w.id, naht: +naht.toFixed(2), normal: +normal.toFixed(2) };
-    }).filter((r) => r.naht > r.normal * 3 + 1.5);
-  });
-  assert.deepEqual(schlecht, []);
-  await ctx.close();
-});
-
-await check("Ansichten wechseln, Reel läuft weiter, Mischpult mischt neu und merkt sich die Mischung", async () => {
-  const { ctx, page, fehler } = await oeffne({ width: 1300, height: 900 }, "#w=frida-4");
-  await page.getByRole("button", { name: "Pause" }).click();   // angehalten, damit das Reel in der langsamen Software-Grafik nicht weiterläuft
-  const nr = () => page.evaluate(() => window.animationen.WERKE[window.animationen.S.reel].id);
-  assert.match(await nr(), /^frida-\d$/, "die Adresse #w=frida-4 öffnet Frida");
-  await page.getByRole("button", { name: "(2)" }).click();
-  assert.equal(await nr(), "frida-1");
-  assert.match(await page.locator("#reel-titel").textContent(), /Frida \/ 01 Op-Art/);
-  await page.getByRole("button", { name: "Weiter" }).click();
-  assert.equal(await nr(), "frida-2");
-  await page.click('[data-ansicht="werke"]');
-  assert.equal(await page.locator(".kachel").count(), 27);
-  await page.locator(".kachel").nth(20).click();
-  assert.ok(await page.locator("#reel").isVisible());
-  assert.equal(await nr(), "strudel-3", "die Kachel öffnet ihr Werk im Reel");
-  await page.click('[data-ansicht="mischpult"]');
-  await page.getByRole("button", { name: "Neu mischen" }).click();
-  await page.waitForTimeout(300);
-  assert.match(page.url(), /#m=/);
-  const url = page.url(), mix = await page.evaluate(() => JSON.stringify(window.animationen.S.mix));
-  await page.click('[data-ansicht="info"]');   // die erste Seite ruht, sonst rechnen zwei in Software
+await check("Werk sichern: mit Titel und Name abgelegt, erscheint bei den Werken, #w=ID öffnet es wieder, Löschen nimmt es weg", async () => {
+  const { ctx, page, fehler, speicher } = await oeffne();
+  await bildBringen(page);
+  await page.getByRole("button", { name: "Werk sichern" }).click();
+  assert.match(await page.locator("#sichern-meldung").textContent(), /Namen/, "ohne Namen kein Sichern");
+  await page.fill("#sichern-titel", "Probe am Abend");
+  await page.fill("#sichern-name", "Testerin");
+  await page.getByRole("button", { name: "Werk sichern" }).click();
+  await page.waitForFunction(() => /Gesichert/.test(document.getElementById("sichern-meldung").textContent), null, { timeout: 30000 });
+  assert.equal(speicher.werke.length, 1);
+  assert.equal(speicher.werke[0].name, "Testerin"); assert.equal(speicher.werke[0].titel, "Probe am Abend");
+  assert.ok(Array.isArray(speicher.werke[0].stapel.ebenen) && !("bild" in speicher.werke[0].stapel), "die Mischung ohne den Bildschlüssel");
+  assert.ok(speicher.bilder.values().next().value.subarray(0, 2).equals(Buffer.from([0xff, 0xd8])), "das Bild kommt als JPEG an");
+  assert.match(page.url(), /#w=[a-f0-9]{10}$/);
+  assert.equal(await page.locator(".kachel").count(), 1);
+  assert.match(await page.locator(".kachel .text").textContent(), /Probe am Abend.*von Testerin/);
+  assert.equal(await page.locator("#werke-anzahl").textContent(), "1");
+  assert.ok(await page.locator(".kachel .loeschen").isVisible(), "das eigene Werk lässt sich löschen");
+  // über die Adresse wieder öffnen
+  const url = page.url();
+  await page.click('[data-ansicht="info"]');
   const zweite = await ctx.newPage(); await zweite.goto(url, { timeout: 120000 });
   await zweite.waitForFunction(() => document.documentElement.classList.contains("bereit"), null, { timeout: 120000 });
-  assert.equal(await zweite.evaluate(() => JSON.stringify(window.animationen.S.mix)), mix);
-  assert.equal(await page.locator("fieldset.ebene").count(), 3);
+  assert.match(await zweite.evaluate(() => window.animationen.S.mix.bild), /^w:[a-f0-9]{10}$/, "das Werk ist im Mischpult");
+  assert.ok(!(await zweite.locator("#pult-leer").isVisible()), "die Bühne zeigt das Werk");
+  assert.match(await zweite.locator("#pult-meldung").textContent(), /von Testerin/);
+  assert.equal(await zweite.locator("input#sichern-titel").inputValue(), "Probe am Abend (Variante)");
+  await zweite.close();
+  // löschen
+  page.once("dialog", (d) => d.accept());
+  await page.click('[data-ansicht="mischpult"]');
+  await page.locator(".kachel .loeschen").click();
+  await page.waitForFunction(() => document.querySelectorAll(".kachel").length === 0, null, { timeout: 10000 });
+  assert.equal(speicher.werke.length, 0);
   assert.deepEqual(fehler, []);
   await ctx.close();
 });
 
-await check("Eigenes Bild: hochladen, mischen, ersetzen; es steht nicht im Link", async () => {
-  const { ctx, page, fehler } = await oeffne({ width: 1300, height: 900 }, "#mischpult");
-  await page.setInputFiles("#pult-datei", new URL("animations/bilder/strudel.jpg", root).pathname.replace(/^\/([A-Za-z]:)/, "$1"));
-  await page.waitForFunction(() => window.animationen.S.mix.bild === "eigen", null, { timeout: 60000 });
-  assert.match(await page.locator("#pult-meldung").textContent(), /strudel\.jpg · 1281 × 1600 · bleibt in diesem Browser/);
-  assert.equal(await page.getByRole("button", { name: "Eigenes Bild", exact: true }).getAttribute("aria-pressed"), "true");
-  await page.getByRole("button", { name: "Neu mischen" }).click();
-  assert.equal(await page.evaluate(() => window.animationen.S.mix.bild), "eigen", "Neu mischen behält das eigene Bild");
-  await page.setInputFiles("#pult-datei", new URL("animations/bilder/frida.jpg", root).pathname.replace(/^\/([A-Za-z]:)/, "$1"));
-  await page.waitForFunction(() => /frida\.jpg/.test(document.getElementById("pult-meldung").textContent), null, { timeout: 60000 });
-  await page.click('[data-ansicht="info"]');
-  const zweite = await ctx.newPage(); await zweite.goto(page.url().replace(/#.*/, "") + "#" + new URL(page.url()).hash.slice(1), { timeout: 120000 });
-  await zweite.waitForFunction(() => document.documentElement.classList.contains("bereit"), null, { timeout: 120000 });
-  assert.equal(await zweite.evaluate(() => window.animationen.S.mix.bild), "fragmente", "ohne das Bild fällt der Link auf das erste Bild zurück");
-  assert.deepEqual(fehler, []);
-  await ctx.close();
-});
-
-await check("Pause hält Reel und Mischpult an (auch per Leertaste); Standbild lädt ein PNG in 1080 × 1350", async () => {
-  const { ctx, page, fehler } = await oeffne({ width: 1300, height: 900 }, "#mischpult");
+await check("Pause hält an (auch per Leertaste und Klick auf die Bühne); Standbild lädt ein PNG in 1080 × 1350", async () => {
+  const { ctx, page, fehler } = await oeffne();
+  await bildBringen(page);
   await page.getByRole("button", { name: "Pause" }).click();
-  await page.waitForTimeout(800);   // das nächste gezeichnete Bild trägt die angehaltene Zeit
+  await page.waitForTimeout(800);
   const a = await page.locator("#pult-uhr").textContent(); await page.waitForTimeout(1500);
   assert.equal(await page.locator("#pult-uhr").textContent(), a, "die Zeit steht");
-  await page.click('[data-ansicht="reel"]');
-  assert.equal(await page.locator("#reel-pause").textContent(), "Abspielen", "Reel ist mit angehalten");
-  await page.evaluate(() => document.activeElement?.blur());   // auf einem Knopf löst die Leertaste den Knopf aus, wie üblich
+  assert.equal(await page.locator("#pult-pause").textContent(), "Abspielen");
+  await page.evaluate(() => document.activeElement?.blur());
   await page.keyboard.press("Space");
-  assert.equal(await page.locator("#reel-pause").textContent(), "Pause", "Leertaste spielt wieder ab");
-  await page.keyboard.press("Space");
+  assert.equal(await page.locator("#pult-pause").textContent(), "Pause", "Leertaste spielt wieder ab");
+  await page.locator("#pult-bild").click();
+  assert.equal(await page.locator("#pult-pause").textContent(), "Abspielen", "Klick auf die Bühne hält an");
   const [download] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: "Standbild" }).click()]);
-  assert.match(download.suggestedFilename(), /^ornament-animation-fragmente-01-glut-und-staub-\d\ds\d-4x5\.png$/);
-  const datei = await download.path();
-  const { readFileSync } = await import("node:fs");
-  const kopf = readFileSync(datei);
+  assert.match(download.suggestedFilename(), /^ornament-animation-mischung-\d\ds\d-4x5\.png$/);
+  const kopf = readFileSync(await download.path());
   assert.equal(kopf.subarray(1, 4).toString(), "PNG");
   assert.deepEqual([kopf.readUInt32BE(16), kopf.readUInt32BE(20)], [1080, 1350]);
   assert.deepEqual(fehler, []);
   await ctx.close();
 });
 
-await check("Handy: kein seitliches Scrollen in allen Ansichten", async () => {
+await check("ohne Ablage: die Seite läuft, Sichern bleibt aus, die Werke melden es", async () => {
+  const ctx = await browser.newContext({ viewport: { width: 1300, height: 900 } });
+  await ctx.route(/werke\.php/, (route) => route.fulfill({ status: 500, body: "kaputt" }));
+  const page = await ctx.newPage();
+  await page.goto(base, { timeout: 120000 });
+  await page.waitForFunction(() => document.documentElement.classList.contains("bereit"), null, { timeout: 120000 });
+  assert.match(await page.locator("#werke-meldung").textContent(), /liessen sich nicht laden/);
+  await bildBringen(page);
+  assert.ok(await page.locator("#pult-sichern").isDisabled());
+  await ctx.close();
+});
+
+await check("Handy: kein seitliches Scrollen in beiden Ansichten, die Ansichten als Leiste unten", async () => {
   const { ctx, page } = await oeffne({ width: 360, height: 760 });
-  for (const a of ["reel", "werke", "mischpult", "info"]) {
+  for (const a of ["mischpult", "info"]) {
     await page.click(`[data-ansicht="${a}"]`);
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth), 0, a);
   }
+  const lage = await page.evaluate(() => getComputedStyle(document.querySelector(".ansichten")).position);
+  assert.equal(lage, "fixed");
   await ctx.close();
 });
 

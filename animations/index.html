@@ -7,232 +7,373 @@
 <!--
 Animationen (Wunsch vom 3. November 2026): «Bau auf ornament.cloud eine neue Seite /animations. Sie soll mit meinen Bildern und den bisher
 nachgebauten Effekten neue Effekte zusammensetzen» – alle Effekte als Bausteine mit Reglern, bis zu drei Ebenen mit Mischmodus und Deckkraft,
-«neu mischen», schwarz-weiss, hell und dunkel, Handy; dazu «aus jedem Bild 9 verschiedene Animationen zur Ansicht und zum Download».
-Gestaltung nach den Portfolios lisovskiy.work (grosse Grotesk, gestreutes Kachelraster) und ijpowell.co.uk (Kopfzeile mit Ansichten, Reel
-in der Mitte, Zähler unten). Steht für sich wie PHORMA (Ausnahme in tests/navigation.test.mjs), noindex, nicht in der Sitemap, bis zur Freigabe.
+«neu mischen», schwarz-weiss, hell und dunkel, Handy.
+Seit 4. November 2026 (Wünsche: «viel schöner im stile eine designstudios … für laptop und smartphone», «nur mischpult und info. werke können
+gesichert werden und werden abgelegt mit ersteller name (und sehr nice präsentiert auf der seite)», «keine beispielbilder», «der "neu mischen"
+knopf soll gut sichtbar sein», «eine tolle vorschaukachel für social media»): zwei Ansichten, Mischpult und Info. Das Bild bringt der Besucher
+mit (hochladen oder auf die Bühne ziehen); «Werk sichern» legt Bild und Mischung mit Titel und Name in werke.php ab, die Werke stehen darunter
+im gestreuten Raster, lebendig beim Darüberfahren, und lassen sich ins Mischpult laden. Gestaltung nach DESIGN.md in diesem Ordner.
+Steht für sich wie PHORMA (Ausnahme in tests/navigation.test.mjs), noindex, nicht in der Sitemap, bis zur Freigabe.
 Rechnet alles im Browser (WebGL 2, motor.js), das MP4 (1080 × 1350, 30 fps, 12 s, nahtlose Schlaufe) mit WebCodecs und mp4-muxer aus vendor/.
 -->
 <meta name="robots" content="noindex">
-<meta name="description" content="Drei Bilder, siebenundzwanzig Effekte, drei Ebenen: Animationen zum Ansehen, Mischen und Herunterladen.">
-<meta name="color-scheme" content="light dark">
-<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="description" content="Dein Bild, siebenundzwanzig Effekte, drei Ebenen: Animationen mischen, als MP4 laden und als Werk mit deinem Namen sichern.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ornament.cloud">
+<meta property="og:locale" content="de_CH">
+<meta property="og:url" content="https://ornament.cloud/animations/">
+<meta property="og:title" content="Animationen">
+<meta property="og:description" content="Dein Bild, siebenundzwanzig Effekte, drei Ebenen: Animationen mischen, als MP4 laden und als Werk mit deinem Namen sichern.">
+<meta property="og:image" content="https://ornament.cloud/animations/og-animationen.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Animationen auf ornament.cloud: links das Wort «Animationen» mit orangem Punkt, rechts sechs Effekte aus Höhenlinien, Strömung, Druckraster und Voxeln auf Schwarz.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Animationen">
+<meta name="twitter:description" content="Dein Bild, siebenundzwanzig Effekte, drei Ebenen: Animationen mischen, als MP4 laden und als Werk mit deinem Namen sichern.">
+<meta name="twitter:image" content="https://ornament.cloud/animations/og-animationen.jpg">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0b090a" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f2efea" media="(prefers-color-scheme: light)">
 <link rel="stylesheet" href="../vendor/fonts/fonts.css">
 <style>
+/* ---------- Tokens (DESIGN.md) ---------- */
 :root {
-  --bg: #fff; --ink: #000; --mute: rgba(0, 0, 0, .45); --line: rgba(0, 0, 0, .14); --chip: #efefef; --buehne: #000;
-  --font: "Instrument Sans", Helvetica, Arial, sans-serif;
-  --rand: 14px;
-  color-scheme: light;
+  --grund: #0b090a; --flaeche: #141112; --buehne: #000; --tinte: #f2ece6; --leise: rgba(242, 236, 230, .56); --linie: rgba(242, 236, 230, .16); --akzent: #f08a5d;
+  --sans: "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --serif: Newsreader, "Iowan Old Style", Georgia, serif;
+  --rand: 24px; --breit: 1680px; --kopf: 60px;
+  --dauer: 240ms;
+  color-scheme: dark;
 }
-@media (prefers-color-scheme: dark) {
-  :root { --bg: #000; --ink: #fff; --mute: rgba(255, 255, 255, .5); --line: rgba(255, 255, 255, .16); --chip: #161616; --buehne: #0d0d0d; color-scheme: dark; }
+@media (prefers-color-scheme: light) {
+  :root { --grund: #f2efea; --flaeche: #fff; --buehne: #0b090a; --tinte: #121010; --leise: rgba(18, 16, 16, .56); --linie: rgba(18, 16, 16, .16); --akzent: #c2410c; color-scheme: light; }
 }
-* { box-sizing: border-box; }
-html { background: var(--bg); color: var(--ink); font: 400 17px/1.25 var(--font); -webkit-text-size-adjust: 100%; }
-body { margin: 0; min-height: 100svh; background: var(--bg); }
-a { color: inherit; }
-button, select, input { font: inherit; color: inherit; }
-button { background: none; border: 0; padding: 0; cursor: pointer; }
-:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
-.leise { color: var(--mute); }
-
-/* Kopfzeile wie ijpowell: links Name, Mitte Zeile, rechts Ansichten mit Kreisen */
-.kopf { position: sticky; top: 0; z-index: 5; display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline; gap: 16px;
-  padding: calc(var(--rand) + env(safe-area-inset-top, 0px)) var(--rand) var(--rand); background: var(--bg); }
-.marke { font-weight: 500; text-decoration: none; letter-spacing: -.01em; }
-.zeile { margin: 0; text-align: center; }
-.ansichten { justify-self: end; display: flex; gap: 14px; }
-.ansichten button { display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
-.ansichten button::before { content: ""; width: .7em; height: .7em; border-radius: 50%; border: 1.3px solid currentColor; }
-.ansichten button[aria-pressed="true"]::before { background: currentColor; }
-.ansicht[hidden] { display: none !important; }
-
-/* Reel */
-#reel { display: grid; grid-template-rows: 1fr auto; min-height: calc(100svh - 52px); }
-.buehne { display: grid; place-items: center; padding: 24px var(--rand); }
+@media (prefers-reduced-motion: reduce) { :root { --dauer: 0ms; } }
+/* Format der Bühne: 4:5, 1:1 oder 16:9 (PR #615), gesetzt als data-format auf <html> */
 :root { --ar: 4 / 5; }
 :root[data-format="1x1"] { --ar: 1; }
 :root[data-format="16x9"] { --ar: 16 / 9; }
-.rahmen { position: relative; background: var(--buehne); width: min(100%, calc(66svh * (var(--ar)))); aspect-ratio: var(--ar); }
-.rahmen canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: pointer; }
-.reel-fuss { display: grid; grid-template-columns: 1fr auto 1fr; align-items: end; gap: 16px; padding: 0 var(--rand) calc(var(--rand) + env(safe-area-inset-bottom, 0px)); }
-.zaehler { margin: 0 0 8px; display: flex; gap: 2px; }
-.zaehler button { color: var(--mute); }
-.zaehler button[aria-pressed="true"] { color: var(--ink); }
-.karte { display: flex; gap: 12px; align-items: center; background: var(--chip); padding: 4px 16px 4px 4px; max-width: 420px; }
-.karte canvas { height: 55px; width: auto; aspect-ratio: var(--ar); display: block; background: var(--buehne); flex: none; }
-.karte b { font-weight: 400; color: var(--mute); }
-.uhr { margin: 0; font-variant-numeric: tabular-nums; text-align: center; }
-.aktionen { margin: 0; justify-self: end; text-align: right; }
-.aktionen button:hover, .marke:hover { text-decoration: underline; text-underline-offset: 3px; }
 
-/* Werke wie lisovskiy: grosse Zeile links, Bilder als Wortstapel rechts, darunter das gestreute Raster */
-#werke { padding: 0 var(--rand) 80px; }
-.werke-kopf { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 4px 0 72px; }
-.gross { font-size: clamp(30px, 3.4vw, 46px); font-weight: 500; line-height: 1; letter-spacing: -.035em; margin: 0; }
-.stapel { list-style: none; margin: 0; padding: 0; }
-.stapel button { font-size: clamp(30px, 3.4vw, 46px); font-weight: 500; line-height: 1; letter-spacing: -.035em; text-align: left; }
-.stapel button[aria-pressed="false"] { color: var(--mute); }
-.streu { display: grid; grid-template-columns: repeat(8, 1fr); gap: 28px; }
-.kachel { display: block; text-decoration: none; transition: opacity .25s; }
-.kachel canvas { display: block; width: 100%; aspect-ratio: var(--ar); height: auto; background: var(--buehne); }
-.kachel span { display: block; font-size: 13px; margin-top: 6px; color: var(--mute); }
-.kachel:hover span, .kachel:focus-visible span { color: var(--ink); }
-.streu.gefiltert .kachel:not(.an) { opacity: .12; }
+/* ---------- Grund ---------- */
+* { box-sizing: border-box; }
+html { background: var(--grund); color: var(--tinte); font: 400 17px/1.4 var(--sans); -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body { margin: 0; min-height: 100svh; background: var(--grund); display: flex; flex-direction: column; }
+main { flex: 1; width: 100%; max-width: var(--breit); margin: 0 auto; }
+a { color: inherit; }
+b, strong { font-weight: 500; }
+button, select, input { font: inherit; color: inherit; }
+button { background: none; border: 0; padding: 0; cursor: pointer; border-radius: 0; text-align: left; }
+:focus-visible { outline: 2px solid var(--akzent); outline-offset: 3px; }
+.leise { color: var(--leise); }
+.etikett, .ansichten small, .kachel .nr, .gruppe > h2, .ebene legend, .kolophon dt, .spalten h2, .stand, .werke-kopf small
+  { font-size: 11px; line-height: 1.3; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--leise); }
+.uhr, .stand, output, .kachel .nr, .ansichten small { font-variant-numeric: tabular-nums; }
+.gross i { font-family: var(--serif); font-style: italic; font-weight: 300; letter-spacing: -.01em; }
+.ansicht { animation: auftauchen var(--dauer) ease-out; }
+.ansicht[hidden] { display: none !important; }
+@keyframes auftauchen { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
-/* Mischpult */
-#mischpult { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 28px; padding: 8px var(--rand) 60px; align-items: start; }
-.pult-buehne { position: sticky; top: 64px; display: grid; justify-items: center; gap: 10px; }
-.pult-buehne { width: 100%; }
-.pult-buehne .rahmen { width: min(100%, calc(78svh * (var(--ar)))); }
-.pult { display: grid; gap: 22px; }
-.gruppe { display: grid; gap: 8px; }
-.gruppe > h2, .ebene legend { font-size: 13px; font-weight: 500; letter-spacing: .02em; color: var(--mute); margin: 0; padding: 0; }
+/* ---------- Kopf ---------- */
+.kopf { position: sticky; top: 0; z-index: 5; height: calc(var(--kopf) + env(safe-area-inset-top, 0px)); padding-top: env(safe-area-inset-top, 0px);
+  background: var(--grund); border-bottom: 1px solid var(--linie); }
+.kopf-innen { max-width: var(--breit); margin: 0 auto; height: 100%; padding: 0 var(--rand); display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 24px; }
+.marke { font-weight: 500; text-decoration: none; letter-spacing: -.01em; white-space: nowrap; }
+.marke .punkt { color: var(--akzent); }
+.marke:hover { text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; }
+.zeile { margin: 0; text-align: center; font-size: 15px; white-space: nowrap; }
+.kurz { display: none; }
+.ansichten { justify-self: end; display: flex; gap: 4px; }
+.ansichten button { display: inline-flex; align-items: baseline; gap: 8px; min-height: 44px; padding: 0 12px; font-weight: 500; color: var(--leise); position: relative; }
+.ansichten button:hover { color: var(--tinte); }
+.ansichten button[aria-pressed="true"] { color: var(--tinte); }
+.ansichten button[aria-pressed="true"] small { color: var(--akzent); }
+.ansichten button[aria-pressed="true"]::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 6px; height: 1px; background: var(--tinte); }
+
+/* ---------- gemeinsame Bausteine ---------- */
+.rahmen { position: relative; background: var(--buehne); aspect-ratio: var(--ar); }
+.rahmen canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.rahmen.ziehen { outline: 1px dashed var(--akzent); outline-offset: 8px; }
+.fortschritt { position: relative; height: 1px; background: var(--linie); overflow: hidden; }
+.fortschritt i { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; background: var(--akzent); transform-origin: 0 50%; transform: scaleX(var(--p, 0)); }
+.gruppe { display: grid; gap: 10px; }
+.gruppe > h2 { margin: 0; }
+.hinweis { margin: 0; font-size: 13px; line-height: 1.45; }
+.hinweis.gut { color: var(--akzent); }
+/* Schalter in einer Reihe: Pillen, die gedrückte ist gefüllt */
 .wahl { display: flex; flex-wrap: wrap; gap: 6px; }
-.wahl button, .knopf { border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; }
-.wahl button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-.knopf:hover, .wahl button:hover { border-color: var(--ink); }
+.wahl button, .knopf { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 36px; padding: 6px 14px; border: 1px solid var(--linie); border-radius: 999px; font-size: 15px; line-height: 1.2;
+  transition: border-color .15s, background-color .15s, color .15s; }
+.wahl button:hover, .knopf:hover { border-color: var(--tinte); }
+.wahl button[aria-pressed="true"] { background: var(--tinte); color: var(--grund); border-color: var(--tinte); }
 .wahl .hochladen { border-style: dashed; }
-.hinweis { margin: 0; font-size: 13px; }
-.rahmen.ziehen { outline: 2px dashed var(--ink); outline-offset: 6px; }
-.knopf.voll { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-.ebene { border: 0; border-top: 1px solid var(--line); padding: 14px 0 0; margin: 0; display: grid; gap: 10px; }
-.ebene.aus .regeln { opacity: .35; }
-.ebene-kopf { display: flex; align-items: center; gap: 10px; }
-.ebene-kopf legend { flex: 1; float: left; }
-.ebene-kopf button { color: var(--mute); }
-.ebene-kopf button:hover { color: var(--ink); }
-.ebene-kopf button:disabled { opacity: .3; cursor: default; }
-.regeln { display: grid; gap: 8px; }
+.knopf.voll { background: var(--tinte); color: var(--grund); border-color: var(--tinte); }
+.knopf.voll:hover { background: var(--akzent); border-color: var(--akzent); color: #0b090a; }
+.knopf.gross { min-height: 52px; padding: 10px 26px; font-size: 17px; font-weight: 500; }
+.knopf.gross .kreis { width: 10px; height: 10px; border-radius: 50%; background: var(--akzent); flex: none; }
+.knopf.voll:hover .kreis { background: #0b090a; }
+.knopf.leise { border-color: transparent; color: var(--leise); padding-left: 6px; padding-right: 6px; }
+.knopf.leise:hover { color: var(--tinte); }
+.knopf:disabled, .wahl button:disabled { opacity: .35; cursor: default; }
+.feld { display: grid; gap: 6px; }
+.feld span { font-size: 13px; color: var(--leise); }
+input[type="text"] { width: 100%; min-height: 40px; padding: 8px 12px; background: var(--flaeche); border: 1px solid var(--linie); border-radius: 0; font-size: 15px; }
+input[type="text"]:hover { border-color: var(--tinte); }
+input[type="text"]:focus-visible { outline: none; border-color: var(--akzent); }
+input[type="text"]::placeholder { color: var(--leise); }
 .zeile2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-select { width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 0; padding: 6px 8px; }
-label.regler { display: grid; grid-template-columns: 96px 1fr 34px; gap: 10px; align-items: center; font-size: 14px; }
-label.regler output { font-variant-numeric: tabular-nums; color: var(--mute); text-align: right; }
-input[type="range"] { width: 100%; accent-color: var(--ink); }
-.tasten { display: flex; flex-wrap: wrap; gap: 8px; }
 
-/* Info wie lisovskiy: drei Listen nebeneinander */
-#info { padding: 4px var(--rand) 80px; }
-.spalten { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 72px; }
-.spalten h2 { font-size: 17px; font-weight: 500; margin: 0 0 14px; }
-.spalten ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
-.spalten li span { display: block; color: var(--mute); font-size: 14px; }
+/* ---------- Mischpult ---------- */
+#mischpult { padding: 0 var(--rand); }
+.pult-raster { display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 64px; padding: 32px 0 72px; align-items: start; }
+.pult-buehne { position: sticky; top: calc(var(--kopf) + 24px); display: grid; justify-items: center; gap: 16px; }
+.pult-buehne .rahmen { width: min(100%, calc(min(100svh - var(--kopf) - 150px, 900px) * (var(--ar)))); }
+.pult-buehne .rahmen canvas { cursor: pointer; }
+.rahmen.ohne canvas { visibility: hidden; }
+/* leere Bühne: Aufforderung, ein Bild zu bringen */
+.leer { position: absolute; inset: 0; display: none; place-content: center; justify-items: center; text-align: center; gap: 12px; padding: 32px; color: #f2ece6; }
+.leer::before { content: ""; position: absolute; inset: 16px; border: 1px dashed rgba(242, 236, 230, .3); pointer-events: none; }
+.rahmen.ohne .leer { display: grid; }
+.leer p { margin: 0; max-width: 28ch; text-wrap: balance; }
+.leer .satz { font-size: 22px; line-height: 1.25; letter-spacing: -.01em; }
+.leer .satz i { font-family: var(--serif); font-style: italic; font-weight: 300; }
+.leer .knopf { color: #f2ece6; border-color: rgba(242, 236, 230, .4); margin-top: 8px; }
+.leer .knopf:hover { border-color: #f2ece6; }
+.leer .hinweis { color: rgba(242, 236, 230, .56); }
+.pult-leiste { display: grid; grid-template-columns: auto 1fr auto; gap: 16px; align-items: center; width: 100%; max-width: 900px; }
+.uhr { margin: 0; font-size: 15px; }
+.stand { margin: 0; }
+.pult-haupt { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; width: 100%; max-width: 900px; }
+.pult { display: grid; gap: 28px; }
+select { width: 100%; background: var(--flaeche) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23999' stroke-width='1.4'/%3E%3C/svg%3E") no-repeat right 12px center;
+  border: 1px solid var(--linie); border-radius: 0; padding: 9px 32px 9px 12px; font-size: 15px; appearance: none; -webkit-appearance: none; min-height: 40px; }
+select:hover { border-color: var(--tinte); }
+.ebene { border: 0; border-top: 1px solid var(--linie); padding: 16px 0 0; margin: 0; display: grid; gap: 12px; min-width: 0; }
+.ebene.aus .regeln { opacity: .35; }
+.ebene-kopf { display: flex; align-items: center; gap: 4px; }
+.ebene-kopf legend { flex: 1; float: left; margin: 0; padding: 0; }
+.ebene-kopf button { min-width: 32px; min-height: 32px; display: inline-grid; place-items: center; color: var(--leise); border-radius: 999px; }
+.ebene-kopf button:hover { color: var(--tinte); background: var(--flaeche); }
+.ebene-kopf button:disabled { opacity: .3; cursor: default; background: none; }
+.ebene-kopf button[aria-pressed="true"] { color: var(--akzent); }
+.regeln { display: grid; gap: 10px; }
+label.regler { display: grid; grid-template-columns: 96px 1fr 34px; gap: 12px; align-items: center; font-size: 14px; min-height: 28px; }
+label.regler output { text-align: right; color: var(--leise); font-size: 13px; }
+input[type="range"] { width: 100%; margin: 0; height: 28px; background: none; appearance: none; -webkit-appearance: none; cursor: pointer; }
+input[type="range"]::-webkit-slider-runnable-track { height: 1px; background: var(--linie); }
+input[type="range"]::-moz-range-track { height: 1px; background: var(--linie); }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; margin-top: -6.5px; border-radius: 50%; background: var(--tinte); border: 0; }
+input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--tinte); border: 0; }
+input[type="range"]:hover::-webkit-slider-thumb, input[type="range"]:focus-visible::-webkit-slider-thumb { background: var(--akzent); }
+input[type="range"]:hover::-moz-range-thumb, input[type="range"]:focus-visible::-moz-range-thumb { background: var(--akzent); }
+input[type="range"]:focus-visible { outline: none; }
+.tasten { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.sichern { border-top: 1px solid var(--linie); padding-top: 20px; }
+.sichern .tasten { padding-top: 4px; }
 
-.export { position: fixed; right: var(--rand); bottom: calc(var(--rand) + env(safe-area-inset-bottom, 0px)); z-index: 9; background: var(--ink); color: var(--bg);
-  padding: 10px 14px; display: flex; gap: 14px; align-items: center; font-variant-numeric: tabular-nums; }
+/* ---------- Werke: das gestreute Raster unter dem Mischpult ---------- */
+.galerie { border-top: 1px solid var(--linie); padding: 48px 0 96px; }
+.werke-kopf { display: grid; grid-template-columns: 1fr auto; gap: 32px; align-items: end; padding: 0 0 40px; border-bottom: 1px solid var(--linie); margin-bottom: 40px; }
+.werke-kopf small { display: block; margin-bottom: 12px; }
+.werke-kopf p { margin: 0; max-width: 36ch; font-size: 15px; text-align: right; text-wrap: balance; }
+.gross { font-size: clamp(40px, 6.4vw, 104px); font-weight: 500; line-height: .95; letter-spacing: -.035em; margin: 0; text-wrap: balance; }
+.streu { display: grid; grid-template-columns: repeat(12, 1fr); gap: 32px 24px; }
+.streu:empty { display: none; }
+.kachel { display: grid; text-decoration: none; transition: opacity .25s; }
+.kachel canvas { display: block; width: 100%; aspect-ratio: 4 / 5; height: auto; background: var(--buehne); cursor: pointer; }   /* jedes Werk in seinem Format, gesetzt in seite.js */
+.kachel .text { display: grid; grid-template-columns: auto 1fr auto; gap: 2px 10px; margin-top: 10px; font-size: 13px; line-height: 1.35; color: var(--leise); align-items: baseline; }
+.kachel .nr { padding-top: 2px; }
+.kachel .titel { color: var(--tinte); }
+.kachel small { grid-column: 2; font-size: 11px; letter-spacing: .04em; color: var(--leise); }
+.kachel .loeschen { grid-column: 3; grid-row: 1 / 3; align-self: start; font-size: 11px; letter-spacing: .04em; color: var(--leise); min-height: 24px; }
+.kachel .loeschen:hover { color: var(--akzent); }
+.kachel:hover .nr, .kachel:focus-within .nr { color: var(--akzent); }
+.kachel:hover .titel { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.meldung { margin: 0; padding: 48px 0; max-width: 48ch; font-size: 22px; line-height: 1.3; letter-spacing: -.01em; text-wrap: balance; }
+.meldung i { font-family: var(--serif); font-style: italic; font-weight: 300; }
+.meldung[hidden] { display: none; }
+
+/* ---------- Info ---------- */
+#info { padding: 48px var(--rand) 96px; }
+.kolophon { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin: 48px 0 0; padding: 24px 0; border-top: 1px solid var(--linie); border-bottom: 1px solid var(--linie); }
+.kolophon div { display: grid; gap: 6px; align-content: start; }
+.kolophon dt, .kolophon dd { margin: 0; }
+.kolophon dd { font-size: 15px; line-height: 1.4; text-wrap: pretty; }
+.spalten { display: grid; grid-template-columns: repeat(3, 1fr); gap: 48px; margin-top: 56px; }
+.spalten h2 { margin: 0 0 8px; }
+.spalten ol { list-style: none; margin: 0; padding: 0; counter-reset: punkt; }
+.spalten li { display: grid; grid-template-columns: 28px 1fr; gap: 2px 8px; padding: 10px 0; border-top: 1px solid var(--linie); counter-increment: punkt; font-size: 15px; }
+.spalten li::before { content: counter(punkt, decimal-leading-zero); font-size: 11px; letter-spacing: .08em; color: var(--leise); padding-top: 4px; font-variant-numeric: tabular-nums; }
+.spalten li span { grid-column: 2; display: block; color: var(--leise); font-size: 13px; line-height: 1.45; }
+
+/* ---------- Fuss, Export ---------- */
+.fuss { border-top: 1px solid var(--linie); }
+.fuss-innen { max-width: var(--breit); margin: 0 auto; padding: 20px var(--rand) calc(20px + env(safe-area-inset-bottom, 0px)); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 32px; font-size: 13px; color: var(--leise); }
+.fuss a { text-decoration: none; }
+.fuss a:hover { color: var(--tinte); text-decoration: underline; text-underline-offset: 3px; }
+.export { position: fixed; right: var(--rand); bottom: calc(var(--rand) + env(safe-area-inset-bottom, 0px)); z-index: 9; width: 260px; background: var(--tinte); color: var(--grund); padding: 12px 14px 14px; display: grid; gap: 10px; font-size: 14px; }
 .export[hidden] { display: none; }
-.export button { text-decoration: underline; text-underline-offset: 3px; }
-.meldung { padding: 40px var(--rand); }
+.export .fortschritt { background: rgba(128, 128, 128, .3); }
+.export-zeile { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.export button { text-decoration: underline; text-underline-offset: 3px; color: inherit; }
+.ohne-webgl { padding: 48px var(--rand); max-width: 60ch; }
 
-@media (max-width: 900px) {
+/* ---------- Laptop schmal und Tablet ---------- */
+@media (max-width: 1180px) {
   .zeile { display: none; }
-  .kopf { grid-template-columns: auto 1fr; }
-  #mischpult { grid-template-columns: 1fr; }
-  .pult-buehne { position: static; }
-  .pult-buehne .rahmen { width: min(100%, 520px * (var(--ar)) / .8, calc(78svh * (var(--ar)))); }
-  .streu { grid-template-columns: repeat(4, 1fr); gap: 18px; }
-  .spalten { grid-template-columns: 1fr; }
+  .kopf-innen { grid-template-columns: auto 1fr; }
+  .pult-raster { grid-template-columns: 1fr; gap: 32px; padding-top: 24px; justify-items: center; }
+  .pult-buehne { position: static; width: 100%; }
+  .pult-buehne .rahmen { width: min(100%, calc(72svh * (var(--ar))), 760px); }
+  .pult-leiste, .pult-haupt { max-width: 760px; }
+  .pult { max-width: 560px; width: 100%; }
+  .streu { grid-template-columns: repeat(8, 1fr); gap: 24px 16px; }
+  .kolophon { grid-template-columns: repeat(2, 1fr); }
+  .spalten { grid-template-columns: 1fr; gap: 32px; }
 }
-@media (max-width: 640px) {
-  :root { --rand: 16px; }
-  html { font-size: 15px; }
-  .kopf { grid-template-columns: 1fr; gap: 6px; }
-  .ansichten { justify-self: start; gap: 12px; }
-  .werke-kopf { grid-template-columns: 1fr; margin-bottom: 44px; }
-  .rahmen, .pult-buehne .rahmen { width: 100%; }
-  #reel { min-height: 0; }
-  .buehne { padding: 12px var(--rand) 18px; }
-  .reel-fuss { grid-template-columns: 1fr auto; padding-bottom: 28px; }
-  .reel-fuss > div { grid-column: 1 / -1; }
-  .aktionen { text-align: right; }
-  .uhr { text-align: left; }
-  .streu { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+
+/* ---------- Handy: Ansichten als Leiste unten ---------- */
+@media (max-width: 720px) {
+  :root { --rand: 16px; --kopf: 52px; }
+  html { font-size: 16px; }
+  body { padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px)); }
+  .kopf-innen { grid-template-columns: 1fr auto; }
+  .kurz { display: block; margin: 0; font-size: 13px; color: var(--leise); }
+  /* die Ansichten werden zur Leiste am unteren Rand (Daumenweite), dasselbe Element wie im Kopf */
+  .ansichten { position: fixed; left: 0; right: 0; bottom: 0; z-index: 8; display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; background: var(--grund); border-top: 1px solid var(--linie);
+    padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .ansichten button { display: grid; justify-items: center; align-items: center; gap: 3px; min-height: 56px; padding: 8px 4px; font-size: 13px; text-align: center; }
+  .ansichten button small { font-size: 10px; }
+  .ansichten button[aria-pressed="true"]::after { display: none; }
+  .pult-raster { padding-top: 16px; gap: 24px; }
+  .pult-buehne .rahmen { width: 100%; }
+  .pult-leiste, .pult-haupt { max-width: none; }
+  .pult-haupt .knopf.gross { flex: 1 1 100%; }
+  .leer .satz { font-size: 19px; }
+  label.regler { grid-template-columns: 84px 1fr 32px; }
+  .galerie { padding-top: 32px; }
+  .werke-kopf { grid-template-columns: 1fr; padding-bottom: 28px; margin-bottom: 28px; gap: 16px; }
+  .werke-kopf p { text-align: left; }
+  .streu { grid-template-columns: repeat(4, 1fr); gap: 20px 12px; }
+  #info { padding-top: 32px; }
+  .kolophon { grid-template-columns: 1fr; gap: 16px; }
+  .export { left: var(--rand); right: var(--rand); width: auto; bottom: calc(68px + env(safe-area-inset-bottom, 0px)); }
 }
 </style>
 </head>
 <body>
 <header class="kopf">
-  <a class="marke" href="../">ornament.cloud</a>
-  <p class="zeile">Animationen — drei Bilder, siebenundzwanzig Effekte, drei Ebenen</p>
-  <nav class="ansichten" aria-label="Ansicht">
-    <button type="button" data-ansicht="reel" aria-pressed="true">Reel</button>
-    <button type="button" data-ansicht="werke" aria-pressed="false">Werke</button>
-    <button type="button" data-ansicht="mischpult" aria-pressed="false">Mischpult</button>
-    <button type="button" data-ansicht="info" aria-pressed="false">Info</button>
-  </nav>
+  <div class="kopf-innen">
+    <a class="marke" href="../">ornament<span class="punkt">.</span>cloud</a>
+    <p class="zeile">Animationen <span class="leise">— dein Bild, siebenundzwanzig Effekte, drei Ebenen</span></p>
+    <p class="kurz">Animationen</p>
+    <nav class="ansichten" aria-label="Ansicht">
+      <button type="button" data-ansicht="mischpult" aria-pressed="true"><small>01</small>Mischpult</button>
+      <button type="button" data-ansicht="info" aria-pressed="false"><small>02</small>Info</button>
+    </nav>
+  </div>
 </header>
 
 <main>
-  <section id="reel" class="ansicht" aria-label="Reel">
-    <div class="buehne"><div class="rahmen"><canvas id="reel-bild" role="img" aria-label="Animation"></canvas></div></div>
-    <div class="reel-fuss">
-      <div>
-        <p class="zaehler" id="reel-zaehler"></p>
-        <div class="karte"><canvas id="reel-mini" width="88" height="110" aria-hidden="true"></canvas><span id="reel-titel"></span></div>
+  <section id="mischpult" class="ansicht" aria-label="Mischpult">
+    <div class="pult-raster">
+      <div class="pult-buehne">
+        <div class="rahmen ohne" id="buehne">
+          <canvas id="pult-bild" role="img" aria-label="Gemischte Animation" title="Klick: anhalten"></canvas>
+          <div class="leer" id="pult-leer">
+            <p class="etikett">Dein Bild</p>
+            <p class="satz">Zieh ein Bild hierher<br>oder <i>wähl eines aus.</i></p>
+            <button type="button" class="knopf" id="pult-waehlen">Bild wählen …</button>
+            <p class="hinweis">JPEG, PNG oder WebP. Es bleibt auf deinem Gerät, bis du dein Werk sicherst.</p>
+          </div>
+        </div>
+        <div class="pult-leiste"><p class="uhr leise" id="pult-uhr">00:00,0 / 00:12</p><div class="fortschritt" aria-hidden="true"><i></i></div><p class="stand" id="pult-stand">Schlaufe</p></div>
+        <div class="pult-haupt">
+          <button type="button" class="knopf voll gross" id="pult-zufall"><span class="kreis" aria-hidden="true"></span>Neu mischen</button>
+          <button type="button" class="knopf gross" id="pult-mp4">MP4 laden</button>
+        </div>
       </div>
-      <p class="uhr" id="reel-uhr">00:00,0 / 00:12</p>
-      <p class="aktionen"><button type="button" id="reel-zurueck">Zurück</button>, <button type="button" id="reel-weiter">Weiter</button>, <button type="button" id="reel-pause">Pause</button>, <button type="button" id="reel-ohnebild" aria-pressed="false">Bild ausblenden</button>, <button type="button" id="reel-durchlauf" aria-pressed="false">Durchlauf</button>, <button type="button" id="reel-format">Format 4:5</button>,<br><button type="button" id="reel-mischen">Ins Mischpult</button>, <button type="button" id="reel-bildpng">Standbild</button>, <button type="button" id="reel-mp4">MP4 laden</button></p>
+      <form class="pult" id="pult" onsubmit="return false">
+        <div class="gruppe"><h2>Bild</h2><div class="wahl" id="pult-bilder"></div>
+          <input type="file" id="pult-datei" accept="image/*" hidden>
+          <p class="hinweis leise" id="pult-meldung">Dein Bild bleibt in deinem Browser. Erst «Werk sichern» legt es mit der Mischung auf ornament.cloud ab.</p></div>
+        <div class="gruppe"><h2>Bild zeigen</h2><div class="wahl" id="pult-zeigen"></div>
+          <p class="hinweis leise">Aus: das Bild steuert die Effekte nur noch, zu sehen ist nur der Effekt.</p></div>
+        <div class="gruppe"><h2>Format</h2><div class="wahl" id="pult-format"></div>
+          <p class="hinweis leise">Das Bild füllt jedes Format ganz aus. Gilt auch für Standbild und MP4 (1080 × 1350, 1080 × 1080, 1920 × 1080).</p></div>
+        <div class="gruppe"><h2>Bewegung</h2><div class="wahl" id="pult-lauf"></div>
+          <div class="wahl" id="pult-laenge"></div>
+          <p class="hinweis leise">Durchlauf: der Effekt läuft weiter, statt hin und zurück zu gehen. Die Länge gilt auch fürs MP4.</p></div>
+        <div class="gruppe"><h2>Grund</h2><div class="wahl" id="pult-grund"></div></div>
+        <div id="pult-ebenen"></div>
+        <div class="tasten">
+          <button type="button" class="knopf leise" id="pult-pause">Pause</button>
+          <button type="button" class="knopf leise" id="pult-bildpng">Standbild</button>
+          <button type="button" class="knopf leise" id="pult-link">Link kopieren</button>
+        </div>
+        <div class="gruppe sichern"><h2>Werk sichern</h2>
+          <div class="zeile2">
+            <label class="feld"><span>Titel (frei)</span><input type="text" id="sichern-titel" maxlength="60" placeholder="Ohne Titel" autocomplete="off"></label>
+            <label class="feld"><span>Dein Name</span><input type="text" id="sichern-name" maxlength="40" placeholder="Wer hat das gemischt?" autocomplete="nickname"></label>
+          </div>
+          <input type="text" id="sichern-schutz" name="schutz" tabindex="-1" autocomplete="off" aria-hidden="true" hidden>
+          <div class="tasten"><button type="button" class="knopf" id="pult-sichern">Werk sichern</button></div>
+          <p class="hinweis leise" id="sichern-meldung">Bild und Mischung werden auf ornament.cloud abgelegt und unten bei den Werken gezeigt, mit deinem Namen. Dein Browser merkt sich einen Schlüssel, mit dem du dein Werk wieder löschen kannst.</p>
+        </div>
+      </form>
     </div>
-  </section>
 
-  <section id="werke" class="ansicht" aria-label="Werke" hidden>
-    <div class="werke-kopf">
-      <p class="gross">Drei Bilder,<br>27 Animationen</p>
-      <ul class="stapel" id="werke-bilder"></ul>
-    </div>
-    <div class="streu" id="werke-raster"></div>
-  </section>
-
-  <section id="mischpult" class="ansicht" aria-label="Mischpult" hidden>
-    <div class="pult-buehne">
-      <div class="rahmen"><canvas id="pult-bild" role="img" aria-label="Gemischte Animation"></canvas></div>
-      <p class="uhr leise" id="pult-uhr">00:00,0 / 00:12</p>
-    </div>
-    <form class="pult" id="pult" onsubmit="return false">
-      <div class="gruppe"><h2>Bild</h2><div class="wahl" id="pult-bilder"></div>
-        <input type="file" id="pult-datei" accept="image/*" hidden>
-        <p class="hinweis leise" id="pult-meldung">Eigene Bilder bleiben in deinem Browser, nichts wird hochgeladen. Auch per Ziehen auf die Bühne.</p></div>
-      <div class="gruppe"><h2>Bild zeigen</h2><div class="wahl" id="pult-zeigen"></div>
-        <p class="hinweis leise">Aus: das Bild steuert die Effekte nur noch, zu sehen ist nur der Effekt.</p></div>
-      <div class="gruppe"><h2>Format</h2><div class="wahl" id="pult-format"></div>
-        <p class="hinweis leise">Das Bild füllt jedes Format ganz aus. Gilt auch für Standbild und MP4 (1080 × 1350, 1080 × 1080, 1920 × 1080).</p></div>
-      <div class="gruppe"><h2>Bewegung</h2><div class="wahl" id="pult-lauf"></div>
-        <p class="hinweis leise">Durchlauf: der Effekt läuft weiter, statt hin und zurück zu gehen. Die Länge gilt auch fürs MP4.</p>
-        <div class="wahl" id="pult-laenge"></div></div>
-      <div class="gruppe"><h2>Grund</h2><div class="wahl" id="pult-grund"></div></div>
-      <div id="pult-ebenen"></div>
-      <div class="tasten">
-        <button type="button" class="knopf voll" id="pult-zufall">Neu mischen</button>
-        <button type="button" class="knopf" id="pult-pause">Pause</button>
-        <button type="button" class="knopf" id="pult-bildpng">Standbild</button>
-        <button type="button" class="knopf" id="pult-mp4">MP4 laden</button>
-        <button type="button" class="knopf" id="pult-link">Link kopieren</button>
+    <section class="galerie" aria-label="Werke">
+      <div class="werke-kopf">
+        <h2 class="gross"><small>Gesicherte Werke</small>Werke <i id="werke-anzahl"></i></h2>
+        <p class="leise">Was andere hier gemischt haben, mit ihrem Namen. Darüberfahren lässt die Animation laufen, ein Klick lädt sie ins Mischpult, wo sie sich weitermischen und als MP4 laden lässt.</p>
       </div>
-    </form>
+      <p class="meldung" id="werke-meldung" hidden></p>
+      <div class="streu" id="werke-raster"></div>
+    </section>
   </section>
 
   <section id="info" class="ansicht" aria-label="Info" hidden>
-    <p class="gross">Bilder von Christian Strickler,<br>Effekte als Bausteine,<br>bis zu drei Ebenen übereinander.</p>
+    <p class="gross">Dein Bild, siebenundzwanzig Effekte,<br>bis zu drei <i>Ebenen</i> übereinander.</p>
+    <dl class="kolophon">
+      <div><dt>Technik</dt><dd>WebGL 2 im Browser, jeder Effekt ein Shader. MP4 mit WebCodecs in 4:5, 1:1 oder 16:9, 30 Bilder pro Sekunde.</dd></div>
+      <div><dt>Schlaufe</dt><dd>12, 30 oder 60 Sekunden, nahtlos: das letzte Bild geht ins erste über.</dd></div>
+      <div><dt>Werke</dt><dd>«Werk sichern» legt Bild und Mischung mit Titel und Name auf ornament.cloud ab, sichtbar für alle. Löschen kann es der Browser, der es gesichert hat.</dd></div>
+      <div><dt>Schrift</dt><dd>Instrument Sans und Newsreader, lokal eingebunden. Keine Dienste von aussen.</dd></div>
+    </dl>
     <div class="spalten">
-      <div><h2>Bilder</h2><ul id="info-bilder"></ul></div>
-      <div><h2>Effekte</h2><ul id="info-effekte"></ul></div>
-      <div><h2>Ebenen</h2><ul>
+      <div><h2>So geht es</h2><ol>
+        <li>Bild bringen<span>auf die Bühne ziehen oder wählen; JPEG, PNG oder WebP, wird auf 1600 px verkleinert</span></li>
+        <li>Neu mischen<span>würfelt eine bis drei Ebenen aus den Effekten; jeder Regler lässt sich danach von Hand stellen</span></li>
+        <li>Bild zeigen: aus<span>das Bild steuert nur noch Helligkeit, Kanten und Farben, sichtbar bleibt der Effekt</span></li>
+        <li>Durchlauf<span>statt hin und zurück läuft der Effekt weiter, 12, 30 oder 60 Sekunden</span></li>
+        <li>Format<span>4:5, 1:1 oder 16:9; das Bild füllt das Format ganz, auch im Standbild und MP4</span></li>
+        <li>Pause und Standbild<span>Leertaste oder Klick auf die Bühne hält an; Standbild lädt genau dieses Bild als PNG im gewählten Format</span></li>
+        <li>MP4 laden<span>1080 × 1350, 1080 × 1080 oder 1920 × 1080, nahtlose Schlaufe, im Browser gerechnet</span></li>
+        <li>Werk sichern<span>mit Titel und Name; es erscheint unten bei den Werken und bekommt einen Link</span></li>
+      </ol></div>
+      <div><h2>Effekte</h2><ol id="info-effekte"></ol></div>
+      <div><h2>Ebenen</h2><ol>
         <li>Normal<span>die Ebene deckt, so weit ihre Deckkraft reicht</span></li>
         <li>Multiplizieren<span>dunkelt ab, Weiss bleibt unsichtbar</span></li>
         <li>Differenz<span>zieht ab, gleiche Farben werden schwarz</span></li>
         <li>Bildschirm<span>hellt auf, Schwarz bleibt unsichtbar</span></li>
         <li>Überlagern<span>Kontrast: Helles heller, Dunkles dunkler</span></li>
         <li>Quelle<span>jeder Effekt nimmt das Bild oder die Ebenen darunter</span></li>
-        <li>Eigenes Bild<span>im Mischpult hochladen oder auf die Bühne ziehen; es bleibt im Browser und wird nirgends gespeichert</span></li>
-        <li>Standbild<span>PNG in 1080 × 1350 (4:5), 1080 × 1080 (1:1) oder 1920 × 1080 (16:9), genau das Bild, das gerade zu sehen ist, auch angehalten (Leertaste oder Pause)</span></li>
-        <li>MP4<span>im gewählten Format, 30 Bilder pro Sekunde, 12, 30 oder 60 Sekunden, nahtlose Schlaufe, im Browser gerechnet</span></li>
-      </ul></div>
+        <li>Reihenfolge<span>die Pfeile schieben eine Ebene nach oben oder unten, «an» schaltet sie aus und wieder ein</span></li>
+      </ol></div>
     </div>
   </section>
 </main>
 
-<div class="export" id="export" hidden><span id="export-text">MP4 · 0 %</span><button type="button" id="export-stop">Abbrechen</button></div>
+<footer class="fuss"><div class="fuss-innen">
+  <a href="../">← ornament.cloud</a>
+  <span>Animationen, 2026 · Werke tragen den Namen, der beim Sichern angegeben wurde.</span>
+  <span>Alles rechnet im Browser. Nur gesicherte Werke liegen auf ornament.cloud.</span>
+</div></footer>
+
+<div class="export" id="export" hidden role="status"><div class="export-zeile"><span id="export-text">MP4 · 0 %</span><button type="button" id="export-stop">Abbrechen</button></div><div class="fortschritt" aria-hidden="true"><i></i></div></div>
 <script type="module" src="seite.js"></script>
 </body>
 </html>
