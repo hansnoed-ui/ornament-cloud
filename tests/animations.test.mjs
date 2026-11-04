@@ -114,3 +114,19 @@ test("Format (4. November 2026, PR #615): 4:5, 1:1, 16:9 im Mischpult, Standbild
   assert.match(seite, /breite, hoehe,/);
   assert.match(php, /const FORMATE = \['4x5', '1x1', '16x9'\];/);
 });
+
+test("Versionsmarke: index.html und alle Importe der Module tragen dieselbe ?v= (Zwischenspeicher zehn Minuten; 4. November 2026: alte seite.js zu neuer Seite)", () => {
+  const html = lies("animations/index.html");
+  const marke = html.match(/src="seite\.js\?v=(\d+)"/)?.[1];
+  assert.ok(marke, "seite.js mit ?v= eingebunden");
+  for (const f of ["seite.js", "rezepte.js", "motor.js"]) {
+    const importe = [...lies(`animations/${f}`).matchAll(/from "\.\/([a-z]+\.js)([^"]*)"/g)];
+    assert.ok(importe.length, f);
+    for (const [, modul, v] of importe) assert.equal(v, `?v=${marke}`, `${f} → ${modul}`);
+  }
+});
+
+test("Werk sichern: leere Ebenen («— keine —») gehen nicht mit, werke.php überspringt sie (Fehler live am 4. November 2026)", () => {
+  assert.match(lies("animations/seite.js"), /stapel\.ebenen = stapel\.ebenen\.filter\(\(e\) => e\.effekt/);
+  assert.match(lies("animations/werke.php"), /if \(\$effekt === ''\) continue;/);
+});

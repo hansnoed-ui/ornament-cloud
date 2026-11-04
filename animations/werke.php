@@ -59,6 +59,7 @@ function stapelPruefen(mixed $s): ?array {
   foreach ($s['ebenen'] as $e) {
     if (!is_array($e)) return null;
     $effekt = $e['effekt'] ?? '';
+    if ($effekt === '') continue;   // eine leere Ebene («— keine —») zählt nicht
     if (!is_string($effekt) || !preg_match('/^[a-z]{1,24}$/', $effekt)) return null;
     $werte = [];
     foreach ((array)($e['werte'] ?? []) as $w) { $z = zahl($w, 0, 1); if ($z === null) return null; $werte[] = round($z, 3); if (count($werte) > 6) return null; }
@@ -71,6 +72,7 @@ function stapelPruefen(mixed $s): ?array {
       'aus' => !empty($e['aus']),
     ];
   }
+  if (!$out['ebenen']) return null;
   if (!empty($s['ohneBild'])) $out['ohneBild'] = true;
   if (!empty($s['durchlauf'])) $out['durchlauf'] = true;
   if (isset($s['dauer']) && in_array($s['dauer'], LAENGEN, true)) $out['dauer'] = (int)$s['dauer'];

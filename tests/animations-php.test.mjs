@@ -55,10 +55,11 @@ test("sichern: nur von der eigenen Herkunft, Name Pflicht, Schutzfeld leer, Bild
   assert.equal((await senden(formular({ bild: Buffer.from("kein bild") }))).status, 400);
   assert.equal((await senden(formular({ mischung: { ebenen: [] } }))).status, 400);
   assert.equal((await senden(formular({ mischung: { ebenen: [{ effekt: "böse;rm", werte: [] }] } }))).status, 400);
+  assert.equal((await senden(formular({ mischung: { ebenen: [{ effekt: "", werte: [] }] } }))).status, 400, "nur leere Ebenen: nichts zu sichern");
 });
 
 test("sichern, lesen, löschen: das Werk liegt als JPEG und JSON, steht in der Liste, trägt die geprüfte Mischung; Löschen nur mit Schlüssel", { skip: ohnePhp && "php fehlt" }, async () => {
-  const r = await senden(formular({ name: "  Testerin\tMüller ", titel: "Probe <am> Abend", mischung: { ...stapel, fremd: 1, ebenen: [{ ...stapel.ebenen[0], werte: [.5, 1.7, -2], modus: "unsinn", extra: true }] } }));
+  const r = await senden(formular({ name: "  Testerin\tMüller ", titel: "Probe <am> Abend", mischung: { ...stapel, fremd: 1, ebenen: [{ ...stapel.ebenen[0], werte: [.5, 1.7, -2], modus: "unsinn", extra: true }, { effekt: "", werte: [], modus: "normal", deckkraft: 1, quelle: "bild", seed: 0 }] } }));
   assert.equal(r.status, 201);
   const d = await r.json();
   assert.match(d.id, /^[a-f0-9]{10}$/); assert.match(d.schluessel, /^[a-f0-9]{32}$/);
