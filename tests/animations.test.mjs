@@ -35,7 +35,8 @@ test("jede Ebene: bekannter Effekt, Mischmodus, Deckkraft, Regler im Bereich", (
 });
 
 test("Effekte: Regler zwischen 0 und 1, höchstens sechs, Shader mit effekt() oder punkt()", () => {
-  assert.equal(Object.keys(EFFEKTE).length, 15);   // Scan entfernt am 3. November 2026 («der scan kann weg»)
+  // Scan entfernt am 3. November 2026 («der scan kann weg»); Seifenblase und Holo-Kugel am 4. November 2026 ersetzt durch vierzehn Effekte aus der Bildinformation
+  assert.equal(Object.keys(EFFEKTE).length, 27);
   for (const [id, e] of Object.entries(EFFEKTE)) {
     assert.ok(e.regler.length >= 1 && e.regler.length <= 6, id);
     for (const r of e.regler) assert.ok(r.wert >= 0 && r.wert <= 1, `${id}: ${r.name}`);
@@ -71,5 +72,5 @@ test("Bild zeigen: aus (4. November 2026): Motor setzt uZeigen, Ql zeigt ein Ras
   assert.match(motor, /stapel\.ohneBild \? 0 : 1/);
   assert.match(html, /id="reel-ohnebild"/); assert.match(html, /id="pult-zeigen"/);
   assert.match(seite, /-ohne-bild/);
-  for (const id of ["partikel", "metaballs", "wirbel", "zebra", "linien", "linsen", "glitzer", "tinte"]) assert.match(EFFEKTE[id].glsl, /Kl\(/, id);
+  for (const id of ["partikel", "metaballs", "wirbel", "zebra", "linien", "linsen", "glitzer", "tinte", "pinsel", "raster", "relief", "hoehenlinien", "stroemung", "roentgen", "montage", "entrauschen", "echo", "aquarell", "voxel", "sortieren", "vertigo", "strahlen"]) assert.match(EFFEKTE[id].glsl, /Kl\(/, id);
 });
