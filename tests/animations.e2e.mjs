@@ -269,6 +269,56 @@ await check("Handy: kein seitliches Scrollen in beiden Ansichten, die Ansichten 
   await ctx.close();
 });
 
+await check("Sprachen (5. November 2026): /animations/en/ und /es/ mischen, sichern und zeigen die Werke in ihrer Sprache, der Umschalter nimmt die Mischung mit", async () => {
+  const speicher = ablage();
+  for (const [sprache, mischen, sichern, gesichert, effekt, ebene] of [["en", "Remix", "Save work", /^Saved: “Abendprobe” by Testerin/, "Contour lines", "Layer 1"], ["es", "Mezclar de nuevo", "Guardar obra", /^Guardada: «Abendprobe» de Testerin/, "Curvas de nivel", "Capa 1"]]) {
+    const ctx = await browser.newContext({ viewport: { width: 1300, height: 900 } });
+    await ctx.route(/werke\.php|\/werke\/[a-f0-9]+\.jpg$/, (route, request) => speicher.route(route, request));
+    const page = await ctx.newPage();
+    const fehler = [];
+    page.on("pageerror", (e) => fehler.push(e.message));
+    page.on("console", (m) => { if (m.type() === "error") fehler.push(m.text()); });
+    const anfragen = [];
+    page.on("request", (r) => { if (/werke/.test(r.url())) anfragen.push(new URL(r.url()).pathname); });
+    await page.goto(`${base}${sprache}/`, { timeout: 120000 });
+    await page.waitForFunction(() => document.documentElement.classList.contains("bereit"), null, { timeout: 120000 });
+    await bildBringen(page);
+    await page.getByRole("button", { name: mischen }).click();
+    await page.locator("#pult-ebenen select").first().selectOption("hoehenlinien");
+    assert.equal(await page.locator("#pult-ebenen select").first().locator("option:checked").textContent(), effekt);
+    assert.equal(await page.locator("#pult-ebenen legend").first().textContent(), ebene);
+    await page.fill("#sichern-titel", "Abendprobe"); await page.fill("#sichern-name", "Testerin");
+    await page.getByRole("button", { name: sichern, exact: true }).click();
+    await page.waitForFunction((n) => document.querySelectorAll("#werke-raster .kachel").length >= n, speicher.werke.length, { timeout: 30000 });
+    assert.match(await page.locator("#sichern-meldung").textContent(), gesichert);
+    assert.ok(anfragen.every((a) => a.startsWith("/animations/werke")), `die Ablage liegt neben dem Modul: ${anfragen.join(", ")}`);
+    // die Kachel zeichnet das Werk (Bild aus /animations/werke/ID.jpg, nicht aus /animations/en/werke/)
+    await page.locator("#werke-raster .kachel").first().scrollIntoViewIfNeeded();
+    await page.waitForFunction(() => { const c = document.querySelector("#werke-raster canvas"), d = c.getContext("2d").getImageData(0, 0, c.width, c.height).data; let s = 0; for (let i = 0; i < d.length; i += 40) s += d[i]; return s > 0; }, null, { timeout: 30000 });
+    // Info: die Effekte in der Sprache der Seite
+    await page.click('[data-ansicht="info"]');
+    assert.match(await page.locator("#info-effekte").textContent(), sprache === "en" ? /Contour lines/ : /Curvas de nivel/);
+    await page.click('[data-ansicht="mischpult"]');
+    // Umschalter: Deutsch mit derselben Mischung
+    const hash = new URL(page.url()).hash;
+    await page.click('.sprachen a[hreflang="de"]');
+    await page.waitForFunction(() => document.documentElement.classList.contains("bereit"), null, { timeout: 120000 });
+    assert.equal(new URL(page.url()).pathname, "/animations/");
+    assert.equal(new URL(page.url()).hash, hash, "die Mischung geht mit");
+    assert.equal(await page.evaluate(() => document.documentElement.lang), "de");
+    assert.deepEqual(fehler, []);
+    await ctx.close();
+  }
+  // Handy: kein seitliches Scrollen mit dem Umschalter im Kopf
+  const ctx = await browser.newContext({ viewport: { width: 360, height: 760 } });
+  const page = await ctx.newPage();
+  await page.goto(`${base}es/`, { timeout: 120000 });
+  await page.waitForFunction(() => document.documentElement.classList.contains("bereit"), null, { timeout: 120000 });
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth), 0);
+  assert.ok(await page.locator('.sprachen a[hreflang="en"]').isVisible());
+  await ctx.close();
+});
+
 await browser.close();
 server.close();
 const fehlgeschlagen = ergebnisse.filter((e) => !e).length;

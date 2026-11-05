@@ -1,7 +1,8 @@
 // Animationen – der Motor: ein WebGL-2-Kontext rechnet bis zu drei Ebenen übereinander (je Effekt, Quelle, Mischmodus, Deckkraft)
 // und gibt das Bild auf eine eigene Leinwand aus, die Reel, Werke und Mischpult abzeichnen. Alles hängt nur von der Zeit t in der
 // Schlaufe ab (phi = 2π·t/DAUER, ganzzahlige Frequenzen): Bild N ist wieder Bild 0, und das MP4 entsteht Bild für Bild.
-import { EFFEKTE, wertVon } from "./effekte.js?v=27";
+import { EFFEKTE, wertVon } from "./effekte.js?v=28";
+import { t } from "./sprache.js?v=28";
 
 export const DAUER = 12, FPS = 30, LAENGEN = [12, 30, 60];
 /** Länge der Schlaufe eines Stapels in Sekunden (Vorgabe 12) */
@@ -141,13 +142,13 @@ void main(){ o = vec4(texture(uA, vUv).rgb, 1.); }`;
 // Warum es keinen Kontext gibt (Christian am 5. November 2026 auf dem Handy: «Diese Seite braucht WebGL 2 … gestern gings noch»):
 // ein Browser, der WebGL 2 kennt, aber keinen Kontext gibt, hat WebGL meist nach einem Grafikabsturz für die Seite gesperrt
 function ohneKontext(meldung) {
-  if (typeof WebGL2RenderingContext === "undefined") return "Dieser Browser kann kein WebGL 2.";
+  if (typeof WebGL2RenderingContext === "undefined") return t("Dieser Browser kann kein WebGL 2.");
   let webgl1 = false;
   try { webgl1 = !!document.createElement("canvas").getContext("webgl"); } catch { /* auch nicht */ }
   const grund = meldung ? ` (${meldung})` : "";
   return webgl1
-    ? `Der Browser gibt gerade keinen WebGL-2-Kontext her${grund}. Den Browser ganz schliessen und neu öffnen hilft meistens.`
-    : `Der Browser hat WebGL gerade gesperrt oder ausgeschaltet${grund}, oft nach einem Grafikabsturz. Den Browser ganz schliessen (auch aus der Liste der offenen Apps wischen) und neu öffnen, dann geht es wieder.`;
+    ? t("Der Browser gibt gerade keinen WebGL-2-Kontext her{grund}. Den Browser ganz schliessen und neu öffnen hilft meistens.", { grund })
+    : t("Der Browser hat WebGL gerade gesperrt oder ausgeschaltet{grund}, oft nach einem Grafikabsturz. Den Browser ganz schliessen (auch aus der Liste der offenen Apps wischen) und neu öffnen, dann geht es wieder.", { grund });
 }
 
 /** Handys und Tablets rechnen sparsam: weniger Teilchen in den schweren Punkt-Effekten, damit die Grafik nicht abstürzt */
@@ -368,7 +369,7 @@ export async function videoErstellen(motor, stapel, { breite = 1080, hoehe = 135
   }
   const typen = [["video/mp4;codecs=avc1.42E01E", "mp4"], ["video/mp4", "mp4"], ["video/webm;codecs=vp9", "webm"], ["video/webm", "webm"]];
   const typ = typeof MediaRecorder !== "undefined" && typen.find(([m]) => MediaRecorder.isTypeSupported(m));
-  if (!typ) throw new Error("Dieser Browser kann keine Videos erzeugen.");
+  if (!typ) throw new Error(t("Dieser Browser kann keine Videos erzeugen."));
   const c = document.createElement("canvas"); c.width = breite; c.height = hoehe;
   const ctx = c.getContext("2d", { alpha: false });
   const strom = c.captureStream(FPS);
