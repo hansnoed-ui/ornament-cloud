@@ -184,3 +184,25 @@ test("Laptop (5. November 2026: «ich hab zurzeit viele abstürze … am laptop�
   assert.match(motor, /SCHWACHE_GRAFIK = \/Intel/);
   assert.match(seite, /else if \(langsam >= 8 && !motor\.sparsam\)/);
 });
+
+test("kurze Links (link.js): jede Mischung kommt genau zurück und der Link bleibt kurz", async () => {
+  const { kurz, lang } = await import(new URL("animations/link.js", root).href);
+  for (let i = 0; i < 300; i++) {
+    let s = i + 1; const zz = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+    const m = zufall(zz); delete m.bild;
+    if (i % 3 === 0) Object.assign(m, { werk: "a1b2c3d4e5", ohneBild: true, durchlauf: true, dauer: 30, format: "16x9" });
+    if (i % 5 === 0) m.ebenen[0].aus = true;
+    const k = kurz(m);
+    assert.ok(k, JSON.stringify(m));
+    assert.deepEqual(lang(k), JSON.parse(JSON.stringify(m)), k);
+    const alt = btoa(unescape(encodeURIComponent(JSON.stringify(m))));
+    assert.ok(k.length < 130 && k.length * 3 < alt.length, `${k.length} gegen ${alt.length}`);
+    assert.doesNotMatch(k, /[.\s%&#?]|_$/, "nichts, was Messenger abschneiden oder kodieren");
+  }
+  // leere Ebenen aus dem Pult, fehlende Felder und unbekannte Felder
+  const leer = { grund: "schwarz", ebenen: [{ effekt: "", werte: [], modus: "normal", deckkraft: 1, quelle: "bild", seed: 0 }, { effekt: "zebra" }] };
+  assert.deepEqual(lang(kurz(leer)), leer);
+  assert.equal(kurz({ ebenen: [], neu: 1 }), null, "Unbekanntes geht in den alten Link");
+  assert.equal(kurz({ ebenen: [{ effekt: "zebra", werte: [2] }] }), null);
+  for (const kaputt of ["", "x", "_q", "_~zebra_zz_9_", "_~ze.bra_00_0__"]) assert.equal(lang(kaputt), null, kaputt);
+});

@@ -1,9 +1,10 @@
 // Animationen – die Seite: Mischpult (das eigene Bild, Grund, drei Ebenen, Schalter, Sichern) mit den gesicherten Werken darunter
 // (gestreutes Raster, beim Darüberfahren lebendig, Klick lädt ins Mischpult) und Info. Ein Motor zeichnet für alles; die sichtbare
 // Leinwand übernimmt sein Bild. Seit 4. November 2026 ohne Reel, Beispielbilder und vorgefertigte Werke.
-import { motorErstellen, videoErstellen, DAUER, LAENGEN, MODI } from "./motor.js?v=25";
-import { EFFEKTE, EFFEKT_IDS, stufe, wertVon } from "./effekte.js?v=25";
-import { zufall, EIGEN } from "./rezepte.js?v=25";
+import { motorErstellen, videoErstellen, DAUER, LAENGEN, MODI } from "./motor.js?v=26";
+import { EFFEKTE, EFFEKT_IDS, stufe, wertVon } from "./effekte.js?v=26";
+import { zufall, EIGEN } from "./rezepte.js?v=26";
+import { kurz, lang } from "./link.js?v=26";
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, attr = {}, ...kinder) => {
@@ -98,17 +99,23 @@ function adresse() {
     const m = { ...S.mix, ohneBild: S.ohneBild || undefined, durchlauf: S.durchlauf || undefined, dauer: S.dauer !== DAUER ? S.dauer : undefined, format: S.format !== "4x5" ? S.format : undefined };
     if (m.bild.startsWith("w:")) m.werk = m.bild.slice(2);   // ein gesichertes Werk steht mit seiner Kennung im Link
     delete m.bild;   // ein eigenes Bild steht nicht im Link
-    h = `m=${btoa(unescape(encodeURIComponent(JSON.stringify(m)))).replace(/=+$/, "")}`;
+    // kurze Links (link.js): ein unverändertes Werk nur mit seiner Kennung, sonst die Mischung kompakt; der alte lange Link nur, wenn nichts anderes passt
+    const voll = (e) => e.effekt && EFFEKTE[e.effekt];   // leere Ebenen füllt das Pult beim Öffnen wieder auf; gesichert werden sie nicht
+    m.ebenen = m.ebenen.slice(0, m.ebenen.findLastIndex(voll) + 1);
+    const k = kurz(m), w = S.werk;
+    if (k && w && m.werk === w.id && kurz({ ...m, ebenen: m.ebenen.filter(voll) }) === kurz({ ...w.stapel, werk: w.id, dauer: w.stapel.dauer !== DAUER ? w.stapel.dauer : undefined })) h = `w=${w.id}`;
+    else h = k ? `k=${k}` : `m=${btoa(unescape(encodeURIComponent(JSON.stringify(m)))).replace(/=+$/, "")}`;
   }
   history.replaceState(null, "", `#${h}`);
 }
-/** liest die Adresse: #w=ID öffnet ein Werk, #m=… eine Mischung (mit werk: ID auf dessen Bild), #info die Info */
+/** liest die Adresse: #w=ID öffnet ein Werk, #k=… (kurz) oder #m=… (alter Link) eine Mischung (mit werk: ID auf dessen Bild), #info die Info */
 function ausAdresse() {
   const h = decodeURIComponent(location.hash.slice(1));
   if (h.startsWith("w=")) return { ansicht: "mischpult", werk: h.slice(2) };
-  if (h.startsWith("m=")) {
+  if (h.startsWith("m=") || h.startsWith("k=")) {
     try {
-      const m = JSON.parse(decodeURIComponent(escape(atob(h.slice(2)))));
+      const m = h.startsWith("k=") ? lang(h.slice(2)) : JSON.parse(decodeURIComponent(escape(atob(h.slice(2)))));
+      if (!m) throw new Error("kaputter Link");
       if (Array.isArray(m.ebenen)) {
         S.ohneBild = !!m.ohneBild; S.durchlauf = !!m.durchlauf; S.dauer = LAENGEN.includes(m.dauer) ? m.dauer : DAUER; if (FORMATE[m.format]) S.format = m.format;
         const werk = typeof m.werk === "string" ? m.werk : null;
