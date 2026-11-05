@@ -1293,6 +1293,65 @@ vec4 effekt(vec2 uv){
   return vec4(clamp(grund + L, 0., 1.), 1.);
 }`,
   },
+  riss: {
+    name: "Papierriss", herkunft: "Papierriss-Collage: das Bild reisst wie Papier entlang seiner Formen in gezackte Bahnen, die langsam gegeneinander gleiten, mit faserigen Rändern und Haarrissen",
+    // Referenzvideo vom 5. November 2026 (webdesigns/papierriss-streifen): Christian wollte es als Effekt. Die Risse sind Linien gleichen
+    // Werts eines Felds aus Lage quer zu den Bahnen, gestrecktem Rauschen und der Helligkeit des Bildes («Formen»), so folgen sie seinen Konturen
+    regler: [r("Risse", .45), r("Versatz", .6), w("Richtung", ["Senkrecht", "Waagrecht", "Schräg", "Kreuz"]), r("Faser", .5), r("Formen", .6), r("Grau", 0)],
+    glsl: `
+struct Bahn { vec2 q; float rand, faser, haar; };
+// eine Lage Papier, an Rissen in Bahnen zerlegt: q ist, wo die Bahn das Bild hernimmt, rand der Abstand zur Risskante in Pixeln
+// (unter null im offenen Spalt), faser die Breite des weissen Faserrands, haar die Haarrisse
+Bahn bahn(vec2 p, float ang, float n, float s0){
+  Bahn B; float k = uRes.y / 1350.;
+  vec2 q = rot(ang) * p;                                                          // q.x quer zu den Bahnen, q.y entlang
+  float L = lum(Kl(UV(p), 4.5).rgb);                                              // grosse Formen, nicht die Textur
+  float zack = ln(vec2(q.x * n * .25 + s0, q.y * 1.1), .35) * .5                  // weiter Schwung des Risses
+             + abs(ln(vec2(q.x * n * .7 + s0, q.y * 9.), .2)) * .1;               // kantig gezackt
+  if (uSparsam < .5) zack += abs(ln(vec2(q.x * n + s0, q.y * 48.), .15)) * .045;  // fein ausgefranst (nicht auf dem Handy)
+  float F = q.x * n + zack + P4 * (L - .5) * 2.;                                 // die Formen des Bildes biegen die Risse
+  float i = floor(F), fr = F - i, fw = max(fwidth(F), 1e-4);
+  vec3 h = h33(vec3(i + 17., s0 + 3., uSeed + 1.));
+  // jede Bahn öffnet sich in ihrem eigenen Takt; am Anfang der Schlaufe ist das Blatt ganz, im Durchlauf bleibt es offen und gleitet
+  float o = HZ(pow(.5 - .5 * cos(uPhi), mix(.6, 1.8, h.z))) * mix(.35, 1., h.x);
+  // der Spalt läuft spitz zu und weitet sich wieder: Splitter statt gleich breiter Fugen
+  float sp = o * mix(.01, .3, P1) * smoothstep(-.35, .6, ln(vec2(q.y * 2.4, i * 1.7 + s0) + 5., .4));
+  float d = min(fr - sp * h.y, 1. - sp * fract(h.y * 7.13 + .3) - fr) / fw;
+  B.rand = d;
+  vec2 v = vec2((h.y - .5) * .03, (h.x - .5) * .45) * P1 * o + vec2(0., .035 * P1 * o * sin(uPhi + h.z * TAU));
+  B.q = rot(-ang) * (rot((h.z - .5) * .1 * P1 * o) * q - v);
+  B.faser = k * (.6 + 7. * P3 * smoothstep(-.3, .7, ln(vec2(q.y * 70., i * 3.1 + s0), .2)) * (.4 + .6 * o));
+  float H = q.x * n * 2.7 + ln(vec2(q.x * 3. + s0, q.y * 4.) + 9., .5) * 1.6;
+  float hd = abs(fract(H) - .5) / max(fwidth(H), 1e-4);
+  float hm = smoothstep(.1, .55, ln(vec2(q.y * 1.3, q.x * 2. + s0) + 3., .6)) * P3 * (.25 + .75 * o);
+  B.haar = hm * clamp(.8 * k + .5 - hd, 0., 1.);
+  return B;
+}
+vec4 effekt(vec2 uv){
+  vec2 p = P(uv); float k = uRes.y / 1350.;
+  int ri = int(P2 * 3. + .5);
+  float n = mix(3., 16., P0);
+  float ang = ri == 1 ? PI * .5 : ri == 2 ? .55 + .05 * sin(uPhi) : 0.;
+  vec2 src = p; float rand = 1e3, faser = 0., haar = 0.;
+  if (ri == 3){                                                                   // Kreuz: erst quer gerissen, darunter längs
+    Bahn T = bahn(p, PI * .5, n * .6, 7.);
+    src = T.q; rand = T.rand; faser = T.faser; haar = T.haar;
+  }
+  Bahn B = bahn(src, ang, n, 0.);
+  if (B.rand < rand){ rand = B.rand; faser = B.faser; }
+  src = B.q; haar = max(haar, B.haar);
+  vec3 bild = Ql(UV(src), 0.).rgb;
+  // im Spalt: ein zweiter Abzug des Bildes darunter, verschoben (so entstehen doppelte Gesichter), dunkler, im Schatten der Kante
+  vec2 ab = rot(ang) * vec2(.04, .09 * sin(uPhi * 2. + 1.)) * (.4 + P1);
+  vec3 unten = Ql(UV(p * .97 + ab), .8).rgb * .72 * (1. - .55 * exp(min(rand, 0.) / (10. * k)));
+  vec3 c = mix(bild, vec3(.94, .93, .9) * (.82 + .18 * lum(bild)), smoothstep(faser + .5, faser - .5, rand) * .9);   // weisse Papierfaser
+  c *= 1. - .7 * clamp(1.1 * k + .5 - rand, 0., 1.);                              // dunkle Risskante
+  c = mix(c, c * .22, haar);                                                      // Haarrisse
+  c = mix(unten, c, clamp(rand + .5, 0., 1.));
+  c = mix(c, vec3(lum(c)), P5);
+  return vec4(clamp(c, 0., 1.), 1.);
+}`,
+  },
 };
 
 export const EFFEKT_IDS = Object.keys(EFFEKTE);
