@@ -387,11 +387,14 @@ vec4 effekt(vec2 uv){
   },
 
   tinte: {
-    name: "Alkoholtinte", herkunft: "infinite mantra (Blüten): das Bild fliesst entlang seiner Konturen, seine Tonflächen werden zu durchscheinenden Farbschleiern mit haarfeinen Tintenrändern",
+    name: "Alkoholtinte", herkunft: "infinite mantra (Blüten): das Bild fliesst entlang seiner Konturen, seine Tonflächen werden zu durchscheinenden Farbschleiern mit weichen Tintenrändern",
     // seit 3. November 2026 neu (Rückmeldung: «die alkohol tinte ist noch etwas plump»): statt dicker Höhenlinien drei Schleier,
-    // deren Farbe aus dem Bild kommt; an ihren Rändern sammelt sich die Tinte, die Kante selbst ist haarfein.
+    // deren Farbe aus dem Bild kommt; an ihren Rändern sammelt sich die Tinte.
     // Seit 5. November 2026 folgen die Schleier den Tonflächen des Bildes (vorher vor allem Rauschen) und das Bild fliesst entlang seiner
-    // Konturen (Wunsch: «dass die effekte das bild stärker mitnehmen und nicht bloss darüber gelegt werden»)
+    // Konturen (Wunsch: «dass die effekte das bild stärker mitnehmen und nicht bloss darüber gelegt werden»).
+    // Seit 5. November 2026 (abends, Wunsch: «weichere, rundere formen mit mehr bewegung»): grosse langsame Wirbel statt vieler kleiner, die
+    // Tonflächen gerundet (weicher gelesen), eine Oktave Rauschen statt vier (runde Lappen statt Fransen), weiche Kanten und breite Säume;
+    // jede Lage treibt auf ihrem Kreis durch die Schlaufe und atmet, das Rauschen läuft auf einem grösseren Kreis durch die Zeit
     regler: [r("Fluss", .7), r("Ränder", .6), r("Lasur", .7), r("Massstab", .4)],
     glsl: `${FELD}
 vec4 effekt(vec2 uv){
@@ -399,23 +402,26 @@ vec4 effekt(vec2 uv){
   int S = uSparsam > .5 ? 2 : 4;                                          // Handy: zwei Schritte
   for (int i = 0; i < 4; i++){
     if (i >= S) break;
-    q -= (lcurl(q * sc * .8, .5) * .012 / sc + strom(UV(q), 3., 5., .2) * .011) * P0 * 4. / float(S);   // die Tinte fliesst den Konturen entlang
+    q -= (lcurl(q * sc * .35 + 2., 1.3) * .03 / sc + strom(UV(q), 4., 5., .2) * .006) * P0 * 4. / float(S);   // grosse runde Wirbel, leise den Konturen entlang
   }
-  vec3 bild = uZeigen > .5 ? Ql(UV(q), .5).rgb : vec3(1.);              // ohne Bild: weisses Papier, Schleier aus dem Bild
+  vec3 bild = uZeigen > .5 ? Ql(UV(q), 1.).rgb : vec3(1.);              // ohne Bild: weisses Papier, Schleier aus dem Bild
   vec3 col = mix(vec3(1.), bild, mix(.55, 1., P2));
   for (int j = 0; j < 3; j++){
     float fj = float(j);
-    vec2 qj = q * sc * (1. + fj * .45) + fj * 7.3;
-    qj += lcurl(qj * .7, .7 + fj * .1) * .35 * P0;
-    float ton = lum(Kl(UV(q + fj * .015), 2. + fj * .8).rgb);           // die Tonfläche des Bildes, jede Lage etwas weicher
-    float e = (.72 - fj * .2 - ton) * 1.6 + lfbm(qj, .8) * .3, aa = fwidth(e) + 1e-4;   // Schleier über den dunkleren Tönen, der Rand franst aus
-    float schleier = smoothstep(-aa, aa, e);
-    float saum = schleier * exp(-e / (.05 + .03 * fj));        // die Tinte sammelt sich am Rand
-    float linie = exp(-pow(e / (aa * 1.2), 2.));                 // haarfeine Kante
-    vec3 farbe = Kl(UV(q + fj * .03), 2.5).rgb;
+    vec2 drift = .35 * vec2(cos(uPhi + fj * 2.1), sin(uPhi + fj * 2.1));   // jede Lage treibt auf ihrem Kreis durch die Schlaufe
+    vec2 qj = q * sc * (1. + fj * .35) + fj * 7.3 + drift;
+    qj += lcurl(qj * .4, 1.2) * .5 * P0;                                  // runde Verwirbelung, eine Oktave
+    float ton = lum(Kl(UV(q + fj * .02), 3.2 + fj * .8).rgb);           // die Tonfläche des Bildes, weich gelesen: runde Lappen
+    float atem = .1 * sin(uPhi * (1. + fj) + fj * 1.7);                   // die Schleier atmen, jede Lage in ihrem Takt (ganze Zyklen)
+    float e = (.72 - fj * .2 - ton + atem) * 1.6 + ln(qj * .6, 1.4) * .45;   // eine Oktave Rauschen: weiche, runde Ränder
+    float w = .06 + .03 * fj;                                              // weiche Kante
+    float schleier = smoothstep(-w, w, e);
+    float saum = schleier * exp(-e / (.12 + .05 * fj));                   // breiter Saum, die Tinte sammelt sich am Rand
+    float linie = exp(-pow(e / (w * .6), 2.));                            // weiche Linie statt haarfein
+    vec3 farbe = Kl(UV(q + fj * .03), 3.).rgb;
     col *= mix(vec3(1.), mix(vec3(1.), farbe, .4), schleier * .7 * P2);
     col *= mix(vec3(1.), farbe * farbe * .8 + .05, saum * .5 * P1);
-    col = mix(col, farbe * farbe * .45, linie * .75 * P1);
+    col = mix(col, farbe * farbe * .45, linie * .5 * P1);
   }
   return vec4(col, 1.);
 }`,
@@ -860,11 +866,14 @@ vec4 effekt(vec2 uv){
 
   gewebe: {
     name: "Gewebe", herkunft: "PHORMA III: die Linien gleicher Helligkeit des Bildes klappen zu Flächen aus feinen Linien auf, zerknittert wie Seide, und legen sich wieder aufs Bild",
+    // seit 5. November 2026 (Rückmeldung: «gewebe sieht man teilweise keinen effekt»: auf flachen Bildzonen, etwa weissem Grund, gab es keine
+    // Tonstufen und darum keine Linien): das Höhenfeld bekommt leise Knitterfalten, sodass auch flache Zonen Linien tragen, und über die ganze
+    // Fläche legt sich ein feines Fadengewebe (Kette und Schuss), wo keine Linien liegen; beides klappt mit den Lagen auf
     regler: [r("Linien", .45), r("Lagen", .6), r("Aufklappen", .7), r("Knittern", .5), r("Papier", 1), r("Bild", .25)],
     glsl: `vec4 effekt(vec2 uv){
   vec2 p = P(uv);
   float auf = P2 * HZ(.5 - .5 * cos(uPhi));                 // an der Naht liegen alle Lagen auf den Umrissen: das Bild steht
-  float N = mix(3., 12., P0); int L = int(mix(6., uSparsam > .5 ? 16. : 36., P1));   // Handy: höchstens 16 Lagen
+  float N = mix(5., 12., P0); int L = int(mix(6., uSparsam > .5 ? 16. : 36., P1));   // Handy: höchstens 16 Lagen
   vec2 dA = lcurl(p * mix(1.2, 3.5, P3) + 1.7, .6) * .045 * (.4 + P3);
   vec2 dB = vec2(ln(p * 1.4 + 4., .5), ln(p * 1.4 + 9., .5)) * .32;
   float tw = ln(p * .7 + 2., .4) * 4. * P3;                 // die Fläche verdreht sich beim Aufklappen: Knitterfalten
@@ -874,12 +883,20 @@ vec4 effekt(vec2 uv){
     float f = (float(i) + .5) / float(L);
     vec2 d = rot(f * tw) * (dA * f + dB * f * f) * auf;
     vec2 q = UV(p - d);
-    vec3 c = Kl(q, 2.).rgb; float v = lum(c) * N;
+    vec3 c = Kl(q, 2.).rgb; float lc = lum(c), lf = lum(Kl(q, 4.).rgb);
+    float hoeh = mix(lf, lc, smoothstep(.02, .08, abs(lc - lf)));   // flache Zonen weich gelesen (sonst zeichnet das Korn des Fotos Kiesel), Kanten scharf
+    float v = (hoeh + .06 * ln(q * 1.8 + f * .4, .5) * (.5 + P3)) * N;   // Knitterfalten: auch flache Zonen tragen Linien
     float e = abs(fract(v + .5) - .5) / max(fwidth(v), 1e-4);
     float a = (1. - smoothstep(.15, .95, e)) * mix(.9, 2.4 / float(L) + .02, smoothstep(0., .35, auf)) * (1. - .4 * f * auf);
     tinte *= 1. - a; farbe += c * a; fs += a;
   }
   float deck = 1. - tinte;
+  // Fadengewebe über die ganze Fläche: Kette und Schuss in der mittleren Lage, sichtbar, wo keine Linien liegen
+  vec2 qw = p - rot(.5 * tw) * (dA * .5 + dB * .25) * auf;
+  float M = mix(70., 130., P0) * (uSparsam > .5 ? .7 : 1.);
+  float kette = pow(.5 + .5 * cos(qw.x * M * TAU + 2. * ln(qw * 2., .4)), 5.), schuss = pow(.5 + .5 * cos(qw.y * M * TAU + 2. * ln(qw * 2. + 5., .4)), 5.);
+  float faden = (kette + schuss) * .5 * (.5 + .5 * ln(qw * 1.5 + 9., .5) + .5);   // das Gewebe ist nicht überall gleich dicht
+  deck += (1. - deck) * faden * .24 * smoothstep(0., .3, auf);
   vec3 papier = vec3(.95, .925, .9), nacht = vec3(.043, .035, .039);
   vec3 grund = mix(nacht, papier, P4), stift = mix(papier, vec3(.06, .055, .06), P4);
   vec3 bc = farbe / max(fs, 1e-4);
