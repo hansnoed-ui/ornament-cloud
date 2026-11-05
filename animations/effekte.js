@@ -1105,7 +1105,7 @@ vec4 effekt(vec2 uv){
     // Die meisten Kügelchen sind klein, etwa jedes siebte mittel, jedes dreissigste gross; die grossen sind träger und lösen sich vom Band
     regler: [r("Strom", .7), r("Kugelgrösse", .45), r("Wirbel", .35), r("Länge", .5), r("Funken", .5), r("Tempo", .2)],
     kugel: true,
-    punkte: (w, a, h, d = 1) => { const n = Math.round(260 * Math.sqrt(d * Math.min(1, h / 1000 + .2))); return { cols: Math.round(n * a * 1.15), rows: Math.round(n * 1.15) }; },
+    punkte: (w, a, h, d = 1) => { const n = Math.round(220 * Math.sqrt(d * Math.min(1, h / 1000 + .2))); return { cols: Math.round(n * a * 1.15), rows: Math.round(n * 1.15) }; },
     glsl: `${FELD}
 void punkt(int id, out vec2 pos, out vec4 col, out float size){
   float i = float(id); vec2 g = vec2(mod(i, uCols), floor(i / uCols));
@@ -1116,13 +1116,13 @@ void punkt(int id, out vec2 pos, out vec4 col, out float size){
   float env = HZ(.5 - .5 * cos(uPhi * m));                                 // 0: das Bild steht exakt (Naht der Schlaufe)
   float weg = env * P0 * mix(.25, 1., s) / (1. + max(gr - 1., 0.) * .5);   // wie weit das Kügelchen auf seiner Stromlinie kommt
   vec2 p0 = P(uv0), q = p0;
-  int N = uSparsam > .5 ? 10 : 22;
+  int N = uSparsam > .5 ? 8 : 14;                                 // leicht genug für Laptops mit eingebauter Grafik (5. November 2026: Absturz am Laptop)
   float L = mix(.12, .6, P3), st = L / float(N), steps = weg * float(N);
   for (int k = 0; k < 22; k++){
     if (k >= N) break;
     float dt = clamp(steps - float(k), 0., 1.);
     if (dt <= 0.) break;
-    vec2 v = strom(UV(q), 2., 5., .1) + lcurl(q * 3.2 + 1.3, .5) * .018 * P2;   // den Konturen entlang, dazu Wirbel
+    vec2 v = rot(ln(q * 3.2 + 1.3, .5) * 1.6 * P2) * strom(UV(q), 2., 5., .1);   // den Konturen entlang, Wirbel drehen die Richtung
     q += normalize(v + 1e-5) * st * dt;
   }
   pos = q;
@@ -1190,14 +1190,17 @@ vec4 effekt(vec2 uv){
   vec2 p = P(uv);
   vec3 ro = vec3(0., 0., kZ), rd = normalize(vec3(p * 2. * kTAN, -1.));
   bool spar = uSparsam > .5;
-  int n = 1 + int(floor(P0 * 4.99)); if (spar) n = 1;                 // Handy: ein Körper (5. November 2026: «körper führt immer noch zum absturz»)
+  int n = 1 + int(floor(P0 * 2.99)); if (spar) n = 1;                 // höchstens drei, Handy einer (5. November 2026: «körper führt immer noch zum absturz», am Laptop)
+  float Mh = lum(Kl(vec2(.5), 14.).rgb);
   float fw = P2 > .9 ? 1. - cos(uPhi) : P2 * 2.;                      // Wandel: Dodekaeder → Geode → Ikosaeder und zurück
   float env = HZ(.5 - .5 * cos(uPhi)), best = 1e9;
   int k = -1; vec3 lo = vec3(0.), ld = vec3(0., 0., -1.), n0 = vec3(0., 0., 1.), M = vec3(0.); mat3 R = mat3(1.); float s0 = 0., g = 1.; vec2 rad = vec2(1.); vec3 ton = vec3(1.);
   for (int j = 0; j < 5; j++){
     if (j >= n) break;
     float fj = float(j), fo; vec3 h = h33(vec3(fj, 7., uSeed + 4.));
-    vec2 c = zumBild((h.xy - .5) * vec2(A() * .5, .5), 2.4, fo);    // auf die starken Formen des Bildes
+    vec2 c = (h.xy - .5) * vec2(A() * .5, .5); fo = bForm(c, Mh);     // ein Schritt zu den starken Formen des Bildes (vier Blicke statt zehn)
+    vec2 gg = vec2(bForm(c + vec2(.05, 0.), Mh) - fo, bForm(c + vec2(0., .05), Mh) - fo) / .05;
+    c += gg / (length(gg) + 1.2) * .18; fo = bForm(c, Mh);
     c += .02 * vec2(cos(uPhi + h.z * TAU), sin(uPhi + h.x * TAU));
     float gj = mix(.12, .34, P1) * mix(.55, 1.15, clamp(fo, 0., 1.)) * mix(.8, 1., env) / (1. + float(n - 1) * .22);
     c = clamp(c, -vec2(A() * .5, .5) + gj * 1.55, vec2(A() * .5, .5) - gj * 1.55);   // der Körper bleibt ganz im Bild
@@ -1214,7 +1217,7 @@ vec4 effekt(vec2 uv){
   vec3 aussen = Ql(uv, 0.).rgb;
   if (k < 0) return vec4(aussen, 1.);
   vec3 e = lo + ld * s0, farbe = vec3(0.); float dicke = 0.;
-  if (spar){                                                            // Handy: ein Strahl, die Säume aus drei leicht versetzten Blicken
+  {                                                                     // ein Strahl, die Säume aus drei leicht versetzten Blicken (vorher drei Strahlen: zu schwer für Laptops)
     float ior = 1. + .5 * mix(.15, 1.5, P3);
     vec3 d1 = refract(ld, n0, 1. / ior); float a, b; vec3 m0, m1;
     kSchnitt(e + d1 * 1e-4, d1, rad, a, b, m0, m1);
@@ -1222,16 +1225,6 @@ vec4 effekt(vec2 uv){
     if (dot(d2, d2) < 1e-6) d2 = reflect(d1, -m1);
     vec2 u0 = kAufBild(R * x * g + M, R * d2), sv = (R * d2).xy * .012 * mix(.15, 1.5, P3);
     farbe = vec3(Ql(u0 - sv, .2).r, Ql(u0, .2).g, Ql(u0 + sv, .2).b); dicke = b;
-  } else
-  for (int c = 0; c < 3; c++){                                          // je Farbkanal eigene Brechung: Regenbogensäume
-    float fc = float(c), ior = 1. + (.46 + .045 * fc) * mix(.15, 1.5, P3);
-    vec3 d1 = refract(ld, n0, 1. / ior); float a, b; vec3 m0, m1;
-    kSchnitt(e + d1 * 1e-4, d1, rad, a, b, m0, m1);
-    vec3 x = e + d1 * b, d2 = refract(d1, -m1, ior);
-    if (dot(d2, d2) < 1e-6) d2 = reflect(d1, -m1);
-    vec3 q = Ql(kAufBild(R * x * g + M, R * d2), .2).rgb;
-    farbe += q * vec3(c == 0 ? 1. : 0., c == 1 ? 1. : 0., c == 2 ? 1. : 0.);   // ohne Schreiben in einen Kanal mit variablem Index (Handy-Treiber)
-    if (c == 1) dicke = b;
   }
   farbe *= mix(vec3(1.), vec3(.86, .92, 1.), clamp(dicke * .35, 0., 1.)) * ton;
   vec3 rw = R * reflect(ld, n0);
