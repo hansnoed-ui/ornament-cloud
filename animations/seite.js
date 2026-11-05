@@ -1,9 +1,9 @@
 // Animationen – die Seite: Mischpult (das eigene Bild, Grund, drei Ebenen, Schalter, Sichern) mit den gesicherten Werken darunter
 // (gestreutes Raster, beim Darüberfahren lebendig, Klick lädt ins Mischpult) und Info. Ein Motor zeichnet für alles; die sichtbare
 // Leinwand übernimmt sein Bild. Seit 4. November 2026 ohne Reel, Beispielbilder und vorgefertigte Werke.
-import { motorErstellen, videoErstellen, DAUER, LAENGEN, MODI } from "./motor.js?v=3";
-import { EFFEKTE, EFFEKT_IDS, stufe } from "./effekte.js?v=3";
-import { zufall, EIGEN } from "./rezepte.js?v=3";
+import { motorErstellen, videoErstellen, DAUER, LAENGEN, MODI } from "./motor.js?v=4";
+import { EFFEKTE, EFFEKT_IDS, stufe, wertVon } from "./effekte.js?v=4";
+import { zufall, EIGEN } from "./rezepte.js?v=4";
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, attr = {}, ...kinder) => {
@@ -202,8 +202,8 @@ function ebeneFeld(e, i) {
   regeln.append(el("div", { class: "zeile2" }, quelle, modus));
   regeln.append(regler("Deckkraft", e.deckkraft ?? 1, (v) => { e.deckkraft = v; }));
   def.regler.forEach((r, k) => {
-    const setzen = (v) => { e.werte ??= []; for (let j = 0; j < def.regler.length; j++) e.werte[j] ??= def.regler[j].wert; e.werte[k] = v; };
-    regeln.append(r.stufen ? stufenWahl(r, e.werte?.[k] ?? r.wert, setzen) : regler(r.name, e.werte?.[k] ?? r.wert, setzen));
+    const setzen = (v) => { const alt = def.regler.map((_, j) => wertVon(def, e.werte, j)); e.werte = alt; e.werte[k] = v; };
+    regeln.append(r.stufen ? stufenWahl(r, wertVon(def, e.werte, k), setzen) : regler(r.name, wertVon(def, e.werte, k), setzen));
   });
   fs.append(regeln);
   return fs;
