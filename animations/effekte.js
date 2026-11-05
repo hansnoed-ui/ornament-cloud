@@ -382,22 +382,35 @@ vec4 effekt(vec2 uv){
     regler: [r("Linien", .45), r("Steigen", .3), r("Strich", .4), r("Wellen", .3), r("Flächen", .35), r("Kubismus", .5, 0)],
     glsl: `${FELD}
 ${KUBUS}
+// seit 5. November 2026 (Christian: «höhenlinien sind auch noch nicht gut»): das Gelände ist geglättet (die Linien folgen den grossen Formen
+// statt jedem Korn), wo die Linien zu dicht würden, laufen sie aus statt zu flimmern; ein Schummerungslicht aus dem Gefälle wandert langsam
+// und hält (halt), so steht das Bild als Relief; die Linien leuchten in den Farben des Bildes, die kräftigen mit einem weichen Hof
+float hlH(vec2 u, float l){ return .25 * hoehe(u, 1.5 + l) + .45 * hoehe(u, 3. + l) + .3 * hoehe(u, 4.8 + l); }
 vec4 effekt(vec2 uv){
   Kub F = kubus(P(uv), P5);
   vec2 p = F.q, u = UV(p);
-  float h = .6 * hoehe(u, 1.5) + .4 * hoehe(u, 3.5) + lfbm(p * 2.5, .7) * .05 * P3 + dot(F.kipp, p - F.mitte) * 1.2;
+  float h = hlH(u, 0.) + lfbm(p * 2.5, .7) * .05 * P3 + dot(F.kipp, p - F.mitte) * 1.2;
   float N = mix(8., 46., P0), sp = 4. * floor(1. + P1 * 1.999);   // vier oder acht Linien pro Schlaufe: die kräftigen schliessen an
   float f = h * N - uT * sp, fr = fract(f), aa = clamp(fwidth(f), 1e-4, .5);   // gedeckelt: an den Kanten der Ebenen springt f
   float d = min(fr, 1. - fr) / aa, k = uRes.y / 1350.;
-  float idx = mod(floor(f + .5), 4.), w = mix(.5, 1.8, P2) * k * (idx < .5 ? 2.4 : 1.);
-  float linie = clamp(w - d + .5, 0., 1.);
+  float idx = mod(floor(f + .5), 4.), stark = step(idx, .5), w = mix(.5, 1.8, P2) * k * (stark > .5 ? 2.2 : 1.);
+  float dicht = smoothstep(.45, .18, aa);                               // zu dichte Linien laufen aus (kein Flimmern an steilen Kanten)
+  float linie = clamp(w - d + .5, 0., 1.) * mix(stark, 1., dicht);      // die kräftigen bleiben auch dort
+  float hof = exp(-d * d / (30. * k * k + 1.)) * stark * .3 * dicht;   // weicher Hof um die kräftigen
   float band = mod(floor(f), 2.) * .5 + .5 * h;                         // Höhenstufen als leise Flächen
+  // Schummerung: Gefälle des geglätteten Geländes gegen ein langsam wanderndes Licht
+  float e = 3. / uRes.y;
+  vec2 g = vec2(hlH(UV(p + vec2(e, 0.)), 0.) - hlH(UV(p - vec2(e, 0.)), 0.), hlH(UV(p + vec2(0., e)), 0.) - hlH(UV(p - vec2(0., e)), 0.)) / (2. * e);
+  float hl = halt(uPhi, .6); vec3 Ld = normalize(vec3(cos(2.3 + .8 * sin(hl)), sin(2.3 + .8 * sin(hl)), 1.1));
+  float schum = clamp(dot(normalize(vec3(-g * .045, 1.)), Ld) / Ld.z, .35, 1.25);
   vec3 nacht = vec3(.043, .035, .039), papier = vec3(.95, .925, .9);
-  vec3 aus = mix(nacht + papier * band * .16 * P4, papier, linie * (.65 + .35 * step(idx, .5)));
-  vec3 im = Ql(u, 0.).rgb;
-  vec3 an = mix(im * (.22 + .3 * P4 * band), mix(im, vec3(1.), .35), linie);
+  vec3 aus = mix(nacht + papier * (band * .14 * P4 + (schum - .8) * .12), papier, linie * (.62 + .38 * stark)) + papier * hof * .4;
+  vec3 im = Ql(u, 0.).rgb, imL = tonDreh(im, 0., 1.25);
+  vec3 lf = mix(imL * 1.35 + .12, vec3(1.), .3);                        // die Linie in der Farbe des Bildes, aufgehellt
+  vec3 an = im * (.3 + .3 * P4 * band) * schum;
+  an = mix(an, lf, linie * (.75 + .25 * stark)) + lf * hof;
   vec3 col = mix(aus, an, uZeigen) * F.licht;
-  return vec4(clamp(mix(col, papier, F.kante * .55), 0., 1.), 1.);
+  return vec4(clamp(schulter(mix(col, papier, F.kante * .3)), 0., 1.), 1.);
 }`,
   },
 
@@ -596,15 +609,23 @@ vec4 effekt(vec2 uv){
 
   sortieren: {
     name: "Pixel Sorting", herkunft: "Glitch: Pixelreihen in einem Helligkeitsfenster werden nach Helligkeit sortiert und ziehen sich wie schmelzende Daten in die Länge",
-    regler: [r("Fenster", .5), r("Länge", .6), r("Richtung", 0), r("Wandern", .5), r("Kontrast", .4)],
+    regler: [r("Fenster", .55), r("Länge", .6), r("Richtung", 0), r("Wandern", .5), r("Kontrast", .4)],
     glsl: `vec4 effekt(vec2 uv){
   float k = uRes.y / 1350., ang = P2 * PI * .5;            // 0 senkrecht, 1 waagrecht
   vec2 dir = vec2(sin(ang), cos(ang)) / uRes;              // ein Pixel in Sortierrichtung, in uv
-  float mitte = .5 + .18 * (uLauf > .5 ? ln(vec2(1.3, 2.1), 1.2) : sin(halt(uPhi, .6))) * P3, br = mix(.12, .45, P0);
+  // seit 5. November 2026 (Christian: «pixelsorting macht noch keine interessanten effekte»): das Bild zerfällt quer zur Sortierrichtung in
+  // Bänder unterschiedlicher Breite; jedes hat sein eigenes Fenster, seine Länge und Richtung (auf- oder absteigend sortiert), manche
+  // verrutschen ein Stück. Das Fenster ist breiter, so laufen durch eine Strähne viele Töne (deutliche Verläufe statt kaum sichtbarer Ordnung)
+  vec2 quer = vec2(cos(ang), -sin(ang));
+  float qb = dot(uv, quer) * mix(5., 14., h12(vec2(floor(dot(uv, quer) * 3.), uSeed + 4.)));   // Bandbreiten wechseln in Dritteln des Bildes
+  float bi = floor(qb + .35 * sin(halt(uPhi, .5) + floor(qb * .3))), hb = h12(vec2(bi, uSeed + 11.));
+  float mitte = .5 + .18 * (uLauf > .5 ? ln(vec2(1.3, 2.1) + hb, 1.2) : sin(halt(uPhi, .6) + hb * TAU)) * P3 + (hb - .5) * .25, br = mix(.18, .5, P0);
   float lo = mitte - br, hi = mitte + br;                  // das Fenster wandert durch die Helligkeiten
   // seit 5. November 2026: die Strähnen wachsen, halten und ziehen sich zurück (halt), jede Spalte etwas versetzt, so schmilzt das Bild in Wellen
   float spalte = dot(uv, vec2(cos(ang), -sin(ang))) * 3.;
-  float Lmax = mix(60., 640., P1) * k * mix(.3 + .7 * (.5 + .5 * cos(halt(uPhi - spalte * .8, .65))), 1., uLauf), st = Lmax / 40.;
+  float Lmax = mix(80., 900., P1) * k * mix(.35, 1.4, hb) * mix(.3 + .7 * (.5 + .5 * cos(halt(uPhi - spalte * .8, .65))), 1., uLauf), st = Lmax / 40.;
+  float rueck = step(.62, hb);                             // absteigend sortiert
+  uv += dir * uRes * step(.84, hb) * .035 * sin(halt(uPhi + hb * 9., .5));   // manche Bänder verrutschen
   float L0 = lum(Kl(uv, .5).rgb);
   vec3 bild = Ql(uv, 0.).rgb, nacht = vec3(.043, .035, .039);
   if (L0 < lo || L0 > hi) return vec4(uZeigen > .5 ? bild : nacht, 1.);
@@ -614,13 +635,14 @@ vec4 effekt(vec2 uv){
   if (a + b < 1.) return vec4(uZeigen > .5 ? bild : nacht, 1.);
   float ls[24]; vec3 cs[24];                               // 24 Proben der Spanne, dann das Quantil an meiner Stelle
   for (int j = 0; j < 24; j++){ vec2 q = uv + dir * st * mix(-a, b, (float(j) + .5) / 24.); cs[j] = Kl(q, .5).rgb; ls[j] = lum(cs[j]); }
-  float f = a / (a + b), ziel = f * 23.; int best = 0; float bd = 1e3;
+  float f = a / (a + b), ziel = mix(f, 1. - f, rueck) * 23.; int best = 0; float bd = 1e3;
   for (int j = 0; j < 24; j++){
     float rang = 0.; for (int m = 0; m < 24; m++) rang += ls[m] < ls[j] || (ls[m] == ls[j] && m < j) ? 1. : 0.;
     float d = abs(rang - ziel); if (d < bd){ bd = d; best = j; }
   }
   vec3 c = cs[best]; float v = ls[best];
   c = (c - .5) * (1. + P4) + .5;
+  c *= 1. - .12 * smoothstep(.4, .5, abs(fract(qb) - .5));          // feine Naht zwischen den Bändern
   c = tonDreh(c, (f - .5) * .5 * P4, 1. + .35 * P4);                  // entlang der Strähne dreht der Farbton leicht (OKLab)
   c += smoothstep(.9, 1., f) * smoothstep(4., 18., a + b) * .25 * (.5 + P4);   // heller Kopf am Ende der Strähne
   vec3 aus = mix(nacht, vec3(.95, .925, .9), clamp((v - lo) / (hi - lo) * (1. + P4) - P4 * .5, 0., 1.));   // ohne Bild: nur die sortierten Strähnen
@@ -725,7 +747,9 @@ vec4 effekt(vec2 uv){
     regler: [r("Linien", .45), r("Lagen", .6), r("Aufklappen", .7), r("Knittern", .5), r("Papier", 1), r("Bild", .25)],
     glsl: `vec4 effekt(vec2 uv){
   vec2 p = P(uv);
-  float auf = P2 * HZ(.5 - .5 * cos(uPhi));                 // an der Naht liegen alle Lagen auf den Umrissen: das Bild steht
+  // seit 5. November 2026: auch an der Naht liegen die Lagen nie ganz aufeinander (sonst zeigen sie nur ein einfaches Netz aus Umrissen),
+  // sie bleiben leicht aufgefächert wie Seide; das Aufklappen hält oben kurz (halt)
+  float auf = P2 * (.14 + .86 * HZ(.5 - .5 * cos(halt(uPhi, .45))));
   float N = mix(5., 12., P0); int L = int(mix(6., uSparsam > .5 ? 16. : 36., P1));   // Handy: höchstens 16 Lagen
   vec2 dA = lcurl(p * mix(1.2, 3.5, P3) + 1.7, .6) * .045 * (.4 + P3);
   vec2 dB = vec2(ln(p * 1.4 + 4., .5), ln(p * 1.4 + 9., .5)) * .32;
@@ -740,16 +764,23 @@ vec4 effekt(vec2 uv){
     float hoeh = mix(lf, lc, smoothstep(.02, .08, abs(lc - lf)));   // flache Zonen weich gelesen (sonst zeichnet das Korn des Fotos Kiesel), Kanten scharf
     float v = (hoeh + .06 * ln(q * 1.8 + f * .4, .5) * (.5 + P3)) * N;   // Knitterfalten: auch flache Zonen tragen Linien
     float e = abs(fract(v + .5) - .5) / max(fwidth(v), 1e-4);
-    float a = (1. - smoothstep(.15, .95, e)) * mix(.9, 2.4 / float(L) + .02, smoothstep(0., .35, auf)) * (1. - .4 * f * auf);
+    float a = (1. - smoothstep(.15, .95, e)) * mix(1. - pow(.35, 1. / float(L)), 2.4 / float(L) + .02, smoothstep(0., .3, auf)) * (1. - .4 * f * auf);
     tinte *= 1. - a; farbe += c * a; fs += a;
   }
   float deck = 1. - tinte;
   // Fadengewebe über die ganze Fläche: Kette und Schuss in der mittleren Lage, sichtbar, wo keine Linien liegen
+  // seit 5. November 2026 (Christian: «das gewebe zeigt sich als einfaches netz»): die Fäden laufen nicht mehr starr waagrecht und senkrecht,
+  // sondern drehen mit den Konturen des Bildes (Richtung aus dem weichen Gefälle), sind feiner und leiser; dazu ein Seidenglanz, der über
+  // die aufgeklappten Lagen wandert, und die Lagen sind zur Tiefe hin schattiert
   vec2 qw = p - rot(.5 * tw) * (dA * .5 + dB * .25) * auf;
+  float ge = .02; vec2 gg = vec2(lum(Kl(UV(qw + vec2(ge, 0.)), 5.).rgb) - lum(Kl(UV(qw - vec2(ge, 0.)), 5.).rgb),
+                                  lum(Kl(UV(qw + vec2(0., ge)), 5.).rgb) - lum(Kl(UV(qw - vec2(0., ge)), 5.).rgb));
+  qw = rot(atan(gg.y, gg.x + 1e-5) * smoothstep(.0, .08, length(gg)) + ln(qw * 1.2, .5) * .6) * qw;
   float M = mix(70., 130., P0) * (uSparsam > .5 ? .7 : 1.);
   float kette = pow(.5 + .5 * cos(qw.x * M * TAU + 2. * ln(qw * 2., .4)), 5.), schuss = pow(.5 + .5 * cos(qw.y * M * TAU + 2. * ln(qw * 2. + 5., .4)), 5.);
   float faden = (kette + schuss) * .5 * (.5 + .5 * ln(qw * 1.5 + 9., .5) + .5);   // das Gewebe ist nicht überall gleich dicht
-  deck += (1. - deck) * faden * .24 * smoothstep(0., .3, auf);
+  deck += (1. - deck) * faden * .14 * smoothstep(0., .3, auf);
+  float glanz = pow(.5 + .5 * cos(dot(p, vec2(.8, .6)) * 5. + tw * 1.5 - halt(uPhi, .5) * 2.), 8.) * auf * deck;   // Seidenglanz auf den Lagen
   vec3 papier = vec3(.95, .925, .9), nacht = vec3(.043, .035, .039);
   vec3 grund = mix(nacht, papier, P4), stift = mix(papier, vec3(.06, .055, .06), P4);
   vec3 bc = farbe / max(fs, 1e-4);
@@ -757,7 +788,9 @@ vec4 effekt(vec2 uv){
     grund = mix(grund, Ql(uv, 0.).rgb * mix(1., .9, P4) + mix(0., .08, P4), P5);
     stift = mix(stift, P4 > .5 ? bc * .55 : min(bc * 1.5 + .1, 1.), .6);
   }
-  return vec4(mix(grund, stift, deck), 1.);
+  vec3 col = mix(grund, stift, deck) * (1. - .18 * auf * smoothstep(.3, 1., deck));
+  col += mix(vec3(1.), stift, .4) * glanz * .35;
+  return vec4(clamp(schulter(col), 0., 1.), 1.);
 }`,
   },
 
@@ -1230,9 +1263,11 @@ vec3 blPal(float t){                                                            
 }
 vec4 effekt(vec2 uv){
   vec2 p = P(uv); float k = uRes.y / 1350.;
-  vec2 off = lcurl(p * 1.3 + 3., 1.1) * .035 + strom(uv, 3.5, 8., .15) * .012 * sin(uPhi);   // das ganze Bild fliesst in einem langsamen Wirbelfeld und atmet entlang seiner Konturen
+  // das ganze Bild fliesst in einem langsamen, weiten Wirbelfeld (seit 5. November 2026 ohne das Atmen entlang der Konturen: dessen Richtung
+  // kippt an jeder Kante und machte das Bild holprig)
+  vec2 off = lcurl(p * 1.1 + 3., 1.1) * .035;
   vec3 lasur = vec3(1.);
-  int n = int(mix(5., 16., P0));
+  int n = int(mix(5., 16., P0)); if (uSparsam > .5) n = min(n, 6);  // Handy: höchstens 6 Membranen (Christian: «zu holprig»)
   for (int i = 0; i < 16; i++){
     if (i >= n) break;
     float fi = float(i); vec2 c; float R, fo; blase(i, P1, .35, c, R);
@@ -1256,15 +1291,15 @@ vec4 effekt(vec2 uv){
       rr = mix(.45, 1.05, smoothstep(0., 1., pow(tn, .9)));
     }
     vec2 ring = vec2(cos(th), sin(th));
-    rr *= 1. + .1 * ln(ring * 1.4 + fi * 1.7, 1.2) + .05 * ln(ring * 3.1 + fi * 2.3 + 9., 1.);   // der Rand wogt: rundliche Lappen statt Kreis
+    rr *= 1. + .075 * ln(ring * 1.4 + fi * 1.7, 1.2) + (uSparsam > .5 ? 0. : .025 * ln(ring * 3.1 + fi * 2.3 + 9., 1.));   // der Rand wogt in weichen, grossen Lappen (feine Wellen weg: «holprig»)
     float rd = (d - rr) * R * uRes.y;                                           // Abstand zum Rand in Pixeln, innen negativ
-    if (rd > 4. * k) continue;
+    if (rd > 6. * k) continue;                                                  // erst ausserhalb des weichen Randes (vorher schnitt es bei 4 px ab)
     float innen = smoothstep(5. * k, -5. * k, rd);                               // breiter, weicher Rand
     float tief = 1. - min(d / rr, 1.);
     vec2 w = v / R;
     off += -(rot(-dr) * vec2(w.x * fa, w.y)) * R * tief * .2 * innen;             // Linse: das Bild zur Mitte gezogen
     off += kt * .035 * sw * innen * tief;                                        // und es fliesst mit der Membran der Kontur entlang
-    off += lcurl(p * 5. + fi * 3., 1.3) * .02 * innen * tief;                      // Wellen im Glas
+    if (uSparsam < .5) off += lcurl(p * 2.4 + fi * 3., 1.3) * .014 * innen * tief;   // weite, ruhige Wellen im Glas (vorher feiner und unruhiger)
     vec3 farbe = Kl(UV(c), 3.5).rgb; farbe = clamp(mix(vec3(lum(farbe)), farbe, 1.7), 0., 1.);
     farbe = mix(farbe, blPal(clamp((1. - lum(farbe)) * .25 + h.x * .8 - .05, 0., 1.)), P4);   // Wärme: zur Palette der Referenz
     float rille = muschel ? .5 + .5 * cos(th * mix(10., 16., h.y) + d * 9.) : .5 + .5 * cos(d / rr * mix(14., 22., h.x) - uPhi);
