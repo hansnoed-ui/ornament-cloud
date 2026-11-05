@@ -8,6 +8,13 @@
 //   GET  werke.php?id=ID                → ein Werk
 //   POST werke.php  (multipart: bild, titel, name, stapel (JSON), schutz (leer))  → { id, schluessel }   (den Schlüssel behält der Browser des Erstellers)
 //   POST werke.php  { aktion: "loeschen", id, schluessel }  → { geloescht: true }
+//   POST werke.php  { aktion: "kurz", werk (ID oder leer), stapel }  → { kurz }   (Kurzlink ornament.cloud/a/KURZ, seit 5. November 2026)
+//   GET  werke.php?kurz=KURZ           → { kurz, werk, stapel }
+//
+// Kurzlinks (Christian: «Ist jetzt kürzer aber immer noch seeeehr lang»): «Link kopieren» legt die Mischung (ohne Bild, mit der Kennung
+// des Werks, dessen Bild sie nutzt) in werke/kurz/ ab und teilt nur noch ornament.cloud/a/KURZ; .htaccess leitet /a/KURZ auf
+// /animations/#a=KURZ. Die Kennung ist aus dem Inhalt abgeleitet (sechs Zeichen), dieselbe Mischung gibt immer denselben Link.
+// Grenzen: 120 Kurzlinks je Adresse und Stunde, insgesamt höchstens 50 000.
 //
 // Grenzen: nur POST von https://ornament.cloud (Origin), Bild bis 2 MB und 2000 px (wird mit GD neu als JPEG geschrieben, ohne Metadaten),
 // Name 1–40 Zeichen, Titel bis 60, Mischung nur aus bekannten Feldern; je Adresse 12 Werke in der Stunde, insgesamt höchstens 2000.
@@ -22,6 +29,8 @@ const MAX_TITEL = 60;
 const MAX_STAPEL = 6000;
 const MAX_WERKE = 2000;
 const JE_STUNDE = 12;
+const KURZ_JE_STUNDE = 120;
+const MAX_KURZ = 50000;
 const MODI = ['normal', 'multiplizieren', 'differenz', 'bildschirm', 'ueberlagern'];
 const LAENGEN = [12, 30, 60];
 const FORMATE = ['4x5', '1x1', '16x9'];
@@ -108,8 +117,8 @@ function liste(string $ordner): array {
   return is_array($werke) ? $werke : listeBauen($ordner);
 }
 /** je Adresse höchstens JE_STUNDE Werke in der Stunde; die Adresse wird nur als Prüfsumme gezählt */
-function zaehlen(string $ordner, string $adresse): bool {
-  $h = @fopen("$ordner/.adressen.json", 'c+');
+function zaehlen(string $ordner, string $adresse, string $datei = '.adressen.json', int $grenze = JE_STUNDE): bool {
+  $h = @fopen("$ordner/$datei", 'c+');
   if (!$h) return true;
   flock($h, LOCK_EX);
   $alle = json_decode((string)stream_get_contents($h), true);
@@ -117,7 +126,7 @@ function zaehlen(string $ordner, string $adresse): bool {
   $jetzt = time();
   foreach ($alle as $k => $zeiten) { $alle[$k] = array_values(array_filter((array)$zeiten, fn($t) => is_int($t) && $t > $jetzt - 3600)); if (!$alle[$k]) unset($alle[$k]); }
   $schluessel = hash('sha256', 'animationen|' . $adresse . '|' . date('Y-m-d'));
-  $ok = count($alle[$schluessel] ?? []) < JE_STUNDE;
+  $ok = count($alle[$schluessel] ?? []) < $grenze;
   if ($ok) $alle[$schluessel][] = $jetzt;
   ftruncate($h, 0); rewind($h); fwrite($h, json_encode($alle)); fflush($h);
   flock($h, LOCK_UN); fclose($h);
@@ -128,7 +137,22 @@ $methode = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 if (!is_dir($ordner)) @mkdir($ordner, 0755, true);
 if (!is_dir($ordner)) fehler(500, 'Die Ablage für die Werke fehlt.');
 
+/** Kurzlink: sechs Zeichen (Base62) aus der Prüfsumme des Inhalts; bei einer Kollision ein Zeichen mehr */
+function kurzKennung(string $inhalt, int $laenge): string {
+  $zeichen = '0123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ';   // ohne l, I, O: am Handy leichter abzutippen
+  $h = hash('sha256', $inhalt, true); $k = '';
+  for ($i = 0; $i < $laenge; $i++) $k .= $zeichen[ord($h[$i]) % strlen($zeichen)];
+  return $k;
+}
+function kurzLesen(string $ordner, string $k): ?array {
+  if (!preg_match('/^[0-9A-Za-z]{6,10}$/', $k)) return null;
+  $roh = @file_get_contents("$ordner/kurz/$k.json");
+  $d = $roh === false ? null : json_decode($roh, true);
+  return is_array($d) ? ['kurz' => $k, 'werk' => $d['werk'] ?? null, 'stapel' => $d['stapel'] ?? null] : null;
+}
+
 if ($methode === 'GET') {
+  if (isset($_GET['kurz'])) { $d = kurzLesen($ordner, (string)$_GET['kurz']); $d ? antwort(200, $d) : fehler(404, 'Diesen Link gibt es nicht.'); }
   if (isset($_GET['id'])) { $w = werkLesen($ordner, (string)$_GET['id']); $w ? antwort(200, $w) : fehler(404, 'Dieses Werk gibt es nicht.'); }
   $werke = liste($ordner);
   antwort(200, ['werke' => $werke, 'anzahl' => count($werke)]);
@@ -141,8 +165,26 @@ if ($origin !== $herkunft) fehler(403, 'Nur von ornament.cloud.');
 $typ = $_SERVER['CONTENT_TYPE'] ?? '';
 if (str_starts_with($typ, 'application/json')) {
   $roh = file_get_contents('php://input') ?: '';
-  if (strlen($roh) > 2000) fehler(413, 'Zu viel.');
+  if (strlen($roh) > MAX_STAPEL + 200) fehler(413, 'Zu viel.');
   $d = json_decode($roh, true);
+  if (is_array($d) && ($d['aktion'] ?? '') === 'kurz') {
+    $werk = (string)($d['werk'] ?? '');
+    if ($werk !== '' && !werkLesen($ordner, $werk)) fehler(404, 'Dieses Werk gibt es nicht.');
+    $stapel = stapelPruefen($d['stapel'] ?? null);
+    if (!$stapel) fehler(400, 'Die Mischung ist nicht lesbar.');
+    $inhalt = json_encode(['werk' => $werk !== '' ? $werk : null, 'stapel' => $stapel], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    if (!is_dir("$ordner/kurz")) @mkdir("$ordner/kurz", 0755, true);
+    for ($n = 6; $n <= 10; $n++) {
+      $k = kurzKennung($inhalt, $n);
+      $da = @file_get_contents("$ordner/kurz/$k.json");
+      if ($da === $inhalt) antwort(200, ['kurz' => $k]);   // dieselbe Mischung: derselbe Link, zählt nicht
+      if ($da === false) break;
+    }
+    if (count(glob("$ordner/kurz/*.json") ?: []) >= MAX_KURZ) fehler(507, 'Die Ablage für Links ist voll.');
+    if (!zaehlen($ordner, $_SERVER['REMOTE_ADDR'] ?? '', '.kurz-adressen.json', KURZ_JE_STUNDE)) fehler(429, 'Zu viele Links in der Stunde: bitte später noch einmal.');
+    if (@file_put_contents("$ordner/kurz/$k.json", $inhalt, LOCK_EX) === false) fehler(500, 'Der Link liess sich nicht ablegen.');
+    antwort(201, ['kurz' => $k]);
+  }
   if (!is_array($d) || ($d['aktion'] ?? '') !== 'loeschen') fehler(400, 'Unbekannte Aktion.');
   $id = (string)($d['id'] ?? ''); $schluessel = (string)($d['schluessel'] ?? '');
   if (!preg_match('/^[a-f0-9]{10}$/', $id) || !preg_match('/^[a-f0-9]{32}$/', $schluessel)) fehler(400, 'Kennung oder Schlüssel fehlen.');

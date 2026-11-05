@@ -1,7 +1,7 @@
 // Animationen – «Neu mischen»: eine zufällige Mischung aus den Effekten für das eigene Bild. Seit 4. November 2026 ohne Beispielbilder
 // und ohne vorgefertigte Werke (Wunsch: «keine beispielbilder»): jedes Werk bringt sein Bild mit, gesichert werden sie in werke.php.
-import { EFFEKTE, EFFEKT_IDS } from "./effekte.js?v=26";
-import { MODI } from "./motor.js?v=26";
+import { EFFEKTE, EFFEKT_IDS } from "./effekte.js?v=27";
+import { MODI } from "./motor.js?v=27";
 
 /** das eigene Bild im Mischpult: hochgeladen oder auf die Bühne gezogen, bleibt im Browser, bis das Werk gesichert wird */
 export const EIGEN = "eigen";
