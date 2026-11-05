@@ -12,10 +12,11 @@ const { EFFEKTE, EFFEKT_IDS, wertVon } = await import(new URL("animations/effekt
 const { MODI, DAUER, FPS, LAENGEN, dauerVon } = await import(new URL("animations/motor.js", root).href);
 const { zufall, EIGEN } = await import(new URL("animations/rezepte.js", root).href);
 
-test("Effekte: 33, Regler zwischen 0 und 1, höchstens sechs, Shader mit effekt() oder punkt(), jeder mit Name und Herkunft", () => {
+test("Effekte: 26, Regler zwischen 0 und 1, höchstens sechs, Shader mit effekt() oder punkt(), jeder mit Name und Herkunft", () => {
   // Scan entfernt am 3. November 2026 («der scan kann weg»); Seifenblase und Holo-Kugel am 4. November 2026 ersetzt durch vierzehn Effekte aus der Bildinformation;
-  // Pinselstrom und Aquarell entfernt am 5. November 2026, Papierriss und Membran-Blüte dazu am 5. November 2026
-  assert.equal(Object.keys(EFFEKTE).length, 33);
+  // Pinselstrom und Aquarell entfernt am 5. November 2026, Papierriss und Membran-Blüte dazu am 5. November 2026;
+  // Metaballs, Wirbel, Linien, Tuscheblasen, Glaslinsen, Röntgen-Scan und Papierriss entfernt am 5. November 2026
+  assert.equal(Object.keys(EFFEKTE).length, 26);
   assert.deepEqual(EFFEKT_IDS, Object.keys(EFFEKTE));
   for (const [id, e] of Object.entries(EFFEKTE)) {
     assert.ok(e.name && e.herkunft, id);
@@ -85,7 +86,7 @@ test("Bild zeigen: aus (4. November 2026): Motor setzt uZeigen, Ql zeigt ein Ras
   assert.match(motor, /stapel\.ohneBild \? 0 : 1/);
   assert.match(html, /id="pult-zeigen"/);
   assert.match(seite, /-ohne-bild/);
-  for (const id of ["partikel", "metaballs", "wirbel", "zebra", "linien", "linsen", "glitzer", "tinte", "raster", "relief", "hoehenlinien", "stroemung", "roentgen", "montage", "entrauschen", "echo", "voxel", "sortieren", "vertigo", "strahlen", "gewebe", "blitze", "traube", "physarum", "geflecht", "lichtformen", "riss", "bluete"]) assert.match(EFFEKTE[id].glsl, /Kl\(/, id);
+  for (const id of ["partikel", "zebra", "glitzer", "tinte", "raster", "relief", "hoehenlinien", "stroemung", "montage", "entrauschen", "echo", "voxel", "sortieren", "vertigo", "strahlen", "gewebe", "blitze", "traube", "physarum", "geflecht", "lichtformen", "bluete"]) assert.match(EFFEKTE[id].glsl, /Kl\(/, id);
 });
 
 test("Durchlauf (4. November 2026): Motor kennt uLauf und HZ(), Schalter und Länge im Mischpult", () => {
