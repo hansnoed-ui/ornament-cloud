@@ -577,6 +577,7 @@ vec4 effekt(vec2 uv){
   vec2 tM = t + ((cell + max(stp, 0.)) / N - pos.xy) / rd.xy;
   float tE = t; int ax = -1; vec3 nrm = vec3(0., 0., 1.), alb = vec3(0.); float hit = 0., th = 0., hh = 0.;
   for (int i = 0; i < 200; i++){
+    if (uSparsam > .5 && i >= 120) break;                  // sparsam: kürzerer Strahl
     float h = vH(cell, N, Hm, alb), tX = min(tM.x, tM.y);
     if (ro.z + rd.z * tE <= h){ th = tE; nrm = ax == 0 ? vec3(-stp.x, 0., 0.) : ax == 1 ? vec3(0., -stp.y, 0.) : vec3(0., 0., 1.); hit = 1.; hh = h; break; }
     if (ro.z + rd.z * tX <= h){ th = (h - ro.z) / rd.z; nrm = vec3(0., 0., 1.); hit = 1.; hh = h; break; }
@@ -623,21 +624,23 @@ vec4 effekt(vec2 uv){
   float lo = mitte - br, hi = mitte + br;                  // das Fenster wandert durch die Helligkeiten
   // seit 5. November 2026: die Strähnen wachsen, halten und ziehen sich zurück (halt), jede Spalte etwas versetzt, so schmilzt das Bild in Wellen
   float spalte = dot(uv, vec2(cos(ang), -sin(ang))) * 3.;
-  float Lmax = mix(80., 900., P1) * k * mix(.35, 1.4, hb) * mix(.3 + .7 * (.5 + .5 * cos(halt(uPhi - spalte * .8, .65))), 1., uLauf), st = Lmax / 40.;
+  float Lmax = mix(80., 900., P1) * k * mix(.35, 1.4, hb) * mix(.3 + .7 * (.5 + .5 * cos(halt(uPhi - spalte * .8, .65))), 1., uLauf), st = Lmax / (uSparsam > .5 ? 20. : 40.);
+  int SK = uSparsam > .5 ? 20 : 40, PR = uSparsam > .5 ? 12 : 24;   // sparsam (Laptop mit schwacher Grafik, Handy): halb so viele Schritte und Proben
   float rueck = step(.62, hb);                             // absteigend sortiert
   uv += dir * uRes * step(.84, hb) * .035 * sin(halt(uPhi + hb * 9., .5));   // manche Bänder verrutschen
   float L0 = lum(Kl(uv, .5).rgb);
   vec3 bild = Ql(uv, 0.).rgb, nacht = vec3(.043, .035, .039);
   if (L0 < lo || L0 > hi) return vec4(uZeigen > .5 ? bild : nacht, 1.);
   float a = 0., b = 0.;                                    // die Spanne finden, in der alle Pixel im Fenster liegen
-  for (int i = 1; i <= 40; i++){ float l = lum(Kl(uv - dir * st * float(i), .5).rgb); if (l < lo || l > hi) break; a = float(i); }
-  for (int i = 1; i <= 40; i++){ float l = lum(Kl(uv + dir * st * float(i), .5).rgb); if (l < lo || l > hi) break; b = float(i); }
+  for (int i = 1; i <= 40; i++){ if (i > SK) break; float l = lum(Kl(uv - dir * st * float(i), .5).rgb); if (l < lo || l > hi) break; a = float(i); }
+  for (int i = 1; i <= 40; i++){ if (i > SK) break; float l = lum(Kl(uv + dir * st * float(i), .5).rgb); if (l < lo || l > hi) break; b = float(i); }
   if (a + b < 1.) return vec4(uZeigen > .5 ? bild : nacht, 1.);
   float ls[24]; vec3 cs[24];                               // 24 Proben der Spanne, dann das Quantil an meiner Stelle
-  for (int j = 0; j < 24; j++){ vec2 q = uv + dir * st * mix(-a, b, (float(j) + .5) / 24.); cs[j] = Kl(q, .5).rgb; ls[j] = lum(cs[j]); }
-  float f = a / (a + b), ziel = mix(f, 1. - f, rueck) * 23.; int best = 0; float bd = 1e3;
+  for (int j = 0; j < 24; j++){ if (j >= PR) break; vec2 q = uv + dir * st * mix(-a, b, (float(j) + .5) / float(PR)); cs[j] = Kl(q, .5).rgb; ls[j] = lum(cs[j]); }
+  float f = a / (a + b), ziel = mix(f, 1. - f, rueck) * float(PR - 1); int best = 0; float bd = 1e3;
   for (int j = 0; j < 24; j++){
-    float rang = 0.; for (int m = 0; m < 24; m++) rang += ls[m] < ls[j] || (ls[m] == ls[j] && m < j) ? 1. : 0.;
+    if (j >= PR) break;
+    float rang = 0.; for (int m = 0; m < 24; m++){ if (m >= PR) break; rang += ls[m] < ls[j] || (ls[m] == ls[j] && m < j) ? 1. : 0.; }
     float d = abs(rang - ziel); if (d < bd){ bd = d; best = j; }
   }
   vec3 c = cs[best]; float v = ls[best];

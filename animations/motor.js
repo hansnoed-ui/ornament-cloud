@@ -154,6 +154,13 @@ function ohneKontext(meldung) {
 export const SPARSAM = (() => {
   try { return matchMedia("(pointer: coarse)").matches || (navigator.deviceMemory ?? 8) <= 4; } catch { return false; }
 })();
+/** Laptops mit eingebauter Intel-Grafik (und Software-Grafik) rechnen ebenfalls sparsam (5. November 2026: Abstürze am Laptop) */
+const SCHWACHE_GRAFIK = /Intel|SwiftShader|llvmpipe|Software|Mali|Adreno|PowerVR/i;
+function grafikName(gl) {
+  try { const x = gl.getExtension("WEBGL_debug_renderer_info"); return x ? String(gl.getParameter(x.UNMASKED_RENDERER_WEBGL)) : ""; } catch { return ""; }
+}
+/** höchstens so viele Pixel zeichnet ein Effekt in einem Zug, darüber in Streifen */
+export const STREIFEN_PIXEL = 1 << 18;
 
 export function motorErstellen({ sparsam = SPARSAM, verloren = () => {}, zurueck = () => {} } = {}) {
   const leinwand = document.createElement("canvas");
@@ -163,7 +170,8 @@ export function motorErstellen({ sparsam = SPARSAM, verloren = () => {}, zurueck
   const gl = leinwand.getContext("webgl2", { antialias: false, alpha: false, premultipliedAlpha: false, preserveDrawingBuffer: true });
   if (!gl) throw new Error(ohneKontext(meldung));
 
-  const motor = { leinwand, gl, sparsam, kaputt: new Map(), uebersetzt: 0 };
+  const grafik = grafikName(gl);
+  const motor = { leinwand, gl, sparsam: sparsam || SCHWACHE_GRAFIK.test(grafik), grafik, kaputt: new Map(), uebersetzt: 0 };
   const programme = new Map();
   let B = 0, H = 0, acc = [], lage = null;
   const bilder = new Map();
@@ -243,6 +251,21 @@ export function motorErstellen({ sparsam = SPARSAM, verloren = () => {}, zurueck
   leinwand.addEventListener("webglcontextlost", (e) => { e.preventDefault(); motor.sparsam = true; verloren(); });
   leinwand.addEventListener("webglcontextrestored", () => { aufbauen(); zurueck(); });
 
+  // In Streifen zeichnen (5. November 2026, Christian: «ich hab zurzeit viele abstürze … am laptop»): ein schwerer Effekt rechnet ein
+  // grosses Bild nicht in einem einzigen Zug, sondern in Bändern von höchstens STREIFEN_PIXEL Pixeln, jedes für sich an die Grafik
+  // geschickt. So bleibt jeder Auftrag kurz, und Windows setzt die Grafik nicht nach zwei Sekunden zurück (TDR), was Chrome mit einem
+  // Absturz und gesperrtem WebGL quittiert. Das Bild bleibt Pixel für Pixel dasselbe.
+  function streifen(b, h) {
+    const n = Math.min(16, Math.ceil((b * h) / STREIFEN_PIXEL));
+    if (n <= 1) { gl.drawArrays(gl.TRIANGLES, 0, 3); return; }
+    gl.enable(gl.SCISSOR_TEST);
+    for (let k = 0; k < n; k++) {
+      const y0 = Math.floor((k * h) / n), y1 = Math.floor(((k + 1) * h) / n);
+      gl.scissor(0, y0, b, y1 - y0); gl.drawArrays(gl.TRIANGLES, 0, 3); gl.flush();
+    }
+    gl.disable(gl.SCISSOR_TEST);
+  }
+
   const fp = (pr, name, ...v) => gl[`uniform${v.length}f`](pr.ort(name), ...v);
   const textur = (pr, name, einheit, tex) => { gl.activeTexture(gl.TEXTURE0 + einheit); gl.bindTexture(gl.TEXTURE_2D, tex); gl.uniform1i(pr.ort(name), einheit); };
   const GRUND = { schwarz: [0, 0, 0], weiss: [1, 1, 1] };
@@ -284,7 +307,7 @@ export function motorErstellen({ sparsam = SPARSAM, verloren = () => {}, zurueck
         if (def.mischung === "add") gl.blendFunc(gl.ONE, gl.ONE); else gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
         gl.drawArrays(gl.POINTS, 0, cols * rows);
         gl.disable(gl.BLEND);
-      } else gl.drawArrays(gl.TRIANGLES, 0, 3);
+      } else streifen(b, h);
       const m = programm("misch", VS_FLAECHE, FS_MISCH);
       gl.bindFramebuffer(gl.FRAMEBUFFER, acc[1 - i].fb);
       gl.useProgram(m.p);

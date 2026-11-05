@@ -177,3 +177,10 @@ test("Handy (5. November 2026: «Diese Seite braucht WebGL 2 … gestern gings n
     assert.deepEqual(e.punkte([.9, .9, .9, .9, .9, .9], .8, 1350, 1), voll, `${id}: auf dem Desktop unverändert`);
   }
 });
+
+test("Laptop (5. November 2026: «ich hab zurzeit viele abstürze … am laptop»): Effekte in Streifen, schwache Grafik und ein Wächter schalten auf sparsam", () => {
+  const motor = lies("animations/motor.js"), seite = lies("animations/seite.js");
+  assert.match(motor, /function streifen\(b, h\)/); assert.match(motor, /gl\.scissor\(/); assert.match(motor, /\} else streifen\(b, h\);/);
+  assert.match(motor, /SCHWACHE_GRAFIK = \/Intel/);
+  assert.match(seite, /else if \(langsam >= 8 && !motor\.sparsam\)/);
+});

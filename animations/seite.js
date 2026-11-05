@@ -447,6 +447,10 @@ function bild(jetzt) {
     langsam = dt > 150 ? langsam + 1 : 0;
     schnell = dt < 45 ? schnell + 1 : 0;
     if (langsam >= 8 && drossel > DROSSEL_MIN) { drossel = Math.max(DROSSEL_MIN, drossel * .85); langsam = 0; }
+    else if (langsam >= 8 && !motor.sparsam) {   // Wächter: auch mit weniger Pixeln zu langsam, also die schweren Effekte leichter rechnen
+      motor.sparsam = true; langsam = 0;
+      pultMeldung("Die Grafik dieses Geräts kommt nicht nach, die schweren Effekte rechnen jetzt leichter.");
+    }
     if (schnell >= 90 && drossel < 1) { drossel = Math.min(1, drossel / .85); schnell = 0; }
   }
   const tt = zeit() % S.dauer;
