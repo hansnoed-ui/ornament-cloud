@@ -176,6 +176,9 @@ select:hover { border-color: var(--tinte); }
 .regeln { display: grid; gap: 10px; }
 label.regler { display: grid; grid-template-columns: 96px 1fr 34px; gap: 12px; align-items: center; font-size: 14px; min-height: 28px; }
 label.regler output { text-align: right; color: var(--leise); font-size: 13px; }
+.regler.stufen { display: grid; grid-template-columns: 96px 1fr; gap: 12px; align-items: center; font-size: 14px; }
+.regler.stufen .wahl { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.regler.stufen .wahl button { min-height: 32px; padding: 4px 10px; font-size: 13px; justify-content: flex-start; }
 input[type="range"] { width: 100%; margin: 0; height: 28px; background: none; appearance: none; -webkit-appearance: none; cursor: pointer; }
 input[type="range"]::-webkit-slider-runnable-track { height: 1px; background: var(--linie); }
 input[type="range"]::-moz-range-track { height: 1px; background: var(--linie); }
@@ -267,6 +270,7 @@ input[type="range"]:focus-visible { outline: none; }
   .pult-haupt .knopf.gross { flex: 1 1 100%; }
   .leer .satz { font-size: 19px; }
   label.regler { grid-template-columns: 84px 1fr 32px; }
+  .regler.stufen { grid-template-columns: 84px 1fr; }
   .galerie { padding-top: 32px; }
   .werke-kopf { grid-template-columns: 1fr; padding-bottom: 28px; margin-bottom: 28px; gap: 16px; }
   .werke-kopf p { text-align: left; }
@@ -389,6 +393,6 @@ input[type="range"]:focus-visible { outline: none; }
 </div></footer>
 
 <div class="export" id="export" hidden role="status"><div class="export-zeile"><span id="export-text">MP4 · 0 %</span><button type="button" id="export-stop">Abbrechen</button></div><div class="fortschritt" aria-hidden="true"><i></i></div></div>
-<script type="module" src="seite.js?v=2"></script>   <!-- Versionsmarke: bei Änderungen an den Modulen hier und in allen Importen hochzählen (Zwischenspeicher 10 Minuten, .htaccess) -->
+<script type="module" src="seite.js?v=3"></script>   <!-- Versionsmarke: bei Änderungen an den Modulen hier und in allen Importen hochzählen (Zwischenspeicher 10 Minuten, .htaccess) -->
 </body>
 </html>

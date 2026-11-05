@@ -1,9 +1,9 @@
 // Animationen – die Seite: Mischpult (das eigene Bild, Grund, drei Ebenen, Schalter, Sichern) mit den gesicherten Werken darunter
 // (gestreutes Raster, beim Darüberfahren lebendig, Klick lädt ins Mischpult) und Info. Ein Motor zeichnet für alles; die sichtbare
 // Leinwand übernimmt sein Bild. Seit 4. November 2026 ohne Reel, Beispielbilder und vorgefertigte Werke.
-import { motorErstellen, videoErstellen, DAUER, LAENGEN, MODI } from "./motor.js?v=2";
-import { EFFEKTE, EFFEKT_IDS } from "./effekte.js?v=2";
-import { zufall, EIGEN } from "./rezepte.js?v=2";
+import { motorErstellen, videoErstellen, DAUER, LAENGEN, MODI } from "./motor.js?v=3";
+import { EFFEKTE, EFFEKT_IDS, stufe } from "./effekte.js?v=3";
+import { zufall, EIGEN } from "./rezepte.js?v=3";
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, attr = {}, ...kinder) => {
@@ -201,9 +201,18 @@ function ebeneFeld(e, i) {
   modus.value = e.modus || "normal";
   regeln.append(el("div", { class: "zeile2" }, quelle, modus));
   regeln.append(regler("Deckkraft", e.deckkraft ?? 1, (v) => { e.deckkraft = v; }));
-  def.regler.forEach((r, k) => regeln.append(regler(r.name, e.werte?.[k] ?? r.wert, (v) => { e.werte ??= []; for (let j = 0; j < def.regler.length; j++) e.werte[j] ??= def.regler[j].wert; e.werte[k] = v; })));
+  def.regler.forEach((r, k) => {
+    const setzen = (v) => { e.werte ??= []; for (let j = 0; j < def.regler.length; j++) e.werte[j] ??= def.regler[j].wert; e.werte[k] = v; };
+    regeln.append(r.stufen ? stufenWahl(r, e.werte?.[k] ?? r.wert, setzen) : regler(r.name, e.werte?.[k] ?? r.wert, setzen));
+  });
   fs.append(regeln);
   return fs;
+}
+// eine Wahl mit Stufen (z. B. die Form der Montage): flache Knöpfe wie die Schalter oben, der Wert bleibt 0 … 1
+function stufenWahl(r, wert, setzen) {
+  const knoepfe = r.stufen.map((text, k) => el("button", { type: "button", "aria-pressed": String(stufe(r, wert) === k), text,
+    onclick: () => { setzen(k / (r.stufen.length - 1)); knoepfe.forEach((b, j) => b.setAttribute("aria-pressed", String(j === k))); adresse(); } }));
+  return el("div", { class: "regler stufen", role: "group", "aria-label": r.name }, el("span", { text: r.name }), el("div", { class: "wahl" }, ...knoepfe));
 }
 function regler(name, wert, setzen) {
   const aus = el("output", { text: Math.round(wert * 100) });
