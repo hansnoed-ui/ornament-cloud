@@ -1,7 +1,7 @@
 // Animationen – der Motor: ein WebGL-2-Kontext rechnet bis zu drei Ebenen übereinander (je Effekt, Quelle, Mischmodus, Deckkraft)
 // und gibt das Bild auf eine eigene Leinwand aus, die Reel, Werke und Mischpult abzeichnen. Alles hängt nur von der Zeit t in der
 // Schlaufe ab (phi = 2π·t/DAUER, ganzzahlige Frequenzen): Bild N ist wieder Bild 0, und das MP4 entsteht Bild für Bild.
-import { EFFEKTE, wertVon } from "./effekte.js?v=16";
+import { EFFEKTE, wertVon } from "./effekte.js?v=17";
 
 export const DAUER = 12, FPS = 30, LAENGEN = [12, 30, 60];
 /** Länge der Schlaufe eines Stapels in Sekunden (Vorgabe 12) */
@@ -88,6 +88,16 @@ const FS_PUNKTE_WEICH = `#version 300 es
 precision highp float;
 in vec4 vCol; out vec4 o;
 void main(){ vec2 d = (gl_PointCoord - .5) * 2.; o = vCol * max(exp(-dot(d, d) * 5.) - .0067, 0.); }`;
+// glänzende Kügelchen (Strom, 5. November 2026, nach PHORMA I): Licht von links oben, ein scharfes Glanzlicht, dunkler zum Rand
+const FS_PUNKTE_KUGEL = `#version 300 es
+precision highp float;
+in vec4 vCol; out vec4 o;
+void main(){ vec2 d = (gl_PointCoord - .5) * 2.; float r2 = dot(d, d);
+  if (r2 > 1.) discard;
+  vec3 n = vec3(d.x, -d.y, sqrt(1. - r2)), L = normalize(vec3(-.5, .6, .65));
+  float dif = .5 + .6 * max(dot(n, L), 0.), spec = pow(max(dot(reflect(-L, n), vec3(0., 0., 1.)), 0.), 36.);
+  float aa = smoothstep(1., .82, sqrt(r2));
+  o = vec4((vCol.rgb * dif * (.75 + .25 * n.z) + spec * .85 * vCol.a) * aa, vCol.a * aa); }`;
 
 // Mischen: die Ebene ist vormultipliziert (Punkte lassen den Grund durch), gemischt wird mit der Farbe ohne Deckung
 const FS_MISCH = `#version 300 es
@@ -160,7 +170,7 @@ export function motorErstellen({ sparsam = SPARSAM, verloren = () => {}, zurueck
     if (motor.kaputt.has(id)) return null;
     const e = EFFEKTE[id];
     try {
-      return e.punkte ? programm(id, vsPunkte(e.glsl), e.weich ? FS_PUNKTE_WEICH : FS_PUNKTE) : programm(id, VS_FLAECHE, fsEffekt(e.glsl));
+      return e.punkte ? programm(id, vsPunkte(e.glsl), e.weich ? FS_PUNKTE_WEICH : e.kugel ? FS_PUNKTE_KUGEL : FS_PUNKTE) : programm(id, VS_FLAECHE, fsEffekt(e.glsl));
     } catch (f) {
       if (gl.isContextLost()) return null;   // kein Fehler des Effekts: der Kontext ist weg
       const text = `Effekt «${e.name}»: ${f.message}`;
