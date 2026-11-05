@@ -11,7 +11,7 @@ const root = new URL("../", import.meta.url);
 const lies = (p) => readFileSync(new URL(p, root), "utf8");
 
 // seit 28. Oktober 2026 «Beta» statt «Lab»: aufklappbar (<details>), darin «Lab» und «Das 3. Rad», beide in einem neuen Fenster
-const BETA = [["Animations", "animations/"], ["Lab", "beta/lab/"], ["Das 3. Rad", "beta/drittes-rad/"]];
+const BETA = [["Lab", "beta/lab/"], ["Das 3. Rad", "beta/drittes-rad/"]];
 // seit 31. Oktober 2026 ganz rechts neben «Beta» das Kästchen «Gamma» (ornament.cloud/gamma/, neues Fenster)
 const GAMMA = ["Gamma", "gamma/"];
 const MENU = [["Apps", "apps/"], ["Prompts", "masterprompts/"], ["Zettel", "zu-seiner-zeit/"], ["Social", "social-media/"], ["Art", "art/"], ["Beta", null]];   // «Beta» seit dem Abend des 28. Oktober 2026 ganz rechts   // «Lab» seit 27. Oktober 2026 (ornament.lab, öffnet in einem neuen Fenster), am selben Tag an die erste Stelle;   // seit 19. Oktober 2026 (abends) ohne «Web» (die Seite bleibt, nur nicht im Menü), dahinter «Art»;   // «Social» seit 19. Oktober 2026;   // seit 10. Oktober 2026 Kästchen mit Symbol (vorher die Wörter Zettelkasten, Apps, Masterprompts, Web)
