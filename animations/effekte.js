@@ -5,6 +5,10 @@
 // seit 4. November 2026 ohne Seifenblase und Holo-Kugel, dafür Effekte, die stark aus der Bildinformation schöpfen (am Ende der Liste).
 
 const r = (name, wert) => ({ name, wert });
+// eine Wahl statt eines Schiebers: der Wert bleibt eine Zahl von 0 bis 1 (Stufe k von n ist k / (n − 1)), so laufen Adresse, Export und Werke wie bisher
+const w = (name, stufen, k = 0) => ({ name, wert: k / (stufen.length - 1), stufen });
+/** Stufe einer Wahl aus ihrem Wert 0 … 1 */
+export const stufe = (rg, v) => Math.min(rg.stufen.length - 1, Math.max(0, Math.round(v * (rg.stufen.length - 1))));
 
 // gemeinsame Blasen (Tusche und Linsen): Lage, Drift und Atmen je Blase
 const BLASE = `
@@ -502,8 +506,10 @@ vec4 effekt(vec2 uv){
   },
 
   montage: {
-    name: "Montage", herkunft: "Quadtree-Collage: das Bild zerfällt dort in kleine Kacheln, wo es viel Detail hat; Kacheln verrutschen, drehen, spiegeln und glitchen",
-    regler: [r("Teilung", .5), r("Verrutschen", .5), r("Drehen", .4), r("Glitch", .4), r("Fugen", .5)],
+    name: "Montage", herkunft: "Quadtree-Collage: das Bild zerfällt dort in kleine Kacheln, wo es viel Detail hat; Kacheln verrutschen, drehen, spiegeln und glitchen, als Vierecke, Dreiecke, Vielecke oder Kreise",
+    // Form seit 5. November 2026 (Wunsch: «nicht nur vierecke, sondern auch dreiecke, viel-ecke, kreise»): eine Wahl mit vier Stufen in P5,
+    // Vierecke ist 0, so bleiben ältere Werke (fünf Werte) unverändert
+    regler: [r("Teilung", .5), r("Verrutschen", .5), r("Drehen", .4), r("Glitch", .4), r("Fugen", .5), w("Form", ["Vierecke", "Dreiecke", "Vielecke", "Kreise"])],
     glsl: `${FELD}
 vec4 effekt(vec2 uv){
   vec2 p = P(uv); float sz = .5, lv = 0.; vec2 c = floor(p / sz) * sz;
@@ -514,25 +520,53 @@ vec4 effekt(vec2 uv){
     if (max(max(a, b), max(e, d)) - min(min(a, b), min(e, d)) < thr) break;
     sz *= .5; c = floor(p / sz) * sz; lv += 1.;
   }
-  vec2 h = h22(c * 37.1 + lv * 3.3 + uSeed), f = (p - c) / sz - .5, m = c + sz * .5;
+  // Form der Kachel: kk ist ihre Kennung (für Zufall und Glitch), m ihre Mitte, rd der Abstand zur Fuge in Pixeln, innen 0 im Zwickel um einen Kreis
+  int form = int(P5 * 3. + .5);
+  vec2 kk = c, m = c + sz * .5, g = (p - c) / sz;
+  vec2 fr = min(g, 1. - g) * sz * uRes.y; float rd = min(fr.x, fr.y), innen = 1.;
+  if (form == 1){                                                      // Dreiecke: jede Kachel an einer Diagonale geteilt, Richtung je Kachel
+    float sp = step(.5, h12(c * 19.7 + lv * 5.1 + uSeed)); vec2 gs = vec2(mix(g.x, 1. - g.x, sp), g.y);
+    float ob = step(gs.x, gs.y); vec2 sw = mix(vec2(2. / 3., 1. / 3.), vec2(1. / 3., 2. / 3.), ob);
+    m = c + vec2(mix(sw.x, 1. - sw.x, sp), sw.y) * sz; kk = c + ob * sz * .37;
+    rd = min(rd, abs(gs.y - gs.x) * .7071 * sz * uRes.y);
+  } else if (form == 2){                                               // Vielecke: Voronoi in der Grösse der Kachel, also fein, wo das Bild Detail hat
+    vec2 qi = floor(p / sz), qf = fract(p / sz), mo = vec2(0.), mr = vec2(0.); float md = 9.;
+    for (int y = -1; y <= 1; y++) for (int x = -1; x <= 1; x++){
+      vec2 o = vec2(x, y), r0 = o + .12 + .76 * h22(qi + o + lv * 17.3 + uSeed) - qf; float d = dot(r0, r0);
+      if (d < md){ md = d; mr = r0; mo = o; }
+    }
+    float ed = 9.;
+    for (int y = -2; y <= 2; y++) for (int x = -2; x <= 2; x++){
+      vec2 o = mo + vec2(x, y), r0 = o + .12 + .76 * h22(qi + o + lv * 17.3 + uSeed) - qf;
+      if (dot(mr - r0, mr - r0) > 1e-5) ed = min(ed, dot(.5 * (mr + r0), normalize(r0 - mr)));
+    }
+    kk = (qi + mo) * sz + .123; m = p + mr * sz; rd = ed * sz * uRes.y;
+  } else if (form == 3){                                               // Kreise: eine Scheibe je Kachel, in den Zwickeln liegt das Bild ruhig darunter
+    float rk = mix(.5, .42, h12(c * 23.3 + lv + uSeed)), d = (rk - length(g - .5)) * sz * uRes.y;
+    innen = clamp(d + .5, 0., 1.); rd = abs(d);
+  }
+  vec2 h = h22(kk * 37.1 + lv * 3.3 + uSeed), f = (p - m) / sz;
   float an = step(1. - P2 * .6, h.y) * floor(fract(uT * 2. + h.x) * 4.) * PI * .5;   // Vierteldrehungen, hart geschnitten
   f = rot(an) * f; if (h.x > .8) f.x = -f.x;
   float sl = pow(.5 + .5 * sin(uPhi + h.x * TAU), 3.);
   vec2 src = m + f * sz * mix(1., .6, step(.7, h.x)) + (h - .5) * sz * 3. * P1 * sl;
-  vec3 col;
+  vec3 col, grund;
   if (uZeigen > .5){
-    float gl = step(1. - P3 * .5, h22(c * 5.7 + floor(uT * 6.)).x), ca = .01 * gl;
+    float gl = step(1. - P3 * .5, h22(kk * 5.7 + floor(uT * 6.)).x), ca = .01 * gl;
     col = vec3(Ql(UV(src + vec2(ca, 0)), 0.).r, Ql(UV(src), 0.).g, Ql(UV(src - vec2(ca, 0)), 0.).b);
     if (h.y < P3 * .25) col = vec3(lum(col));                        // manche Kacheln grau, manche negativ
     else if (h.y < P3 * .4) col = 1. - col;
+    grund = Ql(uv, 0.).rgb * .45;
   } else {
     // ohne Bild: jede Kachel schraffiert, Dichte aus dem Ton des Bildes an ihrer Quelle, Winkel je Kachel
     float t = hoehe(UV(src), max(0., log2(sz * uRes.y) - 2.)), per = max(7. * uRes.y / 1350., 3.);
     vec2 dir = vec2(cos(h.x * PI), sin(h.x * PI));
     float s = abs(fract(dot(p * uRes.y, dir) / per) - .5) * 2.;
     col = mix(vec3(.043, .035, .039), vec3(.95, .925, .9), smoothstep(.12, 0., s - floor(t * 4. + .5) / 4. * .95));
+    grund = vec3(.043, .035, .039);
   }
-  vec2 fr = min((p - c), sz - (p - c)) * uRes.y; float fuge = clamp(mix(0., 2.5, P4) * uRes.y / 1350. - min(fr.x, fr.y) + .5, 0., 1.);
+  col = mix(grund, col, innen);
+  float fuge = clamp(mix(0., 2.5, P4) * uRes.y / 1350. - rd + .5, 0., 1.);
   col = mix(col, vec3(.043, .035, .039), fuge);
   return vec4(col, 1.);
 }`,

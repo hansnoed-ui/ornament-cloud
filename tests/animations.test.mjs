@@ -130,3 +130,15 @@ test("Werk sichern: leere Ebenen («— keine —») gehen nicht mit, werke.php 
   assert.match(lies("animations/seite.js"), /stapel\.ebenen = stapel\.ebenen\.filter\(\(e\) => e\.effekt/);
   assert.match(lies("animations/werke.php"), /if \(\$effekt === ''\) continue;/);
 });
+
+test("Montage: Form als Wahl mit vier Stufen (5. November 2026), Vierecke bleibt der Standard, «neu mischen» trifft nur Stufen", async () => {
+  const { stufe } = await import(new URL("animations/effekte.js", root).href);
+  const form = EFFEKTE.montage.regler.find((r) => r.stufen);
+  assert.deepEqual(form.stufen, ["Vierecke", "Dreiecke", "Vielecke", "Kreise"]);
+  assert.equal(EFFEKTE.montage.regler.indexOf(form), 5, "Form liegt in P5, ältere Werke mit fünf Werten bleiben Vierecke");
+  assert.equal(form.wert, 0);
+  assert.deepEqual([0, 1 / 3, 2 / 3, 1, .49].map((v) => stufe(form, v)), [0, 1, 2, 3, 1]);
+  assert.match(EFFEKTE.montage.glsl, /int form = int\(P5 \* 3\. \+ \.5\)/);
+  for (let i = 0; i < 300; i++) for (const e of zufall().ebenen) if (e.effekt === "montage") assert.ok([0, 1, 2, 3].includes(stufe(form, e.werte[5])) && Math.abs(e.werte[5] * 3 - Math.round(e.werte[5] * 3)) < .01);
+  assert.match(lies("animations/seite.js"), /r\.stufen \? stufenWahl/);
+});
