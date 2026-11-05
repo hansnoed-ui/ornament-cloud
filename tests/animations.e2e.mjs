@@ -1,4 +1,4 @@
-// «Animationen» – Browser-Test (Playwright, Chromium mit SwiftShader): alle 31 Effekte übersetzen und zeichnen mit einem eigenen Bild etwas,
+// «Animationen» – Browser-Test (Playwright, Chromium mit SwiftShader): alle 32 Effekte übersetzen und zeichnen mit einem eigenen Bild etwas,
 // die Schlaufe hat keine Naht, die leere Bühne fordert ein Bild, «Neu mischen» schreibt die Mischung in die Adresse, «Werk sichern» legt
 // das Werk ab (werke.php hier vorgetäuscht), es erscheint bei den Werken, lässt sich über #w=ID öffnen und wieder löschen, Pause und Standbild,
 // kein seitliches Scrollen auf dem Handy.
@@ -99,7 +99,7 @@ await check("leere Bühne: fordert ein Bild, Sichern und MP4 warten; mit Bild ze
   await ctx.close();
 });
 
-await check("alle 31 Effekte zeichnen mit dem eigenen Bild ein sichtbares Bild, und die Schlaufe schliesst ohne Naht", async () => {
+await check("alle 32 Effekte zeichnen mit dem eigenen Bild ein sichtbares Bild, und die Schlaufe schliesst ohne Naht", async () => {
   const { ctx, page } = await oeffne();
   await bildBringen(page);
   const ids = await page.evaluate(async () => (await import("./effekte.js")).EFFEKT_IDS);
@@ -212,7 +212,7 @@ await check("Grafik setzt aus (5. November 2026, Handy: «Diese Seite braucht We
   assert.match(r.weg, /ausgesetzt/); assert.match(r.zurueck, /wieder/); assert.ok(r.hell > 3, `zeichnet wieder (${r.hell})`); assert.equal(r.sparsam, true);
   // ein Effekt, der nicht übersetzt: seine Ebene bleibt leer, die andere wird gezeichnet, die Seite meldet ihn
   const k = await page.evaluate(async () => {
-    const { EFFEKTE } = await import("./effekte.js?v=10");
+    const { EFFEKTE } = await import("./effekte.js?v=11");
     EFFEKTE.kaputt = { name: "Kaputt", herkunft: "", regler: [], glsl: "vec4 effekt(vec2 uv){ return nichtDa; }" };
     const { motor, S } = window.animationen;
     S.mix = { bild: "eigen", grund: "schwarz", ebenen: [{ effekt: "kaputt" }, { effekt: "bild", modus: "normal", deckkraft: 1 }] };
