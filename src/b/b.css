@@ -91,6 +91,10 @@ ul, ol { padding: 0; list-style: none; }
 .hauptnav .beta-liste a::after { content: "\00a0↗"; opacity: 0.7; }
 .hauptnav .beta-liste a:hover, .hauptnav .beta-liste a:focus-visible { background: color-mix(in srgb, var(--tinte) 12%, transparent); outline: none; }
 @media (max-width: 760px) { .beta.nach-rechts .beta-liste { right: auto; left: -18px; } }
+/* «Über» (5. November 2026, Wunsch: «Nimm Angebote, zuletzt und werke mal unter "über"»): gleiches Aufklappmenü wie «Beta», aber Seiten der Website, darum ohne Pfeil */
+.hauptnav .ueber .beta-liste a::after { content: none; }
+.hauptnav .ueber .beta-liste a[aria-current] { font-weight: 600; }
+.hauptnav .ueber > summary.aktiv { border-bottom-color: var(--faden); color: var(--faden); }
 /* .hauptnav a[target="_blank"] (Lab) hatte Rosa; seit die Seiten farbige Köpfe haben, wieder wie die anderen Menüpunkte (27. Oktober 2026, Wunsch: «mach ihn wieder in die selbe farbe wie die anderen menupunkte») */
 .kopf::after { content: ""; display: block; max-width: var(--spalte); margin: 18px auto 0; height: 1px; background: var(--linie); }
 @media (min-width: 760px) { .kopf::after { margin-left: auto; margin-right: auto; width: calc(100% - 2 * var(--rand)); } }
