@@ -1,9 +1,9 @@
 // Animationen – die Seite: Mischpult (das eigene Bild, Grund, drei Ebenen, Schalter, Sichern) mit den gesicherten Werken darunter
 // (gestreutes Raster, beim Darüberfahren lebendig, Klick lädt ins Mischpult) und Info. Ein Motor zeichnet für alles; die sichtbare
 // Leinwand übernimmt sein Bild. Seit 4. November 2026 ohne Reel, Beispielbilder und vorgefertigte Werke.
-import { motorErstellen, videoErstellen, DAUER, LAENGEN, MODI } from "./motor.js?v=7";
-import { EFFEKTE, EFFEKT_IDS, stufe, wertVon } from "./effekte.js?v=7";
-import { zufall, EIGEN } from "./rezepte.js?v=7";
+import { motorErstellen, videoErstellen, DAUER, LAENGEN, MODI } from "./motor.js?v=8";
+import { EFFEKTE, EFFEKT_IDS, stufe, wertVon } from "./effekte.js?v=8";
+import { zufall, EIGEN } from "./rezepte.js?v=8";
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, attr = {}, ...kinder) => {

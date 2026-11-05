@@ -835,23 +835,33 @@ vec4 effekt(vec2 uv){
     // überarbeitet am 5. November 2026 (Rückmeldung zum Handy: «Das sieht gar nicht gut aus» – flacher dicker Drahtwürfel, das Bild nicht zu sehen):
     // der Schein jedes Punkts rechnet mit, wie viele Nachbarn ihn überdecken (sonst wird er zur weissen Fläche), der Würfel hat Tiefe,
     // und die meisten Stränge sind jetzt Lichtspuren, die auf den stärksten Kanten des Bildes beginnen und den Linien gleicher Helligkeit folgen
-    regler: [r("Spuren", .55), r("Länge", .55), r("Würfel", .35), r("Blitze", .4), r("Kanten", .65), r("Glühen", .5)],
+    // seit 5. November 2026 (Wunsch: «differenzierte lichtformen … auch im würfel») wählt «Innen» das Licht im Würfel: ein irrender Faden, Plasma aus der Mitte,
+    // ein Prisma (ein weisser Strahl fächert sich in Farben) oder Schichten, die als Lichtscan durch den Würfel steigen; die Länge der Stränge ist fest
+    regler: [r("Spuren", .6), w("Innen", ["Faden", "Plasma", "Prisma", "Schichten"]), r("Würfel", .3), r("Blitze", .2), r("Kanten", .65), r("Glühen", .5)],
     mischung: "add", weich: true,
-    // je Zeile ein Strang aus 200 Punkten (doppelt: Kern und Schein): zwölf Kanten des Würfels, zwei Fäden in ihm, dann Blitze und Spuren
+    // je Zeile ein Strang aus 120 Punkten (Handy 80; doppelt: Kern und Schein): zwölf Kanten des Würfels, acht Zeilen Licht in ihm, dann Blitze und Spuren
     // sparsam (Handy): kürzere Stränge, dafür mehr davon, damit das Motiv lesbar bleibt (Rechenzeit wächst mit dem Quadrat der Stranglänge)
-    punkte: (w, a, h, d = 1) => ({ cols: d < 1 ? 240 : 400, rows: 14 + Math.round((60 + 200 * w[0]) * Math.min(1, d * 2)) }),
+    punkte: (w, a, h, d = 1) => ({ cols: d < 1 ? 160 : 240, rows: 20 + Math.round((120 + 420 * w[0]) * Math.min(1, d * 2)) }),
     glsl: `${FELD}
 vec3 wDreh(vec3 v){
   float a = uPhi + .4, b = .5 + .2 * sin(uPhi);             // gleichmässig um die Hochachse, leicht nickend
   v.xz = rot(a) * v.xz; v.yz = rot(b) * v.yz; return v;
 }
-vec3 wBild(vec3 v, float s){ v = wDreh(v) * s; return vec3(v.xy * (2.4 / (2.4 - v.z)), v.z / s); }
+// der Würfel sitzt auf der hellsten Form des Bildes (Rückmeldung vom 5. November 2026: «noch viel mehr am Bild orientiert»)
+vec2 wZentrum(){
+  vec3 acc = vec3(0.);
+  for (int y = 0; y < 5; y++) for (int x = 0; x < 5; x++){ vec2 u = (vec2(x, y) + .5) / 5.; float L = lum(Kl(u, 4.).rgb), g = pow(L, 3.) + .02; acc += vec3(P(u) * g, g); }
+  return acc.xy / acc.z * .85;
+}
+vec2 WZ;
+vec3 wBild(vec3 v, float s){ v = wDreh(v) * s; return vec3(v.xy * (2.4 / (2.4 - v.z)) + WZ, v.z / s); }
 void punkt(int id, out vec2 pos, out vec4 col, out float size){
   float i = float(id), x = mod(i, uCols), zeile = floor(i / uCols), schein = mod(x, 2.), j = floor(x / 2.), n = uCols / 2.;
-  float k = uRes.y / 1350., s = mix(.07, .22, P2), px = 1. / uRes.y;
-  float nb = 14. + max(2., floor((uRows - 14.) * mix(.04, .2, P3)));   // Zeilen 14 bis nb: Blitze, danach Spuren
+  float k = uRes.y / 1350., s = mix(.05, .22, P2), px = 1. / uRes.y, wDa = smoothstep(0., .08, P2);   // Würfel 0: kein Würfel, nur die Spuren
+  float nb = 20. + max(2., floor((uRows - 20.) * mix(.04, .2, P3)));   // Zeilen 20 bis nb: Blitze, danach Spuren
   vec3 licht = vec3(.8, .89, 1.);
   pos = vec2(9.); col = vec4(0.); size = 0.;
+  WZ = zeile < nb ? wZentrum() : vec2(0.);
   float kern = 4. * k + 1.2, glanz = (12. + 26. * P5) * k;   // Durchmesser der Gaussflecken; sichtbar ist gut ein Drittel
   // Deckung je Punkt nach dem Abstand der Nachbarn: so bleibt der Schein weich, statt zur Fläche zu werden
   #define DECK(abstand, groesse, ziel) min(1., (ziel) * 2.5 * max(abstand, 1.) / max(groesse, 1.))
@@ -864,37 +874,70 @@ void punkt(int id, out vec2 pos, out vec4 col, out float size){
     float ecke = smoothstep(.9, 1., abs(t)) * (.6 + .4 * sin(uPhi * 3. + zeile));
     float kz = max(kern * (.8 + .5 * tief), ab * 3.2);
     float a = (.35 + .65 * tief) * (schein > .5 ? DECK(ab, glanz, .35) : DECK(ab, kz, .8));
-    a *= 1. + ecke * (schein > .5 ? 2.5 : .6);
+    a *= (1. + ecke * (schein > .5 ? 2.5 : .6)) * wDa;
     col = vec4(licht * a, a);
     size = schein > .5 ? glanz * (.7 + .5 * tief) * (1. + ecke) : kz;
     return;
   }
-  if (zeile < 14.){                                         // im Würfel irrt ein Faden, an den Wänden gespiegelt
-    vec3 q3 = vec3(0.), d3 = normalize(vec3(.3, .5, .2) + zeile * .4);
-    for (int z = 0; z < 200; z++){
-      if (float(z) >= j) break;
-      vec3 r3 = vec3(ln(vec2(float(z) * .05, zeile * 3.), .5), ln(vec2(float(z) * .05 + 7., zeile * 3.), .5), ln(vec2(float(z) * .05 + 13., zeile * 3.), .5));
-      d3 = normalize(d3 + r3 * .5); q3 += d3 * .028;
-      if (abs(q3.x) > 1.){ q3.x = sign(q3.x) * 2. - q3.x; d3.x = -d3.x; }
-      if (abs(q3.y) > 1.){ q3.y = sign(q3.y) * 2. - q3.y; d3.y = -d3.y; }
-      if (abs(q3.z) > 1.){ q3.z = sign(q3.z) * 2. - q3.z; d3.z = -d3.z; }
+  if (zeile < 20.){                                         // Licht im Würfel, nach der Wahl «Innen»
+    float r = zeile - 12., tt = j / (n - 1.); int art = int(floor(P1 * 3. + .5));
+    vec3 q3 = vec3(0.), c3 = licht; float ab = 1., a0 = 1.;
+    if (art == 0){                                          // Faden: irrt, an den Wänden gespiegelt
+      if (r > 1.5) return;
+      vec3 d3 = normalize(vec3(.3, .5, .2) + r * .4);
+      for (int z = 0; z < 200; z++){
+        if (float(z) >= j) break;
+        vec3 r3 = vec3(ln(vec2(float(z) * .05, r * 3.), .5), ln(vec2(float(z) * .05 + 7., r * 3.), .5), ln(vec2(float(z) * .05 + 13., r * 3.), .5));
+        d3 = normalize(d3 + r3 * .5); q3 += d3 * .028;
+        if (abs(q3.x) > 1.){ q3.x = sign(q3.x) * 2. - q3.x; d3.x = -d3.x; }
+        if (abs(q3.y) > 1.){ q3.y = sign(q3.y) * 2. - q3.y; d3.y = -d3.y; }
+        if (abs(q3.z) > 1.){ q3.z = sign(q3.z) * 2. - q3.z; d3.z = -d3.z; }
+      }
+      q3 *= .92; ab = .028 * s * uRes.y; a0 = .45 * (.5 + .5 * sin(j * .08 - uPhi * 2. + r));
+    } else if (art == 1){                                   // Plasma: Entladungen aus einem glühenden Kern zu den Wänden, sie tasten umher
+      vec3 d3 = normalize(h33(vec3(r, 3.1, uSeed)) * 2. - 1. + .8 * vec3(ln(vec2(r * 2.1, 1.), .35), ln(vec2(r * 2.1, 4.), .35), ln(vec2(r * 2.1, 7.), .35)) + 1e-3);
+      vec3 ende = d3 / max(abs(d3.x), max(abs(d3.y), abs(d3.z)));
+      vec3 u3 = normalize(cross(d3, vec3(.3, 1., .2))), v3 = cross(d3, u3);
+      float zit = sin(PI * tt) * .3;
+      q3 = ende * tt + (u3 * ln(vec2(tt * 3., r * 3. + 1.), 1.4) + v3 * ln(vec2(tt * 3. + 9., r * 3.), 1.4)) * zit;
+      ab = length(ende) * s / n * uRes.y * 1.3;
+      a0 = .9 * (1.3 - .5 * tt) * (.7 + .3 * sin(uPhi * 4. + r * 2.));
+      c3 = mix(vec3(.75, .6, 1.), vec3(1., .92, 1.), 1. - tt);
+      if (j < 1.5){ q3 = vec3(0.); a0 = 1.; c3 = vec3(1.); ab = 1.; }   // der Kern
+    } else if (art == 2){                                   // Prisma: ein weisser Strahl tritt ein und fächert sich in der Mitte in Farben auf
+      vec3 ein = vec3(-1., .7, .5);
+      if (r < .5){ q3 = mix(ein, vec3(0.), tt); c3 = vec3(1.); a0 = .9; }
+      else {
+        float fr = (r - 1.) / 6., zit = .03 * sin(uPhi * 3. + r);
+        vec3 aus = vec3(1., mix(.55, -.95, fr) + zit, mix(-.6, .6, fr));
+        q3 = mix(vec3(0.), aus, tt);
+        c3 = clamp(abs(fract(fr * .8 + vec3(0., 2., 1.) / 3.) * 6. - 3.) - 1., 0., 1.) * .9 + .1;
+        a0 = .8;
+      }
+      ab = 1.6 * s / n * uRes.y;
+    } else {                                                // Schichten: helle Quadrate steigen als Lichtscan durch den Würfel
+      float y = mod(r / 8. + uPhi / TAU, 1.) * 2. - 1., u4 = tt * 4., seite = floor(min(u4, 3.999)), f = u4 - seite;
+      vec2 e2 = seite < .5 ? vec2(-1. + 2. * f, -1.) : seite < 1.5 ? vec2(1., -1. + 2. * f) : seite < 2.5 ? vec2(1. - 2. * f, 1.) : vec2(-1., 1. - 2. * f);
+      q3 = vec3(e2.x, y, e2.y) * .98;
+      ab = 8. * s / n * uRes.y;
+      a0 = .5 * smoothstep(1., .7, abs(y)) * (.4 + .6 * pow(.5 + .5 * sin(r * 2.4 + uPhi), 3.));
+      c3 = mix(licht, vec3(.6, 1., .85), .5 + .5 * y);
     }
-    vec3 w3 = wBild(q3 * .92, s); pos = w3.xy;
-    float tief = clamp(.5 + w3.z * .29, 0., 1.), ab = .028 * s * uRes.y;
-    float kz = max(kern * .8, ab * 3.2);
-    float a = (.3 + .7 * tief) * (.5 + .5 * sin(j * .08 - uPhi * 2. + zeile)) * (schein > .5 ? DECK(ab, glanz * .7, .12) : DECK(ab, kz, .45));
-    col = vec4(licht * a, a);
-    size = schein > .5 ? glanz * .7 : kz;
+    vec3 w3 = wBild(q3, s); pos = w3.xy;
+    float tief = clamp(.5 + w3.z * .29, 0., 1.), kz = max(kern * .8, ab * 3.2);
+    float a = (.4 + .6 * tief) * a0 * (schein > .5 ? DECK(ab, glanz, .5) : DECK(ab, kz, 1.1)) * wDa;
+    col = vec4(c3 * a, a);
+    size = schein > .5 ? glanz : kz;
     return;
   }
   if (zeile < nb){                                          // Blitze aus den Ecken, die Kanten des Bildes fangen sie ein
-    float b = zeile - 14.;
+    float b = zeile - 20.;
     float h = h12(vec2(b, 3.) + uSeed), m = 3. + floor(h12(vec2(b, 5.) + uSeed) * 3.);
     float zz = uT * m + h, u = fract(zz), cyc = mod(floor(zz), m);   // m Schläge pro Schlaufe: Schlag n und n + m sind derselbe
     vec2 hh = h22(vec2(b, cyc) * 1.7 + uSeed * 3.1);
     vec3 ecke = vec3(step(.5, hh.x), step(.5, hh.y), step(.5, h12(vec2(cyc, b) + 9.))) * 2. - 1.;
     vec2 q = wBild(ecke, s).xy, dir = normalize(q + (hh - .5) * .4 + 1e-4);
-    float st = mix(.3, 1., P1) / n;
+    float st = .4 / n;
     if (j > smoothstep(0., .12, u) * n) return;              // der Blitz schiesst in einem Augenblick aus, dann verglimmt er
     float kr = 0.;
     for (int z = 0; z < 200; z++){
@@ -911,32 +954,33 @@ void punkt(int id, out vec2 pos, out vec4 col, out float size){
     float fl = .7 + .3 * step(.3, h12(vec2(floor(uT * 240.), b)));
     float a = (u < .12 ? 1.2 : exp(-(u - .12) * 5.)) * fl * (1. - .5 * j / n), ab = st * uRes.y;
     vec3 c = uZeigen > .5 ? mix(licht, min(Kl(UV(q), 1.).rgb * 1.6 + .1, 1.), .5) : licht;
-    float kz = max(kern * (1.3 + .8 * (1. - j / n)), ab * 3.2);
-    a *= schein > .5 ? DECK(ab, glanz * 1.4, .35) : DECK(ab, kz, .95);
+    float kz = max(kern * (.9 + .5 * (1. - j / n)), ab * 3.2);
+    a *= schein > .5 ? DECK(ab, glanz, .25) : DECK(ab, kz, .8);
     col = vec4(c * a * 1.2, a);
-    size = schein > .5 ? glanz * 1.4 : kz;
+    size = schein > .5 ? glanz : kz;
     return;
   }
   // Lichtspuren: beginnen auf der stärksten von vier Kanten und folgen der Linie gleicher Helligkeit; ein heller Kopf läuft, der Schweif glimmt nach
   float sI = zeile - nb, h = h12(vec2(sI, 7.) + uSeed);
   float zz = uT * 2. + h, u = fract(zz), cyc = mod(floor(zz), 2.);
   vec2 sp = vec2(.5); float best = -1.;
-  for (int c = 0; c < 4; c++){
-    vec2 cand = h22(vec2(sI * 1.37, cyc * 4. + float(c)) + uSeed * 1.3) * .96 + .02;
-    float e = length(feldG(cand, 1.5, 3.)); if (e > best){ best = e; sp = cand; }
+  for (int c = 0; c < 6; c++){                             // die stärkste von sechs Kanten
+    if (uSparsam > .5 && c > 3) break;
+    vec2 cand = h22(vec2(sI * 1.37, cyc * 6. + float(c)) + uSeed * 1.3) * .96 + .02;
+    float e = length(feldG(cand, 1., 2.5)); if (e > best){ best = e; sp = cand; }
   }
-  float kr0 = smoothstep(mix(.15, 1.5, P4), mix(2., 7., P4), best);   // Spuren nur, wo das Bild eine Form hat
+  float kr0 = smoothstep(mix(.3, 3., P4), mix(3., 12., P4), best);   // Spuren nur, wo das Bild eine Form hat
   if (kr0 < .02) return;
-  float L = mix(.15, .6, P1), st = L / n, rk = h12(vec2(sI, 9.)) < .5 ? 1. : -1.;
+  float L = .0025 * n, st = L / n, rk = h12(vec2(sI, 9.)) < .5 ? 1. : -1.;
   float tail = n * .6, head = smoothstep(0., .7, u) * (n + tail);
   if (j > head) return;
   vec2 q = P(sp), dir = vec2(0.);
   float kr = kr0;
   for (int z = 0; z < 200; z++){
     if (float(z) >= j) break;
-    vec2 g = feldG(UV(q), 2., 4.), t = normalize(vec2(-g.y, g.x) + 1e-5) * rk;
+    vec2 g = feldG(UV(q), .8, 2.5), t = normalize(vec2(-g.y, g.x) + 1e-5) * rk;   // fein: die Spur hält sich genau an die Kontur
     if (dot(t, dir) < 0.) t = -t;
-    dir = length(dir) < .5 ? t : normalize(mix(dir, t, .5));
+    dir = length(dir) < .5 ? t : normalize(mix(dir, t, .75));
     kr = smoothstep(.4, 6., length(g));
     q += dir * st;
   }
@@ -1120,6 +1164,66 @@ vec4 effekt(vec2 uv){
   vec3 grund = uZeigen > .5 ? mix(nacht, Ql(uv, 0.).rgb * .5, P5) : nacht;
   vec3 col = grund + c * licht + c * .06 * smoothstep(.2, .7, fo);
   return vec4(clamp(col, 0., 1.), 1.);
+}`,
+  },
+  lichtformen: {
+    name: "Lichtformen", herkunft: "Licht aus den Formen des Bildes: glühende Kanten, Kaustiken wie Licht durch Wasser, Strahlenbündel, die aus den hellen Formen brechen, prismatische Säume oder Lichtschleier entlang der Konturen",
+    // Wunsch vom 5. November 2026: «gibt es noch differenzierte lichtformen? … als effekt der sich auf die formen im bild bezieht»
+    regler: [w("Form", ["Glühkanten", "Kaustik", "Strahlen", "Prisma", "Schleier"]), r("Stärke", .6), r("Schwelle", .45), r("Bewegung", .5), r("Wärme", .25), r("Bild", .2)],
+    glsl: `${FELD}
+vec3 lfSpek(float h){ return clamp(abs(fract(h + vec3(0., 2., 1.) / 3.) * 6. - 3.) - 1., 0., 1.); }
+vec4 effekt(vec2 uv){
+  vec2 p = P(uv); int f = int(floor(P0 * 4. + .5));
+  float tempo = 1. + floor(P3 * 2.99), thr = mix(4., 30., P2), st = mix(.4, 1.6, P1);
+  vec3 lc = mix(vec3(.8, .89, 1.), vec3(1., .8, .52), P4);
+  if (uZeigen > .5) lc = mix(lc, min(Kl(uv, 1.).rgb * 1.5 + .1, 1.), .55);   // mit Bild: das Licht nimmt seine Farben an
+  vec3 L = vec3(0.);
+  if (f == 0){                                              // Glühkanten: ein scharfer Kern auf den Kanten, darum ein weiter Hof; ein Puls läuft die Höhenstufen entlang
+    float e1 = length(feldG(uv, 1., 2.)), e3 = length(feldG(uv, 3.5, 6.));
+    float lauf = .55 + .45 * sin(lum(Kl(uv, 2.).rgb) * 22. - uPhi * tempo) * P3;
+    L = lc * (smoothstep(thr, thr * 3., e1) * (.55 + .45 * lauf) * 1.1 + pow(smoothstep(thr * .15, thr * 2., e3), 1.5) * .75 * (.7 + .3 * lauf)) * st;
+  } else if (f == 1){                                       // Kaustik: Licht durch bewegtes Wasser, gebrochen an den Formen des Bildes und hell, wo das Bild hell ist
+    vec2 g3 = feldG(uv, 3., 6.);
+    vec2 q = p * mix(5., 11., P1) + g3 * .012;
+    float c1 = 1. - abs(ln(q, .7)), c2 = 1. - abs(ln(q * 1.7 + 5.3, .9));
+    float c = pow(c1, 7.) + pow(c2, 9.) * .7 + pow(min(c1, c2), 4.) * .6;   // zwei Lagen schmaler Grate: das Netz der Kaustik
+    float hell = smoothstep(mix(.05, .6, P2), 1., lum(Kl(uv, 2.).rgb)) + .5 * smoothstep(thr * .3, thr * 2., length(g3));
+    L = lc * c * hell * 1.3;
+  } else if (f == 2){                                       // Strahlenkranz: die Umrisse werfen feine Strahlen nach aussen, weg von der Mitte des Lichts
+    vec2 zm = vec2(.5 + .05 * cos(uPhi), .52 + .04 * sin(uPhi)), d = uv - zm;
+    float ang = atan(d.y * 1.25, d.x * A()), acc = 0., dec = 1.;
+    int S = uSparsam > .5 ? 12 : 24;
+    for (int i = 0; i < 24; i++){
+      if (i >= S) break;
+      vec2 q = uv - d * float(i) / float(S) * .35;
+      float k = abs(lum(Kl(q, 1.5).rgb) - lum(Kl(q, 4.).rgb)) * 5.;
+      acc += smoothstep(mix(.1, .6, P2), 1., k) * dec; dec *= .92;
+    }
+    float streif = .35 + .65 * pow(.5 + .5 * ln(vec2(ang * 18., 1.), .8 * P3 + .05), 2.);
+    L = lc * acc * .2 * st * streif;
+  } else if (f == 3){                                       // Prisma: die Kanten zerlegen sich in Spektralfarben, Rot und Blau liegen versetzt
+    vec2 g3 = feldG(uv, 3., 6.), o = normalize(g3 + 1e-5) / vec2(A(), 1.) * .006 * st;
+    float eR = smoothstep(thr, thr * 2.5, length(feldG(uv - o, 1.5, 3.)));
+    float eG = smoothstep(thr, thr * 2.5, length(feldG(uv, 1.5, 3.)));
+    float eB = smoothstep(thr, thr * 2.5, length(feldG(uv + o, 1.5, 3.)));
+    float hue = atan(g3.y, g3.x) / TAU + uT * tempo + lum(Kl(uv, 2.).rgb) * .5;
+    L = (vec3(eR, eG, eB) * .9 + lfSpek(hue) * max(eR, max(eG, eB)) * .6 + lfSpek(hue) * smoothstep(thr * .3, thr * 2., length(g3)) * .25) * st;
+  } else {                                                  // Schleier: feine Lichtfäden, die den Konturen folgen und durch sie ziehen
+    vec2 g3 = feldG(uv, 3., 6.), t = normalize(vec2(-g3.y, g3.x) + 1e-5);
+    float hof = smoothstep(thr * .1, thr * .9, length(g3)), v = 0.;
+    int S = uSparsam > .5 ? 8 : 16;
+    for (int i = 0; i < 16; i++){
+      if (i >= S) break;
+      float fi = float(i) / float(S) - .5;
+      vec2 q = p + t * fi * .08;
+      v += ln(q * vec2(70.), .9);
+    }
+    v = abs(v / float(S)) * 4.;
+    float faden = smoothstep(.25, .8, v);
+    L = lc * (faden * 1.6 + .15) * hof * st;
+  }
+  vec3 grund = uZeigen > .5 ? Ql(uv, 0.).rgb * P5 : vec3(.02, .022, .03);
+  return vec4(clamp(grund + L, 0., 1.), 1.);
 }`,
   },
 };

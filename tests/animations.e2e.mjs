@@ -1,4 +1,4 @@
-// «Animationen» – Browser-Test (Playwright, Chromium mit SwiftShader): alle 30 Effekte übersetzen und zeichnen mit einem eigenen Bild etwas,
+// «Animationen» – Browser-Test (Playwright, Chromium mit SwiftShader): alle 31 Effekte übersetzen und zeichnen mit einem eigenen Bild etwas,
 // die Schlaufe hat keine Naht, die leere Bühne fordert ein Bild, «Neu mischen» schreibt die Mischung in die Adresse, «Werk sichern» legt
 // das Werk ab (werke.php hier vorgetäuscht), es erscheint bei den Werken, lässt sich über #w=ID öffnen und wieder löschen, Pause und Standbild,
 // kein seitliches Scrollen auf dem Handy.
@@ -89,7 +89,8 @@ await check("leere Bühne: fordert ein Bild, Sichern und MP4 warten; mit Bild ze
   assert.equal(await page.evaluate(() => window.animationen.S.mix.bild), "eigen", "Neu mischen behält das Bild");
   // Format 16:9 (PR #615): die Bühne wird breit, die Leinwand rechnet im Seitenverhältnis, das Format steht im Link
   await page.getByRole("button", { name: "16:9", exact: true }).click();
-  await page.waitForTimeout(400);
+  // die Leinwand wechselt mit dem nächsten Bild; ein schwerer Effekt in der Mischung braucht in SwiftShader dafür länger als 400 ms
+  await page.waitForFunction(() => { const c = document.getElementById("pult-bild"); return Math.abs(c.width / c.height - 16 / 9) < .02; }, null, { timeout: 20000 }).catch(() => {});
   assert.equal(await page.evaluate(() => document.documentElement.dataset.format), "16x9");
   const [cb, ch, rb, rh] = await page.evaluate(() => { const c = document.getElementById("pult-bild"), r = c.getBoundingClientRect(); return [c.width, c.height, r.width, r.height]; });
   assert.ok(Math.abs(cb / ch - 16 / 9) < .02, `Leinwand ${cb} × ${ch}`); assert.ok(Math.abs(rb / rh - 16 / 9) < .02, `Bühne ${rb} × ${rh}`);
@@ -98,7 +99,7 @@ await check("leere Bühne: fordert ein Bild, Sichern und MP4 warten; mit Bild ze
   await ctx.close();
 });
 
-await check("alle 30 Effekte zeichnen mit dem eigenen Bild ein sichtbares Bild, und die Schlaufe schliesst ohne Naht", async () => {
+await check("alle 31 Effekte zeichnen mit dem eigenen Bild ein sichtbares Bild, und die Schlaufe schliesst ohne Naht", async () => {
   const { ctx, page } = await oeffne();
   await bildBringen(page);
   const ids = await page.evaluate(async () => (await import("./effekte.js")).EFFEKT_IDS);
@@ -211,7 +212,7 @@ await check("Grafik setzt aus (5. November 2026, Handy: «Diese Seite braucht We
   assert.match(r.weg, /ausgesetzt/); assert.match(r.zurueck, /wieder/); assert.ok(r.hell > 3, `zeichnet wieder (${r.hell})`); assert.equal(r.sparsam, true);
   // ein Effekt, der nicht übersetzt: seine Ebene bleibt leer, die andere wird gezeichnet, die Seite meldet ihn
   const k = await page.evaluate(async () => {
-    const { EFFEKTE } = await import("./effekte.js?v=7");
+    const { EFFEKTE } = await import("./effekte.js?v=8");
     EFFEKTE.kaputt = { name: "Kaputt", herkunft: "", regler: [], glsl: "vec4 effekt(vec2 uv){ return nichtDa; }" };
     const { motor, S } = window.animationen;
     S.mix = { bild: "eigen", grund: "schwarz", ebenen: [{ effekt: "kaputt" }, { effekt: "bild", modus: "normal", deckkraft: 1 }] };
