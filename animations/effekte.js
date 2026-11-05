@@ -782,6 +782,269 @@ vec4 effekt(vec2 uv){
   return vec4(clamp(col, 0., 1.), 1.);
 }`,
   },
+  // ——— Nachtrag vom 5. November 2026 (Christian: «ob auch phorma iii effekte möglich sind: gewebe, blitze/spuren aus dem Lichtwürfel, traube (aber von den
+  // Formen des Bildes ausgehend)», dazu «Physarum aus Phorma ii»): die vier Ideen aus PHORMA II und III neu als zustandslose Shader für das Mischpult,
+  // ohne Ton; jede liest ihre Formen aus dem Bild (Linien gleicher Helligkeit, Konturen, Kanten, helle Flächen)
+
+  gewebe: {
+    name: "Gewebe", herkunft: "PHORMA III: die Linien gleicher Helligkeit des Bildes klappen zu Flächen aus feinen Linien auf, zerknittert wie Seide, und legen sich wieder aufs Bild",
+    regler: [r("Linien", .45), r("Lagen", .6), r("Aufklappen", .7), r("Knittern", .5), r("Papier", 1), r("Bild", .25)],
+    glsl: `vec4 effekt(vec2 uv){
+  vec2 p = P(uv);
+  float auf = P2 * HZ(.5 - .5 * cos(uPhi));                 // an der Naht liegen alle Lagen auf den Umrissen: das Bild steht
+  float N = mix(3., 12., P0); int L = int(mix(6., 36., P1));
+  vec2 dA = lcurl(p * mix(1.2, 3.5, P3) + 1.7, .6) * .045 * (.4 + P3);
+  vec2 dB = vec2(ln(p * 1.4 + 4., .5), ln(p * 1.4 + 9., .5)) * .32;
+  float tw = ln(p * .7 + 2., .4) * 4. * P3;                 // die Fläche verdreht sich beim Aufklappen: Knitterfalten
+  float tinte = 1.; vec3 farbe = vec3(0.); float fs = 0.;
+  for (int i = 0; i < 36; i++){
+    if (i >= L) break;
+    float f = (float(i) + .5) / float(L);
+    vec2 d = rot(f * tw) * (dA * f + dB * f * f) * auf;
+    vec2 q = UV(p - d);
+    vec3 c = Kl(q, 2.).rgb; float v = lum(c) * N;
+    float e = abs(fract(v + .5) - .5) / max(fwidth(v), 1e-4);
+    float a = (1. - smoothstep(.15, .95, e)) * mix(.9, 2.4 / float(L) + .02, smoothstep(0., .35, auf)) * (1. - .4 * f * auf);
+    tinte *= 1. - a; farbe += c * a; fs += a;
+  }
+  float deck = 1. - tinte;
+  vec3 papier = vec3(.95, .925, .9), nacht = vec3(.043, .035, .039);
+  vec3 grund = mix(nacht, papier, P4), stift = mix(papier, vec3(.06, .055, .06), P4);
+  vec3 bc = farbe / max(fs, 1e-4);
+  if (uZeigen > .5){                                        // mit Bild: die Fäden nehmen seine Farbe an, das Bild liegt leise darunter
+    grund = mix(grund, Ql(uv, 0.).rgb * mix(1., .9, P4) + mix(0., .08, P4), P5);
+    stift = mix(stift, P4 > .5 ? bc * .55 : min(bc * 1.5 + .1, 1.), .6);
+  }
+  return vec4(mix(grund, stift, deck), 1.);
+}`,
+  },
+
+  blitze: {
+    name: "Lichtwürfel", herkunft: "PHORMA III: in der Mitte dreht sich ein Würfel aus Licht, aus seinen Ecken schlagen Blitze und laufen als Spuren den Konturen des Bildes nach",
+    regler: [r("Blitze", .5), r("Länge", .6), r("Würfel", .5), r("Verästelung", .5), r("Kanten", .65), r("Glühen", .5)],
+    mischung: "add",
+    // je Zeile ein Strang aus 240 Punkten (doppelt: Kern und Schein); die ersten zwölf Zeilen sind die Kanten des Würfels
+    punkte: (w) => ({ cols: 480, rows: 12 + Math.round(12 + 42 * w[0]) }),
+    glsl: `${FELD}
+vec3 wDreh(vec3 v){
+  float a = uPhi + .4, b = .55 + .25 * sin(uPhi);           // gleichmässig um die Hochachse, leicht nickend
+  v.xz = rot(a) * v.xz; v.yz = rot(b) * v.yz; return v;
+}
+vec2 wBild(vec3 v, float s){ v = wDreh(v) * s; return v.xy * (2.6 / (2.6 - v.z)); }
+void punkt(int id, out vec2 pos, out vec4 col, out float size){
+  float i = float(id), x = mod(i, uCols), zeile = floor(i / uCols), schein = mod(x, 2.), j = floor(x / 2.), n = uCols / 2.;
+  float k = uRes.y / 1350., s = mix(.06, .2, P2);
+  vec3 licht = vec3(.78, .88, 1.);
+  pos = vec2(9.); col = vec4(0.); size = 0.;
+  if (zeile < 12.){                                         // der Würfel: zwölf Kanten aus Licht
+    float ax = floor(zeile / 4.), c = mod(zeile, 4.), t = j / (n - 1.) * 2. - 1.;
+    vec2 sg = vec2(mod(c, 2.) * 2. - 1., floor(c / 2.) * 2. - 1.);
+    vec3 v = ax < .5 ? vec3(t, sg) : ax < 1.5 ? vec3(sg.x, t, sg.y) : vec3(sg, t);
+    pos = wBild(v, s);
+    float a = schein > .5 ? .05 + .06 * P5 : .55;
+    col = vec4(licht * a, a);
+    size = schein > .5 ? (10. + 18. * P5) * k : 1.6 * k + .5;
+    return;
+  }
+  float b = zeile - 12., gr = 1. + floor(P3 * 3.99);         // Verästelung: Blitze einer Gruppe teilen den Anfang
+  float stamm = floor(b / gr), ast = b - stamm * gr;
+  float h = h12(vec2(stamm, 3.) + uSeed), m = 3. + floor(h12(vec2(stamm, 5.) + uSeed) * 3.);
+  float zz = uT * m + h, u = fract(zz), cyc = mod(floor(zz), m);   // m Schläge pro Schlaufe: Schlag n und n + m sind derselbe
+  vec2 hh = h22(vec2(stamm, cyc) * 1.7 + uSeed * 3.1);
+  vec3 ecke = vec3(step(.5, hh.x), step(.5, hh.y), step(.5, h12(vec2(cyc, stamm) + 9.))) * 2. - 1.;
+  vec2 q = wBild(ecke, s), dir = normalize(q + (hh - .5) * .4 + 1e-4);
+  float Lg = mix(.25, 1.1, P1), st = Lg / n;
+  float kopf = smoothstep(0., .18, u) * n;                   // der Blitz schiesst in einem Augenblick aus, die Spur verglimmt
+  if (j > kopf) return;
+  float teil = floor(n * (.15 + .35 * h12(vec2(stamm, cyc) + 2.))), knick = 0.;
+  for (int z = 0; z < 240; z++){
+    float fz = float(z);
+    if (fz >= j) break;
+    float zw = fz < teil || ast < .5 ? stamm : stamm + ast * 17.;
+    vec2 r2 = h22(vec2(zw * 3.3 + cyc, floor(fz / 9.)) + uSeed) - .5;
+    vec2 g = feldG(UV(q), 1.5, 4.), t = vec2(-g.y, g.x);
+    float kr = smoothstep(.5, 9., length(g));
+    t = normalize(t + 1e-5); if (dot(t, dir) < 0.) t = -t;
+    if (mod(fz, 9.) < .5) dir = rot(r2.x * 1.6) * dir;                     // das Zucken: harte Knicke alle paar Schritte
+    dir = normalize(mix(dir, t, P4 * kr * .35));                           // die Kontur zieht den Blitz zu sich
+    q += dir * st; knick = kr;
+  }
+  pos = q;
+  float flimmern = .65 + .35 * step(.35, h12(vec2(floor(uT * 240.), b)));
+  float a = (u < .2 ? 1. : exp(-(u - .2) * 4.)) * flimmern * (1. - .4 * j / n) * (.6 + .4 * knick);
+  vec3 c = uZeigen > .5 ? mix(licht, min(Kl(UV(q), 1.).rgb * 1.7 + .08, 1.), .65) : licht;   // ohne Bild: kaltes Licht, die Wege kommen aus dem Bild
+  float al = schein > .5 ? a * (.06 + .1 * P5) : a;
+  col = vec4(c * al * 1.3, al);
+  size = schein > .5 ? (10. + 26. * P5) * k : (2.4 + 2.4 * (1. - j / n)) * k + .6;
+}`,
+  },
+
+  traube: {
+    name: "Traube", herkunft: "PHORMA III: glänzende Perlen wachsen auf den hellen Formen des Bildes zu Trauben, dazwischen ein Knäuel aus feinen Fäden, Rauch und ein wandernder Schärfenzug",
+    regler: [r("Perlen", .55), r("Grösse", .6), r("Schwelle", .35), r("Fäden", .5), r("Schärfe", .35), r("Rot", .7)],
+    glsl: `vec4 effekt(vec2 uv){
+  vec2 p = P(uv); float px = 1. / uRes.y;
+  float N = mix(14., 46., P0), zf = (uLauf > .5 ? ln(vec2(2.3, 5.1), .6) : sin(uPhi)) * .9;   // die Schärfeebene zieht durch die Tiefe
+  vec3 rot1 = vec3(.62, .03, .05), silber = vec3(.82, .84, .88);
+  // Hintergrund: Rauch und ein Knäuel aus Fäden, dicht, wo das Bild Formen hat
+  float form = smoothstep(.12, .55, lum(Kl(uv, 5.).rgb) + .6 * sat(Kl(uv, 5.).rgb));
+  float rauch = smoothstep(-.2, .7, lfbm(p * 2.2 + 3., .5)) * (.25 + .75 * form);
+  vec3 col = vec3(.035, .03, .035) + vec3(.07, .06, .065) * rauch;
+  if (uZeigen > .5) col += Ql(uv, 1.).rgb * .14;
+  float fd = 0.;
+  for (int l = 0; l < 3; l++){
+    float fl = float(l), v = ln(rot(fl * 2.1) * p * (2.2 + fl * 1.3) + fl * 7., .7 + fl * .2);
+    float e = abs(v) / max(fwidth(v), 1e-4);
+    fd += (1. - smoothstep(.2, 1.1, e)) * (.55 - fl * .12);
+  }
+  col += silber * fd * P3 * (.15 + .85 * form) * .55;
+  // die Perlen: je Zelle eine, gross, wo das Bild hell oder farbig ist; nach Tiefe sortiert, hinten zuerst
+  vec2 g = p * N, ci = floor(g);
+  vec4 pl[9]; vec3 pc[9]; int n = 0;
+  for (int y = -1; y <= 1; y++) for (int x = -1; x <= 1; x++){
+    vec2 c = ci + vec2(x, y), h = h22(c + uSeed * 5.3);
+    vec3 im = Kl(UV((c + .5) / N), 2.).rgb;
+    float fo = .45 * lum(im) + 2.2 * abs(lum(im) - lum(Kl(UV((c + .5) / N), 5.).rgb)) + .5 * sat(im);   // Form: hell, farbig oder abgesetzt vom Umfeld
+    float th = mix(.2, .9, P2), v = smoothstep(th - .12, th + .12, fo) * step(.08, h12(c * 1.9 + 4.));   // Perlen nur auf den Formen, die Fläche bleibt frei
+    if (v < .02) continue;
+    float pul = .5 + .5 * sin(uPhi * floor(1. + h.y * 2.) + h.x * TAU);
+    vec2 m = c + .5 + (h - .5) * .7 + .12 * vec2(ln(c * .3, .5), ln(c * .3 + 4., .5));
+    float hr = h12(c + 7.);
+    float R = min((.22 + .5 * hr * hr) * mix(.6, 1.5, P1) * (.55 + .45 * v) * (1. + .18 * pul), .95);   // der Puls lässt sie schwellen
+    float z = (h.y - .5) * 2.4 + (lum(im) - .5) * .8;
+    pl[n] = vec4(m, R, z); pc[n] = im; n++;
+  }
+  for (int a = 0; a < 9; a++) for (int b = 0; b < 8; b++){
+    if (b + 1 >= n) break;
+    if (pl[b].w > pl[b + 1].w){ vec4 t = pl[b]; pl[b] = pl[b + 1]; pl[b + 1] = t; vec3 tc = pc[b]; pc[b] = pc[b + 1]; pc[b + 1] = tc; }
+  }
+  vec3 Ld = normalize(vec3(-.55, .6, .6));
+  for (int k = 0; k < 9; k++){
+    if (k >= n) break;
+    vec2 d = g - pl[k].xy; float R = pl[k].z, dd = length(d);
+    float bl = abs(pl[k].w - zf) * (1. - P4) * .55 * R + N * px * 1.2;   // Tiefenschärfe: unscharf vor und hinter der Ebene
+    float cov = (1. - smoothstep(R - bl, R + bl, dd)) * R * R / ((R + bl * .5) * (R + bl * .5));
+    if (cov < .002) continue;
+    vec2 e = d / R; float r2 = min(dot(e, e), .999);
+    vec3 nn = vec3(e, sqrt(1. - r2));
+    vec3 basis = uZeigen > .5 ? mix(pc[k] / max(max(pc[k].r, max(pc[k].g, pc[k].b)), .1) * .7, rot1, P5) : mix(silber * .55, rot1, P5);
+    float dif = max(dot(nn, Ld), 0.), sp = pow(max(dot(reflect(-Ld, nn), vec3(0., 0., 1.)), 0.), 36.), gl = pow(max(dot(reflect(-Ld, nn), vec3(0., 0., 1.)), 0.), 4.);
+    float rand = pow(1. - nn.z, 3.);
+    vec3 pcol = basis * (.12 + .9 * dif) + vec3(1.) * (sp * 1.2 + gl * .12) + basis * rand * .9;
+    pcol *= mix(1., .55, smoothstep(0., .6, bl / R));       // unscharfe Perlen werden weicher und dunkler
+    col = mix(col, pcol, cov);
+  }
+  return vec4(clamp(col, 0., 1.), 1.);
+}`,
+  },
+
+  physarum: {
+    name: "Physarum", herkunft: "PHORMA II: tausende Agenten eines Schleimpilzes riechen die Nahrung im Bild (Helligkeit und Kanten) und legen ein leuchtendes Netz auf seine Formen",
+    regler: [r("Agenten", .5), r("Spur", .6), r("Nahrung", .7), r("Wandern", .35), r("Glühen", .5)],
+    mischung: "add",
+    // je Agent 40 Punkte Spur; die Zahl folgt der Bildhöhe wie bei der Strömung
+    punkte: (w, a, h) => { const c = Math.max(24, Math.round((40 + 50 * w[0]) * Math.sqrt(Math.min(1, h / 1000)))); return { cols: c * 40, rows: Math.round(c / a) }; },
+    glsl: `float nahrung(vec2 uv){
+  vec3 c = Kl(uv, 3.).rgb; float L = lum(c);
+  vec3 c2 = Kl(uv, 1.5).rgb, c3 = Kl(uv, 4.5).rgb;
+  return mix(L, abs(lum(c2) - lum(c3)) * 3. + L * .3, .45);   // hell und kantig ist Nahrung
+}
+void punkt(int id, out vec2 pos, out vec4 col, out float size){
+  float i = float(id), xx = mod(i, uCols), j = mod(xx, 40.), cx = uCols / 40.;
+  vec2 g = vec2(floor(xx / 40.), floor(i / uCols));
+  float h = h12(g * 1.71 + uSeed), m = 2.;
+  float zz = uT * m + h, u = fract(zz), cyc = mod(floor(zz), m);
+  vec2 sp = (g + h22(g + cyc * 13.7 + uSeed)) / vec2(cx, uRows);
+  float S = 70. * mix(.4, 1., P1), kopf = u * S, schritt = kopf - j * mix(.4, 1.2, P1);
+  pos = vec2(9.); col = vec4(0.); size = 0.;
+  if (schritt <= 0.) return;
+  vec2 q = P(sp), dir = normalize(h22(g + 3.) - .5 + 1e-4);
+  float st = .0065;
+  for (int k = 0; k < 70; k++){
+    float dt = clamp(schritt - float(k), 0., 1.);
+    if (dt <= 0.) break;
+    vec2 uq = UV(q);                                        // drei Fühler: geradeaus, links, rechts; drehen zum stärksten Geruch
+    float a0 = atan(dir.y, dir.x), sa = .55;
+    float F = nahrung(uq + vec2(cos(a0), sin(a0)) * .02 / vec2(A(), 1.));
+    float Lf = nahrung(uq + vec2(cos(a0 + sa), sin(a0 + sa)) * .02 / vec2(A(), 1.));
+    float Rf = nahrung(uq + vec2(cos(a0 - sa), sin(a0 - sa)) * .02 / vec2(A(), 1.));
+    float dreh = (Lf - Rf) * 18. * P2 + ln(q * 3. + float(k) * .02, .8) * 1.6 * P3;
+    a0 += clamp(dreh, -.7, .7);
+    dir = vec2(cos(a0), sin(a0));
+    q += dir * st * dt * (.6 + .8 * F);
+  }
+  pos = q;
+  float nf = nahrung(UV(q));
+  float a = sin(PI * u) * (1. - j / 40.) * (.25 + .75 * smoothstep(.1, .6, nf));
+  vec3 gold = vec3(1., .78, .3);
+  vec3 c = uZeigen > .5 ? mix(gold, min(Kl(UV(q), 1.).rgb * 1.6 + .06, 1.), .7) : gold;   // ohne Bild: das gelbe Netz, die Formen kommen aus dem Bild
+  float al = a * (.3 + .5 * P4);
+  col = vec4(c * al * 1.4, al);
+  size = mix(1.6, 3.6, P4) * uRes.y / 1350. + .6;
+}`,
+  },
+  geflecht: {
+    name: "Physarum-Struktur", herkunft: "PHORMA II weitergedacht: der Schleimpilz als Struktur statt als Spur – Netz, Adern, Zellen oder Membran, je dichter, wo das Bild Nahrung bietet",
+    // Wunsch vom 5. November 2026: «varianten der strukturbildung …, nicht nur diese leuchten spuren»; der Regler «Struktur» geht von Netz (0)
+    // über Adern (⅓) und Zellen (⅔) zur Membran (1), dazwischen blenden zwei Strukturen ineinander
+    regler: [r("Struktur", 0), r("Dichte", .5), r("Nahrung", .55), r("Dicke", .5), r("Fluss", .5), r("Bild", .3)],
+    glsl: `float pNahr(vec2 uv){ vec3 c = Kl(uv, 2.5).rgb; return clamp(.6 * lum(c) + 2. * abs(lum(c) - lum(Kl(uv, 5.).rgb)) + .3 * sat(c), 0., 1.); }
+// Voronoi auf einem Raster, dessen Keime nur dort bleiben, wo das Bild nährt: f1, f2 (Abstand zum nächsten und zweitnächsten Keim), Nahrung und Kennung des nächsten
+vec4 pVor(vec2 g, float N, float sk, out vec2 id){
+  vec2 ci = floor(g); float f1 = 9., f2 = 9., fn = 0.; id = ci;
+  for (int y = -2; y <= 2; y++) for (int x = -2; x <= 2; x++){
+    vec2 c = ci + vec2(x, y), h = h22(c + sk + uSeed * 4.1);
+    vec2 m = c + .5 + (h - .5) * .85 + .18 * vec2(ln(c * .23 + sk, .6), ln(c * .23 + 5. + sk, .6));
+    float fv = pNahr(UV(m / N));
+    if (h12(c * 1.3 + sk) > mix(1., fv * fv * 2.2 + .04, P2)) continue;   // Keime sterben, wo das Bild keine Nahrung hat
+    float d = length(g - m);
+    if (d < f1){ f2 = f1; f1 = d; fn = fv; id = c; } else if (d < f2) f2 = d;
+  }
+  return vec4(f1, f2, fn, 0.);
+}
+vec4 effekt(vec2 uv){
+  vec2 p = P(uv); float N = mix(6., 26., P1), s = P0 * 3., px = N / uRes.y;
+  float w0 = max(0., 1. - abs(s)), w1 = max(0., 1. - abs(s - 1.)), w2 = max(0., 1. - abs(s - 2.)), w3 = max(0., 1. - abs(s - 3.));
+  vec2 warp = lcurl(p * 1.6 + 2., .5) * .02 * (w0 * .7 + w1 + w3);
+  vec2 g = (p + warp) * N, id;
+  vec4 v = pVor(g, N, 0., id);
+  float e = v.y - v.x, fo = pNahr(uv), dk = mix(.4, 1.8, P3);
+  float fluss = .55 + .45 * sin(v.x * 9. - uPhi * 3. + h12(id) * TAU) * P4;   // der Plasmastrom pulsiert durch die Röhren
+  float licht = 0.;
+  if (w0 > 0.){                                            // Netz: Röhren zwischen den Keimen, dick, wo die Nahrung reich ist, Knoten an den Keimen
+    float wd = (.03 + .1 * v.z) * dk;
+    float t = 1. - smoothstep(wd, wd + px * 1.5, e);
+    float kn = (1. - smoothstep(.07 * dk, .07 * dk + px * 2., v.x)) * smoothstep(.45, .9, v.z);   // Knoten nur, wo viel Nahrung liegt
+    licht += w0 * (t * fluss * (.3 + .7 * smoothstep(.1, .55, fo)) + kn);
+  }
+  if (w1 > 0.){                                            // Adern: drei Ordnungen, jede feiner, verzweigt wie in einem Blatt
+    vec2 id2, id3; vec4 v2 = pVor(g * 2.3 + 11., N * 2.3, 7., id2), v3 = pVor(g * 5.1 + 23., N * 5.1, 13., id3);
+    float a1 = 1. - smoothstep(.05 * dk, .05 * dk + px * 1.5, e);
+    float a2 = (1. - smoothstep(.05 * dk, .05 * dk + px * 3.4, v2.y - v2.x)) * smoothstep(.1, .5, fo) * .7;
+    float a3 = (1. - smoothstep(.06 * dk, .06 * dk + px * 7.6, v3.y - v3.x)) * smoothstep(.25, .7, fo) * .45;
+    licht += w1 * max(a1 * fluss, max(a2, a3) * (.7 + .3 * fluss));
+  }
+  if (w2 > 0.){                                            // Zellen: Haut, Plasma und Kern, sie atmen
+    float at = 1. + .12 * sin(uPhi * floor(1. + h12(id + 3.) * 2.) + h12(id) * TAU) * P4;
+    float haut = 1. - smoothstep(.04 * dk, .04 * dk + px * 1.5, e);
+    float kern = (1. - smoothstep(.13 * dk * at, .13 * dk * at + px * 2., v.x)) * (.4 + .6 * v.z);
+    float plasma = smoothstep(.0, .5, e) * .18 * (.4 + v.z);
+    licht += w2 * (haut * (.35 + .65 * smoothstep(.1, .55, fo)) + kern + plasma);
+  }
+  if (w3 > 0.){                                            // Membran: gefaltete Bänder wie ein Labyrinth, gelenkt von der Helligkeit des Bildes
+    float f = lfbm(p * mix(2., 6., P1) + warp * 20., .6) * 2.2 + lum(Kl(uv, 3.).rgb) * 2.4 * P2 + PD(sin(uPhi)) * .4 * P4;
+    float b = abs(fract(f * mix(2., 5., P1)) - .5), fw = fwidth(f * mix(2., 5., P1));
+    float band = 1. - smoothstep(.12 * dk, .12 * dk + fw * 1.5, b);
+    float rand = (1. - smoothstep(.0, fw * 1.5, abs(b - .12 * dk))) * .6;
+    licht += w3 * (band * .55 + rand) * (.35 + .65 * smoothstep(.05, .4, fo));
+  }
+  vec3 gold = vec3(1., .8, .32), nacht = vec3(.035, .03, .02);
+  vec3 c = uZeigen > .5 ? mix(gold, min(Kl(uv, 1.5).rgb * 1.5 + .08, 1.), .65) : gold;   // ohne Bild: das gelbe Geflecht, die Dichte kommt aus dem Bild
+  vec3 grund = uZeigen > .5 ? mix(nacht, Ql(uv, 0.).rgb * .5, P5) : nacht;
+  vec3 col = grund + c * licht + c * .06 * smoothstep(.2, .7, fo);
+  return vec4(clamp(col, 0., 1.), 1.);
+}`,
+  },
 };
 
 export const EFFEKT_IDS = Object.keys(EFFEKTE);

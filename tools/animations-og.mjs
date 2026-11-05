@@ -61,7 +61,7 @@ h1 i { display: block; font-style: normal; font-weight: 300; font-size: 58px; le
 </style></head><body><div class="karte">
 <div class="links"><div><div class="etikett">ornament.cloud/animations</div></div>
 <h1>Anima<span style="white-space:nowrap">tionen<b style="color:#c9ff3d;font-weight:600">.</b></span><i>Mischpult</i></h1>
-<p class="satz">Dein Bild, siebenundzwanzig Effekte, drei Ebenen. Mischen, als MP4 laden, als Werk mit deinem Namen sichern.</p>
+<p class="satz">Dein Bild, zweiunddreissig Effekte, drei Ebenen. Mischen, als MP4 laden, als Werk mit deinem Namen sichern.</p>
 <div class="linie"><i></i></div></div>
 <div class="rechts">${kacheln.map((k) => `<img src="${k}" alt="">`).join("")}</div>
 </div></body></html>`;

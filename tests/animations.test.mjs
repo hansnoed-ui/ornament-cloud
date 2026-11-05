@@ -12,9 +12,9 @@ const { EFFEKTE, EFFEKT_IDS } = await import(new URL("animations/effekte.js", ro
 const { MODI, DAUER, FPS, LAENGEN, dauerVon } = await import(new URL("animations/motor.js", root).href);
 const { zufall, EIGEN } = await import(new URL("animations/rezepte.js", root).href);
 
-test("Effekte: 27, Regler zwischen 0 und 1, höchstens sechs, Shader mit effekt() oder punkt(), jeder mit Name und Herkunft", () => {
+test("Effekte: 32, Regler zwischen 0 und 1, höchstens sechs, Shader mit effekt() oder punkt(), jeder mit Name und Herkunft", () => {
   // Scan entfernt am 3. November 2026 («der scan kann weg»); Seifenblase und Holo-Kugel am 4. November 2026 ersetzt durch vierzehn Effekte aus der Bildinformation
-  assert.equal(Object.keys(EFFEKTE).length, 27);
+  assert.equal(Object.keys(EFFEKTE).length, 32);
   assert.deepEqual(EFFEKT_IDS, Object.keys(EFFEKTE));
   for (const [id, e] of Object.entries(EFFEKTE)) {
     assert.ok(e.name && e.herkunft, id);
@@ -84,7 +84,7 @@ test("Bild zeigen: aus (4. November 2026): Motor setzt uZeigen, Ql zeigt ein Ras
   assert.match(motor, /stapel\.ohneBild \? 0 : 1/);
   assert.match(html, /id="pult-zeigen"/);
   assert.match(seite, /-ohne-bild/);
-  for (const id of ["partikel", "metaballs", "wirbel", "zebra", "linien", "linsen", "glitzer", "tinte", "pinsel", "raster", "relief", "hoehenlinien", "stroemung", "roentgen", "montage", "entrauschen", "echo", "aquarell", "voxel", "sortieren", "vertigo", "strahlen"]) assert.match(EFFEKTE[id].glsl, /Kl\(/, id);
+  for (const id of ["partikel", "metaballs", "wirbel", "zebra", "linien", "linsen", "glitzer", "tinte", "pinsel", "raster", "relief", "hoehenlinien", "stroemung", "roentgen", "montage", "entrauschen", "echo", "aquarell", "voxel", "sortieren", "vertigo", "strahlen", "gewebe", "blitze", "traube", "physarum", "geflecht"]) assert.match(EFFEKTE[id].glsl, /Kl\(/, id);
 });
 
 test("Durchlauf (4. November 2026): Motor kennt uLauf und HZ(), Schalter und Länge im Mischpult", () => {
