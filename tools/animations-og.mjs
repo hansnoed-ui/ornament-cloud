@@ -53,7 +53,7 @@ html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; backgrou
 h1 { margin: 0; font-size: 78px; font-weight: 600; line-height: .95; letter-spacing: -.045em; white-space: nowrap; }
 h1 i { display: block; font-style: normal; font-weight: 300; font-size: 58px; letter-spacing: -.02em; margin-top: 10px; color: #c9ff3d; }
 .satz { font-size: 20px; line-height: 1.35; color: rgba(233,236,242,.62); max-width: 24ch; margin: 0; }
-.etikett { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: rgba(233,236,242,.56); font-weight: 600; }
+.etikett { font-family: "Geist Mono", monospace; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: rgba(233,236,242,.56); font-weight: 500; }
 .rechts { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); gap: 1px; background: rgba(233,236,242,.14); }
 .rechts img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .linie { position: absolute; left: 64px; right: 0; bottom: 48px; height: 1px; background: rgba(233,236,242,.14); width: 392px; }
