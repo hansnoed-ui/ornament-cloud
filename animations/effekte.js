@@ -1156,7 +1156,8 @@ vec2 kAufBild(vec3 o, vec3 d){ d.z = min(d.z, -.05); vec3 p = o + d * ((-1. - o.
 vec4 effekt(vec2 uv){
   vec2 p = P(uv);
   vec3 ro = vec3(0., 0., kZ), rd = normalize(vec3(p * 2. * kTAN, -1.));
-  int n = 1 + int(floor(P0 * 4.99)); if (uSparsam > .5) n = min(n, 2);
+  bool spar = uSparsam > .5;
+  int n = 1 + int(floor(P0 * 4.99)); if (spar) n = 1;                 // Handy: ein Körper (5. November 2026: «körper führt immer noch zum absturz»)
   float fw = P2 > .9 ? 1. - cos(uPhi) : P2 * 2.;                      // Wandel: Dodekaeder → Geode → Ikosaeder und zurück
   float env = HZ(.5 - .5 * cos(uPhi)), best = 1e9;
   int k = -1; vec3 lo = vec3(0.), ld = vec3(0., 0., -1.), n0 = vec3(0., 0., 1.), M = vec3(0.); mat3 R = mat3(1.); float s0 = 0., g = 1.; vec2 rad = vec2(1.); vec3 ton = vec3(1.);
@@ -1170,6 +1171,7 @@ vec4 effekt(vec2 uv){
     vec3 Mj = vec3(c * 2. * kHH, 0.), drj = h * TAU + floor(P5 * 2.99) * uPhi * vec3(1., 1., 0.) + .25 * P5 * vec3(sin(uPhi), cos(uPhi), sin(uPhi + h.y * TAU));
     mat3 Rj = kDreh(drj), inv = transpose(Rj);
     float gw = gj * 2. * kHH;
+    if (length(cross(Mj - ro, rd)) > 1.7 * gw) continue;              // der Strahl verfehlt die Hülle: hier nichts zu rechnen (die meisten Pixel)
     vec3 o = inv * (ro - Mj) / gw, d = inv * rd; float a, b; vec3 m0, m1; vec2 rj = kForm(fw + (h.z - .5) * .3 * step(.9, P2));
     if (kSchnitt(o, d, rj, a, b, m0, m1) && a > 0. && a * gw < best){
       best = a * gw; k = j; lo = o; ld = d; s0 = a; n0 = m0; M = Mj; R = Rj; g = gw; rad = rj;
@@ -1179,6 +1181,15 @@ vec4 effekt(vec2 uv){
   vec3 aussen = Ql(uv, 0.).rgb;
   if (k < 0) return vec4(aussen, 1.);
   vec3 e = lo + ld * s0, farbe = vec3(0.); float dicke = 0.;
+  if (spar){                                                            // Handy: ein Strahl, die Säume aus drei leicht versetzten Blicken
+    float ior = 1. + .5 * mix(.15, 1.5, P3);
+    vec3 d1 = refract(ld, n0, 1. / ior); float a, b; vec3 m0, m1;
+    kSchnitt(e + d1 * 1e-4, d1, rad, a, b, m0, m1);
+    vec3 x = e + d1 * b, d2 = refract(d1, -m1, ior);
+    if (dot(d2, d2) < 1e-6) d2 = reflect(d1, -m1);
+    vec2 u0 = kAufBild(R * x * g + M, R * d2), sv = (R * d2).xy * .012 * mix(.15, 1.5, P3);
+    farbe = vec3(Ql(u0 - sv, .2).r, Ql(u0, .2).g, Ql(u0 + sv, .2).b); dicke = b;
+  } else
   for (int c = 0; c < 3; c++){                                          // je Farbkanal eigene Brechung: Regenbogensäume
     float fc = float(c), ior = 1. + (.46 + .045 * fc) * mix(.15, 1.5, P3);
     vec3 d1 = refract(ld, n0, 1. / ior); float a, b; vec3 m0, m1;

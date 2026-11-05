@@ -75,7 +75,7 @@ test("Versionsmarke: folgt dem Inhalt der Module (nicht den Marken selbst), Seit
   assert.equal(b.marke(mit("00000000")), m);
   assert.equal(b.marke(mit("ffffffff")), m);
   assert.equal(b.marke(Object.fromEntries(Object.entries(d).map(([n, t]) => [n, t.replace(/\?v=[0-9a-f]{8}/g, "")]))), m);
-  assert.equal(b.stempeln(b.stempeln('import x from "./engine.js";', "11111111"), "22222222"), 'import x from "./engine.js?v=22222222";');
+  assert.equal(b.stempeln(b.stempeln('import x from "./engine.js";', "11111111"), "22222222"), 'import x from "./engine.js?v=23222222";');
   assert.equal(b.stempeln('import("../../portfolio/x/js/data/artists.js")', "11111111"), 'import("../../portfolio/x/js/data/artists.js")', "fremde Importe bleiben ohne Marke");
   // jede Änderung an einem Modul ergibt eine neue Marke, damit der Browser alle vier neu holt
   for (const n of b.MODULE) assert.notEqual(b.marke({ ...d, [n]: d[n] + "\n// geändert" }), m, `Änderung an ${n}`);
