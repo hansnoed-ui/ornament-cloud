@@ -481,34 +481,42 @@ vec4 effekt(vec2 uv){
   // Watercolor Bleed und Instancing (Geometry COMP mit Box SOP)
 
   echo: {
-    name: "Echo", herkunft: "Feedback-Schleife: das Bild hinterlässt gezoomte, gedrehte Echos, die einer kreisenden Mitte nachziehen, dazu Bloom",
+    name: "Echo", herkunft: "Feedback-Schleife: hinter dem Bild ziehen seine eigenen Formen als vergrösserte, gedrehte Echos einer kreisenden Mitte nach, jedes später, weicher und im Farbton verschoben, dazu Bloom",
+    // seit 5. November 2026 (Christian: «vieles wirkt noch ein bisschen bescheiden»): die Echos sind die Formen des Bildes selbst (wo es sich
+    // vom Grund abhebt), hinten grösser und unschärfer wie in einem Tunnel; jedes folgt der Mitte etwas später (Nachlauf statt Gleichschritt),
+    // die Bahn hält an den Umkehrpunkten (halt), die Farbe dreht in OKLab, das Licht läuft weich aus (schulter)
     regler: [r("Echos", .6), r("Kreisen", .5), r("Zoom", .5), r("Drall", .6), r("Bloom", .5)],
     // ohne Rückkopplungspuffer gerechnet: Echo k ist das Bild zur Zeit t − k·Δ, k-mal transformiert, so bleibt die Schlaufe geschlossen
-    glsl: `${FELD}
+    glsl: `
+float ecForm(vec3 a, float M){ return clamp((abs(lum(a) - M) * 2.4 + sat(a) * 1.3 - .1) * 3., 0., 1.); }
 vec4 effekt(vec2 uv){
-  vec2 p = P(uv); vec3 acc = vec3(0.); int n = int(mix(3., 14., P0));
-  vec3 papier = vec3(.95, .925, .9);
-  for (int k = 0; k < 14; k++){
-    if (k >= n) break;
-    float fk = float(k), ph = uPhi - fk * .22;
-    vec2 c = .14 * P1 * vec2(cos(ph), sin(2. * ph));
-    vec2 q = c + rot(fk * (P3 - .5) * .16) * (p - c) / pow(mix(1., 1.09, P2), fk);
+  vec2 p = P(uv); int n = int(mix(3., 12., P0)); if (uSparsam > .5) n = min(n, 6);
+  float M = lum(Kl(vec2(.5), 14.).rgb), fn = float(n);
+  vec3 col = Ql(uv, 4.).rgb * .22, hell = vec3(0.), dunkel = vec3(1.);   // tief hinten: das Bild, weich und dunkel; hell/dunkel: die Echos als Licht und als Schatten
+  for (int k = 11; k >= 1; k--){                                     // von hinten nach vorn
+    if (k >= n) continue;
+    float fk = float(k), ph = uPhi - fk * mix(.12, .3, P1);           // jedes Echo folgt später: Nachlauf
+    vec2 c = .16 * P1 * vec2(sin(halt(ph, .6)), .6 * sin(2. * ph + .4));
+    float sk = pow(mix(1.02, 1.11, P2), fk), dr = fk * (P3 - .5) * .22 * (.6 + .4 * sin(halt(ph, .5)));
+    vec2 q = c * (1. - 1. / sk) + rot(dr) * p / sk;                  // um die wandernde Mitte vergrössert und gedreht
     vec2 uq = UV(q);
-    vec3 im = Kl(uq, .5).rgb; float L = lum(im);
-    float kante = smoothstep(2., 22., length(feldG(uq, 1., 2.)));
-    vec3 tint = .5 + .5 * cos(TAU * (fk / float(n) * .8 + vec3(0., .33, .67) + uT));   // jedes Echo verschiebt den Farbton
-    vec3 src = uZeigen > .5 ? (k == 0 ? Ql(uq, 0.).rgb : im * smoothstep(.3, .8, max(L, sat(im))) * mix(vec3(1.), tint, .6))
-                            : kante * (k == 0 ? papier : mix(papier, tint, .7));         // ohne Bild: die Konturen als Echos
-    float w = pow(mix(.55, .86, P0), fk);
-    acc = max(acc, src * w);
+    float m = ecForm(Kl(uq, 1.5 + fk * .2).rgb, M) * step(abs(q.x), A() * .5) * step(abs(q.y), .5);
+    float tief = fk / fn;
+    vec3 a = tonDreh(Ql(uq, .5 + fk * .3).rgb, tief * 1.6, 1. + .5 * tief);   // jedes Echo im Farbton gedreht, satter
+    a *= mix(1., .5, tief);                                          // Luftperspektive: weiter hinten dunkler
+    col = mix(col, a, m * mix(.95, .55, tief));
+    hell = max(hell, a * m * pow(.8, fk)); dunkel = min(dunkel, mix(vec3(1.), a / mix(1., .5, tief), m * pow(.8, fk)));
   }
-  vec3 b = uZeigen > .5 ? max(Kl(uv, 4.).rgb - .45, 0.) + max(Kl(uv, 2.5).rgb - .6, 0.)
-                        : vec3(smoothstep(2., 14., length(feldG(uv, 3.5, 6.)))) * .35;
-  acc += b * P4 * 1.6;
-  return vec4(clamp(acc, 0., 1.), 1.);
+  vec3 vorn = Ql(uv, 0.).rgb; float m0 = ecForm(Kl(uv, 1.).rgb, M);
+  col = mix(col, vorn, max(m0, .18));                                // vorn das Bild selbst
+  // füllt das Motiv das ganze Bild, scheinen die Echos durch: auf dunklen Bildern aufhellend, auf hellen abdunkelnd
+  float voll = smoothstep(.3, .9, m0);
+  col = mix(max(col, hell * .8 * voll), min(col, mix(vec3(1.), dunkel, .85 * voll)), smoothstep(.42, .62, M));
+  vec3 b = max(Kl(uv, 4.5).rgb - .5, 0.) * 1.2 + max(Kl(uv, 3.).rgb - .62, 0.) + max(col - .7, 0.) * .5;
+  col += b * P4 * 1.4 * (.85 + .15 * sin(uPhi));
+  return vec4(clamp(schulter(col), 0., 1.), 1.);
 }`,
   },
-
 
   voxel: {
     name: "Voxel", herkunft: "Instancing: das Bild als Feld aus tausenden Quadern, die Höhe aus der Helligkeit, eine Welle läuft durch, die Kamera schwenkt",
@@ -550,13 +558,15 @@ vec4 effekt(vec2 uv){
 
   sortieren: {
     name: "Pixel Sorting", herkunft: "Glitch: Pixelreihen in einem Helligkeitsfenster werden nach Helligkeit sortiert und ziehen sich wie schmelzende Daten in die Länge",
-    regler: [r("Fenster", .5), r("Länge", .55), r("Richtung", 0), r("Wandern", .5), r("Kontrast", .4)],
+    regler: [r("Fenster", .5), r("Länge", .6), r("Richtung", 0), r("Wandern", .5), r("Kontrast", .4)],
     glsl: `vec4 effekt(vec2 uv){
   float k = uRes.y / 1350., ang = P2 * PI * .5;            // 0 senkrecht, 1 waagrecht
   vec2 dir = vec2(sin(ang), cos(ang)) / uRes;              // ein Pixel in Sortierrichtung, in uv
-  float mitte = .5 + .18 * (uLauf > .5 ? ln(vec2(1.3, 2.1), 1.2) : sin(uPhi)) * P3, br = mix(.12, .45, P0);
+  float mitte = .5 + .18 * (uLauf > .5 ? ln(vec2(1.3, 2.1), 1.2) : sin(halt(uPhi, .6))) * P3, br = mix(.12, .45, P0);
   float lo = mitte - br, hi = mitte + br;                  // das Fenster wandert durch die Helligkeiten
-  float Lmax = mix(40., 520., P1) * k * mix(.75 + .25 * cos(uPhi), 1., uLauf), st = Lmax / 40.;
+  // seit 5. November 2026: die Strähnen wachsen, halten und ziehen sich zurück (halt), jede Spalte etwas versetzt, so schmilzt das Bild in Wellen
+  float spalte = dot(uv, vec2(cos(ang), -sin(ang))) * 3.;
+  float Lmax = mix(60., 640., P1) * k * mix(.3 + .7 * (.5 + .5 * cos(halt(uPhi - spalte * .8, .65))), 1., uLauf), st = Lmax / 40.;
   float L0 = lum(Kl(uv, .5).rgb);
   vec3 bild = Ql(uv, 0.).rgb, nacht = vec3(.043, .035, .039);
   if (L0 < lo || L0 > hi) return vec4(uZeigen > .5 ? bild : nacht, 1.);
@@ -573,36 +583,52 @@ vec4 effekt(vec2 uv){
   }
   vec3 c = cs[best]; float v = ls[best];
   c = (c - .5) * (1. + P4) + .5;
+  c = tonDreh(c, (f - .5) * .5 * P4, 1. + .35 * P4);                  // entlang der Strähne dreht der Farbton leicht (OKLab)
+  c += smoothstep(.9, 1., f) * smoothstep(4., 18., a + b) * .25 * (.5 + P4);   // heller Kopf am Ende der Strähne
   vec3 aus = mix(nacht, vec3(.95, .925, .9), clamp((v - lo) / (hi - lo) * (1. + P4) - P4 * .5, 0., 1.));   // ohne Bild: nur die sortierten Strähnen
   return vec4(clamp(uZeigen > .5 ? c : aus, 0., 1.), 1.);
 }`,
   },
 
   vertigo: {
-    name: "Dolly-Zoom", herkunft: "Vertigo-Effekt: Helligkeit als Tiefe; der Vordergrund bleibt gleich gross, der Hintergrund fährt heran und weg, mit Zoomschlieren",
+    name: "Dolly-Zoom", herkunft: "Vertigo-Effekt: was sich vom Grund abhebt, bleibt stehen; dahinter fährt das Bild in Tiefenschichten heran und weg, hält an den Umkehrpunkten, und je schneller es fährt, desto länger die Zoomschlieren",
+    // seit 5. November 2026 (Christian: «vieles wirkt noch ein bisschen bescheiden»): stärkerer Zoom, der an den Umkehrpunkten hält (halt) statt
+    // gleichförmig zu pendeln; die Tiefe ist stufenlos (Parallaxe: Nahes fährt weniger als Fernes), die Schlieren folgen der Geschwindigkeit
+    // (Bewegungsunschärfe), der Rand dunkelt im Sog ein, ein feiner Farbsaum nur während der Fahrt
     regler: [r("Zoom", .6), r("Vordergrund", .5), r("Schlieren", .5), r("Kante", .4)],
-    glsl: `float tief(vec2 uv){ return smoothstep(mix(.15, .7, P1) - .06, mix(.15, .7, P1) + .06, .6 * lum(Kl(uv, 2.5).rgb) + .4 * lum(Kl(uv, 4.5).rgb)); }
+    glsl: `float vgF(vec2 uv, float M, float l){ vec3 a = Kl(uv, l).rgb; return abs(lum(a) - M) * 2.2 + .8 * sat(a); }
+float vgVorn(vec2 uv, float M){ float t = mix(.12, .62, P1); return smoothstep(t - .12, t + .12, .55 * vgF(uv, M, 3.5) + .45 * vgF(uv, M, 5.5)); }
 vec4 effekt(vec2 uv){
-  vec2 p = P(uv); float z = P0 * .45 * sin(uPhi), vz = cos(uPhi);
-  if (uLauf > .5){ z = 0.; vz = 1.; }
-  float fg = tief(uv), zf = fract(uT);
+  vec2 p = P(uv); float M = lum(Kl(vec2(.5), 14.).rgb);
+  float hz = halt(uPhi, .75), z = P0 * .7 * sin(hz), vz = P0 * .7 * cos(hz) * (1. + .75 * cos(2. * uPhi));   // Zoom und seine Geschwindigkeit
+  float fg = vgVorn(uv, M), zf = fract(uT);
+  if (uLauf > .5){ z = 0.; vz = P0 * .6; }
+  float tiefe = 1. - vgVorn(UV(p / (1. + max(z, 0.))), M) * .7;      // Ferne an der Stelle, die der Hintergrund hierhin schiebt
   vec3 hg = vec3(0.); float n = 0.;
-  for (int i = 0; i < 8; i++){                             // Hintergrund: skaliert um die Mitte, Schlieren in Zoomrichtung
-    float s = 1. / (1. + z + P2 * .04 * vz * (float(i) / 7. - .5) * P0);
-    if (uLauf > .5){                                       // Durchlauf: endloser Zoom, zwei Ebenen eine Oktave auseinander überblenden
-      float sa = s * exp2(-zf * P0 * 1.5), sb = sa * exp2(P0 * 1.5);
-      vec2 qa = p * sa, qb = p * sb; float ga = (1. - tief(UV(qa)) * .97) * (1. - zf), gb = (1. - tief(UV(qb)) * .97) * zf;
+  int S = uSparsam > .5 ? 5 : 9;
+  for (int i = 0; i < 9; i++){                                       // Bewegungsunschärfe entlang des Zooms, so lang wie die Fahrt schnell ist
+    if (i >= S) break;
+    float fi = float(i) / float(S - 1) - .5, dz = fi * vz * P2 * .16;
+    float s = 1. / (1. + (z + dz) * tiefe);
+    if (uLauf > .5){                                                 // Durchlauf: endloser Zoom, zwei Ebenen eine Oktave auseinander überblenden
+      float sa = exp2(-(zf + dz) * P0 * 1.5), sb = sa * exp2(P0 * 1.5);
+      vec2 qa = p * sa, qb = p * sb; float ga = (1. - vgVorn(UV(qa), M) * .97) * (1. - zf), gb = (1. - vgVorn(UV(qb), M) * .97) * zf;
       hg += Ql(UV(qa), .5).rgb * ga + Ql(UV(qb), .5).rgb * gb; n += ga + gb;
       continue;
     }
-    vec2 q = p * s; float g = 1. - tief(UV(q)) * .97; hg += Ql(UV(q), .5).rgb * g; n += g;
+    vec2 q = p * s; float g = 1. - vgVorn(UV(q), M) * .97;
+    float ca = abs(vz) * P2 * .006;                                    // Farbsaum nur, solange gefahren wird
+    vec3 c = vec3(Ql(UV(q * (1. + ca)), .5).r, Ql(UV(q), .5).g, Ql(UV(q * (1. - ca)), .5).b);
+    hg += c * g; n += g;
   }
   hg /= max(n, 1e-3);
+  float sog = 1. - .55 * smoothstep(.15, .85, length(p) * 1.3) * (.35 + .65 * abs(z) / max(P0 * .7, .01));   // Vignette im Sog
+  hg *= sog * (1. - .2 * max(z, 0.));
   vec3 vor = uZeigen > .5 ? Ql(uv, 0.).rgb : vec3(.95, .925, .9) * (.75 + .25 * lum(Kl(uv, 1.).rgb));   // ohne Bild: helle Silhouette vor dem zoomenden Raster
-  vec3 col = mix(hg * (1. - .25 * abs(z)), vor, fg);
+  vec3 col = mix(hg, vor, fg);
   float kante = fg * (1. - fg) * 4.;
-  col += kante * P3 * .5 * vec3(.95, .925, .9);
-  return vec4(clamp(col, 0., 1.), 1.);
+  col += kante * P3 * .6 * mix(vec3(.95, .925, .9), min(Kl(uv, 2.).rgb * 1.4 + .2, 1.), .5);
+  return vec4(clamp(schulter(col), 0., 1.), 1.);
 }`,
   },
 
@@ -612,9 +638,11 @@ vec4 effekt(vec2 uv){
     // Wunsch: «dass die effekte das bild stärker mitnehmen und nicht bloss darüber gelegt werden»)
     regler: [r("Strahlen", .65), r("Wabern", .5), r("Staub", .5), r("Schwelle", .5), r("Bild", .5)],
     glsl: `vec4 effekt(vec2 uv){
-  vec2 lp = vec2(.5 + .22 * cos(uPhi), .78 + .08 * sin(2. * uPhi));     // die Lichtquelle zieht einen kleinen Kreis
+  float hl = halt(uPhi, .55);
+  vec2 lp = vec2(.5 + .24 * cos(hl), .78 + .08 * sin(2. * uPhi));       // die Lichtquelle zieht einen Kreis und verweilt an den Seiten
   vec2 d = (uv - lp) / 40. * mix(.6, 1., P0); vec2 q = uv; float dec = 1., acc = 0.; vec3 acc3 = vec3(0.);
-  float thr = mix(.25, .8, P3);
+  // Schwelle über der mittleren Helligkeit des Bildes (5. November 2026: helle Bilder liefen sonst ganz in Weiss aus)
+  float M = lum(Kl(vec2(.5), 14.).rgb), thr = mix(M, 1., mix(.1, .75, P3)) - .08;
   int S = uSparsam > .5 ? 24 : 40;                                        // Handy: 24 Schritte
   for (int i = 0; i < 40; i++){
     if (i >= S) break;
@@ -624,12 +652,13 @@ vec4 effekt(vec2 uv){
     m *= .75 + .5 * P1 * (ln(q * vec2(9., 2.) + 3., .8) * .5 + .5);    // wabern
     acc += m * dec; acc3 += kq * m * dec; dec *= 1. - .045 * 40. / float(S);
   }
-  float sk = mix(.02, .07, P0) * 40. / float(S); acc *= sk; acc3 *= sk;
+  float sk = mix(.015, .05, P0) * 40. / float(S); acc *= sk; acc3 *= sk;
   vec3 licht = vec3(1., .9, .72);
   vec3 farbe = uZeigen > .5 ? mix(licht * acc, acc3 * 1.5, .75) : licht * acc;   // das Licht in den Farben des Bildes
   // das Bild zieht sich im Licht in die Länge: je mehr Strahl, desto weiter von der Quelle weg gelesen
   vec2 zieh = (uv - lp) * min(acc, 1.2) * .1 * P0;
-  vec3 grund = uZeigen > .5 ? Ql(uv - zieh, 0.).rgb * mix(.25, 1., P4) * (1. + acc * .4)
+  // das Licht formt das Bild: was im Strahl liegt, leuchtet auf, der Rest sinkt ins Dunkel (Regler Bild hebt den Grund)
+  vec3 grund = uZeigen > .5 ? Ql(uv - zieh, 0.).rgb * mix(mix(.18, .75, P4), 1.2, smoothstep(.02, .6, acc))
                             : vec3(.043, .035, .039) + licht * smoothstep(thr, thr + .25, lum(Kl(uv - zieh, 1.5).rgb)) * .18;
   vec3 col = grund + farbe;
   float staub = 0.;                                                       // Staub in drei Tiefen, sichtbar im Licht
@@ -643,7 +672,7 @@ vec4 effekt(vec2 uv){
   }
   vec3 sf = uZeigen > .5 ? mix(licht, min(Kl(uv, 1.).rgb * 1.6 + .15, 1.), .7) : licht;   // der Staub glimmt in der Farbe des Bildes darunter
   col += sf * staub * (.15 + acc * 2.5) * P2;
-  return vec4(clamp(col, 0., 1.), 1.);
+  return vec4(clamp(schulter(col), 0., 1.), 1.);
 }`,
   },
   // ——— Nachtrag vom 5. November 2026 (Christian: «ob auch phorma iii effekte möglich sind: gewebe, blitze/spuren aus dem Lichtwürfel, traube (aber von den
@@ -942,12 +971,15 @@ vec4 effekt(vec2 uv){
   if (f == 0){                                              // Glühkanten: ein scharfer Kern auf den Kanten, darum ein weiter Hof; ein Puls läuft die Höhenstufen entlang
     float e0 = length(feldG(uv, .5, 1.2)), e3 = length(feldG(uv, 2.5, 5.));
     float h = lum(Kl(uv, 1.5).rgb);
-    float lauf = .55 + .45 * sin(h * 22. - uPhi * tempo) * P3;
+    // seit 5. November 2026 (Glühkanten standen fast still): zwei Lichtfelder wandern ruhig über das Bild und entzünden die Kanten, wo sie
+    // vorbeiziehen; dazu läuft wie bisher ein Puls die Höhenstufen entlang
+    float feld = smoothstep(.45, .85, .5 + .5 * ln(p * 1.5, .9)) * 1.4 + smoothstep(.55, .9, .5 + .5 * ln(p * 3.1 + 4.2, 1.3)) * .9;
+    float lauf = (.35 + .65 * (.5 + .5 * sin(h * 22. - uPhi * tempo))) * mix(1., .1 + 1.6 * feld, .45 + .55 * P3);
     float kern = smoothstep(thr * 1.2, thr * 3., e0);                                           // dünner Kern auf der Kante
     float hof = pow(smoothstep(thr * .2, thr * 2.5, e3), 2.) * .3;                               // schmaler Hof
     float iso = h * 36. + ln(p * 3., .5) * 1.2, ia = fwidth(iso) + 1e-4;                         // haarfeine Linien gleicher Helligkeit in den Formen
     float adern = exp(-pow((abs(fract(iso + .5) - .5)) / (ia * 1.1), 2.)) * smoothstep(thr * .1, thr * 1.2, e3) * .55;
-    L = lc * (kern * (.55 + .45 * lauf) * 1.1 + hof * (.7 + .3 * lauf) + adern * (.6 + .4 * lauf)) * st;
+    L = lc * (kern * lauf * 1.1 + hof * (.4 + .6 * lauf) + adern * (.3 + .7 * lauf)) * st;
   } else if (f == 1){                                       // Kaustik: Licht durch bewegtes Wasser, gebrochen an den Formen des Bildes und hell, wo das Bild hell ist
     vec2 g3 = feldG(uv, 3., 6.);
     vec2 q = p * mix(9., 18., P1) + g3 * .012;
@@ -991,7 +1023,7 @@ vec4 effekt(vec2 uv){
     L = lc * (faden * 1.5 + .06) * hof * st;
   }
   vec3 grund = uZeigen > .5 ? Ql(uv, 0.).rgb * P5 : vec3(.02, .022, .03);
-  return vec4(clamp(grund + L, 0., 1.), 1.);
+  return vec4(clamp(schulter(grund + L), 0., 1.), 1.);
 }`,
   },
   strom: {

@@ -1,7 +1,7 @@
 // Animationen – der Motor: ein WebGL-2-Kontext rechnet bis zu drei Ebenen übereinander (je Effekt, Quelle, Mischmodus, Deckkraft)
 // und gibt das Bild auf eine eigene Leinwand aus, die Reel, Werke und Mischpult abzeichnen. Alles hängt nur von der Zeit t in der
 // Schlaufe ab (phi = 2π·t/DAUER, ganzzahlige Frequenzen): Bild N ist wieder Bild 0, und das MP4 entsteht Bild für Bild.
-import { EFFEKTE, wertVon } from "./effekte.js?v=19";
+import { EFFEKTE, wertVon } from "./effekte.js?v=20";
 
 export const DAUER = 12, FPS = 30, LAENGEN = [12, 30, 60];
 /** Länge der Schlaufe eines Stapels in Sekunden (Vorgabe 12) */
@@ -62,6 +62,24 @@ float PD(float s){ return s * (1. - uLauf); }
 float ln(vec2 p, float r){ r *= uL; return gn(vec3(p.x + uSeed * 7.31, p.y + r * cos(uPsi), r * sin(uPsi) + uSeed * 3.7)); }
 float lfbm(vec2 p, float r){ float s = 0., a = .5; for (int i = 0; i < 4; i++){ s += a * ln(p, r); p = p * 2.03 + vec2(1.7, 9.2); a *= .5; } return s; }
 vec2 lcurl(vec2 p, float r){ float e = .02, n = ln(p, r); return vec2(ln(p + vec2(0, e), r) - n, -(ln(p + vec2(e, 0), r) - n)) / e; }
+// Handwerk (5. November 2026, nach den Motion-Skills von iart.ai: «Easing ist der grösste Hebel», Licht weich abfangen, Farbe
+// wahrnehmungsgleich mischen): halt() verzögert eine Phase an den Umkehrpunkten (sin(halt(uPhi, h)) hält an den Enden, h 0 = Sinus),
+// ez() ist ein weicher Übergang 0 → 1, schulter() fängt Licht über .75 weich ab statt hart auf Weiss, okl()/okr() rechnen in OKLab
+// und tonDreh() dreht den Farbton dort, ohne dass die Helligkeit springt
+float halt(float ph, float h){ return ph + .5 * h * sin(2. * ph); }
+float ez(float x){ x = clamp(x, 0., 1.); return x * x * x * (x * (x * 6. - 15.) + 10.); }
+vec3 schulter(vec3 c){ vec3 k = vec3(.75); return mix(c, k + .25 * (1. - exp(-(c - k) / .25)), step(k, c)); }
+vec3 okl(vec3 c){
+  c = pow(max(c, 0.), vec3(2.2));
+  vec3 l = pow(max(mat3(.4122214708, .2119034982, .0883024619, .5363325363, .6806995451, .2817188376, .0514459929, .1073969566, .6299787005) * c, 0.), vec3(1. / 3.));
+  return mat3(.2104542553, 1.9779984951, .0259040371, .7936177850, -2.4285922050, .7827717662, -.0040720468, .4505937099, -.8086757660) * l;
+}
+vec3 okr(vec3 o){
+  vec3 l = mat3(1., 1., 1., .3963377774, -.1055613458, -.0894841775, .2158037573, -.0638541728, -1.2914855480) * o; l = l * l * l;
+  vec3 c = mat3(4.0767416621, -1.2684380046, -.0041960863, -3.3077115913, 2.6097574011, -.7034186147, .2309699292, -.3413193965, 1.7076147010) * l;
+  return pow(max(c, 0.), vec3(1. / 2.2));
+}
+vec3 tonDreh(vec3 c, float a, float s){ vec3 o = okl(c); o.yz = rot(a) * o.yz * s; return okr(o); }
 `;
 
 const VS_FLAECHE = `#version 300 es
