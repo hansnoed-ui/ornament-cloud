@@ -994,6 +994,128 @@ vec4 effekt(vec2 uv){
   return vec4(clamp(grund + L, 0., 1.), 1.);
 }`,
   },
+  strom: {
+    name: "Strom", herkunft: "PHORMA I: das Bild löst sich in glänzende Kügelchen in seinen eigenen Farben, Funken leuchten auf, die Kügelchen ziehen in feinen Bändern und Wirbeln den Konturen nach und fliegen an ihren Platz zurück",
+    // Wunsch vom 5. November 2026: «hol dir für die effekte von Phorma I: strom, körper». Wie in PHORMA I wird jeder Bildpunkt zu einer Kugel
+    // mit Glanzlicht (motor.js, kugel: true); hier aber zieht der Strom die Kügelchen den Linien gleicher Helligkeit des Bildes entlang
+    // (Nachbarn folgen derselben Stromlinie, verschieden weit: so entstehen Bänder statt Staub), ein Wirbelfeld dreht sie zu Schlaufen.
+    // Die meisten Kügelchen sind klein, etwa jedes siebte mittel, jedes dreissigste gross; die grossen sind träger und lösen sich vom Band
+    regler: [r("Strom", .7), r("Kugelgrösse", .45), r("Wirbel", .35), r("Länge", .5), r("Funken", .5), r("Tempo", .2)],
+    kugel: true,
+    punkte: (w, a, h, d = 1) => { const n = Math.round(260 * Math.sqrt(d * Math.min(1, h / 1000 + .2))); return { cols: Math.round(n * a * 1.15), rows: Math.round(n * 1.15) }; },
+    glsl: `${FELD}
+void punkt(int id, out vec2 pos, out vec4 col, out float size){
+  float i = float(id); vec2 g = vec2(mod(i, uCols), floor(i / uCols));
+  vec2 uv0 = (g + h22(g + uSeed * 7.7)) / vec2(uCols, uRows) * 1.1 - .05;   // ein schmaler Saum, damit die Ränder voll bleiben
+  float s = h12(g * 1.37 + uSeed), b = h12(g * 2.11 + 9.3 + uSeed);
+  float gr = b < .033 ? 2. + s : b < .15 ? 1. + .6 * s : .45 + .45 * s;     // Grösse: meist klein, einige mittel, wenige gross
+  float m = 1. + floor(P5 * 1.99);                                         // ein oder zwei Atemzüge je Schlaufe
+  float env = HZ(.5 - .5 * cos(uPhi * m));                                 // 0: das Bild steht exakt (Naht der Schlaufe)
+  float weg = env * P0 * mix(.25, 1., s) / (1. + max(gr - 1., 0.) * .5);   // wie weit das Kügelchen auf seiner Stromlinie kommt
+  vec2 p0 = P(uv0), q = p0;
+  int N = uSparsam > .5 ? 10 : 22;
+  float L = mix(.12, .6, P3), st = L / float(N), steps = weg * float(N);
+  for (int k = 0; k < 22; k++){
+    if (k >= N) break;
+    float dt = clamp(steps - float(k), 0., 1.);
+    if (dt <= 0.) break;
+    vec2 v = strom(UV(q), 2., 5., .1) + lcurl(q * 3.2 + 1.3, .5) * .018 * P2;   // den Konturen entlang, dazu Wirbel
+    q += normalize(v + 1e-5) * st * dt;
+  }
+  pos = q;
+  vec4 c = Ql(uv0, .3); float Lk = lum(Kl(uv0, .3).rgb);
+  if (uZeigen < .5) c = vec4(mix(vec3(.62, .66, .74), vec3(1., .97, .92), Lk), 1.);   // ohne Bild: Silber, hell, wo das Bild hell ist
+  float funke = pow(.5 + .5 * sin(TAU * (s * 3. + lum(c.rgb) * 2. - uT * 2. * m)), 12.) * P4 * smoothstep(.05, .4, env);   // Funken laufen durch
+  col = vec4(min(c.rgb * (1. + funke * 1.8) + funke * .25, 1.), 1.);
+  float ab = uRes.y * 1.1 / uRows;                                         // Abstand der Kügelchen im Raster: in Ruhe deckt das Bild
+  float flug = mix(1., .5, smoothstep(0., .5, weg));                    // im Flug kleiner: feine Bänder statt Brocken
+  size = ab * mix(1.3, 3.2, P1) * gr * flug * (1. + funke * .4) * (uZeigen > .5 ? 1. : .5 + Lk) + .5;
+}`,
+  },
+  koerper: {
+    name: "Körper", herkunft: "PHORMA I: auf den Formen des Bildes wachsen Glaskörper, Dodekaeder, Geode und Ikosaeder, die ineinander übergehen und sich drehen; das Bild scheint durch ihre Facetten, gebrochen in Regenbogensäume, die Kanten spiegeln",
+    // Wunsch vom 5. November 2026 («hol dir für die effekte von Phorma I: strom, körper»): das Glas wie in PHORMA I als Schnitt von 16 Platten
+    // (6 Dodekaeder-, 10 Ikosaederflächen), Ein- und Austritt exakt, Brechung je Farbkanal. Neu aus dem Bild: die Körper setzen sich auf seine
+    // stärksten Formen und sind dort gross, ihr Glas nimmt deren Farbe an, und was sie spiegeln, ist das Bild selbst (weich)
+    regler: [r("Anzahl", .25), r("Grösse", .55), w("Form", ["Dodekaeder", "Geode", "Ikosaeder", "Wandel"], 3), r("Brechung", .6), r("Kanten", .55), r("Drehen", .35)],
+    glsl: `${BLASE}
+const vec3 kN[16] = vec3[16](
+  normalize(vec3(0., 1.618, 1.)), normalize(vec3(0., -1.618, 1.)), normalize(vec3(1., 0., 1.618)), normalize(vec3(-1., 0., 1.618)), normalize(vec3(1.618, 1., 0.)), normalize(vec3(-1.618, 1., 0.)),
+  normalize(vec3(1., 1., 1.)), normalize(vec3(-1., 1., 1.)), normalize(vec3(1., -1., 1.)), normalize(vec3(1., 1., -1.)), normalize(vec3(0., 1., 2.618)), normalize(vec3(0., -1., 2.618)),
+  normalize(vec3(2.618, 0., 1.)), normalize(vec3(-2.618, 0., 1.)), normalize(vec3(1., 2.618, 0.)), normalize(vec3(-1., 2.618, 0.)));
+const float kTAN = .3153, kZ = 3.2;
+bool kSchnitt(vec3 o, vec3 d, vec2 rad, out float s0, out float s1, out vec3 n0, out vec3 n1){
+  s0 = -1e9; s1 = 1e9; n0 = vec3(0., 0., 1.); n1 = vec3(0., 0., -1.);
+  for (int i = 0; i < 16; i++){
+    float r = i < 6 ? rad.x : rad.y; vec3 n = kN[i]; float dn = dot(d, n), on = dot(o, n);
+    if (abs(dn) < 1e-6){ if (abs(on) > r) return false; continue; }
+    float a = (-r - on) / dn, b = (r - on) / dn; vec3 na = -n, nb = n;
+    if (a > b){ float t = a; a = b; b = t; vec3 tn = na; na = nb; nb = tn; }
+    if (a > s0){ s0 = a; n0 = na; }
+    if (b < s1){ s1 = b; n1 = nb; }
+  }
+  return s0 < s1 && s1 > 0.;
+}
+float kKante(vec3 p, vec2 rad, float breite){
+  float a = -1e9, b = -1e9;
+  for (int i = 0; i < 16; i++){ float v = abs(dot(p, kN[i])) - (i < 6 ? rad.x : rad.y); if (v > a){ b = a; a = v; } else if (v > b) b = v; }
+  return 1. - smoothstep(0., breite, a - b);
+}
+mat3 kDreh(vec3 w){
+  float ca = cos(w.x), sa = sin(w.x), cb = cos(w.y), sb = sin(w.y), cc = cos(w.z), sc = sin(w.z);
+  return mat3(cc, sc, 0., -sc, cc, 0., 0., 0., 1.) * mat3(cb, 0., -sb, 0., 1., 0., sb, 0., cb) * mat3(1., 0., 0., 0., ca, sa, 0., -sa, ca);
+}
+vec2 kForm(float f){ float a = smoothstep(0., 1., clamp(f, 0., 1.)), b = smoothstep(0., 1., clamp(f - 1., 0., 1.)); return f < 1. ? vec2(1., 1.3 - .24 * a) : vec2(1. + .3 * b, 1.06 - .06 * b); }
+const float kHH = (kZ + 1.) * kTAN;                                   // halbe Bildhöhe auf der Bildebene z = −1
+vec2 kAufBild(vec3 o, vec3 d){ d.z = min(d.z, -.05); vec3 p = o + d * ((-1. - o.z) / d.z); return UV(p.xy / (2. * kHH)); }
+vec4 effekt(vec2 uv){
+  vec2 p = P(uv);
+  vec3 ro = vec3(0., 0., kZ), rd = normalize(vec3(p * 2. * kTAN, -1.));
+  int n = 1 + int(floor(P0 * 4.99)); if (uSparsam > .5) n = min(n, 2);
+  float fw = P2 > .9 ? 1. - cos(uPhi) : P2 * 2.;                      // Wandel: Dodekaeder → Geode → Ikosaeder und zurück
+  float env = HZ(.5 - .5 * cos(uPhi)), best = 1e9;
+  int k = -1; vec3 lo, ld, n0, M; mat3 R; float s0, g; vec2 rad; vec3 ton;
+  for (int j = 0; j < 5; j++){
+    if (j >= n) break;
+    float fj = float(j), fo; vec3 h = h33(vec3(fj, 7., uSeed + 4.));
+    vec2 c = zumBild((h.xy - .5) * vec2(A() * .5, .5), 2.4, fo);    // auf die starken Formen des Bildes
+    c += .02 * vec2(cos(uPhi + h.z * TAU), sin(uPhi + h.x * TAU));
+    float gj = mix(.12, .34, P1) * mix(.55, 1.15, clamp(fo, 0., 1.)) * mix(.8, 1., env) / (1. + float(n - 1) * .22);
+    c = clamp(c, -vec2(A() * .5, .5) + gj * 1.55, vec2(A() * .5, .5) - gj * 1.55);   // der Körper bleibt ganz im Bild
+    vec3 Mj = vec3(c * 2. * kHH, 0.), drj = h * TAU + floor(P5 * 2.99) * uPhi * vec3(1., 1., 0.) + .25 * P5 * vec3(sin(uPhi), cos(uPhi), sin(uPhi + h.y * TAU));
+    mat3 Rj = kDreh(drj), inv = transpose(Rj);
+    float gw = gj * 2. * kHH;
+    vec3 o = inv * (ro - Mj) / gw, d = inv * rd; float a, b; vec3 m0, m1; vec2 rj = kForm(fw + (h.z - .5) * .3 * step(.9, P2));
+    if (kSchnitt(o, d, rj, a, b, m0, m1) && a > 0. && a * gw < best){
+      best = a * gw; k = j; lo = o; ld = d; s0 = a; n0 = m0; M = Mj; R = Rj; g = gw; rad = rj;
+      ton = mix(vec3(1.), clamp(Kl(UV(c), 3.).rgb * 1.5 + .25, 0., 1.), .45);   // das Glas nimmt die Farbe seiner Form an
+    }
+  }
+  vec3 aussen = Ql(uv, 0.).rgb;
+  if (k < 0) return vec4(aussen, 1.);
+  vec3 e = lo + ld * s0, farbe; float dicke = 0.;
+  for (int c = 0; c < 3; c++){                                          // je Farbkanal eigene Brechung: Regenbogensäume
+    float ior = 1. + (.46 + .045 * float(c)) * mix(.15, 1.5, P3);
+    vec3 d1 = refract(ld, n0, 1. / ior); float a, b; vec3 m0, m1;
+    kSchnitt(e + d1 * 1e-4, d1, rad, a, b, m0, m1);
+    vec3 x = e + d1 * b, d2 = refract(d1, -m1, ior);
+    if (dot(d2, d2) < 1e-6) d2 = reflect(d1, -m1);
+    farbe[c] = Ql(kAufBild(R * x * g + M, R * d2), .2)[c];
+    if (c == 1) dicke = b;
+  }
+  farbe *= mix(vec3(1.), vec3(.86, .92, 1.), clamp(dicke * .35, 0., 1.)) * ton;
+  vec3 rw = R * reflect(ld, n0);
+  float F = .04 + .96 * pow(1. - max(dot(-ld, n0), 0.), 5.);
+  vec3 spiegel = Kl(UV(rw.xy * .5), 5.).rgb * .8 + vec3(.04);            // gespiegelt wird das Bild selbst, weich
+  if (uZeigen < .5) spiegel = mix(vec3(.02), vec3(.55, .6, .72), smoothstep(-.3, .9, rw.y));
+  vec3 glanz = vec3(1., .95, .88) * pow(max(dot(rw, normalize(vec3(.6, .8, .5))), 0.), 220.) * 5.
+             + vec3(1., .6, .3) * pow(max(dot(rw, normalize(vec3(-.7, -.2, .6))), 0.), 90.) * 1.2;
+  farbe = mix(farbe, spiegel, F) + glanz;
+  float kw = .007 / max(g, .2) * uRes.y / 1350. + .004;
+  farbe = mix(farbe, vec3(.97), clamp(kKante(e, rad, kw) * P4, 0., 1.));   // feine Spiegelkanten
+  return vec4(clamp(farbe, 0., 1.), 1.);
+}`,
+  },
   bluete: {
     name: "Membran-Blüte", herkunft: "infinite mantra (Membranen): durchscheinende, weich verformte Membranen setzen sich auf die Formen des Bildes, nehmen seine Farben an, fliessen und falten sich langsam wie Blütenblätter, und das Bild fliesst mit ihnen",
     // Referenzvideo vom 5. November 2026 (webdesigns/infinite-mantra-membran-bluete), Christian wollte es als Effekt. Die Membranen sind
