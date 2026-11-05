@@ -59,7 +59,7 @@ test("Seite: noindex, nicht in der Sitemap, nichts von aussen, zwei Ansichten, k
   const html = lies("animations/index.html");
   assert.match(html, /<meta name="robots" content="noindex">/);
   assert.ok(!lies("sitemap.xml").includes("/animations/"));
-  for (const f of ["index.html", "seite.js", "motor.js", "effekte.js", "rezepte.js"]) assert.doesNotMatch(lies(`animations/${f}`), /(src|href)=["']https?:|import\(["']https?:|from ["']https?:/, f);
+  for (const f of ["index.html", "en/index.html", "es/index.html", "seite.js", "motor.js", "effekte.js", "rezepte.js", "sprache.js"]) assert.doesNotMatch(lies(`animations/${f}`).replace(/<link rel="alternate" hreflang="[a-z-]+" href="https:\/\/ornament\.cloud\/animations\/[a-z/]*">/g, ""), /(src|href)=["']https?:|import\(["']https?:|from ["']https?:/, f);   // ausser den Verweisen auf die Sprachen
   const ansichten = [...html.matchAll(/data-ansicht="([a-z]+)"/g)].map((m) => m[1]);
   assert.deepEqual(ansichten, ["mischpult", "info"], "nur Mischpult und Info (4. November 2026)");
   assert.ok(!html.includes("Christian Strickler"), "kein Name des Betreibers auf der Seite (4. November 2026)");
@@ -213,4 +213,40 @@ test("Kurzlinks: .htaccess leitet /a/KURZ auf /animations/#a=KURZ, die Seite lie
   assert.match(seite, /h\.startsWith\("a="\)/); assert.match(seite, /aktion: "kurz"/); assert.match(seite, /if \(location\.search\) history\.replaceState/);
   assert.match(lies("animations/werke.php"), /\$ordner\/kurz\//);
   assert.match(lies("tools/hostpoint/ausschluss.txt"), /^animations\/werke\/$/m, "die Kurzlinks liegen in werke/ und überstehen den Deploy");
+});
+
+test("Sprachen (5. November 2026: «Bitte die seite Animations auch in Spanisch und englisch»): /animations/en/ und /animations/es/ sind aktuell, jeder Text ist übersetzt", async () => {
+  const { UEBERSETZUNGEN, HERKUENFTE, SEITE, t } = await import(new URL("animations/sprache.js", root).href);
+  assert.equal(t("Pause"), "Pause", "ohne Seite (Node) bleibt Deutsch");
+  // die Seiten stimmen mit der deutschen Seite und der Tabelle überein (sonst: node tools/animations-sprachen.mjs)
+  const { execFileSync } = await import("node:child_process");
+  execFileSync(process.execPath, [new URL("tools/animations-sprachen.mjs", root).pathname.replace(/^\/([A-Za-z]:)/, "$1"), "--pruefen"]);
+  const de = lies("animations/index.html");
+  for (const [sprache, locale] of [["en", "en_GB"], ["es", "es_ES"]]) {
+    const html = lies(`animations/${sprache}/index.html`);
+    assert.match(html, new RegExp(`<html lang="${sprache}">`));
+    assert.match(html, /<meta name="robots" content="noindex">/);
+    assert.ok(html.includes(`<meta property="og:url" content="https://ornament.cloud/animations/${sprache}/">`));
+    assert.ok(html.includes(`<meta property="og:locale" content="${locale}">`));
+    assert.ok(html.includes('src="../seite.js?v='), "dieselben Module wie die deutsche Seite");
+    assert.ok(html.includes(`href="./" hreflang="${sprache}" lang="${sprache}" aria-current="true"`), "Umschalter: die eigene Sprache ist aktuell");
+    for (const l of ["de", "en", "es"]) assert.ok(html.includes(`<link rel="alternate" hreflang="${l}" href="https://ornament.cloud/animations/${l === "de" ? "" : `${l}/`}">`), l);
+    const text = html.replace(/<style>[\s\S]*?<\/style>/, "").replace(/<!--[\s\S]*?-->/g, "");
+    assert.doesNotMatch(text, /[äöüÄÖÜ]|\b(und|oder|das|der|die|dein|Ebene|Werk)\b/, `${sprache}: kein Deutsch mehr in der Seite`);
+    for (const id of [...de.matchAll(/id="([a-z-]+)"/g)].map((m) => m[1])) assert.ok(html.includes(`id="${id}"`), `${sprache}: id ${id}`);
+  }
+  // jeder Text aus seite.js und motor.js (t("…")), jeder Effekt, Regler und jede Stufe hat beide Übersetzungen
+  const schluessel = [...lies("animations/seite.js").matchAll(/\bt\("((?:[^"\\]|\\.)*)"/g), ...lies("animations/motor.js").matchAll(/\bt\("((?:[^"\\]|\\.)*)"/g)].map((m) => m[1]);
+  assert.ok(schluessel.length > 60);
+  for (const k of schluessel) assert.equal(UEBERSETZUNGEN[k]?.length, 2, `fehlt: ${k}`);
+  for (const [id, e] of Object.entries(EFFEKTE)) {
+    assert.equal(UEBERSETZUNGEN[e.name]?.length, 2, `Effekt ${id}`);
+    assert.equal(HERKUENFTE[id]?.length, 2, `Herkunft ${id}`);
+    for (const r of e.regler) { assert.equal(UEBERSETZUNGEN[r.name]?.length, 2, `${id}: ${r.name}`); for (const s of r.stufen ?? []) assert.equal(UEBERSETZUNGEN[s]?.length, 2, `${id}: ${s}`); }
+  }
+  for (const f of [...lies("animations/werke.php").matchAll(/fehler\(\d+, '([^']+)'\)/g)].map((m) => m[1])) assert.equal(UEBERSETZUNGEN[f]?.length, 2, `werke.php: ${f}`);
+  for (const z of SEITE) assert.equal(z.length, 3, z[0]);
+  // Kurzlinks behalten die Sprache, die Ablage liegt neben dem Modul
+  assert.match(lies(".htaccess"), /RewriteRule \^a\/\(\[0-9A-Za-z\]\{6,10\}\)\/\(en\|es\)\/\?\$ \/animations\/\$2\/#a=\$1 \[R=302,NE,L\]/);
+  assert.match(lies("animations/seite.js"), /new URL\("werke\.php", import\.meta\.url\)/);
 });

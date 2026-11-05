@@ -24,6 +24,10 @@ Rechnet alles im Browser (WebGL 2, motor.js), das MP4 (1080 × 1350, 30 fps, 12 
 -->
 <meta name="robots" content="noindex">
 <meta name="description" content="Dein Bild, vierundzwanzig Effekte, drei Ebenen: Animationen mischen, als MP4 laden und als Werk mit deinem Namen sichern.">
+<link rel="alternate" hreflang="de" href="https://ornament.cloud/animations/">
+<link rel="alternate" hreflang="en" href="https://ornament.cloud/animations/en/">
+<link rel="alternate" hreflang="es" href="https://ornament.cloud/animations/es/">
+<link rel="alternate" hreflang="x-default" href="https://ornament.cloud/animations/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="ornament.cloud">
 <meta property="og:locale" content="de_CH">
@@ -95,13 +99,20 @@ button { background: none; border: 0; padding: 0; cursor: pointer; border-radius
 .marke:hover { text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; }
 .zeile { margin: 0; text-align: center; font-size: 15px; white-space: nowrap; }
 .kurz { display: none; }
-.ansichten { justify-self: end; display: flex; gap: 4px; }
+.kopf-rechts { justify-self: end; display: flex; align-items: center; gap: 16px; }
+.ansichten { display: flex; gap: 4px; }
 .ansichten button { display: inline-flex; align-items: baseline; gap: 8px; min-height: 44px; padding: 0 12px; font-size: 14px; font-weight: 500; color: var(--leise); position: relative; }
 .ansichten small { font-size: 11px; letter-spacing: .08em; }
 .ansichten button:hover { color: var(--tinte); }
 .ansichten button[aria-pressed="true"] { color: var(--tinte); }
 .ansichten button[aria-pressed="true"] small { color: var(--akzent); }
 .ansichten button[aria-pressed="true"]::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 6px; height: 1px; background: var(--tinte); }
+/* Sprachen (5. November 2026: «auch in Spanisch und englisch»): wie beim Zettelkasten eigene Adressen /animations/en/ und /animations/es/ */
+.sprachen { display: flex; padding-left: 12px; border-left: 1px solid var(--linie); }
+.sprachen a { display: inline-grid; place-items: center; min-width: 32px; min-height: 44px; font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: .08em;
+  text-transform: uppercase; text-decoration: none; color: var(--leise); }
+.sprachen a:hover { color: var(--tinte); }
+.sprachen a[aria-current="true"] { color: var(--akzent); }
 
 /* ---------- gemeinsame Bausteine ---------- */
 .rahmen { position: relative; background: var(--buehne); aspect-ratio: var(--ar); }
@@ -259,7 +270,10 @@ input[type="range"]:focus-visible { outline: none; }
   :root { --rand: 16px; --kopf: 52px; }
   html { font-size: 16px; }
   body { padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px)); }
-  .kopf-innen { grid-template-columns: 1fr auto; }
+  .kopf-innen { grid-template-columns: 1fr auto auto; gap: 12px; }
+  .kopf-rechts { gap: 0; }
+  .sprachen { padding-left: 4px; border-left: 0; }
+  .sprachen a { min-width: 28px; }
   .kurz { display: block; margin: 0; font-size: 13px; color: var(--leise); }
   /* die Ansichten werden zur Leiste am unteren Rand (Daumenweite), dasselbe Element wie im Kopf */
   .ansichten { position: fixed; left: 0; right: 0; bottom: 0; z-index: 8; display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; background: var(--grund); border-top: 1px solid var(--linie);
@@ -290,10 +304,17 @@ input[type="range"]:focus-visible { outline: none; }
     <a class="marke" href="../">ornament<span class="punkt">.</span>cloud</a>
     <p class="zeile">Animationen <span class="leise">— dein Bild, vierundzwanzig Effekte, drei Ebenen</span></p>
     <p class="kurz">Animationen</p>
-    <nav class="ansichten" aria-label="Ansicht">
-      <button type="button" data-ansicht="mischpult" aria-pressed="true"><small>01</small>Mischpult</button>
-      <button type="button" data-ansicht="info" aria-pressed="false"><small>02</small>Info</button>
-    </nav>
+    <div class="kopf-rechts">
+      <nav class="ansichten" aria-label="Ansicht">
+        <button type="button" data-ansicht="mischpult" aria-pressed="true"><small>01</small>Mischpult</button>
+        <button type="button" data-ansicht="info" aria-pressed="false"><small>02</small>Info</button>
+      </nav>
+      <nav class="sprachen" aria-label="Sprache">
+        <a href="./" hreflang="de" lang="de" aria-current="true" title="Deutsch">De</a>
+        <a href="en/" hreflang="en" lang="en" title="English">En</a>
+        <a href="es/" hreflang="es" lang="es" title="Español">Es</a>
+      </nav>
+    </div>
   </div>
 </header>
 
@@ -396,6 +417,6 @@ input[type="range"]:focus-visible { outline: none; }
 </div></footer>
 
 <div class="export" id="export" hidden role="status"><div class="export-zeile"><span id="export-text">MP4 · 0 %</span><button type="button" id="export-stop">Abbrechen</button></div><div class="fortschritt" aria-hidden="true"><i></i></div></div>
-<script type="module" src="seite.js?v=27"></script>   <!-- Versionsmarke: bei Änderungen an den Modulen hier und in allen Importen hochzählen (Zwischenspeicher 10 Minuten, .htaccess) -->
+<script type="module" src="seite.js?v=28"></script>   <!-- Versionsmarke: bei Änderungen an den Modulen hier und in allen Importen hochzählen (Zwischenspeicher 10 Minuten, .htaccess) -->
 </body>
 </html>
