@@ -1,7 +1,7 @@
 // Animationen – der Motor: ein WebGL-2-Kontext rechnet bis zu drei Ebenen übereinander (je Effekt, Quelle, Mischmodus, Deckkraft)
 // und gibt das Bild auf eine eigene Leinwand aus, die Reel, Werke und Mischpult abzeichnen. Alles hängt nur von der Zeit t in der
 // Schlaufe ab (phi = 2π·t/DAUER, ganzzahlige Frequenzen): Bild N ist wieder Bild 0, und das MP4 entsteht Bild für Bild.
-import { EFFEKTE, wertVon } from "./effekte.js?v=6";
+import { EFFEKTE, wertVon } from "./effekte.js?v=7";
 
 export const DAUER = 12, FPS = 30, LAENGEN = [12, 30, 60];
 /** Länge der Schlaufe eines Stapels in Sekunden (Vorgabe 12) */
@@ -81,6 +81,11 @@ const FS_PUNKTE = `#version 300 es
 precision highp float;
 in vec4 vCol; out vec4 o;
 void main(){ float d = length(gl_PointCoord - .5) * 2.; o = vCol * smoothstep(1., .7, d); }`;
+// weiche Punkte (Gauss) für Linien aus vielen Punkten: ihre Summe ist glatt, wo sie sich überlappen (Lichtwürfel, 5. November 2026)
+const FS_PUNKTE_WEICH = `#version 300 es
+precision highp float;
+in vec4 vCol; out vec4 o;
+void main(){ vec2 d = (gl_PointCoord - .5) * 2.; o = vCol * max(exp(-dot(d, d) * 5.) - .0067, 0.); }`;
 
 // Mischen: die Ebene ist vormultipliziert (Punkte lassen den Grund durch), gemischt wird mit der Farbe ohne Deckung
 const FS_MISCH = `#version 300 es
@@ -152,7 +157,7 @@ export function motorErstellen({ sparsam = SPARSAM, verloren = () => {}, zurueck
     if (motor.kaputt.has(id)) return null;
     const e = EFFEKTE[id];
     try {
-      return e.punkte ? programm(id, vsPunkte(e.glsl), FS_PUNKTE) : programm(id, VS_FLAECHE, fsEffekt(e.glsl));
+      return e.punkte ? programm(id, vsPunkte(e.glsl), e.weich ? FS_PUNKTE_WEICH : FS_PUNKTE) : programm(id, VS_FLAECHE, fsEffekt(e.glsl));
     } catch (f) {
       if (gl.isContextLost()) return null;   // kein Fehler des Effekts: der Kontext ist weg
       const text = `Effekt «${e.name}»: ${f.message}`;
