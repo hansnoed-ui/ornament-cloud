@@ -1159,10 +1159,14 @@ vec4 effekt(vec2 uv){
 }`,
   },
   bluete: {
-    name: "Membran-Blüte", herkunft: "infinite mantra (Membranen): durchscheinende Kreise und Muschelspiralen setzen sich auf die Formen des Bildes, nehmen seine Farben an, falten sich langsam auf wie Blütenblätter und legen sich als Lasur übereinander",
+    name: "Membran-Blüte", herkunft: "infinite mantra (Membranen): durchscheinende, weich verformte Membranen setzen sich auf die Formen des Bildes, nehmen seine Farben an, fliessen und falten sich langsam wie Blütenblätter, und das Bild fliesst mit ihnen",
     // Referenzvideo vom 5. November 2026 (webdesigns/infinite-mantra-membran-bluete), Christian wollte es als Effekt. Die Membranen sind
     // Linsen: im Innern ist das Bild leicht vergrössert und gedreht, ihre Farbe kommt aus dem Bild (Wärme schiebt sie zu Aprikose bis Pflaume),
-    // Überlagerungen dunkeln multiplikativ ab
+    // Überlagerungen dunkeln multiplikativ ab.
+    // Seit 5. November 2026 (dritter Wunsch: «feine, rundlicher, weicher, verformender fliess und dass ausgangsbild mehr bewegt»): der Rand
+    // jeder Membran wird von langsamem Rauschen verformt (rundliche Lappen statt harter Kreise), der Rand ist breit und weich, die Linie fein;
+    // die Membranen gleiten weiter der Kontur entlang; das Bild fliesst als Ganzes in einem langsamen Wirbelfeld und in jeder Membran
+    // stärker (Linse, Strömung, Wellen im Glas)
     regler: [r("Anzahl", .55), r("Grösse", .5), r("Falten", .5), r("Lasur", .6), r("Wärme", .7), r("Muscheln", .4)],
     glsl: `${BLASE}${FELD}
 vec3 blPal(float t){                                                            // Aprikose, Rosé, Altrosa, Pflaume
@@ -1170,43 +1174,46 @@ vec3 blPal(float t){                                                            
   return t < .33 ? mix(a, b, t / .33) : t < .66 ? mix(b, c, (t - .33) / .33) : mix(c, d, (t - .66) / .34);
 }
 vec4 effekt(vec2 uv){
-  vec2 p = P(uv), off = vec2(0.); float k = uRes.y / 1350.;
+  vec2 p = P(uv); float k = uRes.y / 1350.;
+  vec2 off = lcurl(p * 1.3 + 3., 1.1) * .035 + strom(uv, 3.5, 8., .15) * .012 * sin(uPhi);   // das ganze Bild fliesst in einem langsamen Wirbelfeld und atmet entlang seiner Konturen
   vec3 lasur = vec3(1.);
   int n = int(mix(5., 16., P0));
   for (int i = 0; i < 16; i++){
     if (i >= n) break;
-    // Lage seit dem zweiten Wunsch vom 5. November 2026 («langsamere weichere fliessendere Bewegung mit verbindung zum bild»): jede
-    // Membran hat einen festen Ankerplatz auf einer Form des Bildes und gleitet von dort sanft der Kontur entlang hin und zurück
-    float fi = float(i); vec2 c; float R, fo; blase(i, P1, .25, c, R);
+    float fi = float(i); vec2 c; float R, fo; blase(i, P1, .35, c, R);
     vec3 h = h33(vec3(fi, 5., uSeed + 2.));
-    vec2 ca = zumBild((h22(vec2(fi, 3.) + uSeed) - .5) * vec2(A() * .8, .8), 2.2, fo);   // weite Schritte: die Anker sammeln sich auf dem Motiv
-    R *= mix(.5, 1.25, clamp(fo, 0., 1.));                                       // auf leerem Grund klein, auf starken Formen gross
+    vec2 ca = zumBild((h22(vec2(fi, 3.) + uSeed) - .5) * vec2(A() * .8, .8), 2.2, fo);   // der Anker sitzt auf einer Form des Bildes
+    R *= mix(.5, 1.25, clamp(fo, 0., 1.));
     float sw = sin(uPhi + h.z * TAU);                                            // ein weicher Atemzug je Schlaufe
     vec2 kt = strom(UV(ca), 3.5, 8., .15);                                       // Richtung der Kontur am Anker
-    c = ca + kt * .05 * sw + vec2(-kt.y, kt.x) * .01 * cos(uPhi + h.y * TAU);
-    float dr = h.y * TAU + (h.x < .5 ? -.3 : .3) * sw + atan(kt.y, kt.x) * .25;   // dreht sich wenig, leicht zur Kontur ausgerichtet
+    c = ca + kt * .09 * sw + vec2(-kt.y, kt.x) * .025 * cos(uPhi + h.y * TAU) + lcurl(ca * 2. + fi, 1.) * .03;   // gleitet der Kontur entlang und treibt
+    float dr = h.y * TAU + (h.x < .5 ? -.35 : .35) * sw + atan(kt.y, kt.x) * .25;
     vec2 v = rot(dr) * (p - c);
-    float fa = 1. - P2 * .32 * (.5 - .5 * cos(uPhi + h.z * TAU));                 // Falten: der Kreis klappt sanft zur Ellipse und auf
+    float fa = 1. - P2 * .3 * (.5 - .5 * cos(uPhi + h.z * TAU));                  // Falten: klappt sanft zur Ellipse und auf
     v.x /= fa;
-    float d = length(v) / R, th = atan(v.y, v.x), rr = 1.;
+    float th = atan(v.y, v.x), d = length(v) / R, rr = 1.;
     bool muschel = h.z < P5 * .8;
-    if (muschel){                                                              // Muschelspirale: Rand wächst mit dem Winkel, an der Naht eine Spitze
+    if (muschel){                                                              // Muschel: der Rand wächst mit dem Winkel, weich
       float tn = fract(th / TAU + .5 + .012 * sin(uPhi + fi));
-      rr = mix(.35, 1.05, pow(tn, .8));
+      rr = mix(.45, 1.05, smoothstep(0., 1., pow(tn, .9)));
     }
+    vec2 ring = vec2(cos(th), sin(th));
+    rr *= 1. + .1 * ln(ring * 1.4 + fi * 1.7, 1.2) + .05 * ln(ring * 3.1 + fi * 2.3 + 9., 1.);   // der Rand wogt: rundliche Lappen statt Kreis
     float rd = (d - rr) * R * uRes.y;                                           // Abstand zum Rand in Pixeln, innen negativ
-    if (rd > 3. * k) continue;
-    float innen = smoothstep(1.6 * k, -1.6 * k, rd);                              // weicher Rand
+    if (rd > 4. * k) continue;
+    float innen = smoothstep(5. * k, -5. * k, rd);                               // breiter, weicher Rand
+    float tief = 1. - min(d / rr, 1.);
     vec2 w = v / R;
-    off += -(rot(-dr) * vec2(w.x * fa, w.y)) * R * (1. - min(d / rr, 1.)) * .12 * innen;   // Linse: das Bild leicht zur Mitte gezogen
-    off += kt * .012 * sw * innen * (1. - min(d / rr, 1.));                       // und es fliesst mit der Membran der Kontur entlang
-    vec3 farbe = Kl(UV(c), 3.5).rgb; farbe = clamp(mix(vec3(lum(farbe)), farbe, 1.7), 0., 1.);   // die Farbe der Form, etwas satter
+    off += -(rot(-dr) * vec2(w.x * fa, w.y)) * R * tief * .2 * innen;             // Linse: das Bild zur Mitte gezogen
+    off += kt * .035 * sw * innen * tief;                                        // und es fliesst mit der Membran der Kontur entlang
+    off += lcurl(p * 5. + fi * 3., 1.3) * .02 * innen * tief;                      // Wellen im Glas
+    vec3 farbe = Kl(UV(c), 3.5).rgb; farbe = clamp(mix(vec3(lum(farbe)), farbe, 1.7), 0., 1.);
     farbe = mix(farbe, blPal(clamp((1. - lum(farbe)) * .25 + h.x * .8 - .05, 0., 1.)), P4);   // Wärme: zur Palette der Referenz
-    float rille = muschel ? .5 + .5 * cos(th * mix(10., 16., h.y) + d * 9.) : .5 + .5 * cos(d / rr * mix(14., 22., h.x) - uPhi);   // Muschel: gebogene Rippen
-    float a = P3 * (.4 + .35 * smoothstep(.2, 1., d / rr)) * (.9 + .1 * rille);      // zum Rand hin satter, feine Rillen
+    float rille = muschel ? .5 + .5 * cos(th * mix(10., 16., h.y) + d * 9.) : .5 + .5 * cos(d / rr * mix(14., 22., h.x) - uPhi);
+    float a = P3 * (.5 + .38 * smoothstep(.1, 1., d / rr)) * (.94 + .06 * rille);   // zum Rand hin satter, die Rillen nur angedeutet
     lasur *= mix(vec3(1.), farbe, a * innen);
-    float rand = exp(-rd * rd / (3.5 * k * k + 1e-4)) + .07 * innen * smoothstep(.85, 1., rille) * step(.15, d);
-    lasur *= mix(vec3(1.), farbe * farbe * .7, clamp(rand, 0., 1.) * (.35 + .5 * P3));   // dünner, dunklerer Rand in der eigenen Farbe
+    float rand = exp(-rd * rd / (2.2 * k * k + 1e-4)) * .8;                        // feine Randlinie
+    lasur *= mix(vec3(1.), farbe * farbe * .7, clamp(rand, 0., 1.) * (.3 + .5 * P3));
   }
   vec3 grund = uZeigen > .5 ? Ql(UV(p + off), .3).rgb : vec3(.92, .89, .85);   // ohne Bild: Cremepapier, die Membranen aus dem Bild
   vec3 col = grund * lasur;
