@@ -164,6 +164,8 @@ test("Handy (5. November 2026: «Diese Seite braucht WebGL 2 … gestern gings n
   assert.match(motor, /motor\.kaputt\.set\(id/);
   assert.match(motor, /if \(!pr\) continue;/);
   assert.match(motor, /def\.punkte\(w, a, h, motor\.sparsam \? DICHTE_SPARSAM : 1\)/);
+  assert.match(motor, /cols \* rows > PUNKTE_SPARSAM/, "Obergrenze der Punkte auf Handys");
+  assert.match(seite, /const DROSSEL_MIN = \.7;/, "die Drossel macht das Bild nicht grob");
   assert.doesNotMatch(seite, /^const fehler = motor\.pruefen\(\)/m, "nicht mehr alle Effekte beim Start übersetzen");
   for (const id of ["physarum", "blitze", "stroemung"]) {
     const e = EFFEKTE[id]; if (!e) continue;

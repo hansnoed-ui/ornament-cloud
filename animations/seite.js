@@ -1,9 +1,9 @@
 // Animationen – die Seite: Mischpult (das eigene Bild, Grund, drei Ebenen, Schalter, Sichern) mit den gesicherten Werken darunter
 // (gestreutes Raster, beim Darüberfahren lebendig, Klick lädt ins Mischpult) und Info. Ein Motor zeichnet für alles; die sichtbare
 // Leinwand übernimmt sein Bild. Seit 4. November 2026 ohne Reel, Beispielbilder und vorgefertigte Werke.
-import { motorErstellen, videoErstellen, DAUER, LAENGEN, MODI } from "./motor.js?v=6";
-import { EFFEKTE, EFFEKT_IDS, stufe, wertVon } from "./effekte.js?v=6";
-import { zufall, EIGEN } from "./rezepte.js?v=6";
+import { motorErstellen, videoErstellen, DAUER, LAENGEN, MODI } from "./motor.js?v=7";
+import { EFFEKTE, EFFEKT_IDS, stufe, wertVon } from "./effekte.js?v=7";
+import { zufall, EIGEN } from "./rezepte.js?v=7";
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, attr = {}, ...kinder) => {
@@ -66,11 +66,14 @@ const zeit = () => S.laeuft ? (performance.now() - S.t0) / 1000 : S.tPause;
 const hatBild = () => motor.hatBild(S.mix.bild);
 
 // ——— Leinwand passend zur Anzeige (Bildschirmdichte, höchstens 1080 breit) ———
-// Drossel: braucht die Bühne zu lange für ein Bild (schwere Effekte auf schwacher Grafik), rechnet sie mit weniger Pixeln, bevor
-// die Grafik des Geräts aussetzt; nur die Anzeige, Standbild und MP4 bleiben in voller Grösse
-let drossel = 1, langsam = 0, letztesBild = 0;
+// Drossel: braucht die Bühne lange für ein Bild (schwere Effekte auf schwacher Grafik), rechnet sie mit etwas weniger Pixeln, bevor
+// die Grafik des Geräts aussetzt; nur die Anzeige, Standbild und MP4 bleiben in voller Grösse. Seit 5. November 2026 (Christian:
+// «hier auch ungut», das Bild auf dem Handy grob und verwaschen) höchstens auf 70 %, nur nach anhaltend langsamen Bildern, Bilder mit
+// frisch übersetzten Effekten zählen nicht, sie erholt sich, sobald es wieder flüssig läuft, und jede neue Mischung beginnt scharf
+let drossel = 1, langsam = 0, schnell = 0, letztesBild = 0, letzteUebersetzung = 0, letzteMischung = null;
+const DROSSEL_MIN = .7;
 function aufloesung(c, max = 1080) {
-  const r = c.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, motor.sparsam ? 1.5 : 2) * drossel;   // Handys: etwas weniger Pixel für die schweren Effekte
+  const r = c.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, motor.sparsam ? 1.75 : 2) * drossel;   // Handys: etwas weniger Pixel für die schweren Effekte (1.5 war zu weich)
   const b = Math.max(40, Math.min(max, Math.round(r.width * d)));
   return [b, Math.round(b / fmt().ar)];
 }
@@ -438,9 +441,13 @@ function bild(jetzt) {
   requestAnimationFrame(bild);
   const dt = jetzt - letztesBild; letztesBild = jetzt;
   if (S.export || document.hidden || S.ansicht !== "mischpult") { langsam = 0; return; }
-  if (dt > 0 && dt < 2000) {   // längere Pausen kommen vom Wechsel aus dem Hintergrund, nicht vom Rechnen
-    langsam = dt > 120 ? langsam + 1 : 0;
-    if (langsam >= 3 && drossel > .35) { drossel = Math.max(.35, drossel * .7); langsam = 0; }
+  if (S.mix !== letzteMischung) { letzteMischung = S.mix; drossel = 1; langsam = schnell = 0; }
+  if (motor.uebersetzt !== letzteUebersetzung) { letzteUebersetzung = motor.uebersetzt; langsam = 0; }   // Übersetzen ist einmalig, nicht langsam
+  else if (dt > 0 && dt < 2000) {   // längere Pausen kommen vom Wechsel aus dem Hintergrund, nicht vom Rechnen
+    langsam = dt > 150 ? langsam + 1 : 0;
+    schnell = dt < 45 ? schnell + 1 : 0;
+    if (langsam >= 8 && drossel > DROSSEL_MIN) { drossel = Math.max(DROSSEL_MIN, drossel * .85); langsam = 0; }
+    if (schnell >= 90 && drossel < 1) { drossel = Math.min(1, drossel / .85); schnell = 0; }
   }
   const tt = zeit() % S.dauer;
   if (hatBild()) {
