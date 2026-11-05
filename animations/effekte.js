@@ -4,10 +4,13 @@
 // und drei Referenzvideos vom 3. November 2026 (holotx, incrprl.dsgn, infinite mantra), hier neu als Shader für den Browser;
 // seit 4. November 2026 ohne Seifenblase und Holo-Kugel, dafür Effekte, die stark aus der Bildinformation schöpfen (am Ende der Liste).
 
-const r = (name, wert) => ({ name, wert });
+// alt: der Wert für Mischungen, die vor dem Regler gesichert wurden (sie behalten so ihr Aussehen), sonst gilt wert
+const r = (name, wert, alt) => alt == null ? { name, wert } : { name, wert, alt };
 // eine Wahl statt eines Schiebers: der Wert bleibt eine Zahl von 0 bis 1 (Stufe k von n ist k / (n − 1)), so laufen Adresse, Export und Werke wie bisher
 const w = (name, stufen, k = 0) => ({ name, wert: k / (stufen.length - 1), stufen });
 /** Stufe einer Wahl aus ihrem Wert 0 … 1 */
+/** Wert des Reglers k einer Ebene: gesetzt, sonst Vorgabe; fehlt er in einer älteren Mischung (andere Regler gesetzt), gilt alt */
+export const wertVon = (def, werte, k) => werte?.[k] ?? (werte?.length && def.regler[k].alt != null ? def.regler[k].alt : def.regler[k].wert);
 export const stufe = (rg, v) => Math.min(rg.stufen.length - 1, Math.max(0, Math.round(v * (rg.stufen.length - 1))));
 
 // gemeinsame Blasen (Tusche und Linsen): Lage, Drift und Atmen je Blase
@@ -31,6 +34,50 @@ vec2 strom(vec2 uv, float l, float px, float wirbel){
   vec2 g = feldG(uv, l, px), t = vec2(-g.y, g.x);
   float a = ln(P(uv) * 1.8, .6) * TAU;
   return normalize(t + (.4 + wirbel * 4.) * vec2(cos(a), sin(a)) + 1e-4);
+}`;
+
+// Kubismus (Wunsch vom 5. November 2026: Raster und Höhenlinien «weiter in richtung kubistische bzw räumliche verformung und
+// strukturierung und veränderung des ausgangsbildes»): das Bild zerfällt in Ebenen (Voronoi-Facetten, sie treiben leicht), und jede
+// sieht es aus einer eigenen Perspektive: gedreht, gezoomt, verschoben, gekippt mit Verkürzung und mit eigener Blickrichtung auf das
+// Relief der Helligkeit (Parallaxe). Gekippte Ebenen sind schattiert, eine tiefere Ebene liegt am Rand im Schatten der höheren, die
+// Kanten als feine Linien. K = 0 lässt alles wie bisher (q = p).
+const KUBUS = `
+struct Kub { vec2 q, mitte, kipp; float licht, kante, dreh, zoom; };
+Kub kubus(vec2 p, float K){
+  Kub F; F.q = p; F.mitte = p; F.kipp = vec2(0.); F.licht = 1.; F.kante = 0.; F.dreh = 0.; F.zoom = 1.;
+  if (K < .005) return F;
+  float n = mix(3.5, 9., K * K);                                     // Raster der Keime je Bildhöhe: erst grob, dann feiner
+  vec2 x = p * n, i0 = floor(x), c1 = vec2(0.), c2 = vec2(0.), g1 = vec2(0.), g2 = vec2(0.); float d1 = 1e3, d2 = 1e3;
+  for (int j = -2; j <= 2; j++) for (int i = -2; i <= 2; i++){
+    vec2 g = i0 + vec2(i, j), h = h22(g + uSeed * 5.3);
+    vec2 c = g + .5 + (h - .5) * .7 + .1 * K * vec2(sin(uPhi + h.x * TAU), cos(uPhi + h.y * TAU));
+    // Strukturierung aus dem Bild: Keime bleiben, wo das Motiv Kanten und Dunkel hat, auf leeren Flächen nur wenige (grosse Ebenen)
+    vec2 cu = UV(c / n); float Lc = lum(Kl(cu, 3.).rgb), Lg = lum(Kl(cu, 5.5).rgb);
+    float detail = clamp(abs(Lc - Lg) * 5. + (1. - Lc) * .35 + abs(Lc - .5) * .2, 0., 1.);
+    if (h12(g * 1.7 + uSeed + 9.) > mix(.3, 1., detail)) continue;
+    float d = dot(x - c, x - c);
+    if (d < d1){ d2 = d1; c2 = c1; g2 = g1; d1 = d; c1 = c; g1 = g; } else if (d < d2){ d2 = d; c2 = c; g2 = g; }
+  }
+  float k = uRes.y / 1350., ed = abs(dot(x - .5 * (c1 + c2), normalize(c2 - c1 + 1e-5))) / n * uRes.y;   // Abstand zur Kante in Pixeln
+  vec2 hA = h22(g1 + uSeed * 5.3 + 17.), hB = h22(g1 + uSeed * 5.3 + 41.), m = c1 / n, v = p - m;
+  float z1 = h12(g1 + uSeed + 3.), z2 = h12(g2 + uSeed + 3.);
+  float e = .04, L0 = lum(Kl(UV(m), 3.).rgb);
+  vec2 gr = vec2(lum(Kl(UV(m + vec2(e, 0.)), 3.).rgb) - lum(Kl(UV(m - vec2(e, 0.)), 3.).rgb),
+                 lum(Kl(UV(m + vec2(0., e)), 3.).rgb) - lum(Kl(UV(m - vec2(0., e)), 3.).rgb)) / (2. * e);
+  F.kipp = ((hA - .5) * 1.5 + gr * .12) * K;                         // Neigung der Ebene: Zufall und das Gefälle des Bildes
+  F.dreh = (hB.x - .5) * .8 * K + .06 * K * sin(uPhi + hB.y * TAU);
+  F.zoom = 1. + (hB.y - .5) * .55 * K;
+  float pers = 1. / max(1. + dot(F.kipp, v) * 1.3, .35);             // Verkürzung der gekippten Ebene
+  vec2 versatz = (hA.yx - .5) * .07 * K + .02 * K * vec2(cos(uPhi + hA.x * TAU), sin(uPhi + hA.y * TAU));
+  vec2 q = m + rot(F.dreh) * v * F.zoom * pers + versatz;
+  vec2 blick = normalize(hB - .5 + 1e-3) * .07 * K;                   // Mehrperspektive: jede Ebene blickt anders auf das Relief
+  q -= blick * (lum(Kl(UV(q), 2.).rgb) - L0);
+  F.q = q; F.mitte = m;
+  vec3 nr = normalize(vec3(-F.kipp * .9, 1.)), Ld = normalize(vec3(-.5 + .25 * sin(uPhi), .55, .75));
+  F.licht = mix(1., clamp(dot(nr, Ld) / Ld.z, .45, 1.35), .7 * K);
+  F.licht *= 1. - .4 * K * step(z1, z2) * exp(-ed / (16. * k));      // Schatten der höheren Nachbarebene
+  F.kante = clamp(1.1 * k + .5 - ed, 0., 1.) * smoothstep(.08, .35, K);
+  return F;
 }`;
 
 export const EFFEKTE = {
@@ -322,44 +369,15 @@ vec4 effekt(vec2 uv){
   // mit dem Bild arbeiten und es auch bei «Bild zeigen: aus» klar lesbar machen). Sie lesen Helligkeit als Höhe, ihren Gradienten als
   // Kanten und Strömung (die Senkrechte zum Gradienten folgt den Konturen und ist quellenfrei) und die Farben als Druckauszüge.
 
-  pinsel: {
-    name: "Pinselstrom", herkunft: "Line Integral Convolution: Pinselstriche fliessen den Konturen des Bildes entlang, dunkel heisst mehr Tusche",
-    regler: [r("Strichlänge", .55), r("Fluss", .3), r("Korn", .4), r("Kontrast", .55), r("Wirbel", .35)],
-    glsl: `${FELD}
-float korn(vec2 x, float cell){
-  vec2 c = x / cell, i = floor(c), f = c - i; f = f * f * (3. - 2. * f);
-  return mix(mix(h12(i + uSeed * 9.), h12(i + vec2(1, 0) + uSeed * 9.), f.x), mix(h12(i + vec2(0, 1) + uSeed * 9.), h12(i + 1. + uSeed * 9.), f.x), f.y);
-}
-vec4 effekt(vec2 uv){
-  float k = uRes.y / 1350., lg = mix(12., 46., P0) * k, cell = mix(1.4, 4.5, P2) * k, st = lg / 12.;
-  float m = 1. + floor(P1 * 2.999);    // eine bis drei Wellen laufen pro Schlaufe durch jeden Strich
-  vec2 x0 = uv * uRes; float sum = 0., ws = 0.; vec3 cs = vec3(0.);
-  for (int s = -1; s <= 1; s += 2){
-    vec2 x = x0;
-    for (int i = 0; i < 12; i++){
-      float a = float(s) * (float(i) + .5) / 12.;                       // Lage im Strich, −1 … 1
-      float w = .5 + .5 * cos(PI * a);                                   // Hann-Fenster: der Strich läuft weich aus
-      float welle = 1. + .8 * cos(TAU * (a * 1.5 - uT * m));           // die Welle wandert den Strich entlang
-      vec2 u = x / uRes;
-      sum += w * welle * korn(x, cell); ws += w * welle;
-      cs += w * Kl(u, 1.).rgb;
-      x += float(s) * st * strom(u, 2.5, 4., P4);
-    }
-  }
-  float r = clamp((sum / ws - .5) * mix(2.5, 7., P3) + .5, 0., 1.);
-  vec3 farbe = cs / (12. * 2. * .5);                                    // Farbe, entlang des Strichs verwischt
-  float D = 1. - lum(farbe);
-  vec3 papier = vec3(.95, .925, .9), tusche = vec3(.06, .05, .06);
-  vec3 aus = mix(papier, tusche, clamp(D * 1.35 + (.5 - r) * 1.1 - .12, 0., 1.));   // ohne Bild: Tusche auf Papier
-  vec3 an = farbe * (.45 + 1.1 * r);
-  return vec4(clamp(mix(aus, an, uZeigen), 0., 1.), 1.);
-}`,
-  },
+  // Pinselstrom und Aquarell entfernt am 5. November 2026 (Wunsch: «Der pinseleffekt kann weg», «Ebenso: aquarell»)
 
   raster: {
     name: "Druckraster", herkunft: "Halbton: vier gedrehte Raster wie im Offsetdruck, Punkte verschmelzen als Distanzfelder im Dunkeln und atmen in Wellen",
-    regler: [r("Raster", .45), r("Drehung", .5), r("Welle", .5), r("Verschmelzen", .5), r("Negativ", 0)],
-    glsl: `float smin(float a, float b, float k){ float h = max(k - abs(a - b), 0.) / k; return min(a, b) - h * h * k * .25; }
+    // Kubismus (5. November 2026): 0 ist das bisherige Druckraster, darüber zerfällt es in gekippte, verschobene Ebenen, jede mit
+    // eigenem Rasterwinkel und eigener Perspektive auf das Bild
+    regler: [r("Raster", .45), r("Drehung", .5), r("Welle", .5), r("Verschmelzen", .5), r("Negativ", 0), r("Kubismus", .5, 0)],
+    glsl: `${KUBUS}
+float smin(float a, float b, float k){ float h = max(k - abs(a - b), 0.) / k; return min(a, b) - h * h * k * .25; }
 // Deckung eines Rasters: Kanal ch (0 Helligkeit, 1–3 Cyan/Magenta/Gelb, 4–6 Rot/Grün/Blau, 7 Schwarz), Winkel ang, N Zellen je Bildhöhe
 float schirm(vec2 p, float ang, float N, int ch){
   mat2 R = rot(ang); vec2 q = R * p * N, ci = floor(q);
@@ -376,10 +394,11 @@ float schirm(vec2 p, float ang, float N, int ch){
   return smoothstep(aa, -aa, d);
 }
 vec4 effekt(vec2 uv){
-  vec2 p = P(uv); float N = mix(150., 40., P0);
+  Kub F = kubus(P(uv), P5);
+  vec2 p = F.q; float N = mix(150., 40., P0);
   // Drehung: unter einem Drittel pendelt das Raster, sonst dreht es eine Viertel- oder halbe Drehung pro Schlaufe (das Raster ist
   // vierfach symmetrisch, darum schliesst die Schlaufe)
-  float n = max(floor(P1 * 2.999), uLauf), a0 = n < .5 ? .25 * sin(uPhi) : n * uPhi / 4.;
+  float n = max(floor(P1 * 2.999), uLauf), a0 = (n < .5 ? .25 * sin(uPhi) : n * uPhi / 4.) + F.dreh * .6;   // jede Ebene mit eigenem Rasterwinkel
   vec3 papier = vec3(.95, .925, .9), nacht = vec3(.043, .035, .039), col;
   if (P4 < .5){
     if (uZeigen < .5) col = mix(papier, vec3(.06, .05, .06), schirm(p, a0 + .785, N, 0));   // ohne Bild: ein schwarzes Raster
@@ -394,7 +413,9 @@ vec4 effekt(vec2 uv){
     if (uZeigen < .5) col = mix(nacht, papier, schirm(p, a0 + .785, N, 8));                  // ohne Bild: helle Punkte auf Schwarz
     else col = nacht + vec3(schirm(p, a0 + .262, N, 4), schirm(p, a0 + 1.309, N, 5), schirm(p, a0, N, 6)) * .95;   // Licht: Rot, Grün, Blau
   }
-  return vec4(col, 1.);
+  // Kubismus: die Ebenen als Flächen im Licht, ihre Kanten als feine Linien (auf Papier dunkel, im Negativ hell)
+  col = P4 < .5 ? mix(col * F.licht, vec3(.06, .05, .06), F.kante * .75) : mix(col * F.licht, papier, F.kante * .6);
+  return vec4(clamp(col, 0., 1.), 1.);
 }`,
   },
 
@@ -424,22 +445,27 @@ vec4 effekt(vec2 uv){
 
   hoehenlinien: {
     name: "Höhenlinien", herkunft: "Topografie: die Helligkeit als Gelände, Höhenlinien steigen langsam bergauf, jede vierte kräftiger",
-    regler: [r("Linien", .45), r("Steigen", .3), r("Strich", .4), r("Wellen", .3), r("Flächen", .35)],
+    // Kubismus (5. November 2026): 0 ist die bisherige Karte, darüber zerfällt das Gelände in gekippte Ebenen, jede aus eigener
+    // Perspektive; die Neigung einer Ebene legt sich als Gefälle auf ihr Gelände, so laufen die Linien darin wie Schraffuren
+    regler: [r("Linien", .45), r("Steigen", .3), r("Strich", .4), r("Wellen", .3), r("Flächen", .35), r("Kubismus", .5, 0)],
     glsl: `${FELD}
+${KUBUS}
 vec4 effekt(vec2 uv){
-  vec2 p = P(uv);
-  float h = .6 * hoehe(uv, 1.5) + .4 * hoehe(uv, 3.5) + lfbm(p * 2.5, .7) * .05 * P3;
+  Kub F = kubus(P(uv), P5);
+  vec2 p = F.q, u = UV(p);
+  float h = .6 * hoehe(u, 1.5) + .4 * hoehe(u, 3.5) + lfbm(p * 2.5, .7) * .05 * P3 + dot(F.kipp, p - F.mitte) * 1.2;
   float N = mix(8., 46., P0), sp = 4. * floor(1. + P1 * 1.999);   // vier oder acht Linien pro Schlaufe: die kräftigen schliessen an
-  float f = h * N - uT * sp, fr = fract(f), aa = max(fwidth(f), 1e-4);
+  float f = h * N - uT * sp, fr = fract(f), aa = clamp(fwidth(f), 1e-4, .5);   // gedeckelt: an den Kanten der Ebenen springt f
   float d = min(fr, 1. - fr) / aa, k = uRes.y / 1350.;
   float idx = mod(floor(f + .5), 4.), w = mix(.5, 1.8, P2) * k * (idx < .5 ? 2.4 : 1.);
   float linie = clamp(w - d + .5, 0., 1.);
   float band = mod(floor(f), 2.) * .5 + .5 * h;                         // Höhenstufen als leise Flächen
   vec3 nacht = vec3(.043, .035, .039), papier = vec3(.95, .925, .9);
   vec3 aus = mix(nacht + papier * band * .16 * P4, papier, linie * (.65 + .35 * step(idx, .5)));
-  vec3 im = Ql(uv, 0.).rgb;
+  vec3 im = Ql(u, 0.).rgb;
   vec3 an = mix(im * (.22 + .3 * P4 * band), mix(im, vec3(1.), .35), linie);
-  return vec4(mix(aus, an, uZeigen), 1.);
+  vec3 col = mix(aus, an, uZeigen) * F.licht;
+  return vec4(clamp(mix(col, papier, F.kante * .55), 0., 1.), 1.);
 }`,
   },
 
@@ -636,27 +662,6 @@ vec4 effekt(vec2 uv){
 }`,
   },
 
-  aquarell: {
-    name: "Aquarell", herkunft: "Watercolor Bleed: das Bild in Lasuren, die nass ineinanderlaufen, Pigment sammelt sich am Rand, Papierkörnung",
-    regler: [r("Nässe", .6), r("Lasuren", .45), r("Ränder", .6), r("Körnung", .5), r("Pigment", .3)],
-    glsl: `vec4 effekt(vec2 uv){
-  vec2 p = P(uv), px = uv * uRes;
-  vec2 w = vec2(lfbm(p * 2.6, .7), lfbm(p * 2.6 + 5.2, .7)) * .035 * P0;   // die Farbe läuft aus
-  vec2 u = uv + w + vec2(lfbm(p * 9., .9), lfbm(p * 9. + 2.7, .9)) * .006 * P0;
-  vec3 c = Kl(u, 2.).rgb; float L = lum(c);
-  float lv = mix(3., 8., P1), e = (1. - L) * lv + lfbm(p * 7. + 3., .8) * .5 * P0;
-  float st = floor(e), f = fract(e), dk = clamp(st, 0., lv) / lv;            // Deckung der Lasur in Stufen
-  float rand = exp(-(1. - f) * 12.) * P2 * step(.5, e);                       // Pigment sammelt sich an der Kante zur helleren Stufe
-  float korn = (gn(vec3(px / (2.2 * uRes.y / 1350.), uSeed)) * .5 + h12(floor(px)) - .5) * P3;
-  vec3 papier = vec3(.96, .94, .9) * (1. - .04 * P3 * gn(vec3(px * .02, 7.)));
-  vec3 pig = uZeigen > .5 ? mix(c, Kl(u, 4.).rgb, .3) : mix(vec3(.16, .22, .42), vec3(.42, .25, .16), P4);   // ohne Bild: eine Farbe (Indigo bis Sepia)
-  vec3 sattTon = pig / max(lum(pig), .05) * .55;
-  vec3 pc = uZeigen > .5 ? mix(pig, sattTon, .25) : pig;
-  float dicht = clamp(dk * (1. + .25 * korn) + rand * .35, 0., 1.);
-  vec3 col = papier * mix(vec3(1.), pc / max(papier, .05), dicht);           // subtraktiv auf Papier
-  return vec4(clamp(col, 0., 1.), 1.);
-}`,
-  },
 
   voxel: {
     name: "Voxel", herkunft: "Instancing: das Bild als Feld aus tausenden Quadern, die Höhe aus der Helligkeit, eine Welle läuft durch, die Kamera schwenkt",

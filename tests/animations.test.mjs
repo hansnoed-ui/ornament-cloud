@@ -8,13 +8,14 @@ import { readFileSync, existsSync, readdirSync } from "node:fs";
 
 const root = new URL("../", import.meta.url);
 const lies = (p) => readFileSync(new URL(p, root), "utf8");
-const { EFFEKTE, EFFEKT_IDS } = await import(new URL("animations/effekte.js", root).href);
+const { EFFEKTE, EFFEKT_IDS, wertVon } = await import(new URL("animations/effekte.js", root).href);
 const { MODI, DAUER, FPS, LAENGEN, dauerVon } = await import(new URL("animations/motor.js", root).href);
 const { zufall, EIGEN } = await import(new URL("animations/rezepte.js", root).href);
 
-test("Effekte: 32, Regler zwischen 0 und 1, höchstens sechs, Shader mit effekt() oder punkt(), jeder mit Name und Herkunft", () => {
-  // Scan entfernt am 3. November 2026 («der scan kann weg»); Seifenblase und Holo-Kugel am 4. November 2026 ersetzt durch vierzehn Effekte aus der Bildinformation
-  assert.equal(Object.keys(EFFEKTE).length, 32);
+test("Effekte: 30, Regler zwischen 0 und 1, höchstens sechs, Shader mit effekt() oder punkt(), jeder mit Name und Herkunft", () => {
+  // Scan entfernt am 3. November 2026 («der scan kann weg»); Seifenblase und Holo-Kugel am 4. November 2026 ersetzt durch vierzehn Effekte aus der Bildinformation;
+  // Pinselstrom und Aquarell entfernt am 5. November 2026
+  assert.equal(Object.keys(EFFEKTE).length, 30);
   assert.deepEqual(EFFEKT_IDS, Object.keys(EFFEKTE));
   for (const [id, e] of Object.entries(EFFEKTE)) {
     assert.ok(e.name && e.herkunft, id);
@@ -84,7 +85,7 @@ test("Bild zeigen: aus (4. November 2026): Motor setzt uZeigen, Ql zeigt ein Ras
   assert.match(motor, /stapel\.ohneBild \? 0 : 1/);
   assert.match(html, /id="pult-zeigen"/);
   assert.match(seite, /-ohne-bild/);
-  for (const id of ["partikel", "metaballs", "wirbel", "zebra", "linien", "linsen", "glitzer", "tinte", "pinsel", "raster", "relief", "hoehenlinien", "stroemung", "roentgen", "montage", "entrauschen", "echo", "aquarell", "voxel", "sortieren", "vertigo", "strahlen", "gewebe", "blitze", "traube", "physarum", "geflecht"]) assert.match(EFFEKTE[id].glsl, /Kl\(/, id);
+  for (const id of ["partikel", "metaballs", "wirbel", "zebra", "linien", "linsen", "glitzer", "tinte", "raster", "relief", "hoehenlinien", "stroemung", "roentgen", "montage", "entrauschen", "echo", "voxel", "sortieren", "vertigo", "strahlen", "gewebe", "blitze", "traube", "physarum", "geflecht"]) assert.match(EFFEKTE[id].glsl, /Kl\(/, id);
 });
 
 test("Durchlauf (4. November 2026): Motor kennt uLauf und HZ(), Schalter und Länge im Mischpult", () => {
@@ -141,4 +142,17 @@ test("Montage: Form als Wahl mit vier Stufen (5. November 2026), Vierecke bleibt
   assert.match(EFFEKTE.montage.glsl, /int form = int\(P5 \* 3\. \+ \.5\)/);
   for (let i = 0; i < 300; i++) for (const e of zufall().ebenen) if (e.effekt === "montage") assert.ok([0, 1, 2, 3].includes(stufe(form, e.werte[5])) && Math.abs(e.werte[5] * 3 - Math.round(e.werte[5] * 3)) < .01);
   assert.match(lies("animations/seite.js"), /r\.stufen \? stufenWahl/);
+});
+
+test("Kubismus bei Druckraster und Höhenlinien: eigener Regler, ältere Mischungen behalten ihr Aussehen", () => {
+  for (const id of ["raster", "hoehenlinien"]) {
+    const def = EFFEKTE[id], k = def.regler.findIndex((r) => r.name === "Kubismus");
+    assert.equal(k, 5, id);
+    assert.match(def.glsl, /Kub F = kubus\(P\(uv\), P5\)/, id);
+    assert.ok(def.regler[k].wert > 0, `${id}: neu gemischt mit Kubismus`);
+    assert.equal(wertVon(def, [.5, .5, .5, .5, 0], k), 0, `${id}: gesichert mit fünf Werten, also ohne Kubismus`);
+    assert.equal(wertVon(def, [], k), def.regler[k].wert, `${id}: frisch gewählt mit der Vorgabe`);
+    assert.equal(wertVon(def, [.5, .5, .5, .5, 0, .8], k), .8);
+  }
+  for (const id of ["pinsel", "aquarell"]) assert.ok(!EFFEKTE[id], `${id} entfernt`);
 });

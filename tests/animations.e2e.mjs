@@ -1,4 +1,4 @@
-// «Animationen» – Browser-Test (Playwright, Chromium mit SwiftShader): alle 32 Effekte übersetzen und zeichnen mit einem eigenen Bild etwas,
+// «Animationen» – Browser-Test (Playwright, Chromium mit SwiftShader): alle 30 Effekte übersetzen und zeichnen mit einem eigenen Bild etwas,
 // die Schlaufe hat keine Naht, die leere Bühne fordert ein Bild, «Neu mischen» schreibt die Mischung in die Adresse, «Werk sichern» legt
 // das Werk ab (werke.php hier vorgetäuscht), es erscheint bei den Werken, lässt sich über #w=ID öffnen und wieder löschen, Pause und Standbild,
 // kein seitliches Scrollen auf dem Handy.
@@ -98,7 +98,7 @@ await check("leere Bühne: fordert ein Bild, Sichern und MP4 warten; mit Bild ze
   await ctx.close();
 });
 
-await check("alle 32 Effekte zeichnen mit dem eigenen Bild ein sichtbares Bild, und die Schlaufe schliesst ohne Naht", async () => {
+await check("alle 30 Effekte zeichnen mit dem eigenen Bild ein sichtbares Bild, und die Schlaufe schliesst ohne Naht", async () => {
   const { ctx, page } = await oeffne();
   await bildBringen(page);
   const ids = await page.evaluate(async () => (await import("./effekte.js")).EFFEKT_IDS);
