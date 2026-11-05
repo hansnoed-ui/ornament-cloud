@@ -1,13 +1,15 @@
 // Animationen – der Motor: ein WebGL-2-Kontext rechnet bis zu drei Ebenen übereinander (je Effekt, Quelle, Mischmodus, Deckkraft)
 // und gibt das Bild auf eine eigene Leinwand aus, die Reel, Werke und Mischpult abzeichnen. Alles hängt nur von der Zeit t in der
 // Schlaufe ab (phi = 2π·t/DAUER, ganzzahlige Frequenzen): Bild N ist wieder Bild 0, und das MP4 entsteht Bild für Bild.
-import { EFFEKTE, wertVon } from "./effekte.js?v=6";
+import { EFFEKTE, wertVon } from "./effekte.js?v=7";
 
 export const DAUER = 12, FPS = 30, LAENGEN = [12, 30, 60];
 /** Länge der Schlaufe eines Stapels in Sekunden (Vorgabe 12) */
 export const dauerVon = (stapel) => LAENGEN.includes(stapel?.dauer) ? stapel.dauer : DAUER;
 /** Anteil der Teilchen in den schweren Punkt-Effekten auf Handys (und nach einem verlorenen Kontext) */
 export const DICHTE_SPARSAM = .3;
+/** höchstens so viele Punkte je Ebene auf Handys (5. November 2026: Absturz bei der Teilchenwolke mit Glitzer, seit #611 mit Saum fast 600 000 Punkte) */
+export const PUNKTE_SPARSAM = 120_000;
 export const MODI = { normal: 0, multiplizieren: 1, differenz: 2, bildschirm: 3, ueberlagern: 4 };
 
 // Hash ohne Sinus (Dave Hoskins, MIT) und Gradientenrauschen; «ln» läuft auf einem Kreis durch die Zeit und schliesst so die Schlaufe.
@@ -128,7 +130,7 @@ export function motorErstellen({ sparsam = SPARSAM, verloren = () => {}, zurueck
   const gl = leinwand.getContext("webgl2", { antialias: false, alpha: false, premultipliedAlpha: false, preserveDrawingBuffer: true });
   if (!gl) throw new Error(ohneKontext(meldung));
 
-  const motor = { leinwand, gl, sparsam, kaputt: new Map() };
+  const motor = { leinwand, gl, sparsam, kaputt: new Map(), uebersetzt: 0 };
   const programme = new Map();
   let B = 0, H = 0, acc = [], lage = null;
   const bilder = new Map();
@@ -139,6 +141,7 @@ export function motorErstellen({ sparsam = SPARSAM, verloren = () => {}, zurueck
   }
   function programm(name, vs, fs) {
     if (programme.has(name)) return programme.get(name);
+    motor.uebersetzt++;   // die Seite misst Bilder, in denen übersetzt wurde, nicht als langsam
     const p = gl.createProgram();
     gl.attachShader(p, shader(gl.VERTEX_SHADER, vs)); gl.attachShader(p, shader(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(p);
     if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(`${name}: ${gl.getProgramInfoLog(p)}`);
@@ -241,7 +244,8 @@ export function motorErstellen({ sparsam = SPARSAM, verloren = () => {}, zurueck
       const w = def.regler.map((r, k) => wertVon(def, e.werte, k));
       gl.uniform1fv(pr.ort("uP[0]"), Float32Array.from({ length: 6 }, (_, k) => w[k] ?? 0));
       if (def.punkte) {
-        const { cols, rows } = def.punkte(w, a, h, motor.sparsam ? DICHTE_SPARSAM : 1);
+        let { cols, rows } = def.punkte(w, a, h, motor.sparsam ? DICHTE_SPARSAM : 1);
+        if (motor.sparsam && cols * rows > PUNKTE_SPARSAM) rows = Math.max(1, Math.floor(PUNKTE_SPARSAM / cols));   // Obergrenze auf Handys
         fp(pr, "uCols", cols); fp(pr, "uRows", rows);
         gl.enable(gl.BLEND);
         if (def.mischung === "add") gl.blendFunc(gl.ONE, gl.ONE); else gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
