@@ -206,3 +206,11 @@ test("kurze Links (link.js): jede Mischung kommt genau zurück und der Link blei
   assert.equal(kurz({ ebenen: [{ effekt: "zebra", werte: [2] }] }), null);
   for (const kaputt of ["", "x", "_q", "_~zebra_zz_9_", "_~ze.bra_00_0__"]) assert.equal(lang(kaputt), null, kaputt);
 });
+
+test("Kurzlinks: .htaccess leitet /a/KURZ auf /animations/#a=KURZ, die Seite liest #a= und räumt ?fbclid=… weg", () => {
+  assert.match(lies(".htaccess"), /RewriteRule \^a\/\(\[0-9A-Za-z\]\{6,10\}\)\/\?\$ \/animations\/#a=\$1 \[R=302,NE,L\]/);
+  const seite = lies("animations/seite.js");
+  assert.match(seite, /h\.startsWith\("a="\)/); assert.match(seite, /aktion: "kurz"/); assert.match(seite, /if \(location\.search\) history\.replaceState/);
+  assert.match(lies("animations/werke.php"), /\$ordner\/kurz\//);
+  assert.match(lies("tools/hostpoint/ausschluss.txt"), /^animations\/werke\/$/m, "die Kurzlinks liegen in werke/ und überstehen den Deploy");
+});

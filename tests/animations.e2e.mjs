@@ -26,7 +26,7 @@ async function check(name, fn) {
 
 // werke.php vorgetäuscht: eine Ablage im Speicher je Browserkontext; das Bild aus dem Formular wird unter werke/ID.jpg wieder ausgeliefert
 function ablage() {
-  const werke = [], bilder = new Map();
+  const werke = [], bilder = new Map(), kurze = new Map();
   const teil = (buf, name) => {   // ein Feld aus multipart/form-data
     const kopf = Buffer.from(`name="${name}"`);
     const i = buf.indexOf(kopf); if (i < 0) return null;
@@ -34,13 +34,16 @@ function ablage() {
     return buf.subarray(a, b);
   };
   return {
-    werke, bilder,
+    werke, bilder, kurze,
     async route(route, request) {
       const url = new URL(request.url());
+      const json = (status, d) => route.fulfill({ status, contentType: "application/json", body: JSON.stringify(d) });
+      if (url.searchParams.has("kurz")) { const d = kurze.get(url.searchParams.get("kurz")); return d ? json(200, d) : json(404, { fehler: "Diesen Link gibt es nicht." }); }
       if (/\/werke\/[a-f0-9]+\.jpg$/.test(url.pathname)) { const b = bilder.get(url.pathname.split("/").pop()); return b ? route.fulfill({ status: 200, contentType: "image/jpeg", body: b }) : route.fulfill({ status: 404 }); }
       if (request.method() === "GET") return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ werke: [...werke].reverse(), anzahl: werke.length }) });
       if ((request.headers()["content-type"] || "").startsWith("application/json")) {
         const d = JSON.parse(request.postData());
+        if (d.aktion === "kurz") { const kurz = `kz${String(kurze.size + 1).padStart(4, "0")}`; kurze.set(kurz, { kurz, werk: d.werk || null, stapel: d.stapel }); return json(201, { kurz }); }
         const i = werke.findIndex((w) => w.id === d.id && w.schluessel === d.schluessel);
         if (i < 0) return route.fulfill({ status: 403, contentType: "application/json", body: '{"fehler":"Der Schlüssel passt nicht."}' });
         werke.splice(i, 1);
@@ -162,6 +165,22 @@ await check("Werk sichern: mit Titel und Name abgelegt, erscheint bei den Werken
   assert.equal(await dritte.evaluate(geordnet), mix, "der kurze Link bringt die weitergemischte Fassung zurück");
   assert.ok(!(await dritte.locator("#pult-leer").isVisible()), "mit dem Bild des Werks");
   await dritte.close();
+  // «Link kopieren» gibt einen Kurzlink /a/KURZ (5. November 2026: «immer noch seeeehr lang»); #a=KURZ (dorthin leitet .htaccess) öffnet die Fassung
+  await zweite.getByRole("button", { name: "Link kopieren" }).click();
+  await zweite.waitForFunction(() => /\/a\/kz\d{4}$/.test(document.getElementById("pult-meldung").textContent), null, { timeout: 10000 });
+  assert.equal(speicher.kurze.size, 1);
+  const k = [...speicher.kurze.values()][0];
+  assert.match(k.werk, /^[a-f0-9]{10}$/, "der Kurzlink kennt das Werk"); assert.ok(!("werk" in k.stapel) && !("bild" in k.stapel));
+  const vierte = await ctx.newPage(); await vierte.goto(`${base}#a=${k.kurz}`, { timeout: 120000 });
+  await vierte.waitForFunction(() => document.documentElement.classList.contains("bereit"), null, { timeout: 120000 });
+  assert.equal(await vierte.evaluate(geordnet), mix, "der Kurzlink bringt die weitergemischte Fassung zurück");
+  assert.ok(!(await vierte.locator("#pult-leer").isVisible()), "mit dem Bild des Werks");
+  await vierte.close();
+  // Anhängsel von Facebook (?fbclid=…) verschwinden beim Öffnen aus der Adresse
+  const fuenfte = await ctx.newPage(); await fuenfte.goto(url.replace("#", "?fbclid=IwAR0abcdefghijklmnopqrstuvwxyz_aem_123#"), { timeout: 120000 });
+  await fuenfte.waitForFunction(() => document.documentElement.classList.contains("bereit"), null, { timeout: 120000 });
+  assert.equal(fuenfte.url(), url, "ohne ?fbclid");
+  await fuenfte.close();
   await zweite.close();
   // löschen
   page.once("dialog", (d) => d.accept());

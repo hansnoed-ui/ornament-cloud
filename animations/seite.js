@@ -1,10 +1,10 @@
 // Animationen – die Seite: Mischpult (das eigene Bild, Grund, drei Ebenen, Schalter, Sichern) mit den gesicherten Werken darunter
 // (gestreutes Raster, beim Darüberfahren lebendig, Klick lädt ins Mischpult) und Info. Ein Motor zeichnet für alles; die sichtbare
 // Leinwand übernimmt sein Bild. Seit 4. November 2026 ohne Reel, Beispielbilder und vorgefertigte Werke.
-import { motorErstellen, videoErstellen, DAUER, LAENGEN, MODI } from "./motor.js?v=26";
-import { EFFEKTE, EFFEKT_IDS, stufe, wertVon } from "./effekte.js?v=26";
-import { zufall, EIGEN } from "./rezepte.js?v=26";
-import { kurz, lang } from "./link.js?v=26";
+import { motorErstellen, videoErstellen, DAUER, LAENGEN, MODI } from "./motor.js?v=27";
+import { EFFEKTE, EFFEKT_IDS, stufe, wertVon } from "./effekte.js?v=27";
+import { zufall, EIGEN } from "./rezepte.js?v=27";
+import { kurz, lang } from "./link.js?v=27";
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, attr = {}, ...kinder) => {
@@ -93,40 +93,56 @@ function ansicht(name, { verlauf = true } = {}) {
   if (verlauf) adresse();
   scrollTo(0, 0);
 }
+/** die Mischung, wie sie in einem Link steht: mit den Schaltern, ein gesichertes Werk mit seiner Kennung, ohne eigenes Bild, ohne leere Ebenen am Ende */
+const voll = (e) => e.effekt && EFFEKTE[e.effekt];   // leere Ebenen füllt das Pult beim Öffnen wieder auf; gesichert werden sie nicht
+function linkMischung() {
+  const m = { ...S.mix, ohneBild: S.ohneBild || undefined, durchlauf: S.durchlauf || undefined, dauer: S.dauer !== DAUER ? S.dauer : undefined, format: S.format !== "4x5" ? S.format : undefined };
+  if (m.bild.startsWith("w:")) m.werk = m.bild.slice(2);   // ein gesichertes Werk steht mit seiner Kennung im Link
+  delete m.bild;   // ein eigenes Bild steht nicht im Link
+  m.ebenen = m.ebenen.slice(0, m.ebenen.findLastIndex(voll) + 1);
+  return m;
+}
 function adresse() {
   let h = S.ansicht;
   if (S.ansicht === "mischpult") {
-    const m = { ...S.mix, ohneBild: S.ohneBild || undefined, durchlauf: S.durchlauf || undefined, dauer: S.dauer !== DAUER ? S.dauer : undefined, format: S.format !== "4x5" ? S.format : undefined };
-    if (m.bild.startsWith("w:")) m.werk = m.bild.slice(2);   // ein gesichertes Werk steht mit seiner Kennung im Link
-    delete m.bild;   // ein eigenes Bild steht nicht im Link
-    // kurze Links (link.js): ein unverändertes Werk nur mit seiner Kennung, sonst die Mischung kompakt; der alte lange Link nur, wenn nichts anderes passt
-    const voll = (e) => e.effekt && EFFEKTE[e.effekt];   // leere Ebenen füllt das Pult beim Öffnen wieder auf; gesichert werden sie nicht
-    m.ebenen = m.ebenen.slice(0, m.ebenen.findLastIndex(voll) + 1);
-    const k = kurz(m), w = S.werk;
+    // die Adresszeile (link.js): ein unverändertes Werk nur mit seiner Kennung, sonst die Mischung kompakt; der alte lange Link nur, wenn nichts anderes passt.
+    // Zum Teilen gibt «Link kopieren» einen Kurzlink ornament.cloud/a/KURZ (kurzlink())
+    const m = linkMischung(), k = kurz(m), w = S.werk;
     if (k && w && m.werk === w.id && kurz({ ...m, ebenen: m.ebenen.filter(voll) }) === kurz({ ...w.stapel, werk: w.id, dauer: w.stapel.dauer !== DAUER ? w.stapel.dauer : undefined })) h = `w=${w.id}`;
     else h = k ? `k=${k}` : `m=${btoa(unescape(encodeURIComponent(JSON.stringify(m)))).replace(/=+$/, "")}`;
   }
-  history.replaceState(null, "", `#${h}`);
+  history.replaceState(null, "", `${sauber()}#${h}`);
 }
-/** liest die Adresse: #w=ID öffnet ein Werk, #k=… (kurz) oder #m=… (alter Link) eine Mischung (mit werk: ID auf dessen Bild), #info die Info */
+/** die Adresse ohne Anhängsel von Facebook, Instagram, Google und Newslettern (?fbclid=…, utm_…): die Seite braucht keine Abfrage */
+const sauber = () => location.pathname;
+/** eine Mischung aus einem Link ins Pult: Schalter setzen, das Bild eines gesicherten Werks über seine Kennung */
+function mischungAnwenden(m) {
+  if (!m || !Array.isArray(m.ebenen)) return { ansicht: "mischpult" };
+  m = { ...m };
+  S.ohneBild = !!m.ohneBild; S.durchlauf = !!m.durchlauf; S.dauer = LAENGEN.includes(m.dauer) ? m.dauer : DAUER; if (FORMATE[m.format]) S.format = m.format;
+  const werk = typeof m.werk === "string" ? m.werk : null;
+  delete m.ohneBild; delete m.durchlauf; delete m.dauer; delete m.werk; delete m.format;
+  S.mix = { ...m, bild: werk ? `w:${werk}` : EIGEN, grund: m.grund === "weiss" ? "weiss" : "schwarz" };
+  return { ansicht: "mischpult", werk };
+}
+/** liest die Adresse: #a=KURZ ein Kurzlink (/a/KURZ), #w=ID öffnet ein Werk, #k=… (kompakt) oder #m=… (alter Link) eine Mischung, #info die Info */
 function ausAdresse() {
   const h = decodeURIComponent(location.hash.slice(1));
+  if (h.startsWith("a=") && /^[0-9A-Za-z]{6,10}$/.test(h.slice(2))) return { ansicht: "mischpult", kurz: h.slice(2) };
   if (h.startsWith("w=")) return { ansicht: "mischpult", werk: h.slice(2) };
   if (h.startsWith("m=") || h.startsWith("k=")) {
-    try {
-      const m = h.startsWith("k=") ? lang(h.slice(2)) : JSON.parse(decodeURIComponent(escape(atob(h.slice(2)))));
-      if (!m) throw new Error("kaputter Link");
-      if (Array.isArray(m.ebenen)) {
-        S.ohneBild = !!m.ohneBild; S.durchlauf = !!m.durchlauf; S.dauer = LAENGEN.includes(m.dauer) ? m.dauer : DAUER; if (FORMATE[m.format]) S.format = m.format;
-        const werk = typeof m.werk === "string" ? m.werk : null;
-        delete m.ohneBild; delete m.durchlauf; delete m.dauer; delete m.werk; delete m.format;
-        S.mix = { ...m, bild: werk ? `w:${werk}` : EIGEN, grund: m.grund === "weiss" ? "weiss" : "schwarz" };
-        return { ansicht: "mischpult", werk };
-      }
-    } catch { /* alter Link */ }
-    return { ansicht: "mischpult" };
+    try { return mischungAnwenden(h.startsWith("k=") ? lang(h.slice(2)) : JSON.parse(decodeURIComponent(escape(atob(h.slice(2)))))); }
+    catch { return { ansicht: "mischpult" }; }   // kaputter Link
   }
   return { ansicht: h === "info" ? "info" : "mischpult" };
+}
+/** Kurzlink zum Teilen: die Mischung in werke.php ablegen, zurück kommt ornament.cloud/a/KURZ; ohne Ablage der lange Link */
+async function kurzlink() {
+  const m = linkMischung();
+  const r = await fetch(DIENST, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ aktion: "kurz", werk: m.werk ?? "", stapel: { ...m, werk: undefined } }) });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok || !d.kurz) throw new Error(d.fehler || `Antwort ${r.status}`);
+  return `${location.origin}/a/${d.kurz}`;
 }
 for (const b of document.querySelectorAll("[data-ansicht]")) b.addEventListener("click", () => ansicht(b.dataset.ansicht));
 
@@ -278,8 +294,22 @@ buehne.addEventListener("drop", (e) => { e.preventDefault(); buehne.classList.re
 $("pult-mp4").addEventListener("click", () => { if (!hatBild()) { pultMeldung("Zuerst ein Bild wählen."); return; } herunterladen(S.mix, werkName()); });
 $("pult-link").addEventListener("click", async () => {
   adresse();
-  try { await navigator.clipboard.writeText(location.href); $("pult-link").textContent = "Kopiert"; } catch { $("pult-link").textContent = "Link in der Adresszeile"; }
-  setTimeout(() => { $("pult-link").textContent = "Link kopieren"; }, 1800);
+  const knopf = $("pult-link");
+  if (!S.mix.ebenen.some(voll)) { pultMeldung("Zuerst einen Effekt wählen, sonst gibt es nichts zu teilen."); return; }
+  knopf.disabled = true;
+  // der Kurzlink kommt erst vom Server; Safari erlaubt das Kopieren nur sofort beim Tippen, darum das Versprechen direkt in die Zwischenablage
+  const link = kurzlink().catch(() => location.href);
+  let kopiert = false;
+  try {
+    if (window.ClipboardItem && navigator.clipboard?.write) await navigator.clipboard.write([new ClipboardItem({ "text/plain": link.then((t) => new Blob([t], { type: "text/plain" })) })]);
+    else await navigator.clipboard.writeText(await link);
+    kopiert = true;
+  } catch { /* ohne Zwischenablage: der Link steht in der Meldung */ }
+  const t = await link;
+  pultMeldung(kopiert ? `Kopiert: ${t}` : `Dein Link: ${t}`);
+  knopf.textContent = kopiert ? "Kopiert" : "Link unten";
+  knopf.disabled = false;
+  setTimeout(() => { knopf.textContent = "Link kopieren"; }, 1800);
 });
 
 // ——— Werk sichern: Bild und Mischung mit Titel und Name nach werke.php ———
@@ -306,7 +336,7 @@ async function sichern() {
     S.eigene[d.id] = d.schluessel; merken("animationen.eigene", JSON.stringify(S.eigene));
     merken("animationen.name", name);
     S.werke.unshift(d.werk); galerie();
-    history.replaceState(null, "", `#w=${d.id}`);
+    history.replaceState(null, "", `${sauber()}#w=${d.id}`);
     sichernMeldung(`Gesichert: «${d.werk.titel || "Ohne Titel"}» von ${d.werk.name}. Es steht jetzt unten bei den Werken; der Link dazu ist in der Adresszeile.`, true);
   } catch (f) { sichernMeldung(`Das Werk liess sich nicht sichern: ${f.message ?? f}`); }
   finally { knopf.disabled = false; }
@@ -479,9 +509,19 @@ let kaputtGemeldet = 0;
 // die Effekte werden erst übersetzt, wenn sie gebraucht werden (früher alle beim Start: auf Handys langsam und unnötig);
 // window.animationen.motor.pruefen() übersetzt alle und gibt die Fehler zurück
 window.animationen = { motor, S, zufall, werkeLaden };
-const start = ausAdresse();
+if (location.search) history.replaceState(null, "", sauber() + location.hash);   // ?fbclid=… und Co. gleich weg
+let start = ausAdresse();
 standText();
 await werkeLaden();
+if (start.kurz) {   // Kurzlink: die Mischung aus der Ablage holen
+  try {
+    const r = await fetch(`${DIENST}?kurz=${start.kurz}`, { cache: "no-store" });
+    if (!r.ok) throw new Error();
+    const d = await r.json();
+    start = mischungAnwenden({ ...d.stapel, werk: d.werk ?? undefined });
+    standText();
+  } catch { start = { ansicht: "mischpult" }; pultMeldung("Diesen Link gibt es nicht mehr."); }
+}
 if (start.werk) {
   const w = S.werke.find((x) => x.id === start.werk);
   if (w) {

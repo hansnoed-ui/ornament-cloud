@@ -17,6 +17,8 @@ AddDefaultCharset UTF-8
   # die bisherige Startseite unter /?bisher. 302, solange der Neubau Neubau ist; später 301.
   RewriteCond %{QUERY_STRING} !(^|&)bisher(&|=|$)
   RewriteRule ^$ /b/ [R=302,L]
+  # Kurzlinks der Animationen (5. November 2026): /a/KURZ → /animations/#a=KURZ (die Mischung liegt in animations/werke/kurz/)
+  RewriteRule ^a/([0-9A-Za-z]{6,10})/?$ /animations/#a=$1 [R=302,NE,L]
 </IfModule>
 
 # ---- Fehler und Verzeichnisse ----
