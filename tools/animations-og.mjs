@@ -18,7 +18,7 @@ const server = await startServer(0);
 const base = `http://localhost:${server.address().port}/`;
 const browser = await playwright.chromium.launch({ args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"] });
 
-const EFFEKTE = [["hoehenlinien", [.5, .3, .4, .3, .35, .45]], ["stroemung", [.55, .4, .35, .3, .6]], ["raster", [.5, .5, .5, .5, 0, .5]], ["voxel", [.45, .5, .5, .5, .5]], ["relief", [.55, .45, .45, .4, .2]], ["strahlen", [.6, .5, .5, .5, .3]]];
+const EFFEKTE = [["hoehenlinien", [.5, .3, .4, .3, .35, .45]], ["echo", [.6, .5, .5, .6, .5]], ["raster", [.5, .5, .5, .5, 0, .5]], ["voxel", [.45, .5, .5, .5, .5]], ["relief", [.55, .45, .45, .4, .2]], ["strahlen", [.6, .5, .5, .5, .3]]];
 
 // 1. die Kacheln aus dem Motor: ein gezeichnetes Ausgangsbild, sechs Effekte ohne Bild, je 480 × 600
 const seite = await browser.newPage({ viewport: { width: 1280, height: 900 } });
@@ -61,7 +61,7 @@ h1 i { display: block; font-style: normal; font-weight: 300; font-size: 58px; le
 </style></head><body><div class="karte">
 <div class="links"><div><div class="etikett">ornament.cloud/animations</div></div>
 <h1>Anima<span style="white-space:nowrap">tionen<b style="color:#c9ff3d;font-weight:600">.</b></span><i>Mischpult</i></h1>
-<p class="satz">Dein Bild, fünfundzwanzig Effekte, drei Ebenen. Mischen, als MP4 laden, als Werk mit deinem Namen sichern.</p>
+<p class="satz">Dein Bild, zweiundzwanzig Effekte, drei Ebenen. Mischen, als MP4 laden, als Werk mit deinem Namen sichern.</p>
 <div class="linie"><i></i></div></div>
 <div class="rechts">${kacheln.map((k) => `<img src="${k}" alt="">`).join("")}</div>
 </div></body></html>`;
