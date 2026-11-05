@@ -1,7 +1,7 @@
 // Animationen – der Motor: ein WebGL-2-Kontext rechnet bis zu drei Ebenen übereinander (je Effekt, Quelle, Mischmodus, Deckkraft)
 // und gibt das Bild auf eine eigene Leinwand aus, die Reel, Werke und Mischpult abzeichnen. Alles hängt nur von der Zeit t in der
 // Schlaufe ab (phi = 2π·t/DAUER, ganzzahlige Frequenzen): Bild N ist wieder Bild 0, und das MP4 entsteht Bild für Bild.
-import { EFFEKTE, wertVon } from "./effekte.js?v=5";
+import { EFFEKTE, wertVon } from "./effekte.js?v=6";
 
 export const DAUER = 12, FPS = 30, LAENGEN = [12, 30, 60];
 /** Länge der Schlaufe eines Stapels in Sekunden (Vorgabe 12) */
@@ -15,7 +15,7 @@ const KOPF = `#version 300 es
 precision highp float; precision highp int;
 uniform sampler2D uBild, uUnten;
 uniform vec2 uRes, uFit;
-uniform float uPhi, uT, uSeed, uQuelle, uLod, uCols, uRows, uZeigen, uLauf, uPsi, uL;
+uniform float uPhi, uT, uSeed, uQuelle, uLod, uCols, uRows, uZeigen, uLauf, uPsi, uL, uSparsam;
 uniform float uP[6];
 #define PI 3.14159265
 #define TAU 6.28318531
@@ -237,7 +237,7 @@ export function motorErstellen({ sparsam = SPARSAM, verloren = () => {}, zurueck
       gl.useProgram(pr.p);
       textur(pr, "uBild", 0, bild.tex); textur(pr, "uUnten", 1, acc[i].tex);
       fp(pr, "uRes", b, h); fp(pr, "uFit", fit[0], fit[1]); fp(pr, "uLod", lod);
-      fp(pr, "uPhi", tz * Math.PI * 2); fp(pr, "uT", tz); fp(pr, "uPsi", tt * Math.PI * 2); fp(pr, "uL", D / DAUER); fp(pr, "uLauf", stapel.durchlauf ? 1 : 0); fp(pr, "uSeed", e.seed ?? 0); fp(pr, "uQuelle", e.quelle === "unten" ? 1 : 0); fp(pr, "uZeigen", stapel.ohneBild ? 0 : 1);
+      fp(pr, "uPhi", tz * Math.PI * 2); fp(pr, "uT", tz); fp(pr, "uPsi", tt * Math.PI * 2); fp(pr, "uL", D / DAUER); fp(pr, "uLauf", stapel.durchlauf ? 1 : 0); fp(pr, "uSeed", e.seed ?? 0); fp(pr, "uQuelle", e.quelle === "unten" ? 1 : 0); fp(pr, "uZeigen", stapel.ohneBild ? 0 : 1); fp(pr, "uSparsam", motor.sparsam ? 1 : 0);
       const w = def.regler.map((r, k) => wertVon(def, e.werte, k));
       gl.uniform1fv(pr.ort("uP[0]"), Float32Array.from({ length: 6 }, (_, k) => w[k] ?? 0));
       if (def.punkte) {

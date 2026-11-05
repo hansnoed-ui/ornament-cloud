@@ -211,7 +211,7 @@ await check("Grafik setzt aus (5. November 2026, Handy: «Diese Seite braucht We
   assert.match(r.weg, /ausgesetzt/); assert.match(r.zurueck, /wieder/); assert.ok(r.hell > 3, `zeichnet wieder (${r.hell})`); assert.equal(r.sparsam, true);
   // ein Effekt, der nicht übersetzt: seine Ebene bleibt leer, die andere wird gezeichnet, die Seite meldet ihn
   const k = await page.evaluate(async () => {
-    const { EFFEKTE } = await import("./effekte.js?v=5");
+    const { EFFEKTE } = await import("./effekte.js?v=6");
     EFFEKTE.kaputt = { name: "Kaputt", herkunft: "", regler: [], glsl: "vec4 effekt(vec2 uv){ return nichtDa; }" };
     const { motor, S } = window.animationen;
     S.mix = { bild: "eigen", grund: "schwarz", ebenen: [{ effekt: "kaputt" }, { effekt: "bild", modus: "normal", deckkraft: 1 }] };
