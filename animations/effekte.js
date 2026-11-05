@@ -1056,8 +1056,11 @@ void punkt(int id, out vec2 pos, out vec4 col, out float size){
 
   physarum: {
     name: "Physarum", herkunft: "PHORMA II: tausende Agenten eines Schleimpilzes riechen die Nahrung im Bild (Helligkeit und Kanten) und legen ein leuchtendes Netz auf seine Formen",
-    regler: [r("Agenten", .5), r("Spur", .6), r("Nahrung", .7), r("Wandern", .35), r("Glühen", .5)],
-    mischung: "add",
+    // ruhiger seit 5. November 2026 (Christian: «Das physarum ist mir viel zu nervös»): die Agenten werden nicht mehr geboren und gelöscht,
+    // jeder Pfad steht und wandelt sich nur langsam (das Rauschen läuft auf einem kleinen Kreis durch die Zeit), Licht gleitet ruhig an ihm entlang,
+    // und das Netz wächst sanft aus den Keimen und zieht sich wieder zurück; «Tempo» regelt beides
+    regler: [r("Agenten", .5), r("Spur", .6), r("Nahrung", .7), r("Wandern", .3), r("Glühen", .5), r("Tempo", .2)],
+    mischung: "add", weich: true,
     // je Agent 40 Punkte Spur; die Zahl folgt der Bildhöhe wie bei der Strömung. d: Dichte, auf Handys kleiner (motor.js, DICHTE_SPARSAM):
     // die Physarum-Agenten tasten je Schritt neun Mal das Bild ab, mit allen Agenten hat das am 5. November 2026 die Grafik eines Handys umgeworfen
     punkte: (w, a, h, d = 1) => { const c = Math.max(d < 1 ? 16 : 24, Math.round((40 + 50 * w[0]) * Math.sqrt(Math.min(1, h / 1000) * d))); return { cols: c * 40, rows: Math.round(c / a) }; },
@@ -1070,14 +1073,15 @@ void punkt(int id, out vec2 pos, out vec4 col, out float size){
 void punkt(int id, out vec2 pos, out vec4 col, out float size){
   float i = float(id), xx = mod(i, uCols), j = mod(xx, 40.), cx = uCols / 40.;
   vec2 g = vec2(floor(xx / 40.), floor(i / uCols));
-  float h = h12(g * 1.71 + uSeed), m = 2.;
-  float zz = uT * m + h, u = fract(zz), cyc = mod(floor(zz), m);
-  vec2 sp = (g + h22(g + cyc * 13.7 + uSeed)) / vec2(cx, uRows);
-  float S = 70. * mix(.4, 1., P1), kopf = u * S, schritt = kopf - j * mix(.4, 1.2, P1);
+  float h = h12(g * 1.71 + uSeed);
+  vec2 sp = (g + h22(g + uSeed)) / vec2(cx, uRows);          // jeder Agent hat seinen festen Keim
+  float S = mix(25., 70., P1), schritt = (j + .5) / 40. * S;  // die 40 Punkte liegen fest auf dem Pfad
+  float wachsen = mix(.3, 1., HZ(.5 - .5 * cos(uPhi)));       // das Netz wächst ruhig aus den Keimen und zieht sich zurück
+  float spitze = 1. - smoothstep(wachsen * S - 6., wachsen * S, schritt);
   pos = vec2(9.); col = vec4(0.); size = 0.;
-  if (schritt <= 0.) return;
+  if (spitze <= 0.) return;
   vec2 q = P(sp), dir = normalize(h22(g + 3.) - .5 + 1e-4);
-  float st = .0065;
+  float st = .0065, rz = mix(.04, .3, P5);                    // rz: wie schnell sich die Pfade wandeln
   for (int k = 0; k < 70; k++){
     float dt = clamp(schritt - float(k), 0., 1.);
     if (dt <= 0.) break;
@@ -1086,19 +1090,21 @@ void punkt(int id, out vec2 pos, out vec4 col, out float size){
     float F = nahrung(uq + vec2(cos(a0), sin(a0)) * .02 / vec2(A(), 1.));
     float Lf = nahrung(uq + vec2(cos(a0 + sa), sin(a0 + sa)) * .02 / vec2(A(), 1.));
     float Rf = nahrung(uq + vec2(cos(a0 - sa), sin(a0 - sa)) * .02 / vec2(A(), 1.));
-    float dreh = (Lf - Rf) * 18. * P2 + ln(q * 3. + float(k) * .02, .8) * 1.6 * P3;
-    a0 += clamp(dreh, -.7, .7);
+    float dreh = (Lf - Rf) * 14. * P2 + ln(q * 2. + 3.1, rz) * 1.2 * P3;
+    a0 += clamp(dreh, -.45, .45);                           // sanfte Kurven statt Zacken
     dir = vec2(cos(a0), sin(a0));
-    q += dir * st * dt * (.6 + .8 * F);
+    q += dir * st * dt * (.7 + .6 * F);
   }
   pos = q;
-  float nf = nahrung(UV(q));
-  float a = sin(PI * u) * (1. - j / 40.) * (.25 + .75 * smoothstep(.1, .6, nf));
+  float nf = nahrung(UV(q)), m = 1. + floor(P5 * 2.99);
+  float fluss = .7 + .3 * sin(TAU * (j / 40. * 2. - uT * m) + h * TAU);   // langsamer Plasmastrom entlang des Pfads
+  float a = spitze * fluss * smoothstep(0., 4., schritt) * (.25 + .75 * smoothstep(.1, .6, nf));
   vec3 gold = vec3(1., .78, .3);
   vec3 c = uZeigen > .5 ? mix(gold, min(Kl(UV(q), 1.).rgb * 1.6 + .06, 1.), .7) : gold;   // ohne Bild: das gelbe Netz, die Formen kommen aus dem Bild
-  float al = a * (.3 + .5 * P4);
+  float ab = S / 40. * st * uRes.y, sz = max(mix(1.6, 3.6, P4) * uRes.y / 1350. + .6, ab * 3.);   // weiche Punkte, dicht genug für eine glatte Linie
+  float al = a * (.035 + .07 * P4) * min(1., 2.5 * max(ab, 1.) / sz);   // alle Agenten leuchten zugleich: jeder nur leise, das Netz entsteht, wo viele Pfade zusammenlaufen
   col = vec4(c * al * 1.4, al);
-  size = mix(1.6, 3.6, P4) * uRes.y / 1350. + .6;
+  size = sz;
 }`,
   },
   geflecht: {
