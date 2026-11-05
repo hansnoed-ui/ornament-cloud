@@ -1142,15 +1142,30 @@ void punkt(int id, out vec2 pos, out vec4 col, out float size){
     // stärksten Formen und sind dort gross, ihr Glas nimmt deren Farbe an, und was sie spiegeln, ist das Bild selbst (weich)
     regler: [r("Anzahl", .25), r("Grösse", .55), w("Form", ["Dodekaeder", "Geode", "Ikosaeder", "Wandel"], 3), r("Brechung", .6), r("Kanten", .55), r("Drehen", .35)],
     glsl: `${BLASE}
-const vec3 kN[16] = vec3[16](
-  normalize(vec3(0., 1.618, 1.)), normalize(vec3(0., -1.618, 1.)), normalize(vec3(1., 0., 1.618)), normalize(vec3(-1., 0., 1.618)), normalize(vec3(1.618, 1., 0.)), normalize(vec3(-1.618, 1., 0.)),
-  normalize(vec3(1., 1., 1.)), normalize(vec3(-1., 1., 1.)), normalize(vec3(1., -1., 1.)), normalize(vec3(1., 1., -1.)), normalize(vec3(0., 1., 2.618)), normalize(vec3(0., -1., 2.618)),
-  normalize(vec3(2.618, 0., 1.)), normalize(vec3(-2.618, 0., 1.)), normalize(vec3(1., 2.618, 0.)), normalize(vec3(-1., 2.618, 0.)));
+// die 16 Plattennormalen als Werte statt als konstante Liste mit normalize(): manche Handy-Grafiktreiber übersetzen das nicht
+vec3 kN(int i){
+  if (i == 0) return vec3(0., 0.85065, 0.52574);
+  if (i == 1) return vec3(0., -0.85065, 0.52574);
+  if (i == 2) return vec3(0.52574, 0., 0.85065);
+  if (i == 3) return vec3(-0.52574, 0., 0.85065);
+  if (i == 4) return vec3(0.85065, 0.52574, 0.);
+  if (i == 5) return vec3(-0.85065, 0.52574, 0.);
+  if (i == 6) return vec3(0.57735, 0.57735, 0.57735);
+  if (i == 7) return vec3(-0.57735, 0.57735, 0.57735);
+  if (i == 8) return vec3(0.57735, -0.57735, 0.57735);
+  if (i == 9) return vec3(0.57735, 0.57735, -0.57735);
+  if (i == 10) return vec3(0., 0.35683, 0.93417);
+  if (i == 11) return vec3(0., -0.35683, 0.93417);
+  if (i == 12) return vec3(0.93417, 0., 0.35683);
+  if (i == 13) return vec3(-0.93417, 0., 0.35683);
+  if (i == 14) return vec3(0.35683, 0.93417, 0.);
+  return vec3(-0.35683, 0.93417, 0.);
+}
 const float kTAN = .3153, kZ = 3.2;
 bool kSchnitt(vec3 o, vec3 d, vec2 rad, out float s0, out float s1, out vec3 n0, out vec3 n1){
   s0 = -1e9; s1 = 1e9; n0 = vec3(0., 0., 1.); n1 = vec3(0., 0., -1.);
   for (int i = 0; i < 16; i++){
-    float r = i < 6 ? rad.x : rad.y; vec3 n = kN[i]; float dn = dot(d, n), on = dot(o, n);
+    float r = i < 6 ? rad.x : rad.y; vec3 n = kN(i); float dn = dot(d, n), on = dot(o, n);
     if (abs(dn) < 1e-6){ if (abs(on) > r) return false; continue; }
     float a = (-r - on) / dn, b = (r - on) / dn; vec3 na = -n, nb = n;
     if (a > b){ float t = a; a = b; b = t; vec3 tn = na; na = nb; nb = tn; }
@@ -1161,7 +1176,7 @@ bool kSchnitt(vec3 o, vec3 d, vec2 rad, out float s0, out float s1, out vec3 n0,
 }
 float kKante(vec3 p, vec2 rad, float breite){
   float a = -1e9, b = -1e9;
-  for (int i = 0; i < 16; i++){ float v = abs(dot(p, kN[i])) - (i < 6 ? rad.x : rad.y); if (v > a){ b = a; a = v; } else if (v > b) b = v; }
+  for (int i = 0; i < 16; i++){ float v = abs(dot(p, kN(i))) - (i < 6 ? rad.x : rad.y); if (v > a){ b = a; a = v; } else if (v > b) b = v; }
   return 1. - smoothstep(0., breite, a - b);
 }
 mat3 kDreh(vec3 w){
@@ -1174,10 +1189,11 @@ vec2 kAufBild(vec3 o, vec3 d){ d.z = min(d.z, -.05); vec3 p = o + d * ((-1. - o.
 vec4 effekt(vec2 uv){
   vec2 p = P(uv);
   vec3 ro = vec3(0., 0., kZ), rd = normalize(vec3(p * 2. * kTAN, -1.));
-  int n = 1 + int(floor(P0 * 4.99)); if (uSparsam > .5) n = min(n, 2);
+  bool spar = uSparsam > .5;
+  int n = 1 + int(floor(P0 * 4.99)); if (spar) n = 1;                 // Handy: ein Körper (5. November 2026: «körper führt immer noch zum absturz»)
   float fw = P2 > .9 ? 1. - cos(uPhi) : P2 * 2.;                      // Wandel: Dodekaeder → Geode → Ikosaeder und zurück
   float env = HZ(.5 - .5 * cos(uPhi)), best = 1e9;
-  int k = -1; vec3 lo, ld, n0, M; mat3 R; float s0, g; vec2 rad; vec3 ton;
+  int k = -1; vec3 lo = vec3(0.), ld = vec3(0., 0., -1.), n0 = vec3(0., 0., 1.), M = vec3(0.); mat3 R = mat3(1.); float s0 = 0., g = 1.; vec2 rad = vec2(1.); vec3 ton = vec3(1.);
   for (int j = 0; j < 5; j++){
     if (j >= n) break;
     float fj = float(j), fo; vec3 h = h33(vec3(fj, 7., uSeed + 4.));
@@ -1188,6 +1204,7 @@ vec4 effekt(vec2 uv){
     vec3 Mj = vec3(c * 2. * kHH, 0.), drj = h * TAU + floor(P5 * 2.99) * uPhi * vec3(1., 1., 0.) + .25 * P5 * vec3(sin(uPhi), cos(uPhi), sin(uPhi + h.y * TAU));
     mat3 Rj = kDreh(drj), inv = transpose(Rj);
     float gw = gj * 2. * kHH;
+    if (length(cross(Mj - ro, rd)) > 1.7 * gw) continue;              // der Strahl verfehlt die Hülle: hier nichts zu rechnen (die meisten Pixel)
     vec3 o = inv * (ro - Mj) / gw, d = inv * rd; float a, b; vec3 m0, m1; vec2 rj = kForm(fw + (h.z - .5) * .3 * step(.9, P2));
     if (kSchnitt(o, d, rj, a, b, m0, m1) && a > 0. && a * gw < best){
       best = a * gw; k = j; lo = o; ld = d; s0 = a; n0 = m0; M = Mj; R = Rj; g = gw; rad = rj;
@@ -1196,14 +1213,24 @@ vec4 effekt(vec2 uv){
   }
   vec3 aussen = Ql(uv, 0.).rgb;
   if (k < 0) return vec4(aussen, 1.);
-  vec3 e = lo + ld * s0, farbe; float dicke = 0.;
-  for (int c = 0; c < 3; c++){                                          // je Farbkanal eigene Brechung: Regenbogensäume
-    float ior = 1. + (.46 + .045 * float(c)) * mix(.15, 1.5, P3);
+  vec3 e = lo + ld * s0, farbe = vec3(0.); float dicke = 0.;
+  if (spar){                                                            // Handy: ein Strahl, die Säume aus drei leicht versetzten Blicken
+    float ior = 1. + .5 * mix(.15, 1.5, P3);
     vec3 d1 = refract(ld, n0, 1. / ior); float a, b; vec3 m0, m1;
     kSchnitt(e + d1 * 1e-4, d1, rad, a, b, m0, m1);
     vec3 x = e + d1 * b, d2 = refract(d1, -m1, ior);
     if (dot(d2, d2) < 1e-6) d2 = reflect(d1, -m1);
-    farbe[c] = Ql(kAufBild(R * x * g + M, R * d2), .2)[c];
+    vec2 u0 = kAufBild(R * x * g + M, R * d2), sv = (R * d2).xy * .012 * mix(.15, 1.5, P3);
+    farbe = vec3(Ql(u0 - sv, .2).r, Ql(u0, .2).g, Ql(u0 + sv, .2).b); dicke = b;
+  } else
+  for (int c = 0; c < 3; c++){                                          // je Farbkanal eigene Brechung: Regenbogensäume
+    float fc = float(c), ior = 1. + (.46 + .045 * fc) * mix(.15, 1.5, P3);
+    vec3 d1 = refract(ld, n0, 1. / ior); float a, b; vec3 m0, m1;
+    kSchnitt(e + d1 * 1e-4, d1, rad, a, b, m0, m1);
+    vec3 x = e + d1 * b, d2 = refract(d1, -m1, ior);
+    if (dot(d2, d2) < 1e-6) d2 = reflect(d1, -m1);
+    vec3 q = Ql(kAufBild(R * x * g + M, R * d2), .2).rgb;
+    farbe += q * vec3(c == 0 ? 1. : 0., c == 1 ? 1. : 0., c == 2 ? 1. : 0.);   // ohne Schreiben in einen Kanal mit variablem Index (Handy-Treiber)
     if (c == 1) dicke = b;
   }
   farbe *= mix(vec3(1.), vec3(.86, .92, 1.), clamp(dicke * .35, 0., 1.)) * ton;
