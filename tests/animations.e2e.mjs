@@ -85,7 +85,7 @@ await check("leere Bühne: fordert ein Bild, Sichern und MP4 warten; mit Bild ze
   await page.getByRole("button", { name: "Neu mischen" }).click();
   await page.waitForTimeout(200);
   assert.notEqual(await page.evaluate(() => JSON.stringify(window.animationen.S.mix)), vorher);
-  assert.match(page.url(), /#m=/);
+  assert.match(page.url(), /#k=[^#]{10,200}$/, "kurzer Link");
   assert.equal(await page.evaluate(() => window.animationen.S.mix.bild), "eigen", "Neu mischen behält das Bild");
   // Format 16:9 (PR #615): die Bühne wird breit, die Leinwand rechnet im Seitenverhältnis, das Format steht im Link
   await page.getByRole("button", { name: "16:9", exact: true }).click();
@@ -94,7 +94,7 @@ await check("leere Bühne: fordert ein Bild, Sichern und MP4 warten; mit Bild ze
   assert.equal(await page.evaluate(() => document.documentElement.dataset.format), "16x9");
   const [cb, ch, rb, rh] = await page.evaluate(() => { const c = document.getElementById("pult-bild"), r = c.getBoundingClientRect(); return [c.width, c.height, r.width, r.height]; });
   assert.ok(Math.abs(cb / ch - 16 / 9) < .02, `Leinwand ${cb} × ${ch}`); assert.ok(Math.abs(rb / rh - 16 / 9) < .02, `Bühne ${rb} × ${rh}`);
-  assert.match(decodeURIComponent(escape(atob(decodeURIComponent(page.url().split("#m=")[1])))), /"format":"16x9"/);
+  assert.match(page.url().split("#k=")[1].split("~")[0], /^_.*f2$/, "16:9 steht im kurzen Link");
   assert.deepEqual(fehler, []);
   await ctx.close();
 });
@@ -150,6 +150,18 @@ await check("Werk sichern: mit Titel und Name abgelegt, erscheint bei den Werken
   assert.ok(!(await zweite.locator("#pult-leer").isVisible()), "die Bühne zeigt das Werk");
   assert.match(await zweite.locator("#pult-meldung").textContent(), /von Testerin/);
   assert.equal(await zweite.locator("input#sichern-titel").inputValue(), "Probe am Abend (Variante)");
+  // kurze Links: das unveränderte Werk bleibt #w=ID; weitergemischt wird es ein kurzer #k-Link, der das Werk mit der Änderung öffnet
+  assert.equal(zweite.url(), url, "ein geöffnetes, unverändertes Werk teilt sich mit seiner Kennung");
+  await zweite.locator('.regler input[type="range"]').first().evaluate((r) => { r.value = "0.37"; r.dispatchEvent(new Event("input")); r.dispatchEvent(new Event("change")); });
+  const weiter = zweite.url();
+  assert.match(weiter, /#k=[a-f0-9]{10}_[^#]{0,190}$/, `kurzer Link zum Weiterarbeiten: ${weiter}`);
+  const geordnet = () => { const o = (v) => Array.isArray(v) ? v.map(o) : v && typeof v === "object" ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, o(v[k])])) : v; return JSON.stringify(o(window.animationen.S.mix)); };
+  const mix = await zweite.evaluate(geordnet);
+  const dritte = await ctx.newPage(); await dritte.goto(weiter, { timeout: 120000 });
+  await dritte.waitForFunction(() => document.documentElement.classList.contains("bereit"), null, { timeout: 120000 });
+  assert.equal(await dritte.evaluate(geordnet), mix, "der kurze Link bringt die weitergemischte Fassung zurück");
+  assert.ok(!(await dritte.locator("#pult-leer").isVisible()), "mit dem Bild des Werks");
+  await dritte.close();
   await zweite.close();
   // löschen
   page.once("dialog", (d) => d.accept());
