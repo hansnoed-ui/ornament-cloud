@@ -537,7 +537,9 @@ vec4 effekt(vec2 uv){
     float fk = float(k), ph = uPhi - fk * mix(.12, .3, P1);           // jedes Echo folgt später: Nachlauf
     vec2 c = .16 * P1 * vec2(sin(halt(ph, .6)), .6 * sin(2. * ph + .4));
     float sk = pow(mix(1.02, 1.11, P2), fk), dr = fk * (P3 - .5) * .22 * (.6 + .4 * sin(halt(ph, .5)));
-    vec2 q = c * (1. - 1. / sk) + rot(dr) * p / sk;                  // um die wandernde Mitte vergrössert und gedreht
+    // Echo k ist um k-mal die wandernde Mitte versetzt (5. November 2026, Christian: «bei Echo bewegt sich gar nichts mehr»: vorher
+    // verschob die Mitte die Echos nur um wenige Pixel), vergrössert und gedreht
+    vec2 q = rot(dr) * (p - c * fk * .55) / sk;
     vec2 uq = UV(q);
     float m = ecForm(Kl(uq, 1.5 + fk * .2).rgb, M) * step(abs(q.x), A() * .5) * step(abs(q.y), .5);
     float tief = fk / fn;
@@ -546,11 +548,15 @@ vec4 effekt(vec2 uv){
     col = mix(col, a, m * mix(.95, .55, tief));
     hell = max(hell, a * m * pow(.8, fk)); dunkel = min(dunkel, mix(vec3(1.), a / mix(1., .5, tief), m * pow(.8, fk)));
   }
-  vec3 vorn = Ql(uv, 0.).rgb; float m0 = ecForm(Kl(uv, 1.).rgb, M);
+  vec3 tunnel = col;
+  vec2 c0 = .16 * P1 * vec2(sin(halt(uPhi, .6)), .6 * sin(2. * uPhi + .4));
+  vec2 u0 = UV((p - c0 * .25) / (1. + .025 * P2 * sin(uPhi)));        // auch das Bild vorn schwebt leicht mit der Mitte und atmet
+  vec3 vorn = Ql(u0, 0.).rgb; float m0 = ecForm(Kl(u0, 1.).rgb, M);
   col = mix(col, vorn, max(m0, .18));                                // vorn das Bild selbst
   // füllt das Motiv das ganze Bild, scheinen die Echos durch: auf dunklen Bildern aufhellend, auf hellen abdunkelnd
   float voll = smoothstep(.3, .9, m0);
   col = mix(max(col, hell * .8 * voll), min(col, mix(vec3(1.), dunkel, .85 * voll)), smoothstep(.42, .62, M));
+  col = mix(col, tunnel, .32 * voll * smoothstep(.0, .3, P0));         // und als Doppelbelichtung: die nachziehenden Echos bleiben sichtbar
   vec3 b = max(Kl(uv, 4.5).rgb - .5, 0.) * 1.2 + max(Kl(uv, 3.).rgb - .62, 0.) + max(col - .7, 0.) * .5;
   col += b * P4 * 1.4 * (.85 + .15 * sin(uPhi));
   return vec4(clamp(schulter(col), 0., 1.), 1.);
