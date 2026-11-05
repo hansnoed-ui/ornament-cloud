@@ -1,6 +1,6 @@
 # Animationen – Gestaltung (`animations/`)
 
-Stand: 4. November 2026 (spät). Gilt nur für diese Seite; die Website selbst folgt `styles.css`.
+Stand: 5. November 2026. Gilt nur für diese Seite; die Website selbst folgt `styles.css`.
 
 Richtung: ein Werkzeug, das wie die Seite eines Designstudios aussieht. Zwei Ansichten (Mischpult, Info), keine Beispielbilder, kein Name des Betreibers; die Werke der Besucher sind die Galerie. Wenig Farbe, viel Luft, feine Linien, grosse Zeile,
 ein einziger Akzent. Die Animationen sind das Bild, alles andere ist Beschriftung. Vorbilder, die Christian genannt hat:
@@ -35,11 +35,14 @@ Zwei Schriften, lokal aus `vendor/fonts/animationen.css` als variable Schnitte (
 «irgendetwas richtung helvetica now». Helvetica Now ist nicht frei; die nächste freie Verwandte ist **Hanken Grotesk** (neutrale Grotesk mit
 geschlossenen Formen, eng in gross). Geprüft gegen Inter (optische Grösse), Schibsted Grotesk, Archivo und Instrument Sans.
 
-- `--sans` (= `--display`): **Hanken Grotesk**. 400 Lauftext, 500 Bedienung und Knöpfe, 600 grosse Zeilen (Laufweite −.04em), Haupttaste und
-  Beschriftungen (Versalien, 11 px, Laufweite .1em). Das eine Gegenwort in den grossen Zeilen («Werke *12*», «drei *Ebenen*») steht in 300 und im Akzent.
-- `--mono`: **Geist Mono** nur für laufende Zahlen: Uhr, Schlaufenzeile, Reglerwerte, Exportzeile (`font-variant-numeric: tabular-nums`).
-- Stufen (px / Zeilenhöhe): 11/1.3 Beschriftung · 13/1.4 Zweitzeile und Uhr · 14/1.2 Knöpfe · 15/1.45 Bedienung · 17/1.4 Lauftext · 22/1.25 Zwischentitel ·
-  26/1.15 Aufforderung · Grosse Zeile `clamp(40px, 6.4vw, 104px)` / .95.
+- `--sans` (= `--display`): **Hanken Grotesk** für alles, was man liest: 400 Lauftext, Hinweise, Kolophon, Fuss, Marke und Kopfzeile; 600 grosse Zeilen
+  (Laufweite −.04em). Das eine Gegenwort in den grossen Zeilen («Werke *12*», «drei *Ebenen*») steht in 300 und im Akzent.
+- `--mono`: **Geist Mono** für alles, was man bedient (Christian, 5. November: «mir gefällt der schrifttyp mit welchem der zeitstempel unter dem bild
+  angezeigt wird gut … vor allem in den bedienfeldern»): Uhr und Schlaufenzeile, Ansichten im Kopf, Beschriftungen (Versalien, 11 px, 500, Laufweite .08em),
+  Knöpfe und Schalter (13 px, 500), Haupttaste (15 px), Auswahllisten und Felder (13 px), Reglernamen und -werte (12 px), Werk-Zeilen unter den Kacheln (12 px),
+  Listenzahlen, Exportbox. Immer `font-variant-numeric: tabular-nums`.
+- Stufen (px / Zeilenhöhe): 11/1.3 Beschriftung · 12 Regler und Werk-Zeilen · 13/1.2 Knöpfe, Felder, Uhr · 13/1.45 Hinweise · 15/1.45 Bedienungstext ·
+  17/1.4 Lauftext · 22/1.25 Zwischentitel · 26/1.15 Aufforderung · Grosse Zeile `clamp(40px, 6.4vw, 104px)` / .95.
 - Nichts kursiv. Keine Schrift von aussen.
 
 ## Abstand und Mass
@@ -53,7 +56,7 @@ geschlossenen Formen, eng in gross). Geprüft gegen Inter (optische Grösse), Sc
 - Radius 0 für Bühne, Karten und Haarlinien. Knöpfe, Schalter, Felder und Auswahllisten `--radius` 6 px, die Haupttaste und die Exportbox 8 px
   (Christian, 4. November spät: «die button nur leicht abgerundet und cooler», «minimal designte knöpfe … mit einem individuellen touch, also natürlich alle
   auf der seite gleich»). Keine Pillen mehr.
-- **Ein Knopf, überall gleich:** flach, ohne Fläche, 1 px `--linie`, Schrift 14 px / 500 in `--leise`. Darüberfahren: Rahmen und Schrift `--tinte`.
+- **Ein Knopf, überall gleich:** flach, ohne Fläche, 1 px `--linie`, Geist Mono 13 px / 500 in `--leise`. Darüberfahren: Rahmen und Schrift `--tinte`.
   **An** (`aria-pressed`): Rahmen `--tinte`, und der Punkt der Marke wächst in 180 ms vor dem Wort (6 px, Akzent); nichts wird gefüllt. Das ist der
   individuelle Touch der Seite: derselbe Punkt steht in «ornament.cloud», auf der Haupttaste und an der aktiven Ansicht.
   Ausnahmen: die Haupttaste «Neu mischen» ist gefüllt (`--tinte`, Punkt immer da, beim Darüberfahren Akzentfläche), leise Tasten (Pause, Standbild, Link)
