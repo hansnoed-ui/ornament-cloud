@@ -127,16 +127,25 @@ export const EFFEKTE = {
   if (uZeigen < .5) c = vec4(vec3(.95, .925, .9), 1.);   // ohne Bild: helle Teilchen, die Grösse kommt aus dem Bild
   float s = h12(g * 1.37 + 4.1 + uSeed);
   // läuft durch: die Teilchen kehren um, sobald das Bild steht (Exponent unter 1, Geschwindigkeit an der Naht über null)
-  float k = pow(HZ(.5 - .5 * cos(uPhi)), .5 + s * .5) * P0;
+  // seit 5. November 2026 (Runde 2, «auf höheres Niveau»): das Bild löst sich von der Mitte her nach aussen und setzt sich in derselben
+  // Folge wieder zusammen (Nachlauf statt Gleichschritt), hält kurz als Bild und als Wolke (halt)
   vec2 p0 = P(uv0);
+  float stag = .9 * length(p0 * vec2(.8, 1.)) + .35 * s;
+  float k = pow(HZ(.5 - .5 * cos(halt(uPhi - stag, .55))), .5 + s * .5) * P0;
   vec2 drift = vec2(ln(p0 * 2.2 + s * .3, .8), ln(p0 * 2.2 + 7. + s * .3, .8)) * (.06 + .2 * P3);
   vec2 wirbel = lcurl(p0 * 1.5 + 3., .7) * .025 * P3;
   float z = (s - .5) * 2.;
   vec2 wolke = (p0 + drift + wirbel) * (1. + .1 * z * P3);    // Tiefe: leichte Perspektive, die Grösse bleibt
   pos = mix(p0 + .006 * vec2(ln(g * .02, .9), ln(g * .02 + 3., .9)), wolke, k);
-  float tw = pow(.5 + .5 * sin(uPhi * float(2 + int(s * 5.)) + s * 60.), 6.) * P2;
-  col = vec4(c.rgb * (.85 + tw * 1.6 + k * .3) * (1. - .25 * k * max(z, 0.)), 1.);
-  size = mix(1.5, 6., P1) * uRes.y / 1350. * (1. + tw * .8) * (1. + .3 * k * z) * (uZeigen > .5 ? 1. : .15 + 1.6 * Lk * Lk);
+  float tw = pow(.5 + .5 * sin(uPhi * float(2 + int(s * 5.)) + s * 60.), 6.) * P2 * (.15 + .85 * k);   // das stehende Bild funkelt kaum, die Wolke schon
+  // Tiefe in der Wolke: nahe Teilchen werden gross und weich (Bokeh, durchscheinend), ferne klein und blass, der Farbton dreht mit der Tiefe
+  float nah = max(z, 0.) * k, fern = max(-z, 0.) * k;
+  vec3 cc = tonDreh(c.rgb, z * .45 * k * P3, 1. + .25 * k);
+  float alpha = 1. - .55 * nah * smoothstep(.3, 1., s);
+  col = vec4(cc * (1. - .15 * k + tw * 1.6 + k * .3) * (1. - .35 * fern) * alpha, alpha);
+  // Runde 2: im stehenden Bild decken sich die Teilchen lückenlos (vorher schimmerte der schwarze Grund als Rauschen durch)
+  float abstand = uRes.x * 1.7 / uCols;
+  size = max(mix(1.5, 6., P1) * uRes.y / 1350., abstand * mix(3., .9, k)) * (1. + tw * .8) * (1. + 1.6 * nah * nah - .35 * fern) * (uZeigen > .5 ? 1. : .15 + 1.6 * Lk * Lk);
 }`,
   },
 
@@ -212,24 +221,37 @@ export const EFFEKTE = {
   }
   q.x += P1 * .012 * sin(uPhi) * uv.y;
   vec3 kc = Kl(UV(q), 0.).rgb, col = uZeigen > .5 ? kc : vec3(.043, .035, .039);   // ohne Bild: Pailletten auf dunklem Grund
-  float cs = 18. * uRes.y / 1350.;
-  vec2 g = uv * uRes / cs, ci = floor(g), jit = (h22(ci) - .5) * .5, f = fract(g) - .5 - jit;
-  float h = h12(ci + uSeed * 5.);
-  vec2 qc = q + (ci + .5 + jit - g) * cs / uRes.y;                    // die Mitte des Korns, im Bild mitgedreht
-  vec3 kk = Kl(UV(qc), .5).rgb; float Lk = lum(kk), kante = abs(Lk - lum(Kl(UV(qc), 3.).rgb)) * 5., M = lum(Kl(vec2(.5), 14.).rgb);
-  // Pailletten nur, wo das Bild sich abhebt: Kanten, Farbe, Licht über dem Mittel; leere Flächen bleiben ruhig
-  float an = step(h12(ci * 1.7 + 2.), P2 * smoothstep(.06, .5, kante + 1.1 * sat(kk) + max(Lk - M, 0.) * 1.5) * 1.3);
-  float fac = .5 + .5 * sin(uPhi * float(1 + int(h * 3.)) + h * 40.);    // das Plättchen kippt ins Licht und wieder hinaus
-  float pl = smoothstep(.5, .4, abs(f.x) + abs(f.y)) * an;
-  vec3 gold = mix(vec3(1., .86, .55), vec3(1., .72, .84), h22(ci + 3.).x);
-  vec3 fk = uZeigen > .5 ? kk : gold * (.2 + .9 * Lk);
-  col = mix(col, fk * (.5 + 1.25 * fac * fac), pl * mix(.55, .9, P2));
-  float tw = pow(max(0., sin(uPhi * float(1 + int(h * 4.)) + h * 50.)), 24.);
+  // seit 5. November 2026 (Runde 2): Pailletten in zwei Grössen, fein, wo das Bild Detail hat, grob auf ruhigen Formen; jede trägt die
+  // mittlere Farbe ihrer Stelle (ein Mosaik aus dem Bild) und ist ein gekipptes Plättchen mit eigener Normalen: ein Licht kreist und
+  // hält an den Seiten (halt), die Plättchen werden hell, dunkel oder blitzen, je nachdem, wie sie zu ihm stehen
+  float M = lum(Kl(vec2(.5), 14.).rgb), pl = 0., fac = 0., an = 0., h = 0.; vec3 fk = vec3(0.); vec2 f = vec2(0.);
+  float hl = halt(uPhi, .5); vec3 Ld = normalize(vec3(.6 * cos(hl), .5 * sin(hl) + .2, .8));
+  for (int sk = 0; sk < 2; sk++){
+    float cs = (sk == 0 ? 30. : 14.) * uRes.y / 1350.;
+    vec2 g = uv * uRes / cs + float(sk) * 17.3, ci = floor(g), jit = (h22(ci + float(sk) * 9.) - .5) * .45, ff = fract(g) - .5 - jit;
+    vec2 qc = q + (ci + .5 + jit - g) * cs / uRes.y;                  // die Mitte des Korns, im Bild mitgedreht
+    vec3 kk = Kl(UV(qc), sk == 0 ? 2.2 : 1.2).rgb; float Lk = lum(kk), kante = abs(Lk - lum(Kl(UV(qc), 3.5).rgb)) * 5.;
+    float fein = smoothstep(.15, .45, kante);
+    if (sk == 0 && fein > .5) continue;                               // grob nur auf ruhigen Formen
+    if (sk == 1 && fein <= .5) continue;                              // fein nur im Detail
+    float hh = h12(ci + uSeed * 5. + float(sk) * 3.);
+    // Pailletten nur, wo das Bild sich abhebt: Kanten, Farbe, Licht über dem Mittel; leere Flächen bleiben ruhig
+    float aa = step(h12(ci * 1.7 + 2.), P2 * smoothstep(.04, .4, kante + 1.1 * sat(kk) + abs(Lk - M) * 1.5) * 1.5);
+    vec2 nk = (h22(ci + 7. + float(sk)) - .5) * 1.4 + .35 * vec2(sin(uPhi * float(1 + int(hh * 2.)) + hh * 40.), cos(uPhi + hh * 23.));
+    vec3 nrm = normalize(vec3(nk, 1.));
+    float dif = .55 + .75 * max(dot(nrm, Ld), 0.), spec = pow(max(dot(reflect(-Ld, nrm), vec3(0., 0., 1.)), 0.), 18.);
+    pl = smoothstep(.5, .42, abs(ff.x) + abs(ff.y)) * aa; fac = spec; an = aa; h = hh; f = ff;
+    fk = (uZeigen > .5 ? kk : mix(vec3(1., .86, .55), vec3(1., .72, .84), hh) * (.2 + .9 * Lk)) * dif;
+  }
+  col = mix(col, fk + fk * fac * 1.2, pl * mix(.6, .95, P2));
+  float rand = smoothstep(.5, .42, abs(f.x) + abs(f.y)) - smoothstep(.42, .34, abs(f.x) + abs(f.y));
+  col *= 1. - .35 * rand * an;                                         // feine dunkle Fuge zwischen den Plättchen
+  float tw = pow(max(0., sin(uPhi * float(1 + int(h * 4.)) + h * 50.)), 24.) * (.3 + fac * 2.);
   float stern = exp(-length(f) * 14.) + .6 * (exp(-abs(f.x) * 40.) * exp(-abs(f.y) * 6.) + exp(-abs(f.y) * 40.) * exp(-abs(f.x) * 6.));
-  col += mix(fk, vec3(1.), .55) * stern * tw * an * 1.4;               // der Funke hat die Farbe des Bildes
+  col += mix(fk, vec3(1.), .55) * stern * tw * an * 1.2;               // der Funke hat die Farbe des Bildes
   float dd = dot(uv, vec2(.7071)) - (uT * 2.4 - .7), band = exp(-dd * dd * 60.);
-  col *= 1. + P3 * band * (.3 + 1.2 * pl * fac);                       // Glanzband: hellt das Bild auf, die Pailletten darin blitzen
-  return vec4(clamp(col, 0., 1.), 1.);
+  col *= 1. + P3 * band * (.3 + 1.2 * pl * (.3 + fac));               // Glanzband: hellt das Bild auf, die Pailletten darin blitzen
+  return vec4(clamp(schulter(col), 0., 1.), 1.);
 }`,
   },
 
@@ -239,23 +261,25 @@ export const EFFEKTE = {
     // mitnehmen»): über der Linie wird es nach oben gezogen, verwirbelt und weich, darunter liegt es als dunkle, wellige Spiegelung
     regler: [r("Höhe", .6), r("Breite", .5), r("Körnung", .5), r("Strahlen", .5)],
     glsl: `vec4 effekt(vec2 uv){
-  vec2 p = P(uv); float k = uRes.y / 1350., env = HZ(.5 - .5 * cos(uPhi));
-  float cx = PD(.25 * A() * sin(uPhi));
+  // seit 5. November 2026 (Runde 2): der Rauch steigt, hält oben und sinkt (halt), das Bild über der Linie bleibt kräftiger als seine
+  // Spiegelung, der Rauch bleibt näher am Motiv (weniger Unschärfe) und trägt einen hellen Saum
+  vec2 p = P(uv); float k = uRes.y / 1350., env = HZ(.5 - .5 * cos(halt(uPhi, .5)));
+  float cx = PD(.25 * A() * sin(halt(uPhi, .4)));
   float wx = exp(-pow((p.x - cx) / (mix(.12, .65, P1) * A()), 2.)), Hh = mix(.12, .55, P0) * (.35 + .65 * env);
   float y = max(p.y, 0.);
   // über der Linie: das Bild wird aus der Nähe der Linie hochgezogen (hub), verwirbelt (dr) und zur Höhe hin weich
   float hub = wx * min(y, Hh) * .85, wy = y / (y + .12);
   vec2 dr = lcurl(p * vec2(2.4, 1.6) + 3., .8) * .045 * wx * wy * (.5 + P0);
   vec2 src = p - vec2(0., hub) + dr, us = UV(src);
-  float lod = min(wx * wy * 3.5, 3.5);
+  float lod = min(wx * wy * 2.4, 2.4);
   vec3 auf = Ql(us, lod).rgb; float La = lum(Kl(us, lod).rgb);
   float rand = lfbm(src * 3.2 + vec2(0., -y), .8) * .5;
   float m = wx * smoothstep(Hh * 1.25 + .05, Hh * .2, y - rand * Hh) * smoothstep(.3, .75, La + .45 + rand);   // hell steigt leichter auf
-  vec3 oben = uZeigen > .5 ? mix(auf * .3, auf * 1.12 + .03, m) : vec3(.035) + vec3(.2 + .8 * La) * m;
+  vec3 oben = uZeigen > .5 ? mix(Ql(uv, 0.).rgb * .55, auf * 1.15 + .03, m) + auf * m * (1. - m) * .5 : vec3(.035) + vec3(.2 + .8 * La) * m;
   // unter der Linie: dunkle Spiegelung des Bildes, die Wellen werden zur Linie hin feiner
   float t = -min(p.y, 0.);
   vec2 sp = vec2(p.x + ln(vec2(p.x * 6., t * 40.), .9) * .012 * t * 3., t * 1.15);
-  vec3 spieg = uZeigen > .5 ? Ql(UV(sp), 1. + t * 4.).rgb * (.42 - .25 * smoothstep(0., .5, t)) : vec3(.035) + vec3(lum(Kl(UV(sp), 2.).rgb) * .12);
+  vec3 spieg = uZeigen > .5 ? Ql(UV(sp), 1. + t * 4.).rgb * (.3 - .18 * smoothstep(0., .5, t)) : vec3(.035) + vec3(lum(Kl(UV(sp), 2.).rgb) * .12);
   vec3 col = p.y > 0. ? oben : spieg;
   // die Linie trägt die Farben des Bildes an ihrer Stelle
   vec3 lf = uZeigen > .5 ? mix(vec3(1.), min(Kl(UV(vec2(p.x, 0.)), 2.).rgb * 1.5 + .25, 1.), .6) : vec3(1.);
@@ -265,7 +289,7 @@ export const EFFEKTE = {
   float dist = abs(dot(p - vec2(cx, 0.), vec2(-sin(ang), cos(ang)))) * uRes.y / (1.5 * k);
   float strahl = exp(-dist * dist) * pow(.5 + .5 * sin(uPhi * 3.), 8.) * P3 * smoothstep(.6, 0., length(p - vec2(cx, 0.)));
   float korn = (h12(floor(uv * uRes) + floor(uT * 360.)) - .5) * .12 * P2;
-  return vec4(clamp(col + korn + lf * (linie + strahl * .8), 0., 1.), 1.);
+  return vec4(clamp(schulter(col + korn + lf * (linie + strahl * .8)), 0., 1.), 1.);
 }`,
   },
 
@@ -440,6 +464,8 @@ vec4 effekt(vec2 uv){
     col = mix(vec3(.043, .035, .039), vec3(.95, .925, .9), smoothstep(.12, 0., s - floor(t * 4. + .5) / 4. * .95));
     grund = vec3(.043, .035, .039);
   }
+  // seit 5. November 2026 (Runde 2): Kacheln mit Tiefe: zur Fuge hin leicht dunkler, verrutschte Kacheln heben sich etwas ab
+  col *= (.8 + .2 * smoothstep(0., 9. * uRes.y / 1350., rd)) * (1. + .1 * sl * P1);
   col = mix(grund, col, innen);
   float fuge = clamp(mix(0., 2.5, P4) * uRes.y / 1350. - rd + .5, 0., 1.);
   col = mix(col, vec3(.043, .035, .039), fuge);
@@ -528,7 +554,7 @@ vec4 effekt(vec2 uv){
 }
 vec4 effekt(vec2 uv){
   vec2 p = P(uv); float N = mix(28., 120., P0), Hm = mix(.03, .22, P3);
-  float el = mix(1.3, .62, P1), az = -PI * .5 + P2 * .45 * (uLauf > .5 ? ln(vec2(.7, 1.9), .35) : sin(uPhi));   // Durchlauf: die Kamera treibt ruhig im Rauschen (Rückmeldung vom 4. November 2026: «das voxel dreht sich jetzt unstoppbar»), Schwenk 0 steht still
+  float el = mix(1.3, .62, P1), az = -PI * .5 + P2 * .45 * (uLauf > .5 ? ln(vec2(.7, 1.9), .35) : sin(halt(uPhi, .6)));   // Durchlauf: die Kamera treibt ruhig im Rauschen (Rückmeldung vom 4. November 2026: «das voxel dreht sich jetzt unstoppbar»), Schwenk 0 steht still
   vec3 v = vec3(cos(el) * cos(az), cos(el) * sin(az), sin(el));
   vec3 rr = normalize(cross(vec3(0., 0., 1.), v)), up = cross(v, rr);
   vec3 ro = rr * p.x * 1.02 + up * p.y * (1.02 / max(sin(el) + .25 * cos(el), .3)) + v * 2., rd = -v;
@@ -546,12 +572,24 @@ vec4 effekt(vec2 uv){
   vec3 nacht = vec3(.043, .035, .039);
   if (hit < .5) return vec4(nacht, 1.);
   vec3 hp = ro + rd * th; vec2 lc = fract(hp.xy * N);
-  vec3 Ld = normalize(vec3(.5 * cos(uPhi * .0 + .8), .4, .8));
-  float dif = max(dot(nrm, Ld), 0.), ao = .55 + .45 * clamp(hp.z / max(hh, 1e-4), 0., 1.);
-  float fuge = nrm.z > .5 ? smoothstep(.0, .08, min(min(lc.x, 1. - lc.x), min(lc.y, 1. - lc.y))) : 1.;
+  // seit 5. November 2026 (Runde 2): das Licht wandert langsam und hält an den Seiten, die höheren Nachbarn werfen Schatten auf die Deckel,
+  // die Kanten der Deckel glänzen, die Seiten tragen die Farbe des Quaders gedunkelt, Fernes sinkt leicht ins Dunkel
+  float hl = halt(uPhi, .6);
+  vec3 Ld = normalize(vec3(.55 * cos(.8 + .9 * sin(hl)), .45 + .2 * cos(hl), .75));
+  float dif = max(dot(nrm, Ld), 0.), ao = .5 + .5 * clamp(hp.z / max(hh, 1e-4), 0., 1.);
+  float rk = min(min(lc.x, 1. - lc.x), min(lc.y, 1. - lc.y));
+  float fuge = nrm.z > .5 ? smoothstep(.0, .08, rk) : 1.;
+  float schatten = 0., glanz = 0.;
+  if (nrm.z > .5){
+    vec3 al2; vec2 dl = normalize(Ld.xy);
+    float hn = vH(floor(hp.xy * N + dl * .9), N, Hm, al2), hn2 = uSparsam > .5 ? 0. : vH(floor(hp.xy * N + dl * 1.9), N, Hm, al2);
+    schatten = max(smoothstep(0., Hm * .12, hn - hh), .6 * smoothstep(0., Hm * .2, hn2 - hh));
+    glanz = (1. - smoothstep(.04, .14, rk)) * pow(max(dot(reflect(-Ld, nrm), v), 0.), 4.) * .35;
+  }
   vec3 a = uZeigen > .5 ? Ql(UV((cell + .5) / N), 0.).rgb : vec3(.95, .925, .9) * (.5 + .5 * hh / Hm);   // ohne Bild: weisse Quader, die Höhe erzählt das Bild
-  vec3 col = a * (.22 + .85 * dif) * ao * (.75 + .25 * fuge);
-  return vec4(clamp(col, 0., 1.), 1.);
+  vec3 col = a * (.2 + .9 * dif * (1. - .55 * schatten)) * ao * (.75 + .25 * fuge) + glanz * mix(vec3(1.), a, .4);
+  col = mix(col, nacht, .25 * smoothstep(.0, 1.2, th - 1.6));
+  return vec4(clamp(schulter(col), 0., 1.), 1.);
 }`,
   },
   // ——— Nachtrag vom 4. November 2026 (Christians Liste «KI & Algorithmische Transformationen»): Pixel Sorting, Dolly-Zoom, Lichtstrahlen
@@ -1174,6 +1212,9 @@ vec4 effekt(vec2 uv){
     vec3 h = h33(vec3(fi, 5., uSeed + 2.));
     vec2 ca = zumBild((h22(vec2(fi, 3.) + uSeed) - .5) * vec2(A() * .8, .8), 2.2, fo);   // der Anker sitzt auf einer Form des Bildes
     R *= mix(.5, 1.25, clamp(fo, 0., 1.));
+    // seit 5. November 2026 (Runde 2, Handy-Leistung): Membranen, die diesen Pixel sicher nicht erreichen, früh überspringen
+    // (Drift höchstens .15, Rand höchstens 1,2 R, Falten strecken höchstens um 1/.7)
+    if (length(p - ca) > R * 1.9 + .16) continue;
     float sw = sin(uPhi + h.z * TAU);                                            // ein weicher Atemzug je Schlaufe
     vec2 kt = strom(UV(ca), 3.5, 8., .15);                                       // Richtung der Kontur am Anker
     c = ca + kt * .09 * sw + vec2(-kt.y, kt.x) * .025 * cos(uPhi + h.y * TAU) + lcurl(ca * 2. + fi, 1.) * .03;   // gleitet der Kontur entlang und treibt
@@ -1206,8 +1247,9 @@ vec4 effekt(vec2 uv){
     lasur *= mix(vec3(1.), farbe * farbe * .7, clamp(rand, 0., 1.) * (.3 + .5 * P3));
   }
   vec3 grund = uZeigen > .5 ? Ql(UV(p + off), .3).rgb : vec3(.92, .89, .85);   // ohne Bild: Cremepapier, die Membranen aus dem Bild
-  vec3 col = grund * lasur;
-  return vec4(clamp(col, 0., 1.), 1.);
+  // Runde 2: die Lasur bleibt leuchtend statt trüb: Farbe in OKLab etwas satter, das Licht weich abgefangen
+  vec3 col = tonDreh(grund * lasur * 1.06, 0., 1.18);
+  return vec4(clamp(schulter(col), 0., 1.), 1.);
 }`,
   },
 };
