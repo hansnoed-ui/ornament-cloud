@@ -10,7 +10,7 @@
 //   POST werke.php  { aktion: "loeschen", id, schluessel }  → { geloescht: true }
 //
 // Grenzen: nur POST von https://ornament.cloud (Origin), Bild bis 2 MB und 2000 px (wird mit GD neu als JPEG geschrieben, ohne Metadaten),
-// Name 1–40 Zeichen, Titel bis 60, Mischung nur aus bekannten Feldern; je Adresse 6 Werke in der Stunde, insgesamt höchstens 2000.
+// Name 1–40 Zeichen, Titel bis 60, Mischung nur aus bekannten Feldern; je Adresse 12 Werke in der Stunde, insgesamt höchstens 2000.
 // Adressen werden nur als Prüfsumme gezählt und nach einer Stunde vergessen. Tests: tests/animations-php.test.mjs (php -S).
 declare(strict_types=1);
 
@@ -21,7 +21,7 @@ const MAX_NAME = 40;
 const MAX_TITEL = 60;
 const MAX_STAPEL = 6000;
 const MAX_WERKE = 2000;
-const JE_STUNDE = 6;
+const JE_STUNDE = 12;
 const MODI = ['normal', 'multiplizieren', 'differenz', 'bildschirm', 'ueberlagern'];
 const LAENGEN = [12, 30, 60];
 const FORMATE = ['4x5', '1x1', '16x9'];
@@ -173,7 +173,7 @@ if (!$mass || !in_array($mass['mime'], ['image/jpeg', 'image/png', 'image/webp']
 if ($mass[0] > MAX_SEITE || $mass[1] > MAX_SEITE || $mass[0] < 16 || $mass[1] < 16) fehler(400, 'Das Bild muss zwischen 16 und 2000 px haben.');
 if (count(liste($ordner)) >= MAX_WERKE) fehler(507, 'Die Ablage ist voll.');
 $adresse = $_SERVER['REMOTE_ADDR'] ?? '';
-if (!zaehlen($ordner, $adresse)) fehler(429, 'Mehr als sechs Werke in der Stunde: bitte später noch einmal.');
+if (!zaehlen($ordner, $adresse)) fehler(429, 'Mehr als zwölf Werke in der Stunde: bitte später noch einmal.');
 
 $id = bin2hex(random_bytes(5));
 $schluessel = bin2hex(random_bytes(16));

@@ -80,10 +80,11 @@ test("sichern, lesen, löschen: das Werk liegt als JPEG und JSON, steht in der L
   assert.ok(!existsSync(join(werkeOrdner, `${d.id}.jpg`)));
 });
 
-test("Grenze: mehr als sechs Werke in der Stunde von derselben Adresse werden abgewiesen (429)", { skip: ohnePhp && "php fehlt" }, async () => {
+test("Grenze: mehr als zwölf Werke in der Stunde von derselben Adresse werden abgewiesen (429)", { skip: ohnePhp && "php fehlt" }, async () => {
+  // das Werk aus dem Test davor zählt schon für diese Adresse: noch elf frei, dann 429
   const stati = [];
-  for (let i = 0; i < 8; i++) stati.push((await senden(formular({ titel: `Nr. ${i}` }))).status);
-  assert.deepEqual(stati.slice(0, 6), [201, 201, 201, 201, 201, 201]);
-  assert.deepEqual(stati.slice(6), [429, 429]);
-  assert.equal(readdirSync(werkeOrdner).filter((f) => f.endsWith(".jpg")).length, 6);
+  for (let i = 0; i < 13; i++) stati.push((await senden(formular({ titel: `Nr. ${i}` }))).status);
+  assert.deepEqual(stati.slice(0, 11), Array(11).fill(201));
+  assert.deepEqual(stati.slice(11), [429, 429]);
+  assert.equal(readdirSync(werkeOrdner).filter((f) => f.endsWith(".jpg")).length, 11);
 });
