@@ -19,6 +19,20 @@ void blase(int i, float groesse, float atmen, out vec2 c, out float R){
   float fi = float(i); vec2 h = h22(vec2(fi, 3.) + uSeed), k = h22(vec2(fi, 11.) + uSeed);
   c = (h - .5) * vec2(A() * .92, .92) + .07 * vec2(cos(uPhi + k.x * TAU), sin(uPhi * (1. + floor(k.y * 2.)) + h.x * TAU));
   R = mix(.07, .22, k.x) * mix(.6, 1.7, groesse) * (1. + atmen * .14 * sin(uPhi * (1. + floor(h.y * 2.)) + fi));
+}
+// Blasen aus dem Bild (Wunsch vom 5. November 2026: «dass die effekte das bild stärker mitnehmen und nicht bloss darüber gelegt werden»):
+// jede Blase steigt in wenigen Schritten zu den Formen des Bildes hinauf (was sich hell, dunkel oder farbig vom ganzen Bild abhebt),
+// so sitzen die Linsen auf dem Motiv statt auf leerem Grund; f ist, wie stark die Stelle hervortritt (macht die Blase grösser)
+float bForm(vec2 c, float M){ vec3 a = Kl(UV(c), 4.5).rgb; return abs(lum(a) - M) * 2. + .7 * sat(a); }
+vec2 zumBild(vec2 c, float k, out float f){
+  float M = lum(Kl(vec2(.5), 14.).rgb), e = .05; f = bForm(c, M);   // M: die mittlere Helligkeit (kleinste Mip-Stufe)
+  int S = uSparsam > .5 ? 1 : 3;                                  // Handy: ein Schritt statt drei
+  for (int s = 0; s < 3; s++){
+    if (s >= S || k < .01) break;
+    vec2 g = vec2(bForm(c + vec2(e, 0.), M) - f, bForm(c + vec2(0., e), M) - f) / e;
+    c += g / (length(g) + 1.2) * .075 * k; f = bForm(c, M);
+  }
+  return clamp(c, -vec2(A() * .5, .5) + .03, vec2(A() * .5, .5) - .03);
 }`;
 
 // Bild als Gelände: Helligkeit als Höhe, ihr Gradient je Einheit in P (Kanten) und die Strömung entlang der Konturen
@@ -157,7 +171,8 @@ export const EFFEKTE = {
   float s = P2 * (.55 + .45 * HZ(.5 - .5 * cos(uPhi)));
   vec2 p = P(uv);
   vec2 u = uv + vec2(lfbm(p * 2.5, .7), lfbm(p * 2.5 + 7.3, .7)) * .06 * s * P0;
-  float N = mix(5., 34., P1), fx = fract(u.x * N + uT);   // die Rillen gleiten um eine Rille pro Schlaufe
+  // die Rillen gleiten um eine Rille pro Schlaufe und biegen sich über dem Relief des Bildes (5. November 2026: das Bild soll mitgenommen werden)
+  float N = mix(5., 34., P1), fx = fract(u.x * N + uT + lum(Kl(u, 4.).rgb) * 2.2 * s);
   vec2 b = vec2(u.x - (fx - .5) / N * 1.4 * s, u.y + .01 * s * sin(fx * PI));
   float ca = .004 * s + .008 * s * abs(fx - .5);
   vec3 c = vec3(Q(b + vec2(ca, 0)).r, Q(b).g, Q(b - vec2(ca, 0)).b);
@@ -246,7 +261,7 @@ export const EFFEKTE = {
   },
 
   tusche: {
-    name: "Tuscheblasen", herkunft: "Infinite Mantra: farblose Blasen wölben, drehen und brechen das Bild darunter",
+    name: "Tuscheblasen", herkunft: "Infinite Mantra: farblose Blasen suchen die Formen des Bildes, wölben, drehen und brechen sie",
     // seit 3. November 2026 ohne eigene Farbe (Wunsch: «ich möchte dass sie das bild darunter transformieren, aber selber farblos bleiben»):
     // Membran als Linse, Kern dreht, Adern wellen, Rand bricht nach aussen; die Kontur hellt oder dunkelt nur, in Grau
     regler: [r("Anzahl", .5), r("Grösse", .5), r("Atmen", .6), r("Verzerrung", .7), r("Kontur", .25)],
@@ -256,7 +271,8 @@ vec4 effekt(vec2 uv){
   float kontur = 0.; int n = int(mix(4., 14., P0));
   for (int i = 0; i < 14; i++){
     if (i >= n) break;
-    vec2 c; float R; blase(i, P1, P2, c, R);
+    vec2 c; float R, fo; blase(i, P1, P2, c, R);
+    c = zumBild(c, 1., fo); R *= mix(.75, 1.3, clamp(fo, 0., 1.));      // die Blasen wölben das Motiv, nicht den leeren Grund
     vec2 v = (p - c) / R; float d = length(v);
     if (d > 1.15) continue;
     float fi = float(i), innen = 1. - smoothstep(.96, 1.04, d);
@@ -270,12 +286,13 @@ vec4 effekt(vec2 uv){
     off += o; kontur += rand;
   }
   vec3 col = Q(UV(p + off * P3 * 1.4)).rgb;
-  return vec4(col * (1. - P4 * .45 * clamp(kontur, 0., 1.)), 1.);
+  float det = .2 + .8 * smoothstep(.02, .15, abs(lum(Kl(uv, 1.).rgb) - lum(Kl(uv, 4.).rgb)));   // die Kontur zeichnet sich nur im Motiv ab, nicht auf leerem Grund
+  return vec4(col * (1. - P4 * .45 * clamp(kontur, 0., 1.) * det), 1.);
 }`,
   },
 
   linsen: {
-    name: "Glaslinsen", herkunft: "dunkles Gemälde: leuchtende Linsen, Brechung mit Farbsäumen, das Bild strömt mit",
+    name: "Glaslinsen", herkunft: "dunkles Gemälde: leuchtende Linsen setzen sich auf die Formen des Bildes und brechen sie mit Farbsäumen, das Bild strömt mit",
     regler: [r("Anzahl", .6), r("Grösse", .5), r("Brechung", .7), r("Strömung", .6)],
     glsl: `${BLASE}
 vec4 effekt(vec2 uv){
@@ -283,7 +300,8 @@ vec4 effekt(vec2 uv){
   vec3 col = Q(UV(pb)).rgb; int n = int(mix(4., 15., P0));
   for (int i = 0; i < 15; i++){
     if (i >= n) break;
-    vec2 c; float R; blase(i, P1, .6, c, R);
+    vec2 c; float R, fo; blase(i, P1, .6, c, R);
+    c = zumBild(c, 1., fo); R *= mix(.75, 1.3, clamp(fo, 0., 1.));      // die Linsen suchen die Formen des Bildes
     vec2 v = (p - c) / R; float d = length(v);
     if (d > 1.) continue;
     float w = smoothstep(1., .55, d), mag = mix(1., .62 + .25 * d * d, P2), ca = .012 * P2 * d;
@@ -297,7 +315,9 @@ vec4 effekt(vec2 uv){
   },
 
   glitzer: {
-    name: "Glitzer-Morph", herkunft: "Rosen: Wirbel drehen und atmen, Gold- und Rosaglitzer funkelt, ein Lichtband zieht durch",
+    name: "Glitzer-Morph", herkunft: "Rosen: Wirbel drehen und atmen, das Bild bricht in Pailletten aus seinen eigenen Farben, die im Licht kippen und funkeln, ein Glanzband zieht darüber",
+    // seit 5. November 2026 kein Goldstaub mehr über dem Bild (Wunsch: «dass die effekte das bild stärker mitnehmen und nicht bloss darüber
+    // gelegt werden»): jedes Korn ist ein Plättchen aus dem Bild an seiner Stelle, dicht auf hellen, farbigen und kantigen Formen
     regler: [r("Drehung", .7), r("Atmen", .6), r("Glitzer", .6), r("Lichtband", .5)],
     glsl: `vec4 effekt(vec2 uv){
   vec2 q = P(uv);
@@ -308,56 +328,87 @@ vec4 effekt(vec2 uv){
     q = c + rot(P0 * .65 * sin(uPhi + fi * 1.3) * g) * v * (1. - P1 * .07 * sin(2. * uPhi + fi) * g);
   }
   q.x += P1 * .012 * sin(uPhi) * uv.y;
-  vec3 kc = Kl(UV(q), 0.).rgb, col = uZeigen > .5 ? kc : vec3(.043, .035, .039); float L = lum(kc);   // ohne Bild: Glitzer auf dunklem Grund
+  vec3 kc = Kl(UV(q), 0.).rgb, col = uZeigen > .5 ? kc : vec3(.043, .035, .039);   // ohne Bild: Pailletten auf dunklem Grund
   float cs = 18. * uRes.y / 1350.;
-  vec2 g = uv * uRes / cs, ci = floor(g), f = fract(g) - .5 - (h22(ci) - .5) * .5;
+  vec2 g = uv * uRes / cs, ci = floor(g), jit = (h22(ci) - .5) * .5, f = fract(g) - .5 - jit;
   float h = h12(ci + uSeed * 5.);
+  vec2 qc = q + (ci + .5 + jit - g) * cs / uRes.y;                    // die Mitte des Korns, im Bild mitgedreht
+  vec3 kk = Kl(UV(qc), .5).rgb; float Lk = lum(kk), kante = abs(Lk - lum(Kl(UV(qc), 3.).rgb)) * 5., M = lum(Kl(vec2(.5), 14.).rgb);
+  // Pailletten nur, wo das Bild sich abhebt: Kanten, Farbe, Licht über dem Mittel; leere Flächen bleiben ruhig
+  float an = step(h12(ci * 1.7 + 2.), P2 * smoothstep(.06, .5, kante + 1.1 * sat(kk) + max(Lk - M, 0.) * 1.5) * 1.3);
+  float fac = .5 + .5 * sin(uPhi * float(1 + int(h * 3.)) + h * 40.);    // das Plättchen kippt ins Licht und wieder hinaus
+  float pl = smoothstep(.5, .4, abs(f.x) + abs(f.y)) * an;
+  vec3 gold = mix(vec3(1., .86, .55), vec3(1., .72, .84), h22(ci + 3.).x);
+  vec3 fk = uZeigen > .5 ? kk : gold * (.2 + .9 * Lk);
+  col = mix(col, fk * (.5 + 1.25 * fac * fac), pl * mix(.55, .9, P2));
   float tw = pow(max(0., sin(uPhi * float(1 + int(h * 4.)) + h * 50.)), 24.);
-  float an = step(h12(ci * 1.7 + 2.), P2 * (uZeigen > .5 ? .5 * (.2 + L + sat(kc)) : .1 + 4. * abs(L - lum(Kl(UV(q), 4.).rgb)) + sat(kc)));   // ohne Bild: Glitzer sitzt auf Kanten und Farbe
   float stern = exp(-length(f) * 14.) + .6 * (exp(-abs(f.x) * 40.) * exp(-abs(f.y) * 6.) + exp(-abs(f.y) * 40.) * exp(-abs(f.x) * 6.));
-  vec3 gc = mix(vec3(1., .86, .55), vec3(1., .72, .84), h22(ci + 3.).x);
-  col += gc * stern * tw * an * 1.6 + (1. - uZeigen) * gc * exp(-length(f) * 12.) * an * .55;   // ohne Bild glimmt jedes Korn leicht
-  float dd = dot(uv, vec2(.7071)) - (uT * 2.4 - .7);
-  col += P3 * .35 * exp(-dd * dd * 60.) * (.3 + L) * (uZeigen > .5 ? 1. : .25);
+  col += mix(fk, vec3(1.), .55) * stern * tw * an * 1.4;               // der Funke hat die Farbe des Bildes
+  float dd = dot(uv, vec2(.7071)) - (uT * 2.4 - .7), band = exp(-dd * dd * 60.);
+  col *= 1. + P3 * band * (.3 + 1.2 * pl * fac);                       // Glanzband: hellt das Bild auf, die Pailletten darin blitzen
   return vec4(clamp(col, 0., 1.), 1.);
 }`,
   },
 
   horizont: {
-    name: "Horizont", herkunft: "incrprl.dsgn: über einer Lichtlinie steigt das Bild als Rauch auf, Körnung und Strahlen",
+    name: "Horizont", herkunft: "incrprl.dsgn: über einer Lichtlinie steigt das Bild selbst als Rauch auf, darunter spiegelt es sich dunkel, Körnung und Strahlen",
+    // seit 5. November 2026 bleibt das ganze Bild da (vorher nur ein Rauchfleck auf Schwarz; Wunsch: «dass die effekte das bild stärker
+    // mitnehmen»): über der Linie wird es nach oben gezogen, verwirbelt und weich, darunter liegt es als dunkle, wellige Spiegelung
     regler: [r("Höhe", .6), r("Breite", .5), r("Körnung", .5), r("Strahlen", .5)],
     glsl: `vec4 effekt(vec2 uv){
   vec2 p = P(uv); float k = uRes.y / 1350., env = HZ(.5 - .5 * cos(uPhi));
   float cx = PD(.25 * A() * sin(uPhi));
-  vec2 rr = (p - vec2(cx, 0.)) / vec2(mix(.08, .4, P1), mix(.05, .35, P0) * (.35 + .65 * env));
-  vec2 w = rr + lcurl(rr * 1.3, .8) * .35;
-  float m = smoothstep(.25, .75, lfbm(w * 1.4, .8) + .75 - length(w) * .75) * mix(.55, 1., step(0., p.y));
-  float L = uZeigen > .5 ? pow(lum(Q(uv).rgb), .8) : .55;   // ohne Bild: reiner Rauch
+  float wx = exp(-pow((p.x - cx) / (mix(.12, .65, P1) * A()), 2.)), Hh = mix(.12, .55, P0) * (.35 + .65 * env);
+  float y = max(p.y, 0.);
+  // über der Linie: das Bild wird aus der Nähe der Linie hochgezogen (hub), verwirbelt (dr) und zur Höhe hin weich
+  float hub = wx * min(y, Hh) * .85, wy = y / (y + .12);
+  vec2 dr = lcurl(p * vec2(2.4, 1.6) + 3., .8) * .045 * wx * wy * (.5 + P0);
+  vec2 src = p - vec2(0., hub) + dr, us = UV(src);
+  float lod = min(wx * wy * 3.5, 3.5);
+  vec3 auf = Ql(us, lod).rgb; float La = lum(Kl(us, lod).rgb);
+  float rand = lfbm(src * 3.2 + vec2(0., -y), .8) * .5;
+  float m = wx * smoothstep(Hh * 1.25 + .05, Hh * .2, y - rand * Hh) * smoothstep(.3, .75, La + .45 + rand);   // hell steigt leichter auf
+  vec3 oben = uZeigen > .5 ? mix(auf * .3, auf * 1.12 + .03, m) : vec3(.035) + vec3(.2 + .8 * La) * m;
+  // unter der Linie: dunkle Spiegelung des Bildes, die Wellen werden zur Linie hin feiner
+  float t = -min(p.y, 0.);
+  vec2 sp = vec2(p.x + ln(vec2(p.x * 6., t * 40.), .9) * .012 * t * 3., t * 1.15);
+  vec3 spieg = uZeigen > .5 ? Ql(UV(sp), 1. + t * 4.).rgb * (.42 - .25 * smoothstep(0., .5, t)) : vec3(.035) + vec3(lum(Kl(UV(sp), 2.).rgb) * .12);
+  vec3 col = p.y > 0. ? oben : spieg;
+  // die Linie trägt die Farben des Bildes an ihrer Stelle
+  vec3 lf = uZeigen > .5 ? mix(vec3(1.), min(Kl(UV(vec2(p.x, 0.)), 2.).rgb * 1.5 + .25, 1.), .6) : vec3(1.);
   float px = abs(p.y) * uRes.y;
   float linie = (exp(-px * px / (1.2 * k * k)) * .9 + exp(-px / (6. * k)) * .12) * (.55 + .45 * smoothstep(1., 0., abs(p.x - cx) / (.6 * A())));
   float ang = 1. + .4 * sin(uPhi * 2.);
   float dist = abs(dot(p - vec2(cx, 0.), vec2(-sin(ang), cos(ang)))) * uRes.y / (1.5 * k);
   float strahl = exp(-dist * dist) * pow(.5 + .5 * sin(uPhi * 3.), 8.) * P3 * smoothstep(.6, 0., length(p - vec2(cx, 0.)));
   float korn = (h12(floor(uv * uRes) + floor(uT * 360.)) - .5) * .12 * P2;
-  return vec4(clamp(vec3(.035 + korn + L * 1.25 * m + linie + strahl * .8), 0., 1.), 1.);
+  return vec4(clamp(col + korn + lf * (linie + strahl * .8), 0., 1.), 1.);
 }`,
   },
 
   tinte: {
-    name: "Alkoholtinte", herkunft: "infinite mantra (Blüten): das Bild fliesst, darüber durchscheinende Farbschleier mit haarfeinen Tintenrändern",
+    name: "Alkoholtinte", herkunft: "infinite mantra (Blüten): das Bild fliesst entlang seiner Konturen, seine Tonflächen werden zu durchscheinenden Farbschleiern mit haarfeinen Tintenrändern",
     // seit 3. November 2026 neu (Rückmeldung: «die alkohol tinte ist noch etwas plump»): statt dicker Höhenlinien drei Schleier,
-    // deren Farbe aus dem Bild kommt; an ihren Rändern sammelt sich die Tinte, die Kante selbst ist haarfein
+    // deren Farbe aus dem Bild kommt; an ihren Rändern sammelt sich die Tinte, die Kante selbst ist haarfein.
+    // Seit 5. November 2026 folgen die Schleier den Tonflächen des Bildes (vorher vor allem Rauschen) und das Bild fliesst entlang seiner
+    // Konturen (Wunsch: «dass die effekte das bild stärker mitnehmen und nicht bloss darüber gelegt werden»)
     regler: [r("Fluss", .7), r("Ränder", .6), r("Lasur", .7), r("Massstab", .4)],
-    glsl: `vec4 effekt(vec2 uv){
+    glsl: `${FELD}
+vec4 effekt(vec2 uv){
   vec2 p = P(uv), q = p; float sc = mix(.8, 3., P3);
-  for (int i = 0; i < 4; i++) q -= lcurl(q * sc * .8, .5) * .025 * P0 / sc;   // das Bild fliesst in langen Schlieren
-  vec3 bild = uZeigen > .5 ? Ql(UV(q), .5).rgb : vec3(1.), steuer = Kl(UV(q), .5).rgb;   // ohne Bild: weisses Papier, Schleier aus dem Bild
+  int S = uSparsam > .5 ? 2 : 4;                                          // Handy: zwei Schritte
+  for (int i = 0; i < 4; i++){
+    if (i >= S) break;
+    q -= (lcurl(q * sc * .8, .5) * .012 / sc + strom(UV(q), 3., 5., .2) * .011) * P0 * 4. / float(S);   // die Tinte fliesst den Konturen entlang
+  }
+  vec3 bild = uZeigen > .5 ? Ql(UV(q), .5).rgb : vec3(1.);              // ohne Bild: weisses Papier, Schleier aus dem Bild
   vec3 col = mix(vec3(1.), bild, mix(.55, 1., P2));
   for (int j = 0; j < 3; j++){
     float fj = float(j);
     vec2 qj = q * sc * (1. + fj * .45) + fj * 7.3;
     qj += lcurl(qj * .7, .7 + fj * .1) * .35 * P0;
-    float e = lfbm(qj, .8) + (lum(steuer) - .5) * .6 - (fj * .12 - .05), aa = fwidth(e) + 1e-4;
+    float ton = lum(Kl(UV(q + fj * .015), 2. + fj * .8).rgb);           // die Tonfläche des Bildes, jede Lage etwas weicher
+    float e = (.72 - fj * .2 - ton) * 1.6 + lfbm(qj, .8) * .3, aa = fwidth(e) + 1e-4;   // Schleier über den dunkleren Tönen, der Rand franst aus
     float schleier = smoothstep(-aa, aa, e);
     float saum = schleier * exp(-e / (.05 + .03 * fj));        // die Tinte sammelt sich am Rand
     float linie = exp(-pow(e / (aa * 1.2), 2.));                 // haarfeine Kante
@@ -764,22 +815,31 @@ vec4 effekt(vec2 uv){
   },
 
   strahlen: {
-    name: "Lichtstrahlen", herkunft: "God Rays: helle Bildteile werfen wabernde Lichtstrahlen in den Raum, darin schwebt Staub in drei Tiefen",
+    name: "Lichtstrahlen", herkunft: "God Rays: die hellen Bildteile werfen Strahlen in ihren eigenen Farben, das Bild zieht sich im Licht in die Länge, darin schwebt farbiger Staub in drei Tiefen",
+    // seit 5. November 2026 tragen die Strahlen die Farben des Bildes und dehnen es zum Licht hin (vorher weisslicher Schein darüber;
+    // Wunsch: «dass die effekte das bild stärker mitnehmen und nicht bloss darüber gelegt werden»)
     regler: [r("Strahlen", .65), r("Wabern", .5), r("Staub", .5), r("Schwelle", .5), r("Bild", .5)],
     glsl: `vec4 effekt(vec2 uv){
   vec2 lp = vec2(.5 + .22 * cos(uPhi), .78 + .08 * sin(2. * uPhi));     // die Lichtquelle zieht einen kleinen Kreis
-  vec2 d = (uv - lp) / 40. * mix(.6, 1., P0); vec2 q = uv; float dec = 1., acc = 0.;
+  vec2 d = (uv - lp) / 40. * mix(.6, 1., P0); vec2 q = uv; float dec = 1., acc = 0.; vec3 acc3 = vec3(0.);
   float thr = mix(.25, .8, P3);
+  int S = uSparsam > .5 ? 24 : 40;                                        // Handy: 24 Schritte
   for (int i = 0; i < 40; i++){
-    q -= d;
-    float m = smoothstep(thr, thr + .25, lum(Kl(q, 2.).rgb));
+    if (i >= S) break;
+    q -= d * 40. / float(S);
+    vec3 kq = Kl(q, 2.).rgb;
+    float m = smoothstep(thr, thr + .25, max(lum(kq), .85 * max(kq.r, max(kq.g, kq.b))));
     m *= .75 + .5 * P1 * (ln(q * vec2(9., 2.) + 3., .8) * .5 + .5);    // wabern
-    acc += m * dec; dec *= .955;
+    acc += m * dec; acc3 += kq * m * dec; dec *= 1. - .045 * 40. / float(S);
   }
-  acc *= mix(.02, .07, P0);
+  float sk = mix(.02, .07, P0) * 40. / float(S); acc *= sk; acc3 *= sk;
   vec3 licht = vec3(1., .9, .72);
-  vec3 grund = uZeigen > .5 ? Ql(uv, 0.).rgb * mix(.25, 1., P4) : vec3(.043, .035, .039) + licht * smoothstep(thr, thr + .25, lum(Kl(uv, 1.5).rgb)) * .18;
-  vec3 col = grund + licht * acc;
+  vec3 farbe = uZeigen > .5 ? mix(licht * acc, acc3 * 1.5, .75) : licht * acc;   // das Licht in den Farben des Bildes
+  // das Bild zieht sich im Licht in die Länge: je mehr Strahl, desto weiter von der Quelle weg gelesen
+  vec2 zieh = (uv - lp) * min(acc, 1.2) * .1 * P0;
+  vec3 grund = uZeigen > .5 ? Ql(uv - zieh, 0.).rgb * mix(.25, 1., P4) * (1. + acc * .4)
+                            : vec3(.043, .035, .039) + licht * smoothstep(thr, thr + .25, lum(Kl(uv - zieh, 1.5).rgb)) * .18;
+  vec3 col = grund + farbe;
   float staub = 0.;                                                       // Staub in drei Tiefen, sichtbar im Licht
   for (int l = 0; l < 3; l++){
     float fl = float(l), cs = (14. + fl * 9.) * uRes.y / 1350.;
@@ -789,7 +849,8 @@ vec4 effekt(vec2 uv){
     float r = (.05 + .07 * j.x) * (1. - fl * .25);
     staub += smoothstep(r, r * .3, length(f)) * step(1. - P2 * .7, j.y) * (1. - fl * .3);
   }
-  col += licht * staub * (.15 + acc * 2.5) * P2;
+  vec3 sf = uZeigen > .5 ? mix(licht, min(Kl(uv, 1.).rgb * 1.6 + .15, 1.), .7) : licht;   // der Staub glimmt in der Farbe des Bildes darunter
+  col += sf * staub * (.15 + acc * 2.5) * P2;
   return vec4(clamp(col, 0., 1.), 1.);
 }`,
   },
