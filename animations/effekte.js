@@ -101,7 +101,7 @@ export const EFFEKTE = {
     regler: [r("Wolke", .8), r("Punktgrösse", .45), r("Glitzer", .5), r("Streuung", .5)],
     // randlos (Wunsch vom 4. November 2026: «gar keine schwarzen Ränder, das Bild soll immer vollständig gefüllt sein»): die Teilchen
     // liegen auch in einem Saum rund um das Bild (RAND je Seite), der beim Treiben die Ränder nachfüllt; Dichte im Bild wie bisher
-    punkte: (w, a) => ({ cols: Math.round(400 * 1.7), rows: Math.round(400 / a * 1.7) }),
+    punkte: (w, a, h, d = 1) => { const n = 400 * Math.sqrt(d); return { cols: Math.round(n * 1.7), rows: Math.round(n / a * 1.7) }; },
     glsl: `void punkt(int id, out vec2 pos, out vec4 col, out float size){
   float i = float(id); vec2 g = vec2(mod(i, uCols), floor(i / uCols));
   vec2 j = h22(g + uSeed * 13.1), uv0 = (g + j) / vec2(uCols, uRows) * 1.7 - .35;   // RAND = .35
@@ -474,7 +474,7 @@ vec4 effekt(vec2 uv){
     regler: [r("Dichte", .5), r("Tempo", .4), r("Punktgrösse", .35), r("Wirbel", .3), r("Kanten", .6)],
     mischung: "add",
     // die Zahl der Teilchen folgt der Bildhöhe (kleine Vorschauen rechnen weniger), je Teilchen acht Punkte für den Schweif
-    punkte: (w, a, h) => { const c = Math.max(40, Math.round((110 + 100 * w[0]) * Math.sqrt(Math.min(1, h / 1000)))); return { cols: c * 8, rows: Math.round(c / a) }; },
+    punkte: (w, a, h, d = 1) => { const c = Math.max(d < 1 ? 24 : 40, Math.round((110 + 100 * w[0]) * Math.sqrt(Math.min(1, h / 1000) * d))); return { cols: c * 8, rows: Math.round(c / a) }; },
     glsl: `${FELD}
 void punkt(int id, out vec2 pos, out vec4 col, out float size){
   float i = float(id), cx = uCols / 8., xx = mod(i, uCols), j = mod(xx, 8.);
@@ -831,7 +831,7 @@ vec4 effekt(vec2 uv){
     regler: [r("Blitze", .5), r("Länge", .6), r("Würfel", .5), r("Verästelung", .5), r("Kanten", .65), r("Glühen", .5)],
     mischung: "add",
     // je Zeile ein Strang aus 240 Punkten (doppelt: Kern und Schein); die ersten zwölf Zeilen sind die Kanten des Würfels
-    punkte: (w) => ({ cols: 480, rows: 12 + Math.round(12 + 42 * w[0]) }),
+    punkte: (w, a, h, d = 1) => ({ cols: 480, rows: 12 + Math.round((12 + 42 * w[0]) * Math.max(d, .4)) }),
     glsl: `${FELD}
 vec3 wDreh(vec3 v){
   float a = uPhi + .4, b = .55 + .25 * sin(uPhi);           // gleichmässig um die Hochachse, leicht nickend
@@ -949,8 +949,9 @@ void punkt(int id, out vec2 pos, out vec4 col, out float size){
     name: "Physarum", herkunft: "PHORMA II: tausende Agenten eines Schleimpilzes riechen die Nahrung im Bild (Helligkeit und Kanten) und legen ein leuchtendes Netz auf seine Formen",
     regler: [r("Agenten", .5), r("Spur", .6), r("Nahrung", .7), r("Wandern", .35), r("Glühen", .5)],
     mischung: "add",
-    // je Agent 40 Punkte Spur; die Zahl folgt der Bildhöhe wie bei der Strömung
-    punkte: (w, a, h) => { const c = Math.max(24, Math.round((40 + 50 * w[0]) * Math.sqrt(Math.min(1, h / 1000)))); return { cols: c * 40, rows: Math.round(c / a) }; },
+    // je Agent 40 Punkte Spur; die Zahl folgt der Bildhöhe wie bei der Strömung. d: Dichte, auf Handys kleiner (motor.js, DICHTE_SPARSAM):
+    // die Physarum-Agenten tasten je Schritt neun Mal das Bild ab, mit allen Agenten hat das am 5. November 2026 die Grafik eines Handys umgeworfen
+    punkte: (w, a, h, d = 1) => { const c = Math.max(d < 1 ? 16 : 24, Math.round((40 + 50 * w[0]) * Math.sqrt(Math.min(1, h / 1000) * d))); return { cols: c * 40, rows: Math.round(c / a) }; },
     glsl: `float nahrung(vec2 uv){
   vec3 c = Kl(uv, 3.).rgb; float L = lum(c);
   vec3 c2 = Kl(uv, 1.5).rgb, c3 = Kl(uv, 4.5).rgb;
