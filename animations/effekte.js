@@ -277,6 +277,7 @@ export const EFFEKTE = {
   // Metaballs, Wirbel, Linien, Tuscheblasen, Glaslinsen, Röntgen-Scan und Papierriss entfernt am 5. November 2026
   // (Wunsch: «also wir nehme jetzt wieder raus: metaballs, wirbel, linien, tuscheblasen, glaslinsen, röntgenstrahl, papierriss»)
   // Alkoholtinte entfernt am 5. November 2026 (Wunsch: «alkoholtine kann raus»)
+  // Traube, Physarum und Strömung entfernt am 5. November 2026 (Wunsch: «weg können traube, physarum (nicht: physarum-struktur), strömung»)
 
   raster: {
     name: "Druckraster", herkunft: "Halbton: vier gedrehte Raster wie im Offsetdruck, Punkte verschmelzen als Distanzfelder im Dunkeln und atmen in Wellen",
@@ -376,37 +377,6 @@ vec4 effekt(vec2 uv){
 }`,
   },
 
-  stroemung: {
-    name: "Strömung", herkunft: "Flow Field: Lichtteilchen ziehen mit Schweif den Konturen des Bildes nach, wo Kanten sind, sammeln sie sich",
-    regler: [r("Dichte", .5), r("Tempo", .4), r("Punktgrösse", .35), r("Wirbel", .3), r("Kanten", .6)],
-    mischung: "add",
-    // die Zahl der Teilchen folgt der Bildhöhe (kleine Vorschauen rechnen weniger), je Teilchen acht Punkte für den Schweif
-    punkte: (w, a, h, d = 1) => { const c = Math.max(d < 1 ? 24 : 40, Math.round((110 + 100 * w[0]) * Math.sqrt(Math.min(1, h / 1000) * d))); return { cols: c * 8, rows: Math.round(c / a) }; },
-    glsl: `${FELD}
-void punkt(int id, out vec2 pos, out vec4 col, out float size){
-  float i = float(id), cx = uCols / 8., xx = mod(i, uCols), j = mod(xx, 8.);
-  vec2 g = vec2(floor(xx / 8.), floor(i / uCols));
-  float h = h12(g * 1.31 + uSeed), m = 2. + floor(P1 * 2.999);           // zwei bis vier Leben pro Schlaufe
-  float zz = uT * m + h, u = fract(zz), cyc = mod(floor(zz), m);         // das Leben n und n + m sind dasselbe: die Schlaufe schliesst
-  vec2 sp = (g + h22(g + cyc * 17.3 + uSeed)) / vec2(cx, uRows);
-  vec3 c0 = Kl(sp, 1.).rgb; float L0 = lum(c0), ek = length(feldG(sp, 1.5, 3.));
-  float wgt = mix(.25 + .75 * (1. - L0), smoothstep(1., 14., ek), P4);  // wo Teilchen entstehen: im Dunklen oder an Kanten
-  pos = vec2(9.); col = vec4(0.); size = 0.;
-  if (h12(g * 2.7 + cyc * 3.1 + 5.) > wgt) return;
-  float age = max(u - j * .022, 0.), steps = age * 18.;
-  vec2 q = P(sp), sl = vec2(.18 / 18.);
-  for (int k = 0; k < 18; k++){
-    float dt = clamp(steps - float(k), 0., 1.);
-    if (dt <= 0.) break;
-    q += dt * sl * strom(UV(q), 1.5, 3., P3);
-  }
-  pos = q;
-  float a = sin(PI * u) * (1. - j / 8.) * (age > 0. ? 1. : 0.);
-  vec3 c = uZeigen > .5 ? min(c0 * 1.4 + .05, 1.) : vec3(.95, .925, .9);   // ohne Bild: helles Licht, die Form kommt aus dem Bild
-  col = vec4(c * a * 1.2, a);
-  size = mix(1.5, 5., P2) * uRes.y / 1350. * (1. - j / 12.) + .6;
-}`,
-  },
   // ——— drei weitere nach Christians Stichworten vom 4. November 2026: «röntgen/laserscan, krasse montagen, absolut aktuelle prozess-visualisierung»
 
 
@@ -888,141 +858,7 @@ void punkt(int id, out vec2 pos, out vec4 col, out float size){
 }`,
   },
 
-  traube: {
-    name: "Traube", herkunft: "PHORMA III: glänzende Perlen wachsen auf den hellen Formen des Bildes zu Trauben, dazwischen ein Knäuel aus feinen Fäden, Rauch und ein wandernder Schärfenzug",
-    // seit 5. November 2026 (Christian: «beim effekt traube gibt es keine bewegung … noch etwas mehr spiegelung in den einzelnen trauben wäre toll»):
-    // das Licht kreist einmal je Schlaufe um die Trauben, sodass der Glanz über jede Perle wandert; die Perlen wiegen sich wie hängende Trauben
-    // (kleiner Kreis je Perle plus das langsame Rauschen) und wachsen bei «Hin und zurück» gestaffelt aus den Formen; jede Perle spiegelt ihre
-    // Umgebung (das Bild, gespiegelt und verkleinert), dazu ein zweiter Glanzpunkt, ein weicher Fensterfleck und ein heller Rand
-    regler: [r("Perlen", .55), r("Grösse", .6), r("Schwelle", .35), r("Fäden", .5), r("Schärfe", .35), r("Rot", .7)],
-    glsl: `vec4 effekt(vec2 uv){
-  vec2 p = P(uv); float px = 1. / uRes.y;
-  float N = mix(14., 46., P0), zf = (uLauf > .5 ? ln(vec2(2.3, 5.1), .6) : sin(uPhi)) * .9;   // die Schärfeebene zieht durch die Tiefe
-  float env = HZ(.5 - .5 * cos(uPhi));                       // Hin und zurück: die Trauben wachsen aus dem Bild und ziehen sich zurück
-  vec3 rot1 = vec3(.62, .03, .05), silber = vec3(.82, .84, .88);
-  // Licht: kreist einmal je Schlaufe, dazu ein zweites, kleineres Fensterlicht gegenüber
-  vec3 Ld = normalize(vec3(.8 * cos(uPhi), .8 * sin(uPhi) + .2, .62));
-  vec3 L2 = normalize(vec3(-.6 * cos(uPhi + 2.3), -.6 * sin(uPhi + 2.3), .95));
-  // Hintergrund: Rauch und ein Knäuel aus Fäden, dicht, wo das Bild Formen hat; die Fäden treiben auf einem kleinen Kreis durch die Schlaufe
-  vec3 k5 = Kl(uv, 5.).rgb; float form = smoothstep(.12, .55, lum(k5) + .6 * sat(k5));
-  float rauch = smoothstep(-.2, .7, lfbm(p * 2.2 + 3., .5)) * (.25 + .75 * form);
-  vec3 col = vec3(.035, .03, .035) + vec3(.07, .06, .065) * rauch;
-  if (uZeigen > .5) col += Ql(uv, 1.).rgb * .14;
-  float fd = 0.;
-  for (int l = 0; l < 3; l++){
-    if (uSparsam > .5 && l > 1) break;                      // Handy: zwei Lagen Fäden statt drei
-    float fl = float(l);
-    vec2 q = p + .18 * vec2(cos(uPhi + fl * 2.), sin(uPhi + fl * 2.));
-    float v = ln(rot(fl * 2.1) * q * (2.2 + fl * 1.3) + fl * 7., .7 + fl * .2);
-    float e = abs(v) / max(fwidth(v), 1e-4);
-    fd += (1. - smoothstep(.2, 1.1, e)) * (.55 - fl * .12);
-  }
-  col += silber * fd * P3 * (.15 + .85 * form) * .55;
-  // die Perlen: je Zelle eine, gross, wo das Bild hell oder farbig ist; nach Tiefe sortiert, hinten zuerst
-  vec2 g = p * N, ci = floor(g);
-  vec4 pl[9]; vec3 pc[9]; int n = 0;
-  for (int y = -1; y <= 1; y++) for (int x = -1; x <= 1; x++){
-    vec2 c = ci + vec2(x, y), h = h22(c + uSeed * 5.3);
-    vec3 im = Kl(UV((c + .5) / N), 2.).rgb;
-    float fo = .45 * lum(im) + (uSparsam > .5 ? .35 * lum(im) : 2.2 * abs(lum(im) - lum(Kl(UV((c + .5) / N), 5.).rgb))) + .5 * sat(im);   // Handy: ohne den zweiten Blick ins Umfeld   // Form: hell, farbig oder abgesetzt vom Umfeld
-    float th = mix(.2, .9, P2), v = smoothstep(th - .12, th + .12, fo) * step(.08, h12(c * 1.9 + 4.));   // Perlen nur auf den Formen, die Fläche bleibt frei
-    if (v < .02) continue;
-    float hr = h12(c + 7.);
-    float wach = smoothstep(h.x * .5, h.x * .5 + .4, env);  // gestaffelt: jede Perle hat ihren Moment zum Wachsen; im Durchlauf sind alle da
-    float pul = .5 + .5 * sin(uPhi * floor(1. + h.y * 2.) + h.x * TAU);
-    vec2 schwung = vec2(cos(uPhi + h.x * TAU), sin(uPhi + h.x * TAU)) * (.05 + .1 * hr);   // hängende Trauben wiegen sich, jede auf ihrem Kreis
-    vec2 m = c + .5 + (h - .5) * .7 + .2 * vec2(ln(c * .3, .8), ln(c * .3 + 4., .8)) + schwung;
-    float R = min((.22 + .5 * hr * hr) * mix(.6, 1.5, P1) * (.55 + .45 * v) * (1. + .14 * pul), .95) * mix(.2, 1., wach);   // der Puls lässt sie schwellen
-    float z = (h.y - .5) * 2.4 + (lum(im) - .5) * .8;
-    pl[n] = vec4(m, R, z); pc[n] = im; n++;
-  }
-  for (int a = 0; a < 9; a++) for (int b = 0; b < 8; b++){
-    if (b + 1 >= n) break;
-    if (pl[b].w > pl[b + 1].w){ vec4 t = pl[b]; pl[b] = pl[b + 1]; pl[b + 1] = t; vec3 tc = pc[b]; pc[b] = pc[b + 1]; pc[b + 1] = tc; }
-  }
-  for (int k = 0; k < 9; k++){
-    if (k >= n) break;
-    vec2 d = g - pl[k].xy; float R = pl[k].z, dd = length(d);
-    float bl = abs(pl[k].w - zf) * (1. - P4) * .55 * R + N * px * 1.2;   // Tiefenschärfe: unscharf vor und hinter der Ebene
-    float cov = (1. - smoothstep(R - bl, R + bl, dd)) * R * R / ((R + bl * .5) * (R + bl * .5));
-    if (cov < .002) continue;
-    vec2 e = d / R; float r2 = min(dot(e, e), .999);
-    vec3 nn = vec3(e, sqrt(1. - r2));
-    vec3 basis = uZeigen > .5 ? mix(pc[k] / max(max(pc[k].r, max(pc[k].g, pc[k].b)), .1) * .7, rot1, P5) : mix(silber * .55, rot1, P5);
-    float dif = max(dot(nn, Ld), 0.);
-    vec3 rv = reflect(vec3(0., 0., -1.), nn);              // Blickrichtung an der Perle gespiegelt
-    float fres = pow(1. - nn.z, 3.5);                      // am Rand spiegelt Glas am stärksten, der Saum bleibt schmal
-    // Spiegelung der Umgebung: das Bild erscheint verkleinert und gespiegelt in jeder Perle (mit «Bild zeigen: aus» nur der Grund)
-    vec3 umg = Ql(UV((pl[k].xy + rv.xy * R * 1.6) / N), 1.5).rgb;
-    float sp = pow(max(dot(reflect(-Ld, nn), vec3(0., 0., 1.)), 0.), 64.);   // scharfer Glanzpunkt des wandernden Lichts
-    float sp2 = pow(max(dot(reflect(-L2, nn), vec3(0., 0., 1.)), 0.), 24.);  // zweites, weicheres Licht
-    float gl = pow(max(dot(reflect(-Ld, nn), vec3(0., 0., 1.)), 0.), 5.);
-    vec2 fw = (nn.xy - Ld.xy * .45) * rot(.7) / vec2(.42, .2);
-    float fenster = exp(-dot(fw, fw) * 1.8) * (.6 + .4 * nn.z);   // ein länglicher, weicher Lichtfleck wie ein Fenster im Glas
-    vec3 tinte = mix(vec3(1.), basis / max(max(basis.r, max(basis.g, basis.b)), .1), .55);   // die Spiegelung trägt die Farbe der Traube, sonst wirkt sie wie eine Seifenblase
-    vec3 pcol = basis * (.1 + .85 * dif) + basis * fres * .8 + silber * fres * .2
-      + umg * tinte * (.28 + .7 * fres) * (uZeigen > .5 ? 1. : .5)
-      + vec3(1.) * (sp * 1.8 + sp2 * .55 + gl * .14 + fenster * .38);
-    pcol *= mix(1., .55, smoothstep(0., .6, bl / R));       // unscharfe Perlen werden weicher und dunkler
-    col = mix(col, pcol, cov);
-  }
-  return vec4(clamp(col, 0., 1.), 1.);
-}`,
-  },
 
-  physarum: {
-    name: "Physarum", herkunft: "PHORMA II: tausende Agenten eines Schleimpilzes riechen die Nahrung im Bild (Helligkeit und Kanten) und legen ein leuchtendes Netz auf seine Formen",
-    // ruhiger seit 5. November 2026 (Christian: «Das physarum ist mir viel zu nervös»): die Agenten werden nicht mehr geboren und gelöscht,
-    // jeder Pfad steht und wandelt sich nur langsam (das Rauschen läuft auf einem kleinen Kreis durch die Zeit), Licht gleitet ruhig an ihm entlang,
-    // und das Netz wächst sanft aus den Keimen und zieht sich wieder zurück; «Tempo» regelt beides
-    regler: [r("Agenten", .5), r("Spur", .6), r("Nahrung", .7), r("Wandern", .3), r("Glühen", .5), r("Tempo", .2)],
-    mischung: "add", weich: true,
-    // je Agent 40 Punkte Spur; die Zahl folgt der Bildhöhe wie bei der Strömung. d: Dichte, auf Handys kleiner (motor.js, DICHTE_SPARSAM):
-    // die Physarum-Agenten tasten je Schritt neun Mal das Bild ab, mit allen Agenten hat das am 5. November 2026 die Grafik eines Handys umgeworfen
-    punkte: (w, a, h, d = 1) => { const c = Math.max(d < 1 ? 16 : 24, Math.round((40 + 50 * w[0]) * Math.sqrt(Math.min(1, h / 1000) * d))); return { cols: c * 40, rows: Math.round(c / a) }; },
-    glsl: `float nahrung(vec2 uv){
-  vec3 c = Kl(uv, 3.).rgb; float L = lum(c);
-  if (uSparsam > .5) return L;                              // Handy: nur die Helligkeit, ein Blick statt drei je Fühler
-  vec3 c2 = Kl(uv, 1.5).rgb, c3 = Kl(uv, 4.5).rgb;
-  return mix(L, abs(lum(c2) - lum(c3)) * 3. + L * .3, .45);   // hell und kantig ist Nahrung
-}
-void punkt(int id, out vec2 pos, out vec4 col, out float size){
-  float i = float(id), xx = mod(i, uCols), j = mod(xx, 40.), cx = uCols / 40.;
-  vec2 g = vec2(floor(xx / 40.), floor(i / uCols));
-  float h = h12(g * 1.71 + uSeed);
-  vec2 sp = (g + h22(g + uSeed)) / vec2(cx, uRows);          // jeder Agent hat seinen festen Keim
-  float S = mix(25., 70., P1), schritt = (j + .5) / 40. * S;  // die 40 Punkte liegen fest auf dem Pfad
-  float wachsen = mix(.3, 1., HZ(.5 - .5 * cos(uPhi)));       // das Netz wächst ruhig aus den Keimen und zieht sich zurück
-  float spitze = 1. - smoothstep(wachsen * S - 6., wachsen * S, schritt);
-  pos = vec2(9.); col = vec4(0.); size = 0.;
-  if (spitze <= 0.) return;
-  vec2 q = P(sp), dir = normalize(h22(g + 3.) - .5 + 1e-4);
-  float st = .0065, rz = mix(.04, .3, P5);                    // rz: wie schnell sich die Pfade wandeln
-  for (int k = 0; k < 70; k++){
-    float dt = clamp(schritt - float(k), 0., 1.);
-    if (dt <= 0.) break;
-    vec2 uq = UV(q);                                        // drei Fühler: geradeaus, links, rechts; drehen zum stärksten Geruch
-    float a0 = atan(dir.y, dir.x), sa = .55;
-    float F = nahrung(uq + vec2(cos(a0), sin(a0)) * .02 / vec2(A(), 1.));
-    float Lf = nahrung(uq + vec2(cos(a0 + sa), sin(a0 + sa)) * .02 / vec2(A(), 1.));
-    float Rf = nahrung(uq + vec2(cos(a0 - sa), sin(a0 - sa)) * .02 / vec2(A(), 1.));
-    float dreh = (Lf - Rf) * 14. * P2 + ln(q * 2. + 3.1, rz) * 1.2 * P3;
-    a0 += clamp(dreh, -.45, .45);                           // sanfte Kurven statt Zacken
-    dir = vec2(cos(a0), sin(a0));
-    q += dir * st * dt * (.7 + .6 * F);
-  }
-  pos = q;
-  float nf = nahrung(UV(q)), m = 1. + floor(P5 * 2.99);
-  float fluss = .7 + .3 * sin(TAU * (j / 40. * 2. - uT * m) + h * TAU);   // langsamer Plasmastrom entlang des Pfads
-  float a = spitze * fluss * smoothstep(0., 4., schritt) * (.25 + .75 * smoothstep(.1, .6, nf));
-  vec3 gold = vec3(1., .78, .3);
-  vec3 c = uZeigen > .5 ? mix(gold, min(Kl(UV(q), 1.).rgb * 1.6 + .06, 1.), .7) : gold;   // ohne Bild: das gelbe Netz, die Formen kommen aus dem Bild
-  float ab = S / 40. * st * uRes.y, sz = max(mix(1.6, 3.6, P4) * uRes.y / 1350. + .6, ab * 3.);   // weiche Punkte, dicht genug für eine glatte Linie
-  float al = a * (.035 + .07 * P4) * min(1., 2.5 * max(ab, 1.) / sz);   // alle Agenten leuchten zugleich: jeder nur leise, das Netz entsteht, wo viele Pfade zusammenlaufen
-  col = vec4(c * al * 1.4, al);
-  size = sz;
-}`,
-  },
   geflecht: {
     name: "Physarum-Struktur", herkunft: "PHORMA II weitergedacht: der Schleimpilz als Struktur statt als Spur – Netz, Adern, Zellen oder Membran, je dichter, wo das Bild Nahrung bietet",
     // Wunsch vom 5. November 2026: «varianten der strukturbildung …, nicht nur diese leuchten spuren»; der Regler «Struktur» geht von Netz (0)
@@ -1281,10 +1117,14 @@ vec4 effekt(vec2 uv){
 }`,
   },
   bluete: {
-    name: "Membran-Blüte", herkunft: "infinite mantra (Membranen): durchscheinende Kreise und Muschelspiralen setzen sich auf die Formen des Bildes, nehmen seine Farben an, falten sich langsam auf wie Blütenblätter und legen sich als Lasur übereinander",
+    name: "Membran-Blüte", herkunft: "infinite mantra (Membranen): durchscheinende, weich verformte Membranen setzen sich auf die Formen des Bildes, nehmen seine Farben an, fliessen und falten sich langsam wie Blütenblätter, und das Bild fliesst mit ihnen",
     // Referenzvideo vom 5. November 2026 (webdesigns/infinite-mantra-membran-bluete), Christian wollte es als Effekt. Die Membranen sind
     // Linsen: im Innern ist das Bild leicht vergrössert und gedreht, ihre Farbe kommt aus dem Bild (Wärme schiebt sie zu Aprikose bis Pflaume),
-    // Überlagerungen dunkeln multiplikativ ab
+    // Überlagerungen dunkeln multiplikativ ab.
+    // Seit 5. November 2026 (dritter Wunsch: «feine, rundlicher, weicher, verformender fliess und dass ausgangsbild mehr bewegt»): der Rand
+    // jeder Membran wird von langsamem Rauschen verformt (rundliche Lappen statt harter Kreise), der Rand ist breit und weich, die Linie fein;
+    // die Membranen gleiten weiter der Kontur entlang; das Bild fliesst als Ganzes in einem langsamen Wirbelfeld und in jeder Membran
+    // stärker (Linse, Strömung, Wellen im Glas)
     regler: [r("Anzahl", .55), r("Grösse", .5), r("Falten", .5), r("Lasur", .6), r("Wärme", .7), r("Muscheln", .4)],
     glsl: `${BLASE}${FELD}
 vec3 blPal(float t){                                                            // Aprikose, Rosé, Altrosa, Pflaume
@@ -1292,43 +1132,46 @@ vec3 blPal(float t){                                                            
   return t < .33 ? mix(a, b, t / .33) : t < .66 ? mix(b, c, (t - .33) / .33) : mix(c, d, (t - .66) / .34);
 }
 vec4 effekt(vec2 uv){
-  vec2 p = P(uv), off = vec2(0.); float k = uRes.y / 1350.;
+  vec2 p = P(uv); float k = uRes.y / 1350.;
+  vec2 off = lcurl(p * 1.3 + 3., 1.1) * .035 + strom(uv, 3.5, 8., .15) * .012 * sin(uPhi);   // das ganze Bild fliesst in einem langsamen Wirbelfeld und atmet entlang seiner Konturen
   vec3 lasur = vec3(1.);
   int n = int(mix(5., 16., P0));
   for (int i = 0; i < 16; i++){
     if (i >= n) break;
-    // Lage seit dem zweiten Wunsch vom 5. November 2026 («langsamere weichere fliessendere Bewegung mit verbindung zum bild»): jede
-    // Membran hat einen festen Ankerplatz auf einer Form des Bildes und gleitet von dort sanft der Kontur entlang hin und zurück
-    float fi = float(i); vec2 c; float R, fo; blase(i, P1, .25, c, R);
+    float fi = float(i); vec2 c; float R, fo; blase(i, P1, .35, c, R);
     vec3 h = h33(vec3(fi, 5., uSeed + 2.));
-    vec2 ca = zumBild((h22(vec2(fi, 3.) + uSeed) - .5) * vec2(A() * .8, .8), 2.2, fo);   // weite Schritte: die Anker sammeln sich auf dem Motiv
-    R *= mix(.5, 1.25, clamp(fo, 0., 1.));                                       // auf leerem Grund klein, auf starken Formen gross
+    vec2 ca = zumBild((h22(vec2(fi, 3.) + uSeed) - .5) * vec2(A() * .8, .8), 2.2, fo);   // der Anker sitzt auf einer Form des Bildes
+    R *= mix(.5, 1.25, clamp(fo, 0., 1.));
     float sw = sin(uPhi + h.z * TAU);                                            // ein weicher Atemzug je Schlaufe
     vec2 kt = strom(UV(ca), 3.5, 8., .15);                                       // Richtung der Kontur am Anker
-    c = ca + kt * .05 * sw + vec2(-kt.y, kt.x) * .01 * cos(uPhi + h.y * TAU);
-    float dr = h.y * TAU + (h.x < .5 ? -.3 : .3) * sw + atan(kt.y, kt.x) * .25;   // dreht sich wenig, leicht zur Kontur ausgerichtet
+    c = ca + kt * .09 * sw + vec2(-kt.y, kt.x) * .025 * cos(uPhi + h.y * TAU) + lcurl(ca * 2. + fi, 1.) * .03;   // gleitet der Kontur entlang und treibt
+    float dr = h.y * TAU + (h.x < .5 ? -.35 : .35) * sw + atan(kt.y, kt.x) * .25;
     vec2 v = rot(dr) * (p - c);
-    float fa = 1. - P2 * .32 * (.5 - .5 * cos(uPhi + h.z * TAU));                 // Falten: der Kreis klappt sanft zur Ellipse und auf
+    float fa = 1. - P2 * .3 * (.5 - .5 * cos(uPhi + h.z * TAU));                  // Falten: klappt sanft zur Ellipse und auf
     v.x /= fa;
-    float d = length(v) / R, th = atan(v.y, v.x), rr = 1.;
+    float th = atan(v.y, v.x), d = length(v) / R, rr = 1.;
     bool muschel = h.z < P5 * .8;
-    if (muschel){                                                              // Muschelspirale: Rand wächst mit dem Winkel, an der Naht eine Spitze
+    if (muschel){                                                              // Muschel: der Rand wächst mit dem Winkel, weich
       float tn = fract(th / TAU + .5 + .012 * sin(uPhi + fi));
-      rr = mix(.35, 1.05, pow(tn, .8));
+      rr = mix(.45, 1.05, smoothstep(0., 1., pow(tn, .9)));
     }
+    vec2 ring = vec2(cos(th), sin(th));
+    rr *= 1. + .1 * ln(ring * 1.4 + fi * 1.7, 1.2) + .05 * ln(ring * 3.1 + fi * 2.3 + 9., 1.);   // der Rand wogt: rundliche Lappen statt Kreis
     float rd = (d - rr) * R * uRes.y;                                           // Abstand zum Rand in Pixeln, innen negativ
-    if (rd > 3. * k) continue;
-    float innen = smoothstep(1.6 * k, -1.6 * k, rd);                              // weicher Rand
+    if (rd > 4. * k) continue;
+    float innen = smoothstep(5. * k, -5. * k, rd);                               // breiter, weicher Rand
+    float tief = 1. - min(d / rr, 1.);
     vec2 w = v / R;
-    off += -(rot(-dr) * vec2(w.x * fa, w.y)) * R * (1. - min(d / rr, 1.)) * .12 * innen;   // Linse: das Bild leicht zur Mitte gezogen
-    off += kt * .012 * sw * innen * (1. - min(d / rr, 1.));                       // und es fliesst mit der Membran der Kontur entlang
-    vec3 farbe = Kl(UV(c), 3.5).rgb; farbe = clamp(mix(vec3(lum(farbe)), farbe, 1.7), 0., 1.);   // die Farbe der Form, etwas satter
+    off += -(rot(-dr) * vec2(w.x * fa, w.y)) * R * tief * .2 * innen;             // Linse: das Bild zur Mitte gezogen
+    off += kt * .035 * sw * innen * tief;                                        // und es fliesst mit der Membran der Kontur entlang
+    off += lcurl(p * 5. + fi * 3., 1.3) * .02 * innen * tief;                      // Wellen im Glas
+    vec3 farbe = Kl(UV(c), 3.5).rgb; farbe = clamp(mix(vec3(lum(farbe)), farbe, 1.7), 0., 1.);
     farbe = mix(farbe, blPal(clamp((1. - lum(farbe)) * .25 + h.x * .8 - .05, 0., 1.)), P4);   // Wärme: zur Palette der Referenz
-    float rille = muschel ? .5 + .5 * cos(th * mix(10., 16., h.y) + d * 9.) : .5 + .5 * cos(d / rr * mix(14., 22., h.x) - uPhi);   // Muschel: gebogene Rippen
-    float a = P3 * (.4 + .35 * smoothstep(.2, 1., d / rr)) * (.9 + .1 * rille);      // zum Rand hin satter, feine Rillen
+    float rille = muschel ? .5 + .5 * cos(th * mix(10., 16., h.y) + d * 9.) : .5 + .5 * cos(d / rr * mix(14., 22., h.x) - uPhi);
+    float a = P3 * (.5 + .38 * smoothstep(.1, 1., d / rr)) * (.94 + .06 * rille);   // zum Rand hin satter, die Rillen nur angedeutet
     lasur *= mix(vec3(1.), farbe, a * innen);
-    float rand = exp(-rd * rd / (3.5 * k * k + 1e-4)) + .07 * innen * smoothstep(.85, 1., rille) * step(.15, d);
-    lasur *= mix(vec3(1.), farbe * farbe * .7, clamp(rand, 0., 1.) * (.35 + .5 * P3));   // dünner, dunklerer Rand in der eigenen Farbe
+    float rand = exp(-rd * rd / (2.2 * k * k + 1e-4)) * .8;                        // feine Randlinie
+    lasur *= mix(vec3(1.), farbe * farbe * .7, clamp(rand, 0., 1.) * (.3 + .5 * P3));
   }
   vec3 grund = uZeigen > .5 ? Ql(UV(p + off), .3).rgb : vec3(.92, .89, .85);   // ohne Bild: Cremepapier, die Membranen aus dem Bild
   vec3 col = grund * lasur;
