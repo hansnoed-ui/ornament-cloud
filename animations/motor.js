@@ -1,7 +1,7 @@
 // Animationen – der Motor: ein WebGL-2-Kontext rechnet bis zu drei Ebenen übereinander (je Effekt, Quelle, Mischmodus, Deckkraft)
 // und gibt das Bild auf eine eigene Leinwand aus, die Reel, Werke und Mischpult abzeichnen. Alles hängt nur von der Zeit t in der
 // Schlaufe ab (phi = 2π·t/DAUER, ganzzahlige Frequenzen): Bild N ist wieder Bild 0, und das MP4 entsteht Bild für Bild.
-import { EFFEKTE, wertVon } from "./effekte.js?v=25";
+import { EFFEKTE, wertVon } from "./effekte.js?v=26";
 
 export const DAUER = 12, FPS = 30, LAENGEN = [12, 30, 60];
 /** Länge der Schlaufe eines Stapels in Sekunden (Vorgabe 12) */
@@ -233,8 +233,15 @@ export function motorErstellen({ sparsam = SPARSAM, verloren = () => {}, zurueck
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
     return tex;
   }
-  async function bildLaden(schluessel, url) {
-    const img = new Image(); img.decoding = "async"; img.src = url; await img.decode();
+  /** lädt ein Bild als Textur; max > 0 verkleinert es vorher auf höchstens max Pixel Kantenlänge (Kacheln der gesicherten Werke) */
+  async function bildLaden(schluessel, url, max = 0) {
+    let img = new Image(); img.decoding = "async"; img.src = url; await img.decode();
+    const k = max > 0 ? Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight)) : 1;
+    if (k < 1) {
+      const c = document.createElement("canvas"); c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      img = c; img.naturalWidth = c.width; img.naturalHeight = c.height;
+    }
     if (bilder.has(schluessel) && !gl.isContextLost()) gl.deleteTexture(bilder.get(schluessel).tex);   // ein neues eigenes Bild ersetzt das alte
     bilder.set(schluessel, { tex: gl.isContextLost() ? null : hochladen(img), img, b: img.naturalWidth, h: img.naturalHeight });
   }
@@ -328,7 +335,14 @@ export function motorErstellen({ sparsam = SPARSAM, verloren = () => {}, zurueck
     return [...motor.kaputt.values()];
   }
 
-  return Object.assign(motor, { zeichnen, bildLaden, pruefen, hatBild: (s) => bilder.has(s) });
+  /** gibt die Textur eines Bildes frei (ein anderes Werk ist ins Mischpult gekommen) */
+  function bildFreigeben(schluessel) {
+    const e = bilder.get(schluessel); if (!e) return;
+    if (e.tex && !gl.isContextLost()) gl.deleteTexture(e.tex);
+    bilder.delete(schluessel);
+  }
+
+  return Object.assign(motor, { zeichnen, bildLaden, bildFreigeben, pruefen, hatBild: (s) => bilder.has(s) });
 }
 
 // ——— MP4: 1080 × 1350, 30 fps, eine Schlaufe; WebCodecs mit mp4-muxer (lokal in vendor/), sonst MediaRecorder in Echtzeit ———
