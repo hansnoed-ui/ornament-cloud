@@ -831,62 +831,122 @@ vec4 effekt(vec2 uv){
   },
 
   blitze: {
-    name: "Lichtwürfel", herkunft: "PHORMA III: in der Mitte dreht sich ein Würfel aus Licht, aus seinen Ecken schlagen Blitze und laufen als Spuren den Konturen des Bildes nach",
-    regler: [r("Blitze", .5), r("Länge", .6), r("Würfel", .5), r("Verästelung", .5), r("Kanten", .65), r("Glühen", .5)],
-    mischung: "add",
-    // je Zeile ein Strang aus 240 Punkten (doppelt: Kern und Schein); die ersten zwölf Zeilen sind die Kanten des Würfels
-    punkte: (w, a, h, d = 1) => ({ cols: 480, rows: 12 + Math.round((12 + 42 * w[0]) * Math.max(d, .4)) }),
+    name: "Lichtwürfel", herkunft: "PHORMA III: in der Mitte dreht sich ein feiner Würfel aus Licht, in ihm irrt ein Faden; aus seinen Ecken schlagen Blitze, und Lichtspuren zeichnen die Konturen des Bildes nach",
+    // überarbeitet am 5. November 2026 (Rückmeldung zum Handy: «Das sieht gar nicht gut aus» – flacher dicker Drahtwürfel, das Bild nicht zu sehen):
+    // der Schein jedes Punkts rechnet mit, wie viele Nachbarn ihn überdecken (sonst wird er zur weissen Fläche), der Würfel hat Tiefe,
+    // und die meisten Stränge sind jetzt Lichtspuren, die auf den stärksten Kanten des Bildes beginnen und den Linien gleicher Helligkeit folgen
+    regler: [r("Spuren", .55), r("Länge", .55), r("Würfel", .35), r("Blitze", .4), r("Kanten", .65), r("Glühen", .5)],
+    mischung: "add", weich: true,
+    // je Zeile ein Strang aus 200 Punkten (doppelt: Kern und Schein): zwölf Kanten des Würfels, zwei Fäden in ihm, dann Blitze und Spuren
+    // sparsam (Handy): kürzere Stränge, dafür mehr davon, damit das Motiv lesbar bleibt (Rechenzeit wächst mit dem Quadrat der Stranglänge)
+    punkte: (w, a, h, d = 1) => ({ cols: d < 1 ? 240 : 400, rows: 14 + Math.round((60 + 200 * w[0]) * Math.min(1, d * 2)) }),
     glsl: `${FELD}
 vec3 wDreh(vec3 v){
-  float a = uPhi + .4, b = .55 + .25 * sin(uPhi);           // gleichmässig um die Hochachse, leicht nickend
+  float a = uPhi + .4, b = .5 + .2 * sin(uPhi);             // gleichmässig um die Hochachse, leicht nickend
   v.xz = rot(a) * v.xz; v.yz = rot(b) * v.yz; return v;
 }
-vec2 wBild(vec3 v, float s){ v = wDreh(v) * s; return v.xy * (2.6 / (2.6 - v.z)); }
+vec3 wBild(vec3 v, float s){ v = wDreh(v) * s; return vec3(v.xy * (2.4 / (2.4 - v.z)), v.z / s); }
 void punkt(int id, out vec2 pos, out vec4 col, out float size){
   float i = float(id), x = mod(i, uCols), zeile = floor(i / uCols), schein = mod(x, 2.), j = floor(x / 2.), n = uCols / 2.;
-  float k = uRes.y / 1350., s = mix(.06, .2, P2);
-  vec3 licht = vec3(.78, .88, 1.);
+  float k = uRes.y / 1350., s = mix(.07, .22, P2), px = 1. / uRes.y;
+  float nb = 14. + max(2., floor((uRows - 14.) * mix(.04, .2, P3)));   // Zeilen 14 bis nb: Blitze, danach Spuren
+  vec3 licht = vec3(.8, .89, 1.);
   pos = vec2(9.); col = vec4(0.); size = 0.;
-  if (zeile < 12.){                                         // der Würfel: zwölf Kanten aus Licht
+  float kern = 4. * k + 1.2, glanz = (12. + 26. * P5) * k;   // Durchmesser der Gaussflecken; sichtbar ist gut ein Drittel
+  // Deckung je Punkt nach dem Abstand der Nachbarn: so bleibt der Schein weich, statt zur Fläche zu werden
+  #define DECK(abstand, groesse, ziel) min(1., (ziel) * 2.5 * max(abstand, 1.) / max(groesse, 1.))
+  if (zeile < 12.){                                         // der Würfel: zwölf Kanten, hinten matter und feiner, die Ecken funkeln
     float ax = floor(zeile / 4.), c = mod(zeile, 4.), t = j / (n - 1.) * 2. - 1.;
     vec2 sg = vec2(mod(c, 2.) * 2. - 1., floor(c / 2.) * 2. - 1.);
     vec3 v = ax < .5 ? vec3(t, sg) : ax < 1.5 ? vec3(sg.x, t, sg.y) : vec3(sg, t);
-    pos = wBild(v, s);
-    float a = schein > .5 ? .05 + .06 * P5 : .55;
+    vec3 w3 = wBild(v, s); pos = w3.xy;
+    float tief = clamp(.5 + w3.z * .29, 0., 1.), ab = s * 2. / n * uRes.y;
+    float ecke = smoothstep(.9, 1., abs(t)) * (.6 + .4 * sin(uPhi * 3. + zeile));
+    float kz = max(kern * (.8 + .5 * tief), ab * 3.2);
+    float a = (.35 + .65 * tief) * (schein > .5 ? DECK(ab, glanz, .35) : DECK(ab, kz, .8));
+    a *= 1. + ecke * (schein > .5 ? 2.5 : .6);
     col = vec4(licht * a, a);
-    size = schein > .5 ? (10. + 18. * P5) * k : 1.6 * k + .5;
+    size = schein > .5 ? glanz * (.7 + .5 * tief) * (1. + ecke) : kz;
     return;
   }
-  float b = zeile - 12., gr = 1. + floor(P3 * 3.99);         // Verästelung: Blitze einer Gruppe teilen den Anfang
-  float stamm = floor(b / gr), ast = b - stamm * gr;
-  float h = h12(vec2(stamm, 3.) + uSeed), m = 3. + floor(h12(vec2(stamm, 5.) + uSeed) * 3.);
-  float zz = uT * m + h, u = fract(zz), cyc = mod(floor(zz), m);   // m Schläge pro Schlaufe: Schlag n und n + m sind derselbe
-  vec2 hh = h22(vec2(stamm, cyc) * 1.7 + uSeed * 3.1);
-  vec3 ecke = vec3(step(.5, hh.x), step(.5, hh.y), step(.5, h12(vec2(cyc, stamm) + 9.))) * 2. - 1.;
-  vec2 q = wBild(ecke, s), dir = normalize(q + (hh - .5) * .4 + 1e-4);
-  float Lg = mix(.25, 1.1, P1), st = Lg / n;
-  float kopf = smoothstep(0., .18, u) * n;                   // der Blitz schiesst in einem Augenblick aus, die Spur verglimmt
-  if (j > kopf) return;
-  float teil = floor(n * (.15 + .35 * h12(vec2(stamm, cyc) + 2.))), knick = 0.;
-  for (int z = 0; z < 240; z++){
-    float fz = float(z);
-    if (fz >= j) break;
-    float zw = fz < teil || ast < .5 ? stamm : stamm + ast * 17.;
-    vec2 r2 = h22(vec2(zw * 3.3 + cyc, floor(fz / 9.)) + uSeed) - .5;
-    vec2 g = feldG(UV(q), 1.5, 4.), t = vec2(-g.y, g.x);
-    float kr = smoothstep(.5, 9., length(g));
-    t = normalize(t + 1e-5); if (dot(t, dir) < 0.) t = -t;
-    if (mod(fz, 9.) < .5) dir = rot(r2.x * 1.6) * dir;                     // das Zucken: harte Knicke alle paar Schritte
-    dir = normalize(mix(dir, t, P4 * kr * .35));                           // die Kontur zieht den Blitz zu sich
-    q += dir * st; knick = kr;
+  if (zeile < 14.){                                         // im Würfel irrt ein Faden, an den Wänden gespiegelt
+    vec3 q3 = vec3(0.), d3 = normalize(vec3(.3, .5, .2) + zeile * .4);
+    for (int z = 0; z < 200; z++){
+      if (float(z) >= j) break;
+      vec3 r3 = vec3(ln(vec2(float(z) * .05, zeile * 3.), .5), ln(vec2(float(z) * .05 + 7., zeile * 3.), .5), ln(vec2(float(z) * .05 + 13., zeile * 3.), .5));
+      d3 = normalize(d3 + r3 * .5); q3 += d3 * .028;
+      if (abs(q3.x) > 1.){ q3.x = sign(q3.x) * 2. - q3.x; d3.x = -d3.x; }
+      if (abs(q3.y) > 1.){ q3.y = sign(q3.y) * 2. - q3.y; d3.y = -d3.y; }
+      if (abs(q3.z) > 1.){ q3.z = sign(q3.z) * 2. - q3.z; d3.z = -d3.z; }
+    }
+    vec3 w3 = wBild(q3 * .92, s); pos = w3.xy;
+    float tief = clamp(.5 + w3.z * .29, 0., 1.), ab = .028 * s * uRes.y;
+    float kz = max(kern * .8, ab * 3.2);
+    float a = (.3 + .7 * tief) * (.5 + .5 * sin(j * .08 - uPhi * 2. + zeile)) * (schein > .5 ? DECK(ab, glanz * .7, .12) : DECK(ab, kz, .45));
+    col = vec4(licht * a, a);
+    size = schein > .5 ? glanz * .7 : kz;
+    return;
+  }
+  if (zeile < nb){                                          // Blitze aus den Ecken, die Kanten des Bildes fangen sie ein
+    float b = zeile - 14.;
+    float h = h12(vec2(b, 3.) + uSeed), m = 3. + floor(h12(vec2(b, 5.) + uSeed) * 3.);
+    float zz = uT * m + h, u = fract(zz), cyc = mod(floor(zz), m);   // m Schläge pro Schlaufe: Schlag n und n + m sind derselbe
+    vec2 hh = h22(vec2(b, cyc) * 1.7 + uSeed * 3.1);
+    vec3 ecke = vec3(step(.5, hh.x), step(.5, hh.y), step(.5, h12(vec2(cyc, b) + 9.))) * 2. - 1.;
+    vec2 q = wBild(ecke, s).xy, dir = normalize(q + (hh - .5) * .4 + 1e-4);
+    float st = mix(.3, 1., P1) / n;
+    if (j > smoothstep(0., .12, u) * n) return;              // der Blitz schiesst in einem Augenblick aus, dann verglimmt er
+    float kr = 0.;
+    for (int z = 0; z < 200; z++){
+      float fz = float(z);
+      if (fz >= j) break;
+      vec2 g = feldG(UV(q), 1., 3.), t = normalize(vec2(-g.y, g.x) + 1e-5);
+      kr = smoothstep(.6, 7., length(g)) * P4; if (dot(t, dir) < 0.) t = -t;
+      vec2 r2 = h22(vec2(b * 3.3 + cyc, floor(fz / 8.)) + uSeed) - .5;
+      if (mod(fz, 8.) < .5) dir = rot(r2.x * 1.5 * (1. - .75 * kr)) * dir;   // frei zuckt er, auf einer Kante läuft er ihr nach
+      dir = normalize(mix(dir, t, kr * .6));
+      q += dir * st;
+    }
+    pos = q;
+    float fl = .7 + .3 * step(.3, h12(vec2(floor(uT * 240.), b)));
+    float a = (u < .12 ? 1.2 : exp(-(u - .12) * 5.)) * fl * (1. - .5 * j / n), ab = st * uRes.y;
+    vec3 c = uZeigen > .5 ? mix(licht, min(Kl(UV(q), 1.).rgb * 1.6 + .1, 1.), .5) : licht;
+    float kz = max(kern * (1.3 + .8 * (1. - j / n)), ab * 3.2);
+    a *= schein > .5 ? DECK(ab, glanz * 1.4, .35) : DECK(ab, kz, .95);
+    col = vec4(c * a * 1.2, a);
+    size = schein > .5 ? glanz * 1.4 : kz;
+    return;
+  }
+  // Lichtspuren: beginnen auf der stärksten von vier Kanten und folgen der Linie gleicher Helligkeit; ein heller Kopf läuft, der Schweif glimmt nach
+  float sI = zeile - nb, h = h12(vec2(sI, 7.) + uSeed);
+  float zz = uT * 2. + h, u = fract(zz), cyc = mod(floor(zz), 2.);
+  vec2 sp = vec2(.5); float best = -1.;
+  for (int c = 0; c < 4; c++){
+    vec2 cand = h22(vec2(sI * 1.37, cyc * 4. + float(c)) + uSeed * 1.3) * .96 + .02;
+    float e = length(feldG(cand, 1.5, 3.)); if (e > best){ best = e; sp = cand; }
+  }
+  float kr0 = smoothstep(mix(.15, 1.5, P4), mix(2., 7., P4), best);   // Spuren nur, wo das Bild eine Form hat
+  if (kr0 < .02) return;
+  float L = mix(.15, .6, P1), st = L / n, rk = h12(vec2(sI, 9.)) < .5 ? 1. : -1.;
+  float tail = n * .6, head = smoothstep(0., .7, u) * (n + tail);
+  if (j > head) return;
+  vec2 q = P(sp), dir = vec2(0.);
+  float kr = kr0;
+  for (int z = 0; z < 200; z++){
+    if (float(z) >= j) break;
+    vec2 g = feldG(UV(q), 2., 4.), t = normalize(vec2(-g.y, g.x) + 1e-5) * rk;
+    if (dot(t, dir) < 0.) t = -t;
+    dir = length(dir) < .5 ? t : normalize(mix(dir, t, .5));
+    kr = smoothstep(.4, 6., length(g));
+    q += dir * st;
   }
   pos = q;
-  float flimmern = .65 + .35 * step(.35, h12(vec2(floor(uT * 240.), b)));
-  float a = (u < .2 ? 1. : exp(-(u - .2) * 4.)) * flimmern * (1. - .4 * j / n) * (.6 + .4 * knick);
-  vec3 c = uZeigen > .5 ? mix(licht, min(Kl(UV(q), 1.).rgb * 1.7 + .08, 1.), .65) : licht;   // ohne Bild: kaltes Licht, die Wege kommen aus dem Bild
-  float al = schein > .5 ? a * (.06 + .1 * P5) : a;
-  col = vec4(c * al * 1.3, al);
-  size = schein > .5 ? (10. + 26. * P5) * k : (2.4 + 2.4 * (1. - j / n)) * k + .6;
+  float f = clamp((head - j) / tail, 0., 1.), a = (.3 + .7 * pow(1. - f, 2.)) * (.3 + .7 * kr) * (.5 + .5 * kr0) * smoothstep(1., .8, u) * 1.4, ab = st * uRes.y;   // der Kopf leuchtet, die gezeichnete Linie bleibt stehen
+  vec3 c = uZeigen > .5 ? min(Kl(UV(q), 1.).rgb * 1.5 + .12, 1.) : licht;   // ohne Bild: kaltes Licht, die Linien kommen aus dem Bild
+  float kz = max(kern * (1. + .6 * (1. - f)), ab * 3.2);
+  a *= schein > .5 ? DECK(ab, glanz, .3) : DECK(ab, kz, .85);
+  col = vec4(c * a, a);
+  size = schein > .5 ? glanz * (.6 + .6 * (1. - f)) : kz;
 }`,
   },
 

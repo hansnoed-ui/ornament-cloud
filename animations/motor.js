@@ -83,6 +83,11 @@ const FS_PUNKTE = `#version 300 es
 precision highp float;
 in vec4 vCol; out vec4 o;
 void main(){ float d = length(gl_PointCoord - .5) * 2.; o = vCol * smoothstep(1., .7, d); }`;
+// weiche Punkte (Gauss) für Linien aus vielen Punkten: ihre Summe ist glatt, wo sie sich überlappen (Lichtwürfel, 5. November 2026)
+const FS_PUNKTE_WEICH = `#version 300 es
+precision highp float;
+in vec4 vCol; out vec4 o;
+void main(){ vec2 d = (gl_PointCoord - .5) * 2.; o = vCol * max(exp(-dot(d, d) * 5.) - .0067, 0.); }`;
 
 // Mischen: die Ebene ist vormultipliziert (Punkte lassen den Grund durch), gemischt wird mit der Farbe ohne Deckung
 const FS_MISCH = `#version 300 es
@@ -155,7 +160,7 @@ export function motorErstellen({ sparsam = SPARSAM, verloren = () => {}, zurueck
     if (motor.kaputt.has(id)) return null;
     const e = EFFEKTE[id];
     try {
-      return e.punkte ? programm(id, vsPunkte(e.glsl), FS_PUNKTE) : programm(id, VS_FLAECHE, fsEffekt(e.glsl));
+      return e.punkte ? programm(id, vsPunkte(e.glsl), e.weich ? FS_PUNKTE_WEICH : FS_PUNKTE) : programm(id, VS_FLAECHE, fsEffekt(e.glsl));
     } catch (f) {
       if (gl.isContextLost()) return null;   // kein Fehler des Effekts: der Kontext ist weg
       const text = `Effekt «${e.name}»: ${f.message}`;
