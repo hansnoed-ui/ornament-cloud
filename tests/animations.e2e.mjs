@@ -72,7 +72,7 @@ const bildBringen = async (page) => { await page.setInputFiles("#pult-datei", BI
 
 await check("leere Bühne: fordert ein Bild, Sichern und MP4 warten; mit Bild zeichnet die Bühne, «Neu mischen» ändert Mischung und Adresse", async () => {
   const { ctx, page, fehler } = await oeffne();
-  assert.deepEqual(await page.evaluate(() => window.animationen.fehler), []);
+  assert.deepEqual(await page.evaluate(() => window.animationen.motor.pruefen()), []);
   assert.ok(await page.locator("#pult-leer").isVisible(), "die leere Bühne zeigt die Aufforderung");
   assert.ok(await page.locator("#pult-sichern").isDisabled(), "ohne Bild kein Sichern");
   assert.match(await page.locator("#werke-meldung").textContent(), /Noch keine Werke/);
@@ -191,6 +191,37 @@ await check("ohne Ablage: die Seite läuft, Sichern bleibt aus, die Werke melden
   assert.match(await page.locator("#werke-meldung").textContent(), /liessen sich nicht laden/);
   await bildBringen(page);
   assert.ok(await page.locator("#pult-sichern").isDisabled());
+  await ctx.close();
+});
+
+await check("Grafik setzt aus (5. November 2026, Handy: «Diese Seite braucht WebGL 2»): verlorener Kontext kommt zurück und zeichnet wieder, ein kaputter Effekt bleibt leer statt die Seite anzuhalten", async () => {
+  const { ctx, page, fehler } = await oeffne();
+  await bildBringen(page);
+  const r = await page.evaluate(async () => {
+    const { motor } = window.animationen, ext = motor.gl.getExtension("WEBGL_lose_context");
+    ext.loseContext(); await new Promise((ok) => setTimeout(ok, 300));
+    const weg = document.getElementById("pult-meldung").textContent;
+    motor.zeichnen({ bild: "eigen", ebenen: [{ effekt: "bild" }] }, 1, 80, 100);   // darf nicht werfen
+    ext.restoreContext(); await new Promise((ok) => setTimeout(ok, 500));
+    motor.zeichnen({ bild: "eigen", ebenen: [{ effekt: "bild" }] }, 1, 80, 100);
+    const px = new Uint8Array(4 * 80 * 100); motor.gl.readPixels(0, 0, 80, 100, motor.gl.RGBA, motor.gl.UNSIGNED_BYTE, px);
+    let s = 0; for (let i = 0; i < px.length; i += 4) s += px[i] + px[i + 1] + px[i + 2];
+    return { weg, zurueck: document.getElementById("pult-meldung").textContent, hell: s / (px.length / 4), sparsam: motor.sparsam };
+  });
+  assert.match(r.weg, /ausgesetzt/); assert.match(r.zurueck, /wieder/); assert.ok(r.hell > 3, `zeichnet wieder (${r.hell})`); assert.equal(r.sparsam, true);
+  // ein Effekt, der nicht übersetzt: seine Ebene bleibt leer, die andere wird gezeichnet, die Seite meldet ihn
+  const k = await page.evaluate(async () => {
+    const { EFFEKTE } = await import("./effekte.js?v=6");
+    EFFEKTE.kaputt = { name: "Kaputt", herkunft: "", regler: [], glsl: "vec4 effekt(vec2 uv){ return nichtDa; }" };
+    const { motor, S } = window.animationen;
+    S.mix = { bild: "eigen", grund: "schwarz", ebenen: [{ effekt: "kaputt" }, { effekt: "bild", modus: "normal", deckkraft: 1 }] };
+    await new Promise((ok) => setTimeout(ok, 400));
+    const ergebnis = { kaputt: [...motor.kaputt.keys()], meldung: document.getElementById("pult-meldung").textContent };
+    delete EFFEKTE.kaputt;
+    return ergebnis;
+  });
+  assert.deepEqual(k.kaputt, ["kaputt"]); assert.match(k.meldung, /«Kaputt» lässt sich auf diesem Gerät nicht rechnen/);
+  assert.deepEqual(fehler.filter((f) => !/Kaputt/.test(f)), []);
   await ctx.close();
 });
 

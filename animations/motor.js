@@ -1,11 +1,13 @@
 // Animationen – der Motor: ein WebGL-2-Kontext rechnet bis zu drei Ebenen übereinander (je Effekt, Quelle, Mischmodus, Deckkraft)
 // und gibt das Bild auf eine eigene Leinwand aus, die Reel, Werke und Mischpult abzeichnen. Alles hängt nur von der Zeit t in der
 // Schlaufe ab (phi = 2π·t/DAUER, ganzzahlige Frequenzen): Bild N ist wieder Bild 0, und das MP4 entsteht Bild für Bild.
-import { EFFEKTE, wertVon } from "./effekte.js?v=4";
+import { EFFEKTE, wertVon } from "./effekte.js?v=6";
 
 export const DAUER = 12, FPS = 30, LAENGEN = [12, 30, 60];
 /** Länge der Schlaufe eines Stapels in Sekunden (Vorgabe 12) */
 export const dauerVon = (stapel) => LAENGEN.includes(stapel?.dauer) ? stapel.dauer : DAUER;
+/** Anteil der Teilchen in den schweren Punkt-Effekten auf Handys (und nach einem verlorenen Kontext) */
+export const DICHTE_SPARSAM = .3;
 export const MODI = { normal: 0, multiplizieren: 1, differenz: 2, bildschirm: 3, ueberlagern: 4 };
 
 // Hash ohne Sinus (Dave Hoskins, MIT) und Gradientenrauschen; «ln» läuft auf einem Kreis durch die Zeit und schliesst so die Schlaufe.
@@ -13,7 +15,7 @@ const KOPF = `#version 300 es
 precision highp float; precision highp int;
 uniform sampler2D uBild, uUnten;
 uniform vec2 uRes, uFit;
-uniform float uPhi, uT, uSeed, uQuelle, uLod, uCols, uRows, uZeigen, uLauf, uPsi, uL;
+uniform float uPhi, uT, uSeed, uQuelle, uLod, uCols, uRows, uZeigen, uLauf, uPsi, uL, uSparsam;
 uniform float uP[6];
 #define PI 3.14159265
 #define TAU 6.28318531
@@ -101,14 +103,35 @@ precision highp float;
 uniform sampler2D uA; in vec2 vUv; out vec4 o;
 void main(){ o = vec4(texture(uA, vUv).rgb, 1.); }`;
 
-export function motorErstellen() {
+// Warum es keinen Kontext gibt (Christian am 5. November 2026 auf dem Handy: «Diese Seite braucht WebGL 2 … gestern gings noch»):
+// ein Browser, der WebGL 2 kennt, aber keinen Kontext gibt, hat WebGL meist nach einem Grafikabsturz für die Seite gesperrt
+function ohneKontext(meldung) {
+  if (typeof WebGL2RenderingContext === "undefined") return "Dieser Browser kann kein WebGL 2.";
+  let webgl1 = false;
+  try { webgl1 = !!document.createElement("canvas").getContext("webgl"); } catch { /* auch nicht */ }
+  const grund = meldung ? ` (${meldung})` : "";
+  return webgl1
+    ? `Der Browser gibt gerade keinen WebGL-2-Kontext her${grund}. Den Browser ganz schliessen und neu öffnen hilft meistens.`
+    : `Der Browser hat WebGL gerade gesperrt oder ausgeschaltet${grund}, oft nach einem Grafikabsturz. Den Browser ganz schliessen (auch aus der Liste der offenen Apps wischen) und neu öffnen, dann geht es wieder.`;
+}
+
+/** Handys und Tablets rechnen sparsam: weniger Teilchen in den schweren Punkt-Effekten, damit die Grafik nicht abstürzt */
+export const SPARSAM = (() => {
+  try { return matchMedia("(pointer: coarse)").matches || (navigator.deviceMemory ?? 8) <= 4; } catch { return false; }
+})();
+
+export function motorErstellen({ sparsam = SPARSAM, verloren = () => {}, zurueck = () => {} } = {}) {
   const leinwand = document.createElement("canvas");
   leinwand.width = 4; leinwand.height = 5;
+  let meldung = "";
+  leinwand.addEventListener("webglcontextcreationerror", (e) => { meldung = e.statusMessage || ""; });
   const gl = leinwand.getContext("webgl2", { antialias: false, alpha: false, premultipliedAlpha: false, preserveDrawingBuffer: true });
-  if (!gl) throw new Error("Dieser Browser kann kein WebGL 2.");
-  gl.bindVertexArray(gl.createVertexArray());
+  if (!gl) throw new Error(ohneKontext(meldung));
 
+  const motor = { leinwand, gl, sparsam, kaputt: new Map() };
   const programme = new Map();
+  let B = 0, H = 0, acc = [], lage = null;
+  const bilder = new Map();
   function shader(typ, quelle) {
     const s = gl.createShader(typ); gl.shaderSource(s, quelle); gl.compileShader(s);
     if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s) || "Shader");
@@ -124,11 +147,18 @@ export function motorErstellen() {
     programme.set(name, pr);
     return pr;
   }
+  // ein Effekt, der sich nicht übersetzen lässt, fällt aus (seine Ebene bleibt leer), statt die ganze Seite anzuhalten
   const effektProgramm = (id) => {
+    if (motor.kaputt.has(id)) return null;
     const e = EFFEKTE[id];
     try {
       return e.punkte ? programm(id, vsPunkte(e.glsl), FS_PUNKTE) : programm(id, VS_FLAECHE, fsEffekt(e.glsl));
-    } catch (f) { throw new Error(`Effekt «${e.name}»: ${f.message}`); }
+    } catch (f) {
+      if (gl.isContextLost()) return null;   // kein Fehler des Effekts: der Kontext ist weg
+      const text = `Effekt «${e.name}»: ${f.message}`;
+      motor.kaputt.set(id, text); console.error(text);
+      return null;
+    }
   };
 
   function ziel(b, h) {
@@ -141,7 +171,6 @@ export function motorErstellen() {
     gl.bindFramebuffer(gl.FRAMEBUFFER, fb); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
     return { tex, fb };
   }
-  let B = 0, H = 0, acc = [], lage = null;
   function groesse(b, h) {
     if (b === B && h === H) return;
     for (const z of [...acc, lage]) if (z) { gl.deleteTexture(z.tex); gl.deleteFramebuffer(z.fb); }
@@ -149,10 +178,7 @@ export function motorErstellen() {
     acc = [ziel(b, h), ziel(b, h)]; lage = ziel(b, h);
   }
 
-  const bilder = new Map();
-  async function bildLaden(schluessel, url) {
-    const img = new Image(); img.decoding = "async"; img.src = url; await img.decode();
-    if (bilder.has(schluessel)) gl.deleteTexture(bilder.get(schluessel).tex);   // ein neues eigenes Bild ersetzt das alte
+  function hochladen(img) {
     const tex = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, tex);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
@@ -161,8 +187,25 @@ export function motorErstellen() {
     gl.generateMipmap(gl.TEXTURE_2D);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
-    bilder.set(schluessel, { tex, b: img.naturalWidth, h: img.naturalHeight });
+    return tex;
   }
+  async function bildLaden(schluessel, url) {
+    const img = new Image(); img.decoding = "async"; img.src = url; await img.decode();
+    if (bilder.has(schluessel) && !gl.isContextLost()) gl.deleteTexture(bilder.get(schluessel).tex);   // ein neues eigenes Bild ersetzt das alte
+    bilder.set(schluessel, { tex: gl.isContextLost() ? null : hochladen(img), img, b: img.naturalWidth, h: img.naturalHeight });
+  }
+
+  // Kontext verloren (Grafikabsturz, zu viele Tabs, App im Hintergrund): warten, bis der Browser ihn zurückgibt, dann alles neu aufbauen
+  // und ab jetzt sparsam rechnen, damit derselbe schwere Effekt ihn nicht gleich wieder umwirft
+  function aufbauen() {
+    gl.bindVertexArray(gl.createVertexArray());
+    programme.clear(); motor.kaputt.clear();
+    B = 0; H = 0; acc = []; lage = null;
+    for (const e of bilder.values()) e.tex = hochladen(e.img);
+  }
+  aufbauen();
+  leinwand.addEventListener("webglcontextlost", (e) => { e.preventDefault(); motor.sparsam = true; verloren(); });
+  leinwand.addEventListener("webglcontextrestored", () => { aufbauen(); zurueck(); });
 
   const fp = (pr, name, ...v) => gl[`uniform${v.length}f`](pr.ort(name), ...v);
   const textur = (pr, name, einheit, tex) => { gl.activeTexture(gl.TEXTURE0 + einheit); gl.bindTexture(gl.TEXTURE_2D, tex); gl.uniform1i(pr.ort(name), einheit); };
@@ -170,9 +213,10 @@ export function motorErstellen() {
 
   /** zeichnet den Stapel zur Zeit t (Sekunden) in b × h Pixel; danach liegt das Bild auf der Leinwand */
   function zeichnen(stapel, t, b, h) {
+    if (gl.isContextLost()) return;
     groesse(b, h);
     const bild = bilder.get(stapel.bild);
-    if (!bild) return;
+    if (!bild?.tex) return;
     const a = b / h, ab = bild.b / bild.h;
     const fit = a > ab ? [1, ab / a] : [a / ab, 1];
     const lod = Math.max(0, Math.log2((bild.h * fit[1]) / h));
@@ -186,17 +230,18 @@ export function motorErstellen() {
     for (const e of stapel.ebenen) {
       if (!e || e.aus || !EFFEKTE[e.effekt]) continue;
       const def = EFFEKTE[e.effekt];
+      const pr = effektProgramm(e.effekt);
+      if (!pr) continue;
       gl.bindFramebuffer(gl.FRAMEBUFFER, lage.fb);
       gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
-      const pr = effektProgramm(e.effekt);
       gl.useProgram(pr.p);
       textur(pr, "uBild", 0, bild.tex); textur(pr, "uUnten", 1, acc[i].tex);
       fp(pr, "uRes", b, h); fp(pr, "uFit", fit[0], fit[1]); fp(pr, "uLod", lod);
-      fp(pr, "uPhi", tz * Math.PI * 2); fp(pr, "uT", tz); fp(pr, "uPsi", tt * Math.PI * 2); fp(pr, "uL", D / DAUER); fp(pr, "uLauf", stapel.durchlauf ? 1 : 0); fp(pr, "uSeed", e.seed ?? 0); fp(pr, "uQuelle", e.quelle === "unten" ? 1 : 0); fp(pr, "uZeigen", stapel.ohneBild ? 0 : 1);
+      fp(pr, "uPhi", tz * Math.PI * 2); fp(pr, "uT", tz); fp(pr, "uPsi", tt * Math.PI * 2); fp(pr, "uL", D / DAUER); fp(pr, "uLauf", stapel.durchlauf ? 1 : 0); fp(pr, "uSeed", e.seed ?? 0); fp(pr, "uQuelle", e.quelle === "unten" ? 1 : 0); fp(pr, "uZeigen", stapel.ohneBild ? 0 : 1); fp(pr, "uSparsam", motor.sparsam ? 1 : 0);
       const w = def.regler.map((r, k) => wertVon(def, e.werte, k));
       gl.uniform1fv(pr.ort("uP[0]"), Float32Array.from({ length: 6 }, (_, k) => w[k] ?? 0));
       if (def.punkte) {
-        const { cols, rows } = def.punkte(w, a, h);
+        const { cols, rows } = def.punkte(w, a, h, motor.sparsam ? DICHTE_SPARSAM : 1);
         fp(pr, "uCols", cols); fp(pr, "uRows", rows);
         gl.enable(gl.BLEND);
         if (def.mischung === "add") gl.blendFunc(gl.ONE, gl.ONE); else gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
@@ -217,14 +262,13 @@ export function motorErstellen() {
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   }
 
-  /** alle Effekte einmal übersetzen (Prüfung und Vorwärmen); gibt die Fehler zurück */
+  /** alle Effekte einmal übersetzen (Prüfung, für die Entwicklung; die Seite übersetzt jeden Effekt erst, wenn er gebraucht wird) */
   function pruefen() {
-    const fehler = [];
-    for (const id of Object.keys(EFFEKTE)) { try { effektProgramm(id); } catch (f) { fehler.push(f.message); } }
-    return fehler;
+    for (const id of Object.keys(EFFEKTE)) effektProgramm(id);
+    return [...motor.kaputt.values()];
   }
 
-  return { leinwand, gl, zeichnen, bildLaden, pruefen, hatBild: (s) => bilder.has(s) };
+  return Object.assign(motor, { zeichnen, bildLaden, pruefen, hatBild: (s) => bilder.has(s) });
 }
 
 // ——— MP4: 1080 × 1350, 30 fps, eine Schlaufe; WebCodecs mit mp4-muxer (lokal in vendor/), sonst MediaRecorder in Echtzeit ———

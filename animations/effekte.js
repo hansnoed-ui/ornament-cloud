@@ -48,16 +48,20 @@ Kub kubus(vec2 p, float K){
   if (K < .005) return F;
   float n = mix(3.5, 9., K * K);                                     // Raster der Keime je Bildhöhe: erst grob, dann feiner
   vec2 x = p * n, i0 = floor(x), c1 = vec2(0.), c2 = vec2(0.), g1 = vec2(0.), g2 = vec2(0.); float d1 = 1e3, d2 = 1e3;
-  for (int j = -2; j <= 2; j++) for (int i = -2; i <= 2; i++){
+  // Handy (uSparsam, 5. November 2026: die Kubismus-Ebenen haben die Grafik eines Handys abstürzen lassen): 3 × 3 statt 5 × 5 Keime,
+  // ein Blick ins Bild je Keim statt zwei, und mehr Keime bleiben stehen, damit in 3 × 3 immer einer liegt
+  int R = uSparsam > .5 ? 1 : 2;
+  for (int j = -R; j <= R; j++) for (int i = -R; i <= R; i++){
     vec2 g = i0 + vec2(i, j), h = h22(g + uSeed * 5.3);
     vec2 c = g + .5 + (h - .5) * .7 + .1 * K * vec2(sin(uPhi + h.x * TAU), cos(uPhi + h.y * TAU));
     // Strukturierung aus dem Bild: Keime bleiben, wo das Motiv Kanten und Dunkel hat, auf leeren Flächen nur wenige (grosse Ebenen)
-    vec2 cu = UV(c / n); float Lc = lum(Kl(cu, 3.).rgb), Lg = lum(Kl(cu, 5.5).rgb);
-    float detail = clamp(abs(Lc - Lg) * 5. + (1. - Lc) * .35 + abs(Lc - .5) * .2, 0., 1.);
-    if (h12(g * 1.7 + uSeed + 9.) > mix(.3, 1., detail)) continue;
+    vec2 cu = UV(c / n); float Lc = lum(Kl(cu, 3.).rgb), Lg = uSparsam > .5 ? .5 : lum(Kl(cu, 5.5).rgb);
+    float detail = clamp(abs(Lc - Lg) * (uSparsam > .5 ? 1. : 5.) + (1. - Lc) * .35 + abs(Lc - .5) * .2, 0., 1.);
+    if (h12(g * 1.7 + uSeed + 9.) > mix(uSparsam > .5 ? .75 : .3, 1., detail)) continue;
     float d = dot(x - c, x - c);
     if (d < d1){ d2 = d1; c2 = c1; g2 = g1; d1 = d; c1 = c; g1 = g; } else if (d < d2){ d2 = d; c2 = c; g2 = g; }
   }
+  if (d2 > 1e2) return F;                                           // kein Nachbar gefunden (nur sparsam möglich): hier keine Ebene
   float k = uRes.y / 1350., ed = abs(dot(x - .5 * (c1 + c2), normalize(c2 - c1 + 1e-5))) / n * uRes.y;   // Abstand zur Kante in Pixeln
   vec2 hA = h22(g1 + uSeed * 5.3 + 17.), hB = h22(g1 + uSeed * 5.3 + 41.), m = c1 / n, v = p - m;
   float z1 = h12(g1 + uSeed + 3.), z2 = h12(g2 + uSeed + 3.);
@@ -101,7 +105,7 @@ export const EFFEKTE = {
     regler: [r("Wolke", .8), r("Punktgrösse", .45), r("Glitzer", .5), r("Streuung", .5)],
     // randlos (Wunsch vom 4. November 2026: «gar keine schwarzen Ränder, das Bild soll immer vollständig gefüllt sein»): die Teilchen
     // liegen auch in einem Saum rund um das Bild (RAND je Seite), der beim Treiben die Ränder nachfüllt; Dichte im Bild wie bisher
-    punkte: (w, a) => ({ cols: Math.round(400 * 1.7), rows: Math.round(400 / a * 1.7) }),
+    punkte: (w, a, h, d = 1) => { const n = 400 * Math.sqrt(d); return { cols: Math.round(n * 1.7), rows: Math.round(n / a * 1.7) }; },
     glsl: `void punkt(int id, out vec2 pos, out vec4 col, out float size){
   float i = float(id); vec2 g = vec2(mod(i, uCols), floor(i / uCols));
   vec2 j = h22(g + uSeed * 13.1), uv0 = (g + j) / vec2(uCols, uRows) * 1.7 - .35;   // RAND = .35
@@ -474,7 +478,7 @@ vec4 effekt(vec2 uv){
     regler: [r("Dichte", .5), r("Tempo", .4), r("Punktgrösse", .35), r("Wirbel", .3), r("Kanten", .6)],
     mischung: "add",
     // die Zahl der Teilchen folgt der Bildhöhe (kleine Vorschauen rechnen weniger), je Teilchen acht Punkte für den Schweif
-    punkte: (w, a, h) => { const c = Math.max(40, Math.round((110 + 100 * w[0]) * Math.sqrt(Math.min(1, h / 1000)))); return { cols: c * 8, rows: Math.round(c / a) }; },
+    punkte: (w, a, h, d = 1) => { const c = Math.max(d < 1 ? 24 : 40, Math.round((110 + 100 * w[0]) * Math.sqrt(Math.min(1, h / 1000) * d))); return { cols: c * 8, rows: Math.round(c / a) }; },
     glsl: `${FELD}
 void punkt(int id, out vec2 pos, out vec4 col, out float size){
   float i = float(id), cx = uCols / 8., xx = mod(i, uCols), j = mod(xx, 8.);
@@ -799,7 +803,7 @@ vec4 effekt(vec2 uv){
     glsl: `vec4 effekt(vec2 uv){
   vec2 p = P(uv);
   float auf = P2 * HZ(.5 - .5 * cos(uPhi));                 // an der Naht liegen alle Lagen auf den Umrissen: das Bild steht
-  float N = mix(3., 12., P0); int L = int(mix(6., 36., P1));
+  float N = mix(3., 12., P0); int L = int(mix(6., uSparsam > .5 ? 16. : 36., P1));   // Handy: höchstens 16 Lagen
   vec2 dA = lcurl(p * mix(1.2, 3.5, P3) + 1.7, .6) * .045 * (.4 + P3);
   vec2 dB = vec2(ln(p * 1.4 + 4., .5), ln(p * 1.4 + 9., .5)) * .32;
   float tw = ln(p * .7 + 2., .4) * 4. * P3;                 // die Fläche verdreht sich beim Aufklappen: Knitterfalten
@@ -831,7 +835,7 @@ vec4 effekt(vec2 uv){
     regler: [r("Blitze", .5), r("Länge", .6), r("Würfel", .5), r("Verästelung", .5), r("Kanten", .65), r("Glühen", .5)],
     mischung: "add",
     // je Zeile ein Strang aus 240 Punkten (doppelt: Kern und Schein); die ersten zwölf Zeilen sind die Kanten des Würfels
-    punkte: (w) => ({ cols: 480, rows: 12 + Math.round(12 + 42 * w[0]) }),
+    punkte: (w, a, h, d = 1) => ({ cols: 480, rows: 12 + Math.round((12 + 42 * w[0]) * Math.max(d, .4)) }),
     glsl: `${FELD}
 vec3 wDreh(vec3 v){
   float a = uPhi + .4, b = .55 + .25 * sin(uPhi);           // gleichmässig um die Hochachse, leicht nickend
@@ -894,12 +898,13 @@ void punkt(int id, out vec2 pos, out vec4 col, out float size){
   float N = mix(14., 46., P0), zf = (uLauf > .5 ? ln(vec2(2.3, 5.1), .6) : sin(uPhi)) * .9;   // die Schärfeebene zieht durch die Tiefe
   vec3 rot1 = vec3(.62, .03, .05), silber = vec3(.82, .84, .88);
   // Hintergrund: Rauch und ein Knäuel aus Fäden, dicht, wo das Bild Formen hat
-  float form = smoothstep(.12, .55, lum(Kl(uv, 5.).rgb) + .6 * sat(Kl(uv, 5.).rgb));
+  vec3 k5 = Kl(uv, 5.).rgb; float form = smoothstep(.12, .55, lum(k5) + .6 * sat(k5));
   float rauch = smoothstep(-.2, .7, lfbm(p * 2.2 + 3., .5)) * (.25 + .75 * form);
   vec3 col = vec3(.035, .03, .035) + vec3(.07, .06, .065) * rauch;
   if (uZeigen > .5) col += Ql(uv, 1.).rgb * .14;
   float fd = 0.;
   for (int l = 0; l < 3; l++){
+    if (uSparsam > .5 && l > 1) break;                      // Handy: zwei Lagen Fäden statt drei
     float fl = float(l), v = ln(rot(fl * 2.1) * p * (2.2 + fl * 1.3) + fl * 7., .7 + fl * .2);
     float e = abs(v) / max(fwidth(v), 1e-4);
     fd += (1. - smoothstep(.2, 1.1, e)) * (.55 - fl * .12);
@@ -911,7 +916,7 @@ void punkt(int id, out vec2 pos, out vec4 col, out float size){
   for (int y = -1; y <= 1; y++) for (int x = -1; x <= 1; x++){
     vec2 c = ci + vec2(x, y), h = h22(c + uSeed * 5.3);
     vec3 im = Kl(UV((c + .5) / N), 2.).rgb;
-    float fo = .45 * lum(im) + 2.2 * abs(lum(im) - lum(Kl(UV((c + .5) / N), 5.).rgb)) + .5 * sat(im);   // Form: hell, farbig oder abgesetzt vom Umfeld
+    float fo = .45 * lum(im) + (uSparsam > .5 ? .35 * lum(im) : 2.2 * abs(lum(im) - lum(Kl(UV((c + .5) / N), 5.).rgb))) + .5 * sat(im);   // Handy: ohne den zweiten Blick ins Umfeld   // Form: hell, farbig oder abgesetzt vom Umfeld
     float th = mix(.2, .9, P2), v = smoothstep(th - .12, th + .12, fo) * step(.08, h12(c * 1.9 + 4.));   // Perlen nur auf den Formen, die Fläche bleibt frei
     if (v < .02) continue;
     float pul = .5 + .5 * sin(uPhi * floor(1. + h.y * 2.) + h.x * TAU);
@@ -949,10 +954,12 @@ void punkt(int id, out vec2 pos, out vec4 col, out float size){
     name: "Physarum", herkunft: "PHORMA II: tausende Agenten eines Schleimpilzes riechen die Nahrung im Bild (Helligkeit und Kanten) und legen ein leuchtendes Netz auf seine Formen",
     regler: [r("Agenten", .5), r("Spur", .6), r("Nahrung", .7), r("Wandern", .35), r("Glühen", .5)],
     mischung: "add",
-    // je Agent 40 Punkte Spur; die Zahl folgt der Bildhöhe wie bei der Strömung
-    punkte: (w, a, h) => { const c = Math.max(24, Math.round((40 + 50 * w[0]) * Math.sqrt(Math.min(1, h / 1000)))); return { cols: c * 40, rows: Math.round(c / a) }; },
+    // je Agent 40 Punkte Spur; die Zahl folgt der Bildhöhe wie bei der Strömung. d: Dichte, auf Handys kleiner (motor.js, DICHTE_SPARSAM):
+    // die Physarum-Agenten tasten je Schritt neun Mal das Bild ab, mit allen Agenten hat das am 5. November 2026 die Grafik eines Handys umgeworfen
+    punkte: (w, a, h, d = 1) => { const c = Math.max(d < 1 ? 16 : 24, Math.round((40 + 50 * w[0]) * Math.sqrt(Math.min(1, h / 1000) * d))); return { cols: c * 40, rows: Math.round(c / a) }; },
     glsl: `float nahrung(vec2 uv){
   vec3 c = Kl(uv, 3.).rgb; float L = lum(c);
+  if (uSparsam > .5) return L;                              // Handy: nur die Helligkeit, ein Blick statt drei je Fühler
   vec3 c2 = Kl(uv, 1.5).rgb, c3 = Kl(uv, 4.5).rgb;
   return mix(L, abs(lum(c2) - lum(c3)) * 3. + L * .3, .45);   // hell und kantig ist Nahrung
 }
@@ -995,11 +1002,14 @@ void punkt(int id, out vec2 pos, out vec4 col, out float size){
     // Wunsch vom 5. November 2026: «varianten der strukturbildung …, nicht nur diese leuchten spuren»; der Regler «Struktur» geht von Netz (0)
     // über Adern (⅓) und Zellen (⅔) zur Membran (1), dazwischen blenden zwei Strukturen ineinander
     regler: [r("Struktur", 0), r("Dichte", .5), r("Nahrung", .55), r("Dicke", .5), r("Fluss", .5), r("Bild", .3)],
-    glsl: `float pNahr(vec2 uv){ vec3 c = Kl(uv, 2.5).rgb; return clamp(.6 * lum(c) + 2. * abs(lum(c) - lum(Kl(uv, 5.).rgb)) + .3 * sat(c), 0., 1.); }
+    glsl: `float pNahr(vec2 uv){ vec3 c = Kl(uv, 2.5).rgb; if (uSparsam > .5) return clamp(.9 * lum(c) + .5 * sat(c), 0., 1.);   // Handy: ein Blick ins Bild statt zwei
+  return clamp(.6 * lum(c) + 2. * abs(lum(c) - lum(Kl(uv, 5.).rgb)) + .3 * sat(c), 0., 1.); }
 // Voronoi auf einem Raster, dessen Keime nur dort bleiben, wo das Bild nährt: f1, f2 (Abstand zum nächsten und zweitnächsten Keim), Nahrung und Kennung des nächsten
+// R: Suchradius in Zellen; auf Handys (uSparsam) 1 statt 2, das sind 9 statt 25 Keime je Pixel (am 5. November 2026 stürzte die Grafik eines Handys ab)
 vec4 pVor(vec2 g, float N, float sk, out vec2 id){
   vec2 ci = floor(g); float f1 = 9., f2 = 9., fn = 0.; id = ci;
-  for (int y = -2; y <= 2; y++) for (int x = -2; x <= 2; x++){
+  int R = uSparsam > .5 ? 1 : 2;
+  for (int y = -R; y <= R; y++) for (int x = -R; x <= R; x++){
     vec2 c = ci + vec2(x, y), h = h22(c + sk + uSeed * 4.1);
     vec2 m = c + .5 + (h - .5) * .85 + .18 * vec2(ln(c * .23 + sk, .6), ln(c * .23 + 5. + sk, .6));
     float fv = pNahr(UV(m / N));
@@ -1025,7 +1035,7 @@ vec4 effekt(vec2 uv){
     licht += w0 * (t * fluss * (.3 + .7 * smoothstep(.1, .55, fo)) + kn);
   }
   if (w1 > 0.){                                            // Adern: drei Ordnungen, jede feiner, verzweigt wie in einem Blatt
-    vec2 id2, id3; vec4 v2 = pVor(g * 2.3 + 11., N * 2.3, 7., id2), v3 = pVor(g * 5.1 + 23., N * 5.1, 13., id3);
+    vec2 id2, id3; vec4 v2 = pVor(g * 2.3 + 11., N * 2.3, 7., id2), v3 = uSparsam > .5 ? vec4(0., 9., 0., 0.) : pVor(g * 5.1 + 23., N * 5.1, 13., id3);   // Handy: ohne die feinste Ordnung
     float a1 = 1. - smoothstep(.05 * dk, .05 * dk + px * 1.5, e);
     float a2 = (1. - smoothstep(.05 * dk, .05 * dk + px * 3.4, v2.y - v2.x)) * smoothstep(.1, .5, fo) * .7;
     float a3 = (1. - smoothstep(.06 * dk, .06 * dk + px * 7.6, v3.y - v3.x)) * smoothstep(.25, .7, fo) * .45;

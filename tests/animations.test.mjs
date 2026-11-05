@@ -156,3 +156,19 @@ test("Kubismus bei Druckraster und Höhenlinien: eigener Regler, ältere Mischun
   }
   for (const id of ["pinsel", "aquarell"]) assert.ok(!EFFEKTE[id], `${id} entfernt`);
 });
+
+test("Handy (5. November 2026: «Diese Seite braucht WebGL 2 … gestern gings noch»): kein Kontext wird erklärt, verlorener Kontext baut neu auf, ein kaputter Effekt hält die Seite nicht an, schwere Punkt-Effekte rechnen sparsam", () => {
+  const motor = lies("animations/motor.js"), seite = lies("animations/seite.js");
+  assert.match(motor, /function ohneKontext\(/);
+  assert.match(motor, /webglcontextlost[^]*preventDefault[^]*webglcontextrestored/);
+  assert.match(motor, /motor\.kaputt\.set\(id/);
+  assert.match(motor, /if \(!pr\) continue;/);
+  assert.match(motor, /def\.punkte\(w, a, h, motor\.sparsam \? DICHTE_SPARSAM : 1\)/);
+  assert.doesNotMatch(seite, /^const fehler = motor\.pruefen\(\)/m, "nicht mehr alle Effekte beim Start übersetzen");
+  for (const id of ["physarum", "blitze", "stroemung"]) {
+    const e = EFFEKTE[id]; if (!e) continue;
+    const voll = e.punkte([.9, .9, .9, .9, .9, .9], .8, 1350), wenig = e.punkte([.9, .9, .9, .9, .9, .9], .8, 1350, .3);
+    assert.ok(wenig.cols * wenig.rows < voll.cols * voll.rows * .7, id);
+    assert.deepEqual(e.punkte([.9, .9, .9, .9, .9, .9], .8, 1350, 1), voll, `${id}: auf dem Desktop unverändert`);
+  }
+});

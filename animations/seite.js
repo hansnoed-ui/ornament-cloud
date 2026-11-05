@@ -1,9 +1,9 @@
 // Animationen – die Seite: Mischpult (das eigene Bild, Grund, drei Ebenen, Schalter, Sichern) mit den gesicherten Werken darunter
 // (gestreutes Raster, beim Darüberfahren lebendig, Klick lädt ins Mischpult) und Info. Ein Motor zeichnet für alles; die sichtbare
 // Leinwand übernimmt sein Bild. Seit 4. November 2026 ohne Reel, Beispielbilder und vorgefertigte Werke.
-import { motorErstellen, videoErstellen, DAUER, LAENGEN, MODI } from "./motor.js?v=4";
-import { EFFEKTE, EFFEKT_IDS, stufe, wertVon } from "./effekte.js?v=4";
-import { zufall, EIGEN } from "./rezepte.js?v=4";
+import { motorErstellen, videoErstellen, DAUER, LAENGEN, MODI } from "./motor.js?v=6";
+import { EFFEKTE, EFFEKT_IDS, stufe, wertVon } from "./effekte.js?v=6";
+import { zufall, EIGEN } from "./rezepte.js?v=6";
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, attr = {}, ...kinder) => {
@@ -25,9 +25,21 @@ const datum = (iso) => { try { return new Date(iso).toLocaleDateString("de-CH", 
 const merken = (k, v) => { try { localStorage.setItem(k, v); } catch { /* privat */ } };
 const gemerkt = (k) => { try { return localStorage.getItem(k) ?? ""; } catch { return ""; } };
 
-let motor;
-try { motor = motorErstellen(); } catch (f) {
-  document.querySelector("main").replaceChildren(el("p", { class: "ohne-webgl", text: `Diese Seite braucht WebGL 2. ${f.message}` }));
+let motor, wiederTimer = 0;
+try {
+  motor = motorErstellen({
+    // Kontext verloren: der Motor wartet auf ihn und rechnet danach sparsam; kommt er nicht zurück, hilft nur neu laden
+    verloren: () => {
+      pultMeldung("Die Grafik des Geräts hat kurz ausgesetzt. Einen Moment …");
+      clearTimeout(wiederTimer);
+      wiederTimer = setTimeout(() => pultMeldung("Die Grafik kommt nicht zurück. Die Seite neu laden; hilft das nicht, den Browser ganz schliessen und neu öffnen."), 4000);
+    },
+    zurueck: () => { clearTimeout(wiederTimer); pultMeldung("Die Grafik läuft wieder, ab jetzt mit weniger Teilchen."); kachelnMalen(); },
+  });
+} catch (f) {
+  document.querySelector("main").replaceChildren(el("div", { class: "ohne-webgl" },
+    el("p", { text: `Diese Seite braucht WebGL 2. ${f.message}` }),
+    el("p", {}, el("button", { type: "button", text: "Neu laden", onclick: () => location.reload() }))));
   throw f;
 }
 
@@ -54,8 +66,11 @@ const zeit = () => S.laeuft ? (performance.now() - S.t0) / 1000 : S.tPause;
 const hatBild = () => motor.hatBild(S.mix.bild);
 
 // ——— Leinwand passend zur Anzeige (Bildschirmdichte, höchstens 1080 breit) ———
+// Drossel: braucht die Bühne zu lange für ein Bild (schwere Effekte auf schwacher Grafik), rechnet sie mit weniger Pixeln, bevor
+// die Grafik des Geräts aussetzt; nur die Anzeige, Standbild und MP4 bleiben in voller Grösse
+let drossel = 1, langsam = 0, letztesBild = 0;
 function aufloesung(c, max = 1080) {
-  const r = c.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2);
+  const r = c.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, motor.sparsam ? 1.5 : 2) * drossel;   // Handys: etwas weniger Pixel für die schweren Effekte
   const b = Math.max(40, Math.min(max, Math.round(r.width * d)));
   return [b, Math.round(b / fmt().ar)];
 }
@@ -419,9 +434,14 @@ async function herunterladen(stapel, name) {
 $("export-stop").addEventListener("click", () => { if (S.export) S.export.abbrechen = true; });
 
 // ——— Zeichnen ———
-function bild() {
+function bild(jetzt) {
   requestAnimationFrame(bild);
-  if (S.export || document.hidden || S.ansicht !== "mischpult") return;
+  const dt = jetzt - letztesBild; letztesBild = jetzt;
+  if (S.export || document.hidden || S.ansicht !== "mischpult") { langsam = 0; return; }
+  if (dt > 0 && dt < 2000) {   // längere Pausen kommen vom Wechsel aus dem Hintergrund, nicht vom Rechnen
+    langsam = dt > 120 ? langsam + 1 : 0;
+    if (langsam >= 3 && drossel > .35) { drossel = Math.max(.35, drossel * .7); langsam = 0; }
+  }
   const tt = zeit() % S.dauer;
   if (hatBild()) {
     malen($("pult-bild"), S.mix, tt);
@@ -429,12 +449,18 @@ function bild() {
     $("mischpult").style.setProperty("--p", tt / S.dauer);   // die Fortschrittslinie unter der Bühne
   }
   if (S.live) malen(S.live.c, S.live.stapel, ((performance.now() - S.live.t0) / 1000) % DAUER, kachelGr(S.live.stapel), wieEs);
+  if (motor.kaputt.size !== kaputtGemeldet) {   // ein Effekt, den dieses Gerät nicht übersetzen kann, bleibt leer; die anderen laufen weiter
+    kaputtGemeldet = motor.kaputt.size;
+    const namen = [...motor.kaputt.keys()].map((id) => `«${EFFEKTE[id].name}»`).join(", ");
+    if (namen) pultMeldung(`${namen} lässt sich auf diesem Gerät nicht rechnen und bleibt leer. Die anderen Effekte gehen.`);
+  }
 }
+let kaputtGemeldet = 0;
 
 // ——— Start ———
-const fehler = motor.pruefen();
-if (fehler.length) console.error(fehler.join("\n"));
-window.animationen = { motor, S, fehler, zufall, werkeLaden };
+// die Effekte werden erst übersetzt, wenn sie gebraucht werden (früher alle beim Start: auf Handys langsam und unnötig);
+// window.animationen.motor.pruefen() übersetzt alle und gibt die Fehler zurück
+window.animationen = { motor, S, zufall, werkeLaden };
 const start = ausAdresse();
 standText();
 await werkeLaden();
