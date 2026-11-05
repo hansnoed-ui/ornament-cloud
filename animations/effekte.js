@@ -1057,12 +1057,20 @@ void punkt(int id, out vec2 pos, out vec4 col, out float size){
 
   traube: {
     name: "Traube", herkunft: "PHORMA III: glänzende Perlen wachsen auf den hellen Formen des Bildes zu Trauben, dazwischen ein Knäuel aus feinen Fäden, Rauch und ein wandernder Schärfenzug",
+    // seit 5. November 2026 (Christian: «beim effekt traube gibt es keine bewegung … noch etwas mehr spiegelung in den einzelnen trauben wäre toll»):
+    // das Licht kreist einmal je Schlaufe um die Trauben, sodass der Glanz über jede Perle wandert; die Perlen wiegen sich wie hängende Trauben
+    // (kleiner Kreis je Perle plus das langsame Rauschen) und wachsen bei «Hin und zurück» gestaffelt aus den Formen; jede Perle spiegelt ihre
+    // Umgebung (das Bild, gespiegelt und verkleinert), dazu ein zweiter Glanzpunkt, ein weicher Fensterfleck und ein heller Rand
     regler: [r("Perlen", .55), r("Grösse", .6), r("Schwelle", .35), r("Fäden", .5), r("Schärfe", .35), r("Rot", .7)],
     glsl: `vec4 effekt(vec2 uv){
   vec2 p = P(uv); float px = 1. / uRes.y;
   float N = mix(14., 46., P0), zf = (uLauf > .5 ? ln(vec2(2.3, 5.1), .6) : sin(uPhi)) * .9;   // die Schärfeebene zieht durch die Tiefe
+  float env = HZ(.5 - .5 * cos(uPhi));                       // Hin und zurück: die Trauben wachsen aus dem Bild und ziehen sich zurück
   vec3 rot1 = vec3(.62, .03, .05), silber = vec3(.82, .84, .88);
-  // Hintergrund: Rauch und ein Knäuel aus Fäden, dicht, wo das Bild Formen hat
+  // Licht: kreist einmal je Schlaufe, dazu ein zweites, kleineres Fensterlicht gegenüber
+  vec3 Ld = normalize(vec3(.8 * cos(uPhi), .8 * sin(uPhi) + .2, .62));
+  vec3 L2 = normalize(vec3(-.6 * cos(uPhi + 2.3), -.6 * sin(uPhi + 2.3), .95));
+  // Hintergrund: Rauch und ein Knäuel aus Fäden, dicht, wo das Bild Formen hat; die Fäden treiben auf einem kleinen Kreis durch die Schlaufe
   vec3 k5 = Kl(uv, 5.).rgb; float form = smoothstep(.12, .55, lum(k5) + .6 * sat(k5));
   float rauch = smoothstep(-.2, .7, lfbm(p * 2.2 + 3., .5)) * (.25 + .75 * form);
   vec3 col = vec3(.035, .03, .035) + vec3(.07, .06, .065) * rauch;
@@ -1070,7 +1078,9 @@ void punkt(int id, out vec2 pos, out vec4 col, out float size){
   float fd = 0.;
   for (int l = 0; l < 3; l++){
     if (uSparsam > .5 && l > 1) break;                      // Handy: zwei Lagen Fäden statt drei
-    float fl = float(l), v = ln(rot(fl * 2.1) * p * (2.2 + fl * 1.3) + fl * 7., .7 + fl * .2);
+    float fl = float(l);
+    vec2 q = p + .18 * vec2(cos(uPhi + fl * 2.), sin(uPhi + fl * 2.));
+    float v = ln(rot(fl * 2.1) * q * (2.2 + fl * 1.3) + fl * 7., .7 + fl * .2);
     float e = abs(v) / max(fwidth(v), 1e-4);
     fd += (1. - smoothstep(.2, 1.1, e)) * (.55 - fl * .12);
   }
@@ -1084,10 +1094,12 @@ void punkt(int id, out vec2 pos, out vec4 col, out float size){
     float fo = .45 * lum(im) + (uSparsam > .5 ? .35 * lum(im) : 2.2 * abs(lum(im) - lum(Kl(UV((c + .5) / N), 5.).rgb))) + .5 * sat(im);   // Handy: ohne den zweiten Blick ins Umfeld   // Form: hell, farbig oder abgesetzt vom Umfeld
     float th = mix(.2, .9, P2), v = smoothstep(th - .12, th + .12, fo) * step(.08, h12(c * 1.9 + 4.));   // Perlen nur auf den Formen, die Fläche bleibt frei
     if (v < .02) continue;
-    float pul = .5 + .5 * sin(uPhi * floor(1. + h.y * 2.) + h.x * TAU);
-    vec2 m = c + .5 + (h - .5) * .7 + .12 * vec2(ln(c * .3, .5), ln(c * .3 + 4., .5));
     float hr = h12(c + 7.);
-    float R = min((.22 + .5 * hr * hr) * mix(.6, 1.5, P1) * (.55 + .45 * v) * (1. + .18 * pul), .95);   // der Puls lässt sie schwellen
+    float wach = smoothstep(h.x * .5, h.x * .5 + .4, env);  // gestaffelt: jede Perle hat ihren Moment zum Wachsen; im Durchlauf sind alle da
+    float pul = .5 + .5 * sin(uPhi * floor(1. + h.y * 2.) + h.x * TAU);
+    vec2 schwung = vec2(cos(uPhi + h.x * TAU), sin(uPhi + h.x * TAU)) * (.05 + .1 * hr);   // hängende Trauben wiegen sich, jede auf ihrem Kreis
+    vec2 m = c + .5 + (h - .5) * .7 + .2 * vec2(ln(c * .3, .8), ln(c * .3 + 4., .8)) + schwung;
+    float R = min((.22 + .5 * hr * hr) * mix(.6, 1.5, P1) * (.55 + .45 * v) * (1. + .14 * pul), .95) * mix(.2, 1., wach);   // der Puls lässt sie schwellen
     float z = (h.y - .5) * 2.4 + (lum(im) - .5) * .8;
     pl[n] = vec4(m, R, z); pc[n] = im; n++;
   }
@@ -1095,7 +1107,6 @@ void punkt(int id, out vec2 pos, out vec4 col, out float size){
     if (b + 1 >= n) break;
     if (pl[b].w > pl[b + 1].w){ vec4 t = pl[b]; pl[b] = pl[b + 1]; pl[b + 1] = t; vec3 tc = pc[b]; pc[b] = pc[b + 1]; pc[b + 1] = tc; }
   }
-  vec3 Ld = normalize(vec3(-.55, .6, .6));
   for (int k = 0; k < 9; k++){
     if (k >= n) break;
     vec2 d = g - pl[k].xy; float R = pl[k].z, dd = length(d);
@@ -1105,9 +1116,20 @@ void punkt(int id, out vec2 pos, out vec4 col, out float size){
     vec2 e = d / R; float r2 = min(dot(e, e), .999);
     vec3 nn = vec3(e, sqrt(1. - r2));
     vec3 basis = uZeigen > .5 ? mix(pc[k] / max(max(pc[k].r, max(pc[k].g, pc[k].b)), .1) * .7, rot1, P5) : mix(silber * .55, rot1, P5);
-    float dif = max(dot(nn, Ld), 0.), sp = pow(max(dot(reflect(-Ld, nn), vec3(0., 0., 1.)), 0.), 36.), gl = pow(max(dot(reflect(-Ld, nn), vec3(0., 0., 1.)), 0.), 4.);
-    float rand = pow(1. - nn.z, 3.);
-    vec3 pcol = basis * (.12 + .9 * dif) + vec3(1.) * (sp * 1.2 + gl * .12) + basis * rand * .9;
+    float dif = max(dot(nn, Ld), 0.);
+    vec3 rv = reflect(vec3(0., 0., -1.), nn);              // Blickrichtung an der Perle gespiegelt
+    float fres = pow(1. - nn.z, 3.5);                      // am Rand spiegelt Glas am stärksten, der Saum bleibt schmal
+    // Spiegelung der Umgebung: das Bild erscheint verkleinert und gespiegelt in jeder Perle (mit «Bild zeigen: aus» nur der Grund)
+    vec3 umg = Ql(UV((pl[k].xy + rv.xy * R * 1.6) / N), 1.5).rgb;
+    float sp = pow(max(dot(reflect(-Ld, nn), vec3(0., 0., 1.)), 0.), 64.);   // scharfer Glanzpunkt des wandernden Lichts
+    float sp2 = pow(max(dot(reflect(-L2, nn), vec3(0., 0., 1.)), 0.), 24.);  // zweites, weicheres Licht
+    float gl = pow(max(dot(reflect(-Ld, nn), vec3(0., 0., 1.)), 0.), 5.);
+    vec2 fw = (nn.xy - Ld.xy * .45) * rot(.7) / vec2(.42, .2);
+    float fenster = exp(-dot(fw, fw) * 1.8) * (.6 + .4 * nn.z);   // ein länglicher, weicher Lichtfleck wie ein Fenster im Glas
+    vec3 tinte = mix(vec3(1.), basis / max(max(basis.r, max(basis.g, basis.b)), .1), .55);   // die Spiegelung trägt die Farbe der Traube, sonst wirkt sie wie eine Seifenblase
+    vec3 pcol = basis * (.1 + .85 * dif) + basis * fres * .8 + silber * fres * .2
+      + umg * tinte * (.28 + .7 * fres) * (uZeigen > .5 ? 1. : .5)
+      + vec3(1.) * (sp * 1.8 + sp2 * .55 + gl * .14 + fenster * .38);
     pcol *= mix(1., .55, smoothstep(0., .6, bl / R));       // unscharfe Perlen werden weicher und dunkler
     col = mix(col, pcol, cov);
   }
