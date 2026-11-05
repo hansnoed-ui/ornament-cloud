@@ -1130,6 +1130,9 @@ vec4 effekt(vec2 uv){
   lichtformen: {
     name: "Lichtformen", herkunft: "Licht aus den Formen des Bildes: glühende Kanten, Kaustiken wie Licht durch Wasser, Strahlenbündel, die aus den hellen Formen brechen, prismatische Säume oder Lichtschleier entlang der Konturen",
     // Wunsch vom 5. November 2026: «gibt es noch differenzierte lichtformen? … als effekt der sich auf die formen im bild bezieht»
+    // seit 5. November 2026 (abends, Rückmeldung: «die lichtformen dürften noch etwas feingliedriger sein»): dünne Kerne statt dicker Kanten,
+    // dazu haarfeine Linien gleicher Helligkeit in den Formen; die Kaustik als feineres Netz aus drei Lagen schmaler Grate; schmalere Strahlen;
+    // enge Farbsäume am Prisma; der Schleier aus einzelnen feinen Fäden statt Flächen
     regler: [w("Form", ["Glühkanten", "Kaustik", "Strahlen", "Prisma", "Schleier"]), r("Stärke", .6), r("Schwelle", .45), r("Bewegung", .5), r("Wärme", .25), r("Bild", .2)],
     glsl: `${FELD}
 vec3 lfSpek(float h){ return clamp(abs(fract(h + vec3(0., 2., 1.) / 3.) * 6. - 3.) - 1., 0., 1.); }
@@ -1140,16 +1143,21 @@ vec4 effekt(vec2 uv){
   if (uZeigen > .5) lc = mix(lc, min(Kl(uv, 1.).rgb * 1.5 + .1, 1.), .55);   // mit Bild: das Licht nimmt seine Farben an
   vec3 L = vec3(0.);
   if (f == 0){                                              // Glühkanten: ein scharfer Kern auf den Kanten, darum ein weiter Hof; ein Puls läuft die Höhenstufen entlang
-    float e1 = length(feldG(uv, 1., 2.)), e3 = length(feldG(uv, 3.5, 6.));
-    float lauf = .55 + .45 * sin(lum(Kl(uv, 2.).rgb) * 22. - uPhi * tempo) * P3;
-    L = lc * (smoothstep(thr, thr * 3., e1) * (.55 + .45 * lauf) * 1.1 + pow(smoothstep(thr * .15, thr * 2., e3), 1.5) * .75 * (.7 + .3 * lauf)) * st;
+    float e0 = length(feldG(uv, .5, 1.2)), e3 = length(feldG(uv, 2.5, 5.));
+    float h = lum(Kl(uv, 1.5).rgb);
+    float lauf = .55 + .45 * sin(h * 22. - uPhi * tempo) * P3;
+    float kern = smoothstep(thr * 1.2, thr * 3., e0);                                           // dünner Kern auf der Kante
+    float hof = pow(smoothstep(thr * .2, thr * 2.5, e3), 2.) * .3;                               // schmaler Hof
+    float iso = h * 36. + ln(p * 3., .5) * 1.2, ia = fwidth(iso) + 1e-4;                         // haarfeine Linien gleicher Helligkeit in den Formen
+    float adern = exp(-pow((abs(fract(iso + .5) - .5)) / (ia * 1.1), 2.)) * smoothstep(thr * .1, thr * 1.2, e3) * .55;
+    L = lc * (kern * (.55 + .45 * lauf) * 1.1 + hof * (.7 + .3 * lauf) + adern * (.6 + .4 * lauf)) * st;
   } else if (f == 1){                                       // Kaustik: Licht durch bewegtes Wasser, gebrochen an den Formen des Bildes und hell, wo das Bild hell ist
     vec2 g3 = feldG(uv, 3., 6.);
-    vec2 q = p * mix(5., 11., P1) + g3 * .012;
-    float c1 = 1. - abs(ln(q, .7)), c2 = 1. - abs(ln(q * 1.7 + 5.3, .9));
-    float c = pow(c1, 7.) + pow(c2, 9.) * .7 + pow(min(c1, c2), 4.) * .6;   // zwei Lagen schmaler Grate: das Netz der Kaustik
+    vec2 q = p * mix(9., 18., P1) + g3 * .012;
+    float c1 = 1. - abs(ln(q, .7)), c2 = 1. - abs(ln(q * 1.7 + 5.3, .9)), c3 = 1. - abs(ln(q * 2.9 + 11.1, 1.1));
+    float c = pow(c1, 14.) + pow(c2, 18.) * .7 + pow(c3, 22.) * .5 + pow(min(c1, c2), 7.) * .5;   // drei Lagen schmaler Grate: ein feines Netz
     float hell = smoothstep(mix(.05, .6, P2), 1., lum(Kl(uv, 2.).rgb)) + .5 * smoothstep(thr * .3, thr * 2., length(g3));
-    L = lc * c * hell * 1.3;
+    L = lc * c * hell * .8;
   } else if (f == 2){                                       // Strahlenkranz: die Umrisse werfen feine Strahlen nach aussen, weg von der Mitte des Lichts
     vec2 zm = vec2(.5 + .05 * cos(uPhi), .52 + .04 * sin(uPhi)), d = uv - zm;
     float ang = atan(d.y * 1.25, d.x * A()), acc = 0., dec = 1.;
@@ -1160,28 +1168,30 @@ vec4 effekt(vec2 uv){
       float k = abs(lum(Kl(q, 1.5).rgb) - lum(Kl(q, 4.).rgb)) * 5.;
       acc += smoothstep(mix(.1, .6, P2), 1., k) * dec; dec *= .92;
     }
-    float streif = .35 + .65 * pow(.5 + .5 * ln(vec2(ang * 18., 1.), .8 * P3 + .05), 2.);
-    L = lc * acc * .2 * st * streif;
+    float streif = .15 + .85 * pow(.5 + .5 * ln(vec2(ang * 60., 1.), .8 * P3 + .05), 4.) * (.5 + .5 * pow(.5 + .5 * ln(vec2(ang * 190., 3.), .5), 3.));   // viele schmale Strahlen
+    L = lc * acc * .26 * st * streif;
   } else if (f == 3){                                       // Prisma: die Kanten zerlegen sich in Spektralfarben, Rot und Blau liegen versetzt
-    vec2 g3 = feldG(uv, 3., 6.), o = normalize(g3 + 1e-5) / vec2(A(), 1.) * .006 * st;
-    float eR = smoothstep(thr, thr * 2.5, length(feldG(uv - o, 1.5, 3.)));
-    float eG = smoothstep(thr, thr * 2.5, length(feldG(uv, 1.5, 3.)));
-    float eB = smoothstep(thr, thr * 2.5, length(feldG(uv + o, 1.5, 3.)));
+    vec2 g3 = feldG(uv, 3., 6.), o = normalize(g3 + 1e-5) / vec2(A(), 1.) * .0028 * st;
+    float eR = smoothstep(thr * 1.3, thr * 3., length(feldG(uv - o, .6, 1.4)));                  // enge Säume: die Kanten fein gelesen
+    float eG = smoothstep(thr * 1.3, thr * 3., length(feldG(uv, .6, 1.4)));
+    float eB = smoothstep(thr * 1.3, thr * 3., length(feldG(uv + o, .6, 1.4)));
     float hue = atan(g3.y, g3.x) / TAU + uT * tempo + lum(Kl(uv, 2.).rgb) * .5;
-    L = (vec3(eR, eG, eB) * .9 + lfSpek(hue) * max(eR, max(eG, eB)) * .6 + lfSpek(hue) * smoothstep(thr * .3, thr * 2., length(g3)) * .25) * st;
+    L = (vec3(eR, eG, eB) * .85 + lfSpek(hue) * max(eR, max(eG, eB)) * .5 + lfSpek(hue) * smoothstep(thr * .3, thr * 2., length(g3)) * .1) * st;
   } else {                                                  // Schleier: feine Lichtfäden, die den Konturen folgen und durch sie ziehen
-    vec2 g3 = feldG(uv, 3., 6.), t = normalize(vec2(-g3.y, g3.x) + 1e-5);
-    float hof = smoothstep(thr * .1, thr * .9, length(g3)), v = 0.;
+    vec2 g3 = feldG(uv, 3., 6.), t = normalize(vec2(-g3.y, g3.x) + 1e-5), nrm = vec2(-t.y, t.x);
+    float hof = smoothstep(thr * .1, thr * 1.2, length(g3)), v = 0.;
     int S = uSparsam > .5 ? 8 : 16;
     for (int i = 0; i < 16; i++){
       if (i >= S) break;
       float fi = float(i) / float(S) - .5;
-      vec2 q = p + t * fi * .08;
-      v += ln(q * vec2(70.), .9);
+      vec2 q = p + t * fi * .06;
+      vec2 lok = vec2(dot(q, t) * 14., dot(q, nrm) * 230.);                                      // entlang der Kontur gestreckt: lange feine Fäden
+      float n1 = 1. - abs(ln(lok, .9)), n2 = 1. - abs(ln(lok * vec2(1.3, 2.1) + 7., 1.1));
+      v += pow(n1, 10.) + pow(n2, 14.) * .6;
     }
-    v = abs(v / float(S)) * 4.;
-    float faden = smoothstep(.25, .8, v);
-    L = lc * (faden * 1.6 + .15) * hof * st;
+    v /= float(S);
+    float faden = smoothstep(.04, .5, v);
+    L = lc * (faden * 1.5 + .06) * hof * st;
   }
   vec3 grund = uZeigen > .5 ? Ql(uv, 0.).rgb * P5 : vec3(.02, .022, .03);
   return vec4(clamp(grund + L, 0., 1.), 1.);
