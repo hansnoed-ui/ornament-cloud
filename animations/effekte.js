@@ -140,29 +140,6 @@ export const EFFEKTE = {
 }`,
   },
 
-  metaballs: {
-    name: "Metaballs", herkunft: "Punktbild: Punkte fliessen als Tropfen zusammen und auseinander",
-    regler: [r("Raster", .4), r("Fluss", .6), r("Wildheit", .4), r("Schwelle", .45)],
-    glsl: `vec4 effekt(vec2 uv){
-  float N = mix(14., 60., P0);
-  vec2 q = P(uv) * N, ci = floor(q);
-  float f = 0.; vec3 cs = vec3(0.);
-  for (int y = -2; y <= 2; y++) for (int x = -2; x <= 2; x++){
-    vec2 c = ci + vec2(x, y), h = h22(c + uSeed * 3.7);
-    vec3 im = Kl(UV((c + .5) / N), 1.).rgb;
-    float v = uZeigen > .5 ? max(lum(im), sat(im)) : smoothstep(.5, .9, 1. - lum(im)) + sat(im);   // ohne Bild: Tropfen sammeln sich im Dunklen
-    if (uZeigen < .5) im = vec3(.95, .925, .9);   // ohne Bild: Tropfen aus dem Bild geformt, aber einfarbig
-    float fx = floor(1. + h.x * 2.), fy = floor(1. + h.y * 2.);
-    vec2 m = c + .5 + P1 * .8 * vec2(cos(uPhi * fx + h.x * TAU), sin(uPhi * fy + h.y * TAU));
-    float rr = (.18 + .5 * v) * (1. + P2 * (h.y - .5) * 1.8) * (1. + .25 * P2 * sin(uPhi * fx + h.y * 9.));
-    vec2 d = q - m; float w = rr * rr / (dot(d, d) + .02) * (uZeigen > .5 ? step(.04, v) : smoothstep(.15, .45, v));
-    f += w; cs += im * w;
-  }
-  vec3 col = cs / max(f, 1e-4);
-  float thr = mix(.5, 1.6, P3), e = smoothstep(thr * .9, thr * 1.1, f);
-  return vec4(col * e, e);
-}`,
-  },
 
   wasserglas: {
     name: "Wasserglas", herkunft: "Paper Shaders: Wasser, dann geriffeltes Glas, Stärke 0 → max → 0",
@@ -183,27 +160,6 @@ export const EFFEKTE = {
 }`,
   },
 
-  wirbel: {
-    name: "Wirbel", herkunft: "Punktbild: Punkte wirbeln über die ganze Fläche zu Spiralarmen und zurück",
-    regler: [r("Raster", .45), r("Wirbel", .6), r("Arme", .5), r("Punktgrösse", .6), r("Drehungen", .5)],
-    glsl: `vec4 effekt(vec2 uv){
-  vec2 p = P(uv); float rr = length(p), th = atan(p.y, p.x), env = HZ(.5 - .5 * cos(uPhi));
-  float arme = floor(2. + P2 * 4.);
-  float r2 = rr * (1. + .18 * P2 * env * sin(arme * th + rr * 8.));
-  // Drehungen: unter einem Drittel wickelt sich der Wirbel auf und wieder ab (vor und zurück), sonst steht er
-  // und dreht sich als Ganzes ein- oder zweimal pro Schlaufe (Wunsch vom 3. November 2026: «kann er eine ganze Drehung machen?»)
-  float n = max(floor(P4 * 2.999), uLauf);   // Durchlauf: der Wirbel dreht sich, statt sich auf- und abzuwickeln
-  float tw = n < .5 ? env : .85;
-  vec2 ps = rot(P1 * tw * 5. / (rr + .25) + n * uPhi) * vec2(cos(th), sin(th)) * r2;
-  float N = mix(28., 110., P0);
-  vec2 g = ps * N, cell = floor(g) + .5;
-  vec3 im = Kl(UV(cell / N), 1.).rgb;
-  float rad = mix(.12, .52, clamp(max(lum(im), .2) * (.4 + P3 * 1.4), 0., 1.));
-  if (uZeigen < .5) im = vec3(.95, .925, .9);
-  float aa = 1.5 * N / uRes.y, m = smoothstep(rad + aa, rad - aa, length(g - cell));
-  return vec4(im * m, m);
-}`,
-  },
 
   fluid: {
     name: "Tusche-Fluid", herkunft: "Fluid Distortion: das Bild treibt im Strömungsfeld, Regenbogensäume an den Schlieren",
@@ -238,81 +194,8 @@ export const EFFEKTE = {
 }`,
   },
 
-  linien: {
-    name: "Linien", herkunft: "Linien-Dissolve: Punktlinien zerfasern nach rechts im Rauschen, dicker heisst dunkler",
-    regler: [r("Linien", .5), r("Zerfall", .7), r("Rauschen", .5), r("Tinte", .5)],
-    punkte: (w) => ({ cols: 420, rows: Math.round(50 + w[0] * 100) }),
-    glsl: `void punkt(int id, out vec2 pos, out vec4 col, out float size){
-  float i = float(id), x = mod(i, uCols), y = floor(i / uCols);
-  vec2 uv0 = vec2((x + .5) / uCols, (y + .5) / uRows);
-  float s = pow(smoothstep(.2, 1., uv0.x), 2.) * P1;   // links ruhig, nach rechts zerfasert
-  vec2 p0 = P(uv0);
-  vec2 d = vec2(ln(p0 * 3. + vec2(0., y * .37), .8), ln(p0 * 3. + vec2(9.1, y * .37), .8));
-  pos = p0 + d * s * .22 * (.5 + P2) + vec2(s * .04, 0.);
-  vec4 c = Kl(uv0, 1.5);
-  if (uZeigen < .5) c.rgb = vec3(lum(c.rgb));
-  float L = lum(c.rgb), D = smoothstep(.1, .9, P3 > .5 ? L : 1. - L);   // dicker heisst dunkler (bei weisser Tinte heller)
-  size = max(1., uRes.y / uRows * .9 * (.12 + .95 * D) * (1. - .55 * s));
-  vec3 ct = uZeigen > .5 ? c.rgb : vec3(step(.5, P3));   // ohne Bild: reine Tinte, nur die Strichstärke kommt aus dem Bild
-  vec3 tinte = P3 < .5 ? mix(vec3(0.), ct, P3 * 2.) : mix(ct, vec3(1.), P3 * 2. - 1.);
-  float al = 1. - .6 * s;
-  col = vec4(tinte * al, al);
-}`,
-  },
 
-  tusche: {
-    name: "Tuscheblasen", herkunft: "Infinite Mantra: farblose Blasen suchen die Formen des Bildes, wölben, drehen und brechen sie",
-    // seit 3. November 2026 ohne eigene Farbe (Wunsch: «ich möchte dass sie das bild darunter transformieren, aber selber farblos bleiben»):
-    // Membran als Linse, Kern dreht, Adern wellen, Rand bricht nach aussen; die Kontur hellt oder dunkelt nur, in Grau
-    regler: [r("Anzahl", .5), r("Grösse", .5), r("Atmen", .6), r("Verzerrung", .7), r("Kontur", .25)],
-    glsl: `${BLASE}
-vec4 effekt(vec2 uv){
-  vec2 p = P(uv), off = vec2(0.);
-  float kontur = 0.; int n = int(mix(4., 14., P0));
-  for (int i = 0; i < 14; i++){
-    if (i >= n) break;
-    vec2 c; float R, fo; blase(i, P1, P2, c, R);
-    c = zumBild(c, 1., fo); R *= mix(.75, 1.3, clamp(fo, 0., 1.));      // die Blasen wölben das Motiv, nicht den leeren Grund
-    vec2 v = (p - c) / R; float d = length(v);
-    if (d > 1.15) continue;
-    float fi = float(i), innen = 1. - smoothstep(.96, 1.04, d);
-    vec2 o = -v * R * (1. - d * d) * .45 * innen;                                   // Linse: zur Mitte hin vergrössert
-    vec2 kc = vec2(cos(fi * 2.3 + uPhi), sin(fi * 2.3 + uPhi)) * .35, w = v - kc;
-    float kern = exp(-dot(w, w) * 6.);
-    o += (rot(1.8 * kern * sin(uPhi + fi)) * w - w) * R * innen;                    // Kern: dreht das Bild
-    o += vec2(ln(v * 2.5 + fi, .5), ln(v * 2.5 + fi + 4., .5)) * R * .06 * innen;   // Adern: feine Wellen
-    float rand = exp(-pow((d - 1.) * 14., 2.));
-    o += normalize(v + 1e-5) * R * .08 * rand;                                       // Rand: Brechung nach aussen
-    off += o; kontur += rand;
-  }
-  vec3 col = Q(UV(p + off * P3 * 1.4)).rgb;
-  float det = .2 + .8 * smoothstep(.02, .15, abs(lum(Kl(uv, 1.).rgb) - lum(Kl(uv, 4.).rgb)));   // die Kontur zeichnet sich nur im Motiv ab, nicht auf leerem Grund
-  return vec4(col * (1. - P4 * .45 * clamp(kontur, 0., 1.) * det), 1.);
-}`,
-  },
 
-  linsen: {
-    name: "Glaslinsen", herkunft: "dunkles Gemälde: leuchtende Linsen setzen sich auf die Formen des Bildes und brechen sie mit Farbsäumen, das Bild strömt mit",
-    regler: [r("Anzahl", .6), r("Grösse", .5), r("Brechung", .7), r("Strömung", .6)],
-    glsl: `${BLASE}
-vec4 effekt(vec2 uv){
-  vec2 p = P(uv), pb = p + lcurl(p * 1.6, .7) * .012 * P3;
-  vec3 col = Q(UV(pb)).rgb; int n = int(mix(4., 15., P0));
-  for (int i = 0; i < 15; i++){
-    if (i >= n) break;
-    vec2 c; float R, fo; blase(i, P1, .6, c, R);
-    c = zumBild(c, 1., fo); R *= mix(.75, 1.3, clamp(fo, 0., 1.));      // die Linsen suchen die Formen des Bildes
-    vec2 v = (p - c) / R; float d = length(v);
-    if (d > 1.) continue;
-    float w = smoothstep(1., .55, d), mag = mix(1., .62 + .25 * d * d, P2), ca = .012 * P2 * d;
-    vec2 pr = c + (pb - c) * mag, dir = normalize(v + 1e-5);
-    vec3 lins = vec3(Q(UV(pr + dir * ca)).r, Q(UV(pr)).g, Q(UV(pr - dir * ca)).b);
-    vec3 hof = Kl(UV(c), 3.).rgb * pow(1. - d, 2.) * (uZeigen > .5 ? .5 : 1.1);   // die Linse leuchtet in der Farbe des Bildes
-    col = mix(col, 1. - (1. - lins) * (1. - hof), w);
-  }
-  return vec4(col, 1.);
-}`,
-  },
 
   glitzer: {
     name: "Glitzer-Morph", herkunft: "Rosen: Wirbel drehen und atmen, das Bild bricht in Pailletten aus seinen eigenen Farben, die im Licht kippen und funkeln, ein Glanzband zieht darüber",
@@ -431,6 +314,8 @@ vec4 effekt(vec2 uv){
   // Kanten und Strömung (die Senkrechte zum Gradienten folgt den Konturen und ist quellenfrei) und die Farben als Druckauszüge.
 
   // Pinselstrom und Aquarell entfernt am 5. November 2026 (Wunsch: «Der pinseleffekt kann weg», «Ebenso: aquarell»)
+  // Metaballs, Wirbel, Linien, Tuscheblasen, Glaslinsen, Röntgen-Scan und Papierriss entfernt am 5. November 2026
+  // (Wunsch: «also wir nehme jetzt wieder raus: metaballs, wirbel, linien, tuscheblasen, glaslinsen, röntgenstrahl, papierriss»)
 
   raster: {
     name: "Druckraster", herkunft: "Halbton: vier gedrehte Raster wie im Offsetdruck, Punkte verschmelzen als Distanzfelder im Dunkeln und atmen in Wellen",
@@ -563,36 +448,6 @@ void punkt(int id, out vec2 pos, out vec4 col, out float size){
   },
   // ——— drei weitere nach Christians Stichworten vom 4. November 2026: «röntgen/laserscan, krasse montagen, absolut aktuelle prozess-visualisierung»
 
-  roentgen: {
-    name: "Röntgen-Scan", herkunft: "Röntgen und LiDAR: das Bild durchleuchtet (Dichte und Kanten), ein Laser fährt darüber und hinterlässt Höhenprofile",
-    regler: [r("Durchleuchtung", .6), r("Scanlinien", .5), r("Höhe", .5), r("Spur", .5), r("Farbe", .3)],
-    glsl: `${FELD}
-vec4 effekt(vec2 uv){
-  float k = uRes.y / 1350.;
-  float L = hoehe(uv, 1.), det = hoehe(uv, .5) - hoehe(uv, 3.5), ek = length(feldG(uv, 1., 2.));
-  float xr = clamp(.05 + .5 * pow(L, 1.3) + (1.6 * abs(det) + smoothstep(2., 30., ek) * .45) * (.4 + P0), 0., 1.);
-  vec3 film = vec3(.5, .8, 1.) * xr;
-  if (uZeigen > .5) film = mix(film, Ql(uv, 1.).rgb * (.35 + xr), P4);
-  film += (h12(floor(uv * uRes) + floor(uT * 360.)) - .5) * .05;      // Filmkorn
-  // Laser: fährt hinunter und wieder hinauf; hinter ihm bleiben Höhenprofile (Scanlinien, um die Bildhöhe nach oben verschoben)
-  // Durchlauf: der Laser fährt immer von oben nach unten und setzt oben wieder an
-  float ly = uLauf > .5 ? mix(1.06, -.06, uT) : mix(-.06, 1.06, .5 + .5 * cos(uPhi)), dv = uLauf > .5 ? 1. : -sin(uPhi), hinter = (uv.y - ly) * sign(dv) * -1.;
-  float spur = exp(-max(hinter, 0.) / mix(.08, .7, P3)) * step(0., hinter) * smoothstep(0., .25, abs(dv));
-  float sp = mix(16., 5., P1) * k, amp = mix(4., 46., P2) * k, ypx = uv.y * uRes.y, r0 = floor(ypx / sp), prof = 0.; vec3 pc = vec3(0.);
-  for (int j = 0; j < 9; j++){
-    float yr = (r0 - float(j)) * sp; vec2 u = vec2(uv.x, yr / uRes.y);
-    float hh = .6 * hoehe(u, 1.5) + .4 * hoehe(u, 3.);
-    float d = abs(ypx - yr - hh * amp), l = clamp(1.1 * k + .4 - d, 0., 1.);
-    if (l > prof){ prof = l; pc = uZeigen > .5 ? Kl(u, 1.).rgb : vec3(.55, 1., .85); }
-  }
-  vec3 laser = vec3(1., .16, .1);
-  float dy = (uv.y - ly) * uRes.y / k;
-  float strahl = exp(-dy * dy * .5) + .35 * exp(-abs(dy) / 22.);
-  vec3 col = film * (1. - .75 * spur) + pc * prof * spur * 1.8 + laser * strahl * 1.2 + vec3(1.) * exp(-dy * dy * 2.) * .8;
-  col *= 1. - .35 * dot(P(uv), P(uv));                                // Vignette
-  return vec4(clamp(col, 0., 1.), 1.);
-}`,
-  },
 
   montage: {
     name: "Montage", herkunft: "Quadtree-Collage: das Bild zerfällt dort in kleine Kacheln, wo es viel Detail hat; Kacheln verrutschen, drehen, spiegeln und glitchen, als Vierecke, Dreiecke, Vielecke oder Kreise",
@@ -1385,65 +1240,6 @@ vec4 effekt(vec2 uv){
   vec3 grund = uZeigen > .5 ? Ql(UV(p + off), .3).rgb : vec3(.92, .89, .85);   // ohne Bild: Cremepapier, die Membranen aus dem Bild
   vec3 col = grund * lasur;
   return vec4(clamp(col, 0., 1.), 1.);
-}`,
-  },
-  riss: {
-    name: "Papierriss", herkunft: "Papierriss-Collage: das Bild reisst wie Papier entlang seiner Formen in gezackte Bahnen, die langsam gegeneinander gleiten, mit faserigen Rändern und Haarrissen",
-    // Referenzvideo vom 5. November 2026 (webdesigns/papierriss-streifen): Christian wollte es als Effekt. Die Risse sind Linien gleichen
-    // Werts eines Felds aus Lage quer zu den Bahnen, gestrecktem Rauschen und der Helligkeit des Bildes («Formen»), so folgen sie seinen Konturen
-    regler: [r("Risse", .45), r("Versatz", .6), w("Richtung", ["Senkrecht", "Waagrecht", "Schräg", "Kreuz"]), r("Faser", .5), r("Formen", .6), r("Grau", 0)],
-    glsl: `
-struct Bahn { vec2 q; float rand, faser, haar; };
-// eine Lage Papier, an Rissen in Bahnen zerlegt: q ist, wo die Bahn das Bild hernimmt, rand der Abstand zur Risskante in Pixeln
-// (unter null im offenen Spalt), faser die Breite des weissen Faserrands, haar die Haarrisse
-Bahn bahn(vec2 p, float ang, float n, float s0){
-  Bahn B; float k = uRes.y / 1350.;
-  vec2 q = rot(ang) * p;                                                          // q.x quer zu den Bahnen, q.y entlang
-  float L = lum(Kl(UV(p), 4.5).rgb);                                              // grosse Formen, nicht die Textur
-  float zack = ln(vec2(q.x * n * .25 + s0, q.y * 1.1), .35) * .5                  // weiter Schwung des Risses
-             + abs(ln(vec2(q.x * n * .7 + s0, q.y * 9.), .2)) * .1;               // kantig gezackt
-  if (uSparsam < .5) zack += abs(ln(vec2(q.x * n + s0, q.y * 48.), .15)) * .045;  // fein ausgefranst (nicht auf dem Handy)
-  float F = q.x * n + zack + P4 * (L - .5) * 2.;                                 // die Formen des Bildes biegen die Risse
-  float i = floor(F), fr = F - i, fw = max(fwidth(F), 1e-4);
-  vec3 h = h33(vec3(i + 17., s0 + 3., uSeed + 1.));
-  // jede Bahn öffnet sich in ihrem eigenen Takt; am Anfang der Schlaufe ist das Blatt ganz, im Durchlauf bleibt es offen und gleitet
-  float o = HZ(pow(.5 - .5 * cos(uPhi), mix(.6, 1.8, h.z))) * mix(.35, 1., h.x);
-  // der Spalt läuft spitz zu und weitet sich wieder: Splitter statt gleich breiter Fugen
-  float sp = o * mix(.01, .3, P1) * smoothstep(-.35, .6, ln(vec2(q.y * 2.4, i * 1.7 + s0) + 5., .4));
-  float d = min(fr - sp * h.y, 1. - sp * fract(h.y * 7.13 + .3) - fr) / fw;
-  B.rand = d;
-  vec2 v = vec2((h.y - .5) * .03, (h.x - .5) * .45) * P1 * o + vec2(0., .035 * P1 * o * sin(uPhi + h.z * TAU));
-  B.q = rot(-ang) * (rot((h.z - .5) * .1 * P1 * o) * q - v);
-  B.faser = k * (.6 + 7. * P3 * smoothstep(-.3, .7, ln(vec2(q.y * 70., i * 3.1 + s0), .2)) * (.4 + .6 * o));
-  float H = q.x * n * 2.7 + ln(vec2(q.x * 3. + s0, q.y * 4.) + 9., .5) * 1.6;
-  float hd = abs(fract(H) - .5) / max(fwidth(H), 1e-4);
-  float hm = smoothstep(.1, .55, ln(vec2(q.y * 1.3, q.x * 2. + s0) + 3., .6)) * P3 * (.25 + .75 * o);
-  B.haar = hm * clamp(.8 * k + .5 - hd, 0., 1.);
-  return B;
-}
-vec4 effekt(vec2 uv){
-  vec2 p = P(uv); float k = uRes.y / 1350.;
-  int ri = int(P2 * 3. + .5);
-  float n = mix(3., 16., P0);
-  float ang = ri == 1 ? PI * .5 : ri == 2 ? .55 + .05 * sin(uPhi) : 0.;
-  vec2 src = p; float rand = 1e3, faser = 0., haar = 0.;
-  if (ri == 3){                                                                   // Kreuz: erst quer gerissen, darunter längs
-    Bahn T = bahn(p, PI * .5, n * .6, 7.);
-    src = T.q; rand = T.rand; faser = T.faser; haar = T.haar;
-  }
-  Bahn B = bahn(src, ang, n, 0.);
-  if (B.rand < rand){ rand = B.rand; faser = B.faser; }
-  src = B.q; haar = max(haar, B.haar);
-  vec3 bild = Ql(UV(src), 0.).rgb;
-  // im Spalt: ein zweiter Abzug des Bildes darunter, verschoben (so entstehen doppelte Gesichter), dunkler, im Schatten der Kante
-  vec2 ab = rot(ang) * vec2(.04, .09 * sin(uPhi * 2. + 1.)) * (.4 + P1);
-  vec3 unten = Ql(UV(p * .97 + ab), .8).rgb * .72 * (1. - .55 * exp(min(rand, 0.) / (10. * k)));
-  vec3 c = mix(bild, vec3(.94, .93, .9) * (.82 + .18 * lum(bild)), smoothstep(faser + .5, faser - .5, rand) * .9);   // weisse Papierfaser
-  c *= 1. - .7 * clamp(1.1 * k + .5 - rand, 0., 1.);                              // dunkle Risskante
-  c = mix(c, c * .22, haar);                                                      // Haarrisse
-  c = mix(unten, c, clamp(rand + .5, 0., 1.));
-  c = mix(c, vec3(lum(c)), P5);
-  return vec4(clamp(c, 0., 1.), 1.);
 }`,
   },
 };
