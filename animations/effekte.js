@@ -269,46 +269,6 @@ export const EFFEKTE = {
 }`,
   },
 
-  tinte: {
-    name: "Alkoholtinte", herkunft: "infinite mantra (Blüten): das Bild fliesst entlang seiner Konturen, seine Tonflächen werden zu durchscheinenden Farbschleiern mit weichen Tintenrändern",
-    // seit 3. November 2026 neu (Rückmeldung: «die alkohol tinte ist noch etwas plump»): statt dicker Höhenlinien drei Schleier,
-    // deren Farbe aus dem Bild kommt; an ihren Rändern sammelt sich die Tinte.
-    // Seit 5. November 2026 folgen die Schleier den Tonflächen des Bildes (vorher vor allem Rauschen) und das Bild fliesst entlang seiner
-    // Konturen (Wunsch: «dass die effekte das bild stärker mitnehmen und nicht bloss darüber gelegt werden»).
-    // Seit 5. November 2026 (abends, Wunsch: «weichere, rundere formen mit mehr bewegung»): grosse langsame Wirbel statt vieler kleiner, die
-    // Tonflächen gerundet (weicher gelesen), eine Oktave Rauschen statt vier (runde Lappen statt Fransen), weiche Kanten und breite Säume;
-    // jede Lage treibt auf ihrem Kreis durch die Schlaufe und atmet, das Rauschen läuft auf einem grösseren Kreis durch die Zeit
-    regler: [r("Fluss", .7), r("Ränder", .6), r("Lasur", .7), r("Massstab", .4)],
-    glsl: `${FELD}
-vec4 effekt(vec2 uv){
-  vec2 p = P(uv), q = p; float sc = mix(.8, 3., P3);
-  int S = uSparsam > .5 ? 2 : 4;                                          // Handy: zwei Schritte
-  for (int i = 0; i < 4; i++){
-    if (i >= S) break;
-    q -= (lcurl(q * sc * .35 + 2., 1.3) * .03 / sc + strom(UV(q), 4., 5., .2) * .006) * P0 * 4. / float(S);   // grosse runde Wirbel, leise den Konturen entlang
-  }
-  vec3 bild = uZeigen > .5 ? Ql(UV(q), 1.).rgb : vec3(1.);              // ohne Bild: weisses Papier, Schleier aus dem Bild
-  vec3 col = mix(vec3(1.), bild, mix(.55, 1., P2));
-  for (int j = 0; j < 3; j++){
-    float fj = float(j);
-    vec2 drift = .35 * vec2(cos(uPhi + fj * 2.1), sin(uPhi + fj * 2.1));   // jede Lage treibt auf ihrem Kreis durch die Schlaufe
-    vec2 qj = q * sc * (1. + fj * .35) + fj * 7.3 + drift;
-    qj += lcurl(qj * .4, 1.2) * .5 * P0;                                  // runde Verwirbelung, eine Oktave
-    float ton = lum(Kl(UV(q + fj * .02), 3.2 + fj * .8).rgb);           // die Tonfläche des Bildes, weich gelesen: runde Lappen
-    float atem = .1 * sin(uPhi * (1. + fj) + fj * 1.7);                   // die Schleier atmen, jede Lage in ihrem Takt (ganze Zyklen)
-    float e = (.72 - fj * .2 - ton + atem) * 1.6 + ln(qj * .6, 1.4) * .45;   // eine Oktave Rauschen: weiche, runde Ränder
-    float w = .06 + .03 * fj;                                              // weiche Kante
-    float schleier = smoothstep(-w, w, e);
-    float saum = schleier * exp(-e / (.12 + .05 * fj));                   // breiter Saum, die Tinte sammelt sich am Rand
-    float linie = exp(-pow(e / (w * .6), 2.));                            // weiche Linie statt haarfein
-    vec3 farbe = Kl(UV(q + fj * .03), 3.).rgb;
-    col *= mix(vec3(1.), mix(vec3(1.), farbe, .4), schleier * .7 * P2);
-    col *= mix(vec3(1.), farbe * farbe * .8 + .05, saum * .5 * P1);
-    col = mix(col, farbe * farbe * .45, linie * .5 * P1);
-  }
-  return vec4(col, 1.);
-}`,
-  },
   // ——— fünf Effekte aus der Bildinformation (Wunsch vom 4. November 2026: Seifenblase und Holo-Kugel weg, dafür Effekte, die stark
   // mit dem Bild arbeiten und es auch bei «Bild zeigen: aus» klar lesbar machen). Sie lesen Helligkeit als Höhe, ihren Gradienten als
   // Kanten und Strömung (die Senkrechte zum Gradienten folgt den Konturen und ist quellenfrei) und die Farben als Druckauszüge.
@@ -316,6 +276,7 @@ vec4 effekt(vec2 uv){
   // Pinselstrom und Aquarell entfernt am 5. November 2026 (Wunsch: «Der pinseleffekt kann weg», «Ebenso: aquarell»)
   // Metaballs, Wirbel, Linien, Tuscheblasen, Glaslinsen, Röntgen-Scan und Papierriss entfernt am 5. November 2026
   // (Wunsch: «also wir nehme jetzt wieder raus: metaballs, wirbel, linien, tuscheblasen, glaslinsen, röntgenstrahl, papierriss»)
+  // Alkoholtinte entfernt am 5. November 2026 (Wunsch: «alkoholtine kann raus»)
 
   raster: {
     name: "Druckraster", herkunft: "Halbton: vier gedrehte Raster wie im Offsetdruck, Punkte verschmelzen als Distanzfelder im Dunkeln und atmen in Wellen",
