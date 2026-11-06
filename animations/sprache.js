@@ -143,7 +143,6 @@ const T = {
   "Physarum-Struktur": ["Physarum structure", "Estructura de Physarum"],
   "Lichtformen": ["Light forms", "Formas de luz"],
   "Strom": ["Stream", "Corriente"],
-  "Körper": ["Solids", "Cuerpos"],
   "Membran-Blüte": ["Membrane bloom", "Flor de membrana"],
   "Atmen": ["Breathing", "Respirar"],
   "Schwanken": ["Sway", "Vaivén"],
@@ -279,7 +278,6 @@ const HERKUNFT = {
   geflecht: ["PHORMA II taken further: the slime mould as structure instead of trail – network, veins, cells or membrane, denser where the image offers food", "PHORMA II llevado más allá: el moho mucilaginoso como estructura en vez de rastro – red, venas, células o membrana, más denso donde la imagen ofrece alimento"],
   lichtformen: ["Light from the shapes of the image: glowing edges, caustics like light through water, bundles of rays breaking out of the bright shapes, prismatic fringes or veils of light along the contours", "Luz desde las formas de la imagen: bordes incandescentes, cáusticas como luz a través del agua, haces de rayos que brotan de las formas claras, bordes prismáticos o velos de luz a lo largo de los contornos"],
   strom: ["PHORMA I: the image dissolves into glossy beads in its own colours, sparks light up, the beads follow the contours in fine bands and swirls and fly back into place", "PHORMA I: la imagen se disuelve en bolitas brillantes de sus propios colores, se encienden chispas, las bolitas siguen los contornos en bandas finas y remolinos y vuelven volando a su sitio"],
-  koerper: ["PHORMA I: glass solids grow on the shapes of the image, dodecahedron, geode and icosahedron, merging into one another and turning; the image shines through their facets, broken into rainbow fringes, the edges reflect", "PHORMA I: sobre las formas de la imagen crecen cuerpos de vidrio, dodecaedro, geoda e icosaedro, que se transforman unos en otros y giran; la imagen se ve a través de sus facetas, rota en bordes de arcoíris, y las aristas reflejan"],
   bluete: ["infinite mantra (membranes): translucent, softly warped membranes settle on the shapes of the image, take on its colours, flow and fold slowly like petals, and the image flows with them", "infinite mantra (membranas): membranas translúcidas y suavemente deformadas se posan sobre las formas de la imagen, toman sus colores, fluyen y se pliegan despacio como pétalos, y la imagen fluye con ellas"],
 };
 
