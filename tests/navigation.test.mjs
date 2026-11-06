@@ -32,6 +32,7 @@ const AUSNAHMEN = [
   ["Die Redaktion von «Social Media» im Neubau (22. Oktober 2026, «im neuen design am neuen ort»): ihr Formular src/b/redaktion.html und die Weiterleitung an der alten Adresse", /^(social-media\/redaktion\/index|src\/b\/redaktion)\.html$/],
   ["«Kunst», Hypertext der Facebook-Beiträge mit eigener Kopfzeile, steht für sich, nur per Direktlink (1. November 2026)", /^alpha\/kunst\//],
   ["ORNAMENT LAB 0.1 mit eigener Oberfläche, steht für sich, nur per Direktlink (23. Oktober 2026; alpha/lab/README.md)", /^alpha\/lab\//],
+  ["KONSTELLATION, statische Fassung der App aus hansnoed-ui/konstellation mit eigener nüchterner Kopfzeile, steht für sich, nur per Direktlink, noindex (6. November 2026)", /^alpha\/konstellation\//],
   ["Der Neubau unter b/ mit eigener Kopfzeile (20. Oktober 2026, docs/superpowers/specs/2026-10-20-b-neubau-design.md); eigene Tests in tests/b.test.mjs", /^b\//],
 ];
 const ueberspringen = new Set(["node_modules", "dist", "vendor", ".git", "404.html"]);   // 404.html (20. Oktober 2026, Hostpoint): Kopf wie überall, aber absolute Verweise, weil Apache sie unter jeder Adresse ausliefert; tests/hostpoint.test.mjs
