@@ -352,26 +352,84 @@ vec4 effekt(vec2 uv){
   },
 
   relief: {
-    name: "Relief", herkunft: "2.5D: Helligkeit als Tiefe, das Bild wird zum Relief, die Kamera schwebt (Parallaxe) und ein Licht kreist darüber",
-    regler: [r("Tiefe", .55), r("Parallaxe", .45), r("Lichthöhe", .45), r("Glanz", .4), r("Material", .2)],
+    name: "Relief", herkunft: "2.5D: Helligkeit als Tiefe, das Bild wird zum Relief aus echtem Material (Farbe, Lack, Blattgold oder Prägung), die Kamera schwebt (Parallaxe), ein Licht kreist darüber und wirft Schatten, ein Lichtstudio spiegelt sich darin",
+    // Licht und Material seit 6. November 2026 nach Filament (Google, Apache 2.0; Christian schickte den Link): statt Phong rechnet der
+    // Effekt physikalisch wie Filament, aber als eigener Shader ohne die 3,6 MB der Bibliothek: Mikrofacetten (GGX, Smith, Schlick),
+    // Metall und Nichtmetall, eine Klarlackschicht und ein gemaltes Lichtstudio als Umgebung (Split-Sum nach Karis). Dazu weiche
+    // Schatten aus dem Relief selbst: ein tiefes Licht wird zum Streiflicht, das die Formen des Bildes hervorholt. «Oberfläche» wählt
+    // das Material, «Material» stuft es ab (Lack: Schichtdicke, Blattgold: wie viel vergoldet ist, Prägung: wie viel Farbe bleibt).
+    regler: [r("Tiefe", .55), r("Parallaxe", .45), r("Lichthöhe", .45), r("Glanz", .4), r("Material", .2), w("Oberfläche", ["Bild", "Lack", "Blattgold", "Prägung"])],
     glsl: `${FELD}
 float H(vec2 uv){ return .45 * hoehe(uv, 1.) + .35 * hoehe(uv, 2.5) + .2 * hoehe(uv, 4.5); }
+// Filament: Verteilung (GGX), Sichtbarkeit (Smith, korreliert), Fresnel (Schlick), Umgebung (Karis' Näherung des Split-Sum)
+float rlD(float NoH, float a){ float a2 = a * a, f = (NoH * a2 - NoH) * NoH + 1.; return a2 / (PI * f * f); }
+float rlV(float NoV, float NoL, float a){ float a2 = a * a; return .5 / (NoL * sqrt((-NoV * a2 + NoV) * NoV + a2) + NoV * sqrt((-NoL * a2 + NoL) * NoL + a2)); }
+vec3 rlF(vec3 f0, float x){ return f0 + (1. - f0) * pow(1. - x, 5.); }
+vec2 rlE(float NoV, float r){ vec4 q = r * vec4(-1., -.0275, -.572, .022) + vec4(1., .0425, 1.04, -.04); float a = min(q.x * q.x, exp2(-9.28 * NoV)) * q.x + q.y; return vec2(-1.04, 1.04) * a + q.zw; }
+// das Lichtstudio: ein grosser Lichtkasten beim Licht, ein schmaler Gegenlichtstreifen, ein heller Himmel, ein dunkler Boden;
+// je rauer die Fläche, desto breiter und matter spiegelt es sich
+float rlKasten(vec3 d, vec3 c, float b){ return exp(-(1. - dot(d, c)) / b) * min(1., .02 / b + .08); }
+vec3 rlStudio(vec3 d, float ro, vec3 Ld){
+  float b = mix(.008, .5, ro * ro);
+  vec3 c1 = normalize(vec3(Ld.xy, max(Ld.z, .35))), c2 = normalize(vec3(-.8 * Ld.x - .3 * Ld.y, .3 * Ld.x - .8 * Ld.y, .45));   // Gegenlicht schräg hinten
+  vec3 grund = mix(vec3(.025, .024, .026), vec3(.30, .31, .34), smoothstep(-.3, 1., d.z));
+  // dazu eine lange Lichtleiste fast im Zenit, die gegenüber dem Licht kreist: in glatten Flächen zieht sie als Glanzband darüber
+  vec2 q = vec2(-Ld.y, Ld.x);
+  float quer = dot(d.xy, normalize(Ld.xy)) - .32 * sin(halt(uPhi, .4)), leiste = exp(-pow(quer / (.05 + b * .8), 2.)) * smoothstep(.3, .8, d.z) * smoothstep(1.1, .2, abs(dot(d.xy, q)) + .3);
+  return grund + vec3(1., .97, .92) * 3.2 * rlKasten(d, c1, b) + vec3(.75, .85, 1.) * 1.2 * rlKasten(d, c2, b * 1.4) + vec3(1., .98, .95) * 3.5 * leiste * min(1., .06 / b + .15);
+}
 vec4 effekt(vec2 uv){
   vec2 cam = vec2(cos(uPhi), .6 * sin(uPhi)) * mix(0., .05, P1), u = uv;
   for (int i = 0; i < 5; i++) u = uv - cam * (H(u) - .5) / vec2(A(), 1.);   // Parallaxe: Nahes verschiebt sich stärker
-  float e = 2.5 / uRes.y;
+  float e = 2.5 / uRes.y, k = mix(.004, .05, P0);
   vec2 g = vec2(H(u + vec2(e / A(), 0.)) - H(u - vec2(e / A(), 0.)), H(u + vec2(0., e)) - H(u - vec2(0., e))) / (2. * e);
-  vec3 n = normalize(vec3(-g * mix(.004, .05, P0), 1.));
+  vec3 n = normalize(vec3(-g * k, 1.));
   float la = uPhi + .7;
   vec3 Ld = normalize(vec3(cos(la), sin(la), mix(.25, 1.2, P2)));
-  float dif = max(dot(n, Ld), 0.), hoch = H(u);
+  float hoch = H(u);
   float ao = clamp(1. - (hoehe(u, 5.) - hoehe(u, 1.5)) * 1.6, .35, 1.);   // Mulden bekommen weniger Licht
-  float spec = pow(max(dot(n, normalize(Ld + vec3(0., 0., 1.))), 0.), mix(6., 90., P3)) * P3 * 1.4;
+  // weiche Schatten: vom Punkt aus zum Licht hin, wo das Relief über dem Strahl liegt, wird es dunkel (je näher, desto härter)
+  float sch = 1., hs = hoehe(u, 2.), steig = Ld.z / max(length(Ld.xy), .05);
+  vec2 rich = normalize(Ld.xy) / vec2(A(), 1.);
+  int S = uSparsam > .5 ? 8 : 16;
+  for (int i = 1; i <= 16; i++){
+    if (i > S) break;
+    float s = .09 * pow(float(i) / float(S), 1.5);
+    float ueber = k * (hoehe(u + rich * s, 2.) - hs) - s * steig;
+    sch = min(sch, clamp(1. - ueber / (s * .35 + .002) * 4., 0., 1.));
+  }
+  sch = mix(1., ez(sch), smoothstep(.15, .6, P0));   // flaches Relief wirft kaum Schatten
+  // Material
+  int m = int(floor(P5 * 3. + .5));
   vec3 gips = vec3(.93, .9, .86), metall = vec3(.78, .6, .38);
-  vec3 alb = uZeigen > .5 ? Ql(u, 0.).rgb : mix(gips, metall * (.55 + .45 * hoch), P4);   // ohne Bild: Gips oder Metall
-  vec3 sc = mix(vec3(1.), metall * 1.3 + .2, P4 * (1. - uZeigen));
-  vec3 col = alb * (.16 + .95 * dif) * ao + sc * spec;
-  return vec4(clamp(col, 0., 1.), 1.);
+  vec3 bild = uZeigen > .5 ? Ql(u, 0.).rgb : gips;
+  vec3 basis = bild; float met = 0., rau = mix(.85, .2, P3), lack = 0.;
+  if (m == 0 && uZeigen < .5){ basis = mix(gips, metall * (.55 + .45 * hoch), P4); met = P4; }   // ohne Bild wie bisher: Gips oder Metall
+  if (m == 1){ lack = mix(.35, 1., P4); rau = mix(.75, .45, P3); basis = bild * .92; }
+  if (m == 2){
+    // vergoldet sind die Formen, nicht der Grund: wo das Bild Farbe oder Detail hat (helles Papier und dunkle Flächen bleiben)
+    float form = max(sat(Kl(u, 1.5).rgb) * 1.6, abs(hoehe(u, 1.) - hoehe(u, 4.)) * 5.);
+    float s0 = mix(.9, .15, P4), gold = smoothstep(s0 - .08, s0 + .08, form);
+    vec3 gf = mix(vec3(1., .77, .34), vec3(1., .77, .34) * (.5 + bild), .25);
+    basis = mix(bild * .9, gf, gold); met = gold; rau = mix(rau, mix(.45, .12, P3), gold);
+  }
+  if (m == 3){ basis = mix(vec3(.95, .93, .89), bild, P4 * .6); rau = mix(.95, .6, P3); }   // Blindprägung: Papier, das Bild nur im Licht
+  // Licht nach Filament: direkt (Lambert + Mikrofacetten) und aus dem Studio (diffus + gespiegelt)
+  vec3 V = normalize(vec3(-cam * 5. - P(u) * .9, 1.)), Hh = normalize(V + Ld);   // die Kamera in endlicher Höhe: jede Stelle sieht das Studio etwas anders
+  float NoV = max(dot(n, V), 1e-3), NoL = max(dot(n, Ld), 0.), NoH = max(dot(n, Hh), 0.), LoH = max(dot(Ld, Hh), 0.);
+  float a = max(rau * rau, .002);
+  vec3 f0 = mix(vec3(.04), basis, met), dif = basis * (1. - met);
+  vec3 Fr = rlD(NoH, a) * rlV(NoV, NoL, a) * rlF(f0, LoH);
+  vec3 col = (dif / PI + Fr) * NoL * sch * 2.9;
+  vec2 E = rlE(NoV, rau);
+  col += dif * rlStudio(n, 1., Ld) * .5 * ao + rlStudio(reflect(-V, n), rau, Ld) * (f0 * E.x + E.y) * ao * mix(.6, 1., sch);
+  if (lack > 0.){   // Klarlack: eine glatte Schicht, die die feinen Mulden füllt (flachere Normale), darunter wird es etwas dunkler
+    vec3 nc = normalize(mix(n, vec3(0., 0., 1.), .55)), Hc = Hh;
+    float cNoV = max(dot(nc, V), 1e-3), cNoL = max(dot(nc, Ld), 0.), cNoH = max(dot(nc, Hc), 0.);
+    float Fc = (.04 + .96 * pow(1. - LoH, 5.)) * lack, Fv = (.06 + .94 * pow(1. - cNoV, 5.)) * lack;
+    col = col * (1. - Fv) + rlD(cNoH, .0036) * .25 / max(LoH * LoH, .05) * Fc * cNoL * sch * 2.9 + rlStudio(reflect(-V, nc), .06, Ld) * Fv;
+  }
+  return vec4(clamp(schulter(col), 0., 1.), 1.);
 }`,
   },
 
