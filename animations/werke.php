@@ -71,7 +71,7 @@ function stapelPruefen(mixed $s): ?array {
     if ($effekt === '') continue;   // eine leere Ebene («— keine —») zählt nicht
     if (!is_string($effekt) || !preg_match('/^[a-z]{1,24}$/', $effekt)) return null;
     $werte = [];
-    foreach ((array)($e['werte'] ?? []) as $w) { $z = zahl($w, 0, 1); if ($z === null) return null; $werte[] = round($z, 3); if (count($werte) > 6) return null; }
+    foreach ((array)($e['werte'] ?? []) as $w) { $z = zahl($w, 0, 1); if ($z === null) return null; $werte[] = round($z, 3); if (count($werte) > 7) return null; }
     $deck = zahl($e['deckkraft'] ?? 1, 0, 1);
     if ($deck === null) return null;
     $seed = zahl($e['seed'] ?? 0, 0, 999);
