@@ -7,9 +7,9 @@
 //   glühende Schnittkanten) – Rückmeldung: «"Raum", das gefällt mir gar nicht, kann ersatzlos raus, "Scan" bitte behalten». Die Shader können es noch.
 // Gestreckte Maschen an Tiefensprüngen werden dunkel statt verschmiert. Zustandslos.
 import * as THREE from "three";
-import { anteil, weich, inOut, glocke, kamera, ABSTAND, KUPFER, ziel, quadMaterial } from "./gemeinsam.js?v=39";
-import { phase } from "./ablauf.js?v=39";
-import { TIEFE_UEBERGABE } from "./tuchsim.js?v=39";   // dasselbe Relief, aus dem das Tuch beginnt
+import { anteil, weich, inOut, glocke, kamera, ABSTAND, KUPFER, ziel, quadMaterial } from "./gemeinsam.js?v=40";
+import { phase } from "./ablauf.js?v=40";
+import { TIEFE_UEBERGABE } from "./tuchsim.js?v=40";   // dasselbe Relief, aus dem das Tuch beginnt
 
 export { TIEFE_UEBERGABE };
 const SCHICHTEN = 7;
@@ -40,7 +40,9 @@ const FRAGMENT = /* glsl */ `
     c *= mix(1.0, 0.18 + 0.82 * pow(vD, 0.9), uNebel);
     // Scan: die Ebene steht bei Tiefe uScan und wandert von nah (1) nach fern (0)
     float nach = vD - uScan, vor = smoothstep(-0.004, 0.004, nach);
-    float band = exp(-pow(nach / 0.009, 2.0));
+    // nie pow() mit negativer Basis: das ist in GLSL undefiniert, Telefone (Chrome Android) rechnen NaN und das ganze Bild wird schwarz
+    // (Rückmeldung 6. November 2026: «Phorma II bringt bei "Tiefe" ein schwarzes Bild»); nach ist vor der Ebene negativ
+    float q = nach / 0.009, band = exp(-q * q);
     float k = vD * 42.0, fw = fwidth(k), iso = 1.0 - smoothstep(0.0, 1.4 * fw, min(fract(k), 1.0 - fract(k)));
     vec3 scan = uKupfer * band * 1.1 + vec3(0.85, 0.92, 1.0) * iso * 0.45 * exp(-max(nach, 0.0) * 9.0) * vor;
     c = mix(c, c * smoothstep(0.0, 0.22, nach), uDunkel * uScanAn) + scan * uScanAn;

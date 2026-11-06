@@ -6,9 +6,9 @@
 //   ORNA (operational):      die Operationsregel R1–R7 einer Konstellation am Eingang wählt den Ablauf (REGEL_ABLAUF), wenn der Mensch keinen wählt
 //   ausfuehren()             rechnet `bilder` Standbilder gleichmässig über die Kette: die Varianten (Stationen des Films)
 //   lebend()                 gibt dem Film über Stationen die Bühne selbst; ihre Zeit beginnt mit dem Auftritt ihrer Stationen (zeitbasis «auftritt»)
-import { analysieren } from "../../../alpha/phorma-ii/analyse.js?v=39";
-import { kette, ablaufName, EFFEKTE, TITEL, KETTE } from "../../../alpha/phorma-ii/ablauf.js?v=39";
-import { szene, bild as filmBild } from "../../../alpha/phorma-ii/film.js?v=39";
+import { analysieren } from "../../../alpha/phorma-ii/analyse.js?v=40";
+import { kette, ablaufName, EFFEKTE, TITEL, KETTE } from "../../../alpha/phorma-ii/ablauf.js?v=40";
+import { szene, bild as filmBild } from "../../../alpha/phorma-ii/film.js?v=40";
 import { zustandsZeiten } from "./phorma.js";
 import { imBrowser, webgl2Da, leinwand, klemm, fotoBauen, EINGAENGE, BESCHRIFTUNG, beschriftungAn, titelAus, ablaufWaehlen } from "./buehnenhilfe.js";
 import { modulLaden } from "../kern/laden.js";
@@ -41,7 +41,7 @@ let buehneModul = null;
 async function buehneBauen({ bild, konstellation, text }, p, kontext = {}) {
   if (!imBrowser()) throw new Error("PHORMA II braucht einen Browser mit WebGL 2");
   if (!webgl2Da()) throw new Error("PHORMA II braucht WebGL 2; dieser Browser hat es nicht");
-  buehneModul ??= await modulLaden(new URL("../../../alpha/phorma-ii/buehne.js?v=39", import.meta.url).href, { titel: "PHORMA II", melden: kontext.melden });
+  buehneModul ??= await modulLaden(new URL("../../../alpha/phorma-ii/buehne.js?v=40", import.meta.url).href, { titel: "PHORMA II", melden: kontext.melden });
   const wahl = ablaufWaehlen(p, konstellation, REGEL_ABLAUF, KETTE, ABLAEUFE);
   const ablauf = ablaufName(wahl.ablauf);
   const { foto, B, H, klein } = fotoBauen(bild, Math.round(p.seite));
@@ -73,7 +73,7 @@ export const phorma2 = {
   name: "PHORMA II: Szene",
   version: "0.1.0",
   klasse: "zeitlich",
-  herkunft: { art: "adapter", quelle: "PHORMA II", datei: "alpha/phorma-ii/buehne.js, film.js, ablauf.js, analyse.js und die Effekte (v=39, unverändert)", referenz: null },
+  herkunft: { art: "adapter", quelle: "PHORMA II", datei: "alpha/phorma-ii/buehne.js, film.js, ablauf.js, analyse.js und die Effekte (v=40, unverändert)", referenz: null },
   beschreibung: "PHORMA II: Physarum (ein Schleimpilz findet die Formen), Tiefe (das Foto wird Relief), Wellenwanne, Tuch (das Foto fällt als Seide), Rasterdruck, Montage (verschachtelte Rechtecke) – einzeln oder als Kette. Eine ORNA-Konstellation kann den Ablauf wählen, ein Zettel gibt den Titel.",
   eingaenge: EINGAENGE,
   ausgaenge: [{ name: "zustaende", typ: "IMAGE", mehrfach: 12 }],

@@ -337,3 +337,7 @@ test("App (21. Oktober 2026): Manifest, Symbole, Service Worker mit eigenem Cach
   // im Neubau: «Als App installieren» führt mit ?installieren in die App, wie bei PHORMA III
   assert.match(readFileSync(new URL("b/apps/phorma-ii/index.html", root), "utf8"), /href="\/alpha\/phorma-ii\/\?installieren&amp;sprache=de"/);   // b/apps/phorma-ii/ (der Neubau, 20. Oktober 2026) darf
 });
+
+test("Shader ohne pow() mit möglicherweise negativer Basis (6. November 2026: «Tiefe» war am Telefon schwarz – NaN aus pow(nach, 2.0))", () => {
+  for (const f of readdirSync(P).filter((f) => f.endsWith(".js"))) assert.ok(!/exp\(\s*-\s*pow\(/.test(lies(f)), `${f}: Glockenkurve als exp(-q * q), nicht exp(-pow(q, 2.0))`);
+});
