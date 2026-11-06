@@ -12,13 +12,14 @@ const { EFFEKTE, EFFEKT_IDS, wertVon } = await import(new URL("animations/effekt
 const { MODI, DAUER, FPS, LAENGEN, dauerVon } = await import(new URL("animations/motor.js", root).href);
 const { zufall, EIGEN } = await import(new URL("animations/rezepte.js", root).href);
 
-test("Effekte: 24, Regler zwischen 0 und 1, höchstens sechs, Shader mit effekt() oder punkt(), jeder mit Name und Herkunft", () => {
+test("Effekte: 23, Regler zwischen 0 und 1, höchstens sechs, Shader mit effekt() oder punkt(), jeder mit Name und Herkunft", () => {
   // Scan entfernt am 3. November 2026 («der scan kann weg»); Seifenblase und Holo-Kugel am 4. November 2026 ersetzt durch vierzehn Effekte aus der Bildinformation;
   // Pinselstrom und Aquarell entfernt am 5. November 2026, Papierriss und Membran-Blüte dazu am 5. November 2026;
   // Metaballs, Wirbel, Linien, Tuscheblasen, Glaslinsen, Röntgen-Scan und Papierriss entfernt am 5. November 2026
   // Alkoholtinte entfernt am 5. November 2026
   // Traube, Physarum und Strömung entfernt am 5. November 2026; Strom und Körper aus PHORMA I dazu
-  assert.equal(Object.keys(EFFEKTE).length, 24);
+  // Körper entfernt am 6. November 2026 («nimm den körper-effekt raus»)
+  assert.equal(Object.keys(EFFEKTE).length, 23);
   assert.deepEqual(EFFEKT_IDS, Object.keys(EFFEKTE));
   for (const [id, e] of Object.entries(EFFEKTE)) {
     assert.ok(e.name && e.herkunft, id);
@@ -88,7 +89,7 @@ test("Bild zeigen: aus (4. November 2026): Motor setzt uZeigen, Ql zeigt ein Ras
   assert.match(motor, /stapel\.ohneBild \? 0 : 1/);
   assert.match(html, /id="pult-zeigen"/);
   assert.match(seite, /-ohne-bild/);
-  for (const id of ["partikel", "zebra", "glitzer", "raster", "relief", "hoehenlinien", "montage", "entrauschen", "echo", "voxel", "sortieren", "vertigo", "strahlen", "gewebe", "blitze", "geflecht", "lichtformen", "bluete", "strom", "koerper"]) assert.match(EFFEKTE[id].glsl, /Kl\(/, id);
+  for (const id of ["partikel", "zebra", "glitzer", "raster", "relief", "hoehenlinien", "montage", "entrauschen", "echo", "voxel", "sortieren", "vertigo", "strahlen", "gewebe", "blitze", "geflecht", "lichtformen", "bluete", "strom"]) assert.match(EFFEKTE[id].glsl, /Kl\(/, id);
 });
 
 test("Durchlauf (4. November 2026): Motor kennt uLauf und HZ(), Schalter und Länge im Mischpult", () => {
@@ -157,7 +158,7 @@ test("Kubismus bei Druckraster und Höhenlinien: eigener Regler, ältere Mischun
     assert.equal(wertVon(def, [], k), def.regler[k].wert, `${id}: frisch gewählt mit der Vorgabe`);
     assert.equal(wertVon(def, [.5, .5, .5, .5, 0, .8], k), .8);
   }
-  for (const id of ["pinsel", "aquarell"]) assert.ok(!EFFEKTE[id], `${id} entfernt`);
+  for (const id of ["pinsel", "aquarell", "koerper"]) assert.ok(!EFFEKTE[id], `${id} entfernt`);
 });
 
 test("Handy (5. November 2026: «Diese Seite braucht WebGL 2 … gestern gings noch»): kein Kontext wird erklärt, verlorener Kontext baut neu auf, ein kaputter Effekt hält die Seite nicht an, schwere Punkt-Effekte rechnen sparsam", () => {
