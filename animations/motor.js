@@ -1,8 +1,9 @@
 // Animationen – der Motor: ein WebGL-2-Kontext rechnet bis zu drei Ebenen übereinander (je Effekt, Quelle, Mischmodus, Deckkraft)
 // und gibt das Bild auf eine eigene Leinwand aus, die Reel, Werke und Mischpult abzeichnen. Alles hängt nur von der Zeit t in der
 // Schlaufe ab (phi = 2π·t/DAUER, ganzzahlige Frequenzen): Bild N ist wieder Bild 0, und das MP4 entsteht Bild für Bild.
-import { EFFEKTE, wertVon } from "./effekte.js?v=29";
-import { t } from "./sprache.js?v=29";
+import { EFFEKTE, wertVon } from "./effekte.js?v=30";
+import { t } from "./sprache.js?v=30";
+import { physikLaden, kachelBahn, lageZur } from "./schwerkraft.js?v=30";
 
 export const DAUER = 12, FPS = 30, LAENGEN = [12, 30, 60];
 /** Länge der Schlaufe eines Stapels in Sekunden (Vorgabe 12) */
@@ -134,6 +135,34 @@ void main(){
   o = vec4(mix(a, m, clamp(uDeck * L.a, 0., 1.)), 1.);
 }`;
 
+// Schwerkraft (Montage, 6. November 2026): gelöste Kacheln als Vierecke, je Kachel sechs Ecken; Lage und Grösse stehen in einer
+// Gleitkomma-Textur (Zeile 0: Mitte und halbe Grösse am Platz im Bild, Zeile 1: Lage jetzt, Winkel, gelöst). uArt 0 macht die
+// Lücke am alten Platz durchsichtig (Christian: «Gut wäre wenn das ursprungsbild im Hintergrund nicht sichtbar ist»: dort zeigt sich
+// der Grund oder die Ebene darunter), 1 den Schatten, 2 die Kachel selbst mit ihrem Stück des Bildes
+const VS_KACHELN = `#version 300 es
+precision highp float; precision highp int;
+uniform highp sampler2D uDaten; uniform vec2 uRes; uniform int uArt;
+out vec2 vUv, vE, vHw;
+const vec2 EC[6] = vec2[6](vec2(-1., -1.), vec2(1., -1.), vec2(1., 1.), vec2(-1., -1.), vec2(1., 1.), vec2(-1., 1.));
+void main(){
+  int i = gl_VertexID / 6; vec2 e = EC[gl_VertexID % 6];
+  vec4 r = texelFetch(uDaten, ivec2(i, 0), 0), q = texelFetch(uDaten, ivec2(i, 1), 0);
+  float A = uRes.x / uRes.y; vec2 da = r.xy + e * r.zw, p = da;
+  if (uArt > 0){ float c = cos(q.z), s = sin(q.z); p = q.xy + mat2(c, s, -s, c) * (e * r.zw); }
+  if (uArt == 1) p += vec2(.005, -.008);
+  vUv = da / vec2(A, 1.) + .5; vE = e; vHw = r.zw;
+  gl_Position = q.w > .5 ? vec4(p / vec2(A * .5, .5), 0., 1.) : vec4(2., 2., 2., 1.);
+}`;
+const FS_KACHELN = `${KOPF}
+uniform int uArt; in vec2 vUv, vE, vHw; out vec4 o;
+void main(){
+  if (uArt == 0){ o = vec4(0.); return; }
+  vec2 d = (1. - abs(vE)) * vHw * uRes.y; float rd = min(d.x, d.y), al = clamp(rd, 0., 1.);   // Rand in Pixeln, weich geglättet
+  if (uArt == 1){ o = vec4(0., 0., 0., .3 * al); return; }
+  vec3 c = Q(vUv).rgb * (.8 + .2 * smoothstep(0., 9. * uRes.y / 1350., rd));
+  o = vec4(c * al, al);
+}`;
+
 const FS_KOPIE = `#version 300 es
 precision highp float;
 uniform sampler2D uA; in vec2 vUv; out vec4 o;
@@ -174,7 +203,7 @@ export function motorErstellen({ sparsam = SPARSAM, verloren = () => {}, zurueck
   const grafik = grafikName(gl);
   const motor = { leinwand, gl, sparsam: sparsam || SCHWACHE_GRAFIK.test(grafik), grafik, kaputt: new Map(), uebersetzt: 0 };
   const programme = new Map();
-  let B = 0, H = 0, acc = [], lage = null;
+  let B = 0, H = 0, acc = [], lage = null, daten = null;
   const bilder = new Map();
   function shader(typ, quelle) {
     const s = gl.createShader(typ); gl.shaderSource(s, quelle); gl.compileShader(s);
@@ -245,7 +274,7 @@ export function motorErstellen({ sparsam = SPARSAM, verloren = () => {}, zurueck
   function aufbauen() {
     gl.bindVertexArray(gl.createVertexArray());
     programme.clear(); motor.kaputt.clear();
-    B = 0; H = 0; acc = []; lage = null;
+    B = 0; H = 0; acc = []; lage = null; daten = null;
     for (const e of bilder.values()) e.tex = hochladen(e.img);
   }
   aufbauen();
@@ -265,6 +294,67 @@ export function motorErstellen({ sparsam = SPARSAM, verloren = () => {}, zurueck
       gl.scissor(0, y0, b, y1 - y0); gl.drawArrays(gl.TRIANGLES, 0, 3); gl.flush();
     }
     gl.disable(gl.SCISSOR_TEST);
+  }
+
+  // Schwerkraft: der vorgerechnete Fall je Bild und Reglerstand (die letzten paar), live verzögert gerechnet, damit Schieben flüssig bleibt
+  const bahnen = new Map(); let geplant = null, datenN = 0, lageDaten = new Float32Array(0);
+  function bahnSchluessel(stapel, def, e, w, a, D, zyklen) {
+    const k = def.schwerkraft;
+    return { schluessel: [stapel.bild, a.toFixed(4), w[k.teilung].toFixed(3), w[k.regler].toFixed(3), e.seed ?? 0, (D / zyklen).toFixed(2), motor.sparsam ? 1 : 0].join("|"),
+      p: { a, teilung: w[k.teilung], anteil: w[k.regler], seed: e.seed ?? 0, sekunden: D / zyklen, sparsam: motor.sparsam } };
+  }
+  function bahnRechnen(schluessel, bild, p) {
+    let B = null;
+    try { B = kachelBahn(bild.img, p); } catch (f) { console.error("Schwerkraft:", f); B = { n: 0 }; }
+    if (!B) return null;
+    bahnen.set(schluessel, B);
+    while (bahnen.size > 4) bahnen.delete(bahnen.keys().next().value);
+    return B;
+  }
+  function bahnHolen(schluessel, bild, p) {
+    if (bahnen.has(schluessel)) return bahnen.get(schluessel);
+    if (geplant?.schluessel !== schluessel) {
+      if (geplant) clearTimeout(geplant.uhr);
+      geplant = { schluessel, uhr: setTimeout(() => { physikLaden().then(() => { if (geplant?.schluessel === schluessel) { bahnRechnen(schluessel, bild, p); geplant = null; } }).catch(() => { geplant = null; }); }, 160) };
+    }
+    return null;
+  }
+  /** rechnet vor dem Export den Fall aller Ebenen mit Schwerkraft fertig, damit jedes Bild des Videos ihn schon hat */
+  async function vorbereiten(stapel, b, h) {
+    if (!stapel.ebenen.some((e) => e && !e.aus && EFFEKTE[e.effekt]?.schwerkraft)) return;
+    await physikLaden();
+    const bild = bilder.get(stapel.bild); if (!bild) return;
+    const D = dauerVon(stapel), zyklen = Math.max(1, Math.round(D / DAUER));
+    for (const e of stapel.ebenen) {
+      const def = e && !e.aus && EFFEKTE[e.effekt]; if (!def?.schwerkraft) continue;
+      const w = def.regler.map((r, k) => wertVon(def, e.werte, k));
+      if (w[def.schwerkraft.regler] < .005) continue;
+      const { schluessel, p } = bahnSchluessel(stapel, def, e, w, b / h, D, zyklen);
+      if (!bahnen.has(schluessel)) bahnRechnen(schluessel, bild, p);
+    }
+  }
+  function kachelnZeichnen(B, tz, setzen) {
+    if (!B?.n) return;
+    if (!daten || datenN !== B.n || daten.bahn !== B) {
+      if (!daten) daten = { tex: gl.createTexture() };
+      gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, daten.tex);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+      const z = new Float32Array(B.n * 8); z.set(B.rect);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, B.n, 2, 0, gl.RGBA, gl.FLOAT, z);
+      daten.bahn = B; datenN = B.n;
+    }
+    if (lageDaten.length < B.n * 4) lageDaten = new Float32Array(B.n * 4);
+    lageZur(B, tz, lageDaten);
+    gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, daten.tex);
+    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 1, B.n, 1, gl.RGBA, gl.FLOAT, lageDaten, 0);
+    const pr = programm("kacheln", VS_KACHELN, FS_KACHELN);
+    gl.useProgram(pr.p); setzen(pr); gl.uniform1i(pr.ort("uDaten"), 2);
+    gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+    for (let art = 0; art < 3; art++) {
+      gl.blendFunc(art === 0 ? gl.ZERO : gl.ONE, art === 0 ? gl.ZERO : gl.ONE_MINUS_SRC_ALPHA);   // die Lücke löscht, was die Montage dort gezeichnet hat
+      gl.uniform1i(pr.ort("uArt"), art); gl.drawArrays(gl.TRIANGLES, 0, B.n * 6);
+    }
+    gl.disable(gl.BLEND);
   }
 
   const fp = (pr, name, ...v) => gl[`uniform${v.length}f`](pr.ort(name), ...v);
@@ -294,12 +384,14 @@ export function motorErstellen({ sparsam = SPARSAM, verloren = () => {}, zurueck
       if (!pr) continue;
       gl.bindFramebuffer(gl.FRAMEBUFFER, lage.fb);
       gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
-      gl.useProgram(pr.p);
-      textur(pr, "uBild", 0, bild.tex); textur(pr, "uUnten", 1, acc[i].tex);
-      fp(pr, "uRes", b, h); fp(pr, "uFit", fit[0], fit[1]); fp(pr, "uLod", lod);
-      fp(pr, "uPhi", tz * Math.PI * 2); fp(pr, "uT", tz); fp(pr, "uPsi", tt * Math.PI * 2); fp(pr, "uL", D / DAUER); fp(pr, "uLauf", stapel.durchlauf ? 1 : 0); fp(pr, "uSeed", e.seed ?? 0); fp(pr, "uQuelle", e.quelle === "unten" ? 1 : 0); fp(pr, "uZeigen", stapel.ohneBild ? 0 : 1); fp(pr, "uSparsam", motor.sparsam ? 1 : 0);
       const w = def.regler.map((r, k) => wertVon(def, e.werte, k));
-      gl.uniform1fv(pr.ort("uP[0]"), Float32Array.from({ length: 6 }, (_, k) => w[k] ?? 0));
+      const setzen = (pr) => {
+        textur(pr, "uBild", 0, bild.tex); textur(pr, "uUnten", 1, acc[i].tex);
+        fp(pr, "uRes", b, h); fp(pr, "uFit", fit[0], fit[1]); fp(pr, "uLod", lod);
+        fp(pr, "uPhi", tz * Math.PI * 2); fp(pr, "uT", tz); fp(pr, "uPsi", tt * Math.PI * 2); fp(pr, "uL", D / DAUER); fp(pr, "uLauf", stapel.durchlauf ? 1 : 0); fp(pr, "uSeed", e.seed ?? 0); fp(pr, "uQuelle", e.quelle === "unten" ? 1 : 0); fp(pr, "uZeigen", stapel.ohneBild ? 0 : 1); fp(pr, "uSparsam", motor.sparsam ? 1 : 0);
+        gl.uniform1fv(pr.ort("uP[0]"), Float32Array.from({ length: 6 }, (_, k) => w[k] ?? 0));
+      };
+      gl.useProgram(pr.p); setzen(pr);
       if (def.punkte) {
         let { cols, rows } = def.punkte(w, a, h, motor.sparsam ? DICHTE_SPARSAM : 1);
         if (motor.sparsam && cols * rows > PUNKTE_SPARSAM) rows = Math.max(1, Math.floor(PUNKTE_SPARSAM / cols));   // Obergrenze auf Handys
@@ -308,7 +400,13 @@ export function motorErstellen({ sparsam = SPARSAM, verloren = () => {}, zurueck
         if (def.mischung === "add") gl.blendFunc(gl.ONE, gl.ONE); else gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
         gl.drawArrays(gl.POINTS, 0, cols * rows);
         gl.disable(gl.BLEND);
-      } else streifen(b, h);
+      } else {
+        streifen(b, h);
+        if (def.schwerkraft && w[def.schwerkraft.regler] >= .005) {
+          const { schluessel, p } = bahnSchluessel(stapel, def, e, w, a, D, zyklen);
+          try { kachelnZeichnen(bahnHolen(schluessel, bild, p), tz, setzen); } catch (f) { console.error("Schwerkraft:", f); }
+        }
+      }
       const m = programm("misch", VS_FLAECHE, FS_MISCH);
       gl.bindFramebuffer(gl.FRAMEBUFFER, acc[1 - i].fb);
       gl.useProgram(m.p);
@@ -329,7 +427,7 @@ export function motorErstellen({ sparsam = SPARSAM, verloren = () => {}, zurueck
     return [...motor.kaputt.values()];
   }
 
-  return Object.assign(motor, { zeichnen, bildLaden, pruefen, hatBild: (s) => bilder.has(s) });
+  return Object.assign(motor, { zeichnen, vorbereiten, bildLaden, pruefen, hatBild: (s) => bilder.has(s) });
 }
 
 // ——— MP4: 1080 × 1350, 30 fps, eine Schlaufe; WebCodecs mit mp4-muxer (lokal in vendor/), sonst MediaRecorder in Echtzeit ———
@@ -345,6 +443,7 @@ async function konfiguration(b, h) {
 
 export async function videoErstellen(motor, stapel, { breite = 1080, hoehe = 1350, fortschritt = () => {}, abbruch = () => false } = {}) {
   const n = dauerVon(stapel) * FPS;
+  await motor.vorbereiten?.(stapel, breite, hoehe);
   const cfg = await konfiguration(breite, hoehe);
   if (cfg) {
     const { Muxer, ArrayBufferTarget } = await import("../vendor/mp4-muxer-5.2.2/mp4-muxer.js");

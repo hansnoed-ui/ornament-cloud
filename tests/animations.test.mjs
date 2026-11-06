@@ -23,7 +23,7 @@ test("Effekte: 23, Regler zwischen 0 und 1, höchstens sechs, Shader mit effekt(
   assert.deepEqual(EFFEKT_IDS, Object.keys(EFFEKTE));
   for (const [id, e] of Object.entries(EFFEKTE)) {
     assert.ok(e.name && e.herkunft, id);
-    assert.ok(e.regler.length >= 1 && e.regler.length <= 6, id);
+    assert.ok(e.regler.length >= 1 && e.regler.length <= 7, id);   // sieben seit der Schwerkraft der Montage (6. November 2026); werke.php nimmt bis sieben
     for (const r of e.regler) assert.ok(r.wert >= 0 && r.wert <= 1, `${id}: ${r.name}`);
     assert.match(e.glsl, e.punkte ? /void punkt\(int id/ : /vec4 effekt\(vec2 uv\)/, id);
   }
@@ -181,7 +181,7 @@ test("Handy (5. November 2026: «Diese Seite braucht WebGL 2 … gestern gings n
 
 test("Laptop (5. November 2026: «ich hab zurzeit viele abstürze … am laptop»): Effekte in Streifen, schwache Grafik und ein Wächter schalten auf sparsam", () => {
   const motor = lies("animations/motor.js"), seite = lies("animations/seite.js");
-  assert.match(motor, /function streifen\(b, h\)/); assert.match(motor, /gl\.scissor\(/); assert.match(motor, /\} else streifen\(b, h\);/);
+  assert.match(motor, /function streifen\(b, h\)/); assert.match(motor, /gl\.scissor\(/); assert.match(motor, /\} else \{\s*streifen\(b, h\);/);
   assert.match(motor, /SCHWACHE_GRAFIK = \/Intel/);
   assert.match(seite, /else if \(langsam >= 8 && !motor\.sparsam\)/);
 });
@@ -250,4 +250,15 @@ test("Sprachen (5. November 2026: «Bitte die seite Animations auch in Spanisch 
   // Kurzlinks behalten die Sprache, die Ablage liegt neben dem Modul
   assert.match(lies(".htaccess"), /RewriteRule \^a\/\(\[0-9A-Za-z\]\{6,10\}\)\/\(en\|es\)\/\?\$ \/animations\/\$2\/#a=\$1 \[R=302,NE,L\]/);
   assert.match(lies("animations/seite.js"), /new URL\("werke\.php", import\.meta\.url\)/);
+});
+
+test("Schwerkraft (6. November 2026, Planck.js): Montage hat den Regler, ältere Werke bleiben ohne, Planck liegt lokal, das MP4 rechnet den Fall vorher", () => {
+  const m = EFFEKTE.montage, k = m.regler.findIndex((r) => r.name === "Schwerkraft");
+  assert.equal(k, 6); assert.deepEqual(m.schwerkraft, { regler: 6, teilung: 0 });
+  assert.equal(wertVon(m, [.5, .5, .4, .4, .5, 0], 6), 0, "ein Werk mit sechs Werten fällt nicht");
+  assert.ok(existsSync(new URL("vendor/planck-1.4.2/planck.js", root)) && existsSync(new URL("vendor/planck-1.4.2/LICENSE", root)));
+  const motor = lies("animations/motor.js"), sk = lies("animations/schwerkraft.js");
+  assert.match(sk, /import\("\.\.\/vendor\/planck-1\.4\.2\/planck\.js"\)/);
+  assert.match(motor, /await motor\.vorbereiten\?\.\(stapel, breite, hoehe\)/);
+  assert.match(lies("animations/werke.php"), /count\(\$werte\) > 7/);
 });

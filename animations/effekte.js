@@ -1,5 +1,5 @@
 // Animationen – die Effekte als Bausteine. Jeder ist eine Funktion der Zeit in der Schlaufe (uPhi, uT) und liest seine Quelle mit
-// Q(uv): das Bild (bildfüllend) oder die Ebenen darunter. Regler laufen von 0 bis 1 (uP[0] … uP[5]).
+// Q(uv): das Bild (bildfüllend) oder die Ebenen darunter. Regler laufen von 0 bis 1 (uP[0] … uP[5]; ein siebter wie die Schwerkraft der Montage wirkt nur im Motor).
 // Herkunft: die nachgebauten Effekte aus dem Projekt «Animations» (Python, Desktop «claude social media/Animations», UEBERGABE.md)
 // und drei Referenzvideos vom 3. November 2026 (holotx, incrprl.dsgn, infinite mantra), hier neu als Shader für den Browser;
 // seit 4. November 2026 ohne Seifenblase und Holo-Kugel, dafür Effekte, die stark aus der Bildinformation schöpfen (am Ende der Liste).
@@ -418,10 +418,13 @@ vec4 effekt(vec2 uv){
 
 
   montage: {
-    name: "Montage", herkunft: "Quadtree-Collage: das Bild zerfällt dort in kleine Kacheln, wo es viel Detail hat; Kacheln verrutschen, drehen, spiegeln und glitchen, als Vierecke, Dreiecke, Vielecke oder Kreise",
+    name: "Montage", herkunft: "Quadtree-Collage: das Bild zerfällt dort in kleine Kacheln, wo es viel Detail hat; Kacheln verrutschen, drehen, spiegeln und glitchen, als Vierecke, Dreiecke, Vielecke oder Kreise; mit Schwerkraft fallen Kacheln herunter, stapeln sich und setzen sich wieder zusammen",
     // Form seit 5. November 2026 (Wunsch: «nicht nur vierecke, sondern auch dreiecke, viel-ecke, kreise»): eine Wahl mit vier Stufen in P5,
     // Vierecke ist 0, so bleiben ältere Werke (fünf Werte) unverändert
-    regler: [r("Teilung", .5), r("Verrutschen", .5), r("Drehen", .4), r("Glitch", .4), r("Fugen", .5), w("Form", ["Vierecke", "Dreiecke", "Vielecke", "Kreise"])],
+    regler: [r("Teilung", .5), r("Verrutschen", .5), r("Drehen", .4), r("Glitch", .4), r("Fugen", .5), w("Form", ["Vierecke", "Dreiecke", "Vielecke", "Kreise"]), r("Schwerkraft", .5, 0)],
+    // Schwerkraft seit 6. November 2026 (Planck.js, Wunsch: «Oh toll ja gerne»): der Anteil der Kacheln, die sich lösen, fallen und
+    // sich unten stapeln; gerechnet in schwerkraft.js, gezeichnet vom Motor über der Montage. Ältere Werke (sechs Werte) bleiben ohne (alt 0)
+    schwerkraft: { regler: 6, teilung: 0 },
     glsl: `${FELD}
 vec4 effekt(vec2 uv){
   vec2 p = P(uv); float sz = .5, lv = 0.; vec2 c = floor(p / sz) * sz;
