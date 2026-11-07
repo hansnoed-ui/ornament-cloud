@@ -509,7 +509,7 @@ vec4 effekt(vec2 uv){
     // Stil «Achat» seit 7. November 2026 (Stilreferenz forside_art: Achat- und Jahresring-Scheiben in Eisblau bis Indigo, rauchiger Kern,
     // zäh fliessend; Christian: «Ja» zum Prototyp): dieselben Höhenlinien, aber sehr dicht als Bänder, die dem Umriss folgen, freigestellt auf
     // Schwarz; die Regler heissen dort: Linien = Dichte der Bänder, Steigen = wie schnell sie nach innen wandern, Strich = Härte der Bänder,
-    // Wellen = Strömung und Rauch im Kern, Flächen = Freistellen (0 bildfüllend), Kubismus wie bisher. Karte ist 0, ältere Werke bleiben gleich.
+    // Wellen = Strömung und Rauch im Kern, Flächen = Freistellen (bis 0,6 bildfüllend, darüber eine Scheibe auf Schwarz), Kubismus wie bisher. Karte ist 0, ältere Werke bleiben gleich.
     glsl: `${FELD}
 ${KUBUS}
 float hlH(vec2 u, float l){ return .25 * hoehe(u, 1.5 + l) + .45 * hoehe(u, 3. + l) + .3 * hoehe(u, 4.8 + l); }
@@ -527,9 +527,9 @@ vec4 achat(vec2 uv, Kub F){
   vec2 q = p + w1 + w2, u = UV(q);
   // Umriss: aus den grossen Formen des Bildes (stark geglättet) und etwas Rauschen, eine organische Scheibe
   float grob = hoehe(u, 6.5), H = .45 * hlH(u, .8) + .55 * hoehe(u, 4.5);   // geglättet: Bänder statt Körnung
-  float gr = mix(.43, .3, smoothstep(.35, 1., P4));
+  float gr = mix(.43, .3, smoothstep(.85, 1., P4));
   float s = length(q / vec2(A() * gr / .5 * .5, gr)) + .22 * lfbm(q * 1.6 + 4., .3) - .2 * (grob - .5);
-  float frei = smoothstep(.05, .3, P4), aa = fwidth(s) + 1e-4;
+  float frei = smoothstep(.6, .85, P4), aa = fwidth(s) + 1e-4;   // bildfüllend bis gut über die Hälfte (Christian: «Sollte bildschirmfüllend sein»)
   float maske = mix(1., clamp((1. - s) / aa, 0., 1.), frei);
   // Bänder: Helligkeit plus Abstand zum Rand, so laufen sie aussen dem Umriss entlang und innen den Formen des Bildes
   float N = mix(14., 60., P0), sp = 4. * floor(1. + P1 * 1.999);
