@@ -505,15 +505,66 @@ vec4 effekt(vec2 uv){
     name: "Höhenlinien", herkunft: "Topografie: die Helligkeit als Gelände, Höhenlinien steigen langsam bergauf, jede vierte kräftiger",
     // Kubismus (5. November 2026): 0 ist die bisherige Karte, darüber zerfällt das Gelände in gekippte Ebenen, jede aus eigener
     // Perspektive; die Neigung einer Ebene legt sich als Gefälle auf ihr Gelände, so laufen die Linien darin wie Schraffuren
-    regler: [r("Linien", .45), r("Steigen", .3), r("Strich", .4), r("Wellen", .3), r("Flächen", .35), r("Kubismus", .5, 0)],
+    regler: [r("Linien", .45), r("Steigen", .3), r("Strich", .4), r("Wellen", .3), r("Flächen", .35), r("Kubismus", .5, 0), w("Stil", ["Karte", "Achat"])],
+    // Stil «Achat» seit 7. November 2026 (Stilreferenz forside_art: Achat- und Jahresring-Scheiben in Eisblau bis Indigo, rauchiger Kern,
+    // zäh fliessend; Christian: «Ja» zum Prototyp): dieselben Höhenlinien, aber sehr dicht als Bänder, die dem Umriss folgen, freigestellt auf
+    // Schwarz; die Regler heissen dort: Linien = Dichte der Bänder, Steigen = wie schnell sie nach innen wandern, Strich = Härte der Bänder,
+    // Wellen = Strömung und Rauch im Kern, Flächen = Freistellen (0 bildfüllend), Kubismus wie bisher. Karte ist 0, ältere Werke bleiben gleich.
     glsl: `${FELD}
 ${KUBUS}
+float hlH(vec2 u, float l){ return .25 * hoehe(u, 1.5 + l) + .45 * hoehe(u, 3. + l) + .3 * hoehe(u, 4.8 + l); }
+vec3 achatTon(float s){                                                 // dunkles Indigo, Petrol, Eisblau, fast Weiss
+  vec3 a = vec3(.008, .02, .05), b = vec3(.03, .14, .29), c = vec3(.2, .48, .7), d = vec3(.8, .92, .97);
+  s = clamp(s, 0., 1.);
+  return s < .33 ? mix(a, b, s / .33) : s < .68 ? mix(b, c, (s - .33) / .35) : mix(c, d, (s - .68) / .32);
+}
+vec4 achat(vec2 uv, Kub F){
+  vec2 p = F.q, p0 = P(uv);
+  float k = uRes.y / 1350., Wl = .25 + P3 * 1.5;
+  // zähe Strömung: das Gelände wird von einem langsamen Wirbelfeld verbogen (ln läuft auf einem Kreis, die Schlaufe schliesst)
+  vec2 w1 = lcurl(p * 1.1 + 2.3, .35) * .018 * Wl;
+  vec2 w2 = lcurl((p + w1) * 2.4 + 7.1, .5) * .006 * Wl;
+  vec2 q = p + w1 + w2, u = UV(q);
+  // Umriss: aus den grossen Formen des Bildes (stark geglättet) und etwas Rauschen, eine organische Scheibe
+  float grob = hoehe(u, 6.5), H = .45 * hlH(u, .8) + .55 * hoehe(u, 4.5);   // geglättet: Bänder statt Körnung
+  float gr = mix(.43, .3, smoothstep(.35, 1., P4));
+  float s = length(q / vec2(A() * gr / .5 * .5, gr)) + .22 * lfbm(q * 1.6 + 4., .3) - .2 * (grob - .5);
+  float frei = smoothstep(.05, .3, P4), aa = fwidth(s) + 1e-4;
+  float maske = mix(1., clamp((1. - s) / aa, 0., 1.), frei);
+  // Bänder: Helligkeit plus Abstand zum Rand, so laufen sie aussen dem Umriss entlang und innen den Formen des Bildes
+  float N = mix(14., 60., P0), sp = 4. * floor(1. + P1 * 1.999);
+  float f = (H + (1. - s) * mix(.25, .5, frei)) * N + uT * sp, aaf = clamp(fwidth(f), 1e-4, .5);
+  float idx = floor(f), fr = fract(f), hb = h12(vec2(idx, 3.1) + uSeed);
+  float rand = min(fr, 1. - fr) / aaf;                                  // Abstand zur Bandgrenze in Pixeln
+  float hart = mix(.6, 3., P2), weich = smoothstep(0., 1., fr);
+  float ton = mix(hb, h12(vec2(idx + 1., 3.1) + uSeed), pow(weich, hart * 2.));   // jedes Band mit eigenem Ton
+  ton = ton * .55 + .2 * (.5 + .5 * cos(TAU * f * 3. + hb * 6.));       // feine Maserung im Band
+  float naht = clamp(1.2 * k * mix(.6, 1.4, hb) - rand + .5, 0., 1.) * smoothstep(.45, .15, aaf);   // haarfeine helle Bandgrenze
+  // aussen hell, innen tief: der Rand der Scheibe wird fast weiss, der Kern dunkel (oder bildfüllend nach der Helligkeit)
+  float tief = mix(1. - H, .55 * (1. - s) + .45 * (1. - H), frei);
+  float L = ton * .45 + .6 * (1. - smoothstep(.0, .7, tief)) + naht * .35 + .06;
+  // Rauch im Kern: weiche Schwaden, vom selben Wirbel getragen, wo es tief ist
+  float kern = smoothstep(.4, .9, tief) * min(1., P3 * 2.);
+  float rauch = lfbm(q * 3.2 + w1 * 30., .6) + .5 * lfbm(q * 7. - w2 * 60., .8);
+  L = mix(L, .25 + .6 * smoothstep(-.2, .6, rauch), kern * .7);
+  vec3 col = achatTon(L);
+  // das Bild klingt leise mit: sein Licht als Relief, seine Farbe als Hauch
+  float e = 3. / uRes.y;
+  vec2 g = vec2(hlH(UV(q + vec2(e, 0.)), 1.2) - hlH(UV(q - vec2(e, 0.)), 1.2), hlH(UV(q + vec2(0., e)), 1.2) - hlH(UV(q - vec2(0., e)), 1.2)) / (2. * e);
+  vec3 Ld = normalize(vec3(-.6, .7, 1.2));
+  col *= clamp(dot(normalize(vec3(-g * .015, 1.)), Ld) / Ld.z, .75, 1.15);
+  vec3 im = Ql(u, 0.).rgb;
+  col = mix(col, col * (.55 + .9 * im / max(lum(im), .08) * .5), .25 * uZeigen);
+  col += vec3(.75, .88, .95) * exp(-pow((1. - s) / (4. * aa + .004), 2.)) * .35 * frei;   // heller Saum am Umriss
+  col *= maske * F.licht;
+  return vec4(clamp(schulter(col), 0., 1.), 1.);
+}
 // seit 5. November 2026 (Christian: «höhenlinien sind auch noch nicht gut»): das Gelände ist geglättet (die Linien folgen den grossen Formen
 // statt jedem Korn), wo die Linien zu dicht würden, laufen sie aus statt zu flimmern; ein Schummerungslicht aus dem Gefälle wandert langsam
 // und hält (halt), so steht das Bild als Relief; die Linien leuchten in den Farben des Bildes, die kräftigen mit einem weichen Hof
-float hlH(vec2 u, float l){ return .25 * hoehe(u, 1.5 + l) + .45 * hoehe(u, 3. + l) + .3 * hoehe(u, 4.8 + l); }
 vec4 effekt(vec2 uv){
   Kub F = kubus(P(uv), P5);
+  if (P6 > .5) return achat(uv, F);
   vec2 p = F.q, u = UV(p);
   float h = hlH(u, 0.) + lfbm(p * 2.5, .7) * .05 * P3 + dot(F.kipp, p - F.mitte) * 1.2;
   float N = mix(8., 46., P0), sp = 4. * floor(1. + P1 * 1.999);   // vier oder acht Linien pro Schlaufe: die kräftigen schliessen an
