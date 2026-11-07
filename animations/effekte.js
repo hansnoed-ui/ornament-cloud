@@ -352,13 +352,18 @@ vec4 effekt(vec2 uv){
   },
 
   relief: {
-    name: "Relief", herkunft: "2.5D: Helligkeit als Tiefe, das Bild wird zum Relief aus echtem Material (Farbe, Lack, Blattgold oder Prägung), die Kamera schwebt (Parallaxe), ein Licht kreist darüber und wirft Schatten, ein Lichtstudio spiegelt sich darin",
+    name: "Relief", herkunft: "2.5D: Helligkeit als Tiefe, das Bild wird zum Relief aus echtem Material (Farbe, Lack, Blattgold oder Prägung) oder liegt hinter gegossenem Glas, die Kamera schwebt (Parallaxe), ein Licht kreist darüber und wirft Schatten, ein Lichtstudio spiegelt sich darin",
     // Licht und Material seit 6. November 2026 nach Filament (Google, Apache 2.0; Christian schickte den Link): statt Phong rechnet der
     // Effekt physikalisch wie Filament, aber als eigener Shader ohne die 3,6 MB der Bibliothek: Mikrofacetten (GGX, Smith, Schlick),
     // Metall und Nichtmetall, eine Klarlackschicht und ein gemaltes Lichtstudio als Umgebung (Split-Sum nach Karis). Dazu weiche
     // Schatten aus dem Relief selbst: ein tiefes Licht wird zum Streiflicht, das die Formen des Bildes hervorholt. «Oberfläche» wählt
     // das Material, «Material» stuft es ab (Lack: Schichtdicke, Blattgold: wie viel vergoldet ist, Prägung: wie viel Farbe bleibt).
-    regler: [r("Tiefe", .55), r("Parallaxe", .45), r("Lichthöhe", .45), r("Glanz", .4), r("Material", .2), w("Oberfläche", ["Bild", "Lack", "Blattgold", "Prägung"])],
+    // Glas seit 7. November 2026 (Christian schickte ein Video von @neilsonks auf X: eine Seite hinter Ornamentglas mit Drahtgitter, ein
+    // Lichtfleck wandert darüber): das Bild liegt hinter einer gegossenen Scheibe und wird von ihr gebrochen und gestreut. Was im Bild
+    // hervortritt (dunkler oder farbiger als das Ganze), liegt nah am Glas und drückt scharf durch, der Rest verschwimmt im Nebel.
+    // «Tiefe» ist der Abstand hinter dem Glas, «Material» die Glasart (Hammerschlag → Riffel → Eisblume, stufenlos), «Lichthöhe»
+    // die Grösse des wandernden Lichtflecks, «Glanz» wie stark er blendet und auf den Noppen funkelt; «Drahtglas» legt ein Gitter ein.
+    regler: [r("Tiefe", .55), r("Parallaxe", .45), r("Lichthöhe", .45), r("Glanz", .4), r("Material", .2), w("Oberfläche", ["Bild", "Lack", "Blattgold", "Prägung", "Glas", "Drahtglas"])],
     glsl: `${FELD}
 float H(vec2 uv){ return .45 * hoehe(uv, 1.) + .35 * hoehe(uv, 2.5) + .2 * hoehe(uv, 4.5); }
 // Filament: Verteilung (GGX), Sichtbarkeit (Smith, korreliert), Fresnel (Schlick), Umgebung (Karis' Näherung des Split-Sum)
@@ -378,8 +383,72 @@ vec3 rlStudio(vec3 d, float ro, vec3 Ld){
   float quer = dot(d.xy, normalize(Ld.xy)) - .32 * sin(halt(uPhi, .4)), leiste = exp(-pow(quer / (.05 + b * .8), 2.)) * smoothstep(.3, .8, d.z) * smoothstep(1.1, .2, abs(dot(d.xy, q)) + .3);
   return grund + vec3(1., .97, .92) * 3.2 * rlKasten(d, c1, b) + vec3(.75, .85, 1.) * 1.2 * rlKasten(d, c2, b * 1.4) + vec3(1., .98, .95) * 3.5 * leiste * min(1., .06 / b + .15);
 }
+// Glas: drei gegossene Oberflächen als Höhe (q in Bildhöhen, ruhend, nur vom Zufallswert abhängig)
+float glHammer(vec2 q){   // Hammerschlag: flache runde Mulden, an den Graten stossen sie zusammen
+  q *= 62.; vec2 i = floor(q), f = fract(q); float d = 8.;
+  for (int y = -1; y <= 1; y++) for (int x = -1; x <= 1; x++){ vec2 o = vec2(x, y), v = f - o - .15 - .7 * h22(i + o + uSeed * 13.); d = min(d, dot(v, v)); }
+  return d * .5;
+}
+float glRiffel(vec2 q){   // Riffel: runde senkrechte Stäbe, leicht gewellt wie gegossen
+  float x = q.x * 40. + .7 * ln(q * vec2(1.2, 2.4), 0.), f = fract(x) * 2. - 1.;
+  return sqrt(max(1. - f * f, 0.)) * .5;
+}
+float glEis(vec2 q){      // Eisblume: verästelte Grate wie gefrorener Leim
+  float s = 0., a = .5; q *= 13.;
+  for (int i = 0; i < 3; i++){ s += a * (1. - abs(ln(q, 0.))); q = rot(.9) * q * 2.1 + 3.1; a *= .5; }
+  return s * 1.1;
+}
+float glH(vec2 q, float t){
+  // die drei Glasarten stehen je auf einem Drittel des Reglers still, dazwischen gehen sie ineinander über
+  if (t < 1.){ float w = smoothstep(.3, .7, t); return w < .001 ? glHammer(q) : mix(glHammer(q), glRiffel(q), w); }
+  float w = smoothstep(.3, .7, t - 1.); return w > .999 ? glEis(q) : mix(glRiffel(q), glEis(q), w);
+}
+// hinter dem Glas: das Bild, ohne Bild nur seine Helligkeit als Grau (eine Stufe weicher)
+vec3 glHinter(vec2 u, float l){
+  if (uZeigen > .5) return Kl(u, l).rgb;
+  return mix(vec3(.08, .085, .08), vec3(.92, .93, .91), lum(Kl(u, l + 1.).rgb));
+}
+vec4 glas(vec2 uv, vec2 cam, bool draht){
+  vec2 p = P(uv);
+  float t = P4 * 2., e = 1.5 / uRes.y, k = uRes.y / 1350.;
+  if (uSparsam > .5) t = floor(t + .5);   // Handy: eine Glasart, keine Überblendung
+  float h0 = glH(p, t);
+  vec2 g = vec2(glH(p + vec2(e, 0.), t) - h0, glH(p + vec2(0., e), t) - h0) / e;
+  vec3 n = normalize(vec3(-g * .006, 1.));
+  // wie nah liegt das Bild am Glas: was sich vom Ganzen abhebt, liegt nah (scharf), der Grund liegt fern (Nebel)
+  vec3 grob = Kl(uv, 3.).rgb; float M = lum(Kl(vec2(.5), 14.).rgb);
+  float nah = smoothstep(.04, .3, abs(lum(grob) - M) * 1.2 + sat(grob) * .7);
+  float dist = P0 * mix(1., .3, nah);
+  // Parallaxe: hinter der ruhenden Scheibe zieht das Bild langsam vorbei, das ferne mehr
+  vec2 u = uv + cam * (.4 + dist) * 1.6 / vec2(A(), 1.);
+  vec2 br = n.xy * (.008 + dist * .07) / vec2(A(), 1.);   // Brechung: je weiter hinten, desto stärker versetzt
+  float lod = dist * 6.;
+  // gestreut: drei Blicke durch die Noppe, verschieden weit gebrochen, der fernste unschärfer
+  vec3 col = glHinter(u + br, lod) * .45 + glHinter(u + br * 2.2, lod + .7) * .35 + glHinter(u - br * .8, lod + .4) * .2;
+  col = mix(col, vec3(lum(col)) * vec3(.96, 1., .98) + .06, dist * .35);   // das Glas selbst ist milchig und leicht grünlich
+  // der Lichtfleck wandert langsam und hält an den Enden
+  float hl = halt(uPhi, .5);
+  vec2 c = vec2(-.26 * A() * cos(hl), .2 * sin(hl + .6) + .08);
+  float R = mix(.22, .55, P2), r2 = dot(p - c, p - c), fleck = exp(-r2 / (R * R));
+  vec3 Ld = normalize(vec3(c - p, mix(.18, .7, P2)));
+  vec3 Hh = normalize(Ld + vec3(0., 0., 1.));
+  float NoH = max(dot(n, Hh), 0.), NoL = max(dot(n, Ld), 0.), a = .09;
+  float a2 = a * a, dd = (NoH * a2 - NoH) * NoH + 1., D = a2 / (PI * dd * dd);
+  float spec = D * NoL * .035 * (.4 + 1.6 * P3) * (.25 + fleck);
+  float durch = fleck * (.45 + .55 * P3);   // durchscheinendes Licht bleicht das Bild aus
+  col = mix(col, vec3(.97, .98, .96), durch * .8) + vec3(1., .99, .96) * (spec + fleck * fleck * .12 * P3);
+  col *= .9 + .1 * clamp(n.z * 2. - 1., 0., 1.) - .12 * (1. - fleck) * P3;   // abseits des Lichts etwas dunkler, steile Flanken streuen weg
+  if (draht){   // Drahtgitter, im Glas eingegossen: es wird nur wenig gebrochen
+    float G = 34.; vec2 gq = p * G + n.xy * .25, f = abs(fract(gq + .5) - .5) / G * uRes.y;
+    float w = min(f.x, f.y), lin = clamp(1.1 * k + .5 - w, 0., 1.);
+    col = mix(col, vec3(.22, .23, .22) + vec3(.75) * fleck * .5, lin * .65);
+  }
+  return vec4(clamp(schulter(col), 0., 1.), 1.);
+}
 vec4 effekt(vec2 uv){
   vec2 cam = vec2(cos(uPhi), .6 * sin(uPhi)) * mix(0., .05, P1), u = uv;
+  int m = int(floor(P5 * 5. + .5));
+  if (m >= 4) return glas(uv, cam, m == 5);
   for (int i = 0; i < 5; i++) u = uv - cam * (H(u) - .5) / vec2(A(), 1.);   // Parallaxe: Nahes verschiebt sich stärker
   float e = 2.5 / uRes.y, k = mix(.004, .05, P0);
   vec2 g = vec2(H(u + vec2(e / A(), 0.)) - H(u - vec2(e / A(), 0.)), H(u + vec2(0., e)) - H(u - vec2(0., e))) / (2. * e);
@@ -400,7 +469,6 @@ vec4 effekt(vec2 uv){
   }
   sch = mix(1., ez(sch), smoothstep(.15, .6, P0));   // flaches Relief wirft kaum Schatten
   // Material
-  int m = int(floor(P5 * 3. + .5));
   vec3 gips = vec3(.93, .9, .86), metall = vec3(.78, .6, .38);
   vec3 bild = uZeigen > .5 ? Ql(u, 0.).rgb : gips;
   vec3 basis = bild; float met = 0., rau = mix(.85, .2, P3), lack = 0.;
