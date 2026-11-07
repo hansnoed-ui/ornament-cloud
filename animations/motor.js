@@ -1,9 +1,10 @@
 // Animationen – der Motor: ein WebGL-2-Kontext rechnet bis zu drei Ebenen übereinander (je Effekt, Quelle, Mischmodus, Deckkraft)
 // und gibt das Bild auf eine eigene Leinwand aus, die Reel, Werke und Mischpult abzeichnen. Alles hängt nur von der Zeit t in der
 // Schlaufe ab (phi = 2π·t/DAUER, ganzzahlige Frequenzen): Bild N ist wieder Bild 0, und das MP4 entsteht Bild für Bild.
-import { EFFEKTE, wertVon } from "./effekte.js?v=31";
-import { t } from "./sprache.js?v=31";
-import { physikLaden, kachelBahn, lageZur } from "./schwerkraft.js?v=31";
+import { EFFEKTE, wertVon } from "./effekte.js?v=32";
+import { t } from "./sprache.js?v=32";
+import { physikLaden, kachelBahn, lageZur } from "./schwerkraft.js?v=32";
+import { VIDEO_AN, videoZeit } from "./video.js?v=32";
 
 export const DAUER = 12, FPS = 30, LAENGEN = [12, 30, 60];
 /** Länge der Schlaufe eines Stapels in Sekunden (Vorgabe 12) */
@@ -163,6 +164,12 @@ void main(){
   o = vec4(c * al, al);
 }`;
 
+// Video: das Einzelbild (in der Überblendung zwei) als uBild, mit Mipmaps wie ein Bild
+const FS_VIDEO = `#version 300 es
+precision highp float;
+uniform sampler2D uA, uB; uniform float uF; in vec2 vUv; out vec4 o;
+void main(){ o = uF > 0. ? mix(texture(uA, vUv), texture(uB, vUv), uF) : texture(uA, vUv); }`;
+
 const FS_KOPIE = `#version 300 es
 precision highp float;
 uniform sampler2D uA; in vec2 vUv; out vec4 o;
@@ -263,11 +270,79 @@ export function motorErstellen({ sparsam = SPARSAM, verloren = () => {}, zurueck
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
     return tex;
   }
+  // ein neues eigenes Bild (oder Video) ersetzt das alte und gibt seinen Speicher frei
+  function freigeben(schluessel) {
+    const e = bilder.get(schluessel); if (!e) return;
+    if (!gl.isContextLost()) { gl.deleteTexture(e.tex); if (e.video?.gl) videoGlWeg(e.video); }
+    e.video?.speicher.freigeben();
+    bilder.delete(schluessel);
+  }
   async function bildLaden(schluessel, url) {
     const img = new Image(); img.decoding = "async"; img.src = url; await img.decode();
-    if (bilder.has(schluessel) && !gl.isContextLost()) gl.deleteTexture(bilder.get(schluessel).tex);   // ein neues eigenes Bild ersetzt das alte
+    freigeben(schluessel);
     bilder.set(schluessel, { tex: gl.isContextLost() ? null : hochladen(img), img, b: img.naturalWidth, h: img.naturalHeight });
   }
+
+  // Video: der Speicher aus video.js; img ist das erste Einzelbild (für die Schwerkraft), tex wird je Frame neu belegt
+  function videoLaden(schluessel, speicher) {
+    if (!VIDEO_AN) throw new Error("Video ist ausgeschaltet");
+    freigeben(schluessel);
+    bilder.set(schluessel, { tex: null, img: speicher.erstes, b: speicher.b, h: speicher.h, video: { speicher, gl: null, stand: "" } });
+  }
+  function quellTextur() {
+    const tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    return tex;
+  }
+  function videoGlWeg(v) { gl.deleteTexture(v.gl.a); gl.deleteTexture(v.gl.b); gl.deleteTexture(v.gl.ziel); gl.deleteFramebuffer(v.gl.fb); v.gl = null; }
+  function hochladenIn(tex, img) {
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE, img);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+  }
+  /** legt das Einzelbild zur Zeit t als Textur des Videos an; ist es noch nicht entschlüsselt, bleibt das letzte stehen */
+  function videoFrame(bild, t, D) {
+    const v = bild.video, sp = v.speicher;
+    const z = videoZeit(t, D, sp.n, sp.fps);
+    sp.vorladen(z.a + 1);
+    if (z.b >= 0) sp.vorladen(z.b + 1, 3);
+    const A = sp.sofort(z.a), Bb = z.b >= 0 ? sp.sofort(z.b) : null;
+    if (!A) { sp.bild(z.a).catch(() => {}); if (bild.tex) return; }
+    if (z.b >= 0 && !Bb) sp.bild(z.b).catch(() => {});
+    const stand = `${A ? z.a : "x"}|${Bb ? z.b : -1}|${Bb ? z.f.toFixed(3) : 0}`;
+    if (stand === v.stand && bild.tex) return;
+    if (!v.gl) {
+      const ziel = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, ziel);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, sp.b, sp.h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
+      const fb = gl.createFramebuffer();
+      gl.bindFramebuffer(gl.FRAMEBUFFER, fb); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, ziel, 0);
+      v.gl = { a: quellTextur(), b: quellTextur(), ziel, fb };
+    }
+    hochladenIn(v.gl.a, A ?? sp.erstes);
+    if (Bb) hochladenIn(v.gl.b, Bb);
+    const pr = programm("video", VS_FLAECHE, FS_VIDEO);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, v.gl.fb); gl.viewport(0, 0, sp.b, sp.h);
+    gl.useProgram(pr.p);
+    textur(pr, "uA", 0, v.gl.a); textur(pr, "uB", 1, v.gl.b); gl.uniform1f(pr.ort("uF"), Bb ? z.f : 0);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.bindTexture(gl.TEXTURE_2D, v.gl.ziel); gl.generateMipmap(gl.TEXTURE_2D);
+    bild.tex = v.gl.ziel; v.stand = stand;
+  }
+  /** für das MP4: wartet, bis die Einzelbilder zur Zeit t entschlüsselt sind, damit jedes Bild des Videos genau stimmt */
+  async function videoBereit(stapel, t) {
+    const bild = bilder.get(stapel.bild); if (!bild?.video) return;
+    const sp = bild.video.speicher, z = videoZeit(t, dauerVon(stapel), sp.n, sp.fps);
+    await Promise.all([sp.bild(z.a), z.b >= 0 ? sp.bild(z.b) : null]);
+  }
+
+  const fp = (pr, name, ...v) => gl[`uniform${v.length}f`](pr.ort(name), ...v);
+  const textur = (pr, name, einheit, tex) => { gl.activeTexture(gl.TEXTURE0 + einheit); gl.bindTexture(gl.TEXTURE_2D, tex); gl.uniform1i(pr.ort(name), einheit); };
 
   // Kontext verloren (Grafikabsturz, zu viele Tabs, App im Hintergrund): warten, bis der Browser ihn zurückgibt, dann alles neu aufbauen
   // und ab jetzt sparsam rechnen, damit derselbe schwere Effekt ihn nicht gleich wieder umwirft
@@ -275,7 +350,10 @@ export function motorErstellen({ sparsam = SPARSAM, verloren = () => {}, zurueck
     gl.bindVertexArray(gl.createVertexArray());
     programme.clear(); motor.kaputt.clear();
     B = 0; H = 0; acc = []; lage = null; daten = null;
-    for (const e of bilder.values()) e.tex = hochladen(e.img);
+    for (const e of bilder.values()) {
+      if (e.video) { e.video.gl = null; e.video.stand = ""; e.tex = null; }   // Video: die Texturen entstehen beim nächsten Frame neu
+      else e.tex = hochladen(e.img);
+    }
   }
   aufbauen();
   leinwand.addEventListener("webglcontextlost", (e) => { e.preventDefault(); motor.sparsam = true; verloren(); });
@@ -357,8 +435,6 @@ export function motorErstellen({ sparsam = SPARSAM, verloren = () => {}, zurueck
     gl.disable(gl.BLEND);
   }
 
-  const fp = (pr, name, ...v) => gl[`uniform${v.length}f`](pr.ort(name), ...v);
-  const textur = (pr, name, einheit, tex) => { gl.activeTexture(gl.TEXTURE0 + einheit); gl.bindTexture(gl.TEXTURE_2D, tex); gl.uniform1i(pr.ort(name), einheit); };
   const GRUND = { schwarz: [0, 0, 0], weiss: [1, 1, 1] };
 
   /** zeichnet den Stapel zur Zeit t (Sekunden) in b × h Pixel; danach liegt das Bild auf der Leinwand */
@@ -366,11 +442,12 @@ export function motorErstellen({ sparsam = SPARSAM, verloren = () => {}, zurueck
     if (gl.isContextLost()) return;
     groesse(b, h);
     const bild = bilder.get(stapel.bild);
+    const D = dauerVon(stapel), zyklen = Math.max(1, Math.round(D / DAUER));
+    if (bild?.video) videoFrame(bild, t, D);   // Video: das Einzelbild zu dieser Zeit
     if (!bild?.tex) return;
     const a = b / h, ab = bild.b / bild.h;
     const fit = a > ab ? [1, ab / a] : [a / ab, 1];
     const lod = Math.max(0, Math.log2((bild.h * fit[1]) / h));
-    const D = dauerVon(stapel), zyklen = Math.max(1, Math.round(D / DAUER));
     const tt = ((t % D) + D) % D / D, tz = (tt * zyklen) % 1;
     gl.viewport(0, 0, b, h);
     gl.bindFramebuffer(gl.FRAMEBUFFER, acc[0].fb);
@@ -427,7 +504,7 @@ export function motorErstellen({ sparsam = SPARSAM, verloren = () => {}, zurueck
     return [...motor.kaputt.values()];
   }
 
-  return Object.assign(motor, { zeichnen, vorbereiten, bildLaden, pruefen, hatBild: (s) => bilder.has(s) });
+  return Object.assign(motor, { zeichnen, vorbereiten, bildLaden, videoLaden, videoBereit, pruefen, hatBild: (s) => bilder.has(s), istVideo: (s) => !!bilder.get(s)?.video });
 }
 
 // ——— MP4: 1080 × 1350, 30 fps, eine Schlaufe; WebCodecs mit mp4-muxer (lokal in vendor/), sonst MediaRecorder in Echtzeit ———
@@ -455,6 +532,7 @@ export async function videoErstellen(motor, stapel, { breite = 1080, hoehe = 135
     for (let i = 0; i < n; i++) {
       if (fehler) throw fehler;
       if (abbruch()) { enc.close(); return null; }
+      await motor.videoBereit?.(stapel, i / FPS);   // Video: das genaue Einzelbild
       motor.zeichnen(stapel, i / FPS, breite, hoehe);
       const frame = new VideoFrame(motor.leinwand, { timestamp: Math.round((i * 1e6) / FPS), duration: Math.round(1e6 / FPS) });
       enc.encode(frame, { keyFrame: i % (FPS * 2) === 0 }); frame.close();

@@ -60,7 +60,7 @@ test("Seite: noindex, nicht in der Sitemap, nichts von aussen, zwei Ansichten, k
   const html = lies("animations/index.html");
   assert.match(html, /<meta name="robots" content="noindex">/);
   assert.ok(!lies("sitemap.xml").includes("/animations/"));
-  for (const f of ["index.html", "en/index.html", "es/index.html", "seite.js", "motor.js", "effekte.js", "rezepte.js", "sprache.js"]) assert.doesNotMatch(lies(`animations/${f}`).replace(/<link rel="alternate" hreflang="[a-z-]+" href="https:\/\/ornament\.cloud\/animations\/[a-z/]*">/g, ""), /(src|href)=["']https?:|import\(["']https?:|from ["']https?:/, f);   // ausser den Verweisen auf die Sprachen
+  for (const f of ["index.html", "en/index.html", "es/index.html", "seite.js", "motor.js", "effekte.js", "rezepte.js", "sprache.js", "video.js"]) assert.doesNotMatch(lies(`animations/${f}`).replace(/<link rel="alternate" hreflang="[a-z-]+" href="https:\/\/ornament\.cloud\/animations\/[a-z/]*">/g, ""), /(src|href)=["']https?:|import\(["']https?:|from ["']https?:/, f);   // ausser den Verweisen auf die Sprachen
   const ansichten = [...html.matchAll(/data-ansicht="([a-z]+)"/g)].map((m) => m[1]);
   assert.deepEqual(ansichten, ["mischpult", "info"], "nur Mischpult und Info (4. November 2026)");
   assert.ok(!html.includes("Christian Strickler"), "kein Name des Betreibers auf der Seite (4. November 2026)");
@@ -124,7 +124,7 @@ test("Versionsmarke: index.html und alle Importe der Module tragen dieselbe ?v= 
   const html = lies("animations/index.html");
   const marke = html.match(/src="seite\.js\?v=(\d+)"/)?.[1];
   assert.ok(marke, "seite.js mit ?v= eingebunden");
-  for (const f of ["seite.js", "rezepte.js", "motor.js"]) {
+  for (const f of ["seite.js", "rezepte.js", "motor.js", "video.js"]) {
     const importe = [...lies(`animations/${f}`).matchAll(/from "\.\/([a-z]+\.js)([^"]*)"/g)];
     assert.ok(importe.length, f);
     for (const [, modul, v] of importe) assert.equal(v, `?v=${marke}`, `${f} → ${modul}`);
@@ -237,7 +237,7 @@ test("Sprachen (5. November 2026: «Bitte die seite Animations auch in Spanisch 
     for (const id of [...de.matchAll(/id="([a-z-]+)"/g)].map((m) => m[1])) assert.ok(html.includes(`id="${id}"`), `${sprache}: id ${id}`);
   }
   // jeder Text aus seite.js und motor.js (t("…")), jeder Effekt, Regler und jede Stufe hat beide Übersetzungen
-  const schluessel = [...lies("animations/seite.js").matchAll(/\bt\("((?:[^"\\]|\\.)*)"/g), ...lies("animations/motor.js").matchAll(/\bt\("((?:[^"\\]|\\.)*)"/g)].map((m) => m[1]);
+  const schluessel = ["seite.js", "motor.js", "video.js"].flatMap((f) => [...lies(`animations/${f}`).matchAll(/\bt\("((?:[^"\\]|\\.)*)"/g)]).map((m) => m[1]);
   assert.ok(schluessel.length > 60);
   for (const k of schluessel) assert.equal(UEBERSETZUNGEN[k]?.length, 2, `fehlt: ${k}`);
   for (const [id, e] of Object.entries(EFFEKTE)) {
@@ -261,4 +261,27 @@ test("Schwerkraft (6. November 2026, Planck.js): Montage hat den Regler, ältere
   assert.match(sk, /import\("\.\.\/vendor\/planck-1\.4\.2\/planck\.js"\)/);
   assert.match(motor, /await motor\.vorbereiten\?\.\(stapel, breite, hoehe\)/);
   assert.match(lies("animations/werke.php"), /count\(\$werte\) > 7/);
+});
+
+test("Video statt Bild (Prototyp, 7. November 2026: «Mach es so, dass es jederzeit rückgängig gemacht werden kann»): ein Schalter, 13 s, Schlaufe ohne Naht", async () => {
+  const V = await import(new URL("animations/video.js", root).href);
+  assert.equal(typeof V.VIDEO_AN, "boolean");
+  assert.equal(V.VIDEO_SEK, 13); assert.equal(V.VIDEO_FPS, 30);
+  // 13 s Video in 12 s Schlaufe: genau 1 ×, die erste Sekunde blendet vom Ende in den Anfang über
+  const n = 13 * 30, z0 = V.videoZeit(0, 12, n), zm = V.videoZeit(6, 12, n), zu = V.videoZeit(12 - 1 / 30, 12, n);
+  assert.equal(z0.tempo, 1); assert.equal(z0.a, 0); assert.equal(z0.b, 360); assert.equal(z0.f, 1);
+  assert.equal(zm.b, -1); assert.equal(zm.a, 180);
+  assert.equal(zu.a, 359, "das letzte Bild vor der Naht kommt direkt vor dem ersten Bild der Überblendung (360)");
+  // kurzes Video läuft mehrmals je Schlaufe, nie ausserhalb der Einzelbilder
+  for (const [sek, D] of [[3, 12], [5, 30], [13, 60], [0.5, 12]]) for (let t = 0; t < D; t += .37) {
+    const z = V.videoZeit(t, D, Math.round(sek * 30));
+    assert.ok(z.a >= 0 && z.a < Math.round(sek * 30) && z.b < Math.round(sek * 30) && z.f >= 0 && z.f <= 1, `${sek} s in ${D} s bei ${t}`);
+  }
+  // die Seite und der Motor fragen den Schalter, sichern geht mit Video noch nicht
+  const seite = lies("animations/seite.js"), motor = lies("animations/motor.js");
+  assert.match(seite, /if \(istVideo\(datei\)\) return eigenesVideo\(datei\)/);
+  assert.match(seite, /if \(VIDEO_AN\) \{\n  \$\("pult-datei"\)\.accept/);
+  assert.match(seite, /motor\.istVideo\(S\.mix\.bild\)\) \{ sichernMeldung/);
+  assert.match(motor, /if \(!VIDEO_AN\) throw/);
+  assert.match(motor, /await motor\.videoBereit\?\.\(stapel, i \/ FPS\)/, "das MP4 wartet auf das genaue Einzelbild");
 });
