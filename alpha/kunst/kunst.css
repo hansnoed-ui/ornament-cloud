@@ -134,7 +134,8 @@ button { font: inherit; color: inherit; }
   .rechts { border-top: 1px solid var(--linie); }
   .werkbank-raum, .zuordnung { grid-template-columns: 1fr; }
   .spalte-quellen { border-right: 0; border-bottom: 1px solid var(--linie); max-height: 30vh; }
-  .leiste { gap: 8px; padding-left: 12px; font-size: 0.85rem; }
+  /* Markieren und Montieren nur am grossen Bildschirm (am Handy nicht bedienbar) */
+  .marker, .leiste, .notiz-knoepfe, .nur-breit-text { display: none !important; }
 }
 @media (prefers-reduced-motion: no-preference) { .liste a, .marker, .knopf, .knopf-klein { transition: background 0.12s, color 0.12s; } }
 .themen { padding-bottom: 8px; border-bottom: 1px solid var(--linie); }
