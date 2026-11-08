@@ -1,13 +1,13 @@
 // Animationen – die Seite: Mischpult (das eigene Bild, Grund, drei Ebenen, Schalter, Sichern) mit den gesicherten Werken darunter
 // (gestreutes Raster, beim Darüberfahren lebendig, Klick lädt ins Mischpult) und Info. Ein Motor zeichnet für alles; die sichtbare
 // Leinwand übernimmt sein Bild. Seit 4. November 2026 ohne Reel, Beispielbilder und vorgefertigte Werke.
-import { motorErstellen, videoErstellen, DAUER, LAENGEN, MODI } from "./motor.js?v=33";
-import "./thema.js?v=33";
-import { EFFEKTE, EFFEKT_IDS, stufe, wertVon } from "./effekte.js?v=33";
-import { zufall, EIGEN } from "./rezepte.js?v=33";
-import { kurz, lang } from "./link.js?v=33";
-import { t, herkunft, fehlerText, SPRACHE, GEBIET } from "./sprache.js?v=33";
-import { VIDEO_AN, VIDEO_PX, VIDEO_PX_SPARSAM, istVideo, videoZerlegen } from "./video.js?v=33";
+import { motorErstellen, videoErstellen, DAUER, LAENGEN, MODI } from "./motor.js?v=34";
+import "./thema.js?v=34";
+import { EFFEKTE, EFFEKT_IDS, stufe, wertVon } from "./effekte.js?v=34";
+import { zufall, EIGEN } from "./rezepte.js?v=34";
+import { kurz, lang } from "./link.js?v=34";
+import { t, herkunft, fehlerText, SPRACHE, GEBIET } from "./sprache.js?v=34";
+import { VIDEO_AN, VIDEO_PX, VIDEO_PX_SPARSAM, istVideo, videoZerlegen } from "./video.js?v=34";
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, attr = {}, ...kinder) => {

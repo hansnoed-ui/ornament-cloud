@@ -10,7 +10,7 @@
 // die Schlaufe schliesst, und es läuft kein <video> mit, das hinterherhinkt. Damit das Video in der Schlaufe keine Naht hat, blendet
 // es in der ersten Sekunde jeder Runde vom Ende in den Anfang über. Länger als die Schlaufe muss es nicht sein: 13 s (12 s Schlaufe
 // und 1 s Überblendung) werden übernommen, der Rest abgeschnitten.
-import { t } from "./sprache.js?v=33";
+import { t } from "./sprache.js?v=34";
 
 /** Schalter: false nimmt Videos ganz heraus (Datei-Auswahl, Ziehen, Motor), die Seite ist dann wie vor dem 7. November 2026 */
 export const VIDEO_AN = true;
