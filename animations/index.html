@@ -45,6 +45,8 @@ Rechnet alles im Browser (WebGL 2, motor.js), das MP4 (1080 × 1350, 30 fps, 12 
 <meta name="color-scheme" content="dark light">
 <meta name="theme-color" content="#08090c" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#eceef2" media="(prefers-color-scheme: light)">
+<!-- Schalter Hell / Dunkel (thema.js): die gemerkte Wahl vor dem ersten Bild setzen, damit nichts aufblitzt -->
+<script>try{var w=localStorage.getItem("animationen-thema");if(w==="hell"||w==="dunkel")document.documentElement.dataset.thema=w}catch(e){}</script>
 <link rel="stylesheet" href="../vendor/fonts/animationen.css">
 <style>
 /* ---------- Tokens (DESIGN.md) ---------- */
@@ -58,9 +60,11 @@ Rechnet alles im Browser (WebGL 2, motor.js), das MP4 (1080 × 1350, 30 fps, 12 
   --dauer: 240ms;
   color-scheme: dark;
 }
+/* hell: nach dem Gerät, ausser der Schalter im Kopf hat anders gewählt (data-thema, 8. November 2026) */
 @media (prefers-color-scheme: light) {
-  :root { --grund: #eceef2; --flaeche: #fff; --buehne: #08090c; --tinte: #0e1016; --leise: rgba(14, 16, 22, .6); --linie: rgba(14, 16, 22, .16); --akzent: #3a7000; color-scheme: light; }
+  :root:not([data-thema="dunkel"]) { --grund: #eceef2; --flaeche: #fff; --buehne: #08090c; --tinte: #0e1016; --leise: rgba(14, 16, 22, .6); --linie: rgba(14, 16, 22, .16); --akzent: #3a7000; color-scheme: light; }
 }
+:root[data-thema="hell"] { --grund: #eceef2; --flaeche: #fff; --buehne: #08090c; --tinte: #0e1016; --leise: rgba(14, 16, 22, .6); --linie: rgba(14, 16, 22, .16); --akzent: #3a7000; color-scheme: light; }
 @media (prefers-reduced-motion: reduce) { :root { --dauer: 0ms; } }
 /* Format der Bühne: 4:5, 1:1 oder 16:9 (PR #615), gesetzt als data-format auf <html> */
 :root { --ar: 4 / 5; }
@@ -113,6 +117,34 @@ button { background: none; border: 0; padding: 0; cursor: pointer; border-radius
   text-transform: uppercase; text-decoration: none; color: var(--leise); }
 .sprachen a:hover { color: var(--tinte); }
 .sprachen a[aria-current="true"] { color: var(--akzent); }
+
+/* ---------- Schalter Hell / Dunkel (thema.js, 8. November 2026, nach Christians Video) ----------
+   Die eine Ausnahme von «kein Glas, keine Schatten, keine Verläufe»: ein Knopf mit Licht, wie im Vorbild. Hell trägt der Knauf rechts eine
+   Pixel-Sonne und einen bernsteinfarbenen Lichtbogen oben rechts; dunkel links einen Pixel-Mond und einen blauvioletten Bogen unten links. */
+.thema { --b: 68px; --h: 38px; --k: 34px; --i: 2px; --glut: #ffb21c; --halo: rgba(255, 178, 28, .34);
+  --bahn: #dfe2e8; --bahn-schatten: inset 0 1px 3px rgba(14, 16, 22, .22), inset 0 0 0 1px rgba(14, 16, 22, .06);
+  --knauf: linear-gradient(155deg, #ffffff 0%, #f1f1ef 55%, #e4e4e1 100%); --knauf-rand: rgba(255, 255, 255, .9); --knauf-schatten: 0 2px 6px rgba(14, 16, 22, .2), 0 1px 1px rgba(14, 16, 22, .12);
+  position: relative; flex: none; width: var(--b); height: var(--h); border-radius: calc(var(--h) * .34); -webkit-tap-highlight-color: transparent; }
+.thema[aria-checked="true"] { --glut: #8f8cff; --halo: rgba(132, 128, 255, .42);
+  --bahn: #030305; --bahn-schatten: inset 0 1px 4px rgba(0, 0, 0, .9), inset 0 0 0 1px rgba(233, 236, 242, .11);
+  --knauf: linear-gradient(155deg, #444653 0%, #2a2b35 50%, #17181f 100%); --knauf-rand: rgba(233, 236, 242, .16); --knauf-schatten: 0 2px 8px rgba(0, 0, 0, .7); }
+.thema-bahn { position: absolute; inset: 0; border-radius: inherit; background: var(--bahn); box-shadow: var(--bahn-schatten); transition: background-color .5s, box-shadow .5s; }
+.thema-knauf { position: absolute; top: var(--i); left: var(--i); width: var(--k); height: var(--k); border-radius: calc(var(--k) * .3);
+  background: var(--knauf); box-shadow: var(--knauf-schatten), 0 0 14px 1px var(--halo), inset 0 0 0 1px var(--knauf-rand);
+  transform: translateX(calc(var(--b) - var(--k) - var(--i) * 2)); transition: transform .52s cubic-bezier(.65, 0, .25, 1), box-shadow .5s; }
+.thema[aria-checked="true"] .thema-knauf { transform: none; }
+.thema-knauf canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; border-radius: inherit; }
+.thema-bogen { position: absolute; inset: -1px; width: calc(100% + 2px); height: calc(100% + 2px); overflow: visible; pointer-events: none; }
+.thema-bogen rect { fill: none; stroke: var(--glut); stroke-width: 3.2; stroke-linecap: round; stroke-dasharray: 30 70; stroke-dashoffset: -4;
+  filter: drop-shadow(0 0 2px var(--glut)) drop-shadow(0 0 5px var(--glut)); transition: stroke-dashoffset .7s cubic-bezier(.65, 0, .25, 1), stroke .5s; }
+.thema[aria-checked="true"] .thema-bogen rect { stroke-dashoffset: -52; }
+.thema:hover .thema-knauf { box-shadow: var(--knauf-schatten), 0 0 20px 3px var(--halo), inset 0 0 0 1px var(--knauf-rand); }
+.thema:active .thema-knauf { scale: .96; }
+.thema:focus-visible { outline-offset: 4px; }
+@media (prefers-reduced-motion: reduce) { .thema-knauf, .thema-bogen rect, .thema-bahn { transition: none; } }
+/* die Seite wechselt in einem Kreis vom Schalter aus (View Transitions); sonst ohne Überblendung */
+::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+.thema-wechsel::view-transition-new(root) { z-index: 2; }
 
 /* ---------- gemeinsame Bausteine ---------- */
 .rahmen { position: relative; background: var(--buehne); aspect-ratio: var(--ar); }
@@ -273,6 +305,7 @@ input[type="range"]:focus-visible { outline: none; }
   .kopf-innen { grid-template-columns: 1fr auto auto; gap: 12px; }
   .kopf-rechts { gap: 0; }
   .sprachen { padding-left: 4px; border-left: 0; }
+  .thema { --b: 58px; --h: 32px; --k: 28px; margin-right: 6px; }
   .sprachen a { min-width: 28px; }
   .kurz { display: block; margin: 0; font-size: 13px; color: var(--leise); }
   /* die Ansichten werden zur Leiste am unteren Rand (Daumenweite), dasselbe Element wie im Kopf */
@@ -296,6 +329,8 @@ input[type="range"]:focus-visible { outline: none; }
   .kolophon { grid-template-columns: 1fr; gap: 16px; }
   .export { left: var(--rand); right: var(--rand); width: auto; bottom: calc(68px + env(safe-area-inset-bottom, 0px)); }
 }
+/* schmale Handys: der Schalter braucht den Platz des Seitennamens (die Marke bleibt) */
+@media (max-width: 420px) { .kurz { display: none; } }
 </style>
 </head>
 <body>
@@ -417,6 +452,6 @@ input[type="range"]:focus-visible { outline: none; }
 </div></footer>
 
 <div class="export" id="export" hidden role="status"><div class="export-zeile"><span id="export-text">MP4 · 0 %</span><button type="button" id="export-stop">Abbrechen</button></div><div class="fortschritt" aria-hidden="true"><i></i></div></div>
-<script type="module" src="seite.js?v=32"></script>   <!-- Versionsmarke: bei Änderungen an den Modulen hier und in allen Importen hochzählen (Zwischenspeicher 10 Minuten, .htaccess) -->
+<script type="module" src="seite.js?v=33"></script>   <!-- Versionsmarke: bei Änderungen an den Modulen hier und in allen Importen hochzählen (Zwischenspeicher 10 Minuten, .htaccess) -->
 </body>
 </html>

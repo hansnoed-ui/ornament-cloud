@@ -124,11 +124,24 @@ test("Versionsmarke: index.html und alle Importe der Module tragen dieselbe ?v= 
   const html = lies("animations/index.html");
   const marke = html.match(/src="seite\.js\?v=(\d+)"/)?.[1];
   assert.ok(marke, "seite.js mit ?v= eingebunden");
-  for (const f of ["seite.js", "rezepte.js", "motor.js", "video.js"]) {
+  for (const f of ["seite.js", "rezepte.js", "motor.js", "video.js", "thema.js"]) {
     const importe = [...lies(`animations/${f}`).matchAll(/from "\.\/([a-z]+\.js)([^"]*)"/g)];
     assert.ok(importe.length, f);
     for (const [, modul, v] of importe) assert.equal(v, `?v=${marke}`, `${f} → ${modul}`);
   }
+});
+
+test("Schalter Hell / Dunkel (8. November 2026, nach Christians Video): thema.js baut ihn in den Kopf, data-thema übersteuert das Gerät, kein Aufblitzen", async () => {
+  const html = lies("animations/index.html"), thema = lies("animations/thema.js");
+  assert.match(html, /:root\[data-thema="hell"\] \{ --grund: #eceef2;/);
+  assert.match(html, /:root:not\(\[data-thema="dunkel"\]\) \{ --grund: #eceef2;/);
+  assert.ok(html.indexOf('localStorage.getItem("animationen-thema")') < html.indexOf("<style>"), "die gemerkte Wahl steht vor dem ersten Bild");
+  assert.match(lies("animations/seite.js"), /import "\.\/thema\.js\?v=\d+";/);
+  assert.match(thema, /export const SCHLUESSEL = "animationen-thema";/);
+  assert.match(thema, /setAttribute\("role", "switch"\)/);
+  const { sonne, mond } = await import(new URL("animations/thema.js", root).href);
+  for (const p of [...sonne(), ...mond()]) assert.ok(p[0] >= 0 && p[0] < 13 && p[1] >= 0 && p[1] < 13, String(p));
+  assert.ok(sonne().length > 25 && mond().length > 25);
 });
 
 test("Werk sichern: leere Ebenen («— keine —») gehen nicht mit, werke.php überspringt sie (Fehler live am 4. November 2026)", () => {
@@ -237,7 +250,7 @@ test("Sprachen (5. November 2026: «Bitte die seite Animations auch in Spanisch 
     for (const id of [...de.matchAll(/id="([a-z-]+)"/g)].map((m) => m[1])) assert.ok(html.includes(`id="${id}"`), `${sprache}: id ${id}`);
   }
   // jeder Text aus seite.js und motor.js (t("…")), jeder Effekt, Regler und jede Stufe hat beide Übersetzungen
-  const schluessel = ["seite.js", "motor.js", "video.js"].flatMap((f) => [...lies(`animations/${f}`).matchAll(/\bt\("((?:[^"\\]|\\.)*)"/g)]).map((m) => m[1]);
+  const schluessel = ["seite.js", "motor.js", "video.js", "thema.js"].flatMap((f) => [...lies(`animations/${f}`).matchAll(/\bt\("((?:[^"\\]|\\.)*)"/g)]).map((m) => m[1]);
   assert.ok(schluessel.length > 60);
   for (const k of schluessel) assert.equal(UEBERSETZUNGEN[k]?.length, 2, `fehlt: ${k}`);
   for (const [id, e] of Object.entries(EFFEKTE)) {
