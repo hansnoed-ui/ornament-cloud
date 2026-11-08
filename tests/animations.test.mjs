@@ -76,10 +76,11 @@ test("Teilen: die Seite trägt die Vorschaukarte (Open Graph und X) mit absolute
   const m = new Map([...html.matchAll(/<meta (?:property|name)="([^"]+)" content="([^"]*)">/g)].map((x) => [x[1], x[2]]));
   assert.equal(m.get("og:url"), "https://ornament.cloud/animations/");
   assert.equal(m.get("og:title"), "Animationen");
-  assert.equal(m.get("og:image"), "https://ornament.cloud/animations/og-animationen.jpg");
+  assert.equal(m.get("og:image"), "https://ornament.cloud/animations/og-de.jpg");
+  for (const s of ["en", "es"]) assert.ok(lies(`animations/${s}/index.html`).includes(`content="https://ornament.cloud/animations/og-${s}.jpg"`), `${s}: eigene Vorschaukarte`);
   assert.equal(m.get("twitter:card"), "summary_large_image");
-  assert.ok(existsSync(new URL("animations/og-animationen.jpg", root)), "animations/og-animationen.jpg fehlt (NODE_PATH=$(npm root -g) node tools/animations-og.mjs)");
-  assert.ok(lies("tools/animations-og.mjs").includes("og-animationen.jpg"));
+  for (const s of ["de", "en", "es"]) assert.ok(existsSync(new URL(`animations/og-${s}.jpg`, root)), `animations/og-${s}.jpg fehlt (NODE_PATH=$(npm root -g) node tools/animations-og.mjs <ordner-mit-bildern>)`);
+  assert.ok(lies("tools/animations-og.mjs").includes("og-${sprache}.jpg"));
 });
 
 test("Bild zeigen: aus (4. November 2026): Motor setzt uZeigen, Ql zeigt ein Raster, Kl liest weiter das Bild", () => {
