@@ -2,7 +2,7 @@
 // stören sich nicht). Höchstens vier laufen; die Regel steht in anwendungen.js (umschalten); freie Felder verschwinden, die übrigen teilen sich den Platz. Ein Wechsel lädt nur das eine Feld neu; die neue Anwendung
 // erscheint in einem Kreis, der vom Schalter aus wächst (kreisWechsel aus assets/pixel-schalter.js). Wahl und Anordnung bleiben im Browser.
 import { pixelSchalter, kreisWechsel } from "../assets/pixel-schalter.js?v=1";
-import { ANWENDUNGEN, PLAETZE, umschalten, zustandAus } from "./anwendungen.js?v=2";
+import { ANWENDUNGEN, PLAETZE, umschalten, zustandAus } from "./anwendungen.js?v=3";
 
 const SCHLUESSEL = "multiverse";
 const html = document.documentElement;
