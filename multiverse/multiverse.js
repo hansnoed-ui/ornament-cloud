@@ -14,8 +14,11 @@ const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
 
 const gemerkt = lesen();
 let Z = zustandAus(gemerkt);
-let anordnung = gemerkt?.anordnung === "spalten" ? "spalten" : "raster";
-const sichern = () => merken({ ...Z, anordnung });
+// Anordnung: Standard am grossen Bildschirm vier Spalten (Wunsch vom 8. November 2026 abends); gemerkt nur, was jemand selbst gewählt hat
+// («wahl»; das frühere Feld «anordnung» schrieb die Seite bei jedem Besuch mit und gilt deshalb nicht mehr)
+let wahl = gemerkt?.wahl === "raster" || gemerkt?.wahl === "spalten" ? gemerkt.wahl : null;
+let anordnung = wahl ?? "spalten";
+const sichern = () => merken({ ...Z, ...(wahl ? { wahl } : {}) });
 
 // ——— das Signet (die Re-entry-Schlaufe des Neubaus, wie tools/build-b.mjs) im Kopf und im Intro ———
 (function signet() {
@@ -148,13 +151,13 @@ async function wechseln(id) {
   beschaeftigt = false;
 }
 
-// ——— Anordnung: 2 × 2 oder vier Spalten (nur am breiten Bildschirm) ———
+// ——— Anordnung: vier Spalten (Standard) oder 2 × 2, nur am breiten Bildschirm ———
 function anordnen(neu) {
   anordnung = neu;
   $("felder").dataset.anordnung = neu;
   for (const b of document.querySelectorAll("[data-anordnung]")) if (b.tagName === "BUTTON") b.setAttribute("aria-pressed", String(b.dataset.anordnung === neu));
 }
-for (const b of document.querySelectorAll("button[data-anordnung]")) b.addEventListener("click", () => { anordnen(b.dataset.anordnung); sichern(); });
+for (const b of document.querySelectorAll("button[data-anordnung]")) b.addEventListener("click", () => { wahl = b.dataset.anordnung; anordnen(wahl); sichern(); });
 
 // die Höhe von Kopf und Leiste, damit zwei Reihen Felder genau in den Bildschirm passen
 new ResizeObserver(() => html.style.setProperty("--leiste", `${document.querySelector(".leiste").offsetHeight}px`)).observe(document.querySelector(".leiste"));
