@@ -271,12 +271,13 @@ document.body.classList.add("js");
   <button type="button" tabindex="-1">Intro überspringen</button>
 </div>
 <script>
-// Das Intro läuft sofort (ohne auf die Module zu warten): einmal je Sitzung, nur auf der leeren Startseite (oder mit ?intro), nie bei «weniger Bewegung».
+// Das Intro läuft sofort (ohne auf die Module zu warten): einmal je Sitzung, nur auf der leeren Startseite (oder mit ?intro), nie bei «weniger Bewegung» und nie mit ?intro=0.
 (function () {
   var intro = document.getElementById("intro"), q = location.search;
   var gesehen = false; try { gesehen = sessionStorage.getItem("drad-intro") === "1"; } catch (e) {}
   var ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (ruhig || !(/[?&]intro/.test(q) || (!q && !gesehen))) { intro.remove(); return; }
+  // ?intro=0 schaltet es ab (Multiverse, 8. November 2026); vor \b stand hier ein Steuerzeichen, ?intro griff deshalb nie
+  if (ruhig || /[?&]intro=0(&|$)/.test(q) || !(/[?&]intro\b/.test(q) || (!q && !gesehen))) { intro.remove(); return; }
   try { sessionStorage.setItem("drad-intro", "1"); } catch (e) {}
   // dieselben sieben Farben wie THEMEN in alpha/drittes-rad/daten.js (OMNA COLOR)
   var F = ["#b3304d", "#d9782d", "#e4b83c", "#4f8a5b", "#3f6ba8", "#4e4a94", "#85508f"];
