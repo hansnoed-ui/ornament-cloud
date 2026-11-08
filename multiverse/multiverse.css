@@ -70,7 +70,16 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 /* ---------- Felder ---------- */
 .felder { --hoehe: max(300px, calc((100svh - var(--kopf) - var(--leiste, 150px) - var(--luft) * 3) / 2));
   display: grid; gap: var(--luft); padding: var(--luft) var(--rand); grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: var(--hoehe); }
-.felder[data-anordnung="spalten"] { grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: max(520px, calc(100svh - var(--kopf) - var(--leiste, 150px) - var(--luft) * 2)); }
+.felder[data-anordnung="spalten"] { grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr)); grid-auto-rows: max(520px, calc(100svh - var(--kopf) - var(--leiste, 150px) - var(--luft) * 2)); }
+/* weniger als vier (8. November 2026 abends): freie Felder verschwinden, die übrigen teilen sich den Platz; eins oder zwei füllen die ganze Höhe,
+   bei dreien nimmt das letzte die ganze Breite */
+.feld[hidden] { display: none; }
+.felder[data-anordnung="raster"][data-anzahl="1"] { grid-template-columns: minmax(0, 1fr); }
+.felder[data-anordnung="raster"]:is([data-anzahl="1"], [data-anzahl="2"]) { grid-auto-rows: calc(var(--hoehe) * 2 + var(--luft)); }
+.felder[data-anordnung="raster"] .feld.breit { grid-column: 1 / -1; }
+.leer { margin: 0; padding: 18vh var(--rand); text-align: center; font: italic 400 22px/1.4 var(--serif); color: var(--grau); }
+.leer em { display: block; font-size: 16px; }
+.leer[hidden] { display: none; }
 .feld { --farbe: #fff; position: relative; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); min-width: 0; background: var(--flaeche);
   border: 1px solid var(--linie); border-radius: 10px; overflow: hidden; contain: paint; }
 .feld-kopf { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 6px 8px 6px 12px; border-bottom: 1px solid var(--linie); background: var(--papier); }
@@ -104,6 +113,9 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 @media (max-width: 1099px) {
   .anordnung { display: none; }
   .felder[data-anordnung] { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: var(--hoehe); }
+  .felder[data-anordnung][data-anzahl="1"] { grid-template-columns: minmax(0, 1fr); }
+  .felder[data-anordnung]:is([data-anzahl="1"], [data-anzahl="2"]) { grid-auto-rows: calc(var(--hoehe) * 2 + var(--luft)); }
+  .felder[data-anordnung] .feld.breit { grid-column: 1 / -1; }
   .schalter-liste { grid-template-columns: repeat(9, 76px); justify-content: start; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
   .schalter-liste::-webkit-scrollbar { display: none; }
 }
@@ -119,7 +131,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   .schalter-liste label { font-size: 12px; }
   .regel { padding: 0 var(--rand); font-size: 13px; }
   /* untereinander; jedes Feld fast so hoch wie der Bildschirm, zwischen den Feldern bleibt Platz zum Weiterscrollen */
-  .felder[data-anordnung] { grid-template-columns: minmax(0, 1fr); grid-auto-rows: min(78svh, 720px); gap: 22px; padding-top: 16px; }
+  .felder[data-anordnung], .felder[data-anordnung][data-anzahl] { grid-template-columns: minmax(0, 1fr); grid-auto-rows: min(78svh, 720px); gap: 22px; padding-top: 16px; }
   .feld-kopf p { display: none; }
 }
 /* vier schmale Spalten: der Satz weicht dem Namen */
