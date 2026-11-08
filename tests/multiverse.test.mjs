@@ -61,6 +61,8 @@ test("Multiverse: Seite mit Titel, noindex, Rahmen pro Feld, Intro überspringba
   assert.match(js, /import \{ pixelSchalter, kreisWechsel \} from "\.\.\/assets\/pixel-schalter\.js\?v=1";/);
   assert.match(js, /document\.createElement\("iframe"\)/);
   assert.match(js, /localStorage/);
+  assert.match(js, /let anordnung = wahl \?\? "spalten";/, "am grossen Bildschirm vier Spalten als Standard");
+  assert.match(html, /<main class="felder" id="felder" data-anordnung="spalten">/);
   assert.match(lies("multiverse/multiverse.css"), /\.feld\[hidden\] \{ display: none; \}/);
   assert.ok(!lies("sitemap.xml").includes("/multiverse/"), "nicht in der Sitemap");
   // ORNA: ?intro=0 schaltet das Startbild ab, auch als App
