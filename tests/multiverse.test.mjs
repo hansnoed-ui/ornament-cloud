@@ -10,7 +10,7 @@ const lies = (p) => readFileSync(new URL(p, root), "utf8");
 const { ANWENDUNGEN, STANDARD, PLAETZE, umschalten, zustandAus } = await import(new URL("multiverse/anwendungen.js", root).href);
 
 test("Multiverse: neun Anwendungen mit echten Adressen, ohne Intro, je zwei Pixelzeichen auf 13 × 13", () => {
-  assert.deepEqual(ANWENDUNGEN.map((a) => a.id), ["fictory", "phorma-i", "phorma-ii", "phorma-iii", "orna", "drittes-rad", "kunst", "animations", "konstellation"]);
+  assert.deepEqual(ANWENDUNGEN.map((a) => a.id), ["konstellation", "animations", "kunst", "drittes-rad", "orna", "phorma-iii", "phorma-ii", "phorma-i", "fictory"]);
   for (const a of ANWENDUNGEN) {
     assert.match(a.adresse, /[?&]intro=0(&|$)/, a.id);
     for (const adresse of [a.adresse, a.allein]) {

@@ -173,16 +173,17 @@ const Z = {
   })(),
 };
 
+// Reihenfolge der Schalter: Konstellation zuerst, The Fictory zuletzt (Wunsch vom 8. November 2026 abends: «die reihenfolge der anwendungen bitte umkehren»)
 export const ANWENDUNGEN = [
-  { id: "fictory", kompakt: "body > header.site-header { display: none !important; }", name: "The Fictory", satz: "Ein Bild zerfällt und geht weiter", farbe: "#ffc23d", adresse: "../alpha/the-fictory/?b=1&sprache=de&intro=0", allein: "../alpha/the-fictory/" },
-  { id: "phorma-i", kompakt: "body > header.site-header { display: none !important; }", name: "PHORMA I", satz: "Ein Foto in Splittern", farbe: "#8fb0ff", adresse: "../alpha/bildfragmentieren/?b=1&sprache=de&intro=0", allein: "../alpha/bildfragmentieren/" },
-  { id: "phorma-ii", kompakt: "body > header.site-header { display: none !important; }", name: "PHORMA II", satz: "Schleimpilz, Tuch, Wasser", farbe: "#4fe0bd", adresse: "../alpha/phorma-ii/?b=1&sprache=de&intro=0", allein: "../alpha/phorma-ii/" },
-  { id: "phorma-iii", kompakt: "body > header.site-header { display: none !important; }", name: "PHORMA III", satz: "Aus Klang wird Bild", farbe: "#ff6b5e", adresse: "../alpha/phorma-iii/?b=1&sprache=de&intro=0", allein: "../alpha/phorma-iii/" },
-  { id: "orna", kompakt: "body > header.site-header, .rad-install { display: none !important; }", name: "ORNA", satz: "Zwei Ringe, eine Begegnung", farbe: "#c7a8ff", adresse: "../portfolio/nebeneinander-nacheinander/?b=1&sprache=de&intro=0", allein: "../portfolio/nebeneinander-nacheinander/" },
-  { id: "drittes-rad", kompakt: "body > nav.seitenweg { display: none !important; }", name: "Das Dritte Rad", satz: "Zeichen, Farben, Begriffe", farbe: "#ff9d3a", adresse: "../alpha/drittes-rad/?intro=0", allein: "../alpha/drittes-rad/" },
-  { id: "kunst", name: "Zettelkasten", satz: "Facebook-Beiträge als Hypertext", farbe: "#f2f2f2", adresse: "../alpha/kunst/?intro=0", allein: "../alpha/kunst/" },
-  { id: "animations", name: "Animations", satz: "Drei Ebenen, ein Bild", farbe: "#c9ff3d", adresse: "../animations/?intro=0", allein: "../animations/" },
   { id: "konstellation", name: "Konstellation", satz: "Name, Ort, Augenblick", farbe: "#ffe08a", adresse: "../alpha/konstellation/?intro=0", allein: "../alpha/konstellation/" },
+  { id: "animations", name: "Animations", satz: "Drei Ebenen, ein Bild", farbe: "#c9ff3d", adresse: "../animations/?intro=0", allein: "../animations/" },
+  { id: "kunst", name: "Zettelkasten", satz: "Facebook-Beiträge als Hypertext", farbe: "#f2f2f2", adresse: "../alpha/kunst/?intro=0", allein: "../alpha/kunst/" },
+  { id: "drittes-rad", kompakt: "body > nav.seitenweg { display: none !important; }", name: "Das Dritte Rad", satz: "Zeichen, Farben, Begriffe", farbe: "#ff9d3a", adresse: "../alpha/drittes-rad/?intro=0", allein: "../alpha/drittes-rad/" },
+  { id: "orna", kompakt: "body > header.site-header, .rad-install { display: none !important; }", name: "ORNA", satz: "Zwei Ringe, eine Begegnung", farbe: "#c7a8ff", adresse: "../portfolio/nebeneinander-nacheinander/?b=1&sprache=de&intro=0", allein: "../portfolio/nebeneinander-nacheinander/" },
+  { id: "phorma-iii", kompakt: "body > header.site-header { display: none !important; }", name: "PHORMA III", satz: "Aus Klang wird Bild", farbe: "#ff6b5e", adresse: "../alpha/phorma-iii/?b=1&sprache=de&intro=0", allein: "../alpha/phorma-iii/" },
+  { id: "phorma-ii", kompakt: "body > header.site-header { display: none !important; }", name: "PHORMA II", satz: "Schleimpilz, Tuch, Wasser", farbe: "#4fe0bd", adresse: "../alpha/phorma-ii/?b=1&sprache=de&intro=0", allein: "../alpha/phorma-ii/" },
+  { id: "phorma-i", kompakt: "body > header.site-header { display: none !important; }", name: "PHORMA I", satz: "Ein Foto in Splittern", farbe: "#8fb0ff", adresse: "../alpha/bildfragmentieren/?b=1&sprache=de&intro=0", allein: "../alpha/bildfragmentieren/" },
+  { id: "fictory", kompakt: "body > header.site-header { display: none !important; }", name: "The Fictory", satz: "Ein Bild zerfällt und geht weiter", farbe: "#ffc23d", adresse: "../alpha/the-fictory/?b=1&sprache=de&intro=0", allein: "../alpha/the-fictory/" },
 ].map((a) => ({ ...a, aus: Z[a.id][0], an: Z[a.id][1] }));
 
 /** die vier beim ersten Besuch: verschieden in Art und Farbe, alle sofort lebendig */
