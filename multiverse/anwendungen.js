@@ -190,28 +190,31 @@ export const STANDARD = ["orna", "phorma-iii", "drittes-rad", "fictory"];
 export const PLAETZE = 4;
 
 /**
- * Die Regel: genau vier laufen. «plaetze» sind die vier Felder (fest, damit ein Wechsel nur ein Feld neu lädt), «reihe» die laufenden in der
- * Reihenfolge, in der sie eingeschaltet wurden (vorne die am längsten laufende), «ruhe» die übrigen (vorne die am längsten ruhende).
- * Einschalten löst die am längsten laufende ab; ausschalten holt die am längsten ruhende zurück. Gibt den neuen Zustand und das betroffene Feld zurück.
+ * Die Regel: höchstens vier laufen (seit 8. November 2026 abends, Rückmeldung: «weniger als vier dürfen auch laufen»; vorher genau vier).
+ * «plaetze» sind die vier Felder (fest, damit ein Wechsel nur ein Feld neu lädt; null = frei), «reihe» die laufenden in der Reihenfolge, in der
+ * sie eingeschaltet wurden (vorne die am längsten laufende), «ruhe» die übrigen. Einschalten nimmt ein freies Feld, sonst löst es die am längsten
+ * laufende ab; ausschalten macht das Feld frei. Gibt den neuen Zustand, das betroffene Feld und wer geht (raus) und kommt (rein, null = frei) zurück.
  */
 export function umschalten(zustand, id) {
   const { plaetze, reihe, ruhe } = zustand;
   if (!ANWENDUNGEN.some((a) => a.id === id)) return { zustand, platz: -1 };
   if (plaetze.includes(id)) {
-    const nach = ruhe[0], platz = plaetze.indexOf(id);
-    return { platz, raus: id, rein: nach, zustand: { plaetze: plaetze.map((p) => (p === id ? nach : p)), reihe: [...reihe.filter((r) => r !== id), nach], ruhe: [...ruhe.slice(1), id] } };
+    const platz = plaetze.indexOf(id);
+    return { platz, raus: id, rein: null, zustand: { plaetze: plaetze.map((p) => (p === id ? null : p)), reihe: reihe.filter((r) => r !== id), ruhe: [...ruhe, id] } };
   }
+  const frei = plaetze.indexOf(null);
+  if (frei >= 0) return { platz: frei, raus: null, rein: id, zustand: { plaetze: plaetze.map((p, i) => (i === frei ? id : p)), reihe: [...reihe, id], ruhe: ruhe.filter((r) => r !== id) } };
   const alt = reihe[0], platz = plaetze.indexOf(alt);
   return { platz, raus: alt, rein: id, zustand: { plaetze: plaetze.map((p) => (p === alt ? id : p)), reihe: [...reihe.slice(1), id], ruhe: [...ruhe.filter((r) => r !== id), alt] } };
 }
 
-/** gültiger Zustand aus dem Gemerkten (oder der Standard): vier verschiedene bekannte, Reihe und Ruhe vollständig */
+/** gültiger Zustand aus dem Gemerkten (oder der Standard): vier Felder, bekannte und verschiedene Anwendungen oder frei, Reihe und Ruhe vollständig */
 export function zustandAus(gemerkt) {
   const ids = ANWENDUNGEN.map((a) => a.id), ok = (l) => Array.isArray(l) && l.every((x) => ids.includes(x)) && new Set(l).size === l.length;
-  if (gemerkt && ok(gemerkt.plaetze) && gemerkt.plaetze.length === PLAETZE && ok(gemerkt.reihe) && ok(gemerkt.ruhe)) {
-    const reihe = gemerkt.reihe.filter((r) => gemerkt.plaetze.includes(r)), fehlt = gemerkt.plaetze.filter((p) => !reihe.includes(p));
-    const ruhe = [...gemerkt.ruhe.filter((r) => !gemerkt.plaetze.includes(r)), ...ids.filter((i) => !gemerkt.plaetze.includes(i) && !gemerkt.ruhe.includes(i))];
-    return { plaetze: [...gemerkt.plaetze], reihe: [...fehlt, ...reihe], ruhe };
+  const plaetze = gemerkt?.plaetze, belegt = Array.isArray(plaetze) ? plaetze.filter((p) => p !== null) : null;
+  if (belegt && plaetze.length === PLAETZE && ok(belegt) && ok(gemerkt.reihe ?? []) && ok(gemerkt.ruhe ?? [])) {
+    const reihe = gemerkt.reihe.filter((r) => belegt.includes(r)), fehlt = belegt.filter((p) => !reihe.includes(p));
+    return { plaetze: [...plaetze], reihe: [...fehlt, ...reihe], ruhe: ids.filter((i) => !belegt.includes(i)).sort((x, y) => (gemerkt.ruhe.indexOf(x) + 1 || 99) - (gemerkt.ruhe.indexOf(y) + 1 || 99)) };
   }
   return { plaetze: [...STANDARD], reihe: [...STANDARD], ruhe: ids.filter((i) => !STANDARD.includes(i)) };
 }

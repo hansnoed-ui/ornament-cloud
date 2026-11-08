@@ -1,8 +1,8 @@
 // Multiverse – die Seite (8. November 2026): neun Pixel-Schalter, vier Felder mit je einer Anwendung im eigenen Rahmen (iframe: Skripte und Stile
-// stören sich nicht). Genau vier laufen; die Regel steht in anwendungen.js (umschalten). Ein Wechsel lädt nur das eine Feld neu; die neue Anwendung
+// stören sich nicht). Höchstens vier laufen; die Regel steht in anwendungen.js (umschalten); freie Felder verschwinden, die übrigen teilen sich den Platz. Ein Wechsel lädt nur das eine Feld neu; die neue Anwendung
 // erscheint in einem Kreis, der vom Schalter aus wächst (kreisWechsel aus assets/pixel-schalter.js). Wahl und Anordnung bleiben im Browser.
 import { pixelSchalter, kreisWechsel } from "../assets/pixel-schalter.js?v=1";
-import { ANWENDUNGEN, PLAETZE, umschalten, zustandAus } from "./anwendungen.js?v=1";
+import { ANWENDUNGEN, PLAETZE, umschalten, zustandAus } from "./anwendungen.js?v=2";
 
 const SCHLUESSEL = "multiverse";
 const html = document.documentElement;
@@ -92,9 +92,12 @@ for (let i = 0; i < PLAETZE; i++) {
   felder.push(f);
 }
 
-/** ein Feld mit einer Anwendung belegen: neuer Rahmen (der alte geht samt seinen Skripten), Kopf und Platzhalter in ihrer Farbe */
+/** ein Feld mit einer Anwendung belegen: neuer Rahmen (der alte geht samt seinen Skripten), Kopf und Platzhalter in ihrer Farbe; null: Feld frei */
 function belegen(i, id) {
   const f = felder[i], a = nach[id];
+  f.querySelector("iframe")?.remove();
+  f.hidden = !a;
+  if (!a) { f.dataset.id = ""; return; }
   f.dataset.id = id;
   f.style.setProperty("--farbe", a.farbe);
   f.setAttribute("aria-label", a.name);
@@ -103,7 +106,6 @@ function belegen(i, id) {
   f.querySelector(".platzhalter b").textContent = a.name;
   f.querySelector(".allein").href = a.allein;
   f.classList.remove("geladen");
-  f.querySelector("iframe")?.remove();
   const rahmen = document.createElement("iframe");
   rahmen.title = a.name;
   rahmen.allow = "fullscreen; autoplay; clipboard-write; microphone; camera; geolocation; web-share";
@@ -116,9 +118,15 @@ function belegen(i, id) {
   f.querySelector(".feld-innen").append(rahmen);
 }
 
-/** «geht als nächste»: die am längsten laufende */
+/** «geht als nächste»: die am längsten laufende, wenn alle vier Felder belegt sind; dazu die Anordnung nach der Zahl der laufenden */
 function markieren() {
-  for (const f of felder) f.querySelector(".naechste").hidden = f.dataset.id !== Z.reihe[0];
+  const n = Z.reihe.length, sichtbar = felder.filter((f) => !f.hidden);
+  for (const f of felder) f.querySelector(".naechste").hidden = n < PLAETZE || f.dataset.id !== Z.reihe[0];
+  // drei in 2 × 2: das letzte Feld nimmt die ganze Breite
+  for (const f of felder) f.classList.toggle("breit", n === 3 && f === sichtbar.at(-1));
+  $("felder").dataset.anzahl = n;
+  $("felder").style.setProperty("--n", Math.max(1, n));
+  $("leer").hidden = n > 0;
 }
 
 let beschaeftigt = false;
@@ -128,13 +136,15 @@ async function wechseln(id) {
   if (platz < 0) return;
   beschaeftigt = true;
   Z = zustand; sichern();
-  knoepfe[raus].setzen(false); knoepfe[raus].parentElement.classList.remove("an");
-  knoepfe[rein].setzen(true); knoepfe[rein].parentElement.classList.add("an");
-  const f = felder[platz];
+  if (raus) { knoepfe[raus].setzen(false); knoepfe[raus].parentElement.classList.remove("an"); }
+  if (rein) { knoepfe[rein].setzen(true); knoepfe[rein].parentElement.classList.add("an"); }
+  const f = felder[platz], aendern = () => { belegen(platz, rein); markieren(); };
+  // ausschalten: das Feld geht, die Seite ordnet sich im Kreis vom Schalter aus neu
+  if (!rein) { await kreisWechsel(knoepfe[id], aendern, { dauer: 680 }); beschaeftigt = false; return; }
   // auf dem Telefon liegt das Feld vielleicht ausserhalb: erst hinschauen, dann wächst der Kreis
   const r = f.getBoundingClientRect();
-  if (r.bottom < 60 || r.top > innerHeight - 60) { f.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" }); await new Promise((ok) => setTimeout(ok, 420)); }
-  await kreisWechsel(knoepfe[id], () => { belegen(platz, rein); markieren(); }, { ziel: f, name: "mv-feld", dauer: 680 });
+  if (!f.hidden && (r.bottom < 60 || r.top > innerHeight - 60)) { f.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" }); await new Promise((ok) => setTimeout(ok, 420)); }
+  await kreisWechsel(knoepfe[id], aendern, { ziel: f, name: "mv-feld", dauer: 680 });
   beschaeftigt = false;
 }
 
