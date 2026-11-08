@@ -81,7 +81,7 @@ geschlossenen Formen, eng in gross). Geprüft gegen Inter (optische Grösse), Sc
   «von Name · Datum»; eigene Werke mit «Löschen». Darüberfahren lässt die Animation laufen, Klick lädt sie ins Mischpult.
 - **Info**: grosse Zeile, Kolophon (Technik, Schlaufe, Werke, Schrift), drei nummerierte Listen (So geht es, Effekte, Ebenen) mit Haarlinien.
 - **Fuss**: Haarlinie, eine Zeile: zurück zur Website, Hinweis auf die Namen der Werke, alles im Browser gerechnet.
-- **Vorschaukarte** (`og-animationen.jpg`, 1200 × 630, `tools/animations-og.mjs`): links «Animationen.» und darunter «Mischpult» leicht im Akzent, rechts sechs Effekte
-  ohne Bild als Kacheln, getrennt durch Haarlinien.
+- **Vorschaukarte** (`og-de.jpg`, `og-en.jpg`, `og-es.jpg`, 1200 × 630, `tools/animations-og.mjs`): links nur Marke, «Animationen.» und darunter «Mischpult» im Akzent, kein Satz; das untere linke Viertel bleibt frei (X legt dort den Titel darüber); rechts sechs Effekte auf Werken
+  (Christians Werke, bunt und schwarzweiss im Wechsel) als Kacheln.
 - **Zustände**: Hover unterstreicht oder kehrt um, Fokus ist ein 2-px-Ring im Akzent, Gedrücktes ist gefüllt (`aria-pressed`), Abgeschaltetes hat 35 % Deckkraft.
   Meldungen beim Sichern stehen unter der Taste (Erfolg im Akzent). Ansichten blenden in 240 ms ein; mit `prefers-reduced-motion` sofort. Touch-Ziele mindestens 44 px hoch.
