@@ -48,8 +48,8 @@
     <a class="marke" href="/" aria-label="ornament.cloud, zur Startseite"><svg class="signet" viewBox="0 0 34 24" aria-hidden="true"><path/><circle r="2.2"/></svg><span>ornament.cloud</span></a>
     <h1 class="titel">Multiverse</h1>
     <div class="anordnung" role="group" aria-label="Anordnung der Felder">
-      <button type="button" data-anordnung="raster" aria-pressed="true" title="Zwei mal zwei"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="1.5" width="5.5" height="5.5"/><rect x="9" y="1.5" width="5.5" height="5.5"/><rect x="1.5" y="9" width="5.5" height="5.5"/><rect x="9" y="9" width="5.5" height="5.5"/></svg><span>2 × 2</span></button>
-      <button type="button" data-anordnung="spalten" aria-pressed="false" title="Vier Spalten"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="1.5" width="2.6" height="13"/><rect x="4.8" y="1.5" width="2.6" height="13"/><rect x="8.6" y="1.5" width="2.6" height="13"/><rect x="12.4" y="1.5" width="2.6" height="13"/></svg><span>4 Spalten</span></button>
+      <button type="button" data-anordnung="raster" aria-pressed="false" title="Zwei mal zwei"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="1.5" width="5.5" height="5.5"/><rect x="9" y="1.5" width="5.5" height="5.5"/><rect x="1.5" y="9" width="5.5" height="5.5"/><rect x="9" y="9" width="5.5" height="5.5"/></svg><span>2 × 2</span></button>
+      <button type="button" data-anordnung="spalten" aria-pressed="true" title="Vier Spalten"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="1.5" width="2.6" height="13"/><rect x="4.8" y="1.5" width="2.6" height="13"/><rect x="8.6" y="1.5" width="2.6" height="13"/><rect x="12.4" y="1.5" width="2.6" height="13"/></svg><span>4 Spalten</span></button>
     </div>
   </header>
 
@@ -58,12 +58,12 @@
     <p class="regel" id="regel">Bis zu vier laufen zugleich. Schaltest du eine fünfte ein, geht die am längsten laufende aus.</p>
   </nav>
 
-  <main class="felder" id="felder" data-anordnung="raster"></main>
+  <main class="felder" id="felder" data-anordnung="spalten"></main>
   <p class="leer" id="leer" hidden>Alles ist still. <em>Schalte oben eine Anwendung ein.</em></p>
 
   <p class="leise-fuss"><a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a> · <a href="../impressum/">Impressum</a></p>
 
-  <script type="module" src="multiverse.js?v=2"></script>
+  <script type="module" src="multiverse.js?v=3"></script>
   <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
   <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="../vendor/goatcounter/count.js"></script>
 </body>
