@@ -24,7 +24,9 @@ const AUS_DE = new URL("b/", ROOT);
 // Seit 5. November 2026 stehen Angebot, Werke und Zuletzt unter «Über» (aufklappbar wie «Beta», mit der Seite «Über» zuoberst);
 // Wunsch: «Nimm Angebote, zuletzt und werke mal unter "über"».
 const UNTER_UEBER = ["ueber/", "angebot/", "werke/", "zuletzt/"];
-const V = 43;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+// Seit 8. November 2026 steht «Raster» unter «Beta», zuoberst und in derselben Seite (Wunsch: «du kannst die raster unter "beta" nehmen»).
+const UNTER_BETA = ["raster/"];
+const V = 44;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 const INHALT = { de: DE, en: EN };
@@ -259,7 +261,7 @@ function bau(sprache) {
   <header class="kopf">
     <div class="spalte">
       <div class="marke"><a class="signet" href="${B}"${pfad === "" ? ' aria-current="page"' : ""}>${SIGNET}<span>ornament.cloud</span></a>${sprachwahl(pfad, nurDe)}</div>
-      <nav class="hauptnav" aria-label="${attr(T.hauptnav)}"><a href="/animations/" target="_blank" rel="noopener">Animations</a><a href="/multiverse/" target="_blank" rel="noopener">Multiverse</a>${Object.entries(T.nav).filter(([p]) => !UNTER_UEBER.includes(p)).map(([p, n]) => `<a href="${B}${p}"${aktiv === p ? ' aria-current="page"' : ""}>${n}</a>`).join("")}<details class="beta ueber"><summary${UNTER_UEBER.includes(aktiv) ? ' class="aktiv"' : ""}>${T.nav["ueber/"]}</summary><span class="beta-liste">${UNTER_UEBER.map((p) => `<a href="${B}${p}"${aktiv === p ? ' aria-current="page"' : ""}>${T.nav[p]}</a>`).join("")}</span></details><details class="beta"><summary>Beta</summary><span class="beta-liste"><a href="/beta/lab/" target="_blank" rel="noopener">Lab</a><a href="/beta/drittes-rad/" target="_blank" rel="noopener">Das 3. Rad</a></span></details><a href="/gamma/" target="_blank" rel="noopener">Gamma</a></nav>
+      <nav class="hauptnav" aria-label="${attr(T.hauptnav)}"><a href="/animations/" target="_blank" rel="noopener">Animations</a><a href="/multiverse/" target="_blank" rel="noopener">Multiverse</a>${Object.entries(T.nav).filter(([p]) => !UNTER_UEBER.includes(p) && !UNTER_BETA.includes(p)).map(([p, n]) => `<a href="${B}${p}"${aktiv === p ? ' aria-current="page"' : ""}>${n}</a>`).join("")}<details class="beta ueber"><summary${UNTER_UEBER.includes(aktiv) ? ' class="aktiv"' : ""}>${T.nav["ueber/"]}</summary><span class="beta-liste">${UNTER_UEBER.map((p) => `<a href="${B}${p}"${aktiv === p ? ' aria-current="page"' : ""}>${T.nav[p]}</a>`).join("")}</span></details><details class="beta"><summary${UNTER_BETA.includes(aktiv) ? ' class="aktiv"' : ""}>Beta</summary><span class="beta-liste">${UNTER_BETA.map((p) => `<a class="intern" href="${B}${p}"${aktiv === p ? ' aria-current="page"' : ""}>${T.nav[p]}</a>`).join("")}<a href="/beta/lab/" target="_blank" rel="noopener">Lab</a><a href="/beta/drittes-rad/" target="_blank" rel="noopener">Das 3. Rad</a></span></details><a href="/gamma/" target="_blank" rel="noopener">Gamma</a></nav>
     </div>
   </header>
   <main id="inhalt">
