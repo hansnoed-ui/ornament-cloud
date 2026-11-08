@@ -19,6 +19,10 @@ const T = {
   "Die Grafik läuft wieder, ab jetzt mit weniger Teilchen.": ["The graphics are running again, from now on with fewer particles.", "Los gráficos vuelven a funcionar, a partir de ahora con menos partículas."],
   "Diese Seite braucht WebGL 2. {fehler}": ["This page needs WebGL 2. {fehler}", "Esta página necesita WebGL 2. {fehler}"],
   "Neu laden": ["Reload", "Recargar"],
+  // ——— Schalter Hell / Dunkel im Kopf (thema.js) ———
+  "Dunkle Ansicht": ["Dark mode", "Modo oscuro"],
+  "Zur hellen Ansicht": ["Switch to light mode", "Cambiar a modo claro"],
+  "Zur dunklen Ansicht": ["Switch to dark mode", "Cambiar a modo oscuro"],
   "Durchlauf": ["Continuous", "Continuo"],
   "hin und zurück": ["back and forth", "ida y vuelta"],
   "Hin und zurück": ["Back and forth", "Ida y vuelta"],

@@ -12,7 +12,7 @@ Die Richtung ist nicht mit UXKIN an fremden Seiten geprüft (nicht verbunden), s
 
 ## Farbe
 
-Dunkel ist der Normalfall (die Animationen leben auf Schwarz), hell folgt `prefers-color-scheme`. Alle Grautöne sind kalt (ein Hauch Blau), nichts ist warm.
+Dunkel ist der Normalfall (die Animationen leben auf Schwarz), hell folgt `prefers-color-scheme`. Seit 8. November 2026 übersteuert der Schalter im Kopf (`thema.js`) das Gerät: `data-thema="hell|dunkel"` auf `<html>`, gemerkt im Browser. Alle Grautöne sind kalt (ein Hauch Blau), nichts ist warm.
 
 | Token | Dunkel | Hell | Rolle |
 |---|---|---|---|
@@ -63,6 +63,12 @@ geschlossenen Formen, eng in gross). Geprüft gegen Inter (optische Grösse), Sc
   haben keinen Rahmen und bekommen Fläche und Rahmen erst beim Darüberfahren.
 
 ## Bausteine
+
+- **Schalter Hell / Dunkel** (8. November 2026, nach Christians Video, `thema.js`): im Kopf vor den Sprachen, 68 × 38 px (Handy 58 × 32). Die eine bewusste
+  Ausnahme von «kein Glas, keine Schatten, keine Verläufe»: Knauf mit Verlauf und Schatten, Pixelzeichen auf 13 × 13 (hell Sonne, dunkel Mond mit Stern),
+  leuchtender Bogen um den Knauf (hell Bernstein `#ffb21c` oben rechts, dunkel Blauviolett `#8f8cff` unten links). Umschalten: Pixel zerstieben und setzen sich
+  neu, der Bogen wandert, die Seite wechselt in einem Kreis vom Schalter aus (View Transitions). `role="switch"`, ohne Bewegung bei `prefers-reduced-motion`.
+  Unter 420 px Breite weicht dafür der Seitenname neben der Marke.
 
 - **Kopf**: Marke links («ornament.cloud», Punkt im Akzent), Zeile in der Mitte, rechts die zwei Ansichten mit Nummer; die aktive trägt den Akzentpunkt.
   Auf dem Handy wandern die Ansichten in eine feste Leiste am unteren Rand (Daumenweite), der Kopf behält nur die Marke.
