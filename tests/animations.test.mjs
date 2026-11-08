@@ -138,7 +138,9 @@ test("Schalter Hell / Dunkel (8. November 2026, nach Christians Video): thema.js
   assert.ok(html.indexOf('localStorage.getItem("animationen-thema")') < html.indexOf("<style>"), "die gemerkte Wahl steht vor dem ersten Bild");
   assert.match(lies("animations/seite.js"), /import "\.\/thema\.js\?v=\d+";/);
   assert.match(thema, /export const SCHLUESSEL = "animationen-thema";/);
-  assert.match(thema, /setAttribute\("role", "switch"\)/);
+  // die Mechanik liegt seit dem Multiverse (8. November 2026) im Baustein assets/pixel-schalter.js, thema.js nutzt ihn
+  assert.match(thema, /import \{ pixelSchalter, kreisWechsel \} from "\.\.\/assets\/pixel-schalter\.js\?v=\d+";/);
+  assert.match(lies("assets/pixel-schalter.js"), /setAttribute\("role", "switch"\)/);
   const { sonne, mond } = await import(new URL("animations/thema.js", root).href);
   for (const p of [...sonne(), ...mond()]) assert.ok(p[0] >= 0 && p[0] < 13 && p[1] >= 0 && p[1] < 13, String(p));
   assert.ok(sonne().length > 25 && mond().length > 25);

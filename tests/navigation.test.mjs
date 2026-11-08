@@ -25,6 +25,7 @@ const AUSNAHMEN = [
   ["«Hochrendern», Videos auf der eigenen Grafikkarte hochrechnen, steht für sich wie PHORMA (19. Oktober 2026)", /^alpha\/hochrendern\//],
   ["«This is not a Zettelkasten», Partikel-Animation im Vollbild, steht für sich wie PHORMA (1. November 2026)", /^alpha\/not-a-zettelkasten\//],
   ["«Animationen», drei Bilder, sechzehn Effekte, drei Ebenen, eigene Kopfzeile im Stil eines Portfolios, steht für sich (3. November 2026)", /^animations\//],
+  ["«Multiverse», vier Anwendungen zugleich in eigenen Rahmen, eigene Kopfzeile, steht für sich, nur per Direktlink (8. November 2026)", /^multiverse\//],
   ["Beispiele der Skills für Claude (.claude/skills/), keine Seiten der Website (16. Oktober 2026)", /^\.claude\//],
   ["ORNA (Rad, Feld und die App-Abschriften) mit dem Kopf der App statt der Kopfleiste (20. Oktober 2026, zweisprachig)", /^portfolio\/nebeneinander-nacheinander\//],
   ["OMNA COLOR mit dem Kopf der App statt der Kopfleiste: Signet, d · e, Weg in den Neubau (20. Oktober 2026, «auch alle downloadbaren Apps re-designen, auch doppelsprachig»); ihre App-Seite app/ trägt die Navigation", /^alpha\/omna-color\/(?!app\/)/],

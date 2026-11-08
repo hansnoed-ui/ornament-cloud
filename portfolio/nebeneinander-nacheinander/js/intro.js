@@ -3,7 +3,7 @@
 // Systemstartbildschirm baut. Dann finden die 40 Zeichen einzeln ihren Platz, zuletzt erscheinen
 // Achsenmarke und Name. Danach gibt das Bild das Rad frei.
 //
-// Nur als App (Startbildschirm) und einmal pro Sitzung; zum Ansehen im Browser: ?intro.
+// Nur als App (Startbildschirm) und einmal pro Sitzung; zum Ansehen im Browser: ?intro, nie mit ?intro=0.
 // Bei reduzierter Bewegung entfällt es ganz. Antippen oder eine Taste überspringt es.
 
 import { symbolMarkup } from "./symbols.js?v=2";
@@ -14,7 +14,8 @@ const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 let seen = false;
 try { seen = sessionStorage.getItem("orna-intro") === "1"; } catch { /* ohne Speicher: jedes Mal */ }
 
-if (!reduce && (params.has("intro") || (standalone && !seen))) run();
+// ?intro=0 schaltet es ab, auch als App (Multiverse, 8. November 2026)
+if (!reduce && params.get("intro") !== "0" && (params.has("intro") || (standalone && !seen))) run();
 
 function run() {
   try { sessionStorage.setItem("orna-intro", "1"); } catch { /* egal */ }
