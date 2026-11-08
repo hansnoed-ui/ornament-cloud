@@ -19,6 +19,7 @@ import { createRequire } from "node:module";
 import * as INHALT_DE from "../src/b/inhalt.mjs";
 import * as INHALT_EN from "../src/b/inhalt.en.mjs";
 import { ladeZettel, ladeZettelkasten } from "./b-daten.mjs";
+import { ANWENDUNGEN as MV_ANWENDUNGEN, STANDARD as MV_STANDARD } from "../multiverse/anwendungen.js";
 const INHALT = { de: INHALT_DE, en: INHALT_EN };
 
 const require = createRequire(import.meta.url);
@@ -55,6 +56,17 @@ function feldSvg({ hier = null, nah = [], gross = 1 } = {}) {
   let s = `<svg viewBox="0 0 ${w} ${w}" width="${w}" height="${w}" xmlns="http://www.w3.org/2000/svg">`;
   if (hier) for (const n of nah) { const [x1, y1] = pos(hier), [x2, y2] = pos(n); const dx = x2 - x1, dy = y2 - y1, l = Math.hypot(dx, dy) || 1, k = Math.min(40 * gross, l * 0.22); s += `<path d="M${x1} ${y1} Q${(x1 + x2) / 2 - (dy / l) * k} ${(y1 + y2) / 2 + (dx / l) * k} ${x2} ${y2}" fill="none" stroke="#1d3fd6" stroke-width="${1.4 * gross}" opacity="0.8"/>`; }
   for (let n = 1; n <= 49; n++) { const [x, y] = pos(n); const h = n === hier, m = nah.includes(n); s += `<circle cx="${x}" cy="${y}" r="${h ? r * 1.6 : r}" fill="${h ? "#1d3fd6" : m ? "rgba(29,63,214,0.25)" : "none"}" stroke="${h || m ? "#1d3fd6" : "#8a8a8a"}" stroke-width="${1.2 * gross}"/>`; }
+  return s + "</svg>";
+}
+/** Multiverse (8. November 2026): vier Felder 2 × 2 mit den Pixelzeichen (an) der vier Anwendungen, die beim ersten Besuch laufen */
+function multiverseSvg() {
+  const g = 150, luft = 16, z = 7.6, w = g * 2 + luft;
+  let s = `<svg viewBox="0 0 ${w} ${w}" width="${w}" height="${w}" xmlns="http://www.w3.org/2000/svg">`;
+  MV_STANDARD.forEach((id, i) => {
+    const a = MV_ANWENDUNGEN.find((x) => x.id === id), x0 = (i % 2) * (g + luft), y0 = Math.floor(i / 2) * (g + luft), o = (g - 13 * z) / 2;
+    s += `<rect x="${x0}" y="${y0}" width="${g}" height="${g}" rx="14" fill="#000"/>`;
+    for (const [x, y, d] of a.an) s += `<rect x="${(x0 + o + x * z + z * .1).toFixed(1)}" y="${(y0 + o + y * z + z * .1).toFixed(1)}" width="${(z * .8).toFixed(1)}" height="${(z * .8).toFixed(1)}" fill="${a.farbe}" opacity="${d}"/>`;
+  });
   return s + "</svg>";
 }
 // das Signet: die Re-entry-Schlaufe (r = b + a·cos t), wie in tools/build-b.mjs
@@ -148,6 +160,7 @@ const ALT = [
   { datei: "social-media/kacheln/schlagworte.png", kicker: "Social Media · Register", titel: "Schlagworte", satz: "Die Schlagworte im Zettelkasten «Social Media»." },
   { datei: "assets/kacheln/lab.png", kicker: "ORNAMENT LAB · Alpha", titel: "ornament.lab", satz: "Erzeugen · Beobachten · Weiterführen", serif: true, fuss: "ornament.cloud/alpha/lab", feld: feldSvg({ hier: 25, nah: [3, 13, 23, 36, 40, 46] }) },   // seit 25. Oktober 2026 (Wunsch: «Vorschaukarte für social media vom lab»)
   { datei: "assets/kacheln/gamma.png", kicker: "ornament.cloud · Gamma", titel: "Sechs Bereiche, ein Netz.", titelGroesse: 66, titelBreite: 22, satz: "Websites, Apps, Kunst, Specials, Zettel und Social von Christian Strickler.", fuss: "ornament.cloud/gamma", feld: feldSvg({ hier: 25, nah: [1, 7, 19, 31, 43, 49] }) },   // seit 31. Oktober 2026 (SEO-Check: Gamma hatte keine Vorschaukarte)
+  { datei: "multiverse/og-multiverse.png", kicker: "ornament.cloud", titel: "Multiverse", satz: "Vier Anwendungen zugleich, nebeneinander und bedienbar.", fuss: "ornament.cloud/multiverse", feld: multiverseSvg() },   // seit 8. November 2026 (Wunsch: «Teilenkachel … Titel ‹ornament.cloud · Multiverse›»)
   { datei: "social-media/kacheln/autorinnen.png", kicker: "Social Media · Register", titel: "Autor:innen", satz: "Die Autor:innen im Zettelkasten «Social Media»." },
 ];
 
