@@ -14,7 +14,7 @@ import { spurRechnen, schlagRechnen, flaechenSpurRechnen } from "./kern/erzeugen
 import { MAKROS } from "./erzeuger/natur-0.2.0.js";
 import { PATCHES, FAMILIEN_LISTE, MAKROS as SYNTH_MAKROS } from "./erzeuger/synth-0.1.0.js";
 import { ROLLEN, sequenzErzeugen } from "./kern/sequenzen.js";
-import { abschnitte as abschnitteVon, ereignisseFuer, funktionVon, BESETZUNG, wechselPerkussion } from "./kern/arrangement.js";
+import { abschnitte as abschnitteVon, ereignisseFuer, funktionVon, BESETZUNG, wechselPerkussion, teileAus } from "./kern/arrangement.js";
 import { taktLesen } from "./kern/muster.js";
 import { stimmeVon, ERZEUGER } from "./erzeuger/register.js";
 import { LINIEN, LEITERN, NOTEN, linieErzeugen, kickSchritte, grundFrequenz, tonLesen } from "./kern/linien.js";
@@ -517,6 +517,13 @@ async function trackErzeugen() {
   const mitBass = $("mitBass").checked; $("mitBass").checked = true;
   await erzeugen({ anzahlVorgabe: takte, still: true });
   $("mitBass").checked = mitBass;
+  // je Abschnitt eigene Grooves und Basslinien (seit Composer 0.3)
+  for (const sp of z.projekt.spuren.filter(istDrums)) { const def = stil.spuren.find((x) => x.stimme === sp.quelle.stimme)?.teile; if (def) { sp.quelle.teile = teileAus(def, abschnitte); spurNeuRechnen(sp); } }
+  const bassSp = z.projekt.spuren.find(istBass);
+  if (bassSp && b.bassTeile) {
+    const q = bassSp.quelle, defs = Object.fromEntries(Object.entries(b.bassTeile).map(([typ, art], k) => [typ, linieErzeugen({ art, leiter: q.leiter, kicks: kickVorlage(), anzahl: 8, seed: seed * 31 + k })]));
+    q.teile = teileAus(defs, abschnitte); spurNeuRechnen(bassSp);
+  }
   for (const sp of z.projekt.spuren.filter((x) => istDrums(x) && (b.ohne ?? []).includes(x.quelle.stimme))) { post({ art: "weg", id: sp.id }); z.daten.delete(sp.id); }
   z.projekt.spuren = z.projekt.spuren.filter((x) => !(istDrums(x) && (b.ohne ?? []).includes(x.quelle.stimme)));
   for (const [s2, stimme] of b.mix ?? []) stilSpurDazu(s2, stimme, { anzahl: takte, bpm, seed, swing: stil.swing });

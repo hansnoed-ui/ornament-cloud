@@ -17,6 +17,10 @@ Hier steht, was Christian entschieden hat und wie er Klänge beurteilt hat, dami
 - Nicht gut: die übrigen Tracks; am schlimmsten die Glass Keys und die Keys allgemein; Flächen und Bassläufe, die einfach im 4/4 spielen.
 - Gewünscht: Flächen und Bässe in speziellen Takten, lang anhaltend, mit kurzen knarzenden Bewegungen. Die Sounds sollen mehr glänzen und knarzen. Mehr Abwechslung im Stilmix. Die Tracks sollen «atmen, stocken, Gas geben, sich verlieren und wiederfinden», «wirbeln, wummen», und mehr Natursounds.
 
+**Ornament 0.3 (Urteil zu den ersten Ornament-Tracks)**
+- «Die Tracks sind toll. Das Windgeräusch vielleicht etwas dominant (kann man ja mischen), die Drums und der Bass noch etwas eintönig, aber die Richtung ist toll.»
+- Umgesetzt: Teile je Abschnitt (`quelle.teile`). Drums mit eigenen Grooves für Hauptteil, Gas geben (rollend), Atmen (nur Kick und Rim), Stocken und Wiederfinden, dazu ein Wirbel an jedem Abschnittsende. Bass je Abschnitt eine andere Linie (lang, Zyklus, der Kick folgend, Riff). Wind der Gezeiten 30 → 8. Rim gehört im Arrangement jetzt zu den Höhen.
+
 **Ornament Style (Christian, 9. November 2026, Abend)**
 - «Die Klänge sind jetzt recht grossartig.» Richtung: Drum and Bass, Naturgeräusche, indische und orientalische Perkussion. House weiterverfolgen; Pop und ECM raus; Hip-Hop und Goa offen; die übrigen bleiben.
 - Umgesetzt: neuer Stil «Ornament» zuoberst und Standard. 174 BPM Halftime, DnB-Kick und -Snare, helle enge Hats; Tabla, Darbuka, Zarb, Riq sparsam für 174 BPM gesetzt und im ganzen Track je Abschnitt im Wechsel (eine, bei Gas geben und Wiederfinden zwei Stimmen); Reese im ungeraden Zyklus in Hijaz; Deep Room Drone als Schwebe; Gezeiten, Walchor, Vögel 3–4 dB lauter als sonst.

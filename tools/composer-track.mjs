@@ -18,7 +18,7 @@ const { anwenden } = await imp("composer/kern/unterbrechungen.js");
 const PR = await imp("composer/kern/projekt.js");
 const { linieErzeugen, kickSchritte, tonLesen } = await imp("composer/kern/linien.js");
 const { sequenzErzeugen } = await imp("composer/kern/sequenzen.js");
-const { abschnitte: abschnitteVon, ereignisseFuer, funktionVon, BESETZUNG, wechselPerkussion } = await imp("composer/kern/arrangement.js");
+const { abschnitte: abschnitteVon, ereignisseFuer, funktionVon, BESETZUNG, wechselPerkussion, teileAus } = await imp("composer/kern/arrangement.js");
 const { wavSchreiben } = await imp("lab/kern/klangwerk.js");
 const RATE = 48000;
 
@@ -41,7 +41,7 @@ function aufbauen(stil, anzahl, { seed = 1, synths = null, natur, arrangement = 
   stil.spuren.forEach((s, i) => {
     if (arrangement && (BESETZUNG[stil.key].ohne ?? []).includes(s.stimme)) return;
     const st = stimmeVon(s.erzeuger, s.stimme), v = st.varianten.find((x) => x.name === s.variante) ?? st.varianten[0];
-    const q = { art: "erzeugt", erzeuger: s.erzeuger, stimme: s.stimme, werte: { ...v.werte }, takte: s.takte, fill: s.fill ?? null, anzahl, bpm: stil.bpm, swing: stil.swing, menschlich: s.menschlich ?? stil.menschlich, versatz: s.versatz ?? 0, seed: seed * 100 + i };
+    const q = { art: "erzeugt", erzeuger: s.erzeuger, stimme: s.stimme, werte: { ...v.werte }, takte: s.takte, fill: s.fill ?? null, anzahl, bpm: stil.bpm, swing: stil.swing, menschlich: s.menschlich ?? stil.menschlich, versatz: s.versatz ?? 0, seed: seed * 100 + i, teile: arrangement ? teileAus(s.teile, arrangement) : null };
     spuren.push({ sp: PR.erzeugteSpurDazu(p, q, { name: st.name, typ: st.rolle, pegel: s.pegel ?? st.pegel, pan: st.pan, raum: stil.raum ?? null }), k: spurRechnen(q, RATE).kanaele });
   });
   const besetzung = BESETZUNG[stil.key];
@@ -54,6 +54,7 @@ function aufbauen(stil, anzahl, { seed = 1, synths = null, natur, arrangement = 
   const vorlage = stil.spuren.find((x) => x.stimme === "kick") ?? stil.spuren[0];
   const kicks = kickSchritte(vorlage.takte.map((z) => z.split(/\s+/).map((t) => (vorlage.stimme === "kick" ? t : tief.test(t) ? t : ".")).join(" ")));
   const bq = { art: "erzeugt", erzeuger: "bass@0.1.0", stimme: b.stimme, werte: { ...bv.werte }, leiter: b.leiter, grundton: 2, takte: linieErzeugen({ art: arrangement ? besetzung.linie ?? b.linie : b.linie, leiter: b.leiter, kicks, anzahl: 8, seed }), anzahl, bpm: stil.bpm, swing: stil.swing, menschlich: 2, seed: seed * 100 + 50 };
+  if (arrangement && besetzung.bassTeile) bq.teile = teileAus(Object.fromEntries(Object.entries(besetzung.bassTeile).map(([typ, art], k) => [typ, linieErzeugen({ art, leiter: b.leiter, kicks, anzahl: 8, seed: seed * 31 + k })])), arrangement);
   const bk = spurRechnen(bq, RATE).kanaele;
   spuren.push({ sp: PR.erzeugteSpurDazu(p, bq, { name: "Bass", typ: "bass", pegel: bst.pegel, bassfett: b.bassfett ?? null }), k: bk });
   const akkorde = Array.from({ length: Math.min(8, anzahl) }, (_, t) => { const z0 = String(bq.takte[t % bq.takte.length]).trim().split(/\s+/).map(tonLesen).find((x) => x && x !== "-"); return z0 ? ((z0.stufe - 1 + 70) % 7) + 1 : 1; });

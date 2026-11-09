@@ -20,8 +20,10 @@ export function spurRechnen(q, rate) {
   const erste = st.artikulationen[0].key, gueltig = new Set(st.artikulationen.map((a) => a.key));
   let schlaege = 0;
   for (let b = 0; b < anzahl; b++) {
-    const fuellen = q.fill && anzahl >= 4 && ((b + 1) % 8 === 0 || b === anzahl - 1);
-    const zeile = fuellen ? q.fill : q.takte[b % q.takte.length];
+    // Teile (seit Composer 0.3): je Abschnitt eigene Muster und ein Wirbel im letzten Takt des Abschnitts
+    const teil = Array.isArray(q.teile) ? q.teile.find((x) => b >= x.von && b < x.bis) : null;
+    const fuellen = teil ? !!(teil.fill ?? q.fill) && b === teil.bis - 1 && teil.bis - teil.von >= 2 : q.fill && anzahl >= 4 && ((b + 1) % 8 === 0 || b === anzahl - 1);
+    const muster = teil?.takte ?? q.takte, zeile = fuellen ? teil?.fill ?? q.fill : muster[(teil ? b - teil.von : b) % muster.length];
     for (const s of taktLesen(zeile, erste)) {
       if (!gueltig.has(s.art)) continue;
       const schritt = takt / s.n, swing = s.schritt % 2 === 1 ? (q.swing ?? 0) * schritt : 0;
@@ -52,6 +54,11 @@ export function schlagRechnen(q, art, rate, staerke = 0.9) {
  * Jede Note wird einzeln gerechnet; «~» gleitet vom vorigen Ton her. Der Ausklang am Ende wird an den Anfang gelegt (Schleife ohne Naht).
  */
 export function notenSpurRechnen(q, rate) {
+  // Teile (seit Composer 0.3): je Abschnitt eine eigene Linie; die Zeilen werden über die ganze Länge ausgeschrieben
+  if (Array.isArray(q.teile) && q.teile.length) {
+    const anzahl = Math.max(1, q.anzahl ?? 8), takte = Array.from({ length: anzahl }, (_, b) => { const t = q.teile.find((x) => b >= x.von && b < x.bis), m = t?.takte ?? q.takte; return m[(t ? b - t.von : b) % m.length]; });
+    return notenSpurRechnen({ ...q, takte, teile: null }, rate);
+  }
   // Die Zeilen wiederholen sich nach q.takte.length Takten: einen Durchlauf als Schleife rechnen (der Ausklang des letzten Tons liegt über
   // dem Anfang) und über die ganze Länge legen. Für lange Tracks ein Vielfaches schneller und Abtastwert für Abtastwert eine Wiederholung.
   const zyklus = Math.max(1, q.takte?.length ?? 1), gesamt = Math.max(1, q.anzahl ?? 8);

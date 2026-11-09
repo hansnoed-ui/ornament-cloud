@@ -432,3 +432,15 @@ test("Ornament Style: zuoberst, Pop und ECM ausgeblendet, Perkussion wechselt je
     assert.ok(spielen >= 1 && spielen <= 2, `${a.name}: ${spielen} Perkussionsstimmen`);
   }
 });
+
+test("Composer 0.3: Teile je Abschnitt (Drums und Bass), Wirbel an jedem Abschnittsende", () => {
+  const takte1 = ["x! . . . . . . . . . . . . . . ."], takte2 = ["x! . . . x . . . x . . . x . . ."];
+  const q = { erzeuger: "drums@0.1.0", stimme: "kick", werte: {}, takte: takte1, anzahl: 4, bpm: 120, seed: 1, menschlich: 0, teile: [{ von: 2, bis: 4, takte: takte2, fill: null }] };
+  assert.equal(spurRechnen(q, RATE).schlaege, 2 + 8, "2 Takte mit 1, 2 Takte mit 4 Schlägen");
+  const mitFill = spurRechnen({ ...q, teile: [{ von: 0, bis: 2, takte: null, fill: "x x x x x x x x x x x x x x x x" }] }, RATE).schlaege;
+  assert.equal(mitFill, 1 + 16 + 2, "Wirbel im letzten Takt des Abschnitts");
+  const bq = { erzeuger: "bass@0.1.0", stimme: "sub", werte: {}, takte: ["1! - - - - - - - - - - - - - - -"], anzahl: 4, bpm: 120, grundton: 2, leiter: "moll", seed: 1, teile: [{ von: 2, bis: 4, takte: ["1 . 1 . 1 . 1 . 1 . 1 . 1 . 1 ."], fill: null }] };
+  assert.equal(spurRechnen(bq, RATE).schlaege, 2 + 16);
+  const t = A.teileAus({ gas: takte2, fill: "x x" }, [{ typ: "intro", von: 0, bis: 4 }, { typ: "gas", von: 4, bis: 8 }]);
+  assert.deepEqual(t.map((x) => [x.von, !!x.takte, x.fill]), [[0, false, "x x"], [4, true, "x x"]]);
+});
