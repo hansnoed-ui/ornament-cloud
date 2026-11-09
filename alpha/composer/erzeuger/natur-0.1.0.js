@@ -46,7 +46,7 @@ function glatt(rnd, rate) {
   return (t) => { const x = t * rate, i = Math.floor(x), f = x - i, a = w[i & 4095], b = w[(i + 1) & 4095]; return a + (b - a) * (0.5 - 0.5 * Math.cos(Math.PI * f)); };
 }
 /** Frequenz eines Akkordtons: stufe (1–7, darüber in die nächste Oktave) auf grundton/leiter, oktave über der Bassoktave */
-function frequenzVon(kontext, stufe, oktave) { return grundFrequenz(kontext.grundton ?? 2) * 2 ** (oktave + halbtoene({ stufe, vorzeichen: 0, oktave: 0 }, kontext.leiter ?? "moll") / 12); }
+function frequenzVon(kontext, stufe, oktave) { return grundFrequenz(kontext.grundton ?? 2, kontext.kammerton) * 2 ** (oktave + halbtoene({ stufe, vorzeichen: 0, oktave: 0 }, kontext.leiter ?? "moll") / 12); }
 /** die Akkordstufe zur Zeit t (aus kontext.akkorde: [{ beginn, stufe }]), sonst 1 */
 function stufeBei(kontext, t) { let s = 1; for (const a of kontext.akkorde ?? []) { if (a.beginn <= t) s = a.stufe; else break; } return s; }
 

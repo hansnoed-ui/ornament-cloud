@@ -23,8 +23,8 @@ export const LEITERN = Object.freeze({
 });
 
 /** Frequenz des Grundtons (0 = C … 11 = H) in der tiefsten Bass-Oktave: zwischen 30 und 60 Hz */
-export function grundFrequenz(grundton) {
-  let f = KAMMERTON * 2 ** ((grundton - 9) / 12);
+export function grundFrequenz(grundton, kammerton = KAMMERTON) {
+  let f = kammerton * 2 ** ((grundton - 9) / 12);
   while (f >= 60) f /= 2;
   while (f < 30) f *= 2;
   return f;
@@ -52,20 +52,24 @@ export function halbtoene(ton, leiter) {
  */
 export function notenLesen(zeilen, { bpm, anzahl, leiter, swing = 0, menschlich = 0, versatz = 0, seed = 1 }) {
   const takt = (60 / bpm) * 4, rnd = zufall(seed), noten = [];
-  let letzte = null;
+  let letzte = [], gruppe = 0;
   for (let b = 0; b < anzahl; b++) {
     const t = String(zeilen[b % zeilen.length]).trim().split(/\s+/).filter(Boolean), n = t.length || 1, schritt = takt / n;
     t.forEach((tok, i) => {
-      const beginn = b * takt + i * schritt, x = tonLesen(tok);
-      if (x === "-") { if (letzte) letzte.ende = beginn + schritt; return; }
-      if (letzte && letzte.ende > beginn) letzte.ende = beginn;   // eine neue Note oder Pause beendet die vorige
-      if (!x) { letzte = null; return; }
+      const beginn = b * takt + i * schritt;
+      if (tok === "-") { for (const l of letzte) l.ende = beginn + schritt; return; }
+      for (const l of letzte) if (l.ende > beginn) l.ende = beginn;   // eine neue Note oder Pause beendet die vorigen
+      // ein Akkord: Stufen mit «+» verbunden (1+3+5); Betonung und Gleiten eines Teils gelten für alle
+      const teile = tok.split("+").map(tonLesen).filter((x) => x && x !== "-");
+      if (!teile.length) { letzte = []; return; }
       const sw = i % 2 === 1 ? swing * schritt : 0, jitter = ((rnd() * 2 - 1) * menschlich + versatz) / 1000;
-      letzte = { beginn: beginn + sw + jitter, ende: beginn + schritt, halbtoene: halbtoene(x, leiter), staerke: x.staerke, gleiten: x.gleiten };
-      noten.push(letzte);
+      const staerke = Math.max(...teile.map((x) => x.staerke)), gleiten = teile.some((x) => x.gleiten);
+      gruppe++;
+      letzte = teile.map((x) => ({ beginn: beginn + sw + jitter, ende: beginn + schritt, halbtoene: halbtoene(x, leiter), staerke, gleiten, gruppe }));
+      noten.push(...letzte);
     });
   }
-  return noten.map((x) => ({ beginn: x.beginn, dauer: Math.max(0.02, x.ende - x.beginn), halbtoene: x.halbtoene, staerke: x.staerke, gleiten: x.gleiten }));
+  return noten.map((x) => ({ beginn: x.beginn, dauer: Math.max(0.02, x.ende - x.beginn), halbtoene: x.halbtoene, staerke: x.staerke, gleiten: x.gleiten, gruppe: x.gruppe }));
 }
 
 // ---------- Basslinien ----------

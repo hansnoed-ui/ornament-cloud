@@ -319,3 +319,53 @@ test("Natur: eine eigene Aufnahme ersetzt die synthetische Quelle; Pflanzen-Aufn
   const pf = flaechenSpurRechnen({ ...q, stimme: "pflanzen", werte: { weg: "aufnahme", verlangsamen: 16 } }, R, { sample: { kanaele: [us], rate: U } }).kanaele[0];
   assert.ok(pf.some((x) => Math.abs(x) > 0.05), "Impulse regen die Resonatoren an");
 });
+
+// ---------- Synth 0.1.0, Sequenzen, Echo, Kammerton ----------
+const { PATCHES } = await c("erzeuger/synth-0.1.0.js");
+const { sequenzErzeugen, ROLLEN } = await c("kern/sequenzen.js");
+
+test("Synth: 16 Presets in 8 Familien klingen, bleiben endlich, sind mono-verträglich und reproduzierbar", () => {
+  const syn = ERZEUGER["synth@0.1.0"], R = 32000;
+  assert.equal(Object.keys(PATCHES).length, 16); assert.equal(Object.keys(syn.stimmen).length, 8);
+  for (const [fam, st] of Object.entries(syn.stimmen)) for (const k of st.parameter[0].wahl.map((o) => o.wert)) {
+    const p = PATCHES[k], takte = sequenzErzeugen({ rolle: p.rolle, akkorde: [1, 6], kicks: [[0, 10]], anzahl: 2, seed: 2 });
+    const q = { erzeuger: "synth@0.1.0", stimme: fam, werte: { patch: k }, takte, anzahl: 2, bpm: 110, grundton: 2, leiter: "dorisch", seed: 1 };
+    const r = spurRechnen(q, R);
+    let m = 0; for (const s of r.kanaele) for (const x of s) { assert.ok(Number.isFinite(x), `${p.name}`); m = Math.max(m, Math.abs(x)); }
+    assert.ok(m > 0.3 && m <= 0.51, `${p.name}: Spitze ${m}`);
+    const me = messen(r.kanaele, R);
+    assert.ok(me.korrelation > 0.25, `${p.name}: Korrelation ${me.korrelation}`);
+    assert.ok(me.baender.unter120 < 0.5, `${p.name}: kein Gleichanteil/Rumpeln (${me.baender.unter120})`);
+    gleich(spurRechnen(q, R).kanaele[0], r.kanaele[0], `${p.name}: reproduzierbar`);
+  }
+});
+
+test("Synth: Akkorde in der Notenzeile, polyphon gegen einstimmig, Legato bei Slide", async () => {
+  const n = L.notenLesen(["1+3+5! - . 5,~"], { bpm: 120, anzahl: 1, leiter: "moll" });
+  assert.deepEqual(n.map((x) => [x.halbtoene, x.staerke, x.gruppe]), [[0, 1, 1], [3, 1, 1], [7, 1, 1], [-5, 0.8, 2]]);
+  assert.equal(n[0].dauer, 1); assert.ok(n[3].gleiten);
+  const syn = ERZEUGER["synth@0.1.0"].stimmen;
+  assert.equal(syn.shadow.poly({ patch: "shadowChord" }), true); assert.equal(syn.goa.poly({ patch: "spiralAcid" }), false);
+  // Legato: beim Slide setzt die Hüllkurve nicht neu an, sie beginnt auf dem Haltepegel
+  const { _huellkurve } = await c("erzeuger/synth-0.1.0.js"), h = PATCHES.spiralAcid.amp;
+  assert.equal(_huellkurve(h, 32000, 0.2)[0], 0); assert.equal(_huellkurve(h, 32000, 0.2, { legato: true })[0], h.s);
+});
+
+test("Sequenzen: jede Rolle ergibt lesbare Takte; Kammerton verschiebt die Stimmung", () => {
+  for (const r of ROLLEN) {
+    const z = sequenzErzeugen({ rolle: r.key, akkorde: [1, 4, 6, 5], kicks: [[0, 7, 10]], anzahl: 8, seed: 3, halftime: r.key === "pad" });
+    assert.equal(z.length, 8);
+    const n = L.notenLesen(z, { bpm: 100, anzahl: 8, leiter: "phrygisch" });
+    assert.ok(n.length >= 4 && n.every((x) => Number.isFinite(x.halbtoene)), r.key);
+  }
+  assert.ok(Math.abs(L.grundFrequenz(9, 440) / L.grundFrequenz(9) - 440 / 432) < 1e-12);
+});
+
+test("Echo: Anteil 0 unverändert, sonst eine Wiederholung nach der eingestellten Zeit", () => {
+  const def = PLUGINS["echo@0.1.0"], n = RATE, imp = [new Float32Array(n), new Float32Array(n)]; imp[0][0] = imp[1][0] = 1;
+  const lauf = (werte, k) => { const i = def.erzeuge(RATE); i.setze(bereinigeWerte(def, werte)); for (let o = 0; o < n; o += BLOCK) i.prozess([k[0].subarray(o), k[1].subarray(o)], Math.min(BLOCK, n - o)); return k; };
+  const q = klang(1), k0 = lauf({ anteil: 0 }, q.map((x) => Float32Array.from(x))); gleich(k0[0], q[0], "Anteil 0");
+  const k = lauf({ anteil: 100, zeit: 250, pingpong: 0, dunkel: 16000, duenn: 20 }, imp.map((x) => Float32Array.from(x)));
+  let m = 0, wo = 0; for (let i = 100; i < n; i++) if (Math.abs(k[0][i]) > m) { m = Math.abs(k[0][i]); wo = i; }
+  assert.ok(Math.abs(wo / RATE - 0.25) < 0.01, `erste Wiederholung bei ${(wo / RATE).toFixed(3)} s`);
+});

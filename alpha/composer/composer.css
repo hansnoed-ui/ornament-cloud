@@ -181,3 +181,4 @@ canvas.lineal, canvas.welle { width: 100%; display: block; cursor: crosshair; to
 .lizenz input[type="text"] { border: 0; border-bottom: 1px solid var(--border); background: none; color: var(--text); padding: 3px 2px; max-width: 100%; }
 .param select { grid-column: 1 / -1; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--text); padding: 3px 8px; }
 .spur.rechnet .wellen-feld::after { content: "rechnet …"; position: absolute; right: 10px; top: 8px; font-size: 0.75rem; color: #f0a070; }
+.track-zeile { background: color-mix(in srgb, var(--accent) 6%, transparent); border-radius: 10px; padding: 8px 10px; border-top: 0; margin-top: 4px; }

@@ -8,7 +8,7 @@ import { typAusName, variantenFuer } from "./varianten.js";
 import { ERZEUGER } from "../erzeuger/register.js";
 
 export const FORMAT = "ornament-composer-projekt", FORMAT_VERSION = "0.1.0", COMPOSER_VERSION = "0.1.0";
-export const KANALZUG = "kanalzug@0.1.0", GRENZE = "grenze@0.1.0", RAUM = "raum@0.1.0", BASSFETT = "bassfett@0.1.0";
+export const KANALZUG = "kanalzug@0.1.0", GRENZE = "grenze@0.1.0", RAUM = "raum@0.1.0", BASSFETT = "bassfett@0.1.0", ECHO = "echo@0.1.0";
 
 const jetzt = () => new Date().toISOString();
 const neueId = (vor) => `${vor}-${Math.random().toString(36).slice(2, 8)}`;
@@ -42,9 +42,10 @@ export function spurDazu(p, datei, { typ = typAusName(datei.name) } = {}) {
  * eine erzeugte Spur: Die Tondaten stehen nicht im Projekt, nur ihr Rezept (quelle). Beim Öffnen wird sie neu gerechnet, Abtastwert für
  * Abtastwert gleich. quelle: { art: "erzeugt", erzeuger, stimme, variante, werte, takte, fill, anzahl, bpm, swing, menschlich, versatz, seed, stil }
  */
-export function erzeugteSpurDazu(p, quelle, { name, typ, pegel = 0, pan = 0, raum = null, bassfett = null } = {}) {
+export function erzeugteSpurDazu(p, quelle, { name, typ, pegel = 0, pan = 0, raum = null, bassfett = null, echo = null } = {}) {
   const kette = [{ plugin: KANALZUG, parameter: standardWerte(PLUGINS[KANALZUG]), variante: 0 }];
   if (bassfett) kette.push({ plugin: BASSFETT, parameter: { ...standardWerte(PLUGINS[BASSFETT]), ...bassfett } });
+  if (echo) kette.push({ plugin: ECHO, parameter: { ...standardWerte(PLUGINS[ECHO]), ...echo } });
   if (raum) kette.push({ plugin: RAUM, parameter: { ...standardWerte(PLUGINS[RAUM]), ...raum } });
   const sp = { id: neueId("s"), name, typ, quelle, datei: null, pegel, pan, stumm: false, solo: false, vorher: false, kette };
   p.spuren.push(sp); p.geaendert = jetzt();

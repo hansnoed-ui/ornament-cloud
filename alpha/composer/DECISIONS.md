@@ -11,6 +11,11 @@ Hier steht, was Christian entschieden hat und wie er Klänge beurteilt hat, dami
 - Die Klangquelle ist eigene Synthese in JavaScript, reproduzierbar über Startwerte. Christian liefert Samples und Beispiele je Spur, an denen die Erzeuger gemessen und weiterentwickelt werden. Ganze Samples sollen später auch direkt als Clips in Spuren kommen.
 - Fremder Code: AGPL-Quellen (z. B. aquanode-plugins, VoiceStudio) nur lesen, nicht übernehmen. FL-Studio-Samples nur als Messvorlage.
 
+**Synthesizer und ganze Tracks**
+- Auftrag `synthesizer.md`: musikalische Synth-Spuren mit Richtungen Boards of Canada, Radiohead, Massive Attack, Goa, Trance, House, Kraftwerk, Depeche Mode; Shadow Dub, Tape Memory und Glass Circuit zuerst.
+- Umgesetzt in Synth 0.1.0: eine Engine mit fünf Verfahren (analog, FM, Wavetable, Supersaw, Orgel), acht Familien, 16 Presets, sechs Makros, Sequenzen aus Bass und Drums, Akkorde in der Notenzeile, Accent und Slide. Dazu das Plugin Echo 0.1.0 und der Kammerton als Projekteinstellung (Standard 432). Kein GPL-Code, keine fremden Assets. Ausführlich in `SYNTH.md`.
+- Wunsch Christian: einen ganzen Track erzeugen können (z. B. 90 s, alle Spuren und Effekte), um Ergebnisse kennenzulernen, und danach alles von Hand ändern. Umgesetzt als «Track erzeugen» (Arrangement 0.1.0): Abschnitte und Übergänge als gewöhnliche Unterbrechungen; Rechenzeit im Browser etwa 5 s.
+
 **Natur und Flächen (dritter Bereich)**
 - Auftrag `organische-klangwelt.md`: Flächen, Naturklänge und Synthesizer als spielbares Instrument; Natur erkennbar oder stufenlos zur Fläche verwandelt.
 - Umgesetzt in Natur 0.1.0: Walchor, Vogelschwarm, Gezeiten, Pflanzentextur und Pad, je sechs Varianten, sieben Makros. Synthetische Quellen sind so bezeichnet, eigene Aufnahmen kommen mit Lizenzfeldern, der Export warnt bei NC-Material. Gerechnet wird im Worker, als Schleife ohne Naht, auch in langer Fassung für Installationen. Tonart, Akkorde, Einsätze und Hüllkurve kommen von Bass und Drums. Ausführlich in `NATUR.md`.
