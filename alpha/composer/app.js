@@ -11,7 +11,7 @@ import { zipBlob } from "./kern/zip.js";
 import { STILE, stilVon } from "./kern/muster.js";
 import { ARTEN as UNTER, SCHNELL, anwenden, werteVon } from "./kern/unterbrechungen.js";
 import { spurRechnen, schlagRechnen, flaechenSpurRechnen } from "./kern/erzeugen.js";
-import { MAKROS } from "./erzeuger/natur-0.1.0.js";
+import { MAKROS } from "./erzeuger/natur-0.2.0.js";
 import { PATCHES, FAMILIEN_LISTE, MAKROS as SYNTH_MAKROS } from "./erzeuger/synth-0.1.0.js";
 import { ROLLEN, sequenzErzeugen } from "./kern/sequenzen.js";
 import { abschnitte as abschnitteVon, ereignisseFuer, funktionVon, BESETZUNG } from "./kern/arrangement.js";
@@ -278,7 +278,7 @@ function stileAufbauen() {
   $("bassStimme").append(...Object.values(bass).map((b) => el("option", { value: b.key, textContent: b.name })));
   $("bassLinie").append(...LINIEN.map((l) => el("option", { value: l.key, textContent: l.name, title: l.hilfe })));
   $("tonart").append(...NOTEN.map((n, i) => el("option", { value: i, textContent: n, selected: i === 2 })));
-  $("flaecheStimme").append(...Object.values(ERZEUGER["natur@0.1.0"].stimmen).map((b) => el("option", { value: b.key, textContent: b.name })));
+  $("flaecheStimme").append(...Object.values(ERZEUGER["natur@0.2.0"].stimmen).map((b) => el("option", { value: b.key, textContent: b.name })));
   $("leiter").append(...Object.entries(LEITERN).map(([k, l]) => el("option", { value: k, textContent: l.name })));
   sel.onchange = () => {
     const st = stilVon(sel.value); $("erzBpm").value = st.bpm;
@@ -382,7 +382,7 @@ function akkordeVomBass(anzahl) {
   return Array.from({ length: Math.min(8, anzahl) }, (_, t) => { const z0 = String(bass.quelle.takte[t % bass.quelle.takte.length]).trim().split(/\s+/).map(tonLesen).find((x) => x && x !== "-"); return z0 ? ((z0.stufe - 1 + 70) % 7) + 1 : 1; });
 }
 function synthSequenz(q) {
-  return sequenzErzeugen({ rolle: q.rolle, akkorde: akkordeVomBass(q.anzahl), kicks: kickVorlage(), anzahl: q.anzahl, seed: q.seed, halftime: q.bpm >= 140 && ["pad", "chord", "keys", "drone"].includes(q.rolle) });
+  return sequenzErzeugen({ rolle: q.rolle, akkorde: akkordeVomBass(q.anzahl), kicks: kickVorlage(), anzahl: q.anzahl, seed: q.seed, halftime: q.bpm >= 140 && ["pad", "chord", "keys", "drone"].includes(q.rolle) });   // «schwebe» läuft ohnehin quer
 }
 /** Synths folgen Tempo, Länge, Tonart und (wenn nicht von Hand geändert) den Akkorden des Basses */
 function synthsFolgen({ anzahl, bpm }) {
@@ -399,12 +399,12 @@ async function synthDazu(vorgabe = null) {
   await kontext(48000);
   const [fam, patch] = vorgabe ?? $("synthPreset").value.split(":"), st = stimmeVon("synth@0.1.0", fam), pt = PATCHES[patch], bass = z.projekt.spuren.find(istBass), drums = z.projekt.spuren.find(istDrums);
   const v = st.varianten.find((x) => x.werte.patch === patch) ?? st.varianten[0], bpm = z.projekt.tempo.bpm || Number($("erzBpm").value), anzahl = drums?.quelle.anzahl ?? Number($("takte").value);
-  const rolle = vorgabe || $("synthRolle").value === "auto" ? pt.rolle : $("synthRolle").value;
+  const rolle = vorgabe ? vorgabe[2] ?? pt.rolle : $("synthRolle").value === "auto" ? pt.rolle : $("synthRolle").value;
   const q = { art: "erzeugt", erzeuger: "synth@0.1.0", stimme: fam, variante: v.name, werte: { ...v.werte }, rolle, sequenzAuto: true, anzahl, bpm,
     grundton: bass?.quelle.grundton ?? Number($("tonart").value), leiter: bass?.quelle.leiter ?? $("leiter").value, kammerton: kammerton(), swing: drums?.quelle.swing ?? 0, menschlich: 2, versatz: 0, seed: 1 + Math.floor(Math.random() * 99998) };
   q.takte = synthSequenz(q);
   const echoMs = Math.round((0.75 * 60000) / (bpm >= 140 ? bpm / 2 : bpm));
-  const sp = PR.erzeugteSpurDazu(z.projekt, q, { name: `${st.name} · ${pt.name}`, typ: "synth", pegel: st.pegel, echo: { anteil: Math.round((pt.echo ?? 0.2) * 100), zeit: echoMs }, raum: { anteil: 18, nachhall: 2.6, daempfung: 5000, vorverz: 20 } });
+  const sp = PR.erzeugteSpurDazu(z.projekt, q, { name: `${st.name} · ${pt.name}`, typ: "synth", pegel: st.pegel, glanz: vorgabe ? { menge: 35, biss: 55, luft: 3 } : null, echo: { anteil: Math.round((pt.echo ?? 0.2) * 100), zeit: echoMs }, raum: { anteil: 18, nachhall: 2.6, daempfung: 5000, vorverz: 20 } });
   melde(`${pt.name} wird gerechnet …`, 0); await atmen();
   const fertig = spurNeuRechnen(sp);
   if (vorgabe) return fertig;
@@ -435,11 +435,11 @@ function synthSteuerung(sp) {
 /** eine Flächenspur dazu */
 async function flaecheDazu(vorgabe = null) {
   await kontext(48000);
-  const st = stimmeVon("natur@0.1.0", vorgabe?.[0] ?? $("flaecheStimme").value), v = st.varianten[0];
+  const st = stimmeVon("natur@0.2.0", vorgabe?.[0] ?? $("flaecheStimme").value), vv = vorgabe?.[1]?.variante, v = st.varianten.find((x) => x.name === vv) ?? st.varianten[0];
   const drums = z.projekt.spuren.find(istDrums), bass = z.projekt.spuren.find(istBass);
   const anzahl = drums?.quelle.anzahl ?? Number($("takte").value), bpm = z.projekt.tempo.bpm || Number($("erzBpm").value);
-  const quelle = { art: "erzeugt", erzeuger: "natur@0.1.0", stimme: st.key, variante: vorgabe?.[1] ? null : v.name, werte: { ...v.werte, ...(vorgabe?.[1] ?? {}) }, flaeche: true, anzahl, bpm, grundton: bass?.quelle.grundton ?? Number($("tonart").value), leiter: bass?.quelle.leiter ?? $("leiter").value, kammerton: kammerton(), seed: 1 + Math.floor(Math.random() * 99998), sample: null, messdaten: null };
-  const sp = PR.erzeugteSpurDazu(z.projekt, quelle, { name: st.name, typ: "flaeche", pegel: st.pegel, pan: 0, raum: { anteil: 30, nachhall: 3.6, daempfung: 4500, vorverz: 25, groesse: 1.6, tiefschnitt: 200, bewegung: 40 } });
+  const quelle = { art: "erzeugt", erzeuger: "natur@0.2.0", stimme: st.key, variante: vorgabe?.[1] && !vv ? null : v.name, werte: { ...v.werte, ...Object.fromEntries(Object.entries(vorgabe?.[1] ?? {}).filter(([k]) => k !== "variante")) }, flaeche: true, anzahl, bpm, grundton: bass?.quelle.grundton ?? Number($("tonart").value), leiter: bass?.quelle.leiter ?? $("leiter").value, kammerton: kammerton(), seed: 1 + Math.floor(Math.random() * 99998), sample: null, messdaten: null };
+  const sp = PR.erzeugteSpurDazu(z.projekt, quelle, { name: st.name, typ: "flaeche", pegel: st.pegel, pan: 0, glanz: vorgabe ? { menge: 20, luft: 2 } : null, raum: { anteil: 30, nachhall: 3.6, daempfung: 4500, vorverz: 25, groesse: 1.6, tiefschnitt: 200, bewegung: 40 } });
   melde(`${st.name} wird gerechnet …`, 0);
   const fertig = spurNeuRechnen(sp);
   if (vorgabe) return fertig;
@@ -510,16 +510,18 @@ async function trackErzeugen() {
   for (const sp of z.projekt.spuren.filter((x) => x.quelle)) { post({ art: "weg", id: sp.id }); z.daten.delete(sp.id); }
   z.projekt.spuren = z.projekt.spuren.filter((x) => !x.quelle);
   z.projekt.master.pegel = 0;
-  const { takte, abschnitte } = abschnitteVon(sek, bpm);
+  const { takte, abschnitte } = abschnitteVon(sek, bpm, { seed });
+  const b = BESETZUNG[stil.key] ?? { synths: [], natur: [], mix: [] };
+  if (b.linie) $("bassLinie").value = b.linie;
   melde(`Track: Drums und Bass (${takte} Takte) …`, 0); await atmen();
   const mitBass = $("mitBass").checked; $("mitBass").checked = true;
   await erzeugen({ anzahlVorgabe: takte, still: true });
   $("mitBass").checked = mitBass;
-  const b = BESETZUNG[stil.key] ?? { synths: [], natur: null };
+  for (const [s2, stimme] of b.mix ?? []) stilSpurDazu(s2, stimme, { anzahl: takte, bpm, seed, swing: stil.swing });
   const laufend = [];
-  for (const [fam, patch] of b.synths) laufend.push(synthDazu([fam, patch]));
-  if (b.natur) laufend.push(flaecheDazu(b.natur));
-  melde(`Track: Synths und Fläche werden gerechnet …`, 0);
+  for (const syn of b.synths) laufend.push(synthDazu(syn));
+  for (const n of b.natur ?? []) laufend.push(flaecheDazu(n));
+  melde(`Track: Synths und Naturklänge werden gerechnet …`, 0);
   await Promise.all(laufend);
   // das Arrangement: Ereignisse je Spur, nach ihrer Funktion
   for (const sp of z.projekt.spuren.filter((x) => x.quelle)) {
@@ -552,6 +554,18 @@ function schnellEinpegeln(ziel) {
   z.projekt.master.pegel = Math.round(Math.max(-24, Math.min(12, ziel - l)) * 10) / 10;
   const grenze = z.projekt.master.kette.find((g) => g.plugin.startsWith("grenze@")); if (grenze) { grenze.parameter.decke = -1; grenze.aus = false; }
   senden(); summeKopf();
+}
+
+/** eine Spur aus einem anderen Stil dazu (Stilmix): z. B. die Tabla aus «Indien» unter Drum and Bass */
+function stilSpurDazu(stilKey, stimme, { anzahl, bpm, seed, swing }) {
+  const s0 = stilVon(stilKey), s = s0?.spuren.find((x) => x.stimme === stimme);
+  if (!s) return null;
+  const st = stimmeVon(s.erzeuger, s.stimme), v = st.varianten.find((x) => x.name === s.variante) ?? st.varianten[0];
+  const quelle = { art: "erzeugt", erzeuger: s.erzeuger, stimme: s.stimme, variante: v.name, werte: { ...v.werte }, takte: [...s.takte], fill: s.fill ?? null,
+    anzahl, bpm, swing, menschlich: s.menschlich ?? s0.menschlich, versatz: s.versatz ?? 0, seed: seed * 100 + 40, stil: stilKey };
+  const sp = PR.erzeugteSpurDazu(z.projekt, quelle, { name: `${st.name} (aus ${s0.name.split(/[ ,(]/)[0]})`, typ: st.rolle === "perkussion" ? "perkussion" : "drums", pegel: (s.pegel ?? st.pegel) - 2, pan: -(st.pan || 0.2), raum: s0.raum ?? { anteil: 18, nachhall: 1.6 } });
+  spurNeuRechnen(sp);
+  return sp;
 }
 
 function stimmVariante(sp, i) {

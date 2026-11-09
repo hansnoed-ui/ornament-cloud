@@ -8,7 +8,7 @@
 
 import { SVF, zufall } from "../erzeuger/grund.js";
 
-export const UNTERBRECHUNGEN_VERSION = "0.1.0";
+export const UNTERBRECHUNGEN_VERSION = "0.2.0";   // 0.2.0: Knarzen, Wirbel, Wumm dazu; die Arten aus 0.1.0 sind unverändert
 const P = (key, name, min, max, std, einheit = "", mehr = {}) => ({ key, name, gruppe: "", min, max, std, einheit, ...mehr });
 const TEILUNG = { wahl: [{ wert: 4, name: "Viertel" }, { wert: 8, name: "Achtel" }, { wert: 12, name: "Achteltriolen" }, { wert: 16, name: "Sechzehntel" }, { wert: 24, name: "Triolen 16tel" }, { wert: 32, name: "Zweiunddreissigstel" }] };
 
@@ -31,6 +31,17 @@ export const ARTEN = Object.freeze({
     P("zurueck", "am Ende zurück", 0, 1, 0, "", { schritt: 1, hilfe: "1 = in der zweiten Hälfte wieder zurück" })] },
   glitch: { name: "Glitch", hilfe: "kleine Stücke werden zufällig wiederholt, umgedreht, zerkleinert oder weggelassen", parameter: [
     { key: "teilung", name: "Körnung", ...TEILUNG, std: 32 }, P("dichte", "Dichte", 0, 100, 60, "%"), P("zerkleinern", "Bitcrush", 0, 100, 30, "%")] },
+  // seit 0.2.0
+  knarz: { name: "Knarzen", hilfe: "kurze knarzende Bewegungen an zufälligen Stellen: Ringmodulation, Formant, Bitcrush, Zittern", parameter: [
+    P("dichte", "Dichte", 0, 100, 40, "%"), P("laenge", "Länge", 20, 400, 120, "ms", { skala: "log" }), P("staerke", "Stärke", 0, 100, 70, "%"),
+    { key: "farbe", name: "Art", wahl: [{ wert: "mix", name: "gemischt" }, { wert: "ring", name: "Ringmodulation (Growl)" }, { wert: "formant", name: "Formant (vokalig)" }, { wert: "crush", name: "Bitcrush" }, { wert: "zittern", name: "Zittern" }], std: "mix" }] },
+  wirbel: { name: "Wirbel", hilfe: "ein Stück wird immer schneller wiederholt und lauter: Gas geben", parameter: [
+    { key: "von", name: "von", wahl: [{ wert: 4, name: "Viertel" }, { wert: 8, name: "Achtel" }, { wert: 16, name: "Sechzehntel" }], std: 8 },
+    { key: "bis", name: "bis", wahl: [{ wert: 32, name: "Zweiunddreissigstel" }, { wert: 64, name: "Vierundsechzigstel" }, { wert: 128, name: "128stel" }], std: 64 },
+    P("steigen", "Tonhöhe steigt", 0, 12, 3, "Halbtöne"), P("lauter", "lauter werden", 0, 100, 50, "%")] },
+  wumm: { name: "Wumm", hilfe: "ein tiefer Schlag, der in der Tonhöhe fällt (Sub-Drop), darüber wird die Spur kurz geduckt", parameter: [
+    P("hoch", "von", 50, 220, 110, "Hz", { skala: "log" }), P("tief", "nach", 25, 70, 36, "Hz", { skala: "log" }), P("laenge", "Länge", 200, 4000, 1500, "ms", { skala: "log" }),
+    P("staerke", "Stärke", 0, 100, 70, "%"), P("ducken", "Spur ducken", 0, 100, 50, "%")] },
 });
 
 /** Vorschläge für den schnellen Zugriff: an das Ende von Takt 4 (oder an die markierte Stelle) */
@@ -43,6 +54,9 @@ export const SCHNELL = Object.freeze([
   { name: "Rückwärts", art: "rueckwaerts", takt: 3.5, schritte: 8, alle: 0 },
   { name: "Filter zu", art: "filter", takt: 2, schritte: 32, alle: 0 },
   { name: "Glitch", art: "glitch", takt: 3.5, schritte: 8, alle: 4 },
+  { name: "Knarzen", art: "knarz", takt: 0, schritte: 64, alle: 0 },
+  { name: "Wirbel", art: "wirbel", takt: 3, schritte: 16, alle: 0 },
+  { name: "Wumm", art: "wumm", takt: 4, schritte: 16, alle: 0 },
 ]);
 
 export const werteVon = (e) => ({ ...Object.fromEntries(ARTEN[e.art].parameter.map((p) => [p.key, p.std])), ...(e.werte ?? {}) });
@@ -144,6 +158,48 @@ const WIRKUNG = {
       // am Ende in den ungefilterten Klang überblenden, damit die Spur danach ohne Sprung weitergeht
       const mix = !w.zurueck && i > m - aus ? (m - i) / aus : 1;
       for (let c = 0; c < k.length; c++) { const x = k[c][a + i], y = f[c].schritt(x)[w.typ]; k[c][a + i] = y * mix + x * (1 - mix); }
+    }
+  },
+  knarz(k, a, b, rate, w, { seed }) {
+    const rnd = zufall(seed), sek = (b - a) / rate, anz = Math.max(1, Math.round(sek * (0.2 + 3.5 * (w.dichte / 100)))), st = w.staerke / 100;
+    const arten = ["ring", "formant", "crush", "zittern"];
+    for (let j = 0; j < anz; j++) {
+      const L = Math.round((w.laenge / 1000) * (0.6 + 0.8 * rnd()) * rate), p = a + Math.floor(rnd() * Math.max(1, b - a - L));
+      if (L < 32 || p + L > b) continue;
+      const art = w.farbe === "mix" ? arten[Math.floor(rnd() * 4)] : w.farbe, f = 35 + rnd() * 80, f0 = 250 + rnd() * 400, f1 = f0 * (3 + rnd() * 4), halt = 4 + Math.floor(rnd() * 16), stufen = 2 ** (3 + Math.floor(rnd() * 3));
+      for (const s of k) {
+        const seg = s.slice(p, p + L), filt = new SVF();
+        let gehalten = 0;
+        for (let i = 0; i < L; i++) {
+          const u = i / L, e = Math.sin(Math.PI * u) ** 2, x = seg[i];
+          let y;
+          if (art === "ring") y = Math.tanh(3 * x * (0.2 + 0.8 * Math.sin((2 * Math.PI * f * i) / rate))) * 0.8;
+          else if (art === "formant") { if ((i & 15) === 0) filt.setze(f0 * (f1 / f0) ** u, 6, rate); y = Math.tanh(4 * filt.schritt(x).band); }
+          else if (art === "crush") { if (i % halt === 0) gehalten = Math.round(x * stufen) / stufen; y = gehalten; }
+          else y = lies(seg, i + 0.004 * rate * (0.5 + 0.5 * Math.sin((2 * Math.PI * 28 * i) / rate)));
+          s[p + i] = x * (1 - e * st) + y * e * st;
+        }
+      }
+    }
+  },
+  wirbel(k, a, b, rate, w, { takt }) {
+    let len = Math.max(32, Math.round((takt / w.von) * rate));
+    const min = Math.max(16, Math.round((takt / w.bis) * rate)), stueck = k.map((s) => s.slice(a, a + len)), m = b - a;
+    for (let pos = a, j = 0; pos < b; j++) {
+      const u = (pos - a) / m, g = 1 - (w.lauter / 100) * 0.5 * (1 - u), faktor = 2 ** ((w.steigen * u) / 12), ra = Math.min(48, len >> 3);
+      for (let c = 0; c < k.length; c++) for (let i = 0; i < len && pos + i < b; i++) { const e = Math.min(1, i / ra, (len - i) / ra); k[c][pos + i] = lies(stueck[c], i * faktor) * g * e; }
+      pos += len;
+      len = Math.max(min, Math.round(len * 0.8));
+    }
+  },
+  wumm(k, a, b, rate, w) {
+    const n = Math.min(b - a, Math.round((w.laenge / 1000) * rate)), st = (w.staerke / 100) * 0.9, du = w.ducken / 100;
+    let ph = 0;
+    for (let i = 0; i < n; i++) {
+      const u = i / n, f = w.tief + (w.hoch - w.tief) * Math.exp(-u * 6), e = Math.min(1, i / 48) * (1 - u) ** 1.5, x = Math.tanh(2.2 * Math.sin(ph)) * e * st;
+      ph += (2 * Math.PI * f) / rate;
+      const duck = 1 - du * e;
+      for (const s of k) s[a + i] = s[a + i] * duck + x;
     }
   },
   glitch(k, a, b, rate, w, { takt, seed }) {

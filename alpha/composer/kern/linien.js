@@ -89,6 +89,7 @@ export const LINIEN = Object.freeze([
   { key: "riff", name: "Riff (Dub, Trip-Hop)", hilfe: "ein Zwei-Takt-Riff mit Pausen, rund und tief" },
   { key: "offbeat", name: "Offbeat (House, Goa)", hilfe: "zwischen die Kicks: rollend" },
   { key: "walking", name: "Walking (Jazz)", hilfe: "Viertel: Grundton, Akkordtöne, chromatische Annäherung" },
+  { key: "zyklus", name: "lang, ungerader Zyklus (knarzend)", hilfe: "lange Töne über einen Zyklus von 3, 5 oder 7 Takten, Wechsel quer zum Takt, kurze knarzende Gleitbewegungen" },
 ]);
 
 /** die Positionen der Kick (Sechzehntel 0–15) je Takt aus den Zeilen einer Drumspur */
@@ -114,6 +115,7 @@ export function linieErzeugen({ art = "kick", leiter = "moll", kicks = null, anz
   const rnd = zufall(seed), folgen = FOLGEN[leiter] ?? FOLGEN.moll, folge = folgen[Math.floor(rnd() * folgen.length)];
   const k = kicks?.length ? kicks : [[0, 10]];
   if (art === "walking") return walkingZeilen(anzahl, folge, rnd);
+  if (art === "zyklus") return zyklusZeilen(folge, rnd);
   const zeilen = [];
   for (let b = 0; b < anzahl; b++) {
     const g = tief(folge[b % folge.length]), spaet = b % 8 >= 4, schritte = Array(16).fill(".");
@@ -159,3 +161,25 @@ function walkingZeilen(anzahl, folge, rnd) {
 }
 /** Viertel mit einem Achtelpaar → acht Achtel */
 function achtel(t) { const out = []; for (const x of t) { const p = x.split(" "); if (p.length === 2) out.push(p[0], p[1]); else out.push(x, "-"); } return out.join(" "); }
+
+/**
+ * Zyklus (seit Composer 0.2): ein Zyklus von 3, 5 oder 7 Takten, in dem die Töne lang liegen und quer zum Takt wechseln (Dauern von
+ * 6 bis 22 Sechzehnteln, kaum je auf der Eins). Vor einem Wechsel oft eine kurze knarzende Bewegung: ein Nachbarton und zurück, gleitend.
+ * Die Zeilen wiederholen sich als Ganzes; gegen die Viertakt-Gruppen der Drums verschiebt sich die Linie dadurch über den Track.
+ */
+function zyklusZeilen(folge, rnd) {
+  const zy = [3, 5, 7][Math.floor(rnd() * 3)], S = zy * 16, z = Array(S).fill("-"), dauern = [10, 14, 6, 18, 12, 22, 9, 13];
+  let pos = 0, k = 0;
+  while (pos < S) {
+    const g = tief(folge[k % folge.length]), d = Math.min(S - pos, dauern[Math.floor(rnd() * dauern.length)]);
+    z[pos] = fmt(g, { gl: k > 0 && rnd() < 0.35, st: "!" });
+    if (d >= 8 && rnd() < 0.65) {   // knarzen: Nachbarton (oder Oktave) kurz anschleifen, dann zurück
+      const n = pos + d - 3, nb = rnd() < 0.3 ? fmt(g, { okt: 1, gl: true }) : fmt(g + (rnd() < 0.5 ? 1 : -1), { gl: true });
+      z[n] = nb; z[n + 1] = fmt(g, { gl: true, st: "_" });
+    }
+    pos += d; k++;
+  }
+  const zeilen = [];
+  for (let b = 0; b < zy; b++) zeilen.push(z.slice(b * 16, b * 16 + 16).join(" "));
+  return zeilen;
+}

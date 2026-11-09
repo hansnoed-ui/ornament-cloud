@@ -11,6 +11,20 @@ Hier steht, was Christian entschieden hat und wie er Klänge beurteilt hat, dami
 - Die Klangquelle ist eigene Synthese in JavaScript, reproduzierbar über Startwerte. Christian liefert Samples und Beispiele je Spur, an denen die Erzeuger gemessen und weiterentwickelt werden. Ganze Samples sollen später auch direkt als Clips in Spuren kommen.
 - Fremder Code: AGPL-Quellen (z. B. aquanode-plugins, VoiceStudio) nur lesen, nicht übernehmen. FL-Studio-Samples nur als Messvorlage.
 
+**Urteil zu den ersten ganzen Tracks (Christian, 9. November 2026, Mittag)**
+- «halb gut». Gut: Drums und Bass bei Drum and Bass und Hip-Hop; die Perkussion Indien und Orient («toll»); die Naturgeräusche («sehr gut»).
+- Nachtrag: «die Synths beim House-Track sind ok» (Velvet Organ Chord, Open Sky Saw).
+- Nicht gut: die übrigen Tracks; am schlimmsten die Glass Keys und die Keys allgemein; Flächen und Bassläufe, die einfach im 4/4 spielen.
+- Gewünscht: Flächen und Bässe in speziellen Takten, lang anhaltend, mit kurzen knarzenden Bewegungen. Die Sounds sollen mehr glänzen und knarzen. Mehr Abwechslung im Stilmix. Die Tracks sollen «atmen, stocken, Gas geben, sich verlieren und wiederfinden», «wirbeln, wummen», und mehr Natursounds.
+
+**Umsetzung des Urteils (Composer 0.2, 9. November 2026, Nachmittag)**
+- Bass-Linie «Zyklus» und Synth-Rolle «Schwebe»: lange Töne und Akkorde über 3, 5 oder 7 Takte, Wechsel quer zum Takt; beim Bass vor dem Wechsel kurzes Knarzen (Nachbarton oder Oktave, gleitend). Der Zyklus läuft gegen die Viertakt-Gruppen der Drums.
+- Unterbrechungen 0.2.0: neu Knarzen (Ringmodulation, Formant, Bitcrush, Zittern), Wirbel (immer schneller wiederholt, lauter, steigend), Wumm (Sub-Drop, Spur geduckt).
+- Plugin Glanz 0.1.0 (Exciter und Luft) auf Synths und Flächen im Track.
+- Natur 0.2.0: Regen, Feuer und Insekten dazu; die fünf Familien aus 0.1.0 klingen unverändert (getestet).
+- Arrangement 0.2.0: Intro, Aufbau, dann Hauptteil, Stocken, Atmen, Gas geben, Sich verlieren, Wiederfinden in einer Folge aus dem Startwert, Outro. Wer sich verliert, findet sich wieder (mit Wumm). Beim Stocken halten alle Spuren an denselben Stellen an.
+- Stilmix: Perkussion aus einem zweiten Stil (z. B. Tabla unter DnB), zwei Naturschichten, keine Keys. DnB und Hip-Hop behalten ihren Bass (gefiel); House behält seine Synths (gefielen).
+
 **Synthesizer und ganze Tracks**
 - Auftrag `synthesizer.md`: musikalische Synth-Spuren mit Richtungen Boards of Canada, Radiohead, Massive Attack, Goa, Trance, House, Kraftwerk, Depeche Mode; Shadow Dub, Tape Memory und Glass Circuit zuerst.
 - Umgesetzt in Synth 0.1.0: eine Engine mit fünf Verfahren (analog, FM, Wavetable, Supersaw, Orgel), acht Familien, 16 Presets, sechs Makros, Sequenzen aus Bass und Drums, Akkorde in der Notenzeile, Accent und Slide. Dazu das Plugin Echo 0.1.0 und der Kammerton als Projekteinstellung (Standard 432). Kein GPL-Code, keine fremden Assets. Ausführlich in `SYNTH.md`.

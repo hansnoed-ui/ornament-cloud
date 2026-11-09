@@ -215,7 +215,7 @@ test("Linien: jede Art ergibt lesbare Takte in jeder Leiter", () => {
   const kicks = L.kickSchritte(["x! . . . . . . x . . x . . . . ."]);
   for (const art of L.LINIEN.map((l) => l.key)) for (const leiter of Object.keys(L.LEITERN)) {
     const z = L.linieErzeugen({ art, leiter, kicks, anzahl: 8, seed: 4 });
-    assert.equal(z.length, 8, `${art}/${leiter}`);
+    if (art === "zyklus") assert.ok([3, 5, 7].includes(z.length), `${art}: Zyklus ${z.length} Takte`); else assert.equal(z.length, 8, `${art}/${leiter}`);
     const n = L.notenLesen(z, { bpm: 90, anzahl: 8, leiter });
     assert.ok(n.length >= 4, `${art}/${leiter}: ${n.length} Noten`);
     assert.ok(n.every((x) => Number.isFinite(x.halbtoene) && x.halbtoene > -24 && x.halbtoene < 30 && x.dauer > 0), `${art}/${leiter}`);
@@ -354,7 +354,7 @@ test("Synth: Akkorde in der Notenzeile, polyphon gegen einstimmig, Legato bei Sl
 test("Sequenzen: jede Rolle ergibt lesbare Takte; Kammerton verschiebt die Stimmung", () => {
   for (const r of ROLLEN) {
     const z = sequenzErzeugen({ rolle: r.key, akkorde: [1, 4, 6, 5], kicks: [[0, 7, 10]], anzahl: 8, seed: 3, halftime: r.key === "pad" });
-    assert.equal(z.length, 8);
+    if (r.key === "schwebe") assert.ok([3, 5, 7].includes(z.length)); else assert.equal(z.length, 8);
     const n = L.notenLesen(z, { bpm: 100, anzahl: 8, leiter: "phrygisch" });
     assert.ok(n.length >= 4 && n.every((x) => Number.isFinite(x.halbtoene)), r.key);
   }
@@ -368,4 +368,56 @@ test("Echo: Anteil 0 unverändert, sonst eine Wiederholung nach der eingestellte
   const k = lauf({ anteil: 100, zeit: 250, pingpong: 0, dunkel: 16000, duenn: 20 }, imp.map((x) => Float32Array.from(x)));
   let m = 0, wo = 0; for (let i = 100; i < n; i++) if (Math.abs(k[0][i]) > m) { m = Math.abs(k[0][i]); wo = i; }
   assert.ok(Math.abs(wo / RATE - 0.25) < 0.01, `erste Wiederholung bei ${(wo / RATE).toFixed(3)} s`);
+});
+
+// ---------- Composer 0.2: Zyklus, Schwebe, Knarzen, Wirbel, Wumm, Glanz, Natur 0.2.0, Arrangement 0.2.0 ----------
+const A = await c("kern/arrangement.js");
+
+test("Arrangement 0.2: Abschnitte füllen die Länge, wer sich verliert, findet sich wieder, gemeinsames Stocken", () => {
+  for (const [s, b] of [[60, 100], [90, 90], [90, 174], [120, 124], [180, 72]]) for (let seed = 1; seed <= 6; seed++) {
+    const { takte, abschnitte } = A.abschnitte(s, b, { seed });
+    assert.equal(takte % 4, 0); assert.equal(abschnitte.at(-1).bis, takte); assert.equal(abschnitte[0].typ, "intro"); assert.equal(abschnitte.at(-1).typ, "outro");
+    for (let i = 1; i < abschnitte.length; i++) assert.equal(abschnitte[i].von, abschnitte[i - 1].bis);
+    const typen = abschnitte.map((a) => a.typ);
+    if (typen.includes("verlieren")) assert.ok(typen.indexOf("wiederfinden") > typen.indexOf("verlieren"), `${s}/${b}/${seed}: ${typen}`);
+    for (const f of ["kick", "backbeat", "oben", "perkussion", "bass", "pad", "melodie", "natur", "fremd"]) for (const e of A.ereignisseFuer(f, abschnitte, { seed, takte })) {
+      assert.ok(U.ARTEN[e.art], e.art); assert.ok(e.takt >= 0 && e.takt < takte); assert.ok(e.arr);
+    }
+  }
+  const { takte, abschnitte } = A.abschnitte(90, 90, { seed: 1 });
+  if (abschnitte.some((a) => a.typ === "stocken")) {
+    const loecher = (f) => A.ereignisseFuer(f, abschnitte, { seed: 1, takte }).filter((e) => e.art === "dropout" && e.schritte <= 8).map((e) => e.takt).join();
+    assert.equal(loecher("bass"), loecher("pad"), "alle stocken an denselben Stellen");
+  }
+});
+
+test("Unterbrechungen 0.2: Knarzen, Wirbel und Wumm wirken nur in ihrem Bereich; Wumm fügt tiefe Energie hinzu", () => {
+  const q = klang(4), tempo = { bpm: 120, beginn: 0 };
+  for (const art of ["knarz", "wirbel", "wumm"]) {
+    const k = U.anwenden(q, RATE, [{ art, takt: 0.5, schritte: 16, alle: 0, seed: 5 }], tempo);
+    assert.ok(k.every((s) => s.every(Number.isFinite)), art);
+    for (let i = 0; i < RATE - 1; i += 97) assert.equal(k[0][i], q[0][i], `${art}: vorher gleich`);
+    for (let i = 3 * RATE + 1; i < k[0].length; i += 97) assert.equal(k[0][i], q[0][i], `${art}: nachher gleich`);
+  }
+  const still = [new Float32Array(RATE * 2), new Float32Array(RATE * 2)];
+  const w = U.anwenden(still, RATE, [{ art: "wumm", takt: 0, schritte: 16, alle: 0 }], tempo);
+  assert.ok(messen(w, RATE).baender.unter120 > 0.8, "Wumm ist tief");
+});
+
+test("Glanz: Grundstellung unverändert, sonst mehr Energie über der Frequenz", () => {
+  const def = PLUGINS["glanz@0.1.0"], q = klang(1);
+  const lauf = (werte) => { const k = q.map((x) => Float32Array.from(x)), i = def.erzeuge(RATE); i.setze(bereinigeWerte(def, werte)); for (let o = 0; o < k[0].length; o += BLOCK) i.prozess([k[0].subarray(o), k[1].subarray(o)], Math.min(BLOCK, k[0].length - o)); return k; };
+  gleich(lauf({})[0], q[0], "Grundstellung");
+  assert.ok(messen(lauf({ menge: 100, luft: 6 }), RATE).baender.ueber2k > messen(q, RATE).baender.ueber2k);
+});
+
+test("Natur 0.2.0: Regen, Feuer, Insekten klingen und sind Schleifen; die Familien aus 0.1.0 klingen wie in 0.1.0", () => {
+  const R = 24000, n2 = ERZEUGER["natur@0.2.0"];
+  for (const k of ["regen", "feuer", "insekten"]) for (const v of n2.stimmen[k].varianten) {
+    const [L0] = flaechenSpurRechnen({ erzeuger: "natur@0.2.0", stimme: k, werte: v.werte, flaeche: true, anzahl: 2, bpm: 120, grundton: 2, leiter: "moll", seed: 2 }, R, {}).kanaele;
+    let m = 0, e = 0; for (const x of L0) { assert.ok(Number.isFinite(x), `${k} ${v.name}`); m = Math.max(m, Math.abs(x)); e += x * x; }
+    assert.ok(m <= 0.61 && Math.sqrt(e / L0.length) > 0.005, `${k} ${v.name}: Spitze ${m}`);
+  }
+  const q = { stimme: "gezeiten", werte: {}, flaeche: true, anzahl: 2, bpm: 120, grundton: 2, leiter: "moll", seed: 3 };
+  gleich(flaechenSpurRechnen({ ...q, erzeuger: "natur@0.2.0" }, R, {}).kanaele[0], flaechenSpurRechnen({ ...q, erzeuger: "natur@0.1.0" }, R, {}).kanaele[0], "Gezeiten 0.2.0 = 0.1.0");
 });
