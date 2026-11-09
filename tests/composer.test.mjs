@@ -444,3 +444,75 @@ test("Composer 0.3: Teile je Abschnitt (Drums und Bass), Wirbel an jedem Abschni
   const t = A.teileAus({ gas: takte2, fill: "x x" }, [{ typ: "intro", von: 0, bis: 4 }, { typ: "gas", von: 4, bis: 8 }]);
   assert.deepEqual(t.map((x) => [x.von, !!x.takte, x.fill]), [[0, false, "x x"], [4, true, "x x"]]);
 });
+
+// ---------- Bereiche und Fassungen 0.1.0 ----------
+const BE = await c("kern/bereiche.js");
+const FA = await c("kern/fassungen.js");
+const TEMPO = { bpm: 120, beginn: 0, taktart: [4, 4] };   // ein Takt = 2 s
+const flach = (sek = 8, wert = 0.5) => { const n = Math.round(sek * RATE); return [new Float32Array(n).fill(wert), new Float32Array(n).fill(wert)]; };
+
+test("Bereiche: stumm ist innen still, aussen unverändert, mit Blenden ohne Sprung; die Quelle bleibt", () => {
+  const q = flach(), k = BE.anwenden(q, RATE, [{ id: "b", art: "stumm", von: 1, bis: 2, ein: 0, aus: 0, kurve: "gleich" }], TEMPO, PLUGINS);
+  assert.equal(q[0][3 * RATE], 0.5, "Quelle unberührt");
+  assert.equal(k[0][RATE], 0.5); assert.equal(k[0][5 * RATE], 0.5);
+  for (let i = Math.round(2.05 * RATE); i < Math.round(3.95 * RATE); i++) assert.equal(k[0][i], 0, `still bei ${i}`);
+  let sprung = 0; for (let i = 1; i < k[0].length; i++) sprung = Math.max(sprung, Math.abs(k[0][i] - k[0][i - 1]));
+  assert.ok(sprung < 0.01, `grösster Sprung ${sprung}`);
+  const aus = BE.anwenden(q, RATE, [{ id: "b", art: "stumm", von: 1, bis: 2, bypass: true }], TEMPO, PLUGINS);
+  gleich(aus[0], q[0], "bypass");
+});
+
+test("Bereiche: Pegel ändert die Lautheit um den eingestellten Wert, Abfall gleitet, Blendenlänge im Raster", () => {
+  const q = klang(8), b = { id: "b", art: "pegel", von: 1, bis: 3, db: -6, dbEnde: -6, ein: 0, aus: 0, kurve: "gleich" };
+  const k = BE.anwenden(q, RATE, [b], TEMPO, PLUGINS), stueck = (x) => x.map((s) => s.subarray(2.2 * RATE, 5.8 * RATE));
+  const d = lautheitIntegriert(stueck(k), RATE) - lautheitIntegriert(stueck(q), RATE);
+  assert.ok(Math.abs(d + 6) < 0.15, `${d.toFixed(2)} LU statt −6`);
+  const f = flach(), r = BE.anwenden(f, RATE, [{ id: "r", art: "pegel", von: 0, bis: 2, db: 0, dbEnde: -40, ein: 0, aus: 0 }], TEMPO, PLUGINS);
+  assert.ok(r[0][RATE] < 0.5 && r[0][RATE] > r[0][3 * RATE] && r[0][3 * RATE] > r[0][3.9 * RATE], "fällt gleichmässig");
+  const g = BE.grenzen({ von: 1, bis: 2, ein: 4, aus: 16 }, RATE, TEMPO, 8 * RATE);
+  assert.equal(g.a, 2 * RATE); assert.equal(g.e, 4 * RATE);
+  assert.ok(g.ein + g.aus <= g.e - g.a, "Blenden zusammen nicht länger als der Bereich");
+});
+
+test("Bereiche: Effekte wirken nur im Bereich (ohne Ausklang), die Fahne klingt mit Ausklang weiter", () => {
+  const q = klang(8), v = BE.SCHNELL_EFFEKTE.find((x) => x.key === "dubecho");
+  for (const ausklang of [false, true]) {
+    const b = { id: "e", art: "effekt", von: 1, bis: 2, ein: 1, aus: 1, kurve: "gleich", ...BE.effektAus(v, PLUGINS, TEMPO), ausklang };
+    const k = BE.anwenden(q, RATE, [b], TEMPO, PLUGINS);
+    assert.ok(k.every((s) => s.every(Number.isFinite)), "endlich");
+    for (let i = 0; i < 2 * RATE; i += 97) assert.equal(k[0][i], q[0][i], "vor dem Bereich gleich");
+    let diff = 0; for (let i = 2 * RATE; i < 4 * RATE; i++) diff += Math.abs(k[0][i] - q[0][i]);
+    assert.ok(diff > 10, "im Bereich verändert");
+    let nach = 0; for (let i = 4 * RATE + 100; i < 5 * RATE; i++) nach += Math.abs(k[0][i] - q[0][i]);
+    if (ausklang) assert.ok(nach > 1, "Fahne nach dem Bereich"); else assert.equal(nach, 0, "ohne Ausklang danach unverändert");
+  }
+  for (const v2 of BE.SCHNELL_EFFEKTE) { const k = BE.anwenden(q, RATE, [{ id: "x", art: "effekt", von: 0.5, bis: 1.5, ...BE.effektAus(v2, PLUGINS, TEMPO) }], TEMPO, PLUGINS); assert.ok(k.every((s) => s.every(Number.isFinite)), v2.name); }
+  const mono1 = BE.anwenden([q[0]], RATE, [{ id: "m", art: "effekt", von: 1, bis: 2, ...BE.effektAus(v, PLUGINS, TEMPO) }], TEMPO, PLUGINS);
+  assert.equal(mono1.length, 2, "einkanalig wird stereo gerechnet");
+});
+
+test("Fassungen: verschieben, wiederholen, angleichen; Ausrichten findet den Versatz; Wechsel behält Mischung und Bearbeitungen", () => {
+  const q = klang(2);
+  const v = FA.vorbereiten(q, RATE, { versatz: 0.1 }), n = Math.round(0.1 * RATE);
+  assert.equal(v[0][n + 5], q[0][5]); assert.equal(v[0][5], 0);
+  const w = FA.vorbereiten(q, RATE, { wiederholen: true }, 5 * RATE);
+  assert.equal(w[0].length, 5 * RATE); assert.equal(w[0][2 * RATE + 17], q[0][17]);
+  const a = FA.vorbereiten(q, RATE, { angleich: -6 });
+  assert.ok(Math.abs(a[0][1000] - q[0][1000] * 10 ** (-6 / 20)) < 1e-6);
+  assert.equal(FA.vorbereiten(q, RATE, {}), q, "ohne Änderung dieselbe Quelle");
+  // unregelmässige Anschläge (ein regelmässiges Muster wäre mehrdeutig)
+  let zz = 11; const rnd = () => ((zz = (Math.imul(zz, 1664525) + 1013904223) >>> 0) / 4294967296);
+  const lang = [new Float32Array(6 * RATE), null]; for (let t = 0.05; t < 5.5; t += 0.12 + rnd() * 0.5) for (let i = 0; i < 2400; i++) lang[0][Math.round(t * RATE) + i] += Math.exp(-i / 300) * (rnd() - 0.5);
+  lang[1] = lang[0];
+  const spaeter = FA.vorbereiten(lang, RATE, { versatz: 0.25 }), r = FA.ausrichten(spaeter, lang, RATE);
+  assert.ok(Math.abs(r.versatz + 0.25) < 0.01, `Versatz ${r.versatz}`);
+  assert.ok(Math.abs(FA.vorbereiten(spaeter, RATE, { versatz: r.versatz })[0][RATE] - lang[0][RATE]) < 0.05, "verschoben passt es");
+  const sp = { id: "s", name: "Bass", datei: { name: "alt.wav", sha256: "a" }, versatz: 0.1, pegel: -3, kette: [{ plugin: "kanalzug@0.1.0" }], bereiche: [{ id: "b" }] };
+  const alt = FA.fassungVon(sp);
+  sp.fassungen = [alt]; delete sp.versatz; sp.datei = { name: "neu.wav", sha256: "n" };
+  FA.fassungWechseln(sp, alt.id);
+  assert.equal(sp.datei.name, "alt.wav"); assert.equal(sp.versatz, 0.1); assert.equal(sp.pegel, -3); assert.equal(sp.bereiche.length, 1);
+  assert.equal(sp.fassungen[0].datei.name, "neu.wav"); assert.ok(!("versatz" in sp.fassungen[0]));
+  FA.fassungWechseln(sp, sp.fassungen[0].id);
+  assert.equal(sp.datei.name, "neu.wav"); assert.ok(!("versatz" in sp));
+});
