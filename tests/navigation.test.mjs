@@ -32,6 +32,7 @@ const AUSNAHMEN = [
   ["The Fictory mit dem Kopf der App statt der Kopfleiste (21. Oktober 2026, zweisprachig); ihre App-Seite app/ trägt die Navigation", /^alpha\/the-fictory\/(?!app\/)/],
   ["Die Redaktion von «Social Media» im Neubau (22. Oktober 2026, «im neuen design am neuen ort»): ihr Formular src/b/redaktion.html und die Weiterleitung an der alten Adresse", /^(social-media\/redaktion\/index|src\/b\/redaktion)\.html$/],
   ["«Kunst», Hypertext der Facebook-Beiträge mit eigener Kopfzeile, steht für sich, nur per Direktlink (1. November 2026)", /^alpha\/kunst\//],
+  ["ORNAMENT AV STUDIO 0.1 (Probe), Visualisierung des Composers, eigene Oberfläche wie Lab und Composer, nur per Direktlink, noindex (9. November 2026)", /^alpha\/av\//],
   ["ORNAMENT COMPOSER 0.1, Spuren und Plugins, mit eigener Oberfläche wie das Lab, steht für sich, nur per Direktlink, noindex (9. November 2026)", /^alpha\/composer\//],
   ["ORNAMENT LAB 0.1 mit eigener Oberfläche, steht für sich, nur per Direktlink (23. Oktober 2026; alpha/lab/README.md)", /^alpha\/lab\//],
   ["KONSTELLATION, statische Fassung der App aus hansnoed-ui/konstellation mit eigener nüchterner Kopfzeile, steht für sich, nur per Direktlink, noindex (6. November 2026)", /^alpha\/konstellation\//],
