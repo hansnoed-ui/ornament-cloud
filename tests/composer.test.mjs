@@ -139,7 +139,7 @@ const { STILE, taktLesen } = await c("kern/muster.js");
 const { spurRechnen } = await c("kern/erzeugen.js");
 
 test("Erzeuger: jede Stimme, Variante und Artikulation ist endlich, gleich laut und reproduzierbar", () => {
-  for (const [id, e] of Object.entries(ERZEUGER)) for (const [k, s] of Object.entries(e.stimmen)) {
+  for (const [id, e] of Object.entries(ERZEUGER)) if (!e.melodisch) for (const [k, s] of Object.entries(e.stimmen)) {
     const std = Object.fromEntries(s.parameter.map((p) => [p.key, p.std]));
     assert.ok(s.varianten.length >= 6, `${k}: mindestens sechs Varianten`);
     for (const p of s.parameter) assert.ok(p.min <= p.std && p.std <= p.max, `${k}.${p.key}`);
@@ -196,4 +196,60 @@ test("Projekt: erzeugte Spur speichert nur das Rezept und prüft den Erzeuger", 
   assert.equal(sp.datei, null); assert.deepEqual(sp.kette.map((g) => g.plugin), ["kanalzug@0.1.0", "raum@0.1.0"]);
   assert.deepEqual(PR.pruefe(p), []);
   assert.ok(PR.pruefe({ ...p, spuren: [{ ...sp, quelle: { ...sp.quelle, erzeuger: "gibts@1.0.0" } }] }).length > 0);
+});
+
+// ---------- Bass 0.1.0, Linien, Bassfett ----------
+const L = await c("kern/linien.js");
+
+test("Linien: Stufen lesen, Halbtöne, Bindebogen über den Taktstrich, Grundton 30–60 Hz", () => {
+  assert.deepEqual(L.tonLesen("b3'~!"), { stufe: 3, vorzeichen: -1, oktave: 1, gleiten: true, staerke: 1 });
+  assert.equal(L.halbtoene(L.tonLesen("3"), "moll"), 3); assert.equal(L.halbtoene(L.tonLesen("3"), "dur"), 4);
+  assert.equal(L.halbtoene(L.tonLesen("8"), "moll"), 12); assert.equal(L.halbtoene(L.tonLesen("7,"), "moll"), -2);
+  const n = L.notenLesen(["1 - - - . . . . 5 - - - - - - -", "- - - - 3 . . ."], { bpm: 120, anzahl: 2, leiter: "moll" });
+  assert.deepEqual(n.map((x) => [x.beginn, x.dauer, x.halbtoene]), [[0, 0.5, 0], [1, 2, 7], [3, 0.25, 3]]);
+  for (let g = 0; g < 12; g++) { const f = L.grundFrequenz(g); assert.ok(f >= 30 && f < 60, `${g}: ${f}`); }
+  assert.ok(Math.abs(L.grundFrequenz(9) - 54) < 1e-9, "A = 432 Hz → A1 = 54 Hz");
+});
+
+test("Linien: jede Art ergibt lesbare Takte in jeder Leiter", () => {
+  const kicks = L.kickSchritte(["x! . . . . . . x . . x . . . . ."]);
+  for (const art of L.LINIEN.map((l) => l.key)) for (const leiter of Object.keys(L.LEITERN)) {
+    const z = L.linieErzeugen({ art, leiter, kicks, anzahl: 8, seed: 4 });
+    assert.equal(z.length, 8, `${art}/${leiter}`);
+    const n = L.notenLesen(z, { bpm: 90, anzahl: 8, leiter });
+    assert.ok(n.length >= 4, `${art}/${leiter}: ${n.length} Noten`);
+    assert.ok(n.every((x) => Number.isFinite(x.halbtoene) && x.halbtoene > -24 && x.halbtoene < 30 && x.dauer > 0), `${art}/${leiter}`);
+    for (const zl of z) for (const t of zl.split(" ")) assert.ok(t === "." || t === "-" || L.tonLesen(t), `${art}: «${t}»`);
+  }
+});
+
+test("Bass: jede Stimme und Variante ist endlich, einstimmig unter 0 dBFS, unten mono", () => {
+  const bass = ERZEUGER["bass@0.1.0"], takte = L.linieErzeugen({ art: "kick", kicks: L.kickSchritte(["x . . . . . . x . . x . . . . ."]), anzahl: 2, seed: 2 });
+  for (const [k, st] of Object.entries(bass.stimmen)) {
+    assert.ok(st.varianten.length >= 6, k);
+    for (const v of st.varianten) {
+      const r = spurRechnen({ erzeuger: "bass@0.1.0", stimme: k, werte: v.werte, takte, anzahl: 2, bpm: 100, grundton: 2, leiter: "moll", seed: 1 }, RATE);
+      let m = 0; for (const s of r.kanaele) for (const x of s) { assert.ok(Number.isFinite(x), `${k} ${v.name}`); m = Math.max(m, Math.abs(x)); }
+      assert.ok(m > 0.1 && m <= 0.95, `${k} ${v.name}: Spitze ${m}`);
+      const me = messen(r.kanaele, RATE);
+      assert.ok(me.korrelation > 0.8, `${k} ${v.name}: Korrelation ${me.korrelation}`);
+    }
+  }
+});
+
+test("Bass: Tonhöhe stimmt (Sub auf D, 432 Hz)", () => {
+  const st = stimmeVon("bass@0.1.0", "sub"), w = Object.fromEntries(st.parameter.map((p) => [p.key, p.std]));
+  const f = L.grundFrequenz(2) * 2, [s] = st.rechne({ ...w, waerme: 0, antrieb: 0 }, RATE, { frequenz: f, dauer: 1, staerke: 0.8 });
+  let z = 0; for (let i = RATE * 0.2 + 1; i < RATE * 0.8; i++) if (s[i - 1] < 0 && s[i] >= 0) z++;
+  assert.ok(Math.abs(z / 0.6 - f) < 2, `gemessen ${(z / 0.6).toFixed(1)} Hz, erwartet ${f.toFixed(1)}`);
+});
+
+test("Bassfett: Grundstellung unverändert, Unteroktave fügt tiefe Energie hinzu", () => {
+  const def = PLUGINS["bassfett@0.1.0"], q = klang(1);
+  const lauf = (werte) => { const k = q.map((x) => Float32Array.from(x)), i = def.erzeuge(RATE); i.setze(bereinigeWerte(def, werte)); for (let o = 0; o < k[0].length; o += BLOCK) i.prozess([k[0].subarray(o), k[1].subarray(o)], Math.min(BLOCK, k[0].length - o)); return k; };
+  gleich(lauf({})[0], q[0], "Grundstellung");
+  const sub = lauf({ sub: 100 }), mb = messen(q, RATE).spektrum, ms = messen(sub, RATE).spektrum;
+  assert.ok(ms[1] > mb[1] + 3, `31,5-Hz-Band: ${mb[1]} → ${ms[1]} dB`);
+  const ob = messen(lauf({ obertoene: 100 }), RATE);
+  assert.ok(ob.spektrum[9] > mb[9], "Obertöne um 200 Hz");
 });
