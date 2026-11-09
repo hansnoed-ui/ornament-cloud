@@ -19,10 +19,24 @@ export const STILE = Object.freeze([
   // Darbuka, Zarb und Riq je Abschnitt ab (Arrangement), statt alle durchzulaufen.
   { key: "ornament", name: "Ornament", gruppe: "ornament", bpm: 174, swing: 0, menschlich: 1.5,
     bass: { stimme: "reese", variante: "Ed Rush dunkel", linie: "zyklus", leiter: "hijaz", bassfett: { sub: 25, obertoene: 30 } }, spuren: [
-    S(D, "kick", "DnB", ["x! . . . . . . . . . x . . . . .", "x! . . . . . . . . . x . . . . .", "x! . . . . . . . . . x . . . . .", "x! . . . . . . . x . x . . . . ."]),
-    S(D, "snare", "DnB Crack", [". . . . x! . . . . . . . x! . . .", ". . . . x! . . g . . . . x! . . g"], { fill: ". . . . x! . . . . . . . x! . x x", menschlich: 1 }),
-    S(D, "hat", "Goa scharf", ["x . o g x . o . x . o g x . o g"], { pegel: -11 }),
-    S(D, "offen", "kurz", [". . . . . . . . . . . . . . . .", ". . . . . . . . . . . . . . x ."]),
+    // seit Composer 0.3 (Urteil «Drums und Bass noch etwas eintönig»): je Abschnitt eigene Grooves («teile»), Wirbel an jedem Abschnittsende
+    S(D, "kick", "DnB", ["x! . . . . . . . . . x . . . . .", "x! . . . . . . . . . x . . . . .", "x! . . . . . . . . . x . . . . .", "x! . . . . . . . x . x . . . . ."], { teile: {
+      haupt: ["x! . . . . . . . . . x . . . . .", "x! . . . . . . x . . x . . . . .", "x! . . . . . . . . . x . . . x .", "x! . . x . . . . . . x . . . . ."],
+      gas: ["x! . . . . . x . . . x . . x . .", "x! . . x . . . . . x . . x . . .", "x! . . . . . x . . . x . . x . x", "x! . x . . . . x . . x . . . x ."],
+      atmen: ["x! . . . . . . . . . . . . . . .", ". . . . . . . . x_ . . . . . . ."],
+      stocken: ["x! . . . . . . . . . x . . . . .", "x! . . . . . . . . . . . . . . ."],
+      wiederfinden: ["x! . . . . . . x . . x . . . . .", "x! . . . . . . . . x x . . . . .", "x! . . . . . . x . . x . . . x .", "x! . . x . . . . . . x . . . . ."] } }),
+    S(D, "snare", "DnB Crack", [". . . . x! . . . . . . . x! . . .", ". . . . x! . . g . . . . x! . . g"], { fill: ". . . . x! . . . . . . . x! . x x", menschlich: 1, teile: {
+      haupt: [". . . . x! . . . . . . . x! . . .", ". . . . x! . . g . . . . x! . . g", ". . . . x! . . . . g . . x! . . .", ". . . . x! . g . . . . . x! . g ."],
+      gas: [". . . . x! . . g . g . . x! . . g", ". . g . x! . . g . . . g x! . g g", ". . . . x! . . g . g . . x! g . x", ". g . . x! . . g . . g . x! . x x"],
+      wiederfinden: [". . . . x! . . . . . . . x! . . .", ". . . . x! . . g . . . . x! . . ."],
+      fill: ". . . . x! . . . x . x . x x x x" } }),
+    S(D, "hat", "Goa scharf", ["x . o g x . o . x . o g x . o g"], { pegel: -11, teile: {
+      gas: ["x g o g x g o g x g o g x g o g", "x g o g x g o x x g o g x g x x"],
+      atmen: ["x . . . o . . . x . . . o . . .", ". . x . . . o . . . x . . . o ."],
+      wiederfinden: ["x . o . x . o . x . o . x . o g"] } }),
+    S(D, "offen", "kurz", [". . . . . . . . . . . . . . . .", ". . . . . . . . . . . . . . x ."], { teile: { gas: [". . x . . . . . . . x . . . . .", ". . x . . . . . . . x . . . x ."] } }),
+    S(D, "rim", "Minimal", [". . . . . . . . . . . . . . . .", ". . . . . . . . . . . . . . x_ ."], { pegel: -8, teile: { atmen: [". . . . x . . . . . . x . . . .", ". . . x . . . . . . x . . . . x"], stocken: [". . . . . . x . . . . . . . x ."] } }),
     S(PK, "tabla", "trocken", ["dha! . . . . . . na . . ge . na . . .", ". . na . . . ti ra . . ge . . . na ."], { pegel: -5 }),
     S(PK, "darbuka", "ägyptisch", ["doum! . . . . . tek . . . doum . tek . . .", "doum! . . . tek . . ka . . doum . . . tek ka"], { pegel: -5 }),
     S(PK, "zarb", "persisch", ["tom! . . . . . bak . . . tom . . . bak eshare", "tom! . . . . . bak . pelang . tom . . . bak ."], { pegel: -5 }),

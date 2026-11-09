@@ -14,7 +14,7 @@ import { spurRechnen, schlagRechnen, flaechenSpurRechnen } from "./kern/erzeugen
 import { MAKROS } from "./erzeuger/natur-0.2.0.js";
 import { PATCHES, FAMILIEN_LISTE, MAKROS as SYNTH_MAKROS } from "./erzeuger/synth-0.1.0.js";
 import { ROLLEN, sequenzErzeugen } from "./kern/sequenzen.js";
-import { abschnitte as abschnitteVon, ereignisseFuer, funktionVon, BESETZUNG, wechselPerkussion } from "./kern/arrangement.js";
+import { abschnitte as abschnitteVon, ereignisseFuer, funktionVon, BESETZUNG, wechselPerkussion, teileAus } from "./kern/arrangement.js";
 import { taktLesen } from "./kern/muster.js";
 import { stimmeVon, ERZEUGER } from "./erzeuger/register.js";
 import { LINIEN, LEITERN, NOTEN, linieErzeugen, kickSchritte, grundFrequenz, tonLesen } from "./kern/linien.js";
@@ -517,6 +517,13 @@ async function trackErzeugen() {
   const mitBass = $("mitBass").checked; $("mitBass").checked = true;
   await erzeugen({ anzahlVorgabe: takte, still: true });
   $("mitBass").checked = mitBass;
+  // je Abschnitt eigene Grooves und Basslinien (seit Composer 0.3)
+  for (const sp of z.projekt.spuren.filter(istDrums)) { const def = stil.spuren.find((x) => x.stimme === sp.quelle.stimme)?.teile; if (def) { sp.quelle.teile = teileAus(def, abschnitte); spurNeuRechnen(sp); } }
+  const bassSp = z.projekt.spuren.find(istBass);
+  if (bassSp && b.bassTeile) {
+    const q = bassSp.quelle, defs = Object.fromEntries(Object.entries(b.bassTeile).map(([typ, art], k) => [typ, linieErzeugen({ art, leiter: q.leiter, kicks: kickVorlage(), anzahl: 8, seed: seed * 31 + k })]));
+    q.teile = teileAus(defs, abschnitte); spurNeuRechnen(bassSp);
+  }
   for (const sp of z.projekt.spuren.filter((x) => istDrums(x) && (b.ohne ?? []).includes(x.quelle.stimme))) { post({ art: "weg", id: sp.id }); z.daten.delete(sp.id); }
   z.projekt.spuren = z.projekt.spuren.filter((x) => !(istDrums(x) && (b.ohne ?? []).includes(x.quelle.stimme)));
   for (const [s2, stimme] of b.mix ?? []) stilSpurDazu(s2, stimme, { anzahl: takte, bpm, seed, swing: stil.swing });
@@ -881,7 +888,7 @@ function knoepfeAuffrischen() {
   const hat = z.daten.size > 0;
   $("spielen").disabled = !hat; $("spielen").textContent = z.laeuft ? "■" : "▶";
   for (const id of ["projektSpeichern"]) $(id).disabled = !z.projekt.spuren.length;
-  for (const id of ["exportieren", "messenKnopf", "zielKnopf"]) $(id).disabled = !hat;
+  for (const id of ["exportieren", "trackLaden", "messenKnopf", "zielKnopf"]) $(id).disabled = !hat;
   $("schleifeAn").setAttribute("aria-pressed", String(z.schleifeAn)); $("allesVorher").setAttribute("aria-pressed", String(z.allesVorher));
   $("referenzAn").setAttribute("aria-pressed", String(z.referenzAn));
 }
@@ -1031,6 +1038,17 @@ $("referenzDatei").onchange = (e) => { if (e.target.files[0]) referenzLaden(e.ta
 $("projektDatei").onchange = (e) => { if (e.target.files[0]) projektOeffnen(e.target.files[0]); e.target.value = ""; };
 $("projektSpeichern").onclick = projektSpeichern;
 $("exportieren").onclick = () => exportieren().catch((e) => melde(`Export: ${e.message}`, 8000));
+/** nur der fertige Track: die Summe als WAV 24 Bit (dieselbe Rechnung wie «Exportieren», ohne Einzelspuren) */
+$("trackLaden").onclick = async () => {
+  try {
+    await bisFertig();
+    const r = await rendern({ ...renderAuftrag(), stems: false });
+    melde("schreibe WAV …", 0); await atmen();
+    const m = messen(r.summe, z.rate);
+    herunterladen(new Blob([wavSchreiben(r.summe, z.rate, { bits: "24" })], { type: "audio/wav" }), `${dateiname(z.projekt.titel)}.wav`);
+    melde(`Track: ${Math.round(m.dauer)} s, ${zahl(m.lufs)} LUFS, ${zahl(m.tp)} dBTP, 24 Bit, ${zahl(z.rate / 1000, 1)} kHz`, 8000);
+  } catch (e) { melde(`Track: ${e.message}`, 8000); }
+};
 $("messenKnopf").onclick = () => mischungMessen().catch((e) => melde(`Messen: ${e.message}`, 8000));
 $("zielKnopf").onclick = () => aufZielBringen().catch((e) => melde(`Ziel: ${e.message}`, 8000));
 $("ausgabeZiel").onchange = () => { z.projekt.ausgabe = { ziel: $("ausgabeZiel").value, ...ZIELE[$("ausgabeZiel").value], bits: "24" }; messTabelle(); };
