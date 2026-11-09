@@ -8,6 +8,9 @@ import { SPURTYPEN, variantenFuer } from "./kern/varianten.js";
 import { rendern } from "./kern/rendern.js";
 import { messen, TERZEN } from "./kern/messen.js";
 import { zipBlob } from "./kern/zip.js";
+import { STILE, stilVon } from "./kern/muster.js";
+import { spurRechnen, schlagRechnen } from "./kern/erzeugen.js";
+import { stimmeVon, ERZEUGER } from "./erzeuger/register.js";
 import { wavSpuren, abtastrateLesen, mono, tempoSchaetzen, einsaetzeFinden, wavSchreiben, rateWandeln } from "../lab/kern/klangwerk.js";
 
 const $ = (id) => document.getElementById(id);
@@ -92,7 +95,7 @@ async function dateienLaden(liste) {
     const bytes = new Uint8Array(await f.arrayBuffer()), hash = await sha256(bytes), kanaele = await dekodieren(bytes);
     const datei = { name: f.name, sha256: hash, bytes: bytes.length, rate: z.rate, kanaele: kanaele.length, dauer: Math.round((kanaele[0].length / z.rate) * 1000) / 1000 };
     // gehört die Datei zu einer Spur eines geöffneten Projekts? (gleicher Inhalt, sonst gleicher Name)
-    let sp = z.projekt.spuren.find((s) => !z.daten.has(s.id) && s.datei.sha256 === hash) ?? z.projekt.spuren.find((s) => !z.daten.has(s.id) && s.datei.name === f.name);
+    let sp = z.projekt.spuren.find((s) => s.datei && !z.daten.has(s.id) && s.datei.sha256 === hash) ?? z.projekt.spuren.find((s) => s.datei && !z.daten.has(s.id) && s.datei.name === f.name);
     if (sp && sp.datei.sha256 !== hash) melde(`${f.name}: anderer Inhalt als im Projekt gespeichert`, 6000);
     if (!sp) { sp = PR.spurDazu(z.projekt, datei); neu++; }
     z.daten.set(sp.id, { kanaele, wellen: wellenform(kanaele) });
@@ -107,7 +110,7 @@ async function dateienLaden(liste) {
 const typ = (name) => SPURTYPEN.find((t) => t.muster.test(name))?.typ ?? "rest";
 
 function tempoSchaetzenAusSpuren() {
-  const sp = z.projekt.spuren.find((s) => s.typ === "drums" && z.daten.has(s.id)) ?? z.projekt.spuren.find((s) => z.daten.has(s.id));
+  const sp = z.projekt.spuren.find((s) => s.typ === "drums" && s.datei && z.daten.has(s.id)) ?? z.projekt.spuren.find((s) => s.datei && z.daten.has(s.id));
   if (!sp) return;
   const pcm = mono(z.daten.get(sp.id).kanaele), { bpm, sicherheit } = tempoSchaetzen(pcm, z.rate);
   const einsatz = einsaetzeFinden(pcm, z.rate, { empfindlichkeit: 0.4 }).find((e) => e.t > 0.005 && e.staerke > 0.35);
@@ -134,7 +137,7 @@ function allesAufbauen() {
   const hat = z.projekt.spuren.length > 0;
   $("leer").hidden = hat; $("spuren").hidden = !hat; $("unten").hidden = !hat; $("urteilBereich").hidden = !hat;
   $("bpm").value = z.projekt.tempo.bpm; $("beginn").value = z.projekt.tempo.beginn.toFixed(2);
-  $("bpmQuelle").textContent = z.projekt.tempo.quelle === "geschaetzt" ? `geschätzt aus ${z.projekt.tempo.aus ?? "der ersten Spur"}` : z.projekt.tempo.quelle === "mensch" ? "eingestellt" : "";
+  $("bpmQuelle").textContent = z.projekt.tempo.quelle === "stil" ? `aus dem Stil` : z.projekt.tempo.quelle === "geschaetzt" ? `geschätzt aus ${z.projekt.tempo.aus ?? "der ersten Spur"}` : z.projekt.tempo.quelle === "mensch" ? "eingestellt" : "";
   summeKopf(); spurenAufbauen(); pluginAufbauen(); urteileAufbauen(); knoepfeAuffrischen(); zeichnen();
 }
 
@@ -166,27 +169,28 @@ function spurenAufbauen() {
     typWahl.onclick = (e) => e.stopPropagation();
     const v = variantenFuer(sp.typ)[sp.kette[0].variante];
     const kopf = el("div", { className: "kopfzelle" },
-      el("div", { className: "spur-name" }, el("b", { textContent: sp.name, title: `${sp.datei.name} · ${sp.datei.sha256?.slice(0, 12)}…` }), typWahl),
+      el("div", { className: "spur-name" }, el("b", { textContent: sp.name, title: sp.datei ? `${sp.datei.name} · ${sp.datei.sha256?.slice(0, 12)}…` : `${sp.quelle.erzeuger} · ${sp.quelle.stimme} · Startwert ${sp.quelle.seed}` }), sp.quelle ? el("span", { className: "erz", textContent: sp.quelle.variante ?? "eigen" }) : typWahl),
       el("div", { className: "spur-knoepfe" },
         umschalt("M", "m", sp.stumm, "stumm", (e) => { e.stopPropagation(); sp.stumm = !sp.stumm; senden(); spurenAufbauen(); }),
         umschalt("S", "s", sp.solo, "solo", (e) => { e.stopPropagation(); sp.solo = !sp.solo; senden(); spurenAufbauen(); }),
         umschalt("V", "v", sp.vorher, "vorher: ohne Kanalzug, gleich laut", (e) => { e.stopPropagation(); sp.vorher = !sp.vorher; senden(); spurenAufbauen(); }),
         el("span", { className: "mini variante", textContent: v ? v.name : "eigene", title: "Variante des Kanalzugs" }),
-        da ? "" : el("span", { className: "leise-text", textContent: "Datei fehlt" })),
+        da || sp.quelle ? "" : el("span", { className: "leise-text", textContent: "Datei fehlt" })),
       regler("dB", sp.pegel, -24, 12, 0.1, (x) => { sp.pegel = x; senden(); }, (x) => `${zahl(x)} dB`),
       regler("◐", sp.pan * 100, -100, 100, 1, (x) => { sp.pan = x / 100; senden(); }, (x) => (x === 0 ? "Mitte" : x < 0 ? `L ${-x}` : `R ${x}`)),
       el("div", { className: "pegelbalken" }, el("i", { id: `pegel-${sp.id}` })));
-    const welle = el("canvas", { className: "welle", height: 84 });
+    const welle = el("canvas", { className: "welle" });
     welle.dataset.id = sp.id;
     zeigerAuf(welle);
-    const zeile = el("div", { className: `spur${z.gewaehlt === sp.id ? " gewaehlt" : ""}${still ? " still" : ""}` }, kopf, welle);
+    const zeile = el("div", { className: `spur${z.gewaehlt === sp.id ? " gewaehlt" : ""}${still ? " still" : ""}` }, kopf, el("div", { className: "wellen-feld" }, welle));
     kopf.onclick = () => waehle(sp.id);
     liste.append(zeile);
   }
   zeichnen();
 }
 
-function waehle(id) { z.gewaehlt = id; z.glied = 0; summeKopf(); spurenAufbauen(); pluginAufbauen(); }
+function waehle(id) { z.gewaehlt = id; z.glied = erzeugt(id) ? -1 : 0; summeKopf(); spurenAufbauen(); pluginAufbauen(); }
+const erzeugt = (id) => !!z.projekt.spuren.find((s) => s.id === id)?.quelle;
 
 // ---------- Plugin ----------
 function aktuelleKette() { return z.gewaehlt === "summe" ? z.projekt.master.kette : z.projekt.spuren.find((s) => s.id === z.gewaehlt)?.kette; }
@@ -197,9 +201,13 @@ function pluginAufbauen() {
   const kette = aktuelleKette();
   if (!kette) { box.append(el("p", { className: "hinweis", textContent: "Eine Spur wählen (Kopf der Spur antippen)." })); return; }
   z.glied = Math.min(z.glied, kette.length - 1);
+  const spur = z.projekt.spuren.find((s) => s.id === z.gewaehlt);
+  const name = z.gewaehlt === "summe" ? "Summe" : spur.name;
+  const reiter = [...(spur?.quelle ? [umschalt("Klang", "v", z.glied === -1, "der Klangerzeuger dieser Spur", () => { z.glied = -1; pluginAufbauen(); })] : []),
+    ...kette.map((g, i) => umschalt(PLUGINS[g.plugin].name, "v", i === z.glied, g.plugin, () => { z.glied = i; pluginAufbauen(); }))];
+  const wahl = el("div", { className: "glied-wahl" }, ...reiter);
+  if (z.glied === -1 && spur?.quelle) { klangAufbauen(box, spur, wahl); return; }
   const glied = kette[z.glied], def = PLUGINS[glied.plugin];
-  const name = z.gewaehlt === "summe" ? "Summe" : z.projekt.spuren.find((s) => s.id === z.gewaehlt).name;
-  const wahl = el("div", { className: "glied-wahl" }, ...kette.map((g, i) => { const b = umschalt(PLUGINS[g.plugin].name, "v", i === z.glied, g.plugin, () => { z.glied = i; pluginAufbauen(); }); return b; }));
   box.append(el("div", { className: "plugin-kopf" }, el("h2", { textContent: `${name}: ${def.name} ${def.version}` }), wahl, el("span", { className: "leise-text", textContent: def.beschreibung })));
   // Varianten (nur der Kanalzug hat welche)
   if (def.id === "kanalzug") {
@@ -242,12 +250,128 @@ function variantenMarke() {
   document.querySelectorAll(".variante-k").forEach((b, i) => b.setAttribute("aria-pressed", String(glied?.variante === i)));
 }
 function varianteWaehlen(i) {
+  const spur = z.projekt.spuren.find((s) => s.id === z.gewaehlt);
+  if (z.glied === -1 && spur?.quelle) { stimmVariante(spur, i); return; }
   const kette = aktuelleKette(); if (!kette) return;
   const k = kette.findIndex((g) => g.plugin.startsWith("kanalzug@"));
   if (k < 0 || !variantenFuer(aktuellerTyp())[i]) return;
   PR.varianteSetzen(kette[k], aktuellerTyp(), i);
   z.glied = k; senden(); pluginAufbauen(); if (z.gewaehlt !== "summe") spurenAufbauen();
   melde(`${variantenFuer(aktuellerTyp())[i].name}`, 1200);
+}
+
+// ---------- Erzeugen ----------
+function stileAufbauen() {
+  const sel = $("stil"), gruppen = {};
+  for (const s of STILE) (gruppen[s.gruppe] ??= []).push(s);
+  for (const [g, liste] of Object.entries(gruppen)) sel.append(el("optgroup", { label: g === "elektronisch" ? "Drums, elektronisch" : "Perkussion, organisch" }, ...liste.map((s) => el("option", { value: s.key, textContent: `${s.name} · ${s.bpm}` }))));
+  sel.onchange = () => { $("erzBpm").value = stilVon(sel.value).bpm; };
+  sel.onchange();
+}
+
+/** eine erzeugte Spur rechnen und dem Motor geben (die Kette mit ihrem Zustand bleibt) */
+function spurNeuRechnen(sp) {
+  const { kanaele } = spurRechnen(sp.quelle, z.rate);
+  z.daten.set(sp.id, { kanaele, wellen: wellenform(kanaele) });
+  const kopie = kanaele.map((s) => s.slice());
+  post({ art: "spur", id: sp.id, kanaele: kopie }, kopie.map((s) => s.buffer));
+}
+let neuPlan = new Map();
+/** nach einer Änderung am Klang: kurz warten (Regler werden gezogen), dann neu rechnen */
+function spurBald(sp) {
+  clearTimeout(neuPlan.get(sp.id));
+  neuPlan.set(sp.id, setTimeout(() => { neuPlan.delete(sp.id); spurNeuRechnen(sp); zeichnen(); }, 120));
+}
+
+async function erzeugen() {
+  const stil = stilVon($("stil").value), bpm = Number($("erzBpm").value) || stil.bpm, anzahl = Number($("takte").value), seed = Math.max(1, Math.round(Number($("seed").value) || 1));
+  await kontext(48000);
+  if (z.laeuft) await spielen();
+  if ($("ersetzen").checked) for (const sp of z.projekt.spuren.filter((s) => s.quelle)) { post({ art: "weg", id: sp.id }); z.daten.delete(sp.id); }
+  if ($("ersetzen").checked) z.projekt.spuren = z.projekt.spuren.filter((s) => !s.quelle);
+  z.projekt.tempo = { ...z.projekt.tempo, bpm, quelle: "stil", beginn: 0, aus: stil.name };
+  melde(`erzeuge ${stil.name} …`, 0); await atmen();
+  let erste = null;
+  for (const [i, s] of stil.spuren.entries()) {
+    const st = stimmeVon(s.erzeuger, s.stimme), v = st.varianten.find((x) => x.name === s.variante) ?? st.varianten[0];
+    const quelle = { art: "erzeugt", erzeuger: s.erzeuger, stimme: s.stimme, variante: v.name, werte: { ...v.werte }, takte: [...s.takte], fill: s.fill ?? null,
+      anzahl, bpm, swing: stil.swing, menschlich: s.menschlich ?? stil.menschlich, versatz: s.versatz ?? 0, seed: seed * 100 + i, stil: stil.key };
+    const sp = PR.erzeugteSpurDazu(z.projekt, quelle, { name: st.name, typ: st.rolle === "perkussion" ? "perkussion" : "drums", pegel: s.pegel ?? st.pegel, pan: st.pan, raum: stil.raum ?? null });
+    spurNeuRechnen(sp); erste ??= sp;
+    await atmen();
+  }
+  const L = (anzahl * 240) / bpm;
+  z.schleife = { a: 0, b: L }; z.schleifeAn = true; z.projekt.schleife = { a: 0, b: L }; schleifeSenden();
+  z.gewaehlt = erste.id; z.glied = -1; z.pos = 0; post({ art: "stelle", pos: 0 });
+  senden(); allesAufbauen();
+  melde(`${stil.name}: ${stil.spuren.length} Spuren, ${anzahl} Takte, ${bpm} BPM. Leertaste spielt in der Schleife.`, 5000);
+}
+
+function stimmVariante(sp, i) {
+  const st = stimmeVon(sp.quelle.erzeuger, sp.quelle.stimme), v = st.varianten[i];
+  if (!v) return;
+  sp.quelle.werte = { ...v.werte }; sp.quelle.variante = v.name;
+  spurNeuRechnen(sp); pluginAufbauen(); spurenAufbauen();
+  melde(`${sp.name}: ${v.name}`, 1200);
+}
+
+async function schlagHoeren(sp, art) {
+  await kontext(48000); await z.ctx.resume();
+  const st = stimmeVon(sp.quelle.erzeuger, sp.quelle.stimme), [L, R] = schlagRechnen(sp.quelle, art ?? st.artikulationen[0].key, z.rate);
+  const b = z.ctx.createBuffer(2, L.length, z.rate); b.copyToChannel(L, 0); b.copyToChannel(R, 1);
+  const q = z.ctx.createBufferSource(), g = z.ctx.createGain(); g.gain.value = 0.7; q.buffer = b; q.connect(g).connect(z.ctx.destination); q.start();
+}
+
+function klangAufbauen(box, sp, wahl) {
+  const q = sp.quelle, st = stimmeVon(q.erzeuger, q.stimme), e = ERZEUGER[q.erzeuger];
+  box.append(el("div", { className: "plugin-kopf" }, el("h2", { textContent: `${sp.name}: ${e.name} ${e.version}` }), wahl,
+    el("span", { className: "leise-text", textContent: `Eigene Synthese, Startwert ${q.seed}. Jede Änderung rechnet die Spur neu; jeder Schlag ist auf dieselbe Spitze gebracht, damit Klangfarbe nicht als Lautstärke gehört wird.` })));
+  // einzelne Schläge anhören
+  box.append(el("div", { className: "klang-zeile" }, el("span", { className: "leise-text", textContent: "anhören (A):" }),
+    ...st.artikulationen.map((a) => { const b = el("button", { className: "mini", textContent: a.name, title: "ein Schlag, ohne Kanalzug und Raum" }); b.onclick = () => schlagHoeren(sp, a.key); return b; })));
+  // Varianten der Stimme
+  box.append(el("div", { className: "varianten" }, ...st.varianten.map((v, i) => {
+    const b = el("button", { className: "variante-k", title: `Taste ${i + 1}` }, el("b", { textContent: `${i + 1} · ${v.name}` }), el("small", { textContent: v.beschreibung }));
+    b.setAttribute("aria-pressed", String(q.variante === v.name)); b.onclick = () => stimmVariante(sp, i); return b;
+  })));
+  // Regler
+  const gruppen = new Map();
+  for (const p of st.parameter) { if (!gruppen.has(p.gruppe)) gruppen.set(p.gruppe, []); gruppen.get(p.gruppe).push(p); }
+  const raster = el("div", { className: "gruppen" });
+  const markiere = () => document.querySelectorAll(".variante-k").forEach((b) => b.setAttribute("aria-pressed", "false"));
+  for (const [g, ps] of gruppen) {
+    const kasten = el("div", { className: "gruppe" }, el("h3", {}, el("span", { textContent: g })));
+    for (const p of ps) kasten.append(paramRegler(p, q.werte[p.key] ?? p.std, (v) => { q.werte[p.key] = v; q.variante = null; markiere(); spurBald(sp); }));
+    raster.append(kasten);
+  }
+  // Groove
+  const groove = el("div", { className: "gruppe" }, el("h3", {}, el("span", { textContent: "Groove" })));
+  const G = (key, name, min, max, std, einheit, hilfe) => ({ key, name, min, max, std, einheit, hilfe, schritt: key === "swing" ? 0.01 : 0.5 });
+  for (const p of [G("swing", "Swing", 0, 0.5, 0, "", "jeder zweite Schlag nach hinten"), G("menschlich", "Menschlich", 0, 20, 2, "ms", "kleine Abweichungen im Timing"), G("versatz", "hinter dem Schlag", -20, 40, 0, "ms", "die ganze Spur später: laid back")])
+    groove.append(paramRegler(p, q[p.key] ?? p.std, (v) => { q[p.key] = v; spurBald(sp); }));
+  raster.append(groove);
+  box.append(raster);
+  // Muster
+  const arten = st.artikulationen.map((a) => a.key).join(", ");
+  const ta = el("textarea", { className: "muster", rows: Math.min(8, q.takte.length + (q.fill ? 1 : 0) + 1), spellcheck: false, value: [...q.takte, ...(q.fill ? [`fill: ${q.fill}`] : [])].join("\n") });
+  ta.oninput = () => {
+    const zeilen = ta.value.split("\n").map((x) => x.trim()).filter(Boolean), fill = zeilen.find((x) => x.startsWith("fill:"));
+    const takte = zeilen.filter((x) => !x.startsWith("fill:"));
+    if (!takte.length) return;
+    q.takte = takte; q.fill = fill ? fill.slice(5).trim() : null; spurBald(sp);
+  };
+  box.append(el("div", { className: "gruppe", style: "margin-top:16px" }, el("h3", {}, el("span", { textContent: "Muster (eine Zeile je Takt, «fill:» für den Wirbel)" })), ta,
+    el("p", { className: "hinweis", textContent: `16 Zeichen = Sechzehntel, 8 = Achtel, 12 = Triolen. «.» Pause, x o g (laut, mittel, Geisternote), oder Artikulationen: ${arten}. «!» betont, «_» leise.` })));
+}
+
+function paramRegler(p, v, setze) {
+  const out = el("output", { textContent: zeigeWert(p, v) });
+  const inp = el("input", { type: "range", min: 0, max: 1000, step: 1, value: Math.round(zuStellung(p, v) * 1000), title: p.hilfe ?? "" });
+  inp.setAttribute("aria-label", p.name);
+  const neu = (w) => { out.textContent = zeigeWert(p, w); setze(w); };
+  inp.oninput = () => { let w = ausStellung(p, Number(inp.value) / 1000); w = Math.min(p.max, Math.max(p.min, w)); neu(w); };
+  inp.ondblclick = () => { inp.value = Math.round(zuStellung(p, p.std) * 1000); neu(p.std); };
+  return el("label", { className: "param", title: p.hilfe ?? "" }, el("span", { textContent: p.name }), out, inp);
 }
 
 // ---------- Zeitleiste ----------
@@ -448,8 +572,10 @@ async function projektOeffnen(f) {
     if (z.laeuft) await spielen();
     for (const id of z.daten.keys()) post({ art: "weg", id });
     z.projekt = p; z.daten.clear(); z.gewaehlt = p.spuren[0]?.id ?? null; z.schleife = p.schleife; z.schleifeAn = false; z.messungen = null;
+    if (p.spuren.some((s) => s.quelle)) { await kontext(p.rate); for (const s of p.spuren) if (s.quelle) spurNeuRechnen(s); senden(); }
     allesAufbauen();
-    melde(`«${p.titel}» geöffnet. Jetzt die Tondateien laden (${p.spuren.map((s) => s.datei.name).join(", ")}).`, 9000);
+    const fehlen = p.spuren.filter((s) => s.datei).map((s) => s.datei.name);
+    melde(fehlen.length ? `«${p.titel}» geöffnet. Jetzt die Tondateien laden (${fehlen.join(", ")}).` : `«${p.titel}» geöffnet, alle Spuren neu gerechnet.`, 9000);
   } catch (e) { melde(String(e.message ?? e), 8000); }
 }
 
@@ -489,7 +615,8 @@ addEventListener("keydown", (e) => {
   else if (k === "v") $("allesVorher").click();
   else if (k === "r") $("referenzAn").click();
   else if (k === "l") $("schleifeAn").click();
-  else if (/^[1-4]$/.test(k)) varianteWaehlen(Number(k) - 1);
+  else if (/^[1-7]$/.test(k)) varianteWaehlen(Number(k) - 1);
+  else if (k === "a") { const sp = z.projekt.spuren.find((s) => s.id === z.gewaehlt); if (sp?.quelle) schlagHoeren(sp, null); }
   else if (k === "arrowdown" || k === "arrowup") {
     e.preventDefault();
     const ids = ["summe", ...z.projekt.spuren.map((s) => s.id)], i = ids.indexOf(z.gewaehlt);
@@ -501,5 +628,8 @@ addEventListener("resize", () => zeichnen());
 addEventListener("dragover", (e) => e.preventDefault());
 addEventListener("drop", (e) => { e.preventDefault(); if (e.dataTransfer?.files?.length) dateienLaden(e.dataTransfer.files); });
 
+$("erzeugen").onclick = () => erzeugen().catch((e) => melde(`Erzeugen: ${e.message}`, 8000));
+$("wuerfeln").onclick = () => { $("seed").value = 1 + Math.floor(Math.random() * 99998); };
+stileAufbauen();
 allesAufbauen();
 requestAnimationFrame(anzeigen);

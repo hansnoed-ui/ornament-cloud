@@ -45,10 +45,22 @@
     </div>
   </section>
 
+  <section class="erzeugen" aria-label="Spuren erzeugen">
+    <h2>Erzeugen</h2>
+    <label class="feld">Stil <select id="stil"></select></label>
+    <label class="feld">Takte <select id="takte"><option>4</option><option selected>8</option><option>16</option></select></label>
+    <label class="feld">Tempo <input type="number" id="erzBpm" min="40" max="240" step="1"></label>
+    <label class="feld">Startwert <input type="number" id="seed" min="1" max="99999" step="1" value="1"></label>
+    <button class="knopf klein leise" id="wuerfeln" title="neuer Startwert: andere kleine Abweichungen, gleiche Muster">neu würfeln</button>
+    <label class="feld klein"><input type="checkbox" id="ersetzen" checked> erzeugte Spuren ersetzen</label>
+    <button class="knopf voll" id="erzeugen">Spuren erzeugen</button>
+  </section>
+
   <main class="buehne" id="buehne">
     <div class="leer" id="leer">
-      <h2>Spuren laden</h2>
-      <p>Stems eines Tracks wählen (WAV, FLAC, MP3) oder einen ganzen Ordner, zum Beispiel <code>ornament-material/stems/neuland-primo</code>. Die Dateien bleiben auf diesem Gerät.</p>
+      <h2>Spuren erzeugen oder laden</h2>
+      <p>Oben einen Stil wählen und «Spuren erzeugen»: Drums aus eigener Synthese (Drum and Bass, Hip-Hop, Pop, Minimal, Goa, House) oder organische Perkussion (Tabla, Darbuka, Rahmentrommel, Riq, Zarb, Udu) mit Raum.</p>
+      <p>Oder Stems eines Tracks wählen (WAV, FLAC, MP3) oder einen ganzen Ordner, zum Beispiel <code>ornament-material/stems/neuland-primo</code>. Die Dateien bleiben auf diesem Gerät.</p>
       <p>Die Spurtypen erkennt der Composer am Namen (drums, bass, rest, stimme …). Für den Vergleich eine Referenz dazu laden, etwa Spellbound.</p>
     </div>
     <div class="spuren" id="spuren" hidden>
@@ -84,7 +96,7 @@
   </section>
 
   <div class="meldung" id="meldung" role="status" hidden></div>
-  <footer class="fuss"><p>ORNAMENT COMPOSER 0.1 · Kanalzug 0.1.0 · Grenze 0.1.0 · Tasten: Leertaste spielen, V vorher, R Referenz, L Schleife, 1–4 Varianten, ↑ ↓ Spur wählen</p></footer>
+  <footer class="fuss"><p>ORNAMENT COMPOSER 0.1 · Drums 0.1.0 · Perkussion 0.1.0 · Kanalzug 0.1.0 · Raum 0.1.0 · Grenze 0.1.0 · Tasten: Leertaste spielen, V vorher, R Referenz, L Schleife, 1–7 Varianten, A Schlag anhören, ↑ ↓ Spur wählen</p></footer>
   <script type="module" src="app.js"></script>
 </body>
 </html>

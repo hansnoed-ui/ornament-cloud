@@ -57,6 +57,17 @@ kbd { font: inherit; font-size: 0.75em; color: var(--muted); border: 1px solid v
 .anzeige b { color: var(--text); font-weight: 500; display: inline-block; min-width: 4.5ch; text-align: right; }
 .anzeige b.warn { color: var(--warn); }
 
+/* Erzeugen */
+.erzeugen { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 10px 24px; border-bottom: 1px solid var(--border); }
+.erzeugen h2 { font-size: 0.9rem; color: var(--muted); font-weight: 500; }
+.erzeugen select, .klang select { border: 1px solid var(--border); border-radius: 999px; background: var(--bg); padding: 3px 8px; }
+.erzeugen #erzeugen { margin-left: auto; }
+.klang-zeile { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 4px 0 12px; }
+.klang-zeile .mini { border-color: var(--border); color: var(--text); height: 28px; }
+.muster { width: 100%; font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 0.85rem; border: 1px solid var(--border); border-radius: 8px; background: none; padding: 8px; line-height: 1.5; resize: vertical; }
+.muster:focus { outline: none; border-color: var(--accent); }
+.spur-name .erz { color: #8fb0ff; font-size: 0.75rem; }
+
 /* Bühne mit den Spuren */
 .buehne { background: var(--nacht); color: var(--kreide); min-height: 260px; }
 .leer { max-width: 62ch; padding: 48px 24px; }
@@ -67,7 +78,8 @@ kbd { font: inherit; font-size: 0.75em; color: var(--muted); border: 1px solid v
 .kopfzelle { padding: 8px 12px; border-right: 1px solid var(--fuge); display: grid; gap: 6px; align-content: center; }
 .summe-kopf { font-size: 0.8rem; color: var(--staub); }
 canvas.lineal, canvas.welle { width: 100%; display: block; cursor: crosshair; touch-action: none; }
-canvas.welle { height: 84px; }
+.wellen-feld { position: relative; min-height: 84px; }
+.wellen-feld canvas.welle { position: absolute; inset: 0; width: 100%; height: 100%; }
 .spur.gewaehlt .kopfzelle { box-shadow: inset 3px 0 0 #8fb0ff; background: #1c1b19; }
 .spur.still canvas.welle { opacity: 0.35; }
 .spur-name { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
@@ -94,6 +106,7 @@ canvas.welle { height: 84px; }
 .plugin-kopf h2 { font-size: 1.1rem; }
 .plugin-kopf .leise-text { flex-basis: 100%; }
 .glied-wahl { display: inline-flex; gap: 4px; }
+.plugin .mini { border-color: var(--border); color: var(--text); }
 .varianten { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-bottom: 16px; }
 .variante-k { text-align: left; border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; background: none; cursor: pointer; display: grid; gap: 2px; }
 .variante-k b { font-weight: 500; }

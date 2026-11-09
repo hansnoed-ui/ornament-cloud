@@ -132,3 +132,68 @@ test("Projektformat: neu, Spur dazu, prüfen, hin und zurück", () => {
   assert.ok(PR.pruefe({ ...p, spuren: [{ ...p.spuren[0], kette: [{ plugin: "gibts@9.9.9" }] }] }).length > 0);
   assert.throws(() => PR.lesen(JSON.stringify({ format: "anderes" })));
 });
+
+// ---------- Klangerzeuger, Raum, Muster (Drums 0.1.0, Perkussion 0.1.0) ----------
+const { ERZEUGER, stimmeVon } = await c("erzeuger/register.js");
+const { STILE, taktLesen } = await c("kern/muster.js");
+const { spurRechnen } = await c("kern/erzeugen.js");
+
+test("Erzeuger: jede Stimme, Variante und Artikulation ist endlich, gleich laut und reproduzierbar", () => {
+  for (const [id, e] of Object.entries(ERZEUGER)) for (const [k, s] of Object.entries(e.stimmen)) {
+    const std = Object.fromEntries(s.parameter.map((p) => [p.key, p.std]));
+    assert.ok(s.varianten.length >= 6, `${k}: mindestens sechs Varianten`);
+    for (const p of s.parameter) assert.ok(p.min <= p.std && p.std <= p.max, `${k}.${p.key}`);
+    for (const v of s.varianten) for (const a of s.artikulationen) {
+      const [L, R] = s.rechne({ ...std, ...v.werte }, RATE, { art: a.key, staerke: 1, seed: 5 });
+      let m = 0; for (const x of L) { assert.ok(Number.isFinite(x), `${id} ${k} ${v.name} ${a.key}`); m = Math.max(m, Math.abs(x)); }
+      assert.ok(m > 0.2 && m <= 1.2, `${k} ${v.name} ${a.key}: Spitze ${m}`);
+      assert.equal(R.length, L.length);
+    }
+    const a = s.rechne(std, RATE, { art: s.artikulationen[0].key, staerke: 0.8, seed: 9 }), b = s.rechne(std, RATE, { art: s.artikulationen[0].key, staerke: 0.8, seed: 9 });
+    gleich(a[0], b[0], `${k} reproduzierbar`);
+  }
+});
+
+test("Muster: Takte lesen (Sechzehntel, Achtel, Betonung, Artikulation)", () => {
+  const t = taktLesen("x! . . . o . g . x . . . x_ . . .");
+  assert.deepEqual(t.map((s) => [s.schritt, s.staerke]), [[0, 1], [4, 0.6], [6, 0.32], [8, 0.8], [12, 0.45]]);
+  const a = taktLesen("dha . ge . na . ti .", "na");
+  assert.deepEqual(a.map((s) => [s.art, s.stelle]), [["dha", 0], ["ge", 0.25], ["na", 0.5], ["ti", 0.75]]);
+});
+
+test("Stile: jede Spur hat Schläge, die Länge ist ein ganzes Vielfaches des Takts, Schleife ohne Naht, Startwert wirkt", () => {
+  for (const st of STILE) for (const [i, s] of st.spuren.entries()) {
+    const q = { ...s, werte: stimmeVon(s.erzeuger, s.stimme).varianten.find((v) => v.name === s.variante)?.werte ?? {}, anzahl: 4, bpm: st.bpm, swing: st.swing, menschlich: s.menschlich ?? st.menschlich, seed: 3 + i };
+    assert.ok(stimmeVon(s.erzeuger, s.stimme).varianten.some((v) => v.name === s.variante), `${st.key}/${s.stimme}: Variante «${s.variante}» gibt es`);
+    const r = spurRechnen(q, RATE);
+    assert.ok(r.schlaege > 0, `${st.key}/${s.stimme}`);
+    assert.equal(r.kanaele[0].length, Math.round(4 * (240 / st.bpm) * RATE));
+  }
+  const s = STILE[0].spuren[2], q = { ...s, werte: {}, anzahl: 2, bpm: 174, swing: 0, menschlich: 2, seed: 1 };
+  const a = spurRechnen(q, RATE).kanaele[0], b = spurRechnen({ ...q, seed: 2 }, RATE).kanaele[0];
+  assert.ok(a.some((v, i) => v !== b[i]), "anderer Startwert, andere kleine Abweichungen");
+  gleich(spurRechnen(q, RATE).kanaele[0], a, "gleicher Startwert, gleiche Spur");
+});
+
+test("Raum: endlich, klingt aus, Anteil 0 lässt das Signal unverändert", () => {
+  const def = PLUGINS["raum@0.1.0"], n = RATE * 4, imp = [new Float32Array(n), new Float32Array(n)]; imp[0][0] = imp[1][0] = 1;
+  const inst = def.erzeuge(RATE); inst.setze(bereinigeWerte(def, { anteil: 100, nachhall: 1.5 }));
+  for (let o = 0; o < n; o += BLOCK) inst.prozess([imp[0].subarray(o), imp[1].subarray(o)], Math.min(BLOCK, n - o));
+  const rms = (a, b) => { let s = 0; for (let i = a; i < b; i++) s += imp[0][i] ** 2; return Math.sqrt(s / (b - a)); };
+  assert.ok(imp[0].every(Number.isFinite));
+  assert.ok(rms(RATE * 0.1, RATE * 0.3) > 1e-4, "es hallt");
+  const abfall = 20 * Math.log10(rms(RATE * 1.6, RATE * 1.8) / rms(RATE * 0.1, RATE * 0.3));
+  assert.ok(abfall < -40 && abfall > -110, `Abfall nach 1,5 s: ${abfall.toFixed(1)} dB`);
+  assert.ok(imp[0].some((v, i) => v !== imp[1][i]), "stereo");
+  const q = klang(0.5), k = q.map((x) => Float32Array.from(x)), i2 = def.erzeuge(RATE); i2.setze(bereinigeWerte(def, { anteil: 0 }));
+  for (let o = 0; o < k[0].length; o += BLOCK) i2.prozess([k[0].subarray(o), k[1].subarray(o)], Math.min(BLOCK, k[0].length - o));
+  gleich(k[0], q[0], "Anteil 0");
+});
+
+test("Projekt: erzeugte Spur speichert nur das Rezept und prüft den Erzeuger", () => {
+  const p = PR.neuesProjekt({ rate: RATE });
+  const sp = PR.erzeugteSpurDazu(p, { art: "erzeugt", erzeuger: "perkussion@0.1.0", stimme: "tabla", werte: {}, takte: ["dha . ge . na . ti ."], anzahl: 2, bpm: 92, seed: 1 }, { name: "Tabla", typ: "perkussion", raum: { anteil: 20 } });
+  assert.equal(sp.datei, null); assert.deepEqual(sp.kette.map((g) => g.plugin), ["kanalzug@0.1.0", "raum@0.1.0"]);
+  assert.deepEqual(PR.pruefe(p), []);
+  assert.ok(PR.pruefe({ ...p, spuren: [{ ...sp, quelle: { ...sp.quelle, erzeuger: "gibts@1.0.0" } }] }).length > 0);
+});
