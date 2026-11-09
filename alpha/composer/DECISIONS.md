@@ -9,6 +9,7 @@ Hier steht, was Christian entschieden hat und wie er Klänge beurteilt hat, dami
 - Umgesetzt in Bereiche 0.1.0 und Fassungen 0.1.0. Ein gezogener Bereich rastet auf Takte (Alt: Schläge, Umschalt: frei) und gilt für die Spur, auf der er gezogen wurde; auf dem Lineal für die Summe. Bereiche wirken wie die Unterbrechungen vor der Plugin-Kette (Hall der Spur klingt über einen stummen Bereich weiter) und stehen in Takten im Projekt.
 - Ersetzen tauscht nur die Quelle; Kanalzug, Plugins, Pegel, Unterbrechungen und Bereiche bleiben. Beim Ersetzen werden Startpunkt (Einsätze, ±1 s) und Lautheit (LUFS) an die alte Quelle angeglichen, das Tempo nur angezeigt; Dehnen (WSOLA aus dem Lab) erst auf Knopfdruck. Tonart wird nicht erkannt.
 - Neuer Track aus einem Summenbereich: neues Projekt mit jeder Spur als eigener Datei (nach Unterbrechungen und Bereichen, vor dem Kanalzug), Ketten, Pegel, Tempo, Kammerton, Herkunft; die Mischung des Bereichs als Referenz. Das alte Projekt wird vorher als Datei gespeichert, das neue kommt als ZIP. Erzeugte Spuren werden dabei zu Dateien (das Rezept steht unter `herkunft`).
+- Handy: Browser hielten nach dem Merge die alte `composer.css` im Cache (Spurköpfe liefen in die Welle, ⇄ verdeckt). Seitdem tragen `composer.css` und `app.js` in `index.html` ein `?v=`; bei jeder Änderung an CSS oder Oberfläche hochzählen.
 - Noch offen: Bereiche als Muster über den ganzen Track, Loop-Vorbereitung ohne Naht beim neuen Track, Tonart der Ersatzdatei erkennen, Automation neben den Bereichen.
 
 **Grundlagen**
