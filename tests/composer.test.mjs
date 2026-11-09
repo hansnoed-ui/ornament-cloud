@@ -421,3 +421,14 @@ test("Natur 0.2.0: Regen, Feuer, Insekten klingen und sind Schleifen; die Famili
   const q = { stimme: "gezeiten", werte: {}, flaeche: true, anzahl: 2, bpm: 120, grundton: 2, leiter: "moll", seed: 3 };
   gleich(flaechenSpurRechnen({ ...q, erzeuger: "natur@0.2.0" }, R, {}).kanaele[0], flaechenSpurRechnen({ ...q, erzeuger: "natur@0.1.0" }, R, {}).kanaele[0], "Gezeiten 0.2.0 = 0.1.0");
 });
+
+test("Ornament Style: zuoberst, Pop und ECM ausgeblendet, Perkussion wechselt je Abschnitt", () => {
+  assert.equal(STILE[0].key, "ornament");
+  assert.ok(STILE.find((s) => s.key === "pop").versteckt && STILE.find((s) => s.key === "ecm").versteckt);
+  const { abschnitte } = A.abschnitte(90, 174, { seed: 2 }), stimmen = A.BESETZUNG.ornament.wechsel, w = A.wechselPerkussion(stimmen, abschnitte, { seed: 2 });
+  for (const a of abschnitte) {
+    const still = stimmen.filter((s) => w.get(s).some((e) => e.takt === a.von));
+    const spielen = stimmen.length - still.length;
+    assert.ok(spielen >= 1 && spielen <= 2, `${a.name}: ${spielen} Perkussionsstimmen`);
+  }
+});

@@ -14,7 +14,7 @@ import { spurRechnen, schlagRechnen, flaechenSpurRechnen } from "./kern/erzeugen
 import { MAKROS } from "./erzeuger/natur-0.2.0.js";
 import { PATCHES, FAMILIEN_LISTE, MAKROS as SYNTH_MAKROS } from "./erzeuger/synth-0.1.0.js";
 import { ROLLEN, sequenzErzeugen } from "./kern/sequenzen.js";
-import { abschnitte as abschnitteVon, ereignisseFuer, funktionVon, BESETZUNG } from "./kern/arrangement.js";
+import { abschnitte as abschnitteVon, ereignisseFuer, funktionVon, BESETZUNG, wechselPerkussion } from "./kern/arrangement.js";
 import { taktLesen } from "./kern/muster.js";
 import { stimmeVon, ERZEUGER } from "./erzeuger/register.js";
 import { LINIEN, LEITERN, NOTEN, linieErzeugen, kickSchritte, grundFrequenz, tonLesen } from "./kern/linien.js";
@@ -271,9 +271,9 @@ function varianteWaehlen(i) {
 
 // ---------- Erzeugen ----------
 function stileAufbauen() {
-  const sel = $("stil"), gruppen = {};
-  for (const s of STILE) (gruppen[s.gruppe] ??= []).push(s);
-  for (const [g, liste] of Object.entries(gruppen)) sel.append(el("optgroup", { label: g === "elektronisch" ? "Drums, elektronisch" : "Perkussion, organisch" }, ...liste.map((s) => el("option", { value: s.key, textContent: `${s.name} · ${s.bpm}` }))));
+  const sel = $("stil"), gruppen = {}, NAMEN = { ornament: "Ornament", elektronisch: "Drums, elektronisch", organisch: "Perkussion, organisch" };
+  for (const s of STILE.filter((x) => !x.versteckt)) (gruppen[s.gruppe] ??= []).push(s);
+  for (const [g, liste] of Object.entries(gruppen)) sel.append(el("optgroup", { label: NAMEN[g] ?? g }, ...liste.map((s) => el("option", { value: s.key, textContent: `${s.name} · ${s.bpm}` }))));
   const bass = ERZEUGER["bass@0.1.0"].stimmen;
   $("bassStimme").append(...Object.values(bass).map((b) => el("option", { value: b.key, textContent: b.name })));
   $("bassLinie").append(...LINIEN.map((l) => el("option", { value: l.key, textContent: l.name, title: l.hilfe })));
@@ -439,7 +439,7 @@ async function flaecheDazu(vorgabe = null) {
   const drums = z.projekt.spuren.find(istDrums), bass = z.projekt.spuren.find(istBass);
   const anzahl = drums?.quelle.anzahl ?? Number($("takte").value), bpm = z.projekt.tempo.bpm || Number($("erzBpm").value);
   const quelle = { art: "erzeugt", erzeuger: "natur@0.2.0", stimme: st.key, variante: vorgabe?.[1] && !vv ? null : v.name, werte: { ...v.werte, ...Object.fromEntries(Object.entries(vorgabe?.[1] ?? {}).filter(([k]) => k !== "variante")) }, flaeche: true, anzahl, bpm, grundton: bass?.quelle.grundton ?? Number($("tonart").value), leiter: bass?.quelle.leiter ?? $("leiter").value, kammerton: kammerton(), seed: 1 + Math.floor(Math.random() * 99998), sample: null, messdaten: null };
-  const sp = PR.erzeugteSpurDazu(z.projekt, quelle, { name: st.name, typ: "flaeche", pegel: st.pegel, pan: 0, glanz: vorgabe ? { menge: 20, luft: 2 } : null, raum: { anteil: 30, nachhall: 3.6, daempfung: 4500, vorverz: 25, groesse: 1.6, tiefschnitt: 200, bewegung: 40 } });
+  const sp = PR.erzeugteSpurDazu(z.projekt, quelle, { name: st.name, typ: "flaeche", pegel: st.pegel + (vorgabe?.[2]?.pegel ?? 0), pan: 0, glanz: vorgabe ? { menge: 20, luft: 2 } : null, raum: { anteil: 30, nachhall: 3.6, daempfung: 4500, vorverz: 25, groesse: 1.6, tiefschnitt: 200, bewegung: 40 } });
   melde(`${st.name} wird gerechnet …`, 0);
   const fertig = spurNeuRechnen(sp);
   if (vorgabe) return fertig;
@@ -529,6 +529,11 @@ async function trackErzeugen() {
   for (const sp of z.projekt.spuren.filter((x) => x.quelle)) {
     sp.ereignisse = [...(sp.ereignisse ?? []).filter((e) => !e.arr), ...ereignisseFuer(funktionVon(sp.quelle), abschnitte, { seed, takte })];
     spurSenden(sp);
+  }
+  // Ornament Style: die Perkussion wechselt je Abschnitt (nur ein oder zwei Instrumente spielen)
+  if (b.wechsel?.length) {
+    const wechsel = wechselPerkussion(b.wechsel, abschnitte, { seed });
+    for (const sp of z.projekt.spuren.filter((x) => istDrums(x) && b.wechsel.includes(x.quelle.stimme))) { sp.ereignisse.push(...wechsel.get(sp.quelle.stimme)); spurSenden(sp); }
   }
   z.projekt.abschnitte = abschnitte;
   const L = takte * (240 / bpm);

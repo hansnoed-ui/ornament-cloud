@@ -14,6 +14,20 @@ const S = (erzeuger, stimme, variante, takte, mehr = {}) => ({ erzeuger, stimme,
 const D = "drums@0.1.0", PK = "perkussion@0.1.0";
 
 export const STILE = Object.freeze([
+  // Ornament (seit 9. November 2026, Christians eigener Stil): Drum and Bass im Halftime-Gefühl mit indischer und orientalischer
+  // Perkussion und starken Naturgeräuschen. Die Perkussion ist für 174 BPM sparsam gesetzt; im ganzen Track wechseln sich Tabla,
+  // Darbuka, Zarb und Riq je Abschnitt ab (Arrangement), statt alle durchzulaufen.
+  { key: "ornament", name: "Ornament", gruppe: "ornament", bpm: 174, swing: 0, menschlich: 1.5,
+    bass: { stimme: "reese", variante: "Ed Rush dunkel", linie: "zyklus", leiter: "hijaz", bassfett: { sub: 25, obertoene: 30 } }, spuren: [
+    S(D, "kick", "DnB", ["x! . . . . . . . . . x . . . . .", "x! . . . . . . . . . x . . . . .", "x! . . . . . . . . . x . . . . .", "x! . . . . . . . x . x . . . . ."]),
+    S(D, "snare", "DnB Crack", [". . . . x! . . . . . . . x! . . .", ". . . . x! . . g . . . . x! . . g"], { fill: ". . . . x! . . . . . . . x! . x x", menschlich: 1 }),
+    S(D, "hat", "Goa scharf", ["x . o g x . o . x . o g x . o g"], { pegel: -11 }),
+    S(D, "offen", "kurz", [". . . . . . . . . . . . . . . .", ". . . . . . . . . . . . . . x ."]),
+    S(PK, "tabla", "trocken", ["dha! . . . . . . na . . ge . na . . .", ". . na . . . ti ra . . ge . . . na ."], { pegel: -5 }),
+    S(PK, "darbuka", "ägyptisch", ["doum! . . . . . tek . . . doum . tek . . .", "doum! . . . tek . . ka . . doum . . . tek ka"], { pegel: -5 }),
+    S(PK, "zarb", "persisch", ["tom! . . . . . bak . . . tom . . . bak eshare", "tom! . . . . . bak . pelang . tom . . . bak ."], { pegel: -5 }),
+    S(PK, "riq", "klassisch", [". . . . tek_ . . . . . . . tek_ . . zil_"], { pegel: -9 }),
+  ] },
   { key: "dnb", name: "Drum and Bass", gruppe: "elektronisch", bpm: 174, swing: 0, menschlich: 1.5, bass: { stimme: "reese", variante: "Ed Rush dunkel", linie: "lang", leiter: "moll", bassfett: { sub: 25, obertoene: 30 } }, spuren: [
     S(D, "kick", "DnB", ["x! . . . . . . . . . x . . . . .", "x! . . . . . . . . . x . . . . .", "x! . . . . . . . . . x . . . . .", "x! . . . . . . . x . x . . . . ."]),
     S(D, "snare", "DnB Crack", [". . . . x! . . . . . . . x! . . .", ". . . . x! . . g . . . . x! . . g"], { fill: ". . . . x! . . . . . . . x! . x x", menschlich: 1 }),
@@ -28,7 +42,8 @@ export const STILE = Object.freeze([
     S(D, "hat", "staubig", ["x . o . x . o . x . o . x . o g"]),
     S(D, "rim", "Sidestick", [". . . . . . . . . . . . . . . .", ". . . . . . . . . . . x . . . ."]),
   ] },
-  { key: "pop", name: "Pop", gruppe: "elektronisch", bpm: 100, swing: 0, menschlich: 1.5, bass: { stimme: "ebass", variante: "Finger", linie: "kick", leiter: "moll" }, spuren: [
+  { key: "pop", name: "Pop", gruppe: "elektronisch", versteckt: true,   // aus der Auswahl (Christian, 9.11.2026); bleibt für alte Projekte
+    bpm: 100, swing: 0, menschlich: 1.5, bass: { stimme: "ebass", variante: "Finger", linie: "kick", leiter: "moll" }, spuren: [
     S(D, "kick", "Pop", ["x! . . . . . . . x . x . . . . ."]),
     S(D, "snare", "gross", [". . . . x! . . . . . . . x! . . ."]),
     S(D, "clap", "909", [". . . . x . . . . . . . x . . ."], { pegel: -8 }),
@@ -66,7 +81,8 @@ export const STILE = Object.freeze([
     S(PK, "riq", "klassisch", ["dum . tek_ tek_ tek . tek_ tek_ dum . tek_ . tek . tek_ tek_"]),
     S(PK, "rahmen", "Bendir", ["dum! . . . . . . . dum . . . . . . .", "dum! . . . . . . . dum . . . . . tek_ ."]),
   ] },
-  { key: "ecm", name: "ECM (Rahmentrommel, Raum)", gruppe: "organisch", bpm: 72, swing: 0.05, menschlich: 7, raum: RAUM_WEIT, bass: { stimme: "kontrabass", variante: "warm singend", linie: "walking", leiter: "dorisch" }, spuren: [
+  { key: "ecm", name: "ECM (Rahmentrommel, Raum)", gruppe: "organisch", versteckt: true,   // aus der Auswahl; Muster bleiben als Bausteine
+    bpm: 72, swing: 0.05, menschlich: 7, raum: RAUM_WEIT, bass: { stimme: "kontrabass", variante: "warm singend", linie: "walking", leiter: "dorisch" }, spuren: [
     S(PK, "rahmen", "ECM Raum", ["dum! . . . . . . tek_ . . dum_ . . . tek_ .", "dum! . . . . . tek_ . . . dum_ . . tek_ . ."]),
     S(PK, "darbuka", "ECM leise", [". . ka_ . . tek_ . . . . ka_ . tek_ . . .", ". . ka_ . . . tek_ . . . ka_ . . tek_ ka_ ."]),
     S(PK, "riq", "ECM leise", [". . . . . . . . zil_ . . . . . . .", ". . . . . . . . . . . . zil_ . . ."]),

@@ -137,7 +137,29 @@ export function ereignisseFuer(funktion, abschn, { seed = 1, takte } = {}) {
  * zwei Naturschichten; «ohne» nimmt Stimmen des Stils aus dem Track (Orient ohne Riq: seine Schellen nervten). Keine Keys (Urteil vom 9. November 2026); Flächen als «Schwebe» in ungeraden Zyklen. Keine Tabla im Mix (ihr
  * helles «Na» lief als nervendes Dauergeräusch durch DnB, ECM und Goa), keine Pflanzentextur als Natur (Glocken sind keine Naturgeräusche).
  */
+/**
+ * Wechselnde Perkussion (Ornament Style): je Abschnitt spielen nur eine oder zwei der Stimmen (aus dem Startwert, nie zweimal dieselbe
+ * Auswahl hintereinander); die übrigen schweigen dort. Gibt Map stimme → [Dropout-Ereignisse].
+ */
+export function wechselPerkussion(stimmen, abschn, { seed = 1 } = {}) {
+  const rnd = zufall(seed * 977 + 11), aus = new Map(stimmen.map((s) => [s, []]));
+  let vorher = "";
+  for (const a of abschn) {
+    let wahl;
+    for (let v = 0; v < 6; v++) {
+      const n = ["gas", "wiederfinden"].includes(a.typ) ? 2 : 1, rest = [...stimmen];
+      wahl = Array.from({ length: Math.min(n, rest.length) }, () => rest.splice(Math.floor(rnd() * rest.length), 1)[0]).sort();
+      if (wahl.join() !== vorher || stimmen.length < 2) break;
+    }
+    vorher = wahl.join();
+    for (const s of stimmen) if (!wahl.includes(s)) aus.get(s).push(E("dropout", a.von, (a.bis - a.von) * 16, { rest: 0, kante: 20 }));
+  }
+  return aus;
+}
+
 export const BESETZUNG = Object.freeze({
+  ornament: { linie: "zyklus", wechsel: ["tabla", "darbuka", "zarb", "riq"], synths: [["shadow", "deepRoomDrone", "schwebe"]],
+    natur: [["gezeiten", { verwandlung: 30, wellen: 70 }, { pegel: 4 }], ["walchor", { verwandlung: 40 }, { pegel: 3 }], ["vogel", { dichte: 30 }, { pegel: 3 }]] },
   dnb: { mix: [["orient", "darbuka"]], linie: "lang", synths: [["shadow", "deepRoomDrone", "schwebe"]], natur: [["gezeiten", { verwandlung: 40, tonalitaet: 40 }], ["insekten", { verwandlung: 60, tonalitaet: 0 }]] },
   hiphop: { mix: [["orient", "darbuka"]], linie: "kick", synths: [["tape", "amberMemory", "schwebe"]], natur: [["regen", {}], ["walchor", { verwandlung: 50 }]] },
   pop: { mix: [["persisch", "zarb"]], linie: "zyklus", synths: [["darkpop", "darkBrass", "schwebe"]], natur: [["vogel", { dichte: 25 }]] },
