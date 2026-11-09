@@ -253,3 +253,34 @@ test("Bassfett: Grundstellung unverändert, Unteroktave fügt tiefe Energie hinz
   const ob = messen(lauf({ obertoene: 100 }), RATE);
   assert.ok(ob.spektrum[9] > mb[9], "Obertöne um 200 Hz");
 });
+
+// ---------- Unterbrechungen 0.1.0 ----------
+const U = await c("kern/unterbrechungen.js");
+
+test("Unterbrechungen: jede Art bleibt endlich, ändert nur ihren Bereich, die Quelle bleibt unberührt", () => {
+  const q = klang(4), tempo = { bpm: 120, beginn: 0 }, takt = 2;   // 120 BPM: ein Takt = 2 s
+  for (const art of Object.keys(U.ARTEN)) {
+    const vor = q.map((s) => s.slice());
+    const k = U.anwenden(q, RATE, [{ id: "e", art, takt: 0.5, schritte: 8, alle: 0, seed: 3 }], tempo);
+    gleich(q[0], vor[0], `${art}: Quelle unverändert`);
+    assert.equal(k[0].length, q[0].length);
+    assert.ok(k.every((s) => s.every(Number.isFinite)), art);
+    const a = 0.5 * takt * RATE, b = a + takt * 0.5 * RATE;
+    for (let i = 0; i < a - 1; i += 101) assert.equal(k[0][i], q[0][i], `${art}: vor dem Bereich gleich`);
+    for (let i = b + 1; i < k[0].length; i += 101) assert.equal(k[0][i], q[0][i], `${art}: nach dem Bereich gleich (${i})`);
+    let diff = 0; for (let i = a; i < b; i++) diff += Math.abs(k[0][i] - q[0][i]);
+    assert.ok(diff > 1, `${art}: wirkt`);
+  }
+});
+
+test("Unterbrechungen: Stutter wiederholt das erste Stück, Tape-Stop endet leise, Muster wiederholt, aus wirkt nicht", () => {
+  const q = klang(8), tempo = { bpm: 120, beginn: 0 }, st = (2 / 16) * RATE;
+  const s = U.anwenden(q, RATE, [{ art: "stutter", takt: 1, schritte: 4, alle: 0, werte: { abfall: 0 } }], tempo)[0], a = 2 * RATE;
+  for (let i = 100; i < st - 100; i += 37) assert.ok(Math.abs(s[a + st + i] - q[0][a + i]) < 1e-6, "zweites Stück = erstes");
+  const t = U.anwenden(q, RATE, [{ art: "tapestop", takt: 1, schritte: 8, alle: 0 }], tempo)[0];
+  let e = 0; for (let i = a + 0.9 * RATE; i < a + RATE; i++) e = Math.max(e, Math.abs(t[i]));
+  assert.ok(e < 0.05, `Ende des Tape-Stops leise: ${e}`);
+  const d = U.anwenden(q, RATE, [{ art: "dropout", takt: 0.5, schritte: 4, alle: 1, werte: { rest: 0 } }], tempo)[0];
+  for (const takt of [0, 1, 2, 3]) { const m = Math.round((takt * 2 + 1.25) * RATE); assert.ok(Math.abs(d[m]) < 1e-9, `Takt ${takt + 1}: still`); }
+  gleich(U.anwenden(q, RATE, [{ art: "dropout", takt: 0, schritte: 16, alle: 0, aus: true }], tempo)[0], q[0], "aus");
+});
