@@ -415,3 +415,6 @@ export default {
   beschreibung: "Walchor, Vogelschwarm, Gezeiten, Pflanzentextur, Pads. Synthetische Quellen sind als solche bezeichnet; eigene Aufnahmen über den Import.",
   stimmen: Object.fromEntries([walchor, vogel, gezeiten, pflanzen, pad].map((s) => [s.key, s])),
 };
+
+// Bausteine für spätere Versionen (natur-0.2.0.js); der Klang von 0.1.0 bleibt unverändert
+export { glatt, resonatoren, ausdehnen, nahtlos, farbe, pegeln, MAKRO, granular, frequenzVon };

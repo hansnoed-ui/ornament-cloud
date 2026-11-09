@@ -8,7 +8,7 @@
 import { zufall } from "../erzeuger/grund.js";
 
 export const ROLLEN = Object.freeze([
-  { key: "pad", name: "Pad (Akkord je Takt)" }, { key: "drone", name: "Drone" }, { key: "chord", name: "Akkord-Stabs" }, { key: "keys", name: "Keys (gebrochen)" },
+  { key: "schwebe", name: "Schwebe (lange Akkorde, ungerader Zyklus)" }, { key: "pad", name: "Pad (Akkord je Takt)" }, { key: "drone", name: "Drone" }, { key: "chord", name: "Akkord-Stabs" }, { key: "keys", name: "Keys (gebrochen)" },
   { key: "arp", name: "Arpeggio" }, { key: "pluck", name: "Pluck" }, { key: "acid", name: "Acid (Akzent, Slide)" }, { key: "lead", name: "Lead" }, { key: "puls", name: "Puls" },
 ]);
 
@@ -27,6 +27,7 @@ const akkord = (g, toene, st = "") => toene.map((t, i) => fmt(g + t, { st: i ===
  */
 export function sequenzErzeugen({ rolle = "pad", akkorde = [1], kicks = null, anzahl = 8, seed = 1, halftime = false }) {
   const rnd = zufall(seed), takte = Math.min(anzahl, 8), zeilen = [];
+  if (rolle === "schwebe") return schwebe(akkorde, rnd);
   const stufe = (b) => { const a = akkorde.length ? akkorde : [1]; return a[(halftime ? Math.floor(b / 2) * 2 : b) % a.length]; };
   const vier = rnd() < 0.5 ? [0, 2, 4, 6] : [0, 2, 4, 8];   // Septime oder None oben
   const richtung = ["auf", "ab", "aufab", "zufall"][Math.floor(rnd() * 4)];
@@ -70,5 +71,23 @@ export function sequenzErzeugen({ rolle = "pad", akkorde = [1], kicks = null, an
     }
     zeilen.push(z.join(" "));
   }
+  return zeilen;
+}
+
+/**
+ * Schwebe (seit Composer 0.2): lange Akkorde über einen Zyklus von 3, 5 oder 7 Takten, Wechsel quer zum Takt (10 bis 26 Sechzehntel),
+ * offene Lagen (Quinte, None, Undezime) statt enger Dreiklänge. Der Zyklus läuft gegen die Viertakt-Gruppen der Drums.
+ */
+function schwebe(akkorde, rnd) {
+  const zy = [3, 5, 7][Math.floor(rnd() * 3)], S = zy * 16, z = Array(S).fill("-"), dauern = [14, 18, 10, 22, 26, 12];
+  const lagen = [[0, 4, 7], [0, 4, 8], [0, 2, 4, 7], [-3, 0, 4], [-7, 0, 4, 8]];   // offen, aber höchstens eine None über dem Grundton
+  let pos = 0, k = 0;
+  while (pos < S) {
+    const g = akkorde[k % akkorde.length] ?? 1, d = Math.min(S - pos, dauern[Math.floor(rnd() * dauern.length)]);
+    z[pos] = akkord(g, lagen[Math.floor(rnd() * lagen.length)], k === 0 || rnd() < 0.4 ? "!" : "");
+    pos += d; k++;
+  }
+  const zeilen = [];
+  for (let b = 0; b < zy; b++) zeilen.push(z.slice(b * 16, b * 16 + 16).join(" "));
   return zeilen;
 }
