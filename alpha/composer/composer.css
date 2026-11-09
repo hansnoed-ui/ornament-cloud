@@ -163,3 +163,13 @@ canvas.lineal, canvas.welle { width: 100%; display: block; cursor: crosshair; to
   .regler span:first-child, .regler output { display: none; }
   .kopfzelle { padding: 6px 8px; }
 }
+
+/* Unterbrechungen */
+.ereignisse { display: grid; gap: 10px; margin-top: 8px; }
+.ereignis { border: 1px solid var(--border); border-left: 3px solid #f0a070; border-radius: 10px; padding: 10px 12px; }
+.ereignis.aus { opacity: 0.5; }
+.ereignis-kopf { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin-bottom: 8px; }
+.ereignis-kopf b { font-weight: 500; }
+.ereignis-kopf input[type="number"] { width: 6ch; border: 0; border-bottom: 1px solid var(--border); background: none; color: var(--text); padding: 2px; font-variant-numeric: tabular-nums; }
+.ereignis-kopf select, .ereignis select { border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--text); padding: 2px 8px; }
+.ereignis .param select { grid-column: 1 / -1; }

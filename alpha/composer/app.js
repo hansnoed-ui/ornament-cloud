@@ -9,6 +9,7 @@ import { rendern } from "./kern/rendern.js";
 import { messen, TERZEN } from "./kern/messen.js";
 import { zipBlob } from "./kern/zip.js";
 import { STILE, stilVon } from "./kern/muster.js";
+import { ARTEN as UNTER, SCHNELL, anwenden, werteVon } from "./kern/unterbrechungen.js";
 import { spurRechnen, schlagRechnen } from "./kern/erzeugen.js";
 import { stimmeVon, ERZEUGER } from "./erzeuger/register.js";
 import { LINIEN, LEITERN, NOTEN, linieErzeugen, kickSchritte, grundFrequenz } from "./kern/linien.js";
@@ -99,9 +100,7 @@ async function dateienLaden(liste) {
     let sp = z.projekt.spuren.find((s) => s.datei && !z.daten.has(s.id) && s.datei.sha256 === hash) ?? z.projekt.spuren.find((s) => s.datei && !z.daten.has(s.id) && s.datei.name === f.name);
     if (sp && sp.datei.sha256 !== hash) melde(`${f.name}: anderer Inhalt als im Projekt gespeichert`, 6000);
     if (!sp) { sp = PR.spurDazu(z.projekt, datei); neu++; }
-    z.daten.set(sp.id, { kanaele, wellen: wellenform(kanaele) });
-    const kopie = kanaele.map((s) => s.slice());
-    post({ art: "spur", id: sp.id, kanaele: kopie }, kopie.map((s) => s.buffer));
+    spurSenden(sp, kanaele);
   }
   if (neu && z.projekt.tempo.quelle !== "mensch") tempoSchaetzenAusSpuren();
   if (!z.gewaehlt) z.gewaehlt = z.projekt.spuren[0]?.id ?? null;
@@ -205,9 +204,12 @@ function pluginAufbauen() {
   const spur = z.projekt.spuren.find((s) => s.id === z.gewaehlt);
   const name = z.gewaehlt === "summe" ? "Summe" : spur.name;
   const reiter = [...(spur?.quelle ? [umschalt("Klang", "v", z.glied === -1, "der Klangerzeuger dieser Spur", () => { z.glied = -1; pluginAufbauen(); })] : []),
+    ...(spur ? [umschalt(`Unterbrechungen${spur.ereignisse?.length ? ` (${spur.ereignisse.length})` : ""}`, "v", z.glied === -2, "Stutter, Tape-Stop, Gate, Echo-Wurf …", () => { z.glied = -2; pluginAufbauen(); })] : []),
     ...kette.map((g, i) => umschalt(PLUGINS[g.plugin].name, "v", i === z.glied, g.plugin, () => { z.glied = i; pluginAufbauen(); }))];
   const wahl = el("div", { className: "glied-wahl" }, ...reiter);
   if (z.glied === -1 && spur?.quelle) { klangAufbauen(box, spur, wahl); return; }
+  if (z.glied === -2 && spur) { unterAufbauen(box, spur, wahl); return; }
+  if (z.glied < 0) z.glied = 0;
   const glied = kette[z.glied], def = PLUGINS[glied.plugin];
   box.append(el("div", { className: "plugin-kopf" }, el("h2", { textContent: `${name}: ${def.name} ${def.version}` }), wahl, el("span", { className: "leise-text", textContent: def.beschreibung })));
   // Varianten (nur der Kanalzug hat welche)
@@ -303,11 +305,23 @@ function bassErzeugen({ anzahl, bpm, seed, stil }) {
 
 /** eine erzeugte Spur rechnen und dem Motor geben (die Kette mit ihrem Zustand bleibt) */
 function spurNeuRechnen(sp) {
-  const { kanaele } = spurRechnen(sp.quelle, z.rate);
-  z.daten.set(sp.id, { kanaele, wellen: wellenform(kanaele) });
-  const kopie = kanaele.map((s) => s.slice());
-  post({ art: "spur", id: sp.id, kanaele: kopie }, kopie.map((s) => s.buffer));
+  spurSenden(sp, spurRechnen(sp.quelle, z.rate).kanaele);
 }
+
+/**
+ * Tondaten einer Spur an den Motor: roh (aus Datei oder Erzeuger) → Unterbrechungen → Motor. Ohne roh werden die gespeicherten Rohdaten
+ * neu verarbeitet (nach einer Änderung an den Unterbrechungen oder am Tempo).
+ */
+function spurSenden(sp, roh = z.daten.get(sp.id)?.roh) {
+  if (!roh) return;
+  const kanaele = sp.ereignisse?.length ? anwenden(roh, z.rate, sp.ereignisse, z.projekt.tempo) : roh;
+  z.daten.set(sp.id, { roh, kanaele, wellen: wellenform(kanaele) });
+  const kopie = kanaele.map((x) => x.slice());
+  post({ art: "spur", id: sp.id, kanaele: kopie }, kopie.map((x) => x.buffer));
+}
+const unterPlan = new Map();
+function unterBald(sp) { clearTimeout(unterPlan.get(sp.id)); unterPlan.set(sp.id, setTimeout(() => { unterPlan.delete(sp.id); spurSenden(sp); zeichnen(); }, 100)); }
+function alleNeuSenden() { for (const sp of z.projekt.spuren) if (sp.ereignisse?.length) spurSenden(sp); zeichnen(); }
 let neuPlan = new Map();
 /** nach einer Änderung am Klang: kurz warten (Regler werden gezogen), dann neu rechnen */
 function spurBald(sp) {
@@ -418,6 +432,72 @@ function bassSteuerung(sp) {
   return zeile;
 }
 
+// ---------- Unterbrechungen ----------
+const neueEreignisId = () => "u-" + Math.random().toString(36).slice(2, 8);
+/** wohin ein neues Ereignis kommt: an die gezogene Auswahl (wenn sie kürzer als alles ist), sonst an die Stelle des Vorschlags */
+function ortFuerNeues(vorschlag) {
+  const takt = PR.taktDauer(z.projekt), b0 = z.projekt.tempo.beginn, L = laenge();
+  if (z.schleife && z.schleife.b - z.schleife.a < L - 0.05) {
+    const a = Math.max(0, Math.round(((z.schleife.a - b0) / takt) * 16) / 16), s = Math.max(1, Math.round(((z.schleife.b - z.schleife.a) / takt) * 16));
+    return { takt: a, schritte: s, alle: 0 };
+  }
+  return { takt: vorschlag.takt, schritte: vorschlag.schritte, alle: vorschlag.alle };
+}
+function ereignisDazu(sp, v, alleSpuren) {
+  const ort = ortFuerNeues(v), gruppe = alleSpuren ? neueEreignisId() : null;
+  for (const s of alleSpuren ? z.projekt.spuren : [sp]) {
+    (s.ereignisse ??= []).push({ id: neueEreignisId(), art: v.art, ...ort, werte: {}, seed: 1 + Math.floor(Math.random() * 9999), gruppe });
+    spurSenden(s);
+  }
+  spurenAufbauen(); pluginAufbauen();
+  melde(`${UNTER[v.art].name}: Takt ${(ort.takt + 1).toFixed(2).replace(".", ",")}, ${ort.schritte} Sechzehntel${ort.alle ? `, alle ${ort.alle} Takte` : ""}${alleSpuren ? ", auf allen Spuren" : ""}`, 3500);
+}
+/** eine Änderung gilt für alle Ereignisse derselben Gruppe (auf allen Spuren erzeugt) */
+function ereignisAendern(sp, e, aendern) {
+  const ziele = e.gruppe ? z.projekt.spuren.flatMap((s) => (s.ereignisse ?? []).filter((x) => x.gruppe === e.gruppe).map((x) => [s, x])) : [[sp, e]];
+  for (const [s, x] of ziele) { aendern(x); unterBald(s); }
+}
+
+function unterAufbauen(box, sp, wahl) {
+  box.append(el("div", { className: "plugin-kopf" }, el("h2", { textContent: `${sp.name}: Unterbrechungen 0.1.0` }), wahl,
+    el("span", { className: "leise-text", textContent: "Ereignisse auf der Zeitleiste. Auf der Zeitleiste einen Bereich ziehen, dann eine Art wählen: sie kommt genau dorthin. Ohne Auswahl kommt sie an eine typische Stelle (Ende von Takt 4). Sie wirken vor Kanalzug und Raum." })));
+  const alle = el("input", { type: "checkbox", id: "unterAlle" });
+  box.append(el("div", { className: "klang-zeile" }, el("span", { className: "leise-text", textContent: "dazu:" }),
+    ...SCHNELL.map((v) => { const b = el("button", { className: "mini", textContent: v.name, title: UNTER[v.art].hilfe }); b.onclick = () => ereignisDazu(sp, v, alle.checked); return b; }),
+    el("label", { className: "feld klein" }, alle, " auf allen Spuren")));
+  const liste = el("div", { className: "ereignisse" });
+  const sortiert = [...(sp.ereignisse ?? [])].sort((a, b) => a.takt - b.takt);
+  if (!sortiert.length) liste.append(el("p", { className: "hinweis", textContent: "Noch keine Unterbrechung auf dieser Spur." }));
+  for (const e of sortiert) {
+    const art = UNTER[e.art], w = werteVon(e);
+    const zahlFeld = (name, wert, schritt, min, setze, titel) => { const i = el("input", { type: "number", value: wert, step: schritt, min, title: titel ?? "" }); i.onchange = () => { const v = Number(i.value); if (Number.isFinite(v) && v >= min) ereignisAendern(sp, e, (x) => setze(x, v)); }; return el("label", { className: "feld" }, name, i); };
+    const alleWahl = el("select", { title: "einmal oder als Muster" }, ...[[0, "einmal"], [1, "jeden Takt"], [2, "alle 2 Takte"], [4, "alle 4 Takte"], [8, "alle 8 Takte"]].map(([v, t]) => el("option", { value: v, textContent: t, selected: v === (e.alle ?? 0) })));
+    alleWahl.onchange = () => ereignisAendern(sp, e, (x) => { x.alle = Number(alleWahl.value); });
+    const aus = umschalt(e.aus ? "aus" : "an", "v", !e.aus, "vorübergehend ausschalten, um zu vergleichen", () => { ereignisAendern(sp, e, (x) => { x.aus = !x.aus; }); setTimeout(pluginAufbauen, 120); });
+    const weg = el("button", { className: "mini", textContent: "löschen" });
+    weg.onclick = () => { const ziele = e.gruppe ? z.projekt.spuren : [sp]; for (const s of ziele) { const vor = s.ereignisse?.length ?? 0; s.ereignisse = (s.ereignisse ?? []).filter((x) => x.id !== e.id && (!e.gruppe || x.gruppe !== e.gruppe)); if ((s.ereignisse.length) !== vor) spurSenden(s); } spurenAufbauen(); pluginAufbauen(); };
+    const hoer = el("button", { className: "mini", textContent: "hinhören", title: "Schleife vom Takt davor bis nach dem Ereignis" });
+    hoer.onclick = () => {
+      const takt = PR.taktDauer(z.projekt), b0 = z.projekt.tempo.beginn, a = b0 + Math.max(0, Math.floor(e.takt) - 1) * takt, b = Math.min(laenge(), b0 + (e.takt + e.schritte / 16) * takt + takt * 0.5);
+      z.schleife = { a, b }; z.schleifeAn = true; schleifeSenden(); z.pos = Math.round(a * z.rate); post({ art: "stelle", pos: z.pos }); knoepfeAuffrischen(); zeichnen();
+      if (!z.laeuft) spielen();
+    };
+    const kopf = el("div", { className: "ereignis-kopf" }, el("b", { textContent: art.name }), e.gruppe ? el("span", { className: "leise-text", textContent: "alle Spuren" }) : "",
+      zahlFeld("Takt", (e.takt + 1).toFixed(2), 0.25, 1, (x, v) => { x.takt = v - 1; }, "1 = Anfang von Takt 1, 4,75 = letzte Viertel von Takt 4"),
+      zahlFeld("Länge", e.schritte, 1, 1, (x, v) => { x.schritte = Math.round(v); }, "in Sechzehnteln: 4 = eine Viertel, 16 = ein Takt"), alleWahl, aus, hoer, weg);
+    const regler = el("div", { className: "gruppen" });
+    for (const p of art.parameter) {
+      if (p.wahl) {
+        const s2 = el("select", {}, ...p.wahl.map((o) => el("option", { value: String(o.wert), textContent: o.name, selected: String(o.wert) === String(w[p.key]) })));
+        s2.onchange = () => { const o = p.wahl.find((x) => String(x.wert) === s2.value); ereignisAendern(sp, e, (x) => { x.werte = { ...x.werte, [p.key]: o.wert }; }); };
+        regler.append(el("label", { className: "param" }, el("span", { textContent: p.name }), el("output"), s2));
+      } else regler.append(paramRegler(p, w[p.key], (v) => ereignisAendern(sp, e, (x) => { x.werte = { ...x.werte, [p.key]: v }; })));
+    }
+    liste.append(el("div", { className: "ereignis" + (e.aus ? " aus" : "") }, kopf, regler));
+  }
+  box.append(liste);
+}
+
 function paramRegler(p, v, setze) {
   const out = el("output", { textContent: zeigeWert(p, v) });
   const inp = el("input", { type: "range", min: 0, max: 1000, step: 1, value: Math.round(zuStellung(p, v) * 1000), title: p.hilfe ?? "" });
@@ -457,6 +537,18 @@ function zeichnen() {
     for (let x = 0; x < w2 * dauerAnteil; x++) {
       const j = Math.floor((x / (w2 * dauerAnteil)) * WELLE); const lo = min[j], hi = max[j];
       g2.fillRect(x, m - hi * m * 0.95, 1, Math.max(1, (hi - lo) * m * 0.95));
+    }
+    const sp = z.projekt.spuren.find((x) => x.id === c.dataset.id);
+    for (const e of sp?.ereignisse ?? []) {
+      if (e.aus) continue;
+      const wdh = e.alle > 0 ? Math.ceil((L - tempo.beginn) / takt / e.alle) : 1;
+      for (let r = 0; r < wdh; r++) {
+        const a = ((tempo.beginn + (e.takt + r * (e.alle || 0)) * takt) / L) * w2, b = a + ((e.schritte / 16) * takt / L) * w2;
+        if (a > w2) break;
+        g2.fillStyle = "rgba(240,160,112,0.28)"; g2.fillRect(a, 0, Math.max(2, b - a), h2);
+        g2.fillStyle = "#f0a070"; g2.fillRect(a, 0, Math.max(2, b - a), 3);
+        if (r === 0 && b - a > 30) { g2.font = "10px Instrument Sans, system-ui"; g2.fillText(UNTER[e.art].name, a + 3, 14); }
+      }
     }
   }
 }
@@ -649,8 +741,8 @@ $("messenKnopf").onclick = () => mischungMessen().catch((e) => melde(`Messen: ${
 $("zielKnopf").onclick = () => aufZielBringen().catch((e) => melde(`Ziel: ${e.message}`, 8000));
 $("ausgabeZiel").onchange = () => { z.projekt.ausgabe = { ziel: $("ausgabeZiel").value, ...ZIELE[$("ausgabeZiel").value], bits: "24" }; messTabelle(); };
 $("spielen").onclick = spielen;
-$("bpm").onchange = () => { const v = Number($("bpm").value); if (v >= 40 && v <= 240) { z.projekt.tempo = { ...z.projekt.tempo, bpm: v, quelle: "mensch" }; $("bpmQuelle").textContent = "eingestellt"; zeichnen(); } };
-$("beginn").onchange = () => { const v = Number($("beginn").value); if (v >= 0) { z.projekt.tempo.beginn = v; zeichnen(); } };
+$("bpm").onchange = () => { const v = Number($("bpm").value); if (v >= 40 && v <= 240) { z.projekt.tempo = { ...z.projekt.tempo, bpm: v, quelle: "mensch" }; $("bpmQuelle").textContent = "eingestellt"; alleNeuSenden(); } };
+$("beginn").onchange = () => { const v = Number($("beginn").value); if (v >= 0) { z.projekt.tempo.beginn = v; alleNeuSenden(); } };
 $("schleifeAn").onclick = () => { if (!z.schleife) { melde("Zuerst auf der Zeitleiste einen Bereich ziehen (rastet auf Takte, mit Umschalt frei)."); return; } z.schleifeAn = !z.schleifeAn; schleifeSenden(); knoepfeAuffrischen(); zeichnen(); };
 $("allesVorher").onclick = () => { z.allesVorher = !z.allesVorher; senden(); knoepfeAuffrischen(); };
 $("referenzAn").onclick = () => { if (!z.referenz) return; z.referenzAn = !z.referenzAn; senden(); knoepfeAuffrischen(); };
