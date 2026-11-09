@@ -18,7 +18,7 @@ const { anwenden } = await imp("composer/kern/unterbrechungen.js");
 const PR = await imp("composer/kern/projekt.js");
 const { linieErzeugen, kickSchritte, tonLesen } = await imp("composer/kern/linien.js");
 const { sequenzErzeugen } = await imp("composer/kern/sequenzen.js");
-const { abschnitte: abschnitteVon, ereignisseFuer, funktionVon, BESETZUNG } = await imp("composer/kern/arrangement.js");
+const { abschnitte: abschnitteVon, ereignisseFuer, funktionVon, BESETZUNG, wechselPerkussion } = await imp("composer/kern/arrangement.js");
 const { wavSchreiben } = await imp("lab/kern/klangwerk.js");
 const RATE = 48000;
 
@@ -70,10 +70,11 @@ function aufbauen(stil, anzahl, { seed = 1, synths = null, natur, arrangement = 
     const q = { erzeuger: "natur@0.2.0", stimme: nat[0], werte: { ...nv.werte, ...Object.fromEntries(Object.entries(nat[1] ?? {}).filter(([k]) => k !== "variante")) }, flaeche: true, anzahl, bpm: stil.bpm, grundton: 2, leiter: b.leiter, seed: seed * 100 + 90 + ni };
     const einsaetze = []; for (const s of stil.spuren.filter((x) => ["kick", "snare", "rahmen", "darbuka"].includes(x.stimme))) for (let t = 0; t < anzahl; t++) for (const e of taktLesen(s.takte[t % s.takte.length])) einsaetze.push(t * takt + e.stelle * takt);
     const h = RATE / 100, huelle = Float32Array.from({ length: Math.floor(bk[0].length / h) }, (_, j) => { let s2 = 0; for (let i = j * h; i < (j + 1) * h; i += 4) s2 += bk[0][i] ** 2; return Math.sqrt(s2 / (h / 4)); });
-    spuren.push({ sp: PR.erzeugteSpurDazu(p, q, { name: st.name, typ: "flaeche", pegel: st.pegel, glanz: arrangement ? { menge: 20, luft: 2 } : null, raum: { anteil: 30, nachhall: 3.6, daempfung: 4500, vorverz: 25, groesse: 1.6, tiefschnitt: 200, bewegung: 40 } }),
+    spuren.push({ sp: PR.erzeugteSpurDazu(p, q, { name: st.name, typ: "flaeche", pegel: st.pegel + (nat[2]?.pegel ?? 0), glanz: arrangement ? { menge: 20, luft: 2 } : null, raum: { anteil: 30, nachhall: 3.6, daempfung: 4500, vorverz: 25, groesse: 1.6, tiefschnitt: 200, bewegung: 40 } }),
       k: flaechenSpurRechnen(q, RATE, { akkorde: Array.from({ length: anzahl }, (_, t) => ({ beginn: t * takt, stufe: akkorde[t % akkorde.length] })), einsaetze: einsaetze.sort((a, c) => a - c), huelle }).kanaele });
   }
-  if (arrangement) for (const x of spuren) { x.sp.ereignisse = ereignisseFuer(funktionVon(x.sp.quelle), arrangement, { seed, takte: anzahl }); x.k = anwenden(x.k, RATE, x.sp.ereignisse, { bpm: stil.bpm, beginn: 0 }); }
+  const wechsel = arrangement && besetzung.wechsel?.length ? wechselPerkussion(besetzung.wechsel, arrangement, { seed }) : new Map();
+  if (arrangement) for (const x of spuren) { x.sp.ereignisse = [...ereignisseFuer(funktionVon(x.sp.quelle), arrangement, { seed, takte: anzahl }), ...(wechsel.get(x.sp.quelle?.stimme) ?? [])]; x.k = anwenden(x.k, RATE, x.sp.ereignisse, { bpm: stil.bpm, beginn: 0 }); }
   return { p, spuren: spuren.map((x) => ({ id: x.sp.id, kanaele: x.k })) };
 }
 
