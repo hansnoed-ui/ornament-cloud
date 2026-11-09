@@ -88,7 +88,7 @@ canvas.lineal, canvas.welle { width: 100%; display: block; cursor: crosshair; to
 .spur-name b { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .spur-name select { background: none; border: 0; color: var(--staub); font-size: 0.8rem; padding: 0; cursor: pointer; }
 .spur-name select option { color: initial; }
-.spur-knoepfe { display: flex; gap: 4px; align-items: center; }
+.spur-knoepfe { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; min-width: 0; }
 .mini { min-width: 28px; height: 26px; border: 1px solid var(--fuge); border-radius: 6px; background: none; color: var(--welle); cursor: pointer; font-size: 0.8rem; padding: 0 6px; }
 .mini[aria-pressed="true"].m { background: #a33; border-color: #a33; color: #fff; }
 .mini[aria-pressed="true"].s { background: #c9a227; border-color: #c9a227; color: #000; }
@@ -162,6 +162,10 @@ canvas.lineal, canvas.welle { width: 100%; display: block; cursor: crosshair; to
   .regler { grid-template-columns: 1fr; }
   .regler span:first-child, .regler output { display: none; }
   .kopfzelle { padding: 6px 8px; }
+  .mini.variante { display: none; }
+  .bereich-leiste { gap: 6px; }
+  .bereich-leiste kbd { display: none; }
+  .bereich-ort { flex-basis: 100%; }
 }
 
 /* Unterbrechungen */
@@ -196,3 +200,7 @@ canvas.lineal, canvas.welle { width: 100%; display: block; cursor: crosshair; to
 .ereignis.fassung { border-left-color: #c9a227; }
 .ereignis.fassung.aktiv { border-left-width: 6px; }
 .wellen-feld.ziel { outline: 2px dashed #8fb0ff; outline-offset: -2px; }
+
+/* der Spurkopf bleibt in seiner Spalte (auf dem Handy liefen Regler und Knöpfe sonst in die Welle) */
+.kopfzelle { min-width: 0; overflow: hidden; }
+.regler input[type="range"] { min-width: 0; }
