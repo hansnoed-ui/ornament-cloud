@@ -139,7 +139,7 @@ const { STILE, taktLesen } = await c("kern/muster.js");
 const { spurRechnen } = await c("kern/erzeugen.js");
 
 test("Erzeuger: jede Stimme, Variante und Artikulation ist endlich, gleich laut und reproduzierbar", () => {
-  for (const [id, e] of Object.entries(ERZEUGER)) if (!e.melodisch) for (const [k, s] of Object.entries(e.stimmen)) {
+  for (const [id, e] of Object.entries(ERZEUGER)) if (!e.melodisch && !e.flaeche) for (const [k, s] of Object.entries(e.stimmen)) {
     const std = Object.fromEntries(s.parameter.map((p) => [p.key, p.std]));
     assert.ok(s.varianten.length >= 6, `${k}: mindestens sechs Varianten`);
     for (const p of s.parameter) assert.ok(p.min <= p.std && p.std <= p.max, `${k}.${p.key}`);
@@ -283,4 +283,39 @@ test("Unterbrechungen: Stutter wiederholt das erste Stück, Tape-Stop endet leis
   const d = U.anwenden(q, RATE, [{ art: "dropout", takt: 0.5, schritte: 4, alle: 1, werte: { rest: 0 } }], tempo)[0];
   for (const takt of [0, 1, 2, 3]) { const m = Math.round((takt * 2 + 1.25) * RATE); assert.ok(Math.abs(d[m]) < 1e-9, `Takt ${takt + 1}: still`); }
   gleich(U.anwenden(q, RATE, [{ art: "dropout", takt: 0, schritte: 16, alle: 0, aus: true }], tempo)[0], q[0], "aus");
+});
+
+// ---------- Natur 0.1.0 (Flächen, Naturklänge) ----------
+const { flaechenSpurRechnen } = await c("kern/erzeugen.js");
+
+test("Natur: jede Familie und Variante klingt, bleibt endlich, ist reproduzierbar und eine Schleife ohne Naht", () => {
+  const natur = ERZEUGER["natur@0.1.0"], R = 24000;   // halbe Rate: der Test bleibt schnell, die Rechnung ist dieselbe
+  const bezug = { akkorde: [0, 1, 2, 3].map((t) => ({ beginn: t * 2, stufe: [1, 6, 4, 5][t] })), einsaetze: [0, 0.5, 1, 1.5, 2, 2.5], huelle: Float32Array.from({ length: 900 }, (_, i) => Math.abs(Math.sin(i / 20))), daten: [1, 4, 2, 8, 5] };
+  for (const [k, st] of Object.entries(natur.stimmen)) {
+    assert.ok(st.varianten.length >= 6, k);
+    for (const v of st.varianten) {
+      const q = { erzeuger: "natur@0.1.0", stimme: k, werte: v.werte, flaeche: true, anzahl: 4, bpm: 120, grundton: 2, leiter: "moll", seed: 4 };
+      const [L, Rr] = flaechenSpurRechnen(q, R, bezug).kanaele;
+      assert.equal(L.length, Math.round(8 * R), `${k} ${v.name}: Länge = 4 Takte`);
+      let m = 0, e = 0; for (const x of L) { assert.ok(Number.isFinite(x), `${k} ${v.name}`); m = Math.max(m, Math.abs(x)); e += x * x; }
+      assert.ok(m > 0.05 && m <= 0.61, `${k} ${v.name}: Spitze ${m}`);
+      assert.ok(Math.sqrt(e / L.length) > 0.002, `${k} ${v.name}: nicht stumm`);
+      // Naht: der Sprung über das Ende in den Anfang ist nicht grösser als die grössten Sprünge innerhalb der Spur
+      let d = 0; for (let i = 1; i < L.length; i++) d = Math.max(d, Math.abs(L[i] - L[i - 1]));
+      assert.ok(Math.abs(L[0] - L[L.length - 1]) <= d + 1e-6, `${k} ${v.name}: Naht`);
+    }
+  }
+  const q = { erzeuger: "natur@0.1.0", stimme: "gezeiten", werte: {}, flaeche: true, anzahl: 2, bpm: 120, grundton: 2, leiter: "moll", seed: 9 };
+  gleich(flaechenSpurRechnen(q, R, {}).kanaele[0], flaechenSpurRechnen(q, R, {}).kanaele[0], "gleicher Startwert, gleiche Fläche");
+});
+
+test("Natur: eine eigene Aufnahme ersetzt die synthetische Quelle; Pflanzen-Aufnahme wird verlangsamt", () => {
+  const R = 24000, n = R * 2, ruf = Float32Array.from({ length: n }, (_, i) => Math.sin((2 * Math.PI * 300 * i) / R) * Math.sin((Math.PI * i) / n));
+  const q = { erzeuger: "natur@0.1.0", stimme: "walchor", werte: { verwandlung: 20 }, flaeche: true, anzahl: 2, bpm: 120, grundton: 2, leiter: "moll", seed: 1 };
+  const mit = flaechenSpurRechnen(q, R, { sample: { kanaele: [ruf], rate: R } }).kanaele[0], ohne = flaechenSpurRechnen(q, R, {}).kanaele[0];
+  assert.ok(mit.some((x, i) => Math.abs(x - ohne[i]) > 1e-3), "anderes Material, anderer Klang");
+  // Ultraschall: Impulse bei 192 kHz; 16-fach verlangsamt liegen sie im hörbaren Zeitraster
+  const U = 192000, us = new Float32Array(U / 4); for (const p of [1000, 9000, 20000, 33000]) for (let i = 0; i < 40; i++) us[p + i] = Math.sin(i * 2.4) * (1 - i / 40);
+  const pf = flaechenSpurRechnen({ ...q, stimme: "pflanzen", werte: { weg: "aufnahme", verlangsamen: 16 } }, R, { sample: { kanaele: [us], rate: U } }).kanaele[0];
+  assert.ok(pf.some((x) => Math.abs(x) > 0.05), "Impulse regen die Resonatoren an");
 });

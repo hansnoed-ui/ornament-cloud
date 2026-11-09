@@ -10,9 +10,11 @@ import { messen, TERZEN } from "./kern/messen.js";
 import { zipBlob } from "./kern/zip.js";
 import { STILE, stilVon } from "./kern/muster.js";
 import { ARTEN as UNTER, SCHNELL, anwenden, werteVon } from "./kern/unterbrechungen.js";
-import { spurRechnen, schlagRechnen } from "./kern/erzeugen.js";
+import { spurRechnen, schlagRechnen, flaechenSpurRechnen } from "./kern/erzeugen.js";
+import { MAKROS } from "./erzeuger/natur-0.1.0.js";
+import { taktLesen } from "./kern/muster.js";
 import { stimmeVon, ERZEUGER } from "./erzeuger/register.js";
-import { LINIEN, LEITERN, NOTEN, linieErzeugen, kickSchritte, grundFrequenz } from "./kern/linien.js";
+import { LINIEN, LEITERN, NOTEN, linieErzeugen, kickSchritte, grundFrequenz, tonLesen } from "./kern/linien.js";
 import { wavSpuren, abtastrateLesen, mono, tempoSchaetzen, einsaetzeFinden, wavSchreiben, rateWandeln } from "../lab/kern/klangwerk.js";
 
 const $ = (id) => document.getElementById(id);
@@ -28,6 +30,7 @@ const z = {
   gewaehlt: null, glied: 0,  // gewählte Spur (id oder "summe") und Glied der Kette
   laeuft: false, pos: 0, schleifeAn: false, schleife: null, allesVorher: false, referenzAn: false, ausgleich: true,
   anzeige: null, messungen: null,
+  samples: new Map(),        // sha256 → { name, kanaele, rate } (eigene Aufnahmen für Flächen)
 };
 
 // ---------- Meldungen ----------
@@ -272,6 +275,7 @@ function stileAufbauen() {
   $("bassStimme").append(...Object.values(bass).map((b) => el("option", { value: b.key, textContent: b.name })));
   $("bassLinie").append(...LINIEN.map((l) => el("option", { value: l.key, textContent: l.name, title: l.hilfe })));
   $("tonart").append(...NOTEN.map((n, i) => el("option", { value: i, textContent: n, selected: i === 2 })));
+  $("flaecheStimme").append(...Object.values(ERZEUGER["natur@0.1.0"].stimmen).map((b) => el("option", { value: b.key, textContent: b.name })));
   $("leiter").append(...Object.entries(LEITERN).map(([k, l]) => el("option", { value: k, textContent: l.name })));
   sel.onchange = () => {
     const st = stilVon(sel.value); $("erzBpm").value = st.bpm;
@@ -292,8 +296,8 @@ function kickVorlage() {
 
 /** den Bass erzeugen (ersetzt einen vorhandenen erzeugten Bass) */
 function bassErzeugen({ anzahl, bpm, seed, stil }) {
-  for (const sp of z.projekt.spuren.filter((s) => s.quelle?.leiter)) { post({ art: "weg", id: sp.id }); z.daten.delete(sp.id); }
-  z.projekt.spuren = z.projekt.spuren.filter((s) => !s.quelle?.leiter);
+  for (const sp of z.projekt.spuren.filter((s) => s.quelle?.leiter && !s.quelle.flaeche)) { post({ art: "weg", id: sp.id }); z.daten.delete(sp.id); }
+  z.projekt.spuren = z.projekt.spuren.filter((s) => !s.quelle?.leiter || s.quelle.flaeche);
   const st = stimmeVon("bass@0.1.0", $("bassStimme").value), vorgabe = stil?.bass?.stimme === st.key ? stil.bass : null;
   const v = st.varianten.find((x) => x.name === vorgabe?.variante) ?? st.varianten[0], linie = $("bassLinie").value, leiter = $("leiter").value;
   const quelle = { art: "erzeugt", erzeuger: "bass@0.1.0", stimme: st.key, variante: v.name, werte: { ...v.werte }, linie, leiter, grundton: Number($("tonart").value),
@@ -304,8 +308,72 @@ function bassErzeugen({ anzahl, bpm, seed, stil }) {
 }
 
 /** eine erzeugte Spur rechnen und dem Motor geben (die Kette mit ihrem Zustand bleibt) */
+// Flächen rechnet ein Worker: die Oberfläche bleibt bedienbar. Ein späteres Ergebnis ersetzt ein früheres nicht (Stand je Spur).
+let rechner = null, auftragNr = 0;
+const offen = new Map(), stand = new Map();
+function imWorker(q, bezug) {
+  rechner ??= Object.assign(new Worker(new URL("./worker/rechnen-worker.js", import.meta.url), { type: "module" }), { onmessage: ({ data }) => { const o = offen.get(data.id); offen.delete(data.id); if (o) data.fehler ? o.nein(new Error(data.fehler)) : o.ja(data.kanaele); } });
+  const id = ++auftragNr, b = { ...bezug };
+  if (b.sample) b.sample = { kanaele: b.sample.kanaele.map((k) => k.slice()), rate: b.sample.rate };
+  return new Promise((ja, nein) => { offen.set(id, { ja, nein }); rechner.postMessage({ id, q: JSON.parse(JSON.stringify(q)), bezug: b, rate: z.rate }); });
+}
 function spurNeuRechnen(sp) {
+  if (sp.quelle.flaeche) {
+    // je Spur höchstens ein Auftrag unterwegs; Änderungen während der Rechnung werden danach in einem Durchgang nachgeholt
+    const st = stand.get(sp.id) ?? { laeuft: null, nochmal: false };
+    stand.set(sp.id, st);
+    if (st.laeuft) { st.nochmal = true; return st.laeuft; }
+    zeigeRechnen(sp.id, true);
+    st.laeuft = imWorker(sp.quelle, bezugFuer(sp)).then((k) => { if (z.projekt.spuren.includes(sp)) { spurSenden(sp, k); zeichnen(); } })
+      .catch((e) => melde(`${sp.name}: ${e.message}`, 8000))
+      .finally(() => { st.laeuft = null; if (st.nochmal) { st.nochmal = false; spurNeuRechnen(sp); } else zeigeRechnen(sp.id, false); });
+    return st.laeuft;
+  }
   spurSenden(sp, spurRechnen(sp.quelle, z.rate).kanaele);
+  // Flächen, die dieser Spur folgen (Akkorde, Einsätze, Hüllkurve), mitrechnen
+  if (!sp.quelle.flaeche) for (const f of z.projekt.spuren.filter((x) => x.quelle?.flaeche)) if (z.daten.has(f.id)) spurBald(f);
+}
+
+/**
+ * Bezug einer Flächenspur zu den anderen Spuren: Tonart und Akkorde vom Bass (erster Ton jedes Takts), Einsätze von Kick und Snare,
+ * die Hüllkurve des Basses (100 Werte je Sekunde), dazu eine eigene Aufnahme oder Messdaten.
+ */
+function bezugFuer(sp) {
+  const q = sp.quelle, takt = (60 / q.bpm) * 4, bass = z.projekt.spuren.find((x) => x.quelle?.leiter && !x.quelle.flaeche);
+  const b = {};
+  if (bass) {
+    q.grundton = bass.quelle.grundton; q.leiter = bass.quelle.leiter;
+    b.akkorde = [];
+    for (let t = 0; t < q.anzahl; t++) { const z0 = String(bass.quelle.takte[t % bass.quelle.takte.length]).trim().split(/\s+/).map(tonLesen).find((x) => x && x !== "-"); b.akkorde.push({ beginn: t * takt, stufe: z0 ? ((z0.stufe - 1 + 70) % 7) + 1 : 1 }); }
+    const roh = z.daten.get(bass.id)?.roh;
+    if (roh) { const h = Math.round(z.rate / 100), m = Math.floor(roh[0].length / h), e = new Float32Array(m); for (let j = 0; j < m; j++) { let s2 = 0; for (let i = j * h; i < (j + 1) * h; i += 4) s2 += roh[0][i] * roh[0][i]; e[j] = Math.sqrt(s2 / (h / 4)); } b.huelle = e; }
+  }
+  const drums = z.projekt.spuren.filter((x) => x.quelle && !x.quelle.leiter && !x.quelle.flaeche && ["kick", "snare", "clap", "rahmen", "darbuka", "tabla", "zarb"].includes(x.quelle.stimme));
+  if (drums.length) {
+    b.einsaetze = [];
+    for (const d of drums) for (let t = 0; t < q.anzahl; t++) for (const s2 of taktLesen(d.quelle.takte[t % d.quelle.takte.length])) b.einsaetze.push(t * takt + s2.stelle * takt);
+    b.einsaetze.sort((x, y) => x - y);
+  }
+  if (q.sample) { const a = z.samples.get(q.sample.sha256); if (a) b.sample = a; }
+  if (q.messdaten?.length) b.daten = q.messdaten;
+  return b;
+}
+
+function zeigeRechnen(id, an) { const c = document.querySelector(`canvas.welle[data-id="${id}"]`); c?.closest(".spur")?.classList.toggle("rechnet", an); }
+
+/** eine Flächenspur dazu */
+async function flaecheDazu() {
+  await kontext(48000);
+  const st = stimmeVon("natur@0.1.0", $("flaecheStimme").value), v = st.varianten[0];
+  const drums = z.projekt.spuren.find((x) => x.quelle && !x.quelle.flaeche);
+  const anzahl = drums?.quelle.anzahl ?? Number($("takte").value), bpm = z.projekt.tempo.bpm || Number($("erzBpm").value);
+  const quelle = { art: "erzeugt", erzeuger: "natur@0.1.0", stimme: st.key, variante: v.name, werte: { ...v.werte }, flaeche: true, anzahl, bpm, grundton: Number($("tonart").value), leiter: $("leiter").value, seed: 1 + Math.floor(Math.random() * 99998), sample: null, messdaten: null };
+  const sp = PR.erzeugteSpurDazu(z.projekt, quelle, { name: st.name, typ: "flaeche", pegel: st.pegel, pan: 0, raum: { anteil: 30, nachhall: 3.6, daempfung: 4500, vorverz: 25, groesse: 1.6, tiefschnitt: 200, bewegung: 40 } });
+  melde(`${st.name} wird gerechnet …`, 0);
+  await spurNeuRechnen(sp);
+  if (!z.schleife) { const L = (anzahl * 240) / bpm; z.schleife = { a: 0, b: L }; z.schleifeAn = true; schleifeSenden(); }
+  z.gewaehlt = sp.id; z.glied = -1; senden(); allesAufbauen();
+  melde(`${st.name}: ${sp.quelle.sample ? "Aufnahme" : "synthetische Quelle"}, ${NOTEN[sp.quelle.grundton]} ${LEITERN[sp.quelle.leiter].name}`, 4000);
 }
 
 /**
@@ -333,8 +401,8 @@ async function erzeugen() {
   const stil = stilVon($("stil").value), bpm = Number($("erzBpm").value) || stil.bpm, anzahl = Number($("takte").value), seed = Math.max(1, Math.round(Number($("seed").value) || 1));
   await kontext(48000);
   if (z.laeuft) await spielen();
-  if ($("ersetzen").checked) for (const sp of z.projekt.spuren.filter((s) => s.quelle)) { post({ art: "weg", id: sp.id }); z.daten.delete(sp.id); }
-  if ($("ersetzen").checked) z.projekt.spuren = z.projekt.spuren.filter((s) => !s.quelle);
+  if ($("ersetzen").checked) for (const sp of z.projekt.spuren.filter((s) => s.quelle && !s.quelle.flaeche)) { post({ art: "weg", id: sp.id }); z.daten.delete(sp.id); }
+  if ($("ersetzen").checked) z.projekt.spuren = z.projekt.spuren.filter((s) => !s.quelle || s.quelle.flaeche);
   z.projekt.tempo = { ...z.projekt.tempo, bpm, quelle: "stil", beginn: 0, aus: stil.name };
   melde(`erzeuge ${stil.name} …`, 0); await atmen();
   let erste = null;
@@ -347,6 +415,7 @@ async function erzeugen() {
     await atmen();
   }
   if ($("mitBass").checked) bassErzeugen({ anzahl, bpm, seed, stil });
+  for (const f of z.projekt.spuren.filter((x) => x.quelle?.flaeche)) { f.quelle.anzahl = anzahl; f.quelle.bpm = bpm; spurNeuRechnen(f); }
   const L = (anzahl * 240) / bpm;
   z.schleife = { a: 0, b: L }; z.schleifeAn = true; z.projekt.schleife = { a: 0, b: L }; schleifeSenden();
   z.gewaehlt = erste.id; z.glied = -1; z.pos = 0; post({ art: "stelle", pos: 0 });
@@ -365,6 +434,7 @@ function stimmVariante(sp, i) {
 async function schlagHoeren(sp, art) {
   await kontext(48000); await z.ctx.resume();
   const st = stimmeVon(sp.quelle.erzeuger, sp.quelle.stimme), q = sp.quelle;
+  if (q.flaeche) { const d = z.daten.get(sp.id); if (!d) return; const n = Math.min(d.roh[0].length, z.rate * 6); const b = z.ctx.createBuffer(2, n, z.rate); b.copyToChannel(d.roh[0].subarray(0, n), 0); b.copyToChannel(d.roh[1].subarray(0, n), 1); const qk = z.ctx.createBufferSource(), g = z.ctx.createGain(); g.gain.value = 0.7; qk.buffer = b; qk.connect(g).connect(z.ctx.destination); qk.start(); return; }
   const [L, R] = q.leiter ? st.rechne({ ...Object.fromEntries(st.parameter.map((p) => [p.key, p.std])), ...q.werte }, z.rate, { frequenz: grundFrequenz(q.grundton) * 2 ** ((q.werte.oktave ?? 0) + (art ?? 0) / 12), dauer: 0.9, staerke: 0.85, seed: 3 })
     : schlagRechnen(q, art ?? st.artikulationen[0].key, z.rate);
   const b = z.ctx.createBuffer(2, L.length, z.rate); b.copyToChannel(L, 0); b.copyToChannel(R, 1);
@@ -376,7 +446,8 @@ function klangAufbauen(box, sp, wahl) {
   box.append(el("div", { className: "plugin-kopf" }, el("h2", { textContent: `${sp.name}: ${e.name} ${e.version}` }), wahl,
     el("span", { className: "leise-text", textContent: `Eigene Synthese, Startwert ${q.seed}. Jede Änderung rechnet die Spur neu; jeder Schlag und jeder Ton ist auf dieselbe Spitze gebracht, damit Klangfarbe nicht als Lautstärke gehört wird.` })));
   // einzelne Schläge anhören
-  if (q.leiter) box.append(bassSteuerung(sp));
+  if (q.flaeche) box.append(flaechenSteuerung(sp));
+  else if (q.leiter) box.append(bassSteuerung(sp));
   else box.append(el("div", { className: "klang-zeile" }, el("span", { className: "leise-text", textContent: "anhören (A):" }),
     ...st.artikulationen.map((a) => { const b = el("button", { className: "mini", textContent: a.name, title: "ein Schlag, ohne Kanalzug und Raum" }); b.onclick = () => schlagHoeren(sp, a.key); return b; })));
   // Varianten der Stimme
@@ -391,7 +462,13 @@ function klangAufbauen(box, sp, wahl) {
   const markiere = () => document.querySelectorAll(".variante-k").forEach((b) => b.setAttribute("aria-pressed", "false"));
   for (const [g, ps] of gruppen) {
     const kasten = el("div", { className: "gruppe" }, el("h3", {}, el("span", { textContent: g })));
-    for (const p of ps) kasten.append(paramRegler(p, q.werte[p.key] ?? p.std, (v) => { q.werte[p.key] = v; q.variante = null; markiere(); spurBald(sp); }));
+    for (const p of ps) {
+      if (p.wahl) {
+        const w0 = q.werte[p.key] ?? p.std, sel = el("select", {}, ...p.wahl.map((o) => el("option", { value: String(o.wert), textContent: o.name, selected: String(o.wert) === String(w0) })));
+        sel.onchange = () => { q.werte[p.key] = p.wahl.find((o) => String(o.wert) === sel.value).wert; q.variante = null; markiere(); spurBald(sp); };
+        kasten.append(el("label", { className: "param" }, el("span", { textContent: p.name }), el("output"), sel));
+      } else kasten.append(paramRegler(p, q.werte[p.key] ?? p.std, (v) => { q.werte[p.key] = v; q.variante = null; markiere(); spurBald(sp); }));
+    }
     raster.append(kasten);
   }
   // Groove
@@ -399,8 +476,9 @@ function klangAufbauen(box, sp, wahl) {
   const G = (key, name, min, max, std, einheit, hilfe) => ({ key, name, min, max, std, einheit, hilfe, schritt: key === "swing" ? 0.01 : 0.5 });
   for (const p of [G("swing", "Swing", 0, 0.5, 0, "", "jeder zweite Schlag nach hinten"), G("menschlich", "Menschlich", 0, 20, 2, "ms", "kleine Abweichungen im Timing"), G("versatz", "hinter dem Schlag", -20, 40, 0, "ms", "die ganze Spur später: laid back")])
     groove.append(paramRegler(p, q[p.key] ?? p.std, (v) => { q[p.key] = v; spurBald(sp); }));
-  raster.append(groove);
+  if (!q.flaeche) raster.append(groove);
   box.append(raster);
+  if (q.flaeche) return;   // Flächen haben kein Muster: sie laufen durch
   // Muster
   const arten = (st.artikulationen ?? []).map((a) => a.key).join(", ");
   const ta = el("textarea", { className: "muster", rows: Math.min(8, q.takte.length + (q.fill ? 1 : 0) + 1), spellcheck: false, value: [...q.takte, ...(q.fill ? [`fill: ${q.fill}`] : [])].join("\n") });
@@ -414,6 +492,53 @@ function klangAufbauen(box, sp, wahl) {
     el("p", { className: "hinweis", textContent: q.leiter
       ? "16 Zeichen = Sechzehntel, 8 = Achtel, 4 = Viertel. 1–7 Stufe der Tonleiter, b3 #4 mit Vorzeichen, 1' 1, Oktave höher, tiefer, «-» Ton hält, «.» Pause, «~» gleiten, «!» betont, «_» leise."
       : `16 Zeichen = Sechzehntel, 8 = Achtel, 12 = Triolen. «.» Pause, x o g (laut, mittel, Geisternote), oder Artikulationen: ${arten}. «!» betont, «_» leise.` })));
+}
+
+/** Herkunft (synthetisch oder Aufnahme), Import, Lizenzangaben, Messdaten, Installation für eine Flächenspur */
+function flaechenSteuerung(sp) {
+  const q = sp.quelle, st = stimmeVon(q.erzeuger, q.stimme), box = el("div", { className: "herkunft" });
+  const hat = q.sample && z.samples.has(q.sample.sha256);
+  const status = q.sample ? (hat ? `Aufnahme: ${q.sample.name}` : `Aufnahme fehlt: ${q.sample.name} (bis zum Neuladen synthetische Quelle)`) : "Quelle: synthetisches Modell (keine Aufnahme)";
+  box.append(el("p", { className: "hinweis" + (q.sample && !hat ? " warn" : ""), textContent: status }));
+  const datei = el("input", { type: "file", accept: "audio/*,.wav,.flac,.mp3,.ogg", hidden: true });
+  datei.onchange = async () => {
+    const f = datei.files[0]; if (!f) return;
+    melde(`lade ${f.name} …`, 0);
+    const bytes = new Uint8Array(await f.arrayBuffer()), sha = await sha256(bytes);
+    let k, rate;
+    try { const w = wavSpuren(bytes); k = w.spuren; rate = w.rate; } catch { const b = await z.ctx.decodeAudioData(bytes.buffer.slice(0)); k = Array.from({ length: Math.min(2, b.numberOfChannels) }, (_, c) => b.getChannelData(c).slice()); rate = b.sampleRate; }
+    z.samples.set(sha, { name: f.name, kanaele: k, rate });
+    q.sample = { name: f.name, sha256: sha, bytes: bytes.length, rate, dauer: Math.round((k[0].length / rate) * 100) / 100, herkunft: "aufnahme", lizenz: q.sample?.sha256 === sha ? q.sample.lizenz : "Lizenz nicht angegeben", urheber: "", url: "", nichtKommerziell: false };
+    spurNeuRechnen(sp); pluginAufbauen(); zeichnen();
+    melde(`${f.name}: ${rate} Hz, ${q.sample.dauer} s${rate > 96000 ? " (hohe Abtastrate: für Ultraschall «Verlangsamen» nutzen)" : ""}`, 6000);
+  };
+  const laden = el("button", { className: "mini", textContent: q.sample ? "andere Aufnahme" : "eigene Aufnahme laden" }); laden.onclick = () => datei.click();
+  const zurueck = el("button", { className: "mini", textContent: "synthetisch", title: "zurück zur synthetischen Quelle" }); zurueck.onclick = () => { q.sample = null; spurNeuRechnen(sp); pluginAufbauen(); };
+  const zeile = el("div", { className: "klang-zeile" }, laden, q.sample ? zurueck : "", datei);
+  if (st.key === "pflanzen") {
+    const csv = el("input", { type: "file", accept: ".csv,.txt", hidden: true });
+    csv.onchange = async () => { const t = await csv.files[0].text(); const zahlen = t.split(/[\s,;]+/).map(Number).filter(Number.isFinite); if (zahlen.length < 2) { melde("keine Zahlen gefunden"); return; } q.messdaten = zahlen.slice(0, 4000); q.werte.weg = "daten"; spurNeuRechnen(sp); pluginAufbauen(); melde(`${zahlen.length} Messwerte`, 3000); };
+    const mb = el("button", { className: "mini", textContent: q.messdaten ? `Messdaten (${q.messdaten.length})` : "Messdaten laden (CSV)" }); mb.onclick = () => csv.click();
+    zeile.append(mb, csv);
+  }
+  const inst = el("select", { title: "eine lange Fassung nur dieser Spur als WAV, als Schleife ohne Naht (Installation, Museum)" }, ...[[0, "Installation …"], [1, "1 Minute"], [3, "3 Minuten"], [10, "10 Minuten"]].map(([v, t]) => el("option", { value: v, textContent: t })));
+  inst.onchange = async () => {
+    const min = Number(inst.value); inst.value = 0; if (!min) return;
+    melde(`rechne ${min} Minuten …`, 0); await atmen();
+    const k = flaechenSpurRechnen({ ...q, dauer: min * 60 }, z.rate, bezugFuer(sp)).kanaele;
+    herunterladen(new Blob([wavSchreiben(k, z.rate, { bits: "24" })], { type: "audio/wav" }), `${dateiname(sp.name)}-${min}min-schleife.wav`);
+    melde(`${sp.name}: ${min} Minuten als Schleife ohne Naht gespeichert`, 4000);
+  };
+  zeile.append(inst);
+  box.append(zeile);
+  if (q.sample) {
+    const feld = (key, name, breite) => { const i = el("input", { type: "text", value: q.sample[key] ?? "", placeholder: name, style: `width:${breite}ch` }); i.onchange = () => { q.sample[key] = i.value.trim(); }; return i; };
+    const nc = el("input", { type: "checkbox", checked: !!q.sample.nichtKommerziell }); nc.onchange = () => { q.sample.nichtKommerziell = nc.checked; };
+    box.append(el("div", { className: "klang-zeile lizenz" }, el("span", { className: "leise-text", textContent: "Lizenz" }), feld("lizenz", "z. B. CC0, CC BY 4.0", 16), feld("urheber", "Urheber", 16), feld("url", "Quelle (URL)", 28), el("label", { className: "feld klein" }, nc, " nicht kommerziell (NC)")));
+  }
+  const makro = MAKROS[st.key];
+  if (makro) box.append(el("details", {}, el("summary", { className: "leise-text", textContent: "Was die Makros hier tun" }), el("ul", { className: "hinweis" }, ...Object.entries(makro).map(([k, t]) => el("li", { textContent: `${k}: ${t}` })))));
+  return box;
 }
 
 /** Tonart, Leiter, Linie und Anhören für eine Bassspur */
@@ -623,11 +748,13 @@ function anzeigen() {
 }
 
 // ---------- Messen und Export ----------
+async function bisFertig() { while (offen.size || [...stand.values()].some((x) => x.laeuft)) await new Promise((r) => setTimeout(r, 100)); }
 function renderAuftrag(extra = {}) {
   const spuren = z.projekt.spuren.filter((s) => z.daten.has(s.id)).map((s) => ({ id: s.id, kanaele: z.daten.get(s.id).kanaele }));
   return { rate: z.rate, plugins: PLUGINS, spuren, zustand: { ...PR.motorZustand(z.projekt), ...extra }, melden: async (a) => { melde(`rechne … ${Math.round(a * 100)} %`, 0); await atmen(); } };
 }
 async function mischungMessen() {
+  await bisFertig();
   const nach = await rendern({ ...renderAuftrag(), stems: false });
   melde("messe …", 0); await atmen();
   const mNach = messen(nach.summe, z.rate);
@@ -690,6 +817,9 @@ const dateiname = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, ""
 function herunterladen(blob, name) { const a = el("a", { href: URL.createObjectURL(blob), download: name }); document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000); }
 
 async function exportieren() {
+  await bisFertig();
+  const nc = z.projekt.spuren.filter((s) => s.quelle?.sample?.nichtKommerziell);
+  if (nc.length) melde(`Achtung: ${nc.map((s) => s.name).join(", ")} enthält Material mit nicht kommerzieller Lizenz (NC). Für Reels und Aufträge nicht verwenden.`, 9000);
   const r = await rendern({ ...renderAuftrag(), stems: true });
   melde("messe und schreibe WAV …", 0); await atmen();
   const name = dateiname(z.projekt.titel), m = messen(r.summe, z.rate), dateien = [{ name: `${name}-summe.wav`, bytes: wavSchreiben(r.summe, z.rate, { bits: "24" }) }];
@@ -775,6 +905,7 @@ addEventListener("dragover", (e) => e.preventDefault());
 addEventListener("drop", (e) => { e.preventDefault(); if (e.dataTransfer?.files?.length) dateienLaden(e.dataTransfer.files); });
 
 $("erzeugen").onclick = () => erzeugen().catch((e) => melde(`Erzeugen: ${e.message}`, 8000));
+$("flaecheDazu").onclick = () => flaecheDazu().catch((e) => melde(`Fläche: ${e.message}`, 8000));
 $("bassDazu").onclick = async () => {
   try {
     await kontext(48000);
