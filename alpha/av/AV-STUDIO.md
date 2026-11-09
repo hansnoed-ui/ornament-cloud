@@ -53,6 +53,10 @@ Fehlend: Zeitleiste mit Szenen und Automationskurven, Masken, Tiefe, Optical Flo
 - Fehler gefunden und behoben: Der Hash für die Auswahl hatte schwache untere Bits; dadurch war das Material immer dasselbe.
 - Probefilme 3 und 4 (DnB 60 s, ECM 93 s, je vier Materialien, 1920 × 1080) in 46 s und 74 s gerechnet, ohne Fehler; Kontaktbögen angesehen.
 
+## Stand nach dem Merge (9. November 2026)
+
+Gemergt mit Christians OK (PR #688). Sein Urteil: «Was die Videos und die Filter anbelangt, müssen wir noch einiges nachkorrigieren bzw. dazusetzen, aber wir sind schon ganz gut unterwegs.»
+
 ## Offen und bekannt
 
 - **AAC höchstens 192 kbit/s im Browser:** Chromium kodiert nicht mit 320 kbit/s. Für 320 kbit/s den Ton nachträglich ersetzen: `ffmpeg -i film.mp4 -i summe.wav -map 0:v -map 1:a -c:v copy -c:a aac -b:a 320k film-320.mp4`. Später kann das ein lokaler Renderschritt übernehmen.
