@@ -48,7 +48,7 @@ function aufbauen(stil, anzahl, { seed = 1, synths = null, natur, arrangement = 
   for (const [s2, stimme] of arrangement ? besetzung.mix ?? [] : []) {   // Stilmix: Perkussion aus einem zweiten Stil
     const s0 = stilVon(s2), s = s0.spuren.find((x) => x.stimme === stimme), st = stimmeVon(s.erzeuger, s.stimme), v = st.varianten.find((x) => x.name === s.variante) ?? st.varianten[0];
     const q = { art: "erzeugt", erzeuger: s.erzeuger, stimme: s.stimme, werte: { ...v.werte }, takte: stil.bpm >= 130 && stil.bpm > s0.bpm * 1.25 ? halbeZeit(s.takte) : s.takte, fill: s.fill ?? null, anzahl, bpm: stil.bpm, swing: stil.swing, menschlich: s.menschlich ?? s0.menschlich, versatz: s.versatz ?? 0, seed: seed * 100 + 40, mix: true };
-    spuren.push({ sp: PR.erzeugteSpurDazu(p, q, { name: st.name, typ: st.rolle, pegel: (s.pegel ?? st.pegel) - 5, pan: -(st.pan || 0.2), raum: s0.raum ?? { anteil: 18, nachhall: 1.6 } }), k: spurRechnen(q, RATE).kanaele });
+    spuren.push({ sp: PR.erzeugteSpurDazu(p, q, { name: `${st.name} (Mix)`, typ: st.rolle, pegel: (s.pegel ?? st.pegel) - 5, pan: -(st.pan || 0.2), raum: s0.raum ?? { anteil: 18, nachhall: 1.6 } }), k: spurRechnen(q, RATE).kanaele });
   }
   const b = stil.bass, bst = stimmeVon("bass@0.1.0", b.stimme), bv = bst.varianten.find((x) => x.name === b.variante) ?? bst.varianten[0];
   const vorlage = stil.spuren.find((x) => x.stimme === "kick") ?? stil.spuren[0];
@@ -77,12 +77,26 @@ function aufbauen(stil, anzahl, { seed = 1, synths = null, natur, arrangement = 
   return { p, spuren: spuren.map((x) => ({ id: x.sp.id, kanaele: x.k })) };
 }
 
+const { zipBlob } = await imp("composer/kern/zip.js");
+const dname = (x) => x.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "composer";
+
 const [modus, ...arg] = process.argv.slice(2);
 if (modus === "track") {
   const stil = stilVon(arg[0]), sek = Number(arg[1] ?? 90), seed = Number(arg[3] ?? 1), { takte, abschnitte } = abschnitteVon(sek, stil.bpm, { seed });
   const { p, spuren } = aufbauen(stil, takte, { seed, arrangement: abschnitte });
   speichern(arg[2], await mischen(p, spuren));
   console.log(abschnitte.map((a) => `${a.name} ${(a.von * 240 / stil.bpm).toFixed(1)} s`).join(" · "));
+} else if (modus === "export") {   // wie «Exportieren» im Composer: ZIP mit Summe, Stems und Projekt (für das AV Studio)
+  const stil = stilVon(arg[0]), sek = Number(arg[1] ?? 90), seed = Number(arg[3] ?? 1), { takte, abschnitte } = abschnitteVon(sek, stil.bpm, { seed });
+  const { p, spuren } = aufbauen(stil, takte, { seed, arrangement: abschnitte });
+  await mischen(p, spuren);
+  const r = await rendern({ rate: RATE, plugins: PLUGINS, spuren, zustand: PR.motorZustand(p), stems: true });
+  Object.assign(p, { titel: `${stil.name} ${sek} s`, abschnitte, tempo: { ...p.tempo, bpm: stil.bpm, beginn: 0, quelle: "stil" } });
+  const name = dname(p.titel), dateien = [{ name: `${name}-summe.wav`, bytes: wavSchreiben(r.summe, RATE, { bits: "24" }) }];
+  for (const sp of p.spuren) { const k = r.stems.get(sp.id); if (k) dateien.push({ name: `stems/${dname(sp.name)}.wav`, bytes: wavSchreiben(k, RATE, { bits: "24" }) }); }
+  dateien.push({ name: `${name}.composer.json`, bytes: new TextEncoder().encode(JSON.stringify(p, null, 1)) });
+  writeFileSync(arg[2], new Uint8Array(await (await zipBlob(dateien)).arrayBuffer()));
+  const m = messen(r.summe, RATE); console.log(`${arg[2]}: ${m.dauer} s, ${m.lufs} LUFS, ${p.spuren.length} Stems, ${abschnitte.map((a) => a.name).join(" · ")}`);
 } else if (modus === "synth") {
   const ziel = arg[0]; mkdirSync(ziel, { recursive: true });
   const bpm = 90, takt = 240 / bpm, VERGLEICH = ["1+3+5 - - -", "6,+1+3 - - -", "4,+6,+1 - - -", "5,+7,+2 - - -"];   // dieselbe Folge für alle Presets (Viertel)
