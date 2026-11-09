@@ -888,7 +888,7 @@ function knoepfeAuffrischen() {
   const hat = z.daten.size > 0;
   $("spielen").disabled = !hat; $("spielen").textContent = z.laeuft ? "■" : "▶";
   for (const id of ["projektSpeichern"]) $(id).disabled = !z.projekt.spuren.length;
-  for (const id of ["exportieren", "messenKnopf", "zielKnopf"]) $(id).disabled = !hat;
+  for (const id of ["exportieren", "trackLaden", "messenKnopf", "zielKnopf"]) $(id).disabled = !hat;
   $("schleifeAn").setAttribute("aria-pressed", String(z.schleifeAn)); $("allesVorher").setAttribute("aria-pressed", String(z.allesVorher));
   $("referenzAn").setAttribute("aria-pressed", String(z.referenzAn));
 }
@@ -1038,6 +1038,17 @@ $("referenzDatei").onchange = (e) => { if (e.target.files[0]) referenzLaden(e.ta
 $("projektDatei").onchange = (e) => { if (e.target.files[0]) projektOeffnen(e.target.files[0]); e.target.value = ""; };
 $("projektSpeichern").onclick = projektSpeichern;
 $("exportieren").onclick = () => exportieren().catch((e) => melde(`Export: ${e.message}`, 8000));
+/** nur der fertige Track: die Summe als WAV 24 Bit (dieselbe Rechnung wie «Exportieren», ohne Einzelspuren) */
+$("trackLaden").onclick = async () => {
+  try {
+    await bisFertig();
+    const r = await rendern({ ...renderAuftrag(), stems: false });
+    melde("schreibe WAV …", 0); await atmen();
+    const m = messen(r.summe, z.rate);
+    herunterladen(new Blob([wavSchreiben(r.summe, z.rate, { bits: "24" })], { type: "audio/wav" }), `${dateiname(z.projekt.titel)}.wav`);
+    melde(`Track: ${Math.round(m.dauer)} s, ${zahl(m.lufs)} LUFS, ${zahl(m.tp)} dBTP, 24 Bit, ${zahl(z.rate / 1000, 1)} kHz`, 8000);
+  } catch (e) { melde(`Track: ${e.message}`, 8000); }
+};
 $("messenKnopf").onclick = () => mischungMessen().catch((e) => melde(`Messen: ${e.message}`, 8000));
 $("zielKnopf").onclick = () => aufZielBringen().catch((e) => melde(`Ziel: ${e.message}`, 8000));
 $("ausgabeZiel").onchange = () => { z.projekt.ausgabe = { ziel: $("ausgabeZiel").value, ...ZIELE[$("ausgabeZiel").value], bits: "24" }; messTabelle(); };
