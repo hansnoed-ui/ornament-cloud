@@ -62,6 +62,22 @@
       <select id="leiter" aria-label="Tonleiter"></select>
       <button class="knopf klein" id="bassDazu" title="nur den Bass neu erzeugen, aus der Kick der vorhandenen Drums">nur Bass neu</button>
     </div>
+    <div class="bass-zeile track-zeile">
+      <span class="feld"><b>Ganzer Track</b></span>
+      <label class="feld">Dauer <select id="trackDauer"><option value="60">1 Minute</option><option value="90" selected>90 Sekunden</option><option value="120">2 Minuten</option><option value="180">3 Minuten</option></select></label>
+      <label class="feld klein"><input type="checkbox" id="trackZiel" checked> etwa −14 LUFS</label>
+      <button class="knopf voll" id="trackErzeugen" title="Stil oben: Drums, Bass, Synths, Fläche und ein Arrangement mit Übergängen; danach ist alles von Hand änderbar">Track erzeugen</button>
+      <span class="leise-text">Intro → Aufbau → Hauptteil → Breakdown → Hauptteil → Outro, mit Filterfahrten, Stutter, Echo-Würfen und Tape-Stop. Ersetzt alle erzeugten Spuren.</span>
+    </div>
+    <div class="bass-zeile">
+      <span class="feld">Synth</span>
+      <select id="synthFilterRolle" aria-label="nach Rolle filtern"></select>
+      <select id="synthFilterVerfahren" aria-label="nach Verfahren filtern"></select>
+      <select id="synthPreset" aria-label="Synth-Preset"></select>
+      <select id="synthRolle" aria-label="Rolle der Sequenz"></select>
+      <button class="knopf klein" id="synthDazu" title="eine Synthspur dazu; Tonart und Akkorde vom Bass, Rhythmus und Akzente von den Drums">Synth dazu</button>
+      <label class="feld klein" title="Kammerton des Projekts">A = <input type="number" id="kammerton" min="400" max="466" step="1" value="432"> Hz</label>
+    </div>
     <div class="bass-zeile">
       <span class="feld">Fläche, Natur</span>
       <select id="flaecheStimme" aria-label="Fläche oder Naturklang"></select>
