@@ -19,3 +19,8 @@ An einer Spur, alles optional (ältere Projekte laden unverändert):
 - Spuren eines neuen Tracks aus einem Bereich: `herkunft: { projekt, spur, von, bis, quelle, datei }`; am Projekt `herkunft: { projekt, von, bis, bpm, zeit }`.
 
 Reihenfolge der Rechnung je Spur: Quelle (Dehnung beim Laden) → Versatz, Wiederholen, Angleich → Unterbrechungen → Bereiche → Plugin-Kette im Motor. Vorschau und Export rechnen dasselbe.
+
+## Unterbrechungen löschen
+
+- Eine orange Markierung oben in der Welle antippen: Die Spur wird gewählt, der Reiter «Unterbrechungen» öffnet sich, die Karte ist blau umrandet; dort «löschen» oder «an/aus». Ein Band unten in der Welle öffnet ebenso den Bereich im Reiter «Bereiche».
+- «alle einer Art» im Reiter «Unterbrechungen»: z. B. alle Dropouts auf dieser Spur oder auf allen Spuren löschen (mit Rückfrage). «Track erzeugen» legt Unterbrechungen auf jeder Spur einzeln an, darum gibt es das.

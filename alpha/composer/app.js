@@ -783,6 +783,23 @@ function unterAufbauen(box, sp, wahl) {
   box.append(el("div", { className: "klang-zeile" }, el("span", { className: "leise-text", textContent: "dazu:" }),
     ...SCHNELL.map((v) => { const b = el("button", { className: "mini", textContent: v.name, title: UNTER[v.art].hilfe }); b.onclick = () => ereignisDazu(sp, v, alle.checked); return b; }),
     el("label", { className: "feld klein" }, alle, " auf allen Spuren")));
+  // mehrere auf einmal löschen: eine Art auf dieser Spur oder auf allen Spuren
+  const arten = [...new Set(z.projekt.spuren.flatMap((s) => (s.ereignisse ?? []).map((e) => e.art)))].filter((a) => UNTER[a]);
+  if (arten.length) {
+    const zaehlen = (a, alle) => (alle ? z.projekt.spuren : [sp]).reduce((n, s) => n + (s.ereignisse ?? []).filter((e) => e.art === a).length, 0);
+    const artWahl = el("select", { title: "welche Art" }, ...arten.map((a) => el("option", { value: a, textContent: `${UNTER[a].name} (${zaehlen(a, false)} hier, ${zaehlen(a, true)} total)` })));
+    const weg = (alle) => {
+      const a = artWahl.value, n = zaehlen(a, alle);
+      if (!n) { melde(`Keine ${UNTER[a].name} ${alle ? "im Projekt" : "auf dieser Spur"}.`); return; }
+      if (n > 1 && !confirm(`${n} × ${UNTER[a].name} ${alle ? "auf allen Spuren" : "auf dieser Spur"} löschen? Das lässt sich nicht rückgängig machen (Projekt vorher speichern, wenn du zurück willst).`)) return;
+      for (const s of alle ? z.projekt.spuren : [sp]) { const vor = s.ereignisse?.length ?? 0; s.ereignisse = (s.ereignisse ?? []).filter((e) => e.art !== a); if (s.ereignisse.length !== vor) spurSenden(s); }
+      spurenAufbauen(); pluginAufbauen();
+      melde(`${n} × ${UNTER[a].name} gelöscht${alle ? " (alle Spuren)" : ""}.`, 3000);
+    };
+    const hier = el("button", { className: "mini", textContent: "auf dieser Spur löschen" }); hier.onclick = () => weg(false);
+    const ueberall = el("button", { className: "mini", textContent: "auf allen Spuren löschen" }); ueberall.onclick = () => weg(true);
+    box.append(el("div", { className: "klang-zeile" }, el("span", { className: "leise-text", textContent: "alle einer Art:" }), artWahl, hier, ueberall));
+  }
   const liste = el("div", { className: "ereignisse" });
   const sortiert = [...(sp.ereignisse ?? [])].sort((a, b) => a.takt - b.takt);
   if (!sortiert.length) liste.append(el("p", { className: "hinweis", textContent: "Noch keine Unterbrechung auf dieser Spur." }));
@@ -811,7 +828,7 @@ function unterAufbauen(box, sp, wahl) {
         regler.append(el("label", { className: "param" }, el("span", { textContent: p.name }), el("output"), s2));
       } else regler.append(paramRegler(p, w[p.key], (v) => ereignisAendern(sp, e, (x) => { x.werte = { ...x.werte, [p.key]: v }; })));
     }
-    liste.append(el("div", { className: "ereignis" + (e.aus ? " aus" : "") }, kopf, regler));
+    liste.append(el("div", { className: "ereignis" + (e.aus ? " aus" : "") + (z.markiert === e.id ? " markiert" : ""), id: `karte-${e.id}` }, kopf, regler));
   }
   box.append(liste);
 }
@@ -924,7 +941,7 @@ function bereicheAufbauen(box, sp, wahl) {
       inhalt.append(el("label", { className: "feld" }, "Effekt", plug), el("label", { className: "feld klein", title: "Echo- und Hallfahnen klingen über das Ende des Bereichs hinaus (bis 8 s)" }, fahne, " Ausklang"));
       for (const p of def.parameter) regler.append(paramRegler(p, b.effekt.parameter[p.key] ?? p.std, (v) => aendern((x) => { x.effekt.parameter = { ...x.effekt.parameter, [p.key]: v }; })));
     }
-    liste.append(el("div", { className: `ereignis bereich ${b.art}${b.bypass ? " aus" : ""}` }, kopf, inhalt, regler));
+    liste.append(el("div", { className: `ereignis bereich ${b.art}${b.bypass ? " aus" : ""}${z.markiert === b.id ? " markiert" : ""}`, id: `karte-${b.id}` }, kopf, inhalt, regler));
   }
   box.append(liste);
 }
@@ -1156,6 +1173,30 @@ function zeichnen() {
   }
 }
 
+/**
+ * Antippen einer Markierung in der Welle: oben (orange) eine Unterbrechung, unten (Band) ein Bereich. Wählt die Spur, öffnet den Reiter
+ * und zeigt die Karte, auf der sich das Ereignis ändern oder löschen lässt. Gibt true zurück, wenn etwas getroffen wurde.
+ */
+function markierungOeffnen(c, e) {
+  const sp = spurVon(c.dataset.id); if (!sp) return false;
+  const r = c.getBoundingClientRect(), y = e.clientY - r.top, oben = y < 22, unten = y > r.height - 22;
+  if (!oben && !unten) return false;
+  const takt = PR.taktDauer(z.projekt), b0 = z.projekt.tempo.beginn, L = laenge(), toleranz = (6 / r.width) * L;
+  const t = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * L;
+  let treffer = null;
+  if (oben) for (const ev of sp.ereignisse ?? []) {
+    const wdh = ev.alle > 0 ? Math.ceil((L - b0) / takt / ev.alle) : 1;
+    for (let k = 0; k < wdh && !treffer; k++) { const a = b0 + (ev.takt + k * (ev.alle || 0)) * takt, b = a + (ev.schritte / 16) * takt; if (t >= a - toleranz && t <= b + toleranz) treffer = { id: ev.id, glied: -2 }; }
+  }
+  if (unten && !treffer) for (const bb of sp.bereiche ?? []) { const a = b0 + bb.von * takt, b = b0 + bb.bis * takt; if (t >= a - toleranz && t <= b + toleranz) { treffer = { id: bb.id, glied: -3 }; break; } }
+  if (!treffer) return false;
+  z.markiert = treffer.id;
+  if (z.gewaehlt !== sp.id) waehle(sp.id);
+  z.glied = treffer.glied; pluginAufbauen();
+  document.getElementById(`karte-${treffer.id}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+  return true;
+}
+
 function zeigerAuf(c) {
   let start = null;
   const sek = (e) => { const r = c.getBoundingClientRect(); return Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * laenge(); };
@@ -1178,7 +1219,7 @@ function zeigerAuf(c) {
       if (id && z.gewaehlt !== id) waehle(id); else bereichLeisteAuffrischen();
       return;
     }
-    else { const s = sek(e); z.pos = Math.round(s * z.rate); post({ art: "stelle", pos: z.pos }); }
+    else if (!markierungOeffnen(c, e)) { const s = sek(e); z.pos = Math.round(s * z.rate); post({ art: "stelle", pos: z.pos }); }
     start = null;
   };
 }

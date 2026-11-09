@@ -204,3 +204,4 @@ canvas.lineal, canvas.welle { width: 100%; display: block; cursor: crosshair; to
 /* der Spurkopf bleibt in seiner Spalte (auf dem Handy liefen Regler und Knöpfe sonst in die Welle) */
 .kopfzelle { min-width: 0; overflow: hidden; }
 .regler input[type="range"] { min-width: 0; }
+.ereignis.markiert { outline: 2px solid #8fb0ff; outline-offset: 2px; }
