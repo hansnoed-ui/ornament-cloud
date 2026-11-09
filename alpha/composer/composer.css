@@ -173,3 +173,11 @@ canvas.lineal, canvas.welle { width: 100%; display: block; cursor: crosshair; to
 .ereignis-kopf input[type="number"] { width: 6ch; border: 0; border-bottom: 1px solid var(--border); background: none; color: var(--text); padding: 2px; font-variant-numeric: tabular-nums; }
 .ereignis-kopf select, .ereignis select { border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--text); padding: 2px 8px; }
 .ereignis .param select { grid-column: 1 / -1; }
+
+/* Flächen: Herkunft und Lizenz */
+.herkunft { display: grid; gap: 4px; margin-bottom: 12px; }
+.herkunft .hinweis.warn { color: var(--warn); }
+.herkunft details ul { margin: 4px 0 0; padding-left: 1.2em; }
+.lizenz input[type="text"] { border: 0; border-bottom: 1px solid var(--border); background: none; color: var(--text); padding: 3px 2px; max-width: 100%; }
+.param select { grid-column: 1 / -1; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--text); padding: 3px 8px; }
+.spur.rechnet .wellen-feld::after { content: "rechnet …"; position: absolute; right: 10px; top: 8px; font-size: 0.75rem; color: #f0a070; }

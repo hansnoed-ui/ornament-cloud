@@ -11,6 +11,11 @@ Hier steht, was Christian entschieden hat und wie er Klänge beurteilt hat, dami
 - Die Klangquelle ist eigene Synthese in JavaScript, reproduzierbar über Startwerte. Christian liefert Samples und Beispiele je Spur, an denen die Erzeuger gemessen und weiterentwickelt werden. Ganze Samples sollen später auch direkt als Clips in Spuren kommen.
 - Fremder Code: AGPL-Quellen (z. B. aquanode-plugins, VoiceStudio) nur lesen, nicht übernehmen. FL-Studio-Samples nur als Messvorlage.
 
+**Natur und Flächen (dritter Bereich)**
+- Auftrag `organische-klangwelt.md`: Flächen, Naturklänge und Synthesizer als spielbares Instrument; Natur erkennbar oder stufenlos zur Fläche verwandelt.
+- Umgesetzt in Natur 0.1.0: Walchor, Vogelschwarm, Gezeiten, Pflanzentextur und Pad, je sechs Varianten, sieben Makros. Synthetische Quellen sind so bezeichnet, eigene Aufnahmen kommen mit Lizenzfeldern, der Export warnt bei NC-Material. Gerechnet wird im Worker, als Schleife ohne Naht, auch in langer Fassung für Installationen. Tonart, Akkorde, Einsätze und Hüllkurve kommen von Bass und Drums. Ausführlich in `NATUR.md`.
+- Startsammlung: acht NOAA-Walclips (vermutlich gemeinfrei, geringe Qualität) im Materialordner, nicht im Repo.
+
 **Unterbrechungen**
 - Wunsch aus dem Masterprompt: Spuren gezielt aufbrechen (Stutter, Tape-Stop, Gate, Dropouts, Echo-Schwänze, Reverse, Filterfahrten, Glitches), als Einzelereignis oder Muster.
 - Umgesetzt in Unterbrechungen 0.1.0: neun Arten als Ereignisse auf der Zeitleiste (Takt, Länge in Sechzehnteln, einmal oder alle 1/2/4/8 Takte), pro Spur oder auf allen Spuren als Gruppe. Sie wirken vor der Plugin-Kette, der Hall klingt also über ein Dropout weiter. Das Projekt speichert nur die Ereignisse.

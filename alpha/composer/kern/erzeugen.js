@@ -12,6 +12,7 @@ import { notenLesen, grundFrequenz } from "./linien.js";
  * Gibt { kanaele: [L, R], schlaege } zurück.
  */
 export function spurRechnen(q, rate) {
+  if (q.flaeche) return flaechenSpurRechnen(q, rate);
   if (q.grundton !== undefined || q.leiter) return notenSpurRechnen(q, rate);
   const st = stimmeVon(q.erzeuger, q.stimme), werte = { ...Object.fromEntries(st.parameter.map((p) => [p.key, p.std])), ...q.werte };
   const takt = (60 / q.bpm) * 4, anzahl = Math.max(1, q.anzahl ?? 8), n = Math.round(anzahl * takt * rate);
@@ -68,4 +69,17 @@ export function notenSpurRechnen(q, rate) {
     vorher = frequenz;
   });
   return { kanaele: [L, R], schlaege: noten.length };
+}
+
+// ---------- Flächen und Naturklänge ----------
+/**
+ * q: { erzeuger, stimme, werte, anzahl, bpm, grundton, leiter, seed, flaeche: true, dauer? (s, für lange Installationen statt anzahl Takte) }
+ * bezug: { akkorde: [{ beginn, stufe }], einsaetze: [s], huelle: Float32Array (100 je s), sample: { kanaele, rate }, daten: [Zahlen] } – aus
+ * den anderen Spuren und dem Import, vom Aufrufer bestimmt. Die Spur ist eine Schleife ohne Naht.
+ */
+export function flaechenSpurRechnen(q, rate, bezug = q.bezug ?? {}) {
+  const st = stimmeVon(q.erzeuger, q.stimme), werte = { ...Object.fromEntries(st.parameter.map((p) => [p.key, p.std])), ...q.werte };
+  const dauer = q.dauer ?? Math.max(1, q.anzahl ?? 8) * (60 / q.bpm) * 4;
+  const kanaele = st.rechne(werte, rate, { dauer, bpm: q.bpm, seed: q.seed ?? 1, grundton: q.grundton ?? 2, leiter: q.leiter ?? "moll", ...bezug });
+  return { kanaele, schlaege: 0 };
 }
