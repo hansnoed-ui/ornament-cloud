@@ -62,6 +62,8 @@ kbd { font: inherit; font-size: 0.75em; color: var(--muted); border: 1px solid v
 .erzeugen h2 { font-size: 0.9rem; color: var(--muted); font-weight: 500; }
 .erzeugen select, .klang select { border: 1px solid var(--border); border-radius: 999px; background: var(--bg); padding: 3px 8px; }
 .erzeugen #erzeugen { margin-left: auto; }
+.bass-zeile { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding-top: 8px; border-top: 1px dashed var(--border); }
+.bass-zeile select, .klang-zeile select { border: 1px solid var(--border); border-radius: 999px; background: var(--bg); padding: 3px 8px; }
 .klang-zeile { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 4px 0 12px; }
 .klang-zeile .mini { border-color: var(--border); color: var(--text); height: 28px; }
 .muster { width: 100%; font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 0.85rem; border: 1px solid var(--border); border-radius: 8px; background: none; padding: 8px; line-height: 1.5; resize: vertical; }

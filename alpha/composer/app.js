@@ -11,6 +11,7 @@ import { zipBlob } from "./kern/zip.js";
 import { STILE, stilVon } from "./kern/muster.js";
 import { spurRechnen, schlagRechnen } from "./kern/erzeugen.js";
 import { stimmeVon, ERZEUGER } from "./erzeuger/register.js";
+import { LINIEN, LEITERN, NOTEN, linieErzeugen, kickSchritte, grundFrequenz } from "./kern/linien.js";
 import { wavSpuren, abtastrateLesen, mono, tempoSchaetzen, einsaetzeFinden, wavSchreiben, rateWandeln } from "../lab/kern/klangwerk.js";
 
 const $ = (id) => document.getElementById(id);
@@ -265,8 +266,39 @@ function stileAufbauen() {
   const sel = $("stil"), gruppen = {};
   for (const s of STILE) (gruppen[s.gruppe] ??= []).push(s);
   for (const [g, liste] of Object.entries(gruppen)) sel.append(el("optgroup", { label: g === "elektronisch" ? "Drums, elektronisch" : "Perkussion, organisch" }, ...liste.map((s) => el("option", { value: s.key, textContent: `${s.name} · ${s.bpm}` }))));
-  sel.onchange = () => { $("erzBpm").value = stilVon(sel.value).bpm; };
+  const bass = ERZEUGER["bass@0.1.0"].stimmen;
+  $("bassStimme").append(...Object.values(bass).map((b) => el("option", { value: b.key, textContent: b.name })));
+  $("bassLinie").append(...LINIEN.map((l) => el("option", { value: l.key, textContent: l.name, title: l.hilfe })));
+  $("tonart").append(...NOTEN.map((n, i) => el("option", { value: i, textContent: n, selected: i === 2 })));
+  $("leiter").append(...Object.entries(LEITERN).map(([k, l]) => el("option", { value: k, textContent: l.name })));
+  sel.onchange = () => {
+    const st = stilVon(sel.value); $("erzBpm").value = st.bpm;
+    if (st.bass) { $("bassStimme").value = st.bass.stimme; $("bassLinie").value = st.bass.linie; $("leiter").value = st.bass.leiter; }
+  };
   sel.onchange();
+}
+
+/** die Kick (oder sonst die tiefste erzeugte Schlagspur) als Vorlage für den Rhythmus des Basses */
+function kickVorlage() {
+  const sp = z.projekt.spuren.filter((s) => s.quelle && !s.quelle.leiter);
+  const kick = sp.find((s) => s.quelle.stimme === "kick") ?? sp.find((s) => ["rahmen", "darbuka", "zarb", "tabla", "tom"].includes(s.quelle.stimme)) ?? sp[0];
+  if (!kick) return null;
+  // bei Perkussion nur die tiefen Schläge
+  const tief = /^(x|o|dum|doum|tom|ge|ghe|dha|dhin|dhi|bum|tun)[!_]?$/;
+  return kickSchritte(kick.quelle.takte.map((zl) => zl.trim().split(/\s+/).map((t) => (tief.test(t) || (kick.quelle.stimme === "kick" && t !== "." && t !== "-") ? t : ".")).join(" ")));
+}
+
+/** den Bass erzeugen (ersetzt einen vorhandenen erzeugten Bass) */
+function bassErzeugen({ anzahl, bpm, seed, stil }) {
+  for (const sp of z.projekt.spuren.filter((s) => s.quelle?.leiter)) { post({ art: "weg", id: sp.id }); z.daten.delete(sp.id); }
+  z.projekt.spuren = z.projekt.spuren.filter((s) => !s.quelle?.leiter);
+  const st = stimmeVon("bass@0.1.0", $("bassStimme").value), vorgabe = stil?.bass?.stimme === st.key ? stil.bass : null;
+  const v = st.varianten.find((x) => x.name === vorgabe?.variante) ?? st.varianten[0], linie = $("bassLinie").value, leiter = $("leiter").value;
+  const quelle = { art: "erzeugt", erzeuger: "bass@0.1.0", stimme: st.key, variante: v.name, werte: { ...v.werte }, linie, leiter, grundton: Number($("tonart").value),
+    takte: linieErzeugen({ art: linie, leiter, kicks: kickVorlage(), anzahl: Math.min(anzahl, 8), seed }), anzahl, bpm, swing: stil?.swing ?? 0, menschlich: Math.min(4, stil?.menschlich ?? 2), versatz: 0, seed: seed * 100 + 50 };
+  const sp = PR.erzeugteSpurDazu(z.projekt, quelle, { name: `Bass · ${st.name}`, typ: "bass", pegel: st.pegel, pan: 0, bassfett: stil?.bass?.bassfett ?? null });
+  spurNeuRechnen(sp);
+  return sp;
 }
 
 /** eine erzeugte Spur rechnen und dem Motor geben (die Kette mit ihrem Zustand bleibt) */
@@ -300,11 +332,12 @@ async function erzeugen() {
     spurNeuRechnen(sp); erste ??= sp;
     await atmen();
   }
+  if ($("mitBass").checked) bassErzeugen({ anzahl, bpm, seed, stil });
   const L = (anzahl * 240) / bpm;
   z.schleife = { a: 0, b: L }; z.schleifeAn = true; z.projekt.schleife = { a: 0, b: L }; schleifeSenden();
   z.gewaehlt = erste.id; z.glied = -1; z.pos = 0; post({ art: "stelle", pos: 0 });
   senden(); allesAufbauen();
-  melde(`${stil.name}: ${stil.spuren.length} Spuren, ${anzahl} Takte, ${bpm} BPM. Leertaste spielt in der Schleife.`, 5000);
+  melde(`${stil.name}: ${stil.spuren.length + ($("mitBass").checked ? 1 : 0)} Spuren, ${anzahl} Takte, ${bpm} BPM, ${NOTEN[$("tonart").value]} ${LEITERN[$("leiter").value].name}. Leertaste spielt in der Schleife.`, 5000);
 }
 
 function stimmVariante(sp, i) {
@@ -317,17 +350,20 @@ function stimmVariante(sp, i) {
 
 async function schlagHoeren(sp, art) {
   await kontext(48000); await z.ctx.resume();
-  const st = stimmeVon(sp.quelle.erzeuger, sp.quelle.stimme), [L, R] = schlagRechnen(sp.quelle, art ?? st.artikulationen[0].key, z.rate);
+  const st = stimmeVon(sp.quelle.erzeuger, sp.quelle.stimme), q = sp.quelle;
+  const [L, R] = q.leiter ? st.rechne({ ...Object.fromEntries(st.parameter.map((p) => [p.key, p.std])), ...q.werte }, z.rate, { frequenz: grundFrequenz(q.grundton) * 2 ** ((q.werte.oktave ?? 0) + (art ?? 0) / 12), dauer: 0.9, staerke: 0.85, seed: 3 })
+    : schlagRechnen(q, art ?? st.artikulationen[0].key, z.rate);
   const b = z.ctx.createBuffer(2, L.length, z.rate); b.copyToChannel(L, 0); b.copyToChannel(R, 1);
-  const q = z.ctx.createBufferSource(), g = z.ctx.createGain(); g.gain.value = 0.7; q.buffer = b; q.connect(g).connect(z.ctx.destination); q.start();
+  const quelleKnoten = z.ctx.createBufferSource(), g = z.ctx.createGain(); g.gain.value = 0.7; quelleKnoten.buffer = b; quelleKnoten.connect(g).connect(z.ctx.destination); quelleKnoten.start();
 }
 
 function klangAufbauen(box, sp, wahl) {
   const q = sp.quelle, st = stimmeVon(q.erzeuger, q.stimme), e = ERZEUGER[q.erzeuger];
   box.append(el("div", { className: "plugin-kopf" }, el("h2", { textContent: `${sp.name}: ${e.name} ${e.version}` }), wahl,
-    el("span", { className: "leise-text", textContent: `Eigene Synthese, Startwert ${q.seed}. Jede Änderung rechnet die Spur neu; jeder Schlag ist auf dieselbe Spitze gebracht, damit Klangfarbe nicht als Lautstärke gehört wird.` })));
+    el("span", { className: "leise-text", textContent: `Eigene Synthese, Startwert ${q.seed}. Jede Änderung rechnet die Spur neu; jeder Schlag und jeder Ton ist auf dieselbe Spitze gebracht, damit Klangfarbe nicht als Lautstärke gehört wird.` })));
   // einzelne Schläge anhören
-  box.append(el("div", { className: "klang-zeile" }, el("span", { className: "leise-text", textContent: "anhören (A):" }),
+  if (q.leiter) box.append(bassSteuerung(sp));
+  else box.append(el("div", { className: "klang-zeile" }, el("span", { className: "leise-text", textContent: "anhören (A):" }),
     ...st.artikulationen.map((a) => { const b = el("button", { className: "mini", textContent: a.name, title: "ein Schlag, ohne Kanalzug und Raum" }); b.onclick = () => schlagHoeren(sp, a.key); return b; })));
   // Varianten der Stimme
   box.append(el("div", { className: "varianten" }, ...st.varianten.map((v, i) => {
@@ -352,7 +388,7 @@ function klangAufbauen(box, sp, wahl) {
   raster.append(groove);
   box.append(raster);
   // Muster
-  const arten = st.artikulationen.map((a) => a.key).join(", ");
+  const arten = (st.artikulationen ?? []).map((a) => a.key).join(", ");
   const ta = el("textarea", { className: "muster", rows: Math.min(8, q.takte.length + (q.fill ? 1 : 0) + 1), spellcheck: false, value: [...q.takte, ...(q.fill ? [`fill: ${q.fill}`] : [])].join("\n") });
   ta.oninput = () => {
     const zeilen = ta.value.split("\n").map((x) => x.trim()).filter(Boolean), fill = zeilen.find((x) => x.startsWith("fill:"));
@@ -361,7 +397,25 @@ function klangAufbauen(box, sp, wahl) {
     q.takte = takte; q.fill = fill ? fill.slice(5).trim() : null; spurBald(sp);
   };
   box.append(el("div", { className: "gruppe", style: "margin-top:16px" }, el("h3", {}, el("span", { textContent: "Muster (eine Zeile je Takt, «fill:» für den Wirbel)" })), ta,
-    el("p", { className: "hinweis", textContent: `16 Zeichen = Sechzehntel, 8 = Achtel, 12 = Triolen. «.» Pause, x o g (laut, mittel, Geisternote), oder Artikulationen: ${arten}. «!» betont, «_» leise.` })));
+    el("p", { className: "hinweis", textContent: q.leiter
+      ? "16 Zeichen = Sechzehntel, 8 = Achtel, 4 = Viertel. 1–7 Stufe der Tonleiter, b3 #4 mit Vorzeichen, 1' 1, Oktave höher, tiefer, «-» Ton hält, «.» Pause, «~» gleiten, «!» betont, «_» leise."
+      : `16 Zeichen = Sechzehntel, 8 = Achtel, 12 = Triolen. «.» Pause, x o g (laut, mittel, Geisternote), oder Artikulationen: ${arten}. «!» betont, «_» leise.` })));
+}
+
+/** Tonart, Leiter, Linie und Anhören für eine Bassspur */
+function bassSteuerung(sp) {
+  const q = sp.quelle, zeile = el("div", { className: "klang-zeile" });
+  const ton = el("select", { title: "Tonart" }, ...NOTEN.map((n, i) => el("option", { value: i, textContent: n, selected: i === q.grundton })));
+  const lei = el("select", { title: "Tonleiter" }, ...Object.entries(LEITERN).map(([k, l]) => el("option", { value: k, textContent: l.name, selected: k === q.leiter })));
+  const lin = el("select", { title: "Art der Linie" }, ...LINIEN.map((l) => el("option", { value: l.key, textContent: l.name, selected: l.key === q.linie })));
+  ton.onchange = () => { q.grundton = Number(ton.value); spurNeuRechnen(sp); zeichnen(); };
+  lei.onchange = () => { q.leiter = lei.value; spurNeuRechnen(sp); zeichnen(); };
+  const neu = el("button", { className: "mini", textContent: "Linie neu", title: "eine neue Linie dieser Art aus der Kick (neuer Startwert)" });
+  const neuRechnen = () => { q.linie = lin.value; q.seed = (q.seed % 100000) + 7919; q.takte = linieErzeugen({ art: q.linie, leiter: q.leiter, kicks: kickVorlage(), anzahl: Math.min(q.anzahl, 8), seed: q.seed }); spurNeuRechnen(sp); pluginAufbauen(); zeichnen(); };
+  lin.onchange = neuRechnen; neu.onclick = neuRechnen;
+  const hoer = el("button", { className: "mini", textContent: "Grundton anhören", title: "ein Ton, ohne Kanalzug (A)" }); hoer.onclick = () => schlagHoeren(sp, 0);
+  zeile.append(el("span", { className: "leise-text", textContent: "Tonart" }), ton, lei, el("span", { className: "leise-text", textContent: "Linie" }), lin, neu, hoer);
+  return zeile;
 }
 
 function paramRegler(p, v, setze) {
@@ -629,6 +683,15 @@ addEventListener("dragover", (e) => e.preventDefault());
 addEventListener("drop", (e) => { e.preventDefault(); if (e.dataTransfer?.files?.length) dateienLaden(e.dataTransfer.files); });
 
 $("erzeugen").onclick = () => erzeugen().catch((e) => melde(`Erzeugen: ${e.message}`, 8000));
+$("bassDazu").onclick = async () => {
+  try {
+    await kontext(48000);
+    const drums = z.projekt.spuren.find((s) => s.quelle && !s.quelle.leiter), stil = stilVon(drums?.quelle.stil ?? $("stil").value);
+    const sp = bassErzeugen({ anzahl: drums?.quelle.anzahl ?? Number($("takte").value), bpm: z.projekt.tempo.bpm, seed: Math.max(1, Math.round(Number($("seed").value) || 1)), stil });
+    z.gewaehlt = sp.id; z.glied = -1; senden(); allesAufbauen();
+    melde(`${sp.name}: ${LINIEN.find((l) => l.key === sp.quelle.linie).name}, ${NOTEN[sp.quelle.grundton]} ${LEITERN[sp.quelle.leiter].name}`, 4000);
+  } catch (e) { melde(`Bass: ${e.message}`, 8000); }
+};
 $("wuerfeln").onclick = () => { $("seed").value = 1 + Math.floor(Math.random() * 99998); };
 stileAufbauen();
 allesAufbauen();

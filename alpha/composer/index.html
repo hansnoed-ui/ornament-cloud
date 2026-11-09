@@ -54,6 +54,14 @@
     <button class="knopf klein leise" id="wuerfeln" title="neuer Startwert: andere kleine Abweichungen, gleiche Muster">neu würfeln</button>
     <label class="feld klein"><input type="checkbox" id="ersetzen" checked> erzeugte Spuren ersetzen</label>
     <button class="knopf voll" id="erzeugen">Spuren erzeugen</button>
+    <div class="bass-zeile">
+      <label class="feld klein"><input type="checkbox" id="mitBass" checked> Bass</label>
+      <label class="feld">Stimme <select id="bassStimme"></select></label>
+      <label class="feld">Linie <select id="bassLinie"></select></label>
+      <label class="feld">Tonart <select id="tonart"></select></label>
+      <select id="leiter" aria-label="Tonleiter"></select>
+      <button class="knopf klein" id="bassDazu" title="nur den Bass neu erzeugen, aus der Kick der vorhandenen Drums">nur Bass neu</button>
+    </div>
   </section>
 
   <main class="buehne" id="buehne">
