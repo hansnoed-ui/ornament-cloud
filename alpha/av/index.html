@@ -27,8 +27,8 @@
     </div>
     <div class="schritt">
       <h2>2 · Material</h2>
-      <label class="knopf voll"><input type="file" id="material" accept="video/*,image/*" hidden>Video oder Bild laden</label>
-      <p class="leise" id="materialInfo">MP4 (H.264) am sichersten. Ein Video wird auf höchstens 20 s zerlegt und läuft als Schleife.</p>
+      <label class="knopf voll"><input type="file" id="material" accept="video/*,image/*" multiple hidden>Videos oder Bilder laden (mehrere)</label>
+      <p class="leise" id="materialInfo">Mehrere wählen: jede Szene zeigt eines davon. MP4 (H.264) am sichersten; ein Video läuft als Schleife von höchstens 20 s. Weitere lassen sich später dazuladen.</p>
     </div>
     <div class="schritt">
       <h2>3 · Partitur</h2>
@@ -51,13 +51,13 @@
   </section>
 
   <section class="zuordnung" id="zuordnung" hidden>
-    <h2>Zuordnungen</h2>
-    <p class="leise">Audiosignal → Regler eines Effekts aus /animations. Werte 0–1; die Basis ist der Wert der Ebene, die Zuordnungen kommen dazu.</p>
+    <h2>Partitur: Szenen je Abschnitt</h2>
+    <p class="leise">Jeder Abschnitt des Arrangements spielt eine Szene aus seinem Vorrat; lange Abschnitte wechseln alle acht Takte. Zwischen den Szenen wird 0,8 s überblendet. Ein anderer Startwert wählt andere Szenen.</p>
     <table id="zuordnungTabelle"></table>
   </section>
 
   <div class="meldung" id="meldung" role="status" hidden></div>
-  <footer class="fuss"><p>ORNAMENT AV STUDIO 0.1 · Effekte aus <a href="../../animations/">/animations</a> über einen Adapter · Steuerung 0.1.0 · Partitur 0.1.0 · Leertaste spielt</p></footer>
+  <footer class="fuss"><p>ORNAMENT AV STUDIO 0.1 · Effekte aus <a href="../../animations/">/animations</a> über einen Adapter · Steuerung 0.1.0 · Partitur 0.2.0 · Leertaste spielt</p></footer>
   <script type="module" src="app.js"></script>
 </body>
 </html>

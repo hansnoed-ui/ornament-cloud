@@ -41,17 +41,24 @@ test("Bildzeit: Stutter wiederholt, Tape-Stop bremst stetig, Rückwärts läuft 
   assert.ok(Math.abs(S.bildzeit(8.25, br).t - 8.75) < 1e-9, "rückwärts");
 });
 
-test("Partitur: jede Familie nutzt nur vorhandene Effekte und Regler, alle Werte bleiben in 0–1", () => {
+test("Partitur 0.2: Szenen nutzen nur vorhandene Effekte und Regler, jede Familie deckt alle Abschnitte, Werte in 0–1, Überblendung", async () => {
+  const { SZENEN, szeneBei } = await imp("alpha/av/kern/partitur.js");
+  for (const [k, sz] of Object.entries(SZENEN)) {
+    for (const e of sz.ebenen) { assert.ok(EFFEKTE[e.effekt], `${k}: ${e.effekt}`); for (const r of Object.keys(e.werte)) assert.ok(Number(r) < EFFEKTE[e.effekt].regler.length, `${k}: Regler ${r}`); }
+    for (const z of sz.zuordnungen) assert.ok(z.ziel === "deck" || z.ziel < EFFEKTE[sz.ebenen[z.ebene].effekt].regler.length, `${k}: Zuordnung ${z.ziel}`);
+  }
+  const effekte = new Set(Object.values(SZENEN).flatMap((s) => s.ebenen.map((e) => e.effekt)));
+  assert.ok(effekte.size >= 15, `${effekte.size} verschiedene Effekte in den Szenen`);
   const s = S.signaleAus(export_(), 30);
   for (const [k, f] of Object.entries(FAMILIEN)) {
-    for (const e of f.ebenen) { assert.ok(EFFEKTE[e.effekt], `${k}: Effekt ${e.effekt}`); assert.ok(e.werte.length <= EFFEKTE[e.effekt].regler.length, `${k}/${e.effekt}: zu viele Werte`); }
-    for (const z of f.zuordnungen) { const e = f.ebenen[z.ebene]; assert.ok(z.ziel === "deck" || z.ziel < EFFEKTE[e.effekt].regler.length, `${k}: Regler ${z.ziel} von ${e.effekt}`); }
+    for (const typ of ["intro", "aufbau", "haupt", "gas", "stocken", "atmen", "verlieren", "wiederfinden", "outro"]) for (const n of f.folge[typ]) assert.ok(SZENEN[n], `${k}/${typ}: ${n}`);
     for (let t = 0; t < 8; t += 0.1) {
-      const { stapel, licht } = stapelBei(t, f, s);
-      for (const e of stapel.ebenen) { assert.ok(e.deckkraft >= 0 && e.deckkraft <= 1); for (const w of e.werte) assert.ok(w >= 0 && w <= 1, `${k} ${e.effekt} ${t}: ${w}`); }
-      assert.ok(licht >= 0 && licht <= 1.8);
+      const r = stapelBei(t, f, s, { materialien: 3 });
+      for (const st of [r.stapel, r.vorher?.stapel].filter(Boolean)) { assert.match(st.bild, /^material[0-2]$/); for (const e of st.ebenen) { assert.ok(e.deckkraft >= 0 && e.deckkraft <= 1); for (const w of e.werte) assert.ok(w >= 0 && w <= 1, `${k} ${e.effekt} ${t}: ${w}`); } }
+      if (r.vorher) assert.ok(r.vorher.gewicht > 0 && r.vorher.gewicht <= 1);
     }
   }
+  assert.ok(szeneBei(1, FAMILIEN.organisch, s).name === "klar" && szeneBei(5, FAMILIEN.organisch, s).name !== undefined);
 });
 
 test("Register: alle 23 Effekte von /animations mit Reglern und stabilem Fingerabdruck", async () => {

@@ -10,7 +10,7 @@ import { leseZip } from "../lab/kern/archiv.js";
 import { wavSpuren } from "../lab/kern/klangwerk.js";
 import { tonKodieren, mp4Schreiber } from "../phorma-iii/tonspur.js";
 import { signaleAus, bildzeit, wert, GRUPPEN } from "./kern/steuerung.js";
-import { FAMILIEN, stapelBei } from "./kern/partitur.js";
+import { FAMILIEN, SZENEN, stapelBei } from "./kern/partitur.js";
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, props = {}, ...k) => { const e = Object.assign(document.createElement(tag), props); e.append(...k); return e; };
@@ -18,7 +18,7 @@ const atmen = () => new Promise((ok) => setTimeout(ok, 0));
 let meldeZeit = 0;
 const melde = (text, dauer = 4000) => { const m = $("meldung"); m.textContent = text; m.hidden = false; clearTimeout(meldeZeit); if (dauer) meldeZeit = setTimeout(() => (m.hidden = true), dauer); };
 
-const z = { motor: null, sig: null, musik: null, buffer: null, ctx: null, quelle: null, start: 0, laeuft: false, pos: 0, familie: "organisch", material: false, materialName: "" };
+const z = { motor: null, sig: null, musik: null, buffer: null, ctx: null, quelle: null, start: 0, laeuft: false, pos: 0, familie: "gemischt", material: false, materialien: [] };
 
 try { z.motor = motorErstellen(); } catch (f) { melde(`WebGL 2 ist hier nicht verfügbar: ${f.message}. Das Studio braucht einen Browser mit WebGL 2 (Chrome, Edge, Firefox, Safari 15+).`, 0); }
 
@@ -43,19 +43,25 @@ async function musikLaden(datei) {
 }
 
 // ---------- Material ----------
-async function materialLaden(datei) {
+/** ein oder mehrere Materialien laden (Schlüssel material0, material1, …); jede Szene zeigt eines davon */
+async function materialLaden(dateien) {
   if (!z.motor) return;
-  if (datei.type.startsWith("image/")) {
-    const url = URL.createObjectURL(datei); await z.motor.bildLaden("material", url);
-    $("materialInfo").textContent = `${datei.name} (Bild)`;
-  } else {
-    melde("zerlege das Video (läuft einmal in Echtzeit ab) …", 0);
-    const sp = await videoZerlegen(datei, { px: 1280, sek: 20, fortschritt: (p) => melde(`zerlege das Video … ${Math.round(p * 100)} %`, 0) });
-    if (!sp) return;
-    z.motor.videoLaden("material", sp);
-    $("materialInfo").textContent = `${datei.name}: ${sp.b} × ${sp.h}, ${(sp.n / sp.fps).toFixed(1)} s als Schleife`;
+  for (const datei of dateien) {
+    const key = `material${z.materialien.length}`;
+    if (datei.type.startsWith("image/")) {
+      await z.motor.bildLaden(key, URL.createObjectURL(datei));
+      z.materialien.push({ name: datei.name, art: "Bild" });
+    } else {
+      melde(`zerlege ${datei.name} (läuft einmal in Echtzeit ab) …`, 0);
+      const sp = await videoZerlegen(datei, { px: 1280, sek: 20, fortschritt: (p) => melde(`zerlege ${datei.name} … ${Math.round(p * 100)} %`, 0) });
+      if (!sp) continue;
+      z.motor.videoLaden(key, sp);
+      z.materialien.push({ name: datei.name, art: `${sp.b} × ${sp.h}, ${(sp.n / sp.fps).toFixed(1)} s Schleife` });
+    }
   }
-  z.material = true; z.materialName = datei.name; melde("Material geladen", 2000); bereit(); zeichneBild(z.pos / (z.sig?.fps ?? 30));
+  z.material = z.materialien.length > 0;
+  $("materialInfo").textContent = z.materialien.map((m, i) => `${i + 1}. ${m.name} (${m.art})`).join(" · ");
+  melde(`${z.materialien.length} Material${z.materialien.length > 1 ? "ien" : ""} geladen`, 2500); bereit(); zeichneBild(z.pos);
 }
 
 function bereit() {
@@ -75,9 +81,12 @@ function familienAufbauen() {
 }
 function zuordnungZeigen() {
   const f = FAMILIEN[z.familie], t = $("zuordnungTabelle");
-  t.replaceChildren(el("tr", {}, ...["Signal", "Ebene", "Effekt", "Regler", "Bereich"].map((x) => el("th", { textContent: x }))),
-    ...f.zuordnungen.map((m) => { const e = f.ebenen[m.ebene], def = EFFEKTE[e.effekt]; return el("tr", {}, el("td", { textContent: m.quelle.replace("huelle.", "Hüllkurve ").replace("impuls.", "Impuls ") + (m.art === "ruhe" ? " (Gegenbewegung)" : "") }),
-      el("td", { textContent: String(m.ebene + 1) }), el("td", { textContent: def?.name ?? e.effekt }), el("td", { textContent: m.ziel === "deck" ? "Deckkraft" : def?.regler[m.ziel]?.name ?? m.ziel }), el("td", { textContent: `${m.von} → ${m.bis}` })); }));
+  const namen = { intro: "Intro", aufbau: "Aufbau", haupt: "Hauptteil", gas: "Gas geben", stocken: "Stocken", atmen: "Atmen", verlieren: "Sich verlieren", wiederfinden: "Wiederfinden", outro: "Outro" };
+  const quelle = (q) => q.replace("huelle.", "").replace("impuls.", "Schlag ").replace("abschnitt.rueck", "Abschnitt rückwärts").replace("abschnitt.u", "Abschnitt");
+  const zeile = (sz) => SZENEN[sz].ebenen.map((e) => EFFEKTE[e.effekt]?.name ?? e.effekt).join(" + ") + " ← " +
+    SZENEN[sz].zuordnungen.map((m) => `${quelle(m.quelle)} → ${m.ziel === "deck" ? "Deckkraft" : EFFEKTE[SZENEN[sz].ebenen[m.ebene].effekt]?.regler[m.ziel]?.name}`).join(", ");
+  t.replaceChildren(el("tr", {}, ...["Abschnitt", "Szenen", "Effekte und Zuordnungen"].map((x) => el("th", { textContent: x }))),
+    ...Object.entries(f.folge).map(([typ, pool]) => el("tr", {}, el("td", { textContent: namen[typ] ?? typ }), el("td", { textContent: pool.join(", ") }), el("td", { textContent: pool.map(zeile).join("  ·  ") }))));
 }
 
 // ---------- Zeichnen ----------
@@ -86,10 +95,12 @@ function format() { const [b, h] = $("format").value.split("x").map(Number); ret
 function vorschauGroesse() { const { b, h } = format(), s = Math.min(960 / b, 540 / h, 1); vorschau.width = Math.round(b * s); vorschau.height = Math.round(h * s); }
 
 /** ein Bild zur Musikzeit t in b × h auf ctx: Motor zeichnen, dann Licht und Dunkel des Ganzen */
+const optionen = (dunkel = 0) => ({ seed: Number($("seed").value) || 1, dunkel, materialien: z.materialien.length });
 function bildRechnen(t, b, h, ctx) {
-  const bz = bildzeit(t, z.sig.brueche), r = stapelBei(t, FAMILIEN[z.familie], z.sig, { seed: Number($("seed").value) || 1, dunkel: bz.dunkel });
-  z.motor.zeichnen(r.stapel, Math.max(0, bz.t), b, h);
-  ctx.drawImage(z.motor.leinwand, 0, 0, b, h);
+  const bz = bildzeit(t, z.sig.brueche), r = stapelBei(t, FAMILIEN[z.familie], z.sig, optionen(bz.dunkel)), tb = Math.max(0, bz.t);
+  if (r.vorher) { z.motor.zeichnen(r.vorher.stapel, tb, b, h); ctx.globalAlpha = 1; ctx.drawImage(z.motor.leinwand, 0, 0, b, h); }
+  z.motor.zeichnen(r.stapel, tb, b, h);
+  ctx.globalAlpha = r.vorher ? 1 - r.vorher.gewicht : 1; ctx.drawImage(z.motor.leinwand, 0, 0, b, h); ctx.globalAlpha = 1;
   const ende = Math.min(1, Math.max(0, (z.sig.dauer - t) / 1.5));   // am Schluss in Schwarz
   const licht = r.licht * ende * (1 - bz.dunkel);
   if (licht < 1) { ctx.fillStyle = `rgba(0,0,0,${Math.min(1, 1 - licht)})`; ctx.fillRect(0, 0, b, h); }
@@ -100,7 +111,7 @@ function zeichneBild(t) {
   if (!z.sig || !z.material || !z.motor) return;
   const { r } = bildRechnen(t, vorschau.width, vorschau.height, vctx);
   $("uhr").textContent = `${Math.floor(t / 60)}:${(t % 60).toFixed(1).padStart(4, "0").replace(".", ",")}`;
-  $("abschnitt").textContent = r.abschnitt?.name ?? "";
+  $("abschnitt").textContent = `${r.abschnitt?.name ?? ""} · ${r.szene}`;
   const f = z.sig.fps, w = (g) => wert(z.sig.huelle[g], t, f).toFixed(2).replace("0.", ",");
   $("signale").textContent = `Kick ${w("kick")} · Bass ${w("bass")} · Pad ${w("pad")} · Natur ${w("natur")} · Höhen ${w("oben")}`;
   strichZeichnen(t);
@@ -174,13 +185,13 @@ async function exportieren() {
   let fehler = null, avcC = null;
   const enc = new VideoEncoder({ output: (chunk, meta) => { if (meta?.decoderConfig?.description) avcC ??= new Uint8Array(meta.decoderConfig.description); const d = new Uint8Array(chunk.byteLength); chunk.copyTo(d); schreiber.bild(d, chunk.type === "key", chunk.timestamp, avcC); }, error: (e) => { fehler = e; } });
   enc.configure(cfg);
-  const st0 = stapelBei(0, FAMILIEN[z.familie], z.sig, {}).stapel;
-  await z.motor.vorbereiten?.(st0, b, h);
+  for (const sz of Object.values(SZENEN)) for (let m = 0; m < z.materialien.length; m++) await z.motor.vorbereiten?.({ bild: `material${m}`, dauer: 60, ebenen: sz.ebenen.map((e) => ({ ...e, werte: [] })) }, b, h);
   const t0 = performance.now();
   for (let i = 0; i < n; i++) {
     if (fehler) throw fehler;
     const t = i / fps, bz = bildzeit(t, z.sig.brueche);
-    await z.motor.videoBereit?.(stapelBei(t, FAMILIEN[z.familie], z.sig, {}).stapel, Math.max(0, bz.t));   // das genaue Einzelbild des Materials
+    const r0 = stapelBei(t, FAMILIEN[z.familie], z.sig, optionen());
+    await z.motor.videoBereit?.(r0.stapel, Math.max(0, bz.t)); if (r0.vorher) await z.motor.videoBereit?.(r0.vorher.stapel, Math.max(0, bz.t));   // die genauen Einzelbilder
     bildRechnen(t, b, h, cx);
     const frame = new VideoFrame(c, { timestamp: Math.round((i * 1e6) / fps), duration: Math.round(1e6 / fps) });
     enc.encode(frame, { keyFrame: i % (fps * 2) === 0 }); frame.close();
@@ -197,7 +208,7 @@ async function exportieren() {
 
 // ---------- Ereignisse ----------
 $("musik").onchange = (e) => { const f = e.target.files[0]; e.target.value = ""; if (f) musikLaden(f).catch((x) => melde(`Musik: ${x.message}`, 9000)); };
-$("material").onchange = (e) => { const f = e.target.files[0]; e.target.value = ""; if (f) materialLaden(f).catch((x) => melde(`Material: ${x.message}`, 9000)); };
+$("material").onchange = (e) => { const f = [...e.target.files]; e.target.value = ""; if (f.length) materialLaden(f).catch((x) => melde(`Material: ${x.message}`, 9000)); };
 $("spielen").onclick = spielen;
 $("exportieren").onclick = () => exportieren().catch((x) => melde(`Export: ${x.message}`, 9000));
 $("format").onchange = () => { vorschauGroesse(); zeichneBild(z.pos); };
@@ -206,4 +217,10 @@ addEventListener("keydown", (e) => { if (e.key === " " && !e.target.closest?.("i
 addEventListener("resize", () => { zeitleisteZeichnen(); strichZeichnen(z.pos); });
 familienAufbauen(); vorschauGroesse();
 // für Tests: die Zustände von aussen erreichbar
-globalThis.__av = { z, exportieren };
+globalThis.__av = { z, exportieren,
+  /** für Tests und Kontaktbögen: ein Stapel zur Zeit t als JPEG (Daten-URL) */
+  async probe(stapel, t, b = 480, h = 270) {
+    await z.motor.vorbereiten?.(stapel, b, h); await z.motor.videoBereit?.(stapel, t); z.motor.zeichnen(stapel, t, b, h);
+    const c = document.createElement("canvas"); c.width = b; c.height = h; c.getContext("2d").drawImage(z.motor.leinwand, 0, 0, b, h);
+    return { bild: c.toDataURL("image/jpeg", 0.8), kaputt: [...z.motor.kaputt.values()], verloren: z.motor.gl.isContextLost() };
+  } };

@@ -41,6 +41,18 @@ Fehlend: Zeitleiste mit Szenen und Automationskurven, Masken, Tiefe, Optical Flo
   - Lautheit −13,6 LUFS wie der Master.
 - Kontaktbögen angesehen. Organische Materie wirkt sichtbar: lesbar in den ruhigen Teilen, Strömung und Regenbogenkanten im Hauptteil. **Lebendes Archiv ist zu schwach**: Rauschen und Echo kaum zu sehen, nur Grau und Licht.
 
+## Urteil Christian zu den Probefilmen (9. November 2026)
+
+«Ziemlich ok. Der Sound ist sehr gut, die Videos passen von der Reaktion auf den Sound gut, sind halt jetzt eher langweilige Effekte und nur der gleiche pro Film.» Nächster Schritt: Szenen je Abschnitt aus der ganzen Breite der 23 Effekte, Übergänge, mehrere Materialien je Film.
+
+## Partitur 0.2 (nach dem Urteil)
+
+- 17 Szenen aus 17 der 23 Effekte (Kontaktbogen aller Effekte auf Wasser angesehen; die stärksten gewählt: Zebra, Montage, Partikel, Strom, Geflecht, Raster, Voxel, Pixel Sorting, Höhenlinien, Horizont, Lichtwürfel, Glitzer, Wasserglas, Tusche-Fluid, Echo, Lichtstrahlen, Bild).
+- Drei Familien: Organische Materie, Lebendes Archiv, Wechsel (beide gemischt). Jede legt je Abschnitt einen Vorrat an Szenen fest; lange Abschnitte wechseln je acht Takte; die Wahl kommt aus dem Startwert. «Sich verlieren» löst das Bild in Teilchen auf, «Wiederfinden» setzt es wieder zusammen.
+- Überblendung 0,8 s zwischen Szenen. Mehrere Materialien: jeder Abschnitt zeigt das nächste (reihum, versetzt um den Startwert).
+- Fehler gefunden und behoben: Der Hash für die Auswahl hatte schwache untere Bits; dadurch war das Material immer dasselbe.
+- Probefilme 3 und 4 (DnB 60 s, ECM 93 s, je vier Materialien, 1920 × 1080) in 46 s und 74 s gerechnet, ohne Fehler; Kontaktbögen angesehen.
+
 ## Offen und bekannt
 
 - **AAC höchstens 192 kbit/s im Browser:** Chromium kodiert nicht mit 320 kbit/s. Für 320 kbit/s den Ton nachträglich ersetzen: `ffmpeg -i film.mp4 -i summe.wav -map 0:v -map 1:a -c:v copy -c:a aac -b:a 320k film-320.mp4`. Später kann das ein lokaler Renderschritt übernehmen.
