@@ -124,7 +124,8 @@ const insekten = {
     const hell = w.helligkeit / 100, leiter = LEITERN[kx.leiter ?? "moll"].stufen, basis = grundFrequenz(kx.grundton ?? 2, kx.kammerton) * 64;
     for (let tier = 0; tier < w.tiere; tier++) {
       const [gl, gr] = pan2((rnd() * 2 - 1) * (w.raum / 100)), ferne = 0.35 + 0.65 * rnd(), zikade = rnd() < (w.zikaden / (w.grillen + w.zikaden + 1e-9));
-      const f = rnd() < w.tonalitaet / 100 ? basis * 2 ** (leiter[Math.floor(rnd() * leiter.length)] / 12) * (rnd() < 0.5 ? 1 : 0.5) : (3500 + rnd() * 2000) * (0.8 + hell * 0.4);
+      // gestimmt nur im Bereich echter Grillen (über 2,3 kHz): tiefer klingen kurze Sinuspulse wie eine Kuhglocke (Urteil vom 9. November 2026)
+      const f = rnd() < w.tonalitaet / 100 ? basis * 2 ** (leiter[Math.floor(rnd() * leiter.length)] / 12) * (rnd() < 0.5 ? 1 : 2) : (3500 + rnd() * 2000) * (0.8 + hell * 0.4);
       const bew = glatt(rnd, 0.05 + (w.bewegung / 100) * 0.3);
       if (!zikade) {   // Grille: Zirpen aus 3–5 Pulsen, im eigenen Takt (1–3 je Sekunde), leicht schwankend
         const takt = 0.35 + rnd() * 0.6, pulse = 3 + Math.floor(rnd() * 3), pl = 0.012 + rnd() * 0.01;
@@ -132,7 +133,9 @@ const insekten = {
           if (rnd() > 0.3 + 0.7 * (w.dichte / 100)) continue;
           for (let p = 0; p < pulse; p++) {
             const i0 = Math.round((t + p * pl * 1.6) * rate), m = Math.round(pl * rate), a = ferne * 0.4 * (0.6 + 0.4 * bew(t));
-            for (let i = 0; i < m && i0 + i < n; i++) { const x = Math.sin((TAU * f * (i0 + i)) / rate) * Math.sin((Math.PI * i) / m) * a; L[i0 + i] += x * gl; R[i0 + i] += x * gr; }
+            // ein Puls: Tonhöhe fällt leicht (Schrillkante), mit etwas Rauschen im Anschlag: zirpend statt glockig
+            let ph = 0;
+            for (let i = 0; i < m && i0 + i < n; i++) { const u = i / m, x = (Math.sin(ph) * 0.85 + (rnd() * 2 - 1) * 0.3 * (1 - u)) * Math.sin(Math.PI * u) * a; ph += (TAU * f * (1.04 - 0.08 * u)) / rate; L[i0 + i] += x * gl; R[i0 + i] += x * gr; }
           }
         }
       } else {   // Zikade: Rauschband mit schnellem Puls, schwillt über Sekunden an und ab

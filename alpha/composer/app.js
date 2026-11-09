@@ -8,7 +8,7 @@ import { SPURTYPEN, variantenFuer } from "./kern/varianten.js";
 import { rendern } from "./kern/rendern.js";
 import { messen, TERZEN, lautheitIntegriert } from "./kern/messen.js";
 import { zipBlob } from "./kern/zip.js";
-import { STILE, stilVon } from "./kern/muster.js";
+import { STILE, stilVon, halbeZeit } from "./kern/muster.js";
 import { ARTEN as UNTER, SCHNELL, anwenden, werteVon } from "./kern/unterbrechungen.js";
 import { spurRechnen, schlagRechnen, flaechenSpurRechnen } from "./kern/erzeugen.js";
 import { MAKROS } from "./erzeuger/natur-0.2.0.js";
@@ -517,6 +517,8 @@ async function trackErzeugen() {
   const mitBass = $("mitBass").checked; $("mitBass").checked = true;
   await erzeugen({ anzahlVorgabe: takte, still: true });
   $("mitBass").checked = mitBass;
+  for (const sp of z.projekt.spuren.filter((x) => istDrums(x) && (b.ohne ?? []).includes(x.quelle.stimme))) { post({ art: "weg", id: sp.id }); z.daten.delete(sp.id); }
+  z.projekt.spuren = z.projekt.spuren.filter((x) => !(istDrums(x) && (b.ohne ?? []).includes(x.quelle.stimme)));
   for (const [s2, stimme] of b.mix ?? []) stilSpurDazu(s2, stimme, { anzahl: takte, bpm, seed, swing: stil.swing });
   const laufend = [];
   for (const syn of b.synths) laufend.push(synthDazu(syn));
@@ -562,8 +564,9 @@ function stilSpurDazu(stilKey, stimme, { anzahl, bpm, seed, swing }) {
   if (!s) return null;
   const st = stimmeVon(s.erzeuger, s.stimme), v = st.varianten.find((x) => x.name === s.variante) ?? st.varianten[0];
   const quelle = { art: "erzeugt", erzeuger: s.erzeuger, stimme: s.stimme, variante: v.name, werte: { ...v.werte }, takte: [...s.takte], fill: s.fill ?? null,
-    anzahl, bpm, swing, menschlich: s.menschlich ?? s0.menschlich, versatz: s.versatz ?? 0, seed: seed * 100 + 40, stil: stilKey };
-  const sp = PR.erzeugteSpurDazu(z.projekt, quelle, { name: `${st.name} (aus ${s0.name.split(/[ ,(]/)[0]})`, typ: st.rolle === "perkussion" ? "perkussion" : "drums", pegel: (s.pegel ?? st.pegel) - 2, pan: -(st.pan || 0.2), raum: s0.raum ?? { anteil: 18, nachhall: 1.6 } });
+    anzahl, bpm, swing, menschlich: s.menschlich ?? s0.menschlich, versatz: s.versatz ?? 0, seed: seed * 100 + 40, stil: stilKey, mix: true };
+  if (bpm >= 130 && bpm > s0.bpm * 1.25) quelle.takte = halbeZeit(quelle.takte);   // im schnellen Stil im halben Tempo, wie im eigenen Stil
+  const sp = PR.erzeugteSpurDazu(z.projekt, quelle, { name: `${st.name} (aus ${s0.name.split(/ \(|,/)[0]})`, typ: st.rolle === "perkussion" ? "perkussion" : "drums", pegel: (s.pegel ?? st.pegel) - 5, pan: -(st.pan || 0.2), raum: s0.raum ?? { anteil: 18, nachhall: 1.6 } });
   spurNeuRechnen(sp);
   return sp;
 }

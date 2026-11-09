@@ -9,7 +9,7 @@ const root = new URL("../alpha/", import.meta.url);
 const imp = (p) => import(new URL(p, root).href);
 const { stimmeVon } = await imp("composer/erzeuger/register.js");
 const { PATCHES, FAMILIEN_LISTE } = await imp("composer/erzeuger/synth-0.1.0.js");
-const { STILE, stilVon, taktLesen } = await imp("composer/kern/muster.js");
+const { STILE, stilVon, taktLesen, halbeZeit } = await imp("composer/kern/muster.js");
 const { spurRechnen, flaechenSpurRechnen } = await imp("composer/kern/erzeugen.js");
 const { rendern } = await imp("composer/kern/rendern.js");
 const { PLUGINS } = await imp("composer/plugins/register.js");
@@ -39,6 +39,7 @@ const tief = /^(x|o|dum|doum|tom|ge|ghe|dha|dhin|dhi|bum|tun)[!_]?$/;
 function aufbauen(stil, anzahl, { seed = 1, synths = null, natur, arrangement = null, ohneEffekte = false } = {}) {
   const p = PR.neuesProjekt({ rate: RATE }), spuren = [], takt = 240 / stil.bpm;
   stil.spuren.forEach((s, i) => {
+    if (arrangement && (BESETZUNG[stil.key].ohne ?? []).includes(s.stimme)) return;
     const st = stimmeVon(s.erzeuger, s.stimme), v = st.varianten.find((x) => x.name === s.variante) ?? st.varianten[0];
     const q = { art: "erzeugt", erzeuger: s.erzeuger, stimme: s.stimme, werte: { ...v.werte }, takte: s.takte, fill: s.fill ?? null, anzahl, bpm: stil.bpm, swing: stil.swing, menschlich: s.menschlich ?? stil.menschlich, versatz: s.versatz ?? 0, seed: seed * 100 + i };
     spuren.push({ sp: PR.erzeugteSpurDazu(p, q, { name: st.name, typ: st.rolle, pegel: s.pegel ?? st.pegel, pan: st.pan, raum: stil.raum ?? null }), k: spurRechnen(q, RATE).kanaele });
@@ -46,8 +47,8 @@ function aufbauen(stil, anzahl, { seed = 1, synths = null, natur, arrangement = 
   const besetzung = BESETZUNG[stil.key];
   for (const [s2, stimme] of arrangement ? besetzung.mix ?? [] : []) {   // Stilmix: Perkussion aus einem zweiten Stil
     const s0 = stilVon(s2), s = s0.spuren.find((x) => x.stimme === stimme), st = stimmeVon(s.erzeuger, s.stimme), v = st.varianten.find((x) => x.name === s.variante) ?? st.varianten[0];
-    const q = { art: "erzeugt", erzeuger: s.erzeuger, stimme: s.stimme, werte: { ...v.werte }, takte: s.takte, fill: s.fill ?? null, anzahl, bpm: stil.bpm, swing: stil.swing, menschlich: s.menschlich ?? s0.menschlich, versatz: s.versatz ?? 0, seed: seed * 100 + 40 };
-    spuren.push({ sp: PR.erzeugteSpurDazu(p, q, { name: st.name, typ: st.rolle, pegel: (s.pegel ?? st.pegel) - 2, pan: -(st.pan || 0.2), raum: s0.raum ?? { anteil: 18, nachhall: 1.6 } }), k: spurRechnen(q, RATE).kanaele });
+    const q = { art: "erzeugt", erzeuger: s.erzeuger, stimme: s.stimme, werte: { ...v.werte }, takte: stil.bpm >= 130 && stil.bpm > s0.bpm * 1.25 ? halbeZeit(s.takte) : s.takte, fill: s.fill ?? null, anzahl, bpm: stil.bpm, swing: stil.swing, menschlich: s.menschlich ?? s0.menschlich, versatz: s.versatz ?? 0, seed: seed * 100 + 40, mix: true };
+    spuren.push({ sp: PR.erzeugteSpurDazu(p, q, { name: st.name, typ: st.rolle, pegel: (s.pegel ?? st.pegel) - 5, pan: -(st.pan || 0.2), raum: s0.raum ?? { anteil: 18, nachhall: 1.6 } }), k: spurRechnen(q, RATE).kanaele });
   }
   const b = stil.bass, bst = stimmeVon("bass@0.1.0", b.stimme), bv = bst.varianten.find((x) => x.name === b.variante) ?? bst.varianten[0];
   const vorlage = stil.spuren.find((x) => x.stimme === "kick") ?? stil.spuren[0];

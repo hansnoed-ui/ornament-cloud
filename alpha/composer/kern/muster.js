@@ -21,9 +21,10 @@ export const STILE = Object.freeze([
     S(D, "shaker", "eng", ["x g o g x g o g x g o g x g o g"]),
     S(D, "offen", "kurz", [". . . . . . . . . . . . . . . .", ". . . . . . . . . . . . . . x ."]),
   ] },
-  { key: "hiphop", name: "Hip-Hop (Boom Bap)", gruppe: "elektronisch", bpm: 90, swing: 0.16, menschlich: 4, bass: { stimme: "analog", variante: "G-Funk", linie: "kick", leiter: "moll", bassfett: { obertoene: 35 } }, spuren: [
+  { key: "hiphop", name: "Hip-Hop (Boom Bap)", gruppe: "elektronisch", bpm: 90, swing: 0.16, menschlich: 1.5,   // präziser (Urteil 9.11.2026, vorher 4 ms)
+    bass: { stimme: "analog", variante: "G-Funk", linie: "kick", leiter: "moll", bassfett: { obertoene: 35 } }, spuren: [
     S(D, "kick", "Boom Bap", ["x! . . . . . . x . . x . . . . .", "x! . . . . . . x . . x . . . x ."]),
-    S(D, "snare", "Boom Bap", [". . . . x! . . . . . . . x! . . ."], { versatz: 12, fill: ". . . . x! . . . . . . . x! . . g" }),
+    S(D, "snare", "Boom Bap", [". . . . x! . . . . . . . x! . . ."], { versatz: 5, fill: ". . . . x! . . . . . . . x! . . g" }),
     S(D, "hat", "staubig", ["x . o . x . o . x . o . x . o g"]),
     S(D, "rim", "Sidestick", [". . . . . . . . . . . . . . . .", ". . . . . . . . . . . x . . . ."]),
   ] },
@@ -91,4 +92,9 @@ export function taktLesen(zeile, ersteArt = "x") {
     out.push({ stelle: i / n, schritt: i, n, art, staerke: st });
   });
   return out;
+}
+
+/** ein Muster im halben Tempo: jeder Takt wird auf zwei Takte gedehnt (zwischen die Schläge kommen Pausen) */
+export function halbeZeit(takte) {
+  return takte.flatMap((z) => { const t = String(z).trim().split(/\s+/), lang = t.flatMap((x) => [x, "."]), h = lang.length / 2; return [lang.slice(0, h).join(" "), lang.slice(h).join(" ")]; });
 }

@@ -10,7 +10,9 @@ import { zufall } from "../erzeuger/grund.js";
 /** Funktion einer Spur im Arrangement, aus Erzeuger und Stimme (bzw. Rolle bei Synths) */
 export function funktionVon(q) {
   if (!q) return "fremd";
-  if (q.flaeche) return ["pad"].includes(q.stimme) ? "pad" : "natur";
+  if (q.mix) return "mix";   // Perkussion aus einem zweiten Stil: Würze, nicht Dauerschicht
+  // perkussive Naturtexturen (Tropfen, Zirpen, Knistern, Rufe, Impulse) nur in den ruhigen Teilen; durchgehend nervten sie (Urteil 9.11.2026)
+  if (q.flaeche) return q.stimme === "pad" ? "pad" : ["regen", "feuer", "insekten", "vogel", "pflanzen"].includes(q.stimme) ? "naturklang" : "natur";
   if (q.erzeuger?.startsWith("bass@")) return "bass";
   if (q.erzeuger?.startsWith("synth@")) return ["pad", "drone", "schwebe"].includes(q.rolle) ? "pad" : "melodie";
   const s = q.stimme;
@@ -22,18 +24,18 @@ export function funktionVon(q) {
 
 // wer in welchem Abschnitt spielt (1 = spielt, 0 = still)
 const SPIELT = {
-  //              kick backbeat oben perk bass pad melodie natur fremd
-  intro:        [0, 0, 0, 0, 0, 1, 0, 1, 1],
-  aufbau:       [0, 1, 1, 1, 0, 1, 1, 1, 1],
-  haupt:        [1, 1, 1, 1, 1, 1, 1, 1, 1],
-  stocken:      [1, 1, 1, 1, 1, 1, 1, 1, 1],
-  atmen:        [0, 0, 1, 1, 1, 1, 0, 1, 1],
-  gas:          [1, 1, 1, 1, 1, 1, 1, 1, 1],
-  verlieren:    [0, 0, 0, 1, 0, 1, 1, 1, 1],
-  wiederfinden: [1, 1, 1, 1, 1, 1, 1, 1, 1],
-  outro:        [0, 0, 1, 1, 0, 1, 0, 1, 1],
+  //              kick backbeat oben perk bass pad melodie natur fremd mix naturklang
+  intro:        [0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1],
+  aufbau:       [0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0],
+  haupt:        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+  stocken:      [1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+  atmen:        [0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1],
+  gas:          [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+  verlieren:    [0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1],
+  wiederfinden: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+  outro:        [0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1],
 };
-const FUNKTIONEN = ["kick", "backbeat", "oben", "perkussion", "bass", "pad", "melodie", "natur", "fremd"];
+const FUNKTIONEN = ["kick", "backbeat", "oben", "perkussion", "bass", "pad", "melodie", "natur", "fremd", "mix", "naturklang"];
 export const NAMEN = Object.freeze({ intro: "Intro", aufbau: "Aufbau", haupt: "Hauptteil", stocken: "Stocken", atmen: "Atmen", gas: "Gas geben", verlieren: "Sich verlieren", wiederfinden: "Wiederfinden", outro: "Outro" });
 const FOLGEN = [
   ["haupt", "stocken", "verlieren", "wiederfinden", "gas"],
@@ -79,6 +81,8 @@ export function ereignisseFuer(funktion, abschn, { seed = 1, takte } = {}) {
     out.push(E("dropout", abschn[i].von, (bis - abschn[i].von) * 16, { rest: 0, kante: 12 }));
     i = j;
   }
+  // die Mischperkussion setzt auch in ihren Abschnitten jeden zweiten Viertakt aus
+  if (f === "mix") for (const a of abschn) if (spielt(a)) for (let t = a.von + 4; t < a.bis; t += 8) out.push(E("dropout", t, Math.min(4, a.bis - t) * 16, { rest: 0, kante: 20 }));
   abschn.forEach((a, idx) => {
     const L = a.bis - a.von, gem = zufall(seed * 131 + idx * 17), naechster = abschn[idx + 1];
     if (a.typ === "intro") {
@@ -130,17 +134,18 @@ export function ereignisseFuer(funktion, abschn, { seed = 1, takte } = {}) {
 
 /**
  * Besetzung je Stil (seit 0.2.0 mit Stilmix): Perkussion aus einem anderen Stil als zweite Schicht, Bass (Linie), Synths mit Rolle,
- * zwei Naturschichten. Keine Keys (Urteil vom 9. November 2026); Flächen als «Schwebe» in ungeraden Zyklen.
+ * zwei Naturschichten; «ohne» nimmt Stimmen des Stils aus dem Track (Orient ohne Riq: seine Schellen nervten). Keine Keys (Urteil vom 9. November 2026); Flächen als «Schwebe» in ungeraden Zyklen. Keine Tabla im Mix (ihr
+ * helles «Na» lief als nervendes Dauergeräusch durch DnB, ECM und Goa), keine Pflanzentextur als Natur (Glocken sind keine Naturgeräusche).
  */
 export const BESETZUNG = Object.freeze({
-  dnb: { mix: [["indien", "tabla"]], linie: "lang", synths: [["shadow", "deepRoomDrone", "schwebe"]], natur: [["gezeiten", { verwandlung: 40, tonalitaet: 40 }], ["insekten", { verwandlung: 60 }]] },
+  dnb: { mix: [["orient", "darbuka"]], linie: "lang", synths: [["shadow", "deepRoomDrone", "schwebe"]], natur: [["gezeiten", { verwandlung: 40, tonalitaet: 40 }], ["insekten", { verwandlung: 60, tonalitaet: 0 }]] },
   hiphop: { mix: [["orient", "darbuka"]], linie: "kick", synths: [["tape", "amberMemory", "schwebe"]], natur: [["regen", {}], ["walchor", { verwandlung: 50 }]] },
   pop: { mix: [["persisch", "zarb"]], linie: "zyklus", synths: [["darkpop", "darkBrass", "schwebe"]], natur: [["vogel", { dichte: 25 }]] },
-  minimal: { mix: [["ecm", "udu"]], linie: "zyklus", synths: [["shadow", "deepRoomDrone", "schwebe"]], natur: [["pflanzen", {}], ["feuer", { variante: "Glut" }]] },
-  goa: { mix: [["indien", "tabla"]], linie: "zyklus", synths: [["goa", "spiralAcid"], ["shadow", "deepRoomDrone", "schwebe"]], natur: [["insekten", { verwandlung: 70 }], ["gezeiten", { verwandlung: 80 }]] },
+  minimal: { mix: [["ecm", "udu"]], linie: "zyklus", synths: [["shadow", "deepRoomDrone", "schwebe"]], natur: [["regen", { verwandlung: 30 }], ["feuer", { variante: "Glut" }]] },
+  goa: { mix: [["persisch", "zarb"]], linie: "zyklus", synths: [["goa", "spiralAcid"], ["shadow", "deepRoomDrone", "schwebe"]], natur: [["insekten", { verwandlung: 70 }], ["gezeiten", { verwandlung: 80 }]] },
   house: { mix: [["orient", "riq"]], linie: "offbeat", synths: [["house", "velvetOrgan"], ["trance", "openSky", "schwebe"]], natur: [["regen", { verwandlung: 40 }]] },
   indien: { mix: [["dnb", "hat"]], linie: "zyklus", synths: [["tape", "amberMemory", "schwebe"]], natur: [["vogel", { dichte: 25 }], ["regen", {}]] },
-  orient: { mix: [["ecm", "rahmen"]], linie: "zyklus", synths: [["shadow", "shadowChord", "schwebe"]], natur: [["gezeiten", { wellen: 50, wind: 40 }], ["feuer", {}]] },
-  ecm: { mix: [["indien", "tabla"]], linie: "zyklus", synths: [["shadow", "deepRoomDrone", "schwebe"]], natur: [["walchor", { verwandlung: 50 }], ["regen", { verwandlung: 30 }]] },
+  orient: { ohne: ["riq"], mix: [["dnb", "hat"]], linie: "zyklus", synths: [["shadow", "shadowChord", "schwebe"]], natur: [["gezeiten", { wellen: 50, wind: 40 }], ["feuer", {}]] },
+  ecm: { mix: [["persisch", "zarb"]], linie: "zyklus", synths: [["shadow", "deepRoomDrone", "schwebe"]], natur: [["walchor", { verwandlung: 50 }], ["regen", { verwandlung: 30 }]] },
   persisch: { mix: [["orient", "darbuka"]], linie: "zyklus", synths: [["tape", "amberMemory", "schwebe"]], natur: [["vogel", { dichte: 15, raum: 90 }], ["insekten", {}]] },
 });
