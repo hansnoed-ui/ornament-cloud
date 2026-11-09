@@ -4,6 +4,13 @@ Hier steht, was Christian entschieden hat und wie er Klänge beurteilt hat, dami
 
 ## 9. November 2026
 
+**Bereiche und Fassungen (Auftrag `bereiche-und-spuren.md`)**
+- Wunsch Christian: in der Summe einen Bereich markieren und daraus den nächsten Track machen; einzelne Spuren leicht ersetzen; in Spuren Bereiche stumm, lauter, leiser oder mit Effekten belegen.
+- Umgesetzt in Bereiche 0.1.0 und Fassungen 0.1.0. Ein gezogener Bereich rastet auf Takte (Alt: Schläge, Umschalt: frei) und gilt für die Spur, auf der er gezogen wurde; auf dem Lineal für die Summe. Bereiche wirken wie die Unterbrechungen vor der Plugin-Kette (Hall der Spur klingt über einen stummen Bereich weiter) und stehen in Takten im Projekt.
+- Ersetzen tauscht nur die Quelle; Kanalzug, Plugins, Pegel, Unterbrechungen und Bereiche bleiben. Beim Ersetzen werden Startpunkt (Einsätze, ±1 s) und Lautheit (LUFS) an die alte Quelle angeglichen, das Tempo nur angezeigt; Dehnen (WSOLA aus dem Lab) erst auf Knopfdruck. Tonart wird nicht erkannt.
+- Neuer Track aus einem Summenbereich: neues Projekt mit jeder Spur als eigener Datei (nach Unterbrechungen und Bereichen, vor dem Kanalzug), Ketten, Pegel, Tempo, Kammerton, Herkunft; die Mischung des Bereichs als Referenz. Das alte Projekt wird vorher als Datei gespeichert, das neue kommt als ZIP. Erzeugte Spuren werden dabei zu Dateien (das Rezept steht unter `herkunft`).
+- Noch offen: Bereiche als Muster über den ganzen Track, Loop-Vorbereitung ohne Naht beim neuen Track, Tonart der Ersatzdatei erkennen, Automation neben den Bereichen.
+
 **Grundlagen**
 - Der Composer ist eine eigene Seite `alpha/composer/` (nur per Direktlink, noindex) und nutzt Bausteine des Lab per Import. Gemergt wird nur mit Christians OK.
 - Das Material liegt ausserhalb des Repos in `C:\Users\StartKlar\ornament-material\` (`vorlagen/<spur>/`, `referenzen/`, `stems/`, `hoerproben/`, `vst-referenz/`). Stimmmaterial und fremde Samples kommen nie ins Repo.

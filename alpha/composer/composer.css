@@ -182,3 +182,17 @@ canvas.lineal, canvas.welle { width: 100%; display: block; cursor: crosshair; to
 .param select { grid-column: 1 / -1; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--text); padding: 3px 8px; }
 .spur.rechnet .wellen-feld::after { content: "rechnet …"; position: absolute; right: 10px; top: 8px; font-size: 0.75rem; color: #f0a070; }
 .track-zeile { background: color-mix(in srgb, var(--accent) 6%, transparent); border-radius: 10px; padding: 8px 10px; border-top: 0; margin-top: 4px; }
+
+/* Bereich bearbeiten (Bereiche, Fassungen 0.1.0) */
+.bereich-leiste { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding-top: 8px; border-top: 1px dashed var(--border); }
+.bereich-leiste .mini { border-color: var(--border); color: var(--text); height: 28px; }
+.bereich-leiste .mini kbd { margin-left: 2px; }
+.bereich-leiste select { border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--text); padding: 3px 8px; }
+.bereich-ort { font-variant-numeric: tabular-nums; font-weight: 500; }
+.bereich-spur, .bereich-summe { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.ereignis.bereich { border-left-color: #8fb0ff; }
+.ereignis.bereich.stumm { border-left-color: #a33; }
+.ereignis.bereich.effekt { border-left-color: #9ccc85; }
+.ereignis.fassung { border-left-color: #c9a227; }
+.ereignis.fassung.aktiv { border-left-width: 6px; }
+.wellen-feld.ziel { outline: 2px dashed #8fb0ff; outline-offset: -2px; }
