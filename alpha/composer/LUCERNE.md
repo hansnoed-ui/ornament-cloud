@@ -77,7 +77,20 @@ bei 440 Hz, nicht bei 432 Hz, weil das Material so gestimmt ist.
 
 Die vollständige Auswahl steht in `ornament-material/samples/lucerne-auswahl.json`, mit dem Grund jeder Wahl.
 
-## Musikalische Entscheidungen (Ausprägung «Erinnerung», 88 BPM)
+## Urteil 10. November 2026 und was sich geändert hat
+
+Christian zum ganzen Track: «Sehr geile Arbeit», der erste Teil «noch nicht top», der zweite «genial», «etwas viel gebraucht», der Beat
+«etwas schleppender und knarzender», «die Melodie könnte auch mal unterbrochen werden». Geändert (nicht gehört, nur gemessen):
+
+- **Schleppender:** 84 statt 88 BPM. Snare 20 ms und Ghosts 16 ms hinter dem Schlag, Hi-Hats 60:40 und 9 ms später, die Kick bleibt vorn.
+- **Knarzender:** neues Makro «Knarzen» (Standard 55). Sättigung auf Kick und Snare, Snare und Hi-Hats mit weniger Bits und tieferer
+  Abtastrate (Halten wie ein alter Sampler), Knistern auf den Hi-Hats. Die Drums bekommen dafür `nach` wie die Sampler-Spuren.
+- **Unterbrechungen:** neues Makro «Unterbrechung» (Standard 45). Eine Motivaussage bleibt ganz still oder reisst mitten in der Phrase ab,
+  der letzte Ton kurz gestossen. Die erste Aussage jedes Abschnitts bleibt, nie zwei stille hintereinander. Bei 45 sind das etwa vier
+  von vierzehn Aussagen.
+- **«Etwas viel gebraucht»** gelesen als: das Motiv kommt zu oft. Die Unterbrechungen nehmen es zurück.
+
+## Musikalische Entscheidungen (Ausprägung «Erinnerung», 84 BPM)
 
 **Tonart Fis-Moll (äolisch).** Sie kommt aus dem Material: Die Akkorde des Outros (Fis-Moll, D, A, Cis-Moll) sind leitereigen.
 `tonartAusMaterial()` wählt die Molltonart, in der die meisten Akkord-Ausschnitte passen.
@@ -112,11 +125,12 @@ Takt 73 liegen die Aussagen eine Oktave höher, und Takt 69 endet auf Cis statt 
   - Hauptschläge 0,8; zweite Kick-Schläge 0,6
   - Hi-Hat 0,6 auf Zählzeiten, 0,33 dazwischen
   - Ghost 0,32 bzw. 0,18
-- **Swing:**
-  - Hi-Hat 56:44 (+4 ms, ±3 ms)
-  - Ghost 57:43 (+8 ms)
+- **Swing und Lage (schleppend):**
+  - Hi-Hat 60:40 (+9 ms, ±4 ms)
+  - Ghost 59:41 (+16 ms, ±4 ms)
+  - Snare gerade, aber +20 ms (±3 ms) hinter dem Schlag
   - Motiv 55:45
-  - Kick, Snare und Bass gerade und ohne Zufall
+  - Kick gerade (±2 ms), Bass gerade und ohne Zufall
 - **Choke:** Die geschlossene Hi-Hat schneidet die offene ab (6 ms).
 - **Variation:**
   - alle vier Takte eine kleine Antwort: Kick verschoben, Ghost verschoben, Hi-Hat 13 weg oder Snare betont
@@ -130,7 +144,7 @@ Takt 73 liegen die Aussagen eine Oktave höher, und Takt 69 endet auf Cis statt 
 - Verwandlung: gehaltener Orgelpunkt
 - Einsatz erst ab Takt 13
 
-**Arrangement:** 88 Takte = 240 s, dazu zwei Takte Ausklang.
+**Arrangement:** 88 Takte ≈ 251 s bei 84 BPM, dazu zwei Takte Ausklang.
 
 | Takte | Abschnitt | Was geschieht |
 |---|---|---|
@@ -150,6 +164,8 @@ Takt 73 liegen die Aussagen eine Oktave höher, und Takt 69 endet auf Cis statt 
 | Instabilität | 35 | Drift je Note ±12 Cent·I; gemeinsames Leiern der Schichten Motiv, Harmonie, Textur und Umgebung (Wow bis 25 Cent·I, Flutter 3 Cent·I); ab 60 Alterung (Rauschen, 12 Bit). Bass und Drums bleiben stabil |
 | Fragmentierung | 30 | in der Verwandlung: auslassen 15 % + 50 %·F, tauschen 10 % + 60 %·F, Zweiunddreissigstel 40 %·F; sonst Schnitte an Phrasenenden (ab 15) und zerteilte Motivnoten (30 %·F) |
 | Wiederkehr | 60 | Anteil wörtlicher Motivaussagen |
+| Unterbrechung | 45 | Motivaussage still (12 % + 40 %·U) oder abgerissen (10 % + 40 %·U); erste Aussage je Abschnitt bleibt, nie zwei stille hintereinander |
+| Knarzen | 55 | Sättigung Kick (20 + 30·K) und Snare (30 + 60·K); Snare und Hi-Hats 12 − 5·K Bit, Abtastrate 22 − 12·K kHz; Knistern auf den Hi-Hats (2 + 8·K je s) |
 | Raum | 45 | Hallanteil und Nachhall je Rolle gestaffelt, Echo des Motivs bis 30 %, Breite der Körner |
 
 ## Neue Samples: Arbeitsablauf

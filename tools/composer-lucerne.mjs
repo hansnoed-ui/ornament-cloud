@@ -3,7 +3,7 @@
 //   node tools/composer-lucerne.mjs sammlung <ordner>                 Quellen analysieren (nur neue), Auswahl/Vorschläge eintragen
 //   node tools/composer-lucerne.mjs vorhoeren <ordner> <ziel>         je Ausschnitt: Original, bearbeitet (lautheitsgleich), Rolle
 //   node tools/composer-lucerne.mjs studie <ordner> <ziel> [seed]     16 Takte + drei Varianten (Fragmentierung/Instabilität)
-//   node tools/composer-lucerne.mjs track <ordner> <ziel> [seed]      88 Takte (240 s) + ZIP
+//   node tools/composer-lucerne.mjs track <ordner> <ziel> [seed]      88 Takte (≈ 251 s bei 84 BPM) + ZIP
 //   node tools/composer-lucerne.mjs test4 <ordner> <ziel>             vierte Quelle (synthetische TESTQUELLE): hinzufügen, ersetzen, neu
 // Die Audiodateien bleiben im Ordner (nie im Repo); die Sammlung liegt daneben als klangsammlung.json.
 import { readFileSync, writeFileSync, existsSync, readdirSync, mkdirSync } from "node:fs";

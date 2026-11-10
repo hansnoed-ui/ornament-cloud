@@ -4,6 +4,10 @@ Hier steht, was Christian entschieden hat und wie er Klänge beurteilt hat, dami
 
 ## 10. November 2026
 
+**ornament.lucerne: Urteil zum ganzen Track**
+- Christian: «Sehr geile Arbeit», erster Teil «noch nicht top», zweiter «genial», «etwas viel gebraucht», Beat «etwas schleppender und knarzender», die Melodie «könnte auch mal unterbrochen werden».
+- Umgesetzt: 84 statt 88 BPM, Snare und Ghosts hinter dem Schlag, mehr Swing auf den Hi-Hats; Makros «Knarzen» (Sättigung, Bits, Abtastrate, Knistern auf den Drums) und «Unterbrechung» (Motivaussagen still oder abgerissen). «Viel gebraucht» als «das Motiv kommt zu oft» gelesen. Einzelheiten in `LUCERNE.md`.
+
 **Natur 0.3.0: Tiere und Kosmos**
 - Christian: mehr Natur- und vor allem Tierklänge für Ornament und Drum and Bass, «der walchor ist grosse spitze», dazu «eine ebene mit astronomischen signalen aus dem universum».
 - Umgesetzt in einem Cloud-Strang: Delfine, Nachtwald (Unken, Frösche, Uhu, Blätter) und Kosmos (Pulsar, Plasmawellen, Gravitationswellen, Radiorauschen), alles synthetisch nach veröffentlichten Messwerten. Keine fremden Aufnahmen (Lizenzen von NASA-Sonifikationen und ESA-Material uneinheitlich). Ausführlich in `NATUR.md`.

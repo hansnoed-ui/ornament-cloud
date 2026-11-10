@@ -8,7 +8,7 @@
 //             Ein Ton eine Oktave tiefer klingt doppelt so lang; ein Loop wird länger und braucht eine Entscheidung im Arrangement.
 //   dehnung   Dauer und Tonhöhe getrennt: WSOLA-Zeitdehnung (dehnen aus klangwerk.js), danach umgetastet. Echte Zeitdehnung, aber mit den
 //             Grenzen von WSOLA: bei dichtem, mehrstimmigem Material und grossen Faktoren hörbar verschmiert («flattert»).
-// Bearbeitungsschritte: band, dehnung, umkehr, hochpass, tiefpass, waerme, instabil, alterung, koerner, huelle, pegel, normal.
+// Bearbeitungsschritte: band, dehnung, umkehr, hochpass, tiefpass, waerme, instabil, alterung, knistern, koerner, huelle, pegel, normal.
 // Nach der Veröffentlichung nicht mehr verändern; neue Fähigkeiten bekommen eine neue Version.
 
 import { umtasten, dehnen, korn } from "../../lab/kern/klangwerk.js";
@@ -19,7 +19,7 @@ export const MODI = Object.freeze({
   band: { name: "Band (Playback)", hilfe: "Tonhöhe und Tempo ändern sich gemeinsam; die Dauer ändert sich mit der Transposition" },
   dehnung: { name: "Zeitdehnung (WSOLA)", hilfe: "Dauer und Tonhöhe getrennt; bei dichtem Material und grossen Faktoren hörbar verschmiert" },
 });
-export const SCHRITTE = Object.freeze(["band", "dehnung", "umkehr", "hochpass", "tiefpass", "waerme", "instabil", "alterung", "koerner", "huelle", "pegel", "normal"]);
+export const SCHRITTE = Object.freeze(["band", "dehnung", "umkehr", "hochpass", "tiefpass", "waerme", "instabil", "alterung", "knistern", "koerner", "huelle", "pegel", "normal"]);
 
 const stereo = (k) => (k.length >= 2 ? [k[0], k[1]] : [k[0], k[0]]);
 
@@ -79,12 +79,30 @@ const SCHRITT = {
     }
     return out;
   },
-  /** Alterung: Rauschen (dB unter dem Signal, eigener Pegel) und reduzierte Auflösung (Bits), beides getrennt dosierbar */
+  /**
+   * Alterung: Rauschen (dB unter dem Signal, eigener Pegel), reduzierte Auflösung (Bits) und reduzierte Abtastrate («rate» in Hz, Halten
+   * ohne Glättung wie ein alter Sampler: knarzt in den Höhen), alles getrennt dosierbar
+   */
   alterung: (k, rate, p) => {
     const rnd = zufall(p.seed ?? 7), bits = p.bits ?? 0, rausch = p.rauschen ?? -Infinity, stufen = bits > 0 ? 2 ** (bits - 1) : 0;
+    const halten = p.rate > 0 && p.rate < rate ? rate / p.rate : 1;
     let spitze = 1e-9; for (const s of k) for (const v of s) spitze = Math.max(spitze, Math.abs(v));
     const r = Number.isFinite(rausch) ? spitze * 10 ** (rausch / 20) : 0;
-    return k.map((s) => Float32Array.from(s, (v) => { let x = stufen ? Math.round(v * stufen) / stufen : v; if (r) x += (rnd() * 2 - 1) * r; return x; }));
+    return k.map((s) => {
+      let h = 0, wert = 0;
+      return Float32Array.from(s, (v, i) => { if (halten > 1) { if (i >= h) { wert = v; h += halten; } v = wert; } let x = stufen ? Math.round(v * stufen) / stufen : v; if (r) x += (rnd() * 2 - 1) * r; return x; });
+    });
+  },
+  /** Knistern: einzelne kurze Knackser wie Staub auf einer Platte (dichte je Sekunde, db unter der Spitze), zufällig in Stärke und Seite */
+  knistern: (k, rate, p) => {
+    const rnd = zufall(p.seed ?? 9), out = k.map((s) => s.slice()), n = out[0].length, zahl = Math.round((n / rate) * (p.dichte ?? 4));
+    let spitze = 1e-9; for (const s of k) for (const v of s) spitze = Math.max(spitze, Math.abs(v));
+    const g = spitze * 10 ** ((p.db ?? -30) / 20), lang = Math.max(2, Math.round(0.0006 * rate));
+    for (let j = 0; j < zahl; j++) {
+      const i0 = Math.floor(rnd() * Math.max(1, n - lang)), a = g * (0.2 + 0.8 * rnd() ** 2) * (rnd() < 0.5 ? -1 : 1), seite = rnd();
+      for (let i = 0; i < lang; i++) { const v = a * (1 - i / lang) * (i % 2 ? -0.6 : 1); out[0][i0 + i] += v * (0.4 + 0.6 * seite); if (out[1]) out[1][i0 + i] += v * (1 - 0.6 * seite); }
+    }
+    return out;
   },
   /**
    * Körner: aus dem Klang eine Fläche von «dauer» s. Körner von laenge ms (20–120), dichte je Sekunde, Lesestelle wandert langsam durch
