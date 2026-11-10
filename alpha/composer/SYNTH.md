@@ -41,12 +41,12 @@ Christian (10. November 2026): keine Popmelodien; «Melodie» heisst lange, sich
 
 - **Fläche:** lange Klänge, Harmonie alle 8, 4 oder 2 Takte (Wandel; bei Halftime doppelt so lang, bis 16 Takte), Stimmführung mit kleinsten Schritten, 3–6 Stimmen (Weite). Einzelne Stimmen wandern (Wechselnoten), die anderen halten mit `=`.
 - **Spitzen:** 0–3 helle Einzelklänge je Viertakt-Phrase, kurz nach einer Snare oder am Phrasenende, nie auf jeder Snare.
-- **Off-Beat:** Akkordfetzen neben dem Schlag, nur in den Lücken der Drums (aus den Drumspuren gelesen), mal dicht, mal lange nichts; bei raga- und maqam-inspirierten Tonleitern nach einem Zyklus von 7 oder 10 Sechzehnteln gegen den 4/4-Takt.
+- **Off-Beat:** kurze Akkord-Stiche auf den Achtel-Off-Beats (mit der offenen Hi-Hat, nie auf Kick oder Snare; bei Halftime auf 4 und 12), in enger Lage ohne Sprünge und mit Dub-Echo. Unregelmässig ist, in welchen Takten sie kommen: eine Figur kehrt wieder, verliert mal einen Stich oder gewinnt einen dazu. Bei raga- und maqam-inspirierten Tonleitern nach einem Zyklus von 7 oder 10 Sechzehnteln gegen den 4/4-Takt.
 - **Ruf** (selten, Horn oder Flöte, pentatonisch), **Alap** (Ton für Ton vom Grundton aufwärts, Meend und Gamak-artiges Pendeln), **Tanpura** (Pa, Sa, Sa, Sa tief; der Grundton bleibt).
 - **Klassik** wirkt in allen Schichten: Orgelpunkt, Vorhalt 4–3, chromatisch absteigende Innenstimme (Oktave, Septime, kleine Septime, Sexte), weite Lage, Glockenklang aus Oktave und Quinte bei den Spitzen. Keine Zitate.
 - **Regler** im Klang-Reiter jeder Synthspur: Wandel, Weite, Spitzen, Off-Beat, Klassik, Ruhe. Skala über die Tonleiter des Basses, Ausdruck im Klang. Dazu **sechs Melodie-Varianten** (1–6, aus einem gemeinsamen Startwert) und «neue sechs». Alles bleibt im Muster editierbar.
 - Die älteren Rollen (Pad, Keys, Arp, Lead …) bleiben für bestehende Projekte und als Werkzeug, stehen aber hinten in der Liste.
-- **Track erzeugen:** Ornament und Drum and Bass bekommen zur Schwebe zwei leise Schichten: Spitzen (Music Box Frost) und Off-Beats (Worn Electric Keys bzw. Velvet Rhodes Haze). Indien bekommt den Tanpura-Drone.
+- **Track erzeugen:** Ornament und Drum and Bass bekommen zur Schwebe zwei leise Schichten: Spitzen (Music Box Frost) und Off-Beats (Velvet Rhodes Haze). Indien bekommt den Tanpura-Drone.
 
 ## Quellen und Lizenzen
 
@@ -58,7 +58,7 @@ Keine fremden Assets, Samples, Presets oder Wellenformdateien; kein GPL-Code. Ka
   - alle 24 Presets endlich, Spitze ≤ 0,5, mono-verträglich (Korrelation über 0,25), ohne Rumpeln, reproduzierbar; jede Familie mindestens zwei Presets; alle sechs Charaktere vertreten
   - die zwölf nicht überarbeiteten Presets aus 0.1.0 bitgleich
   - jede Färbung endlich, gleiche Spitze, hörbar anders
-  - `=` hält Töne ohne neuen Anschlag; Spitzen selten; Off-Beats nie auf belegten Schritten oder auf dem Schlag; Ruhe macht nicht dichter
+  - `=` hält Töne ohne neuen Anschlag; Spitzen selten; Off-Beats nur auf den Achtel-Off-Beats, nie auf Kick oder Snare, in enger Lage, in mindestens zwei und nicht allen Takten; Ruhe macht nicht dichter
   - Maqam Bayati: zweite Stufe 150 Cent über dem Grundton, gemessen auf 3 Cent genau
 - Browser (Chromium, headless, Linux): Track «Ornament» (88 s, 17 Spuren) in etwa 6 s; Breathing Choir dazu über den Charakter-Filter, Variante 3, Klassik 90, Abspielen; keine Fehler in der Konsole.
 - Hörproben mit `node tools/composer-synth-hoerproben.mjs <ordner>`.

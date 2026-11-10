@@ -5,7 +5,9 @@
 //   charaktere/   je Klangcharakter drei Varianten (Shadow Chord, Velvet Rhodes Haze, Breathing Choir Pad mit dieser Färbung), −20 LUFS
 //   melodien/     DnB, Ornament, Indien: vier Schichten zusammen mit Drums und Bass, dann jede Schicht solo; Ornament in drei Varianten,
 //                 alt (Synth 0.1.0, Keys und Lead) gegen neu mit demselben Groove; Klassik 0, 50, 100
-//   node tools/composer-synth-hoerproben.mjs <ziel-ordner>
+//   offbeats/     die neuen Off-Beats (Achtel-Off-Beats, enge Lage) nur mit Drums und Bass: DnB mit Off-Beat 30, 60, 85; Ornament mit drei
+//                 Klängen; dann DnB und Ornament mit allen Schichten
+//   node tools/composer-synth-hoerproben.mjs <ziel-ordner> [presets|familien|charaktere|melodien|offbeats]
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -26,7 +28,7 @@ const { taktLesen } = await imp("composer/kern/muster.js");
 const { wavSchreiben } = await imp("lab/kern/klangwerk.js");
 
 const ziel = process.argv[2] ?? "hoerproben-synth", RATE = 48000, nur = process.argv[3] ?? "";
-for (const d of ["presets", "familien", "charaktere", "melodien"]) mkdirSync(join(ziel, d), { recursive: true });
+for (const d of ["presets", "familien", "charaktere", "melodien", "offbeats"]) mkdirSync(join(ziel, d), { recursive: true });
 const name = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 const schreibe = (pfad, k) => { writeFileSync(join(ziel, pfad), wavSchreiben(k, RATE, { bits: "24" })); };
 const log = [];
@@ -59,7 +61,7 @@ function synthSpur(p, { modul = "synth@0.2.0", fam, patch, rolle, takte, anzahl,
   const P = (modul === "synth@0.1.0" ? S1 : S2).PATCHES[patch], st = stimmeVon(modul, fam);
   const q = { art: "erzeugt", erzeuger: modul, stimme: fam, werte: { patch, ...werte }, rolle, takte, anzahl, bpm, grundton, leiter, kammerton: 432, swing: 0, menschlich: 2, seed };
   const echoMs = Math.round((0.75 * 60000) / (bpm >= 140 ? bpm / 2 : bpm));
-  const sp = PR.erzeugteSpurDazu(p, q, { name: P.name, typ: "synth", pegel: st.pegel + pegel, echo: effekte ? { anteil: Math.round((P.echo ?? 0.2) * 100), zeit: echoMs } : null, raum: effekte ? { anteil: 18, nachhall: 2.6, daempfung: 5000, vorverz: 20 } : null });
+  const sp = PR.erzeugteSpurDazu(p, q, { name: P.name, typ: "synth", pegel: st.pegel + pegel, echo: effekte ? { anteil: Math.round(Math.max(P.echo ?? 0.2, rolle === "offbeat" ? 0.4 : 0) * 100), zeit: echoMs } : null, raum: effekte ? { anteil: 18, nachhall: 2.6, daempfung: 5000, vorverz: 20 } : null });
   return { id: sp.id, kanaele: spurRechnen(q, RATE).kanaele, q };
 }
 
@@ -114,9 +116,9 @@ if (!nur || nur === "charaktere") for (const ch of S2.CHARAKTERE) {
 
 // ---------- Melodien: vier Schichten ----------
 const SCHICHTEN = {
-  dnb: [["flaeche", "ice", "breathingChoir", 0], ["spitzen", "ice", "musicBoxFrost", -6], ["offbeat", "velvet", "velvetRhodes", -6], ["drone", "shadow", "deepRoomDrone", -4, "schwebe"]],
-  ornament: [["flaeche", "shadow", "shadowChord", -2], ["spitzen", "ice", "musicBoxFrost", -7], ["offbeat", "tape", "wornKeys", -6], ["drone", "raga", "tanpuraGlow", -6, "tanpura"]],
-  indien: [["drone", "raga", "tanpuraGlow", -2, "tanpura"], ["alap", "raga", "sitarGlide", -4, "alap"], ["spitzen", "ice", "musicBoxFrost", -8], ["offbeat", "velvet", "velvetRhodes", -7]],
+  dnb: [["flaeche", "ice", "breathingChoir", 0], ["spitzen", "ice", "musicBoxFrost", -6], ["offbeat", "velvet", "velvetRhodes", 0], ["drone", "shadow", "deepRoomDrone", -4, "schwebe"]],
+  ornament: [["flaeche", "shadow", "shadowChord", -2], ["spitzen", "ice", "musicBoxFrost", -7], ["offbeat", "velvet", "velvetRhodes", 0], ["drone", "raga", "tanpuraGlow", -6, "tanpura"]],
+  indien: [["drone", "raga", "tanpuraGlow", -2, "tanpura"], ["alap", "raga", "sitarGlide", -4, "alap"], ["spitzen", "ice", "musicBoxFrost", -8], ["offbeat", "velvet", "velvetRhodes", -1]],
 };
 async function schichten(stilKey, anzahl, { seed = 1, regler = {}, solo = null, leiter = null, schicht = null } = {}) {
   const p = PR.neuesProjekt({ rate: RATE }), db = drumsUndBass(p, stilKey, anzahl), spuren = [...db.spuren];
@@ -152,3 +154,11 @@ if (!nur || nur === "melodien") {
   console.log("Melodien fertig");
 }
 console.log("fertig:", ziel);
+
+// ---------- Off-Beats: Akkord-Stiche auf den Achtel-Off-Beats, gehört mit Drums und Bass (ohne Schlag ist ein Off-Beat nicht zu beurteilen) ----------
+if (!nur || nur === "offbeats") {
+  for (const ob of [30, 60, 85]) schreibe(`offbeats/dnb-1-velvet-rhodes-off-beat-${ob}-mit-drums-und-bass.wav`, await schichten("dnb", 16, { seed: 1, regler: { offbeat: ob }, schicht: [["offbeat", "velvet", "velvetRhodes", 0]] }));
+  for (const [fam, k] of [["velvet", "velvetRhodes"], ["shadow", "shadowChord"], ["glass", "glassKeys"]]) schreibe(`offbeats/ornament-2-${name(S2.PATCHES[k].name)}-mit-drums-und-bass.wav`, await schichten("ornament", 16, { seed: 1, regler: { offbeat: 60 }, schicht: [["offbeat", fam, k, 0]] }));
+  for (const stil of ["dnb", "ornament"]) schreibe(`offbeats/${stil}-3-alle-schichten-mit-neuen-off-beats.wav`, await schichten(stil, 32, { seed: 1 }));
+  console.log("Off-Beats");
+}

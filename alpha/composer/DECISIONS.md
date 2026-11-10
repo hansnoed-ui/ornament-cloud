@@ -13,6 +13,12 @@ Hier steht, was Christian entschieden hat und wie er Klänge beurteilt hat, dami
 - Raga- und Maqam-Tonleitern (Bayati, Rast, Saba, Shur mit Vierteltönen) als Inspiration bezeichnet.
 - Kein GPL-Code, keine fremden Assets.
 
+**Off-Beats neu (Urteil auf der Hörseite, 10.11.: «das meiste gefällt gut. die offbeats gehen noch nicht»)**
+- Ursache: Die Off-Beats wichen allen Drumschlägen aus, auch der offenen Hi-Hat, die genau auf den Achtel-Off-Beats liegt. Übrig blieben zufällige Sechzehntel, dazu Zweiklänge, die in der Lage sprangen (teils Sekunden), rund 20 dB unter den Drums.
+- Jetzt: kurze Akkord-Stiche auf den Achtel-Off-Beats (2, 6, 10, 14; Halftime 4 und 12), nie auf Kick oder Snare. Unregelmässig ist nur, in welchen Takten sie kommen: eine Figur, die wiederkehrt und ab und zu einen Stich verliert oder dazugewinnt. Enge Lage (Terz, Quinte, Septime oder Dreiklang, immer die nächste Umkehrung), Quartvorhalt mit Klassik.
+- Off-Beats 6 dB lauter in Ornament und DnB, Echo-Anteil mindestens 40 % (Dub-Echo). Ornament nimmt Velvet Rhodes Haze statt Worn Electric Keys («nein» zweimal).
+- Offen: Klangwahl für Ornament (Velvet Rhodes, Shadow Chord oder Glass Circuit Keys) und Dichte nach Christians Urteil.
+
 ## 9. November 2026
 
 **Bereiche und Fassungen (Auftrag `bereiche-und-spuren.md`)**

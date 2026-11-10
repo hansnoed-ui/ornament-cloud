@@ -559,7 +559,7 @@ test("Synth 0.2.0: jede Färbung verändert den Klang, bleibt endlich und auf de
   }
 });
 
-test("Melodie: Fläche hält Stimmen mit «=» (kein neuer Anschlag), Spitzen selten, Off-Beats nur in Lücken, Ruhe macht stiller", () => {
+test("Melodie: Fläche hält Stimmen mit «=» (kein neuer Anschlag), Spitzen selten, Off-Beats auf dem Off-Beat, Ruhe macht stiller", () => {
   const n = L.notenLesen(["1+3+5! - - - 1=+4+5= - - - 1=+3+5= - - -"], { bpm: 120, anzahl: 1, leiter: "moll" });
   assert.equal(n.length, 5, "1 und 5 klingen durch, nur 4 und 3 werden neu angeschlagen");
   assert.equal(n.find((x) => x.halbtoene === 0).dauer, 2);
@@ -568,8 +568,23 @@ test("Melodie: Fläche hält Stimmen mit «=» (kein neuer Anschlag), Spitzen se
     assert.ok(fl.join(" ").includes("="), "Fläche hält Stimmen");
     const sp = sequenzErzeugen({ rolle: "spitzen", akkorde: [1, 4], anzahl: 8, seed, snares: [[4, 12]] }), zahl = sp.join(" ").split(/\s+/).filter((t) => t !== "." && t !== "-").length;
     assert.ok(zahl <= 2 * 3 * 2, `Spitzen selten (${zahl})`);
-    const belegt = [[0, 4, 6, 8, 10, 12, 14]], ob = sequenzErzeugen({ rolle: "offbeat", akkorde: [1], anzahl: 8, seed, belegt, regler: { offbeat: 100 } });
-    for (const z of ob) z.split(" ").forEach((t, i) => { if (t !== "." && t !== "-") assert.ok(!belegt[0].includes(i) && i % 4 !== 0, `Off-Beat auf ${i}`); });
+    // Off-Beats: nur auf den Achtel-Off-Beats (bei Halftime 4 und 12, dazu 14), nie auf Kick oder Snare, als enger Akkord in einer Lage
+    for (const [snares, erlaubt] of [[[[4, 12]], [2, 6, 14]], [[[8]], [4, 6, 12, 14]]]) for (const offb of [20, 50, 100]) {
+      const ob = sequenzErzeugen({ rolle: "offbeat", akkorde: [1, 6, 4, 5], anzahl: 8, seed, kicks: [[0, 10]], snares, belegt: [[0, 2, 4, 6, 8, 10, 12, 14]], regler: { offbeat: offb, klassik: 80 } });
+      let takte = 0;
+      for (const z of ob) {
+        const t = z.split(" "); if (t.some((x) => x !== "." && x !== "-")) takte++;
+        t.forEach((x, i) => {
+          if (x === "." || x === "-") return;
+          assert.ok(erlaubt.includes(i), `Off-Beat auf ${i} (${z})`);
+          const st = x.split("+").map((y) => { const m = y.match(/^(\d)(['’,]*)/); return Number(m[1]) + 7 * ((m[2].match(/'/g) ?? []).length - (m[2].match(/,/g) ?? []).length); });
+          assert.ok(st.length >= 3 && Math.max(...st) - Math.min(...st) <= 6, `enge Lage: ${x}`);
+        });
+      }
+      assert.ok(takte >= 2 && (offb < 100 ? takte < 8 : true), `unregelmässig in ${takte} von 8 Takten`);
+    }
+    const ohneDrums = sequenzErzeugen({ rolle: "offbeat", akkorde: [1], anzahl: 8, seed, regler: { offbeat: 100 } });
+    for (const z of ohneDrums) z.split(" ").forEach((x, i) => { if (x !== "." && x !== "-") assert.ok([2, 6, 10, 14].includes(i), `ohne Drums auf ${i}`); });
     const viel = (r) => sequenzErzeugen({ rolle: "offbeat", akkorde: [1], anzahl: 8, seed, regler: { offbeat: 80, ruhe: r } }).join(" ").split(/\s+/).filter((t) => t !== "." && t !== "-").length;
     assert.ok(viel(100) <= viel(0) + 2, "Ruhe macht nicht dichter");
   }

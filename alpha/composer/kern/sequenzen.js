@@ -47,7 +47,7 @@ export function sequenzErzeugen({ rolle = "pad", akkorde = [1], kicks = null, an
   const R = { ...REGLER_STD, ...(regler ?? {}) }, a = akkorde.length ? akkorde : [1];
   if (rolle === "flaeche") return flaeche(a, rnd, R, Math.min(anzahl, R.wandel < 34 && anzahl >= 16 ? 16 : 8), halftime);
   if (rolle === "spitzen") return spitzen(a, rnd, R, takte, snares);
-  if (rolle === "offbeat") return offbeat(a, rnd, R, takte, belegt ?? kicks, zyklus);
+  if (rolle === "offbeat") return offbeat(a, rnd, R, takte, { belegt, kicks, snares, zyklus });
   if (rolle === "ruf") return ruf(a, rnd, R, takte);
   if (rolle === "alap") return alap(rnd, R, takte);
   if (rolle === "tanpura") return tanpura(rnd, takte, halftime);
@@ -204,30 +204,60 @@ function spitzen(akkorde, rnd, R, takte, snares) {
 }
 
 /**
- * Off-Beats: kurze Akkordfetzen neben dem Schlag, in den Lücken der Drums (belegt: Schritte mit Schlägen je Takt), unregelmässig gesteuert
- * über Wahrscheinlichkeit und Dichte, reproduzierbar. Mal ein dichter Takt, mal lange nichts. Mit «zyklus» (7, 10 oder 16 Sechzehntel,
- * z. B. Rupak, Jhaptal, Teental) folgen die Stellen den Betonungen eines Zyklus, der gegen den 4/4-Takt läuft.
+ * Off-Beats: kurze Akkord-Stiche auf den Achtel-Off-Beats, also zwischen den Schlägen, dort wo die offene Hi-Hat liegt, nie auf Kick oder
+ * Snare. Unregelmässig ist, in welchen Takten sie kommen, nicht wo im Takt: je Sequenz eine Figur (ein, zwei oder mehr Stiche), die in
+ * unregelmässig verteilten Takten wiederkehrt, ab und zu einen Stich verliert oder dazugewinnt; ab Takt 5 manchmal eine zweite Figur.
+ * Die Stimmen bleiben eng in einer Lage (Terz, Quinte, Septime ohne Grundton oder Dreiklang; immer die nächste Umkehrung), das Echo der
+ * Spur trägt sie weiter. Mit Klassik ein Quartvorhalt, der sich auf den nächsten Stich in die Terz löst. Das Raster folgt der Snare:
+ * Snare auf 2 und 4 → Off-Beats auf 2, 6, 10, 14; Halftime (Snare auf 3) → 4 und 12. Mit «zyklus» (7, 10 oder 16 Sechzehntel, z. B. Rupak,
+ * Jhaptal, Teental) folgen die Stellen den Betonungen eines Zyklus, der gegen den 4/4-Takt läuft.
+ * Bis Version 0.2.0 der App lagen die Fetzen auf zufälligen Sechzehnteln neben der Hi-Hat und sprangen in der Lage: das klang verloren.
  */
 const ZYKLEN = { 7: [0, 3, 5], 10: [0, 2, 5, 7], 16: [0, 4, 8, 12] };
-function offbeat(akkorde, rnd, R, takte, belegt, zyklus) {
+const FIGUREN = {
+  4: { selten: [[6], [14], [2]], mittel: [[6, 14], [2, 10], [2, 6], [6, 10]], dicht: [[2, 6, 14], [2, 6, 10, 14], [6, 10, 14]] },
+  8: { selten: [[4], [12]], mittel: [[4, 12], [12, 14]], dicht: [[4, 12, 14], [4, 6, 12]] },
+};
+/** Stufe in ein Fenster von sieben Stufen um «mitte» falten: jede Tonklasse genau einmal, die Lage bleibt stehen */
+const imFenster = (s, mitte) => { while (s > mitte + 3) s -= 7; while (s < mitte - 3) s += 7; return s; };
+const enge = (g, toene, mitte, st = "") => toene.map((t) => imFenster(g + t, mitte)).sort((a, b) => a - b).map((s, i, a) => fmt(s, { st: i === a.length - 1 ? st : "" })).join("+");
+function offbeat(akkorde, rnd, R, takte, { belegt, kicks, snares, zyklus }) {
   const S = takte * 16, z = leerZeilen(S), p = R.offbeat / 100, ruhe = R.ruhe / 100, k = R.klassik / 100;
-  const frei = (b, s2) => !(belegt?.[b % (belegt?.length || 1)] ?? []).includes(s2);
-  let still = 0;
+  const jeTakt = (a, b) => (a?.length ? a[b % a.length] ?? [] : []);
+  // nur Kick und Snare sperren (die Hi-Hat ist der Partner des Off-Beats); ohne beides die schweren Schläge aus «belegt»
+  const hart = (b) => { const h = [...jeTakt(kicks, b), ...jeTakt(snares, b)]; return h.length || !belegt ? h : jeTakt(belegt, b).filter((s) => s % 4 === 0); };
+  const sn = (snares ?? []).flat(), halb = sn.length > 0 && sn.includes(8) && !sn.includes(4) && !sn.includes(12);
+  const fig = FIGUREN[halb ? 8 : 4], raster = halb ? [4, 12] : [2, 6, 10, 14];
+  const wahl = (a) => a[Math.floor(rnd() * a.length)];
+  const dichte = () => (p < 0.35 ? "selten" : p < 0.7 ? (rnd() < 0.5 ? "selten" : "mittel") : rnd() < 0.4 ? "mittel" : "dicht");
+  const figurA = wahl(fig[dichte()]), figurB = rnd() < 0.4 ? wahl(fig[dichte()]) : figurA;
+  const lage = R.weite > 70 ? [2, 4, 6, 8] : rnd() < 0.6 ? [2, 4, 6] : [0, 2, 4], mitte = 6;
+  const lang = halb ? 2 + (rnd() < 0.5 ? 1 : 0) : rnd() < 0.5 ? 1 : 2;
+  // welche Takte: unregelmässig, mindestens zwei, mit Ruhe weniger
+  const anteil = Math.max(0.12, Math.min(0.95, 0.3 + 0.55 * p - 0.25 * ruhe));
+  const aktiv = Array.from({ length: takte }, () => rnd() < anteil);
+  for (let n = aktiv.filter(Boolean).length, versuch = 0; n < Math.min(2, takte) && versuch < 20; versuch++) { const b = Math.floor(rnd() * takte); if (!aktiv[b]) { aktiv[b] = true; n++; } }
   for (let b = 0; b < takte; b++) {
-    if (still > 0) { still--; continue; }
-    if (rnd() < ruhe * 0.35) { still = Math.floor(rnd() * 3); continue; }   // lange nichts
-    if (rnd() > p + 0.3) continue;
-    const g = akkorde[b % akkorde.length], dicht = rnd() < p * 0.5 ? 3 : rnd() < 0.5 ? 2 : 1;
+    if (!aktiv[b]) continue;
+    const g = akkorde[b % akkorde.length], sperre = hart(b);
     let stellen;
-    if (ZYKLEN[zyklus]) { stellen = []; for (let s2 = 0; s2 < 16; s2++) if (ZYKLEN[zyklus].includes(((b * 16 + s2) % zyklus))) stellen.push(s2); }
-    else stellen = [2, 3, 6, 7, 10, 11, 14, 15, 5, 13];
-    stellen = stellen.filter((s2) => s2 % 4 !== 0 && frei(b, s2));
-    for (let c = 0; c < dicht && stellen.length; c++) {
-      const s2 = stellen.splice(Math.floor(rnd() * stellen.length), 1)[0], pos = b * 16 + s2;
-      const fetzen = rnd() < 0.5 ? [2, 6] : rnd() < 0.5 ? [4, 8] : k > 0.4 ? [2, 3] : [6, 9];   // Terz+Septime, Quinte+None, Vorhalt (Terz+Quarte), Septime+Dezime
-      z[pos] = fetzen.map((t, i) => ton({ stufe: g + t, st: i === fetzen.length - 1 ? (rnd() < 0.3 ? "!" : rnd() < 0.5 ? "_" : "") : "" })).join("+");
-      if (s2 < 15 && rnd() < 0.35 && z[pos + 1] === ".") z[pos + 1] = "-";
+    if (ZYKLEN[zyklus]) {
+      const im = []; for (let s2 = 0; s2 < 16; s2++) if (ZYKLEN[zyklus].includes((b * 16 + s2) % zyklus) && s2 % 4 !== 0 && !sperre.includes(s2)) im.push(s2);
+      stellen = []; for (let c = 0; c < (b < 4 ? figurA : figurB).length && im.length; c++) stellen.push(im.splice(Math.floor(rnd() * im.length), 1)[0]);
+    } else {
+      stellen = [...(b < 4 ? figurA : figurB)];
+      if (stellen.length > 1 && rnd() < 0.25) stellen.splice(Math.floor(rnd() * stellen.length), 1);   // einen Stich auslassen
+      else if (rnd() < 0.15 + 0.2 * p) { const dazu = raster.filter((x) => !stellen.includes(x)); if (dazu.length) stellen.push(wahl(dazu)); }
+      stellen = stellen.filter((s2) => !sperre.includes(s2));
+      if (!stellen.length) { const frei = raster.filter((s2) => !sperre.includes(s2)); if (frei.length) stellen = [wahl(frei)]; }
     }
+    stellen.sort((a, c) => a - c);
+    const vorhalt = k > 0.45 && stellen.length >= 2 && lage.includes(2) && rnd() < (k - 0.3) * 0.7;
+    stellen.forEach((s2, i) => {
+      const pos = b * 16 + s2, toene = vorhalt && i === 0 ? lage.map((t) => (t === 2 ? 3 : t)) : lage;
+      z[pos] = enge(g, toene, mitte, i > 0 && rnd() < 0.4 ? "_" : "");
+      for (let j = 1; j < lang && s2 + j < 16 && z[pos + j] === "."; j++) z[pos + j] = "-";
+    });
   }
   return zeilenAus(z);
 }
