@@ -422,6 +422,25 @@ test("Natur 0.2.0: Regen, Feuer, Insekten klingen und sind Schleifen; die Famili
   gleich(flaechenSpurRechnen({ ...q, erzeuger: "natur@0.2.0" }, R, {}).kanaele[0], flaechenSpurRechnen({ ...q, erzeuger: "natur@0.1.0" }, R, {}).kanaele[0], "Gezeiten 0.2.0 = 0.1.0");
 });
 
+test("Natur 0.3.0: Delfine, Nachtwald, Kosmos klingen und sind reproduzierbar; die Familien aus 0.2.0 klingen wie in 0.2.0", () => {
+  const R = 24000, n3 = ERZEUGER["natur@0.3.0"];
+  for (const k of ["delfine", "nachtwald", "kosmos"]) for (const v of n3.stimmen[k].varianten) {
+    const q = { erzeuger: "natur@0.3.0", stimme: k, werte: v.werte, flaeche: true, anzahl: 2, bpm: 174, grundton: 2, leiter: "moll", seed: 2 };
+    const [L0] = flaechenSpurRechnen(q, R, { einsaetze: [0, 0.69, 1.38] }).kanaele;
+    assert.equal(L0.length, Math.round(2 * (240 / 174) * R), `${k} ${v.name}: Länge`);
+    let m = 0, e = 0; for (const x of L0) { assert.ok(Number.isFinite(x), `${k} ${v.name}`); m = Math.max(m, Math.abs(x)); e += x * x; }
+    assert.ok(m <= 0.61 && Math.sqrt(e / L0.length) > 0.005, `${k} ${v.name}: Spitze ${m}`);
+    gleich(flaechenSpurRechnen(q, R, { einsaetze: [0, 0.69, 1.38] }).kanaele[0], L0, `${k} ${v.name}: reproduzierbar`);
+  }
+  for (const k of ["walchor", "regen", "insekten"]) {
+    const q = { stimme: k, werte: {}, flaeche: true, anzahl: 2, bpm: 120, grundton: 2, leiter: "moll", seed: 3 };
+    gleich(flaechenSpurRechnen({ ...q, erzeuger: "natur@0.3.0" }, R, {}).kanaele[0], flaechenSpurRechnen({ ...q, erzeuger: "natur@0.2.0" }, R, {}).kanaele[0], `${k} 0.3.0 = 0.2.0`);
+  }
+  assert.ok(A.BESETZUNG.ornament.natur.some(([s]) => s === "kosmos") && A.BESETZUNG.dnb.natur.some(([s]) => s === "nachtwald"));
+  assert.equal(A.funktionVon({ flaeche: true, stimme: "delfine" }), "naturklang");
+  assert.equal(A.funktionVon({ flaeche: true, stimme: "kosmos" }), "natur");
+});
+
 test("Ornament Style: zuoberst, Pop und ECM ausgeblendet, Perkussion wechselt je Abschnitt", () => {
   assert.equal(STILE[0].key, "ornament");
   assert.ok(STILE.find((s) => s.key === "pop").versteckt && STILE.find((s) => s.key === "ecm").versteckt);

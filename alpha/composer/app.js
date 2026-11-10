@@ -11,7 +11,7 @@ import { zipBlob } from "./kern/zip.js";
 import { STILE, stilVon, halbeZeit } from "./kern/muster.js";
 import { ARTEN as UNTER, SCHNELL, anwenden, werteVon } from "./kern/unterbrechungen.js";
 import { spurRechnen, schlagRechnen, flaechenSpurRechnen } from "./kern/erzeugen.js";
-import { MAKROS } from "./erzeuger/natur-0.2.0.js";
+import { MAKROS } from "./erzeuger/natur-0.3.0.js";
 import * as SYNTH010 from "./erzeuger/synth-0.1.0.js";
 import * as SYNTH020 from "./erzeuger/synth-0.2.0.js";
 import { ROLLEN, REGLER, REGLER_STD, sequenzErzeugen } from "./kern/sequenzen.js";
@@ -345,7 +345,7 @@ function stileAufbauen() {
   $("bassStimme").append(...Object.values(bass).map((b) => el("option", { value: b.key, textContent: b.name })));
   $("bassLinie").append(...LINIEN.map((l) => el("option", { value: l.key, textContent: l.name, title: l.hilfe })));
   $("tonart").append(...NOTEN.map((n, i) => el("option", { value: i, textContent: n, selected: i === 2 })));
-  $("flaecheStimme").append(...Object.values(ERZEUGER["natur@0.2.0"].stimmen).map((b) => el("option", { value: b.key, textContent: b.name })));
+  $("flaecheStimme").append(...Object.values(ERZEUGER["natur@0.3.0"].stimmen).map((b) => el("option", { value: b.key, textContent: b.name })));
   $("leiter").append(...Object.entries(LEITERN).map(([k, l]) => el("option", { value: k, textContent: l.name })));
   sel.onchange = () => {
     const st = stilVon(sel.value); $("erzBpm").value = st.bpm;
@@ -536,10 +536,10 @@ function synthSteuerung(sp) {
 /** eine Flächenspur dazu */
 async function flaecheDazu(vorgabe = null) {
   await kontext(48000);
-  const st = stimmeVon("natur@0.2.0", vorgabe?.[0] ?? $("flaecheStimme").value), vv = vorgabe?.[1]?.variante, v = st.varianten.find((x) => x.name === vv) ?? st.varianten[0];
+  const st = stimmeVon("natur@0.3.0", vorgabe?.[0] ?? $("flaecheStimme").value), vv = vorgabe?.[1]?.variante, v = st.varianten.find((x) => x.name === vv) ?? st.varianten[0];
   const drums = z.projekt.spuren.find(istDrums), bass = z.projekt.spuren.find(istBass);
   const anzahl = drums?.quelle.anzahl ?? Number($("takte").value), bpm = z.projekt.tempo.bpm || Number($("erzBpm").value);
-  const quelle = { art: "erzeugt", erzeuger: "natur@0.2.0", stimme: st.key, variante: vorgabe?.[1] && !vv ? null : v.name, werte: { ...v.werte, ...Object.fromEntries(Object.entries(vorgabe?.[1] ?? {}).filter(([k]) => k !== "variante")) }, flaeche: true, anzahl, bpm, grundton: bass?.quelle.grundton ?? Number($("tonart").value), leiter: bass?.quelle.leiter ?? $("leiter").value, kammerton: kammerton(), seed: 1 + Math.floor(Math.random() * 99998), sample: null, messdaten: null };
+  const quelle = { art: "erzeugt", erzeuger: "natur@0.3.0", stimme: st.key, variante: vorgabe?.[1] && !vv ? null : v.name, werte: { ...v.werte, ...Object.fromEntries(Object.entries(vorgabe?.[1] ?? {}).filter(([k]) => k !== "variante")) }, flaeche: true, anzahl, bpm, grundton: bass?.quelle.grundton ?? Number($("tonart").value), leiter: bass?.quelle.leiter ?? $("leiter").value, kammerton: kammerton(), seed: 1 + Math.floor(Math.random() * 99998), sample: null, messdaten: null };
   const sp = PR.erzeugteSpurDazu(z.projekt, quelle, { name: st.name, typ: "flaeche", pegel: st.pegel + (vorgabe?.[2]?.pegel ?? 0), pan: 0, glanz: vorgabe ? { menge: 20, luft: 2 } : null, raum: { anteil: 30, nachhall: 3.6, daempfung: 4500, vorverz: 25, groesse: 1.6, tiefschnitt: 200, bewegung: 40 } });
   melde(`${st.name} wird gerechnet …`, 0);
   const fertig = spurNeuRechnen(sp);
