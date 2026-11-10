@@ -33,8 +33,8 @@ class MotorWorklet extends AudioWorkletProcessor {
       this.m.block(this.aus, n);
       const [L, R] = this.aus;
       if (this.g !== 1 || this.ziel !== 1) {
-        const d = this.ziel > this.g ? this.schritt : -this.schritt;
-        for (let i = 0; i < n; i++) { if (this.g !== this.ziel) this.g = d > 0 ? Math.min(this.ziel, this.g + d) : Math.max(this.ziel, this.g - d); L[i] *= this.g; R[i] *= this.g; }
+        const auf = this.ziel > this.g, s = this.schritt;
+        for (let i = 0; i < n; i++) { if (this.g !== this.ziel) this.g = auf ? Math.min(this.ziel, this.g + s) : Math.max(this.ziel, this.g - s); L[i] *= this.g; R[i] *= this.g; }
         if (this.g === 0 && this.ziel === 0) this.m.laeuft = false;
       }
       out[0].set(L.subarray(0, n));
