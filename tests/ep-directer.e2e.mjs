@@ -121,6 +121,24 @@ try {
     assert.deepEqual(await p.evaluate(() => [innerWidth, document.documentElement.scrollWidth]), [412, 412]);
   });
 
+  await pruefe("Normaler Browser: kein Hinweis auf den App-Browser", async () => {
+    assert.equal(await p.isVisible("#inapp"), false);
+  });
+
+  await pruefe("Facebook-Browser (Android): Hinweis mit «In Chrome öffnen», die Seite spielt trotzdem, nichts breiter als der Bildschirm", async () => {
+    const fbCtx = await browser.newContext({ ...devices["Pixel 7"], userAgent: devices["Pixel 7"].userAgent + " [FB_IAB/FB4A;FBAV/489.0.0.0;]" });
+    const f = await fbCtx.newPage();
+    await f.goto(url);
+    await f.waitForSelector("#inapp:not([hidden])");
+    assert.match(await f.textContent("#inapp"), /Im Facebook-Browser stoppt die Musik/);
+    assert.match(await f.getAttribute("#inapp a", "href"), /^intent:\/\/localhost:\d+\/listen\/directer\/#Intent;scheme=http;package=com\.android\.chrome;/);
+    await f.waitForFunction(() => document.querySelector("#regler").max !== "0");
+    await f.click("#play");
+    await f.waitForFunction(() => !__ep.audio.paused);
+    assert.deepEqual(await f.evaluate(() => [innerWidth, document.documentElement.scrollWidth]), [412, 412]);
+    await fbCtx.close();
+  });
+
   await pruefe("Keine Fehler im Browser", async () => assert.deepEqual(konsole, []));
 
   await pruefe("Fehlt die Audiodatei, steht ein verständlicher Hinweis da", async () => {

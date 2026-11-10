@@ -129,3 +129,12 @@ body {
 
 .hinweis { margin: 0; padding: 12px 14px; border: 1px solid var(--linie); border-radius: 8px; background: var(--flaeche); }
 .platzhalter { margin: 0; padding: 10px 14px; border: 1px dashed #c98a3a; border-radius: 8px; color: #f0c48a; font-size: 0.9rem; }
+
+/* Hinweis im Browser einer App (Facebook, Instagram …): dort stoppt die Musik mit gesperrtem Bildschirm */
+.inapp { padding: 12px 14px; border: 1px solid #c98a3a; border-radius: 8px; color: #f0c48a; font-size: 0.92rem; display: grid; gap: 10px; }
+.inapp[hidden] { display: none; }
+.inapp p { margin: 0; }
+.inapp-knoepfe { display: flex; flex-wrap: wrap; gap: 8px; }
+.inapp-knopf { min-height: 40px; padding: 8px 16px; border: 1px solid #f0c48a; border-radius: 999px; background: none; color: #f0c48a; font: inherit; font-size: 0.9rem; text-decoration: none; display: inline-flex; align-items: center; cursor: pointer; }
+.inapp-knopf.haupt { background: #f0c48a; color: var(--bg); font-weight: 600; }
+.inapp-knopf:focus-visible { outline: 2px solid var(--akzent); outline-offset: 2px; }

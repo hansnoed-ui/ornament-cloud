@@ -28,6 +28,8 @@ Platzhalter tragen das Wort `PLATZHALTER` (Tracktitel) oder `null` (Marken). Sol
 
 Genau ein natives `<audio preload="metadata">` spielt eine einzige WAV. Die Tracks sind Zeitmarken darin (`startSample / abtastrate`). Ein Tipp auf einen Titel setzt `currentTime`, die Datei bleibt dieselbe. Darum gibt es zwischen den Tracks nichts umzuschalten, und der Browser spielt am Sperrbildschirm einfach weiter. Der aktive Titel folgt der tatsächlichen Position (`timeupdate`, und beim Zurückkehren `visibilitychange`, `pageshow`, `focus`). Media Session setzt Titel, Anzeigename, EP und Cover sowie Play, Pause, Vor, Zurück und Spulen am Sperrbildschirm; die Position dort zählt je Track. Fehlt die Datei oder bricht sie ab, steht ein verständlicher Hinweis da.
 
+**Browser in Apps (Facebook, Instagram, Messenger, TikTok …):** Deren eingebauter Browser hält die Musik an, sobald der Bildschirm gesperrt oder die App gewechselt wird; das lässt sich von der Seite aus nicht verhindern. Die Seite erkennt ihn am User-Agent (`inAppBrowser` in `player.js`) und zeigt über der Wiedergabe einen Hinweis: auf Android ein Knopf «In Chrome öffnen» (Intent-Link), auf dem iPhone die Anleitung «··· → Im externen Browser öffnen», dazu «Link kopieren».
+
 ## WAV exportieren
 
 Braucht Node und `ffmpeg`/`ffprobe` im PATH. Die Master werden nur gelesen.
