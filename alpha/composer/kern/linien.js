@@ -22,6 +22,8 @@ export const LEITERN = Object.freeze({
   hijaz: { name: "Hijaz", stufen: [0, 1, 4, 5, 7, 8, 10] },
   harmonisch: { name: "harmonisch Moll (Nahawand)", stufen: [0, 2, 3, 5, 7, 8, 11] },
   dur: { name: "Dur", stufen: [0, 2, 4, 5, 7, 9, 11] },
+  lydisch: { name: "Lydisch", stufen: [0, 2, 4, 6, 7, 9, 11] },   // seit Harmonik 0.1.0 (ornament.bienne)
+  mixolydisch: { name: "Mixolydisch", stufen: [0, 2, 4, 5, 7, 9, 10] },
   // raga-inspiriert (Thaat-Tonvorrat, keine Raga-Praxis: Bewegungsregeln, Vadi und Pakad fehlen)
   bhairav: { name: "Bhairav (Raga-Inspiration)", stufen: [0, 1, 4, 5, 7, 8, 11] },
   bhairavi: { name: "Bhairavi (Raga-Inspiration)", stufen: [0, 1, 3, 5, 7, 8, 10] },

@@ -4,6 +4,14 @@ Hier steht, was Christian entschieden hat und wie er Klänge beurteilt hat, dami
 
 ## 10. November 2026
 
+**ornament.bienne (Auftrag `bienne.md`), Phase 1: Harmonik 0.1.0**
+- Neuer Stil in fünf Phasen (Plan in `BIENNE.md`), jede als eigener PR. Phase 1 ist die Harmonik-Engine `kern/harmonik.js`, ohne Abhängigkeit von bienne, damit Ornament, DnB und Lucerne sie später nutzen können.
+- `LEITERN` hat jetzt auch Lydisch und Mixolydisch. Ionisch bleibt `dur`. Bestehende Leitern sind unverändert.
+- `erzeugen.js` kann Noten als Ereignisse mit festen MIDI-Tönen rechnen (`q.noten`), für Klänge, die nicht als Stufen einer Leiter zu schreiben sind. Bestehende Rezepte klingen gleich.
+- Rückwärtskompatibilität alter Projekte ist nicht mehr nötig (Christian, 10.11.); was sich dadurch ändert, wird hier vermerkt.
+- Referenzen nur als Verfahren: keine Bandnamen in Presets, Abschnitten oder Dateinamen, keine nachgebauten Folgen. Der Generator kennt nur Regeln.
+
+
 **ornament.lucerne: Urteil zum ganzen Track**
 - Christian: «Sehr geile Arbeit», erster Teil «noch nicht top», zweiter «genial», «etwas viel gebraucht», Beat «etwas schleppender und knarzender», die Melodie «könnte auch mal unterbrochen werden».
 - Umgesetzt: 84 statt 88 BPM, Snare und Ghosts hinter dem Schlag, mehr Swing auf den Hi-Hats; Makros «Knarzen» (Sättigung, Bits, Abtastrate, Knistern auf den Drums) und «Unterbrechung» (Motivaussagen still oder abgerissen). «Viel gebraucht» als «das Motiv kommt zu oft» gelesen. Einzelheiten in `LUCERNE.md`.
