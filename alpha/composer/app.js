@@ -1612,5 +1612,5 @@ zeigerAuf($("lineal"));
 stileAufbauen();
 allesAufbauen();
 // ornament.lucerne: Klangsammlung und Steuerung (eigenes Modul, bekommt nur, was es braucht)
-const LUI = await lucerneEinbauen({ z, $, el, melde, atmen, PR, post, senden, allesAufbauen, spurSenden, spurNeuRechnen, kontext, spielen, bisFertig, schnellEinpegeln, schleifeSenden, zeichnen, zeigeRechnen, herunterladen, sha256, imWorker, imWorkerRoh, NOTEN });
+const LUI = await lucerneEinbauen({ z, $, el, melde, atmen, PR, post, senden, allesAufbauen, spurSenden, spurNeuRechnen, kontext, spielen, bisFertig, schnellEinpegeln, schleifeSenden, zeichnen, zeigeRechnen, herunterladen, sha256, imWorker, imWorkerRoh, tonWecken, NOTEN });
 requestAnimationFrame(anzeigen);
