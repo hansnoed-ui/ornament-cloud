@@ -60,7 +60,51 @@ async function kontext(rate) {
     else if (d.art === "ende") { z.laeuft = false; knoepfeAuffrischen(); }
     else if (d.art === "fehler") melde(`Motor: ${d.text}`, 8000);
   };
+  // Das System kann den Ton selbst anhalten (iOS: Bildschirmsperre, Anruf, anderer Ton → «interrupted»). Dann sauber halten statt weiterzuzählen.
+  const ctx = z.ctx;
+  ctx.onstatechange = () => { if (ctx === z.ctx && ctx.state !== "running" && z.laeuft && !z.selbstAngehalten) verlassen("unterbrochen"); };
   return z.ctx;
+}
+
+// ---------- Seite verlassen, Bildschirmsperre ----------
+// Läuft die Musik, wenn die Seite verschwindet (anderer Tab, App-Wechsel, Sperre), wird sie ausgeblendet und angehalten; die Stelle
+// bleibt, ▶ spielt dort weiter. Mobil kommt ein AudioContext nach einer Sperre oft beschädigt zurück (knistert lange, falsche Abtastrate):
+// darum wird er dort beim nächsten ▶ neu aufgebaut, mit allen Spuren, der Referenz und dem Zustand.
+const MOBIL = typeof navigator !== "undefined" && (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent)));
+function verlassen(grund) {
+  if (!z.ctx) return;
+  const lief = z.laeuft;
+  if (lief) { post({ art: "stop", sofort: grund === "unterbrochen" }); z.laeuft = false; z.angehaltenBeimVerlassen = true; knoepfeAuffrischen(); }
+  if (lief || grund === "unterbrochen") z.neuAufbauen ||= MOBIL || grund === "unterbrochen";
+  // nach der Blende den Kontext ruhen lassen (spart Strom; der Motor rechnet nicht im Hintergrund weiter)
+  const ctx = z.ctx;
+  if (ctx.state === "running") { z.selbstAngehalten = true; setTimeout(() => { if (ctx === z.ctx && !z.laeuft && document.hidden) ctx.suspend().catch(() => {}); }, 60); }
+}
+function zurueck() {
+  if (!z.angehaltenBeimVerlassen) return;
+  z.angehaltenBeimVerlassen = false;
+  melde("Angehalten, als die Seite verlassen wurde. ▶ spielt an derselben Stelle weiter.", 6000);
+}
+document.addEventListener("visibilitychange", () => (document.hidden ? verlassen("versteckt") : zurueck()));
+addEventListener("pagehide", () => verlassen("versteckt"));
+
+/** einen frischen AudioContext bauen und den Motor neu füllen (Spuren, Referenz, Zustand, Schleife, Stelle) */
+async function motorNeuAufbauen() {
+  const alt = z.ctx, rate = z.rate;
+  z.neuAufbauen = false; z.ctx = null; z.node = null;
+  try { alt?.close(); } catch { /* schon zu */ }
+  await kontext(rate);
+  for (const [id, d] of z.daten) { const kopie = d.kanaele.map((x) => x.slice()); post({ art: "spur", id, kanaele: kopie }, kopie.map((x) => x.buffer)); }
+  if (z.referenz?.kanaele) { const kopie = z.referenz.kanaele.map((x) => x.slice()); post({ art: "referenz", kanaele: kopie }, kopie.map((x) => x.buffer)); }
+  post({ art: "zustand", zustand: PR.motorZustand(z.projekt, { ausgleich: z.ausgleich, allesVorher: z.allesVorher, referenzAn: z.referenzAn }) });
+  schleifeSenden(); post({ art: "stelle", pos: z.pos });
+}
+/** den Kontext laufen lassen; kommt er nicht innerhalb einer Sekunde zurück, wird er neu gebaut */
+async function tonWecken() {
+  if (z.neuAufbauen || z.ctx.state === "closed") await motorNeuAufbauen();
+  z.selbstAngehalten = false;
+  const ok = await Promise.race([z.ctx.resume().then(() => z.ctx.state === "running", () => false), new Promise((r) => setTimeout(() => r(false), 1000))]);
+  if (!ok) { await motorNeuAufbauen(); await z.ctx.resume(); }
 }
 const post = (d, transfer) => z.node?.port.postMessage(d, transfer ?? []);
 let sendenGeplant = false;
@@ -617,7 +661,7 @@ function stimmVariante(sp, i) {
 }
 
 async function schlagHoeren(sp, art) {
-  await kontext(48000); await z.ctx.resume();
+  await kontext(48000); await tonWecken();
   const st = stimmeVon(sp.quelle.erzeuger, sp.quelle.stimme), q = sp.quelle;
   if (q.flaeche) { const d = z.daten.get(sp.id); if (!d) return; const n = Math.min(d.roh[0].length, z.rate * 6); const b = z.ctx.createBuffer(2, n, z.rate); b.copyToChannel(d.roh[0].subarray(0, n), 0); b.copyToChannel(d.roh[1].subarray(0, n), 1); const qk = z.ctx.createBufferSource(), g = z.ctx.createGain(); g.gain.value = 0.7; qk.buffer = b; qk.connect(g).connect(z.ctx.destination); qk.start(); return; }
   if (istSynth(sp)) {
@@ -1230,7 +1274,8 @@ async function spielen() {
   if (!z.ctx || !z.daten.size) return;
   if (z.laeuft) { post({ art: "stop" }); z.laeuft = false; }
   else {
-    await z.ctx.resume();
+    z.angehaltenBeimVerlassen = false;
+    await tonWecken();
     let pos = z.pos;
     if (z.schleifeAn && z.schleife && (pos < z.schleife.a * z.rate || pos >= z.schleife.b * z.rate)) pos = Math.round(z.schleife.a * z.rate);
     if (pos >= laenge() * z.rate) pos = 0;
