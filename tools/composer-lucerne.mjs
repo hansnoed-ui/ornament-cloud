@@ -135,6 +135,27 @@ async function exportZip(datei, plan, p, spuren, sammlung) {
   console.log(`  → ${datei}: ${p.spuren.length} Stems, ${marker.length} Zeitmarken`);
 }
 
+/**
+ * Spuren gezielt anpassen (LUC_SPUREN='{"motiv": { "raum": {…}, "echo": {…}, "pegel": −2, "ohneWaerme": true, "schritteDazu": [{ "art": "hochpass", "f": 250 }] }, …}'):
+ * Raum, Echo und Pegel ersetzen die Werte des Plans; «ohneWaerme» nimmt die Sättigung aus den Klängen dieser Spur; «schritteDazu» hängt
+ * Bearbeitungsschritte an jeden Klang der Spur. Das Arrangement (Ereignisse) bleibt unberührt.
+ */
+function spurenAnpassen(plan) {
+  if (!process.env.LUC_SPUREN) return;
+  for (const [key, a] of Object.entries(JSON.parse(process.env.LUC_SPUREN))) {
+    const sp = plan.spuren.find((x) => x.key === key);
+    if (!sp) { console.log(`  (keine Spur «${key}»)`); continue; }
+    if (a.raum) sp.raum = { ...(sp.raum ?? {}), ...a.raum };
+    if (a.echo) sp.echo = { ...(sp.echo ?? {}), ...a.echo };
+    if (a.pegel != null) sp.pegel = a.pegel;
+    for (const kl of Object.values(sp.quelle.klaenge ?? {})) {
+      if (a.ohneWaerme) kl.schritte = kl.schritte.filter((x) => x.art !== "waerme");
+      if (a.schritteDazu) kl.schritte = [...kl.schritte, ...a.schritteDazu];
+    }
+    console.log(`  angepasst: ${key} ${JSON.stringify(a)}`);
+  }
+}
+
 /** Warnung, wenn fremdes, geschütztes Material im Plan steckt (wie NC beim Export des Composers) */
 function warnenExtern(plan, s) {
   const ids = new Set(Object.values(plan.material).flat().map((id) => s.ausschnitte.find((a) => a.id === id)?.quelle));
@@ -217,16 +238,19 @@ if (modus === "sammlung") {
   // dieselbe Komposition (Startwert, Motiv, Groove, Bass, Tempo, Tonart gesperrt) mit anderem Material je Rolle:
   //   node tools/composer-lucerne.mjs fassung <ordner> <ziel> <seed> "main_motif=Schimmer" "texture=helle Stelle" …  (Teil des Ausschnittnamens)
   const s = sammlungAktualisieren(ordner), m = materialLaden(ordner, s); mkdirSync(ziel, { recursive: true });
-  const vorher = LU.planen({ sammlung: s, seed }), ersetze = {};
+  // Feinschliff ohne Änderung des Arrangements: Tempo, Groove (Zweitakter) und Timing je Rolle gelten schon für den Ausgangsplan
+  const fein = { bpm: process.env.LUC_BPM ? Number(process.env.LUC_BPM) : undefined, groove: process.env.LUC_GROOVE ? JSON.parse(process.env.LUC_GROOVE) : undefined, timing: process.env.LUC_TIMING ? JSON.parse(process.env.LUC_TIMING) : undefined };
+  const vorher = LU.planen({ sammlung: s, seed, ...fein }), ersetze = {};
   for (const a of process.argv.slice(6)) {
     const [rolle, namen] = a.split("=");
     ersetze[rolle] = namen.split(";").map((n) => { const c = s.ausschnitte.find((x) => (x.name ?? "").includes(n.trim()) && !x.aus); if (!c) throw new Error(`kein Ausschnitt «${n}»`); return c.id; });
   }
-  const plan = LU.planen({ sammlung: s, seed, vorher, sperren: { motiv: true, groove: true, bass: true, tempo: true, tonart: true, material: true }, ersetze });
+  const plan = LU.planen({ sammlung: s, seed, vorher, sperren: { motiv: true, groove: true, bass: true, tempo: true, tonart: true, material: true }, ersetze, ...fein });
+  spurenAnpassen(plan);
   for (const h of plan.hinweise) console.log(`  Hinweis: ${h}`);
   console.log(herkunftTabelle(plan, s));
   const { p, spuren } = await planRechnen(plan, m);
-  const basis = join(ziel, `ornament-lucerne-erinnerung-${seed}-fassung-b`);
+  const basis = join(ziel, process.env.LUC_NAME ?? `ornament-lucerne-erinnerung-${seed}-fassung-b`);
   speichern(`${basis}.wav`, await mischen(p, spuren, -14));
   await exportZip(`${basis}.zip`, plan, p, spuren, s);
   writeFileSync(`${basis}-plan.json`, JSON.stringify(plan, null, 1));
