@@ -174,7 +174,7 @@ async function starte() {
       positionMelden();
     }
     const s = starts[i] ?? 0, ende = trackEnde(i, starts, d);
-    $("zeit-track").textContent = zeitText(t - s);
+    $("zeit-track").textContent = zeitText(Math.max(t - s, 0));
     $("dauer-track").textContent = ende != null ? zeitText(ende - s) : "–:––";
     if (!ziehen && d) regler.value = String(t);
     document.body.dataset.aktiverTrack = String(i + 1);
@@ -204,7 +204,7 @@ async function starte() {
   regler.addEventListener("input", () => {
     ziehen = true;
     const t = Number(regler.value), i = aktiverTrack(t, starts), s = starts[i] ?? 0, ende = trackEnde(i, starts, gesamt());
-    $("zeit-track").textContent = zeitText(t - s);
+    $("zeit-track").textContent = zeitText(Math.max(t - s, 0));
     if (ende != null) $("dauer-track").textContent = zeitText(ende - s);
   });
   regler.addEventListener("change", () => { ziehen = false; audio.currentTime = Number(regler.value); aktualisieren(); });
