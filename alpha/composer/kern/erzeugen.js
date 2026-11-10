@@ -6,9 +6,11 @@ import { stimmeVon } from "../erzeuger/register.js";
 import { zufall, hash } from "../erzeuger/grund.js";
 import { taktLesen } from "./muster.js";
 import { notenLesen, grundFrequenz } from "./linien.js";
+import { bearbeiten } from "./sampler.js";
 
 /**
- * q: { erzeuger, stimme, werte, takte: [Zeilen], fill?, anzahl (Takte), bpm, swing (0–0,5), menschlich (ms), versatz (ms), seed }
+ * q: { erzeuger, stimme, werte, takte: [Zeilen], fill?, anzahl (Takte), bpm, swing (0–0,5), menschlich (ms), versatz (ms), seed,
+ *   nach? (Bearbeitungsschritte des Samplers auf der ganzen Spur, z. B. Wärme, Alterung, Knistern; die Länge bleibt) }
  * Gibt { kanaele: [L, R], schlaege } zurück.
  */
 export function spurRechnen(q, rate) {
@@ -41,6 +43,7 @@ export function spurRechnen(q, rate) {
     }
   }
   if (eigene) choken([L, R], rate, eigene.sort((a, b) => a - b), q.choke.zeiten);
+  if (q.nach?.length) return { kanaele: bearbeiten([L, R], rate, q.nach).map((s) => (s.length === n ? s : Float32Array.from({ length: n }, (_, i) => s[i] ?? 0))), schlaege };
   return { kanaele: [L, R], schlaege };
 }
 

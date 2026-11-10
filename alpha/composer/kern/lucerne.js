@@ -16,7 +16,7 @@ import { SAMPLER } from "./sampler.js";
 export const PROFIL = Object.freeze({ id: "ornament.lucerne", schema: "0.1.0", name: "ornament.lucerne", gruppe: "ornament" });
 
 export const AUSPRAEGUNGEN = Object.freeze({
-  erinnerung: { name: "Erinnerung", bpm: 88, bereich: [78, 104], fertig: true, hilfe: "warme Melodik, Raum, verlangsamte Materialschichten, gebrochener Groove" },
+  erinnerung: { name: "Erinnerung", bpm: 84, bereich: [78, 104], fertig: true, hilfe: "warme Melodik, Raum, verlangsamte Materialschichten, gebrochener Groove" },
   bruch: { name: "Bruch", bpm: 138, bereich: [126, 154], fertig: false, hilfe: "präzisere Zerteilung, komplexere Perkussion über längerem Bogen (Halftime möglich)" },
   nacht: { name: "Nacht", bpm: 72, bereich: [60, 88], fertig: false, hilfe: "reduzierte Impulse, ausklingende Instrumente, atmosphärische Entwicklung" },
 });
@@ -27,12 +27,14 @@ export const MAKROS = Object.freeze({
   instabilitaet: { name: "Instabilität", std: 35, wirkung: "Drift je Note (±12 Cent·I, fest je Note), gemeinsames Leiern der Schichten Motiv/Harmonie/Textur/Umgebung (Wow bis 25 Cent·I, Flutter 3 Cent·I), ab 60: Alterung (Rauschen, 12 Bit); Bass und Drums bleiben stabil" },
   fragmentierung: { name: "Fragmentierung", std: 30, wirkung: "Dichte und Länge der Schnitte: Auslassen (15 % + 50 %·F), Tauschen (10 % + 60 %·F), Zweiunddreissigstel-Wiederholung (40 %·F) in der Verwandlung; Schnitte an Phrasenenden und zerteilte Motivnoten in den anderen Abschnitten" },
   wiederkehr: { name: "Wiederkehr", std: 60, wirkung: "Anteil wörtlicher Motivwiederholungen (W) gegenüber Abwandlungen (Endton, Register, Dauer, Pause); die erste Aussage im Ersten Gedanken und in der Wiederkehr bleibt immer wörtlich" },
+  unterbrechung: { name: "Unterbrechung", std: 45, wirkung: "Das Motiv setzt aus: ganze Aussagen bleiben still (12 % + 40 %·U, nie zweimal hintereinander) oder reissen mitten in der Phrase ab (10 % + 40 %·U); die erste Aussage jedes Abschnitts bleibt" },
+  knarzen: { name: "Knarzen", std: 55, wirkung: "Drums: Sättigung (Kick 20 + 30·K, Snare 30 + 60·K), Snare und Hi-Hat mit weniger Bits (12 − 5·K) und tieferer Abtastrate (22 − 12·K kHz), Knistern auf den Hi-Hats (2 + 8·K je Sekunde)" },
   raum: { name: "Raum", std: 45, wirkung: "Hallanteil (8–40 %) und Nachhall (1,2–4 s) je Rolle gestaffelt, Echo des Motivs (punktierte Achtel, 0–30 %), Stereobreite der Texturen" },
 });
 export const SPERRBAR = Object.freeze(["motiv", "groove", "bass", "tempo", "tonart", "material"]);
 
 export const NAMEN = Object.freeze({ auftauchen: "Auftauchen", gedanke: "Erster Gedanke", vertiefung: "Vertiefung", freistellung: "Freistellung", verwandlung: "Verwandlung", wiederkehr: "Wiederkehr", nachbild: "Nachbild" });
-/** Gerüst Erinnerung: 88 Takte bei 88 BPM = 240 s (Takte 1–8, 9–24, 25–40, 41–48, 49–64, 65–80, 81–88) */
+/** Gerüst Erinnerung: 88 Takte bei 84 BPM ≈ 251 s (Takte 1–8, 9–24, 25–40, 41–48, 49–64, 65–80, 81–88) */
 export const GERUEST = Object.freeze([["auftauchen", 8], ["gedanke", 16], ["vertiefung", 16], ["freistellung", 8], ["verwandlung", 16], ["wiederkehr", 16], ["nachbild", 8]]);
 export const AUSKLANG = 2;   // Takte nach dem Ende für ausklingende Räume (alle Spuren gleich lang)
 
@@ -43,7 +45,8 @@ export const GROOVE = Object.freeze({
   V: { kick: [1, 4, 11], snare: [13], hat: [1, 3, 5, 9, 11, 13], offen: [], ghost: [7, 15] },   // Verwandlung: halbe Zeit, Kick auf 4
 });
 /** Swing je Rolle (Anteil eines Sechzehntels: 0,10 = 55:45, 0,16 = 58:42) und Mikroverschiebung (ms, fest + zufällig mit Startwert) */
-export const TIMING = Object.freeze({ kick: [0, 0, 0], snare: [0, 0, 0], hat: [0.12, 4, 3], offen: [0.12, 4, 2], ghost: [0.14, 8, 3], motiv: [0.1, 0, 4], gegen: [0.1, 6, 4], fragment: [0.08, 0, 0] });
+// Schleppend (Urteil 10.11.): Snare und Ghosts deutlich hinter dem Schlag, Hi-Hats mit mehr Swing und etwas später, die Kick bleibt vorn
+export const TIMING = Object.freeze({ kick: [0, 0, 2], snare: [0, 20, 3], hat: [0.2, 9, 4], offen: [0.2, 9, 3], ghost: [0.18, 16, 4], motiv: [0.1, 0, 4], gegen: [0.1, 6, 4], fragment: [0.12, 6, 0] });
 
 /** Motivzelle: [Schritt (0–31 über zwei Takte), Dauer (Sechzehntel), Stufe, Oktave]. Ruf und Antwort, zusammen vier Takte */
 export const ZELLE = Object.freeze({
@@ -212,9 +215,18 @@ export function planen(eingabe) {
   }
   plan.drumZeilen = drumZeilen;
   const DRUM = { kick: ["kick", "Boom Bap", 0, "Kick"], snare: ["snare", "Boom Bap", -1, "Snare"], ghost: ["snare", "Boom Bap", -7, "Ghost-Snare"], hat: ["hat", "staubig", -5, "Hi-Hat"], offen: ["offen", "staubig", -10, "Hi-Hat offen"] };
+  // Knarzen: Sättigung, weniger Bits, tiefere Abtastrate (Halten wie ein alter Sampler) und Staub auf den Hi-Hats; die Kick bleibt rund
+  const kn = M("knarzen"), krumm = (seedK) => [{ art: "alterung", bits: Math.round(12 - 5 * kn), rate: Math.round(22000 - 12000 * kn), seed: seedK }];
+  const DRUMNACH = {
+    kick: kn > 0 ? [{ art: "waerme", menge: Math.round(20 + 30 * kn) }] : [],
+    snare: kn > 0 ? [{ art: "waerme", menge: Math.round(30 + 60 * kn) }, ...krumm(2)] : [],
+    ghost: kn > 0 ? [{ art: "waerme", menge: Math.round(30 + 60 * kn) }, ...krumm(3)] : [],
+    hat: kn > 0 ? [...krumm(4), { art: "knistern", dichte: +(2 + 8 * kn).toFixed(1), db: -26, seed: 4 }] : [],
+    offen: kn > 0 ? krumm(5) : [],
+  };
   drumKeys.forEach((k) => {
     const [stimme, variante, pegel, name] = DRUM[k], st = stimmeVon("drums@0.1.0", stimme), v = st.varianten.find((x) => x.name === variante) ?? st.varianten[0], [sw, vers, mensch] = TI[k];
-    const quelle = { art: "erzeugt", erzeuger: "drums@0.1.0", stimme, variante: v.name, werte: { ...v.werte }, takte: drumZeilen[k], fill: null, anzahl: gesamt, bpm, swing: sw, menschlich: mensch, versatz: vers, seed: hash(seeds.groove, k) % 99991 + 1, stil: "lucerne", lucerne: k };
+    const quelle = { art: "erzeugt", erzeuger: "drums@0.1.0", stimme, variante: v.name, werte: { ...v.werte }, takte: drumZeilen[k], fill: null, anzahl: gesamt, bpm, swing: sw, menschlich: mensch, versatz: vers, seed: hash(seeds.groove, k) % 99991 + 1, stil: "lucerne", lucerne: k, nach: DRUMNACH[k] };
     if (k === "offen") quelle.choke = { mit: "hat" };   // die geschlossene Hi-Hat schneidet die offene ab
     plan.spuren.push({ key: k, name, typ: "drums", rolle: "groove", pegel, pan: st.pan ?? 0, raum: { anteil: Math.round(6 + 14 * M("raum")), nachhall: 1.2 }, quelle });
   });
@@ -270,8 +282,8 @@ export function planen(eingabe) {
   if (halte("motiv")) motivNoten = alt.motivNoten;
   else {
     motivNoten = [];
-    const aussage = (start, { woertlich = false, nur = null, oktave = 0, schluss = null, staerke = 0.82, umkehr = false, typ } = {}) => {
-      const ops = [];
+    const aussage = (start, { woertlich = false, nur = null, oktave = 0, schluss = null, staerke = 0.82, umkehr = false, typ, abbruch = null } = {}) => {
+      const ops = [], vorher = motivNoten.length;
       if (!woertlich && rndM() > M("wiederkehr")) { const alle = ["endton", "register", "dauer", "pause", "fragment"]; ops.push(alle[Math.floor(rndM() * alle.length)]); if (rndM() > 0.6) ops.push(alle[Math.floor(rndM() * alle.length)]); }
       const teile = [["ruf", 0], ["antwort", 2]];
       for (const [teil, off] of teile) {
@@ -287,16 +299,33 @@ export function planen(eingabe) {
           motivNoten.push({ t: start + off + s / 16, d: dd / 16, midi: tonika + halbVon(st, o, ton.leiter), staerke: staerke * (i === 0 ? 1 : 0.88), typ, umkehr, cent: drift(rndM), versatz: Math.round(rndM() * TI.motiv[2]) });
         });
       }
+      // Abbruch: die Phrase reisst nach «abbruch» (Anteil 0–1) ihrer Töne ab, der letzte Ton wird kurz gestossen und klingt nicht aus
+      if (abbruch != null) {
+        const zahl = motivNoten.length - vorher, bleiben = Math.max(1, Math.min(zahl - 1, Math.round(zahl * abbruch)));
+        motivNoten.splice(vorher + bleiben);
+        const letzte = motivNoten.at(-1); letzte.d = Math.min(letzte.d, 1 / 16); letzte.abgerissen = true;
+        ops.push(`reisst nach ${bleiben} Tönen ab`);
+      }
       plan.marker.push({ art: "motiv", takt: start, text: [typ, ...(ops.length ? ops : woertlich ? ["wörtlich"] : [])].join(" · ") });
+    };
+    // Unterbrechungen (Urteil 10.11.): ganze Aussagen bleiben still oder reissen ab; nie zwei stille hintereinander, die erste bleibt
+    const rndU = zufall(hash(seeds.motiv, "unterbrechung")), U = M("unterbrechung");
+    let stillZuvor = false;
+    const unterbrochen = (erste, opts) => (start) => {
+      const r = rndU(), r2 = rndU();
+      if (!erste && !stillZuvor && r < 0.12 + 0.4 * U) { stillZuvor = true; plan.marker.push({ art: "motiv", takt: start, text: `${opts.typ} · Pause` }); return; }
+      stillZuvor = false;
+      aussage(start, { ...opts, abbruch: !erste && r2 < 0.1 + 0.4 * U ? 0.35 + 0.4 * rndU() : null });
     };
     for (const a of abschnitte) {
       const L = a.bis - a.von;
       if (a.typ === "auftauchen") aussage(a.von + L - 4, { nur: "ruf", staerke: 0.7, woertlich: true, typ: "Fragment" });   // Motivfragment, fern
-      if (a.typ === "gedanke") for (let p = 0; p < L; p += 4) aussage(a.von + p, { woertlich: p === 0, typ: "Gedanke" });
-      if (a.typ === "vertiefung") for (let p = 0; p < L; p += 4) aussage(a.von + p, { typ: "Vertiefung", staerke: 0.78 });
-      if (a.typ === "freistellung") for (let p = 0; p < L; p += 4) aussage(a.von + p, { typ: "Freistellung", staerke: 0.7, woertlich: p === 0 });
+      stillZuvor = false;
+      if (a.typ === "gedanke") for (let p = 0; p < L; p += 4) unterbrochen(p === 0, { woertlich: p === 0, typ: "Gedanke" })(a.von + p);
+      if (a.typ === "vertiefung") for (let p = 0; p < L; p += 4) unterbrochen(p === 0, { typ: "Vertiefung", staerke: 0.78 })(a.von + p);
+      if (a.typ === "freistellung") for (let p = 0; p < L; p += 4) unterbrochen(p === 0, { typ: "Freistellung", staerke: 0.7, woertlich: p === 0 })(a.von + p);
       if (a.typ === "verwandlung") for (let p = 4; p < L; p += 8) aussage(a.von + p, { nur: "ruf", umkehr: true, staerke: 0.6, typ: "Verwandlung (rückwärts)" });
-      if (a.typ === "wiederkehr") for (let p = 0; p < L; p += 4) aussage(a.von + p, { woertlich: p === 0, oktave: p >= 8 ? 1 : 0, schluss: p === 4 ? 5 : null, typ: "Wiederkehr" });
+      if (a.typ === "wiederkehr") for (let p = 0; p < L; p += 4) unterbrochen(p === 0, { woertlich: p === 0, oktave: p >= 8 ? 1 : 0, schluss: p === 4 ? 5 : null, typ: "Wiederkehr" })(a.von + p);
     }
     // vorgezogener Eintritt der Wiederkehr: der erste Ton kommt eine Achtel zu früh
     const wk = abschnitte.find((a) => a.typ === "wiederkehr");
@@ -306,10 +335,10 @@ export function planen(eingabe) {
   if (motivTon.length) {
     const ev = [];
     for (const no of motivNoten) {
-      const ins = instrument(no.midi), basis = { t: no.t, d: no.d, klang: ins.key, midi: no.midi, staerke: no.staerke, cent: no.cent, versatz: no.versatz, aus: 0.18 };
+      const ins = instrument(no.midi), basis = { t: no.t, d: no.d, klang: ins.key, midi: no.midi, staerke: no.staerke, cent: no.cent, versatz: no.versatz, aus: no.abgerissen ? 0.02 : 0.18 };
       const typAb = typVon(Math.floor(no.t)).typ;
       // Fragmentierung zerteilt einzelne Motivnoten (nicht in der Freistellung und nicht in der ersten wörtlichen Aussage)
-      if (!no.umkehr && typAb !== "freistellung" && no.d >= 3 / 16 && rndF() < frag * 0.3) {
+      if (!no.umkehr && !no.abgerissen && typAb !== "freistellung" && no.d >= 3 / 16 && rndF() < frag * 0.3) {
         const teile = no.d >= 6 / 16 ? 3 : 2;
         for (let j = 0; j < teile; j++) ev.push({ ...basis, t: no.t + (j * 2) / 16, d: 1 / 32, staerke: no.staerke * (1 - j * 0.15), aus: 0.03 });
         continue;

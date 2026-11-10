@@ -609,7 +609,7 @@ test("ornament.lucerne: Plan mit Gerüst 88 Takte, Groove auf 1-basierten Schrit
   const { s, material } = testsammlung();
   const plan = LU.planen({ sammlung: s, seed: 1 });
   assert.equal(plan.profil, "ornament.lucerne"); assert.equal(plan.schema, "0.1.0");
-  assert.equal(plan.takte, 88); assert.equal(plan.bpm, 88); assert.ok(Math.abs((plan.takte * 240) / plan.bpm - 240) < 1e-9, "88 Takte bei 88 BPM = 240 s");
+  assert.equal(plan.takte, 88); assert.equal(plan.bpm, 84, "schleppender als die erste Fassung (88)");
   assert.deepEqual(plan.abschnitte.map((a) => [a.typ, a.von + 1, a.bis]), [["auftauchen", 1, 8], ["gedanke", 9, 24], ["vertiefung", 25, 40], ["freistellung", 41, 48], ["verwandlung", 49, 64], ["wiederkehr", 65, 80], ["nachbild", 81, 88]]);
   const z = (k, b) => plan.spuren.find((x) => x.key === k).quelle.takte[b].split(" ").flatMap((t, i) => (t === "." ? [] : [i + 1]));
   assert.deepEqual(z("kick", 8), [1, 7, 9]); assert.deepEqual(z("snare", 8), [5, 13]); assert.deepEqual(z("hat", 8), [1, 3, 5, 7, 9, 11, 13, 15]); assert.deepEqual(z("ghost", 8), [12]);
@@ -618,7 +618,7 @@ test("ornament.lucerne: Plan mit Gerüst 88 Takte, Groove auf 1-basierten Schrit
   assert.ok(plan.spuren.find((x) => x.key === "offen").quelle.choke.zeiten.length > 100);
   assert.ok(plan.marker.some((m) => m.art === "abschnitt") && plan.marker.some((m) => m.art === "motiv") && plan.marker.some((m) => m.art === "akzent"));
   const mz = LU.markerMitZeit(plan).find((m) => m.art === "abschnitt" && m.text === "Freistellung");
-  assert.equal(mz.takt1, 41); assert.ok(Math.abs(mz.zeit - (40 * 240) / 88) < 1e-3);
+  assert.equal(mz.takt1, 41); assert.ok(Math.abs(mz.zeit - (40 * 240) / 84) < 1e-3);
   assert.equal(JSON.stringify(LU.planen({ sammlung: s, seed: 1 })), JSON.stringify(plan), "reproduzierbar");
   const v = LU.planen({ sammlung: s, seed: 1, seeds: { ...plan.seeds, groove: 99, motiv: 99, bass: 99 }, vorher: plan, sperren: { motiv: true, bass: true } });
   assert.deepEqual(v.motivNoten, plan.motivNoten); assert.deepEqual(v.bassZeilen, plan.bassZeilen);
@@ -628,6 +628,41 @@ test("ornament.lucerne: Plan mit Gerüst 88 Takte, Groove auf 1-basierten Schrit
   const st = LU.planen({ sammlung: s, seed: 1, studie: true });
   assert.equal(st.takte, 16); assert.ok(st.spuren.some((x) => x.rolle === "main_motif"));
   for (const sp of st.spuren.filter((x) => x.quelle.erzeuger === SA.SAMPLER)) { const r = SA.samplerSpurRechnen(sp.quelle, RATE, material); assert.ok(r.kanaele[0].every(Number.isFinite), sp.key); assert.deepEqual(r.fehlt, []); }
+});
+
+test("ornament.lucerne: Motiv wird unterbrochen (Pausen, Abbrüche), erste Aussage bleibt; Unterbrechung 0 spielt durch", () => {
+  const { s } = testsammlung();
+  const zaehle = (plan) => { const m = plan.marker.filter((x) => x.art === "motiv"); return { pause: m.filter((x) => /Pause/.test(x.text)).length, ab: m.filter((x) => /reisst/.test(x.text)).length, m }; };
+  let pausen = 0, abbrueche = 0;
+  for (let seed = 1; seed <= 6; seed++) {
+    const plan = LU.planen({ sammlung: s, seed }), z = zaehle(plan);
+    pausen += z.pause; abbrueche += z.ab;
+    for (const a of plan.abschnitte.filter((x) => ["gedanke", "vertiefung", "wiederkehr"].includes(x.typ))) assert.ok(!z.m.some((x) => x.takt === a.von && /Pause/.test(x.text)), `erste Aussage in ${a.name} bleibt`);
+    const still = z.m.filter((x) => /Pause/.test(x.text)).map((x) => x.takt);
+    for (const t of still) assert.ok(!still.includes(t + 4), "nie zwei stille Aussagen hintereinander");
+    for (const t of still) assert.ok(!plan.motivNoten.some((n) => n.t >= t && n.t < t + 4 && !n.umkehr), `Takt ${t + 1} ist still`);
+    assert.ok(plan.motivNoten.filter((n) => n.abgerissen).every((n) => n.d <= 1 / 16));
+  }
+  assert.ok(pausen >= 6 && abbrueche >= 4, `${pausen} Pausen, ${abbrueche} Abbrüche in sechs Tracks`);
+  const ohne = zaehle(LU.planen({ sammlung: s, seed: 1, makros: { unterbrechung: 0 } }));
+  assert.ok(ohne.pause + ohne.ab <= 3, "bei 0 fast keine Unterbrechungen");
+});
+
+test("ornament.lucerne: Beat schleppt (Snare hinter dem Schlag) und knarzt (Bearbeitung auf den Drums, Knistern), Knarzen 0 ist sauber", () => {
+  const { s } = testsammlung(), plan = LU.planen({ sammlung: s, seed: 1 }), q = (k) => plan.spuren.find((x) => x.key === k).quelle;
+  assert.ok(q("snare").versatz >= 15 && q("ghost").versatz > 0 && q("kick").versatz === 0, "Snare und Ghosts hinter dem Schlag, Kick vorn");
+  assert.ok(q("hat").swing > q("motiv").swing);
+  assert.ok(q("snare").nach.some((x) => x.art === "alterung" && x.rate < 20000) && q("hat").nach.some((x) => x.art === "knistern"));
+  assert.deepEqual(LU.planen({ sammlung: s, seed: 1, makros: { knarzen: 0 } }).spuren.find((x) => x.key === "snare").quelle.nach, []);
+  const kurz = { ...q("snare"), anzahl: 2, takte: q("snare").takte.slice(8, 10) }, roh = spurR({ ...kurz, nach: [] }, RATE), krumm = spurR(kurz, RATE);
+  assert.equal(krumm.kanaele[0].length, roh.kanaele[0].length);
+  assert.ok(krumm.kanaele[0].every(Number.isFinite));
+  let d = 0; for (let i = 0; i < roh.kanaele[0].length; i++) d += Math.abs(krumm.kanaele[0][i] - roh.kanaele[0][i]);
+  assert.ok(d / roh.kanaele[0].length > 1e-4, "hörbar anders");
+  gleich(spurR(kurz, RATE).kanaele[0], krumm.kanaele[0], "reproduzierbar");
+  const stille = [new Float32Array(RATE), new Float32Array(RATE)]; stille[0][10] = 1;
+  const kn = SA.bearbeiten(stille, RATE, [{ art: "knistern", dichte: 20, db: -20, seed: 1 }]);
+  assert.ok(kn[0].filter((v) => Math.abs(v) > 1e-4).length > 20, "Knackser da");
 });
 
 // ---------- Synth 0.2.0, Klangcharaktere, die vier Schichten der Melodie, Vierteltöne ----------
