@@ -38,8 +38,9 @@ test("Seite: ein natives <audio> mit preload=metadata, noindex, Titel für Linkv
   assert.match(html, /<meta name="robots" content="noindex">/);
   const titel = `${ep.anzeigename} – ${ep.titel}`;
   assert.ok(html.includes(`<title>${titel}</title>`) && html.includes(`<meta property="og:title" content="${titel}">`), "Titel und og:title wie in ep.json");
-  assert.ok(html.includes('<meta property="og:image" content="https://ornament.cloud/listen/directer/vorschau.jpg">'), "Vorschaubild für Linkvorschauen");
-  assert.ok(statSync(new URL("listen/directer/vorschau.jpg", root)).size < 300_000, "Vorschaubild unter 300 KB (WhatsApp lässt grössere weg)");
+  assert.ok(html.includes('<meta property="og:image" content="https://ornament.cloud/listen/directer/og-directer.jpg">'), "Vorschaubild für Linkvorschauen");
+  assert.match(html, /<meta property="og:type" content="website">/, "Facebook nimmt music.album nur mit weiteren music:-Angaben an");
+  assert.ok(statSync(new URL("listen/directer/og-directer.jpg", root)).size < 300_000, "Vorschaubild unter 300 KB (WhatsApp lässt grössere weg)");
   assert.doesNotMatch(html + lies("listen/directer/player.css") + lies("listen/directer/player.js"), /(src|href)="https?:|@import|fonts\.googleapis/, "alles vom eigenen Server");
   assert.ok(!lies("sitemap.xml").includes("/listen/"), "nicht in der Sitemap");
   const js = lies("listen/directer/player.js");
