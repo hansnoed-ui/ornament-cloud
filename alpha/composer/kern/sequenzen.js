@@ -7,7 +7,23 @@
 
 import { zufall } from "../erzeuger/grund.js";
 
+// Seit Synth 0.2.0 stehen zuerst die vier Schichten aus melodien.md (keine Popmelodien): lange, sich verändernde Flächen, helle Spitzen,
+// unregelmässige Off-Beats, dazu Ruf (seltene Horn- und Flötenrufe), Alap (Ton für Ton über dem Drone) und Tanpura. Die spätromantischen
+// Anleihen (Orgelpunkt, Vorhalt, chromatisch absteigende Innenstimme, weite Lage, Glockenakkorde) steuert der Regler «Klassik» in allen
+// Schichten. Die älteren Rollen bleiben für bestehende Projekte und als Werkzeug.
+export const REGLER = Object.freeze([
+  { key: "wandel", name: "Wandel", hilfe: "wie schnell sich die Fläche verändert: Harmonie alle 8, 4 oder 2 Takte, wie oft eine Innenstimme wandert" },
+  { key: "weite", name: "Weite", hilfe: "enge oder weite Lage, 3 bis 6 Stimmen" },
+  { key: "spitzen", name: "Spitzen", hilfe: "wie viele helle Einzelklänge je Phrase (0 bis 3)" },
+  { key: "offbeat", name: "Off-Beat", hilfe: "Wahrscheinlichkeit und Dichte der Off-Beat-Klänge in den Lücken der Drums" },
+  { key: "klassik", name: "Klassik", hilfe: "Orgelpunkt, Vorhalte, chromatisch absteigende Innenstimme, Glockenakkorde, Sequenzen" },
+  { key: "ruhe", name: "Ruhe", hilfe: "Anteil an Pausen und Stillstand" },
+]);
+export const REGLER_STD = Object.freeze({ wandel: 40, weite: 60, spitzen: 40, offbeat: 45, klassik: 50, ruhe: 40 });
+
 export const ROLLEN = Object.freeze([
+  { key: "flaeche", name: "Fläche (wandernde Stimmen)" }, { key: "spitzen", name: "Spitzen (helle Einzelklänge)" }, { key: "offbeat", name: "Off-Beat (unregelmässig)" },
+  { key: "ruf", name: "Ruf (selten, Horn/Flöte)" }, { key: "alap", name: "Alap (Ton für Ton, Meend)" }, { key: "tanpura", name: "Tanpura (Drone gezupft)" },
   { key: "schwebe", name: "Schwebe (lange Akkorde, ungerader Zyklus)" }, { key: "pad", name: "Pad (Akkord je Takt)" }, { key: "drone", name: "Drone" }, { key: "chord", name: "Akkord-Stabs" }, { key: "keys", name: "Keys (gebrochen)" },
   { key: "arp", name: "Arpeggio" }, { key: "pluck", name: "Pluck" }, { key: "acid", name: "Acid (Akzent, Slide)" }, { key: "lead", name: "Lead" }, { key: "puls", name: "Puls" },
 ]);
@@ -25,9 +41,16 @@ const akkord = (g, toene, st = "") => toene.map((t, i) => fmt(g + t, { st: i ===
  * rolle; akkorde: Stufe je Takt (Länge beliebig, wird wiederholt); kicks: Kickschritte (0–15) je Takt oder null; anzahl Takte; seed;
  * halftime: Akkordwechsel nur alle zwei Takte (schnelle Stile im halben Gefühl). Gibt Zeilen zurück (höchstens 8 verschiedene Takte).
  */
-export function sequenzErzeugen({ rolle = "pad", akkorde = [1], kicks = null, anzahl = 8, seed = 1, halftime = false }) {
+export function sequenzErzeugen({ rolle = "pad", akkorde = [1], kicks = null, anzahl = 8, seed = 1, halftime = false, regler = null, belegt = null, snares = null, zyklus = 0 }) {
   const rnd = zufall(seed), takte = Math.min(anzahl, 8), zeilen = [];
   if (rolle === "schwebe") return schwebe(akkorde, rnd);
+  const R = { ...REGLER_STD, ...(regler ?? {}) }, a = akkorde.length ? akkorde : [1];
+  if (rolle === "flaeche") return flaeche(a, rnd, R, Math.min(anzahl, R.wandel < 34 && anzahl >= 16 ? 16 : 8), halftime);
+  if (rolle === "spitzen") return spitzen(a, rnd, R, takte, snares);
+  if (rolle === "offbeat") return offbeat(a, rnd, R, takte, belegt ?? kicks, zyklus);
+  if (rolle === "ruf") return ruf(a, rnd, R, takte);
+  if (rolle === "alap") return alap(rnd, R, takte);
+  if (rolle === "tanpura") return tanpura(rnd, takte, halftime);
   const stufe = (b) => { const a = akkorde.length ? akkorde : [1]; return a[(halftime ? Math.floor(b / 2) * 2 : b) % a.length]; };
   const vier = rnd() < 0.5 ? [0, 2, 4, 6] : [0, 2, 4, 8];   // Septime oder None oben
   const richtung = ["auf", "ab", "aufab", "zufall"][Math.floor(rnd() * 4)];
@@ -89,5 +112,172 @@ function schwebe(akkorde, rnd) {
   }
   const zeilen = [];
   for (let b = 0; b < zy; b++) zeilen.push(z.slice(b * 16, b * 16 + 16).join(" "));
+  return zeilen;
+}
+
+// ---------- die vier Schichten (seit Synth 0.2.0, nach melodien.md) ----------
+
+/** Stufe mit Vorzeichen und Haltezeichen schreiben: { stufe, vz: -1|0|1, okt, st, gl, halten } */
+function ton({ stufe, vz = 0, okt = 0, st = "", gl = false, halten = false }) {
+  return `${vz < 0 ? "b" : vz > 0 ? "#" : ""}${fmt(stufe, { okt, gl, st })}${halten ? "=" : ""}`;
+}
+const leerZeilen = (S) => Array(S).fill(".");
+const zeilenAus = (z) => { const out = []; for (let b = 0; b < z.length / 16; b++) out.push(z.slice(b * 16, b * 16 + 16).join(" ")); return out; };
+
+/**
+ * Fläche: lange Akkorde, die sich durch einzelne wandernde Stimmen verändern statt durch harte Wechsel. Harmonie je 8, 4 oder 2 Takte
+ * (Wandel; bei Halftime doppelt so lang), Stimmführung mit kleinsten Schritten (die nächste Lage wird aus Kandidaten nach Abstand gewählt),
+ * 3–6 Stimmen (Weite). Klassik: Orgelpunkt auf dem Grundton, Vorhalt 4–3 (die Terz kommt erst in der Mitte), chromatisch absteigende
+ * Innenstimme (Oktave, Septime, kleine Septime, Sexte: Lamento-Gang), weite Lage über zwei bis drei Oktaven. Ruhe: am Ende einer langen
+ * Harmonie manchmal ein Takt Stille. Gehaltene Stimmen tragen «=»: sie klingen ohne neuen Anschlag weiter.
+ */
+function flaeche(akkorde, rnd, R, L, halftime) {
+  const S = L * 16, z = Array(S).fill("-"), k = R.klassik / 100;
+  let span = R.wandel > 66 ? 2 : R.wandel > 33 ? 4 : 8; if (halftime) span = Math.min(L, span * 2);
+  const nSt = 3 + Math.round((R.weite / 100) * 3), weit = R.weite / 100, orgel = k > 0.3 && rnd() < 0.4 + k * 0.5;
+  let vorher = null;
+  for (let b0 = 0; b0 < L; b0 += span) {
+    const g = akkorde[b0 % akkorde.length], leiter = [0, 2, 4, 6, 8, 11, 13, 15, 18, 20];   // 1 3 5 7 9, dann 5 7 9 … eine Oktave höher
+    // Kandidaten: aufsteigend aus Akkordtönen, mit Sprüngen je nach Weite; der nächste am vorigen Klang gewinnt
+    let best = null, bestD = Infinity;
+    for (let c = 0; c < 8; c++) {
+      const st = [g + (weit > 0.6 && rnd() < weit ? -7 : 0)]; let pos = 0;
+      while (st.length < nSt) { pos += 1 + (rnd() < weit * 0.6 ? 1 : 0); st.push(g + leiter[Math.min(pos, leiter.length - 1)]); }
+      const d = vorher ? st.reduce((s2, x, i) => s2 + Math.abs(x - (vorher[i] ?? vorher.at(-1))), 0) : 0;
+      if (d < bestD) { bestD = d; best = st; }
+    }
+    const stimmen = best.map((x) => ({ stufe: x, vz: 0 })), anf = b0 * 16 + (rnd() < 0.5 ? 0 : 1 + Math.floor(rnd() * 2)), ende = Math.min(S, (b0 + span) * 16);
+    // Vorhalt: die Terz (g+2) beginnt als Quarte (g+3) und löst sich in der Mitte auf
+    const terz = stimmen.findIndex((x) => x.stufe % 7 === (g + 2) % 7 && x.stufe > g), vorhalt = terz > 0 && rnd() < k * 0.8;
+    if (vorhalt) stimmen[terz] = { stufe: stimmen[terz].stufe + 1, vz: 0 };
+    const pedal = orgel ? [{ stufe: 1, vz: 0, okt: -1 }] : [];
+    const schreibe = (pos, liste, neu, st = "") => { z[pos] = [...pedal.map((p) => ton({ ...p, halten: pos > 0 })), ...liste.map((x, i) => ton({ ...x, st: i === liste.length - 1 ? st : "", halten: !neu.includes(i) }))].join("+"); };
+    // ein neuer Klang: Stimmen, die gleich bleiben, klingen weiter (Stimmführung über die Harmoniegrenze)
+    const gleich = vorher ? stimmen.map((x, i) => (vorher[i] === x.stufe ? -1 : i)).filter((i) => i >= 0) : stimmen.map((_, i) => i);
+    schreibe(anf, stimmen, vorher ? gleich : stimmen.map((_, i) => i), b0 === 0 ? "!" : "");
+    // Bewegung innerhalb der Harmonie: Vorhalt auflösen, Lamento-Gang, Wechselnoten in einer Innenstimme
+    const punkte = []; for (let b = b0 + 1; b < Math.min(L, b0 + span); b++) punkte.push(b * 16 + (rnd() < 0.6 ? 0 : 2 + Math.floor(rnd() * 3)));
+    if (vorhalt) punkte.unshift(anf + Math.max(4, Math.round((ende - anf) / 2 / 4) * 4 - 4));
+    punkte.sort((x, y) => x - y);
+    const lamento = k > 0.4 && nSt >= 4 && span >= 2 && rnd() < k * 0.7, innen = Math.min(stimmen.length - 2, 1 + Math.floor(rnd() * (stimmen.length - 2)));
+    if (lamento) stimmen[innen] = { stufe: g + 7, vz: 0 };   // die Innenstimme beginnt auf der Oktave des Grundtons
+    const gang = [{ d: 7, vz: 0 }, { d: 6, vz: 0 }, { d: 6, vz: -1 }, { d: 5, vz: 0 }, { d: 5, vz: -1 }];
+    let schritt = 0, wechsel = false;
+    for (const pos of punkte) {
+      if (pos >= ende || pos <= anf) continue;
+      const neu = [];
+      if (vorhalt && stimmen[terz].stufe !== best[terz]) { stimmen[terz] = { stufe: best[terz], vz: 0 }; neu.push(terz); }
+      else if (lamento && schritt < gang.length - 1) { schritt++; stimmen[innen] = { stufe: g + gang[schritt].d, vz: gang[schritt].vz }; neu.push(innen); }
+      else if (rnd() < 0.3 + R.wandel / 150) {   // Wechselnote: eine Innenstimme geht einen Schritt und kehrt beim nächsten Punkt zurück
+        const i = 1 + Math.floor(rnd() * Math.max(1, stimmen.length - 1)); i < stimmen.length && (wechsel = !wechsel, stimmen[i] = { stufe: wechsel ? best[i] + (rnd() < 0.5 ? 1 : -1) : best[i], vz: 0 }, neu.push(i));
+      }
+      if (neu.length) schreibe(pos, stimmen, neu);
+    }
+    // Ruhe: der letzte Takt einer langen Harmonie wird manchmal still
+    if (span >= 4 && rnd() < (R.ruhe / 100) * 0.45) for (let p2 = (b0 + span - 1) * 16; p2 < ende; p2++) z[p2] = p2 === (b0 + span - 1) * 16 ? "." : "-";
+    vorher = best;
+  }
+  return zeilenAus(z);
+}
+
+/**
+ * Spitzen: helle Einzelklänge, selten, wie Lichtreflexe: 0–3 je Viertakt-Phrase, kurz nach einem Snare-Schlag oder am Phrasenende, nie
+ * auf jeder Snare. Hohe Akkordtöne (None, Undezime, Oktave); mit Klassik manchmal ein Glockenklang aus Oktave und Quinte (Rachmaninow),
+ * sonst manchmal ein Vorschlag, aus dem der Ton gleitet.
+ */
+function spitzen(akkorde, rnd, R, takte, snares) {
+  const S = takte * 16, z = leerZeilen(S), k = R.klassik / 100, jePhrase = Math.round((R.spitzen / 100) * 3), sn = snares?.length ? snares : [[4, 12]];
+  for (let ph = 0; ph < takte; ph += 4) {
+    let n = jePhrase - (rnd() < R.ruhe / 200 ? 1 : 0); if (R.spitzen > 15 && n < 1) n = 1;
+    const genutzt = new Set();
+    for (let c = 0; c < n; c++) {
+      const b = ph + Math.floor(rnd() * Math.min(4, takte - ph)), s0 = sn[b % sn.length], basis = rnd() < 0.6 && s0.length ? s0[Math.floor(rnd() * s0.length)] + 1 + Math.floor(rnd() * 3) : 12 + Math.floor(rnd() * 4);
+      const pos = b * 16 + Math.min(15, basis); if (genutzt.has(b) || pos >= S) continue; genutzt.add(b);
+      const g = akkorde[b % akkorde.length], hoch = g + [7, 8, 9, 11, 4][Math.floor(rnd() * 5)];   // schon über der Oktave: das Preset liegt hoch
+      if (k > 0.3 && rnd() < k * 0.5) z[pos] = `${ton({ stufe: g + 7 })}+${ton({ stufe: g + 11, st: "!" })}`;   // Glocke: Oktave und Quinte
+      else if (rnd() < 0.3 && pos > 0 && z[pos - 1] === ".") { z[pos - 1] = ton({ stufe: hoch + 1, st: "_" }); z[pos] = ton({ stufe: hoch, gl: true }); }
+      else z[pos] = ton({ stufe: hoch, st: rnd() < 0.5 ? "!" : "" });
+      if (pos + 1 < S && rnd() < 0.5) z[pos + 1] = "-";
+    }
+  }
+  return zeilenAus(z);
+}
+
+/**
+ * Off-Beats: kurze Akkordfetzen neben dem Schlag, in den Lücken der Drums (belegt: Schritte mit Schlägen je Takt), unregelmässig gesteuert
+ * über Wahrscheinlichkeit und Dichte, reproduzierbar. Mal ein dichter Takt, mal lange nichts. Mit «zyklus» (7, 10 oder 16 Sechzehntel,
+ * z. B. Rupak, Jhaptal, Teental) folgen die Stellen den Betonungen eines Zyklus, der gegen den 4/4-Takt läuft.
+ */
+const ZYKLEN = { 7: [0, 3, 5], 10: [0, 2, 5, 7], 16: [0, 4, 8, 12] };
+function offbeat(akkorde, rnd, R, takte, belegt, zyklus) {
+  const S = takte * 16, z = leerZeilen(S), p = R.offbeat / 100, ruhe = R.ruhe / 100, k = R.klassik / 100;
+  const frei = (b, s2) => !(belegt?.[b % (belegt?.length || 1)] ?? []).includes(s2);
+  let still = 0;
+  for (let b = 0; b < takte; b++) {
+    if (still > 0) { still--; continue; }
+    if (rnd() < ruhe * 0.35) { still = Math.floor(rnd() * 3); continue; }   // lange nichts
+    if (rnd() > p + 0.3) continue;
+    const g = akkorde[b % akkorde.length], dicht = rnd() < p * 0.5 ? 3 : rnd() < 0.5 ? 2 : 1;
+    let stellen;
+    if (ZYKLEN[zyklus]) { stellen = []; for (let s2 = 0; s2 < 16; s2++) if (ZYKLEN[zyklus].includes(((b * 16 + s2) % zyklus))) stellen.push(s2); }
+    else stellen = [2, 3, 6, 7, 10, 11, 14, 15, 5, 13];
+    stellen = stellen.filter((s2) => s2 % 4 !== 0 && frei(b, s2));
+    for (let c = 0; c < dicht && stellen.length; c++) {
+      const s2 = stellen.splice(Math.floor(rnd() * stellen.length), 1)[0], pos = b * 16 + s2;
+      const fetzen = rnd() < 0.5 ? [2, 6] : rnd() < 0.5 ? [4, 8] : k > 0.4 ? [2, 3] : [6, 9];   // Terz+Septime, Quinte+None, Vorhalt (Terz+Quarte), Septime+Dezime
+      z[pos] = fetzen.map((t, i) => ton({ stufe: g + t, st: i === fetzen.length - 1 ? (rnd() < 0.3 ? "!" : rnd() < 0.5 ? "_" : "") : "" })).join("+");
+      if (s2 < 15 && rnd() < 0.35 && z[pos + 1] === ".") z[pos + 1] = "-";
+    }
+  }
+  return zeilenAus(z);
+}
+
+/**
+ * Ruf: seltene, hornartige oder flötende Rufe aus Quarte, Quinte und Sexte (pentatonisch, Dvořák als Richtung): 2–4 lange Töne, danach
+ * lange Stille; die Wiederkehr ist leicht verändert. Mit Ausdruck (Anschleifen, Vibrato) im Preset.
+ */
+function ruf(akkorde, rnd, R, takte) {
+  const S = takte * 16, z = leerZeilen(S), rufe = [[5, 8, 8], [1, 5, 6, 5], [5, 6, 8], [8, 5, 6, 5], [1, 2, 5]];
+  const motiv = rufe[Math.floor(rnd() * rufe.length)], einsatz = [0, 4].filter(() => rnd() > (R.ruhe / 100) * 0.5);
+  for (const b of einsatz.length ? einsatz : [0]) {
+    if (b >= takte) continue;
+    let pos = b * 16 + 2 + Math.floor(rnd() * 3);
+    motiv.forEach((st, i) => {
+      if (pos >= S) return;
+      const var2 = b > 0 && i === motiv.length - 1 ? (rnd() < 0.5 ? 1 : -1) : 0, d = [6, 4, 8, 10][Math.floor(rnd() * 4)];
+      z[pos] = ton({ stufe: st + var2, gl: i > 0 && rnd() < 0.3, st: i === 0 ? "!" : "" });
+      for (let j = pos + 1; j < Math.min(S, pos + d); j++) z[j] = "-";
+      pos += d + (rnd() < 0.3 ? 2 : 0);
+    });
+  }
+  return zeilenAus(z);
+}
+
+/**
+ * Alap: wie die freie Einleitung eines Ragas (als Inspiration): Töne werden einzeln eingeführt, lange gehalten und gleitend verbunden
+ * (Meend), dazu ab und zu ein Pendeln um einen Ton (Gamak-artig). Der Tonraum wächst über die Takte vom Grundton aus nach oben.
+ */
+function alap(rnd, R, takte) {
+  const S = takte * 16, z = leerZeilen(S), folge = [1, 2, 1, 3, 2, 1, 4, 3, 5, 4, 3, 2, 1, 5, 6, 5, 8, 7, 6, 5, 4, 3, 2, 1];
+  let pos = 2, k = 0;
+  while (pos < S && k < folge.length) {
+    const st = folge[k], d = 6 + Math.floor(rnd() * 10);
+    z[pos] = ton({ stufe: st, gl: k > 0 && rnd() < 0.7, st: k === 0 ? "!" : "" });
+    for (let j = pos + 1; j < Math.min(S, pos + d); j++) z[j] = "-";
+    if (d >= 10 && rnd() < 0.35 && pos + d - 1 < S) {   // Gamak: drei Sechzehntel Pendeln, gleitend
+      const e = pos + d - 4; z[e] = ton({ stufe: st + 1, gl: true, st: "_" }); z[e + 1] = ton({ stufe: st, gl: true }); z[e + 2] = ton({ stufe: st + 1, gl: true, st: "_" }); z[e + 3] = ton({ stufe: st, gl: true });
+    }
+    pos += d; k++;
+    if (rnd() < (R.ruhe / 100) * 0.3) pos += 4;   // Atem
+  }
+  return zeilenAus(z);
+}
+
+/** Tanpura: Pa (Quinte unten), Sa, Sa, Sa (tief): vier Zupfer je Takt (bei Halftime je zwei Takte), jeder klingt bis zum nächsten */
+function tanpura(rnd, takte, halftime) {
+  const zeilen = [], muster = ["5,", "1", "1", "1,"], weit = halftime ? 8 : 4;
+  const z = [];
+  for (let s2 = 0; s2 < takte * 16; s2++) z.push(s2 % weit === 0 ? muster[(s2 / weit) % 4] + ((s2 / weit) % 4 === 0 ? "!" : "") : "-");
+  for (let b = 0; b < takte; b++) zeilen.push(z.slice(b * 16, b * 16 + 16).join(" "));
   return zeilen;
 }

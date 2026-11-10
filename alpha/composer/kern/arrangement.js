@@ -14,7 +14,7 @@ export function funktionVon(q) {
   // perkussive Naturtexturen (Tropfen, Zirpen, Knistern, Rufe, Impulse) nur in den ruhigen Teilen; durchgehend nervten sie (Urteil 9.11.2026)
   if (q.flaeche) return q.stimme === "pad" ? "pad" : ["regen", "feuer", "insekten", "vogel", "pflanzen"].includes(q.stimme) ? "naturklang" : "natur";
   if (q.erzeuger?.startsWith("bass@")) return "bass";
-  if (q.erzeuger?.startsWith("synth@")) return ["pad", "drone", "schwebe"].includes(q.rolle) ? "pad" : "melodie";
+  if (q.erzeuger?.startsWith("synth@")) return ["pad", "drone", "schwebe", "flaeche", "tanpura", "alap"].includes(q.rolle) ? "pad" : "melodie";
   const s = q.stimme;
   if (s === "kick") return "kick";
   if (["snare", "clap", "tom"].includes(s)) return "backbeat";
@@ -163,18 +163,20 @@ export function teileAus(defs, abschn) {
   return abschn.map((a) => ({ von: a.von, bis: a.bis, takte: defs[a.typ] ?? null, fill: defs.fill ?? null })).filter((t) => t.takte || t.fill);
 }
 
+// Synths: [Familie, Preset, Rolle, { pegel (dB zum Standard), regler }]. Seit Synth 0.2.0 (melodien.md) kommen bei Ornament und Drum and
+// Bass zur Schwebe zwei leise Schichten dazu: helle Spitzen (Spieldose, gedämpft) und unregelmässige Off-Beats in den Lücken der Drums.
 export const BESETZUNG = Object.freeze({
   // bassTeile: je Abschnitt eine eigene Art der Linie (seit Composer 0.3); Wind der Gezeiten zurückgenommen (Urteil: «etwas dominant»)
-  ornament: { linie: "zyklus", wechsel: ["tabla", "darbuka", "zarb", "riq"], synths: [["shadow", "deepRoomDrone", "schwebe"]],
+  ornament: { linie: "zyklus", wechsel: ["tabla", "darbuka", "zarb", "riq"], synths: [["shadow", "deepRoomDrone", "schwebe"], ["ice", "musicBoxFrost", "spitzen", { pegel: -7, regler: { spitzen: 30, klassik: 60 } }], ["tape", "wornKeys", "offbeat", { pegel: -6, regler: { offbeat: 40, ruhe: 55 } }]],
     bassTeile: { aufbau: "lang", haupt: "zyklus", gas: "kick", stocken: "riff", atmen: "lang", wiederfinden: "riff", outro: "lang" },
     natur: [["gezeiten", { verwandlung: 30, wellen: 70, wind: 8 }, { pegel: 4 }], ["walchor", { verwandlung: 40 }, { pegel: 3 }], ["vogel", { dichte: 30 }, { pegel: 3 }]] },
-  dnb: { mix: [["orient", "darbuka"]], linie: "lang", synths: [["shadow", "deepRoomDrone", "schwebe"]], natur: [["gezeiten", { verwandlung: 40, tonalitaet: 40 }], ["insekten", { verwandlung: 60, tonalitaet: 0 }]] },
+  dnb: { mix: [["orient", "darbuka"]], linie: "lang", synths: [["shadow", "deepRoomDrone", "schwebe"], ["ice", "musicBoxFrost", "spitzen", { pegel: -6, regler: { spitzen: 45, klassik: 60 } }], ["velvet", "velvetRhodes", "offbeat", { pegel: -6, regler: { offbeat: 50 } }]], natur: [["gezeiten", { verwandlung: 40, tonalitaet: 40 }], ["insekten", { verwandlung: 60, tonalitaet: 0 }]] },
   hiphop: { mix: [["orient", "darbuka"]], linie: "kick", synths: [["tape", "amberMemory", "schwebe"]], natur: [["regen", {}], ["walchor", { verwandlung: 50 }]] },
   pop: { mix: [["persisch", "zarb"]], linie: "zyklus", synths: [["darkpop", "darkBrass", "schwebe"]], natur: [["vogel", { dichte: 25 }]] },
   minimal: { mix: [["ecm", "udu"]], linie: "zyklus", synths: [["shadow", "deepRoomDrone", "schwebe"]], natur: [["regen", { verwandlung: 30 }], ["feuer", { variante: "Glut" }]] },
   goa: { mix: [["persisch", "zarb"]], linie: "zyklus", synths: [["goa", "spiralAcid"], ["shadow", "deepRoomDrone", "schwebe"]], natur: [["insekten", { verwandlung: 70 }], ["gezeiten", { verwandlung: 80 }]] },
   house: { mix: [["orient", "riq"]], linie: "offbeat", synths: [["house", "velvetOrgan"], ["trance", "openSky", "schwebe"]], natur: [["regen", { verwandlung: 40 }]] },
-  indien: { mix: [["dnb", "hat"]], linie: "zyklus", synths: [["tape", "amberMemory", "schwebe"]], natur: [["vogel", { dichte: 25 }], ["regen", {}]] },
+  indien: { mix: [["dnb", "hat"]], linie: "zyklus", synths: [["tape", "amberMemory", "schwebe"], ["raga", "tanpuraGlow", "tanpura", { pegel: -3 }]], natur: [["vogel", { dichte: 25 }], ["regen", {}]] },
   orient: { ohne: ["riq"], mix: [["dnb", "hat"]], linie: "zyklus", synths: [["shadow", "shadowChord", "schwebe"]], natur: [["gezeiten", { wellen: 50, wind: 40 }], ["feuer", {}]] },
   ecm: { mix: [["persisch", "zarb"]], linie: "zyklus", synths: [["shadow", "deepRoomDrone", "schwebe"]], natur: [["walchor", { verwandlung: 50 }], ["regen", { verwandlung: 30 }]] },
   persisch: { mix: [["orient", "darbuka"]], linie: "zyklus", synths: [["tape", "amberMemory", "schwebe"]], natur: [["vogel", { dichte: 15, raum: 90 }], ["insekten", {}]] },
