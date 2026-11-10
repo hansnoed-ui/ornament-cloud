@@ -79,7 +79,7 @@ kbd { font: inherit; font-size: 0.75em; color: var(--muted); border: 1px solid v
 .lineal-zeile, .spur { display: grid; grid-template-columns: var(--kopfbreite) 1fr; border-bottom: 1px solid var(--fuge); }
 .kopfzelle { padding: 8px 12px; border-right: 1px solid var(--fuge); display: grid; gap: 6px; align-content: center; }
 .summe-kopf { font-size: 0.8rem; color: var(--staub); }
-canvas.lineal, canvas.welle { width: 100%; display: block; cursor: crosshair; touch-action: none; }
+canvas.lineal, canvas.welle { width: 100%; display: block; cursor: crosshair; touch-action: pan-y; }
 .wellen-feld { position: relative; min-height: 84px; }
 .wellen-feld canvas.welle { position: absolute; inset: 0; width: 100%; height: 100%; }
 .spur.gewaehlt .kopfzelle { box-shadow: inset 3px 0 0 #8fb0ff; background: #1c1b19; }
