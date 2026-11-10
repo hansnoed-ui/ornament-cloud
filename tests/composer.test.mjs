@@ -517,6 +517,100 @@ test("Fassungen: verschieben, wiederholen, angleichen; Ausrichten findet den Ver
   assert.equal(sp.datei.name, "neu.wav"); assert.ok(!("versatz" in sp));
 });
 
+// ---------- ornament.lucerne (synthetische Testquellen; eigene Aufnahmen kommen nie ins Repo) ----------
+const K = await c("kern/klangsammlung.js");
+const SA = await c("kern/sampler.js");
+const LU = await c("kern/lucerne.js");
+const { spurRechnen: spurR } = await c("kern/erzeugen.js");
+
+/** Testquelle: Ausklang eines A-Dur-Akkords (8 s), dann Schläge (8 s) – so bezeichnet */
+function testquelle() {
+  const n = 16 * RATE, L = new Float32Array(n), R = new Float32Array(n);
+  for (let i = 0; i < 8 * RATE; i++) { const t = i / RATE, e = 0.25 * Math.exp(-t / 4); for (const f of [220, 277.18, 329.63, 659.26]) { const v = e * Math.sin(2 * Math.PI * f * t); L[i] += v; R[i] += v * 0.9; } }
+  for (let k = 0; k < 40; k++) { const i0 = Math.round((8.1 + k * 0.18 + (k % 3) * 0.03) * RATE); for (let i = 0; i < 4000; i++) { const v = 0.6 * Math.exp(-i / 500) * Math.sin(i * 0.05); L[i0 + i] += v; R[i0 + i] += v; } }
+  return [L, R];
+}
+function testsammlung() {
+  const k = testquelle(), an = K.analysieren(k, RATE);
+  let s = K.quelleHinzufuegen(K.neueSammlung(), { name: "TESTQUELLE_akkord_schlaege.wav", sha256: "a".repeat(64), rate: RATE, kanaele: 2, dauer: an.dauer, herkunft: "test" }, an).sammlung;
+  s = K.ausschnitteHinzufuegen(s, K.ausschnitteVorschlagen(s.quellen[0]));
+  return { s, material: new Map([[s.quellen[0].id, { kanaele: k, rate: RATE }]]) };
+}
+
+test("Klangsammlung: stabile IDs, bekannte Quelle wird nicht neu angelegt, Vorschläge mit Rollen aus dem Material", () => {
+  const { s } = testsammlung(), q = s.quellen[0];
+  assert.equal(q.id, K.quelleId("a".repeat(64))); assert.ok(q.test);
+  const nochmal = K.quelleHinzufuegen(s, { name: "anders.wav", sha256: "a".repeat(64) }, null);
+  assert.equal(nochmal.neu, false); assert.equal(nochmal.sammlung, s, "gleiche Prüfsumme: nichts ändert sich");
+  const rollen = new Set(s.ausschnitte.map((a) => a.rolle));
+  assert.ok(rollen.has("harmonic_layer"), [...rollen].join()); assert.ok(rollen.has("accent") || rollen.has("fragment"));
+  const ak = s.ausschnitte.find((a) => a.rolle === "harmonic_layer").akkord;
+  assert.deepEqual([ak.grundton, ak.art], [9, "dur"], "A-Dur erkannt");
+  for (const a of s.ausschnitte) { assert.ok(a.bis > a.von && a.von >= 0 && a.bis <= q.dauer + 1e-6); assert.ok(K.herkunft(s, a.id).quelle.id === q.id); }
+  assert.ok(s.ausschnitte.length >= 3 && s.ausschnitte.length <= 8);
+});
+
+test("Sampler: Band ändert Tonhöhe und Dauer gemeinsam, Zeitdehnung nur die Dauer; Original bleibt", () => {
+  const n = RATE, s = Float32Array.from({ length: n }, (_, i) => Math.sin((2 * Math.PI * 440 * i) / RATE) * 0.5), k = [s, s.slice()];
+  const kopie = s.slice();
+  const b = SA.bearbeiten(k, RATE, [{ art: "band", halbtoene: -12 }]);
+  assert.ok(Math.abs(b[0].length - 2 * n) < 4, "eine Oktave tiefer = doppelt so lang");
+  const d = SA.bearbeiten(k, RATE, [{ art: "dehnung", faktor: 2, halbtoene: 0 }]);
+  assert.ok(Math.abs(d[0].length - 2 * n) < 4);
+  const nullDurchgaenge = (x) => { let z = 0; for (let i = 1000; i < x.length - 1000; i++) if ((x[i] >= 0) !== (x[i - 1] >= 0)) z++; return z / ((x.length - 2000) / RATE) / 2; };
+  assert.ok(Math.abs(nullDurchgaenge(b[0]) - 220) < 5, `Band: ${nullDurchgaenge(b[0])} Hz`);
+  assert.ok(Math.abs(nullDurchgaenge(d[0]) - 440) < 8, `Dehnung: ${nullDurchgaenge(d[0])} Hz`);
+  gleich(s, kopie, "Original unverändert");
+  const norm = SA.bearbeiten(k, RATE, [{ art: "normal", db: -20 }]); let e = 0; for (const v of norm[0]) e += v * v;
+  assert.ok(Math.abs(10 * Math.log10(e / n) + 20) < 0.5, "lautheitsgleich auf −20 dB");
+});
+
+test("Sampler-Spur: Ereignisse in musikalischer Zeit, Swing nur auf ungeraden Sechzehnteln, fehlende Quelle gemeldet, reproduzierbar", () => {
+  const imp = new Float32Array(RATE); imp[200] = 1;   // nach der 2-ms-Einblendung des Ausschnitts
+  const material = new Map([["q", { kanaele: [imp, imp], rate: RATE }]]);
+  const q = { erzeuger: SA.SAMPLER, rolle: "accent", anzahl: 2, bpm: 120, seed: 1, swing: 0.1, klaenge: { a: { quelle: "q", von: 0, bis: 0.1, schritte: [] }, b: { quelle: "fehlt", von: 0, bis: 1, schritte: [] } },
+    ereignisse: [{ t: 0, klang: "a", staerke: 1 }, { t: 1 / 16, klang: "a", staerke: 1 }, { t: 1 + 4 / 16, klang: "a", staerke: 1 }, { t: 1.5, klang: "b" }] };
+  const r = SA.samplerSpurRechnen(q, RATE, material), T = 2, sech = T / 16;
+  const stellen = []; r.kanaele[0].forEach((v, i) => { if (Math.abs(v) > 0.5) stellen.push(i); });
+  assert.deepEqual(stellen, [0, Math.round((sech + 0.1 * sech) * RATE), Math.round((T + 4 * sech) * RATE)].map((x) => x + 200));
+  assert.deepEqual(r.fehlt, ["fehlt"]);
+  gleich(SA.samplerSpurRechnen(q, RATE, material).kanaele[0], r.kanaele[0], "gleiches Rezept, gleiche Abtastwerte");
+});
+
+test("Choke: die offene Hi-Hat endet beim nächsten Schlag der geschlossenen", () => {
+  const basis = { erzeuger: "drums@0.1.0", stimme: "offen", werte: {}, anzahl: 1, bpm: 120, swing: 0, menschlich: 0, versatz: 0, seed: 1, takte: ["x . . . . . . . . . . . . . . ."] };
+  const frei = spurR(basis, RATE).kanaele[0], gechokt = spurR({ ...basis, choke: { zeiten: [0.25] } }, RATE).kanaele[0];
+  const e = (x, a, b) => { let s = 0; for (let i = Math.round(a * RATE); i < Math.round(b * RATE); i++) s += x[i] * x[i]; return s; };
+  assert.ok(e(frei, 0.26, 0.4) > 1e-4, "ohne Choke klingt sie weiter");
+  assert.equal(e(gechokt, 0.26, 0.4), 0);
+  gleich(gechokt.subarray(0, Math.round(0.249 * RATE)), frei.subarray(0, Math.round(0.249 * RATE)), "vorher unverändert");
+});
+
+test("ornament.lucerne: Plan mit Gerüst 88 Takte, Groove auf 1-basierten Schritten, Sperren, Zeitmarken", () => {
+  const { s, material } = testsammlung();
+  const plan = LU.planen({ sammlung: s, seed: 1 });
+  assert.equal(plan.profil, "ornament.lucerne"); assert.equal(plan.schema, "0.1.0");
+  assert.equal(plan.takte, 88); assert.equal(plan.bpm, 88); assert.ok(Math.abs((plan.takte * 240) / plan.bpm - 240) < 1e-9, "88 Takte bei 88 BPM = 240 s");
+  assert.deepEqual(plan.abschnitte.map((a) => [a.typ, a.von + 1, a.bis]), [["auftauchen", 1, 8], ["gedanke", 9, 24], ["vertiefung", 25, 40], ["freistellung", 41, 48], ["verwandlung", 49, 64], ["wiederkehr", 65, 80], ["nachbild", 81, 88]]);
+  const z = (k, b) => plan.spuren.find((x) => x.key === k).quelle.takte[b].split(" ").flatMap((t, i) => (t === "." ? [] : [i + 1]));
+  assert.deepEqual(z("kick", 8), [1, 7, 9]); assert.deepEqual(z("snare", 8), [5, 13]); assert.deepEqual(z("hat", 8), [1, 3, 5, 7, 9, 11, 13, 15]); assert.deepEqual(z("ghost", 8), [12]);
+  assert.deepEqual(z("kick", 9), [1, 8, 11]); assert.deepEqual(z("offen", 9), [15]); assert.deepEqual(z("hat", 9), [1, 3, 5, 7, 9, 11]);
+  assert.deepEqual(z("kick", 0), [], "im Auftauchen keine Kick");
+  assert.ok(plan.spuren.find((x) => x.key === "offen").quelle.choke.zeiten.length > 100);
+  assert.ok(plan.marker.some((m) => m.art === "abschnitt") && plan.marker.some((m) => m.art === "motiv") && plan.marker.some((m) => m.art === "akzent"));
+  const mz = LU.markerMitZeit(plan).find((m) => m.art === "abschnitt" && m.text === "Freistellung");
+  assert.equal(mz.takt1, 41); assert.ok(Math.abs(mz.zeit - (40 * 240) / 88) < 1e-3);
+  assert.equal(JSON.stringify(LU.planen({ sammlung: s, seed: 1 })), JSON.stringify(plan), "reproduzierbar");
+  const v = LU.planen({ sammlung: s, seed: 1, seeds: { ...plan.seeds, groove: 99, motiv: 99, bass: 99 }, vorher: plan, sperren: { motiv: true, bass: true } });
+  assert.deepEqual(v.motivNoten, plan.motivNoten); assert.deepEqual(v.bassZeilen, plan.bassZeilen);
+  assert.notDeepEqual(v.drumZeilen, plan.drumZeilen);
+  const w = LU.planen({ sammlung: s, seed: 1, seeds: { ...plan.seeds, groove: 77 }, vorher: plan, sperren: { abschnitte: ["vertiefung"] } });
+  for (let b = 24; b < 40; b++) assert.equal(w.drumZeilen.kick[b], plan.drumZeilen.kick[b]);
+  const st = LU.planen({ sammlung: s, seed: 1, studie: true });
+  assert.equal(st.takte, 16); assert.ok(st.spuren.some((x) => x.rolle === "main_motif"));
+  for (const sp of st.spuren.filter((x) => x.quelle.erzeuger === SA.SAMPLER)) { const r = SA.samplerSpurRechnen(sp.quelle, RATE, material); assert.ok(r.kanaele[0].every(Number.isFinite), sp.key); assert.deepEqual(r.fehlt, []); }
+});
+
 // ---------- Synth 0.2.0, Klangcharaktere, die vier Schichten der Melodie, Vierteltöne ----------
 const S2 = await c("erzeuger/synth-0.2.0.js");
 

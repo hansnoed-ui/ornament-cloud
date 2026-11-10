@@ -26,6 +26,7 @@ import { LINIEN, LEITERN, NOTEN, linieErzeugen, kickSchritte, grundFrequenz, ton
 import { wavSpuren, abtastrateLesen, mono, tempoSchaetzen, einsaetzeFinden, wavSchreiben, rateWandeln, dehnen } from "../lab/kern/klangwerk.js";
 import * as BE from "./kern/bereiche.js";
 import * as FA from "./kern/fassungen.js";
+import { lucerneEinbauen, klangPanel, istSampler, samplerRechnen } from "./lucerne-ui.js";
 
 const $ = (id) => document.getElementById(id);
 const atmen = () => new Promise((ok) => setTimeout(ok, 0));
@@ -340,7 +341,7 @@ function varianteWaehlen(i) {
 function stileAufbauen() {
   const sel = $("stil"), gruppen = {}, NAMEN = { ornament: "Ornament", elektronisch: "Drums, elektronisch", organisch: "Perkussion, organisch" };
   for (const s of STILE.filter((x) => !x.versteckt)) (gruppen[s.gruppe] ??= []).push(s);
-  for (const [g, liste] of Object.entries(gruppen)) sel.append(el("optgroup", { label: NAMEN[g] ?? g }, ...liste.map((s) => el("option", { value: s.key, textContent: `${s.name} · ${s.bpm}` }))));
+  for (const [g, liste] of Object.entries(gruppen)) sel.append(el("optgroup", { label: NAMEN[g] ?? g }, ...(g === "ornament" ? [el("option", { value: "lucerne", textContent: "ornament.lucerne · Erinnerung · 88 (eigene Aufnahmen)" })] : []), ...liste.map((s) => el("option", { value: s.key, textContent: `${s.name} · ${s.bpm}` }))));
   const bass = ERZEUGER["bass@0.1.0"].stimmen;
   $("bassStimme").append(...Object.values(bass).map((b) => el("option", { value: b.key, textContent: b.name })));
   $("bassLinie").append(...LINIEN.map((l) => el("option", { value: l.key, textContent: l.name, title: l.hilfe })));
@@ -348,6 +349,7 @@ function stileAufbauen() {
   $("flaecheStimme").append(...Object.values(ERZEUGER["natur@0.2.0"].stimmen).map((b) => el("option", { value: b.key, textContent: b.name })));
   $("leiter").append(...Object.entries(LEITERN).map(([k, l]) => el("option", { value: k, textContent: l.name })));
   sel.onchange = () => {
+    if (sel.value === "lucerne") { $("erzBpm").value = 88; $("lucerne")?.scrollIntoView({ behavior: "smooth", block: "nearest" }); return; }
     const st = stilVon(sel.value); $("erzBpm").value = st.bpm;
     if (st.bass) { $("bassStimme").value = st.bass.stimme; $("bassLinie").value = st.bass.linie; $("leiter").value = st.bass.leiter; }
   };
@@ -387,17 +389,26 @@ function bassErzeugen({ anzahl, bpm, seed, stil }) {
 let rechner = null, auftragNr = 0;
 const offen = new Map(), stand = new Map();
 // mehrere Worker (höchstens drei): Spuren eines ganzen Tracks rechnen gleichzeitig; ein Auftrag geht an den Worker mit den wenigsten offenen
-function imWorker(q, bezug) {
+function imWorker(q, bezug, nurStarten = false) {
   if (!rechner) {
     const anzahl = Math.max(1, Math.min(3, (navigator.hardwareConcurrency || 2) - 1));
-    rechner = Array.from({ length: anzahl }, () => { const w = new Worker(new URL("./worker/rechnen-worker.js", import.meta.url), { type: "module" }); w.offen = 0; w.onmessage = ({ data }) => { w.offen--; const o = offen.get(data.id); offen.delete(data.id); if (o) data.fehler ? o.nein(new Error(data.fehler)) : o.ja(data.kanaele); }; return w; });
+    rechner = Array.from({ length: anzahl }, () => { const w = new Worker(new URL("./worker/rechnen-worker.js", import.meta.url), { type: "module" }); w.offen = 0; w.onmessage = ({ data }) => { w.offen--; const o = offen.get(data.id); offen.delete(data.id); if (o) data.fehler ? o.nein(new Error(data.fehler)) : o.ja(data.kanaele ?? data.ergebnis); }; return w; });
   }
+  if (nurStarten) return null;
   const id = ++auftragNr, b = { ...bezug }, w = rechner.reduce((a, x) => (x.offen < a.offen ? x : a));
   if (b.sample) b.sample = { kanaele: b.sample.kanaele.map((k) => k.slice()), rate: b.sample.rate };
   w.offen++;
   return new Promise((ja, nein) => { offen.set(id, { ja, nein }); w.postMessage({ id, q: JSON.parse(JSON.stringify(q)), bezug: b, rate: z.rate }); });
 }
+/** ein beliebiger Auftrag an einen Worker (z. B. die Analyse einer Aufnahme für die Klangsammlung) */
+function imWorkerRoh(nachricht) {
+  imWorker(null, null, true);
+  const id = ++auftragNr, w = rechner.reduce((a, x) => (x.offen < a.offen ? x : a));
+  w.offen++;
+  return new Promise((ja, nein) => { offen.set(id, { ja, nein }); w.postMessage({ ...nachricht, id }); });
+}
 function spurNeuRechnen(sp) {
+  if (istSampler(sp)) return samplerRechnen(sp);
   if (sp.quelle.flaeche || istSynth(sp)) {
     // je Spur höchstens ein Auftrag unterwegs; Änderungen während der Rechnung werden danach in einem Durchgang nachgeholt
     const st = stand.get(sp.id) ?? { laeuft: null, nochmal: false };
@@ -579,6 +590,7 @@ function spurBald(sp) {
 }
 
 async function erzeugen({ anzahlVorgabe = null, still = false } = {}) {
+  if ($("stil").value === "lucerne") return LUI.erzeugen({ studie: true });
   const stil = stilVon($("stil").value), bpm = Number($("erzBpm").value) || stil.bpm, anzahl = anzahlVorgabe ?? Number($("takte").value), seed = Math.max(1, Math.round(Number($("seed").value) || 1));
   await kontext(48000);
   if (z.laeuft) await spielen();
@@ -612,6 +624,7 @@ async function erzeugen({ anzahlVorgabe = null, still = false } = {}) {
  * Ereignis, jeder Regler lässt sich ändern. Geladene Dateien bleiben, erzeugte Spuren werden ersetzt.
  */
 async function trackErzeugen() {
+  if ($("stil").value === "lucerne") return LUI.erzeugen({ studie: false });
   const stil = stilVon($("stil").value), bpm = Number($("erzBpm").value) || stil.bpm, sek = Number($("trackDauer").value), seed = Math.max(1, Math.round(Number($("seed").value) || 1));
   await kontext(48000);
   if (z.laeuft) await spielen();
@@ -717,6 +730,7 @@ async function schlagHoeren(sp, art) {
 }
 
 function klangAufbauen(box, sp, wahl) {
+  if (istSampler(sp)) { klangPanel(box, sp, wahl); return; }
   const q = sp.quelle, st = stimmeVon(q.erzeuger, q.stimme), e = ERZEUGER[q.erzeuger];
   box.append(el("div", { className: "plugin-kopf" }, el("h2", { textContent: `${sp.name}: ${e.name} ${e.version}` }), wahl,
     el("span", { className: "leise-text", textContent: `Eigene Synthese, Startwert ${q.seed}. Jede Änderung rechnet die Spur neu; jeder Schlag und jeder Ton ist auf dieselbe Spitze gebracht, damit Klangfarbe nicht als Lautstärke gehört wird.` })));
@@ -1360,7 +1374,7 @@ function anzeigen() {
 // ---------- Messen und Export ----------
 async function bisFertig() { while (offen.size || [...stand.values()].some((x) => x.laeuft)) await new Promise((r) => setTimeout(r, 100)); }
 function renderAuftrag(extra = {}) {
-  const spuren = z.projekt.spuren.filter((s) => z.daten.has(s.id)).map((s) => ({ id: s.id, kanaele: z.daten.get(s.id).kanaele }));
+  const spuren = z.projekt.spuren.filter((s) => z.daten.has(s.id) && !s.nurVorschau).map((s) => ({ id: s.id, kanaele: z.daten.get(s.id).kanaele }));   // Metronom nie im Export
   return { rate: z.rate, plugins: PLUGINS, spuren, zustand: { ...PR.motorZustand(z.projekt), ...extra }, melden: async (a) => { melde(`rechne … ${Math.round(a * 100)} %`, 0); await atmen(); } };
 }
 async function mischungMessen({ vorher = true } = {}) {
@@ -1458,7 +1472,7 @@ async function projektOeffnen(f) {
     for (const id of z.daten.keys()) post({ art: "weg", id });
     z.projekt = p; z.daten.clear(); z.fassungRoh.clear(); z.original.clear(); z.auswahl = false; z.gewaehlt = p.spuren[0]?.id ?? null; z.schleife = p.schleife; z.schleifeAn = false; z.messungen = null;
     if (p.spuren.some((s) => s.quelle)) { await kontext(p.rate); for (const s of p.spuren) if (s.quelle) spurNeuRechnen(s); senden(); }
-    allesAufbauen();
+    allesAufbauen(); LUI.aufbauen();
     const fehlen = p.spuren.filter((s) => s.datei).map((s) => s.datei.name);
     melde(fehlen.length ? `«${p.titel}» geöffnet. Jetzt die Tondateien laden (${fehlen.join(", ")}).` : `«${p.titel}» geöffnet, alle Spuren neu gerechnet.`, 9000);
   } catch (e) { melde(String(e.message ?? e), 8000); }
@@ -1578,4 +1592,6 @@ $("ersatzDatei").onchange = (e) => { const f = e.target.files[0], sp = spurVon(z
 zeigerAuf($("lineal"));
 stileAufbauen();
 allesAufbauen();
+// ornament.lucerne: Klangsammlung und Steuerung (eigenes Modul, bekommt nur, was es braucht)
+const LUI = await lucerneEinbauen({ z, $, el, melde, atmen, PR, post, senden, allesAufbauen, spurSenden, spurNeuRechnen, kontext, spielen, bisFertig, schnellEinpegeln, schleifeSenden, zeichnen, zeigeRechnen, herunterladen, sha256, imWorker, imWorkerRoh, NOTEN });
 requestAnimationFrame(anzeigen);
