@@ -55,6 +55,22 @@ export function pruefeEp(ep) {
   return { fehler, platzhalter };
 }
 
+/** Browser in einer App (Facebook, Instagram, Messenger, TikTok, Snapchat, LinkedIn, X): Dort hält das System die Wiedergabe an, sobald der Bildschirm
+ *  gesperrt ist oder die App wechselt (Rückmeldung von Christian, 11. November 2026: «im facebook browser stoppt die maxi nach einer bestimmten zeit»).
+ *  Gibt den Namen der App zurück oder null. */
+export function inAppBrowser(ua = "") {
+  const regeln = [[/FBAN|FBAV|FB_IAB|FBIOS|FB4A/, "Facebook"], [/Instagram/, "Instagram"], [/Messenger|FBMS/, "Messenger"],
+    [/musical_ly|BytedanceWebview|TikTok/i, "TikTok"], [/Snapchat/, "Snapchat"], [/LinkedInApp/, "LinkedIn"], [/Twitter|TwitterAndroid/, "X"]];
+  for (const [re, name] of regeln) if (re.test(ua)) return name;
+  return null;
+}
+
+/** Android: Adresse, die die Seite in Chrome öffnet (intent:), mit Rückfall auf die normale Adresse */
+export function chromeIntent(url) {
+  const u = new URL(url);
+  return `intent://${u.host}${u.pathname}${u.search}#Intent;scheme=${u.protocol.replace(":", "")};package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent(u.href)};end`;
+}
+
 // ---------------------------------------------------------------- Oberfläche (nur im Browser)
 
 if (typeof document !== "undefined") {
@@ -67,6 +83,37 @@ async function starte() {
   const audio = $("audio"), play = $("play"), regler = $("regler"), liste = $("tracks"), hinweis = $("hinweis");
 
   const zeige = (text) => { hinweis.textContent = text; hinweis.hidden = !text; };
+
+  // Im Browser einer App: Hinweis mit Weg in den richtigen Browser (die Seite spielt trotzdem, nur nicht mit gesperrtem Bildschirm)
+  const app = inAppBrowser(navigator.userAgent);
+  if (app) {
+    const box = $("inapp"), android = /Android/i.test(navigator.userAgent), hier = location.href.split("#")[0];
+    const p = document.createElement("p");
+    p.textContent = `Im ${app}-Browser stoppt die Musik, wenn du den Bildschirm sperrst oder die App wechselst. Öffne die Seite darum in ${android ? "Chrome" : "Safari"}`
+      + (android ? "." : ": oben rechts auf ··· oder das Teilen-Symbol tippen und «Im externen Browser öffnen» wählen.");
+    box.append(p);
+    const leiste = document.createElement("div");
+    leiste.className = "inapp-knoepfe";
+    if (android) {
+      const a = document.createElement("a");
+      a.className = "inapp-knopf haupt";
+      a.href = chromeIntent(hier);
+      a.textContent = "In Chrome öffnen";
+      leiste.append(a);
+    }
+    const k = document.createElement("button");
+    k.type = "button";
+    k.className = "inapp-knopf";
+    k.textContent = "Link kopieren";
+    k.addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText(hier); k.textContent = "Kopiert"; }
+      catch { window.prompt("Link kopieren:", hier); }
+    });
+    leiste.append(k);
+    box.append(leiste);
+    box.hidden = false;
+    document.body.dataset.inapp = app;
+  }
 
   let ep;
   try {

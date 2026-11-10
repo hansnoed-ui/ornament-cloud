@@ -9,7 +9,7 @@ import { spawnSync } from "node:child_process";
 
 const root = new URL("../", import.meta.url);
 const lies = (p) => readFileSync(new URL(p, root), "utf8");
-const { startzeiten, aktiverTrack, trackEnde, zeitText, pruefeEp } = await import(new URL("listen/directer/player.js", root).href);
+const { startzeiten, aktiverTrack, trackEnde, zeitText, pruefeEp, inAppBrowser, chromeIntent } = await import(new URL("listen/directer/player.js", root).href);
 const { wavKopf, wavInfo, marken, markenEintragen } = await import(new URL("tools/ep-wav.mjs", root).href);
 const { startServer, bereich } = await import(new URL("tools/ep-server.mjs", root).href);
 const { pruefeRange } = await import(new URL("tools/ep-range.mjs", root).href);
@@ -144,4 +144,16 @@ test("Deployment: WAV nicht in Git, auf dem Webspace vor rsync --delete geschüt
   const ht = lies(".htaccess");
   assert.match(ht, /AddType audio\/wav \.wav/);
   for (const z of ht.split("\n").filter((z) => /DEFLATE|BROTLI/.test(z))) assert.doesNotMatch(z, /audio/, "Audio wird nicht komprimiert (sonst kein Range)");
+});
+
+test("Browser in Apps: erkannt (Facebook, Instagram), normale Browser nicht; Android-Weg nach Chrome", () => {
+  const fb = "Mozilla/5.0 (Linux; Android 14; SM-S911B Build/UP1A; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/130.0 Mobile Safari/537.36 [FB_IAB/FB4A;FBAV/489.0.0.0;]";
+  const fbIos = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 [FBAN/FBIOS;FBAV/489.0;FBBV/1;]";
+  const ig = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Instagram 350.0.0";
+  const chrome = "Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Mobile Safari/537.36";
+  const safari = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1";
+  assert.equal(inAppBrowser(fb), "Facebook"); assert.equal(inAppBrowser(fbIos), "Facebook"); assert.equal(inAppBrowser(ig), "Instagram");
+  assert.equal(inAppBrowser(chrome), null); assert.equal(inAppBrowser(safari), null);
+  assert.equal(chromeIntent("https://ornament.cloud/listen/directer/?x"),
+    "intent://ornament.cloud/listen/directer/?x#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=https%3A%2F%2Fornament.cloud%2Flisten%2Fdirecter%2F%3Fx;end");
 });
