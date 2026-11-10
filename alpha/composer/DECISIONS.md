@@ -132,3 +132,11 @@ Christian: Läuft Musik und die Seite wird verlassen oder der Bildschirm sperrt,
 - Mobil wird der AudioContext beim nächsten ▶ neu gebaut und mit Spuren, Referenz, Zustand, Schleife und Stelle gefüllt; ebenso überall, wenn das System den Ton unterbrochen hat oder der Kontext nicht innerhalb einer Sekunde wieder läuft.
 - Start und Halt blenden im Worklet 15 ms ein und aus (auch beim normalen ■), der Motor selbst bleibt bitgleich zum Export.
 - Weiterspielen im Hintergrund wurde nicht gewählt: Web Audio läuft mobil im Hintergrund nicht verlässlich, und der Motor rechnet in Echtzeit.
+
+## Stopp und Neuaufbau der Tonausgabe (10. November 2026, Nachtrag)
+
+Christian: Stopp funktioniert nicht, der Ton «überschlägt» sich bzw. verdoppelt sich. Ursache im Neuaufbau aus dem Eintrag oben: Kam `resume()` nicht innerhalb einer Sekunde zurück (belastetes Gerät), wurde die Ausgabe neu gebaut, auch wenn eine andere Anfrage schon dabei war. So konnten sich Aufbauten überholen, Motoren auf dem falschen Kontext landen und einer davon unerreichbar weiterspielen; Stopp erreichte nur den neuesten.
+
+- Es gibt höchstens einen Aufbau gleichzeitig (Kontext, Neuaufbau und Wecken warten jeweils auf den laufenden). Ein Motor, der nicht mehr der aktuelle ist, wird sofort stumm geschaltet und abgehängt; seine Meldungen werden ignoriert.
+- Neu gebaut wird nach Ablauf der Wartezeit (jetzt 1,5 s) nur noch, wenn der Kontext wirklich nicht läuft.
+- ■ gilt sofort, auch während ▶ noch auf den Ton wartet; der Start fällt dann weg.

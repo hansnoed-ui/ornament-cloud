@@ -53,23 +53,32 @@ function melde(text, dauer = 3500) { const m = $("meldung"); m.textContent = tex
 const zahl = (x, s = 1) => (Number.isFinite(x) ? x.toFixed(s).replace(".", ",").replace("-", "−") : "–");
 
 // ---------- Ton ----------
-async function kontext(rate) {
-  if (z.ctx) return z.ctx;
+// Es gibt immer höchstens einen Kontext mit einem Motor. Wer während des Aufbaus fragt, wartet auf denselben Aufbau (sonst entstehen
+// zwei Motoren, von denen einer nicht mehr erreichbar ist und weiterspielt).
+let kontextBau = null;
+function kontext(rate) {
+  if (z.ctx && z.node) return Promise.resolve(z.ctx);
+  return (kontextBau ??= kontextBauen(rate).finally(() => { kontextBau = null; }));
+}
+async function kontextBauen(rate) {
   const AC = globalThis.AudioContext ?? globalThis.webkitAudioContext;
-  try { z.ctx = new AC({ sampleRate: rate, latencyHint: "interactive" }); } catch { z.ctx = new AC({ latencyHint: "interactive" }); }
-  z.rate = z.ctx.sampleRate; z.projekt.rate = z.rate;
-  await z.ctx.audioWorklet.addModule(new URL("./worklet/motor-worklet.js", import.meta.url));
-  z.node = new AudioWorkletNode(z.ctx, "composer-motor", { numberOfInputs: 0, numberOfOutputs: 1, outputChannelCount: [2] });
-  z.node.connect(z.ctx.destination);
-  z.node.port.onmessage = ({ data: d }) => {
+  let ctx;
+  try { ctx = new AC({ sampleRate: rate, latencyHint: "interactive" }); } catch { ctx = new AC({ latencyHint: "interactive" }); }
+  z.ctx = ctx; z.node = null;
+  z.rate = ctx.sampleRate; z.projekt.rate = z.rate;
+  await ctx.audioWorklet.addModule(new URL("./worklet/motor-worklet.js", import.meta.url));
+  const node = new AudioWorkletNode(ctx, "composer-motor", { numberOfInputs: 0, numberOfOutputs: 1, outputChannelCount: [2] });
+  node.connect(ctx.destination);
+  node.port.onmessage = ({ data: d }) => {
+    if (node !== z.node) return;
     if (d.art === "anzeige") { z.anzeige = d; z.pos = d.pos; }
     else if (d.art === "ende") { z.laeuft = false; knoepfeAuffrischen(); }
     else if (d.art === "fehler") melde(`Motor: ${d.text}`, 8000);
   };
+  z.node = node;
   // Das System kann den Ton selbst anhalten (iOS: Bildschirmsperre, Anruf, anderer Ton → «interrupted»). Dann sauber halten statt weiterzuzählen.
-  const ctx = z.ctx;
-  ctx.onstatechange = () => { if (ctx === z.ctx && ctx.state !== "running" && z.laeuft && !z.selbstAngehalten) verlassen("unterbrochen"); };
-  return z.ctx;
+  ctx.onstatechange = () => { if (ctx === z.ctx && ctx.state !== "running" && (z.laeuft || z.startet) && !z.selbstAngehalten) verlassen("unterbrochen"); };
+  return ctx;
 }
 
 // ---------- Seite verlassen, Bildschirmsperre ----------
@@ -79,7 +88,8 @@ async function kontext(rate) {
 const MOBIL = typeof navigator !== "undefined" && (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent)));
 function verlassen(grund) {
   if (!z.ctx) return;
-  const lief = z.laeuft;
+  const lief = z.laeuft || z.startet;
+  z.startet = false;
   if (lief) { post({ art: "stop", sofort: grund === "unterbrochen" }); z.laeuft = false; z.angehaltenBeimVerlassen = true; knoepfeAuffrischen(); }
   if (lief || grund === "unterbrochen") z.neuAufbauen ||= MOBIL || grund === "unterbrochen";
   // nach der Blende den Kontext ruhen lassen (spart Strom; der Motor rechnet nicht im Hintergrund weiter)
@@ -94,23 +104,31 @@ function zurueck() {
 document.addEventListener("visibilitychange", () => (document.hidden ? verlassen("versteckt") : zurueck()));
 addEventListener("pagehide", () => verlassen("versteckt"));
 
-/** einen frischen AudioContext bauen und den Motor neu füllen (Spuren, Referenz, Zustand, Schleife, Stelle) */
-async function motorNeuAufbauen() {
-  const alt = z.ctx, rate = z.rate;
+/** einen frischen AudioContext bauen und den Motor neu füllen (Spuren, Referenz, Zustand, Schleife, Stelle); nie zweimal gleichzeitig */
+let neuBau = null;
+function motorNeuAufbauen() { return (neuBau ??= motorNeuBauen().finally(() => { neuBau = null; })); }
+async function motorNeuBauen() {
+  if (kontextBau) await kontextBau.catch(() => {});
+  const alt = z.ctx, altNode = z.node, rate = z.rate;
   z.neuAufbauen = false; z.ctx = null; z.node = null;
-  try { alt?.close(); } catch { /* schon zu */ }
+  // der alte Motor schweigt sofort und wird abgehängt, bevor sein Kontext schliesst
+  try { altNode?.port.postMessage({ art: "stop", sofort: true }); altNode?.disconnect(); } catch { /* schon weg */ }
+  try { await alt?.close(); } catch { /* schon zu */ }
   await kontext(rate);
   for (const [id, d] of z.daten) { const kopie = d.kanaele.map((x) => x.slice()); post({ art: "spur", id, kanaele: kopie }, kopie.map((x) => x.buffer)); }
   if (z.referenz?.kanaele) { const kopie = z.referenz.kanaele.map((x) => x.slice()); post({ art: "referenz", kanaele: kopie }, kopie.map((x) => x.buffer)); }
   post({ art: "zustand", zustand: PR.motorZustand(z.projekt, { ausgleich: z.ausgleich, allesVorher: z.allesVorher, referenzAn: z.referenzAn }) });
   schleifeSenden(); post({ art: "stelle", pos: z.pos });
 }
-/** den Kontext laufen lassen; kommt er nicht innerhalb einer Sekunde zurück, wird er neu gebaut */
-async function tonWecken() {
-  if (z.neuAufbauen || z.ctx.state === "closed") await motorNeuAufbauen();
+/** den Kontext laufen lassen; mobil oder nach einer Unterbrechung wird er neu gebaut, ebenso wenn er nicht innerhalb von 1,5 s läuft */
+let wecken = null;
+function tonWecken() { return (wecken ??= tonWeckenJetzt().finally(() => { wecken = null; })); }
+async function tonWeckenJetzt() {
+  if (z.neuAufbauen || !z.ctx || z.ctx.state === "closed") await motorNeuAufbauen();
   z.selbstAngehalten = false;
-  const ok = await Promise.race([z.ctx.resume().then(() => z.ctx.state === "running", () => false), new Promise((r) => setTimeout(() => r(false), 1000))]);
-  if (!ok) { await motorNeuAufbauen(); await z.ctx.resume(); }
+  const ctx = z.ctx;
+  const ok = await Promise.race([ctx.resume().then(() => ctx.state === "running", () => false), new Promise((r) => setTimeout(() => r(false), 1500))]);
+  if (!ok && ctx.state !== "running") { await motorNeuAufbauen(); await z.ctx.resume().catch(() => {}); }
 }
 const post = (d, transfer) => z.node?.port.postMessage(d, transfer ?? []);
 let sendenGeplant = false;
@@ -1324,21 +1342,22 @@ const schleifeSenden = () => post({ art: "schleife", schleife: z.schleifeAn && z
 
 // ---------- Transport ----------
 async function spielen() {
-  if (!z.ctx || !z.daten.size) return;
-  if (z.laeuft) { post({ art: "stop" }); z.laeuft = false; }
-  else {
-    z.angehaltenBeimVerlassen = false;
-    await tonWecken();
-    let pos = z.pos;
-    if (z.schleifeAn && z.schleife && (pos < z.schleife.a * z.rate || pos >= z.schleife.b * z.rate)) pos = Math.round(z.schleife.a * z.rate);
-    if (pos >= laenge() * z.rate) pos = 0;
-    post({ art: "start", pos }); z.laeuft = true;
-  }
+  // Halt gilt sofort, auch wenn ein Start noch auf den Ton wartet (der Start fällt dann weg)
+  if (z.laeuft || z.startet) { z.startet = false; post({ art: "stop" }); z.laeuft = false; knoepfeAuffrischen(); return; }
+  if (!z.daten.size || (!z.ctx && !neuBau)) return;
+  z.startet = true; z.angehaltenBeimVerlassen = false; knoepfeAuffrischen();
+  try { await tonWecken(); } catch (e) { z.startet = false; knoepfeAuffrischen(); melde(`Ton: ${e?.message ?? e}`, 8000); return; }
+  if (!z.startet) return;
+  z.startet = false;
+  let pos = z.pos;
+  if (z.schleifeAn && z.schleife && (pos < z.schleife.a * z.rate || pos >= z.schleife.b * z.rate)) pos = Math.round(z.schleife.a * z.rate);
+  if (pos >= laenge() * z.rate) pos = 0;
+  post({ art: "start", pos }); z.laeuft = true;
   knoepfeAuffrischen();
 }
 function knoepfeAuffrischen() {
   const hat = z.daten.size > 0;
-  $("spielen").disabled = !hat; $("spielen").textContent = z.laeuft ? "■" : "▶";
+  $("spielen").disabled = !hat; $("spielen").textContent = z.laeuft || z.startet ? "■" : "▶";
   for (const id of ["projektSpeichern"]) $(id).disabled = !z.projekt.spuren.length;
   for (const id of ["exportieren", "trackLaden", "messenKnopf", "zielKnopf"]) $(id).disabled = !hat;
   $("schleifeAn").setAttribute("aria-pressed", String(z.schleifeAn)); $("allesVorher").setAttribute("aria-pressed", String(z.allesVorher));
