@@ -140,3 +140,4 @@ Christian: Stopp funktioniert nicht, der Ton «überschlägt» sich bzw. verdopp
 - Es gibt höchstens einen Aufbau gleichzeitig (Kontext, Neuaufbau und Wecken warten jeweils auf den laufenden). Ein Motor, der nicht mehr der aktuelle ist, wird sofort stumm geschaltet und abgehängt; seine Meldungen werden ignoriert.
 - Neu gebaut wird nach Ablauf der Wartezeit (jetzt 1,5 s) nur noch, wenn der Kontext wirklich nicht läuft.
 - ■ gilt sofort, auch während ▶ noch auf den Ton wartet; der Start fällt dann weg.
+- Nachtrag 2: Die eigentliche Ursache war ein Vorzeichenfehler in der Ausblende des Worklets (#695): Beim ■ stieg der Pegel, statt zu fallen, die Wiedergabe hielt nie an und wurde immer lauter. Behoben; ein Test prüft jetzt, dass ■ leiser wird und die Stelle steht.

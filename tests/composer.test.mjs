@@ -774,3 +774,24 @@ test("Tonleitern: Maqam mit Vierteltönen ergibt Cent-genaue Frequenzen; Raga-To
   assert.ok(Math.abs(1200 * Math.log2(f / (f0 * 2 ** (1.5 / 12)))) < 3, `${f.toFixed(2)} Hz statt ${(f0 * 2 ** (1.5 / 12)).toFixed(2)} Hz`);
   assert.ok(syn.poly({ patch: "tanpuraGlow" }) && !syn.poly({ patch: "sitarGlide" }));
 });
+
+test("Worklet: ■ blendet aus und hält an (der Pegel steigt nicht, die Stelle steht)", async () => {
+  let Klasse;
+  globalThis.sampleRate = RATE;
+  globalThis.AudioWorkletProcessor = class { constructor() { this.port = { postMessage() {}, onmessage: null }; } };
+  globalThis.registerProcessor = (_n, k) => { Klasse = k; };
+  await c("worklet/motor-worklet.js");
+  const w = new Klasse(), sende = (d) => w.port.onmessage({ data: d });
+  sende({ art: "spur", id: "a", kanaele: klang(2) });
+  sende({ art: "start", pos: 0 });
+  const out = [[new Float32Array(BLOCK), new Float32Array(BLOCK)]];
+  const spitze = () => Math.max(...out[0][0].map(Math.abs), ...out[0][1].map(Math.abs));
+  let vorher = 0;
+  for (let i = 0; i < 100; i++) { w.process([], out); vorher = Math.max(vorher, spitze()); }
+  sende({ art: "stop" });
+  let nachher = 0;
+  for (let i = 0; i < 20; i++) { w.process([], out); nachher = Math.max(nachher, spitze()); }
+  assert.ok(nachher <= vorher + 1e-6, `nach ■ lauter: ${nachher} > ${vorher}`);
+  assert.equal(w.m.laeuft, false);
+  const pos = w.m.pos; w.process([], out); assert.equal(w.m.pos, pos); assert.equal(spitze(), 0);
+});
