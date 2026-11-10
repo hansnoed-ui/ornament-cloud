@@ -73,11 +73,13 @@ function grooveTakt(def) {
 }
 
 /** Abschnitte (0-basiert, bis exklusiv). variieren: Längen aus dem Startwert, Funktion und Reihenfolge bleiben */
-export function abschnitteFuer({ seed = 1, variieren = false, studie = false } = {}) {
+export function abschnitteFuer({ seed = 1, variieren = false, studie = false, geruest = null } = {}) {
   if (studie) return [{ typ: "gedanke", name: NAMEN.gedanke, von: 0, bis: 8 }, { typ: "vertiefung", name: NAMEN.vertiefung, von: 8, bis: 16 }];
   const rnd = zufall(hash(seed, "abschnitte"));
   let von = 0;
-  return GERUEST.map(([typ, l]) => { const lang = variieren && l === 16 ? [8, 16, 16][Math.floor(rnd() * 3)] : l; const a = { typ, name: NAMEN[typ], von, bis: von + lang }; von += lang; return a; });
+  // eigenes Gerüst (für längere, anders gebaute Tracks): [[typ, takte], …]; ein Typ darf mehrfach vorkommen (Name mit II, III …)
+  const zaehler = {};
+  return (geruest ?? GERUEST).map(([typ, l]) => { const lang = variieren && l === 16 ? [8, 16, 16][Math.floor(rnd() * 3)] : l; zaehler[typ] = (zaehler[typ] ?? 0) + 1; const a = { typ, name: NAMEN[typ] + (zaehler[typ] > 1 ? ` ${["", "II", "III", "IV"][zaehler[typ] - 1] ?? zaehler[typ]}` : ""), von, bis: von + lang }; von += lang; return a; });
 }
 
 // ---------- Material ----------
@@ -142,11 +144,11 @@ export function planen(eingabe) {
   for (const [rolle, ids] of Object.entries(eingabe.ersetze ?? {})) material[rolle] = [...ids];
   const GR = { ...GROOVE, ...(eingabe.groove ?? {}) }, TI = { ...TIMING, ...(eingabe.timing ?? {}) };
   const ton = halte("tonart") ? { grundton: alt.grundton, leiter: alt.leiter, grund: "gesperrt" } : tonartAusMaterial({ ausschnitte: sammlung.ausschnitte.filter((a) => material.harmonic_layer.includes(a.id)) });
-  const abschnitte = halte("abschnitte_folge") ? alt.abschnitte : abschnitteFuer({ seed, variieren, studie });
+  const abschnitte = halte("abschnitte_folge") ? alt.abschnitte : abschnitteFuer({ seed, variieren, studie, geruest: eingabe.geruest ?? alt?.geruest ?? null });
   const takte = abschnitte.at(-1).bis, gesamt = takte + AUSKLANG, T = 240 / bpm;
   const cut = (id) => sammlung.ausschnitte.find((a) => a.id === id);
   const quelleName = (id) => sammlung.quellen.find((q) => q.id === id)?.name ?? id;
-  const plan = { profil: PROFIL.id, schema: PROFIL.schema, auspraegung, bpm, groove: eingabe.groove ?? null, timing: eingabe.timing ?? null, ersetze: eingabe.ersetze ?? null, auswahl: eingabe.auswahl ?? null, grundton: ton.grundton, leiter: ton.leiter, kammerton: 440, seed, seeds, makros, sperren: sp, studie, abschnitte, takte, gesamt, material, spuren: [], resampling: [], marker: [], hinweise, tonartGrund: ton.grund };
+  const plan = { profil: PROFIL.id, schema: PROFIL.schema, auspraegung, bpm, groove: eingabe.groove ?? null, timing: eingabe.timing ?? null, geruest: eingabe.geruest ?? alt?.geruest ?? null, ersetze: eingabe.ersetze ?? null, auswahl: eingabe.auswahl ?? null, grundton: ton.grundton, leiter: ton.leiter, kammerton: 440, seed, seeds, makros, sperren: sp, studie, abschnitte, takte, gesamt, material, spuren: [], resampling: [], marker: [], hinweise, tonartGrund: ton.grund };
   const typVon = (b) => abschnitte.find((a) => b >= a.von && b < a.bis) ?? { typ: "ausklang", von: takte, bis: gesamt };
   const M = (k) => makros[k] / 100;
 
