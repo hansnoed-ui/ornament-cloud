@@ -2,7 +2,7 @@
 //   node --test tests/ep-directer.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, mkdtempSync, writeFileSync, rmSync, existsSync } from "node:fs";
+import { readFileSync, mkdtempSync, writeFileSync, rmSync, existsSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -38,7 +38,8 @@ test("Seite: ein natives <audio> mit preload=metadata, noindex, Titel für Linkv
   assert.match(html, /<meta name="robots" content="noindex">/);
   const titel = `${ep.anzeigename} – ${ep.titel}`;
   assert.ok(html.includes(`<title>${titel}</title>`) && html.includes(`<meta property="og:title" content="${titel}">`), "Titel und og:title wie in ep.json");
-  assert.ok(html.includes(`<meta property="og:image" content="https://ornament.cloud/listen/directer/${ep.cover}">`), "Vorschaubild = Cover aus ep.json");
+  assert.ok(html.includes('<meta property="og:image" content="https://ornament.cloud/listen/directer/vorschau.jpg">'), "Vorschaubild für Linkvorschauen");
+  assert.ok(statSync(new URL("listen/directer/vorschau.jpg", root)).size < 300_000, "Vorschaubild unter 300 KB (WhatsApp lässt grössere weg)");
   assert.doesNotMatch(html + lies("listen/directer/player.css") + lies("listen/directer/player.js"), /(src|href)="https?:|@import|fonts\.googleapis/, "alles vom eigenen Server");
   assert.ok(!lies("sitemap.xml").includes("/listen/"), "nicht in der Sitemap");
   const js = lies("listen/directer/player.js");
