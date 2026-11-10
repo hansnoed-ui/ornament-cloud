@@ -56,7 +56,7 @@ function begleitung(stilKey, p, anzahl) {
 }
 
 const dname = (x) => x.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-const MIT = { delfine: ["ornament", "Delfine singen"], nachtwald: ["dnb", "Teich bei Nacht"], kosmos: ["dnb", "Pulsar im Takt"] };
+const MIT = { delfine: ["ornament", "Delfine singen"], nachtwald: ["dnb", "Teich bei Nacht"], kosmos: ["dnb", "Magnetosphäre"] };
 const akkordeAllein = Array.from({ length: 8 }, (_, t) => ({ beginn: t * 3, stufe: [1, 6, 4, 5][t % 4] }));
 for (const fam of ["delfine", "nachtwald", "kosmos"]) {
   const st = stimmeVon("natur@0.3.0", fam);

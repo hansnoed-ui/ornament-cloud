@@ -5,7 +5,8 @@
 //              Echoortung (breitbandige Klicks, die sich zum «Buzz» beschleunigen); unter Wasser gedämpft
 //   Nachtwald  Unken (weiche, glockige «Uh»-Rufe um 400–500 Hz, mehrere Tiere im Wechsel), Froschknarren (Pulsfolgen durch Formanten),
 //              Uhu (tiefes zweisilbiges «Uu-hu» um 300 Hz, selten), Blätterrauschen
-//   Kosmos     Pulsar (Pulse mit Dispersion: jede Puls kommt hoch zuerst und gleitet nach unten; Perioden echter Pulsare oder im Takt),
+//   Kosmos     Pulsar (nur schnelle Pulsare: Vela, Krebsnebel; jeder Puls gleitet durch die Dispersion von hoch nach tief; die langsamen
+//              Pulsare als einzelne Schläge sind raus, Urteil vom 10. November 2026: «zu dominant, zu wenig fein», «zu grell»),
 //              Plasmawellen (Whistler: f = (D / t)², fallende Pfiffe; Chorus: steigende Zirpen), Gravitationswellen-Chirp
 //              (f ∝ (1 − t/tc)^(−3/8), Amplitude ∝ f^(2/3), dann Abklingen), Radiorauschen (Jupiter-L-Bursts als Rauschwellen)
 // Makros wie in 0.1.0 (Verwandlung, Dichte, Bewegung, Rauheit, Helligkeit, Raum, Tonalität). Nach der Veröffentlichung nicht verändern.
@@ -146,13 +147,13 @@ function frosch(L, R, rate, i0, { pulse, d, f1, gl, gr, a, rnd }) {
     const y = (F[0].schritt(x).band + 0.6 * F[1].schritt(x).band) * e * a; L[i0 + i] += y * gl; R[i0 + i] += y * gr;
   }
 }
-/** Uhu: «Uu-hu», tiefer Ton mit Atemrauschen, die zweite Silbe kürzer und etwas tiefer */
+/** Uhu: «Uu-hu», tiefer runder Ton (um 190 Hz) mit wenig Atem, die zweite Silbe kürzer und etwas tiefer */
 function uhu(L, R, rate, i0, { f, gl, gr, a, rnd }) {
   const silben = [[0, 0.45, 1], [0.6, 0.35, 0.92]], b = new SVF().setze(f, 3, rate);
   for (const [beg, d, fak] of silben) {
     const j0 = i0 + Math.round(beg * rate), m = Math.round(d * rate);
     let ph = 0;
-    for (let i = 0; i < m && j0 + i < L.length; i++) { const u = i / m, e = Math.sin(Math.PI * u) ** 1.2, fi = f * fak * (1 + 0.04 * Math.sin(Math.PI * u)); const x = (Math.sin(ph) * 0.8 + 0.25 * Math.sin(2 * ph) + b.schritt(rnd() * 2 - 1).band * 0.5) * e * a; ph += (TAU * fi) / rate; L[j0 + i] += x * gl; R[j0 + i] += x * gr; }
+    for (let i = 0; i < m && j0 + i < L.length; i++) { const u = i / m, e = Math.sin(Math.PI * u) ** 1.2, fi = f * fak * (1 + 0.04 * Math.sin(Math.PI * u)); const x = (Math.sin(ph) * 0.9 + 0.08 * Math.sin(2 * ph) + b.schritt(rnd() * 2 - 1).band * 0.25) * e * a; ph += (TAU * fi) / rate; L[j0 + i] += x * gl; R[j0 + i] += x * gr; }
   }
 }
 
@@ -190,7 +191,7 @@ const nachtwald = {
     // Uhu: selten, tief, fern
     for (const t of zeiten(rnd, D, 0.03 + dichte * 0.1, kx)) {
       if (rnd() > w.eulen / 100) continue;
-      const [gl, gr] = pan2((rnd() * 2 - 1) * (w.raum / 100) * 0.8); let f = 280 + rnd() * 50; if (rnd() < w.tonalitaet / 100) f = aufLeiter(f, kx);
+      const [gl, gr] = pan2((rnd() * 2 - 1) * (w.raum / 100) * 0.8); let f = 175 + rnd() * 35; if (rnd() < w.tonalitaet / 100) f = Math.min(aufLeiter(f, kx), 215);   // tief (Urteil: «der hohe Uhu ist komisch»)
       uhu(L, R, rate, Math.round(t * rate), { f, gl, gr, a: 0.4 + 0.2 * rnd(), rnd });
     }
     // Blätter: Rauschen in Böen, links und rechts verschieden
@@ -208,13 +209,10 @@ const nachtwald = {
 };
 
 // ---------- Kosmos ----------
-/** Perioden echter Pulsare (s) aus den Katalogen; «takt» rastet die Periode von B0329+54 auf das nächste Vielfache eines Schlags ein */
+/** Perioden echter Pulsare (s) aus den Katalogen; nur die schnellen, die zu einem schnarrenden Ton verschmelzen */
 export const PULSARE = Object.freeze({
-  b0329: { name: "PSR B0329+54 (0,714 s)", periode: 0.714520 },
   vela: { name: "Vela-Pulsar (11,2 je Sekunde)", periode: 0.089328 },
-  b0950: { name: "PSR B0950+08 (0,253 s)", periode: 0.253065 },
   krebs: { name: "Krebsnebel-Pulsar (30 je Sekunde)", periode: 0.033392 },
-  takt: { name: "im Takt (B0329+54 eingerastet)", periode: null },
 });
 
 /** ein Pulsarpuls: Rauschen durch einen Bandpass, der von hoch nach tief gleitet (Dispersion im interstellaren Medium) und ein dumpfer Kern */
@@ -232,15 +230,13 @@ function puls(L, R, rate, i0, { dauer, hoch, tief, a, gl, gr, rnd, kern }) {
 const kosmos = {
   key: "kosmos", name: "Kosmos", rolle: "flaeche", pan: 0, pegel: -3,
   parameter: [...MAKRO({ dichte: 40, bewegung: 40, rauheit: 30, helligkeit: 35, raum: 80, tonalitaet: 20, verwandlung: 0 }),
-    P("pulsar", "Pulsar", "Schichten", 0, 100, 55, "%"), P("plasma", "Plasmawellen", "Schichten", 0, 100, 50, "%", { hilfe: "Whistler (fallende Pfiffe aus Blitzen) und Chorus (steigende Zirpen aus dem Strahlungsgürtel)" }),
+    P("pulsar", "Pulsar", "Schichten", 0, 100, 0, "%", { hilfe: "schnarrender Ton aus schnellen Pulsen (Vela, Krebsnebel)" }), P("plasma", "Plasmawellen", "Schichten", 0, 100, 50, "%", { hilfe: "Whistler (fallende Pfiffe aus Blitzen) und Chorus (steigende Zirpen aus dem Strahlungsgürtel)" }),
     P("chirp", "Gravitationswellen", "Schichten", 0, 100, 30, "%", { hilfe: "das ansteigende «Wuup» zweier verschmelzender schwarzer Löcher" }),
     P("rauschen", "Radiorauschen", "Schichten", 0, 100, 40, "%", { hilfe: "Rauschwellen wie in Jupiters Radiostürmen, dazu das kosmische Hintergrundrauschen" }),
-    { key: "stern", name: "Pulsar", gruppe: "Detail", wahl: Object.entries(PULSARE).map(([wert, p]) => ({ wert, name: p.name })), std: "b0329" },
+    { key: "stern", name: "Pulsar", gruppe: "Detail", wahl: Object.entries(PULSARE).map(([wert, p]) => ({ wert, name: p.name })), std: "vela" },
     P("dispersion", "Dispersion", "Detail", 0, 100, 50, "%", { hilfe: "wie stark jeder Puls von hoch nach tief gleitet (Weg durch das interstellare Gas)" })],
   varianten: [
-    V("Tiefer Raum", "alle vier Signale, ruhig gemischt", {}),
-    V("Pulsar B0329+54", "der Pulsar allein, 84 Pulse je Minute", { pulsar: 100, plasma: 0, chirp: 0, rauschen: 30 }),
-    V("Pulsar im Takt", "Pulse auf dem Raster des Tracks", { stern: "takt", pulsar: 90, plasma: 20, chirp: 0, rauschen: 25 }),
+    V("Tiefer Raum", "Plasmawellen, Gravitationswellen und Radiorauschen, ruhig gemischt", {}),
     V("Vela schnarrt", "der Vela-Pulsar: ein schnarrender Ton aus 11 Pulsen je Sekunde", { stern: "vela", pulsar: 90, plasma: 15, dispersion: 25, rauschen: 30 }),
     V("Magnetosphäre", "Whistler und Chorus, wie im Strahlungsgürtel der Erde", { plasma: 100, pulsar: 0, chirp: 0, rauschen: 30, dichte: 55 }),
     V("Verschmelzung", "Gravitationswellen-Chirps über Radiorauschen", { chirp: 100, rauschen: 70, pulsar: 0, plasma: 15 }),
@@ -249,10 +245,9 @@ const kosmos = {
   rechne(w, rate, kx) {
     const rnd = zufall(kx.seed ?? 1), ueber = Math.min(4, kx.dauer / 4), D = kx.dauer + ueber, n = Math.round(D * rate), L = new Float32Array(n), R = new Float32Array(n);
     const hell = w.helligkeit / 100, dichte = w.dichte / 100, bew = glatt(rnd, 0.03 + (w.bewegung / 100) * 0.2);
-    // Pulsar: streng periodisch; die Stärke schwankt von Puls zu Puls, manchmal fällt ein Puls aus («Nulling»)
+    // Pulsar (schnell, verschmilzt zu einem Ton): streng periodisch; die Stärke schwankt von Puls zu Puls, manchmal fällt ein Puls aus («Nulling»)
     if (w.pulsar > 0) {
-      const p = PULSARE[w.stern] ?? PULSARE.b0329, schlag = 60 / (kx.bpm ?? 90);
-      const roh = p.periode ?? schlag * Math.max(1, Math.round(PULSARE.b0329.periode / schlag));
+      const roh = (PULSARE[w.stern] ?? PULSARE.vela).periode;
       // Schleife ohne Naht: eine ganze Zahl von Perioden in der Spurdauer (weicht höchstens um eine halbe Periode auf die ganze Spur ab)
       const periode = kx.dauer / Math.max(1, Math.round(kx.dauer / roh));
       const schnell = periode < 0.15, disp = w.dispersion / 100, [gl, gr] = pan2(0);
@@ -324,6 +319,6 @@ export const MAKROS = Object.freeze({
 
 export default {
   id: "natur", version: "0.3.0", name: "Natur und Flächen", flaeche: true,
-  beschreibung: "Alle Familien aus 0.2.0, dazu Delfine, Nachtwald und Kosmos (Pulsare, Plasmawellen, Gravitationswellen, Radiorauschen). Synthetisch und so bezeichnet.",
+  beschreibung: "Alle Familien aus 0.2.0, dazu Delfine, Nachtwald und Kosmos (Plasmawellen, Gravitationswellen, Radiorauschen, schnarrender Pulsar). Synthetisch und so bezeichnet.",
   stimmen: { ...natur020.stimmen, delfine, nachtwald, kosmos },
 };

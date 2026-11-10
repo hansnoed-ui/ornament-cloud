@@ -7,7 +7,8 @@ Hier steht, was Christian entschieden hat und wie er Klänge beurteilt hat, dami
 **Natur 0.3.0: Tiere und Kosmos**
 - Christian: mehr Natur- und vor allem Tierklänge für Ornament und Drum and Bass, «der walchor ist grosse spitze», dazu «eine ebene mit astronomischen signalen aus dem universum».
 - Umgesetzt in einem Cloud-Strang: Delfine, Nachtwald (Unken, Frösche, Uhu, Blätter) und Kosmos (Pulsar, Plasmawellen, Gravitationswellen, Radiorauschen), alles synthetisch nach veröffentlichten Messwerten. Keine fremden Aufnahmen (Lizenzen von NASA-Sonifikationen und ESA-Material uneinheitlich). Ausführlich in `NATUR.md`.
-- Ornament: dazu Delfine singen und Kosmos «Tiefer Raum». Drum and Bass: dazu Teich bei Nacht und Pulsar im Takt. Vorgeschlagen, noch nicht gebaut: Elefanten-Grollen, Fledermäuse, Wolfsheulen, Specht.
+- Ornament: dazu Delfine singen und Kosmos «Tiefer Raum». Drum and Bass: dazu Teich bei Nacht und Kosmos «Magnetosphäre».
+- Urteil zu den Hörproben: alle Delfine «gut», Nachtwald gut bis auf «der hohe Uhu ist komisch» (jetzt tiefer, runder). Kosmos: Vela, Magnetosphäre, Verschmelzung «gut»; der Pulsar als einzelne Schläge «zu dominant, zu wenig fein», «zu grell», «muss raus». Die langsamen Pulsare sind entfernt. Vorgeschlagen, noch nicht gebaut: Elefanten-Grollen, Fledermäuse, Wolfsheulen, Specht.
 
 **Synth 0.2.0 und Melodien (Aufträge `synthesizer.md` und `melodien.md`)**
 - Umgesetzt in einem Cloud-Strang (das Terminal war belegt), auf eigenem Zweig, Merge nur mit Christians OK.
