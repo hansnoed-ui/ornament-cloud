@@ -1,4 +1,6 @@
-# Hörseite der EP «directer» von the i
+# Hörseite der Maxi «directer» von the i
+
+Das Format heisst «Maxi», nicht EP; die Dateinamen `ep.json`, `ep-wav.mjs` usw. sind geblieben. Tracks: directer, making movies, directer reprise. Die Dateien auf dem Server heissen noch nach den Arbeitstiteln (`the-dancer`); beim Herunterladen bekommt die Datei den Titel aus `ep.json`.
 
 Seit 10. November 2026 (Wunsch von Christian): eine schlichte Seite für Freunde. Link öffnen, einmal auf Play tippen, die ganze EP läuft durch, auch mit gesperrtem Bildschirm oder in einer anderen App. Die drei Tracks sind einzeln anwählbar und einzeln herunterladbar (seit 10. November 2026 drei statt vier: ohne «outro»).
 
