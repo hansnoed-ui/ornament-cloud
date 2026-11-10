@@ -222,7 +222,8 @@ if (modus === "sammlung") {
   const auswahl = process.env.LUC_QUELLEN ? s.quellen.filter((q) => q.name.startsWith(process.env.LUC_QUELLEN)).map((q) => q.id) : null;
   // LUC_MATERIAL='{"rolle": ["Name oder Teil davon", …], …}' legt das Material je Rolle ausdrücklich fest
   const ersetze = process.env.LUC_MATERIAL ? Object.fromEntries(Object.entries(JSON.parse(process.env.LUC_MATERIAL)).map(([r, namen]) => [r, namen.map((n) => { const c = s.ausschnitte.find((x) => x.name === n) ?? s.ausschnitte.find((x) => (x.name ?? "").includes(n)); if (!c) throw new Error(`kein Ausschnitt «${n}»`); return c.id; })])) : null;
-  const plan = LU.planen({ sammlung: s, seed, auswahl, ersetze, bpm: process.env.LUC_BPM ? Number(process.env.LUC_BPM) : undefined, variieren: !!process.env.LUC_VARIIEREN, makros: process.env.LUC_MAKROS ? JSON.parse(process.env.LUC_MAKROS) : undefined });
+  const plan = LU.planen({ sammlung: s, seed, auswahl, ersetze, bpm: process.env.LUC_BPM ? Number(process.env.LUC_BPM) : undefined, variieren: !!process.env.LUC_VARIIEREN, makros: process.env.LUC_MAKROS ? JSON.parse(process.env.LUC_MAKROS) : undefined, geruest: process.env.LUC_GERUEST ? JSON.parse(process.env.LUC_GERUEST) : undefined, groove: process.env.LUC_GROOVE ? JSON.parse(process.env.LUC_GROOVE) : undefined, timing: process.env.LUC_TIMING ? JSON.parse(process.env.LUC_TIMING) : undefined });
+  spurenAnpassen(plan);
   console.log(`Tonart ${plan.grundton} ${plan.leiter} (${plan.tonartGrund}), ${plan.bpm} BPM, ${plan.takte} Takte + ${LU.AUSKLANG} Ausklang, ${plan.spuren.length} Spuren`);
   for (const h of plan.hinweise) console.log(`  Hinweis: ${h}`);
   console.log(herkunftTabelle(plan, s));
@@ -239,7 +240,7 @@ if (modus === "sammlung") {
   //   node tools/composer-lucerne.mjs fassung <ordner> <ziel> <seed> "main_motif=Schimmer" "texture=helle Stelle" …  (Teil des Ausschnittnamens)
   const s = sammlungAktualisieren(ordner), m = materialLaden(ordner, s); mkdirSync(ziel, { recursive: true });
   // Feinschliff ohne Änderung des Arrangements: Tempo, Groove (Zweitakter) und Timing je Rolle gelten schon für den Ausgangsplan
-  const fein = { bpm: process.env.LUC_BPM ? Number(process.env.LUC_BPM) : undefined, groove: process.env.LUC_GROOVE ? JSON.parse(process.env.LUC_GROOVE) : undefined, timing: process.env.LUC_TIMING ? JSON.parse(process.env.LUC_TIMING) : undefined };
+  const fein = { bpm: process.env.LUC_BPM ? Number(process.env.LUC_BPM) : undefined, groove: process.env.LUC_GROOVE ? JSON.parse(process.env.LUC_GROOVE) : undefined, timing: process.env.LUC_TIMING ? JSON.parse(process.env.LUC_TIMING) : undefined, geruest: process.env.LUC_GERUEST ? JSON.parse(process.env.LUC_GERUEST) : undefined };
   const vorher = LU.planen({ sammlung: s, seed, ...fein }), ersetze = {};
   for (const a of process.argv.slice(6)) {
     const [rolle, namen] = a.split("=");
