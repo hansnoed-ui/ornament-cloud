@@ -19,6 +19,7 @@ export function spurRechnen(q, rate) {
   const L = new Float32Array(n), R = new Float32Array(n), rnd = zufall(q.seed ?? 1), cache = new Map();
   const erste = st.artikulationen[0].key, gueltig = new Set(st.artikulationen.map((a) => a.key));
   let schlaege = 0;
+  const eigene = q.choke?.zeiten ? [] : null;
   for (let b = 0; b < anzahl; b++) {
     // Teile (seit Composer 0.3): je Abschnitt eigene Muster und ein Wirbel im letzten Takt des Abschnitts
     const teil = Array.isArray(q.teile) ? q.teile.find((x) => b >= x.von && b < x.bis) : null;
@@ -35,10 +36,29 @@ export function spurRechnen(q, rate) {
       const [hl, hr] = cache.get(k), g = staerke / stufe;
       let i0 = Math.round(zeit * rate); i0 = ((i0 % n) + n) % n;
       for (let i = 0; i < hl.length; i++) { const j = (i0 + i) % n; L[j] += hl[i] * g; R[j] += hr[i] * g; }
+      eigene?.push(zeit);
       schlaege++;
     }
   }
+  if (eigene) choken([L, R], rate, eigene.sort((a, b) => a - b), q.choke.zeiten);
   return { kanaele: [L, R], schlaege };
+}
+
+/**
+ * Choke (seit ornament.lucerne): eine Stimme wird abgeschnitten, wo eine andere spielt – die offene Hi-Hat endet beim nächsten Schlag der
+ * geschlossenen (6 ms Ausblendung) und bleibt still bis zum eigenen nächsten Schlag. Nur wenn das Rezept «choke.zeiten» hat.
+ */
+function choken(k, rate, eigene, fremde) {
+  const n = k[0].length, aus = Math.round(0.006 * rate);
+  let f = 0;
+  eigene.forEach((h, i) => {
+    const naechste = eigene[i + 1] ?? Infinity;
+    while (f < fremde.length && fremde[f] <= h + 0.005) f++;
+    const c = fremde[f];
+    if (c === undefined || c >= naechste) return;
+    const a = Math.round(c * rate), b = Math.min(n, Number.isFinite(naechste) ? Math.round(naechste * rate) - 1 : n);
+    for (let j = Math.max(0, a); j < b; j++) { const g = j - a < aus ? 1 - (j - a) / aus : 0; k[0][j] *= g; k[1][j] *= g; }
+  });
 }
 
 /** einen einzelnen Schlag (zum Anhören) */

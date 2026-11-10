@@ -2,6 +2,15 @@
 
 Hier steht, was Christian entschieden hat und wie er Klänge beurteilt hat, damit spätere Sitzungen es kennen. Neueste oben.
 
+## 10. November 2026
+
+**ornament.lucerne (Auftrag `Masterprompt_Claude_Code_ornament_lucerne.md`)**
+- Neuer Stil aus Christians eigenen Aufnahmen, zuerst drei: `ly_trailer1.wav`, `ly_trailer_2.wav`, `ly_trailer_3.wav` in `ornament-material/samples/`. Weitere Samples kündigt er an («heute Abend und morgen sehr viele»); deshalb von Anfang an Klangsammlung mit stabilen IDs, Analyse nur neuer Dateien, Rollen getrennt von Dateien.
+- Umgesetzt: Klangsammlung 0.1.0, Sampler 0.1.0, Profil ornament.lucerne 0.1.0 (Ausprägung Erinnerung, 88 BPM, Fis-Moll aus dem Material, 88 Takte), Oberfläche `lucerne-ui.js`, Werkzeug `tools/composer-lucerne.mjs`. Einzelheiten, Zeitmarken und Makro-Zuordnung in `LUCERNE.md`.
+- Charakteristische Quelle des ersten Tracks: das ruhige Outro von `ly_trailer1.wav` (96–107 s) – Akkordschatten, Motivtöne, Umgebung. Das Hauptmotiv ist eine eigene Zelle, gespielt mit den Oberstimmen dieses Outros.
+- Kammerton der Lucerne-Projekte 440 Hz (das Material ist so gestimmt), nicht 432.
+- Ehrlich: nichts davon ist gehört. Urteil steht aus.
+
 ## 9. November 2026
 
 **Bereiche und Fassungen (Auftrag `bereiche-und-spuren.md`)**
