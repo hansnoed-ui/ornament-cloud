@@ -12,8 +12,13 @@ import { STILE, stilVon, halbeZeit } from "./kern/muster.js";
 import { ARTEN as UNTER, SCHNELL, anwenden, werteVon } from "./kern/unterbrechungen.js";
 import { spurRechnen, schlagRechnen, flaechenSpurRechnen } from "./kern/erzeugen.js";
 import { MAKROS } from "./erzeuger/natur-0.2.0.js";
-import { PATCHES, FAMILIEN_LISTE, MAKROS as SYNTH_MAKROS } from "./erzeuger/synth-0.1.0.js";
-import { ROLLEN, sequenzErzeugen } from "./kern/sequenzen.js";
+import * as SYNTH010 from "./erzeuger/synth-0.1.0.js";
+import * as SYNTH020 from "./erzeuger/synth-0.2.0.js";
+import { ROLLEN, REGLER, REGLER_STD, sequenzErzeugen } from "./kern/sequenzen.js";
+// neue Synthspuren nehmen Synth 0.2.0; ältere Spuren behalten ihre Version (und deren Presets)
+const SYNTH_NEU = "synth@0.2.0", SYNTH_MODUL = { "synth@0.1.0": SYNTH010, "synth@0.2.0": SYNTH020 };
+const { PATCHES, FAMILIEN_LISTE, CHARAKTERE } = SYNTH020;
+const synthModul = (q) => SYNTH_MODUL[q?.erzeuger] ?? SYNTH020;
 import { abschnitte as abschnitteVon, ereignisseFuer, funktionVon, BESETZUNG, wechselPerkussion, teileAus } from "./kern/arrangement.js";
 import { taktLesen } from "./kern/muster.js";
 import { stimmeVon, ERZEUGER } from "./erzeuger/register.js";
@@ -455,7 +460,22 @@ function akkordeVomBass(anzahl) {
   return Array.from({ length: Math.min(8, anzahl) }, (_, t) => { const z0 = String(bass.quelle.takte[t % bass.quelle.takte.length]).trim().split(/\s+/).map(tonLesen).find((x) => x && x !== "-"); return z0 ? ((z0.stufe - 1 + 70) % 7) + 1 : 1; });
 }
 function synthSequenz(q) {
-  return sequenzErzeugen({ rolle: q.rolle, akkorde: akkordeVomBass(q.anzahl), kicks: kickVorlage(), anzahl: q.anzahl, seed: q.seed, halftime: q.bpm >= 140 && ["pad", "chord", "keys", "drone"].includes(q.rolle) });   // «schwebe» läuft ohnehin quer
+  const { belegt, snares } = drumLuecken();
+  return sequenzErzeugen({ rolle: q.rolle, akkorde: akkordeVomBass(q.anzahl), kicks: kickVorlage(), anzahl: q.anzahl, seed: q.seed, halftime: q.bpm >= 140 && ["pad", "chord", "keys", "drone", "flaeche", "tanpura"].includes(q.rolle),   // «schwebe» läuft ohnehin quer
+    regler: q.regler, belegt, snares, zyklus: ZYKLUS_LEITER[q.leiter] ?? 0 });
+}
+// Off-Beats in raga- und maqam-inspirierten Tonleitern folgen einem Zyklus gegen den 4/4-Takt (Rupak 7, Jhaptal 10, Sama'i-artig 10)
+const ZYKLUS_LEITER = { bhairav: 7, bhairavi: 10, yaman: 7, todi: 10, marwa: 7, bayati: 10, rast: 7, saba: 10, kurd: 7, shur: 10, hijaz: 7 };
+/** wo die Drums schlagen (je Takt die belegten Sechzehntel aller Schlagspuren) und wo die Snare liegt: Lücken für Off-Beats und Spitzen */
+function drumLuecken() {
+  const sp = z.projekt.spuren.filter(istDrums); if (!sp.length) return { belegt: null, snares: null };
+  const n = Math.min(8, Math.max(...sp.map((s) => s.quelle.takte.length))), belegt = [], snares = [];
+  for (let b = 0; b < n; b++) {
+    const bel = new Set(), sn = [];
+    for (const s of sp) for (const x of taktLesen(s.quelle.takte[b % s.quelle.takte.length])) { const st = Math.round(x.stelle * 16); if (x.staerke >= 0.6) bel.add(st); if (["snare", "clap"].includes(s.quelle.stimme)) sn.push(st); }
+    belegt.push([...bel]); snares.push(sn);
+  }
+  return { belegt, snares };
 }
 /** Synths folgen Tempo, Länge, Tonart und (wenn nicht von Hand geändert) den Akkorden des Basses */
 function synthsFolgen({ anzahl, bpm }) {
@@ -470,14 +490,14 @@ function synthsFolgen({ anzahl, bpm }) {
 }
 async function synthDazu(vorgabe = null) {
   await kontext(48000);
-  const [fam, patch] = vorgabe ?? $("synthPreset").value.split(":"), st = stimmeVon("synth@0.1.0", fam), pt = PATCHES[patch], bass = z.projekt.spuren.find(istBass), drums = z.projekt.spuren.find(istDrums);
+  const [fam, patch] = vorgabe ?? $("synthPreset").value.split(":"), st = stimmeVon(SYNTH_NEU, fam), pt = PATCHES[patch], bass = z.projekt.spuren.find(istBass), drums = z.projekt.spuren.find(istDrums);
   const v = st.varianten.find((x) => x.werte.patch === patch) ?? st.varianten[0], bpm = z.projekt.tempo.bpm || Number($("erzBpm").value), anzahl = drums?.quelle.anzahl ?? Number($("takte").value);
   const rolle = vorgabe ? vorgabe[2] ?? pt.rolle : $("synthRolle").value === "auto" ? pt.rolle : $("synthRolle").value;
-  const q = { art: "erzeugt", erzeuger: "synth@0.1.0", stimme: fam, variante: v.name, werte: { ...v.werte }, rolle, sequenzAuto: true, anzahl, bpm,
+  const q = { art: "erzeugt", erzeuger: SYNTH_NEU, stimme: fam, variante: v.name, werte: { ...v.werte }, rolle, regler: { ...REGLER_STD, ...(vorgabe?.[3]?.regler ?? {}) }, sequenzAuto: true, anzahl, bpm,
     grundton: bass?.quelle.grundton ?? Number($("tonart").value), leiter: bass?.quelle.leiter ?? $("leiter").value, kammerton: kammerton(), swing: drums?.quelle.swing ?? 0, menschlich: 2, versatz: 0, seed: 1 + Math.floor(Math.random() * 99998) };
   q.takte = synthSequenz(q);
   const echoMs = Math.round((0.75 * 60000) / (bpm >= 140 ? bpm / 2 : bpm));
-  const sp = PR.erzeugteSpurDazu(z.projekt, q, { name: `${st.name} · ${pt.name}`, typ: "synth", pegel: st.pegel, glanz: vorgabe ? { menge: 35, biss: 55, luft: 3 } : null, echo: { anteil: Math.round((pt.echo ?? 0.2) * 100), zeit: echoMs }, raum: { anteil: 18, nachhall: 2.6, daempfung: 5000, vorverz: 20 } });
+  const sp = PR.erzeugteSpurDazu(z.projekt, q, { name: `${st.name} · ${pt.name}`, typ: "synth", pegel: st.pegel + (vorgabe?.[3]?.pegel ?? 0), glanz: vorgabe ? { menge: 35, biss: 55, luft: 3 } : null, echo: { anteil: Math.round((pt.echo ?? 0.2) * 100), zeit: echoMs }, raum: { anteil: 18, nachhall: 2.6, daempfung: 5000, vorverz: 20 } });
   melde(`${pt.name} wird gerechnet …`, 0); await atmen();
   const fertig = spurNeuRechnen(sp);
   if (vorgabe) return fertig;
@@ -485,11 +505,11 @@ async function synthDazu(vorgabe = null) {
   z.gewaehlt = sp.id; z.glied = -1; senden(); allesAufbauen();
   melde(`${pt.name}: ${ROLLEN.find((r) => r.key === rolle).name}, ${NOTEN[q.grundton]} ${LEITERN[q.leiter].name}${bass ? ", Akkorde vom Bass" : ""}`, 4000);
 }
-/** Preset-Wahl, Rolle, Sequenz, Variation für eine Synthspur */
+/** Preset-Wahl, Rolle, Sequenz, sechs Varianten, Regler der Melodie, Variation für eine Synthspur */
 function synthSteuerung(sp) {
-  const q = sp.quelle, box = el("div", { className: "herkunft" });
-  const preset = el("select", { title: "Preset (Familie und Klang)" }, ...FAMILIEN_LISTE.map((f) => el("optgroup", { label: f.name }, ...f.patches.map((k) => el("option", { value: `${f.key}:${k}`, textContent: `${PATCHES[k].name} (${PATCHES[k].rolle}, ${PATCHES[k].verfahren})`, selected: q.stimme === f.key && q.werte.patch === k })))));
-  preset.onchange = () => { const [fam, k] = preset.value.split(":"); q.stimme = fam; q.werte = { ...q.werte, patch: k }; q.variante = PATCHES[k].name; sp.name = `${stimmeVon("synth@0.1.0", fam).name} · ${PATCHES[k].name}`; spurNeuRechnen(sp); spurenAufbauen(); pluginAufbauen(); };
+  const q = sp.quelle, box = el("div", { className: "herkunft" }), M = synthModul(q);
+  const preset = el("select", { title: "Preset (Familie und Klang)" }, ...M.FAMILIEN_LISTE.map((f) => el("optgroup", { label: f.name }, ...f.patches.map((k) => el("option", { value: `${f.key}:${k}`, textContent: `${M.PATCHES[k].name} (${M.PATCHES[k].rolle}, ${M.PATCHES[k].verfahren}${M.PATCHES[k].charaktere?.length ? ", " + M.PATCHES[k].charaktere.join(", ") : ""})`, selected: q.stimme === f.key && q.werte.patch === k })))));
+  preset.onchange = () => { const [fam, k] = preset.value.split(":"); q.stimme = fam; q.werte = { ...q.werte, patch: k }; q.variante = M.PATCHES[k].name; sp.name = `${stimmeVon(q.erzeuger, fam).name} · ${M.PATCHES[k].name}`; spurNeuRechnen(sp); spurenAufbauen(); pluginAufbauen(); };
   const rolle = el("select", { title: "Rolle: bestimmt die erzeugte Sequenz" }, ...ROLLEN.map((r) => el("option", { value: r.key, textContent: r.name, selected: r.key === q.rolle })));
   const neu = el("button", { className: "mini", textContent: "Sequenz neu", title: "neue Sequenz dieser Rolle aus Bass und Drums (neuer Startwert)" });
   const neuRechnen = () => { q.rolle = rolle.value; q.seed = (q.seed % 100000) + 7919; q.sequenzAuto = true; q.takte = synthSequenz(q); spurNeuRechnen(sp); pluginAufbauen(); };
@@ -499,9 +519,28 @@ function synthSteuerung(sp) {
   variation.onclick = () => { sp._vorVariation = { ...q.werte }; const r = () => (Math.random() - 0.5) * 30; for (const k of ["helligkeit", "bewegung", "waerme", "alter", "breite", "charakter"]) q.werte[k] = Math.max(0, Math.min(100, Math.round((q.werte[k] ?? 50) + r()))); q.variante = null; spurNeuRechnen(sp); pluginAufbauen(); };
   zurueck.onclick = () => { if (!sp._vorVariation) return; q.werte = sp._vorVariation; sp._vorVariation = null; spurNeuRechnen(sp); pluginAufbauen(); };
   box.append(el("div", { className: "klang-zeile" }, el("span", { className: "leise-text", textContent: "Preset" }), preset, el("span", { className: "leise-text", textContent: "Rolle" }), rolle, neu, variation, zurueck));
-  box.append(el("p", { className: "hinweis", textContent: `${NOTEN[q.grundton]} ${LEITERN[q.leiter].name}, A = ${q.kammerton ?? 432} Hz${z.projekt.spuren.some(istBass) ? ", Tonart und Akkorde vom Bass" : ""}${q.sequenzAuto === false ? ", Sequenz von Hand geändert (folgt dem Bass nicht mehr)" : ""}` }));
-  const m = SYNTH_MAKROS[q.stimme];
-  if (m) box.append(el("details", {}, el("summary", { className: "leise-text", textContent: "Was die Makros hier tun" }), el("ul", { className: "hinweis" }, ...["helligkeit", "bewegung", "waerme", "alter", "breite"].map((k) => el("li", { textContent: `${k}: ${m[k]}` })), el("li", { textContent: `${m.charakterName}: ${m.charakter}` }))));
+  // sechs Varianten derselben Situation (Startwerte aus einem gemeinsamen Grund): vergleichen, die beste behalten
+  q.variantenGrund ??= q.seed;
+  const varianten = el("div", { className: "klang-zeile" }, el("span", { className: "leise-text", textContent: "Melodie-Varianten" }), ...Array.from({ length: 6 }, (_, i) => {
+    const s0 = q.variantenGrund + i * 7919, b = el("button", { className: "mini", textContent: String(i + 1), title: `Startwert ${s0}: dieselbe Rolle und dieselben Regler, andere Variante` });
+    b.setAttribute("aria-pressed", String(q.seed === s0 && q.sequenzAuto !== false));
+    b.onclick = () => { q.seed = s0; q.sequenzAuto = true; q.takte = synthSequenz(q); spurNeuRechnen(sp); pluginAufbauen(); };
+    return b;
+  }), (() => { const b = el("button", { className: "mini", textContent: "neue sechs", title: "sechs neue Varianten" }); b.onclick = () => { q.variantenGrund = 1 + Math.floor(Math.random() * 90000); q.seed = q.variantenGrund; q.sequenzAuto = true; q.takte = synthSequenz(q); spurNeuRechnen(sp); pluginAufbauen(); }; return b; })());
+  box.append(varianten);
+  // Regler der Melodie (melodien.md): Wandel, Weite, Spitzen, Off-Beat, Klassik, Ruhe; Skala über die Tonleiter des Basses, Ausdruck im Klang
+  q.regler = { ...REGLER_STD, ...(q.regler ?? {}) };
+  const regler = el("div", { className: "klang-zeile" }, ...REGLER.map((r) => {
+    const i = el("input", { type: "range", min: 0, max: 100, step: 5, value: q.regler[r.key], title: r.hilfe }), w = el("span", { className: "leise-text", textContent: `${r.name} ${q.regler[r.key]}` });
+    i.setAttribute("aria-label", r.name); i.oninput = () => { w.textContent = `${r.name} ${i.value}`; };
+    i.onchange = () => { q.regler[r.key] = Number(i.value); if (q.sequenzAuto !== false) { q.takte = synthSequenz(q); spurNeuRechnen(sp); } };
+    return el("label", { className: "regler-klein", title: r.hilfe }, w, i);
+  }));
+  box.append(el("details", { open: ["flaeche", "spitzen", "offbeat", "ruf", "alap"].includes(q.rolle) }, el("summary", { className: "leise-text", textContent: "Regler der Melodie (wirken auf neu erzeugte Sequenzen)" }), regler));
+  box.append(el("p", { className: "hinweis", textContent: `${NOTEN[q.grundton]} ${LEITERN[q.leiter]?.name ?? q.leiter}, A = ${q.kammerton ?? 432} Hz${z.projekt.spuren.some(istBass) ? ", Tonart und Akkorde vom Bass" : ""}${q.sequenzAuto === false ? ", Sequenz von Hand geändert (folgt dem Bass nicht mehr)" : ""}${q.erzeuger !== SYNTH_NEU ? `. Ältere Fassung ${q.erzeuger}: klingt wie beim Erzeugen; neue Presets gibt es in einer neuen Synthspur.` : ""}` }));
+  const m = M.MAKROS[q.stimme];
+  if (m) box.append(el("details", {}, el("summary", { className: "leise-text", textContent: "Was die Makros hier tun" }), el("ul", { className: "hinweis" }, ...["helligkeit", "bewegung", "waerme", "alter", "breite"].map((k) => el("li", { textContent: `${k}: ${m[k]}` })), el("li", { textContent: `${m.charakterName}: ${m.charakter}` }),
+    ...(M.CHARAKTERE ?? []).map((c) => el("li", { textContent: `Färbung «${c.name}»: ${c.hilfe}` })))));
   return box;
 }
 
@@ -741,7 +780,7 @@ function klangAufbauen(box, sp, wahl) {
   };
   box.append(el("div", { className: "gruppe", style: "margin-top:16px" }, el("h3", {}, el("span", { textContent: "Muster (eine Zeile je Takt, «fill:» für den Wirbel)" })), ta,
     el("p", { className: "hinweis", textContent: q.leiter
-      ? "16 Zeichen = Sechzehntel, 8 = Achtel, 4 = Viertel. 1–7 Stufe der Tonleiter, b3 #4 mit Vorzeichen, 1' 1, Oktave höher, tiefer, «-» Ton hält, «.» Pause, «~» gleiten, «!» betont, «_» leise."
+      ? "16 Zeichen = Sechzehntel, 8 = Achtel, 4 = Viertel. 1–7 Stufe der Tonleiter, b3 #4 mit Vorzeichen, 1' 1, Oktave höher, tiefer, «-» Ton hält, «.» Pause, «~» gleiten, «!» betont, «_» leise, «1+3+5» Akkord, «3=» im Akkord: Ton klingt ohne neuen Anschlag weiter."
       : `16 Zeichen = Sechzehntel, 8 = Achtel, 12 = Triolen. «.» Pause, x o g (laut, mittel, Geisternote), oder Artikulationen: ${arten}. «!» betont, «_» leise.` })));
 }
 
@@ -1512,13 +1551,14 @@ $("kammerton").onchange = () => {
 };
 for (const r of ["synthRolle"]) $(r).append(el("option", { value: "auto", textContent: "Rolle des Presets" }), ...ROLLEN.map((x) => el("option", { value: x.key, textContent: x.name })));
 function synthListe() {
-  const rolle = $("synthFilterRolle").value, verf = $("synthFilterVerfahren").value, alt = $("synthPreset").value;
-  $("synthPreset").replaceChildren(...FAMILIEN_LISTE.map((f) => { const ps = f.patches.filter((k) => (!rolle || PATCHES[k].rolle === rolle) && (!verf || PATCHES[k].verfahren === verf)); return ps.length ? el("optgroup", { label: f.name }, ...ps.map((k) => el("option", { value: `${f.key}:${k}`, textContent: `${PATCHES[k].name} · ${PATCHES[k].rolle}, ${PATCHES[k].verfahren}` }))) : null; }).filter(Boolean));
+  const rolle = $("synthFilterRolle").value, verf = $("synthFilterVerfahren").value, cha = $("synthFilterCharakter").value, alt = $("synthPreset").value;
+  $("synthPreset").replaceChildren(...FAMILIEN_LISTE.map((f) => { const ps = f.patches.filter((k) => (!rolle || PATCHES[k].rolle === rolle) && (!verf || PATCHES[k].verfahren === verf) && (!cha || PATCHES[k].charaktere?.includes(cha))); return ps.length ? el("optgroup", { label: f.name }, ...ps.map((k) => el("option", { value: `${f.key}:${k}`, textContent: `${PATCHES[k].name} · ${PATCHES[k].rolle}, ${PATCHES[k].verfahren}${PATCHES[k].charaktere?.length ? " · " + PATCHES[k].charaktere.join(", ") : ""}` }))) : null; }).filter(Boolean));
   if ([...$("synthPreset").options].some((o) => o.value === alt)) $("synthPreset").value = alt;
 }
 $("synthFilterRolle").append(el("option", { value: "", textContent: "alle Rollen" }), ...[...new Set(Object.values(PATCHES).map((p) => p.rolle))].map((r) => el("option", { value: r, textContent: r })));
 $("synthFilterVerfahren").append(el("option", { value: "", textContent: "alle Verfahren" }), ...[...new Set(Object.values(PATCHES).map((p) => p.verfahren))].map((r) => el("option", { value: r, textContent: r })));
-$("synthFilterRolle").onchange = synthListe; $("synthFilterVerfahren").onchange = synthListe; synthListe();
+$("synthFilterCharakter").append(el("option", { value: "", textContent: "alle Charaktere" }), ...CHARAKTERE.map((c) => el("option", { value: c.key, textContent: c.name, title: c.hilfe })));
+$("synthFilterRolle").onchange = synthListe; $("synthFilterVerfahren").onchange = synthListe; $("synthFilterCharakter").onchange = synthListe; synthListe();
 $("flaecheDazu").onclick = () => flaecheDazu().catch((e) => melde(`Fläche: ${e.message}`, 8000));
 $("bassDazu").onclick = async () => {
   try {

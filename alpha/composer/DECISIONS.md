@@ -11,6 +11,15 @@ Hier steht, was Christian entschieden hat und wie er Klänge beurteilt hat, dami
 - Kammerton der Lucerne-Projekte 440 Hz (das Material ist so gestimmt), nicht 432.
 - Ehrlich: nichts davon ist gehört. Urteil steht aus.
 
+**Synth 0.2.0 und Melodien (Aufträge `synthesizer.md` und `melodien.md`)**
+- Umgesetzt in einem Cloud-Strang (das Terminal war belegt), auf eigenem Zweig, Merge nur mit Christians OK.
+- Synth 0.2.0 als neue Version neben 0.1.0 (alte Projekte klingen gleich). Neu: Velvet Dub, Raga Drift, Ice Organism, Signal Sparrow; Verfahren Saite und Glocke; sechs Klangcharaktere als Schlagwort, Filter und Färbung. 24 Presets.
+- Glass Circuit Keys und Worn Electric Keys überarbeitet (Urteil 9.11.: «am schlimmsten die Glass Keys und die Keys allgemein»). Die übrigen zwölf Presets aus 0.1.0 bleiben bitgleich.
+- Christian: «ich will keine popmelodien mit synthies». Der Melodie-Generator erzeugt jetzt vier Schichten (Fläche mit wandernden Stimmen, Spitzen, unregelmässige Off-Beats, klassische Anleihen über den Regler Klassik) statt einer Oberstimme; dazu Ruf, Alap, Tanpura. Notation `=` für gehaltene Stimmen.
+- Track erzeugen: Ornament und DnB bekommen leise Spitzen und Off-Beats zur Schwebe dazu, Indien den Tanpura-Drone. Die bisherige Schwebe bleibt (gefiel).
+- Raga- und Maqam-Tonleitern (Bayati, Rast, Saba, Shur mit Vierteltönen) als Inspiration bezeichnet.
+- Kein GPL-Code, keine fremden Assets.
+
 ## 9. November 2026
 
 **Bereiche und Fassungen (Auftrag `bereiche-und-spuren.md`)**

@@ -1,3 +1,78 @@
+# Synth 0.2.0 und die vier Schichten der Melodie
+
+Aufträge: `synthesizer.md` (Fassung vom 10. November 2026, mit Velvet Dub, Raga Drift, Ice Organism und den sechs Klangcharakteren) und `melodien.md` (10. November 2026: keine Popmelodien, sondern vier Schichten). Synth 0.1.0 bleibt unverändert im Repo; bestehende Projekte klingen wie vorher. Neue Synthspuren nehmen 0.2.0.
+
+## Was neu ist
+
+- **Zwei neue Verfahren in derselben Engine** (`erzeuger/synth-0.2.0.js`), kein zweiter Synthesizer:
+  - **saite:** gezupfte Saite (Karplus-Strong). Der Steg staucht Auslenkungen über einem Bruchteil der laufenden Amplitude (Jawari-artig); der Bruchteil schwankt langsam, so wandern die Obertöne beim Ausklingen. Zweite, leicht verstimmte Saite, mitschwingende Saiten (Resonatoren), Gleiten über die Länge der Verzögerung (Meend). Schleifenverstärkung immer unter 1.
+  - **glocke:** additive Synthese mit unharmonischen Teiltönen, jeder mit eigener Abklingzeit, kurzer Anschlagklick (Spieldose, Celesta).
+- **Im analogen Verfahren:** Atem (Rauschen als schmales Band um den Grundton: Flöte, Chor), Vokalfilter, das zwischen Vokalen wandert (atmender Chor).
+- **Ausdruck** (Detail-Regler): verzögertes Vibrato, Anschleifen von unten, längere Gleitzeit. Wirkt bei Presets mit Ausdruck (Smoked Flute, Sitar Glide, Signal Sparrow).
+- **Nachbearbeitung der Spur, nur wo verlangt:** Wärme um 250 Hz, Wavefolder, Bitcrusher, Vinyl-Knistern mit Mikro-Klicks und Pops, Glanzhall mit Vorverzögerung, Schimmer (eine Oktave höher in den Hall), Fiepen (kleine hohe Figuren dort, wo die Spur leise ist). Hall und Schimmer rechnen die Schleife zweimal: kein Abriss an der Naht.
+- **Klangcharaktere:** warm, weich, fiepsend, strahlen-flächig, knarzend, hallig-glänzend. Jedes Preset trägt seine Charaktere als Schlagwort (Filter «Charakter» neben «Synth dazu»). Dazu der Regler **Färbung** (Gruppe «Charakter», mit Menge), der jedes Preset in Richtung eines Charakters schiebt; Zuordnung in `CHARAKTERE` und `faerben()`.
+- **Notation:** `3=` in einem Akkord heisst «dieser Ton klingt aus dem vorigen Akkord ohne neuen Anschlag weiter». So wandert in einer Fläche eine einzelne Stimme, während die anderen liegen. Alte Zeilen ohne `=` lesen sich wie bisher.
+- **Tonleitern:** Raga-inspiriert Bhairav, Bhairavi, Yaman, Todi, Marwa (Tonvorrat, keine Raga-Praxis); Maqam Bayati, Rast, Saba, Kurd und Dastgah Shur, die meisten mit Vierteltönen (Halbtöne mit Nachkommastelle, gemessen auf 3 Cent genau, bezogen auf den Kammerton).
+
+## Presets (24 in 11 Familien)
+
+| Familie | Preset | Rolle | Verfahren | Charaktere |
+|---|---|---|---|---|
+| Velvet Dub | Velvet Rhodes Haze | Off-Beat | FM (Anschlag öffnet Bellen), Tremolo, Knistern | warm, weich |
+| Velvet Dub | Smoked Flute Echo | Ruf | analog mit Atem, Vibrato, Echo | weich, knarzend |
+| Shadow Dub | Shadow Chord, Deep Room Drone | Pad, Drone | wie 0.1.0 (bitgleich) | warm, knarzend / warm, weich |
+| Ice Organism | Music Box Frost | Spitzen | Glocke, Glanzhall, Schimmer | hallig, fiepsend |
+| Ice Organism | Breathing Choir Pad | Fläche | analog, Vokal wandert, Atem, Schimmer | strahlend, weich |
+| Ice Organism | Crackle Glass Texture | Off-Beat | FM-Glas, starkes Knistern, Bitcrusher, Hall | knarzend, hallig, fiepsend |
+| Raga Drift | Tanpura Glow Drone | Tanpura | Saite mit Jawari, zwei Saiten | warm, strahlend |
+| Raga Drift | Sitar Glide Lead | Alap | Saite, mitschwingende Saiten, Meend | hallig, knarzend |
+| Tape Memory | Amber Memory Pad | Pad | wie 0.1.0 | warm, weich |
+| Tape Memory | Worn Electric Keys | Off-Beat | **überarbeitet:** weniger Zinke, länger, Tremolo, Knistern, Wärme | warm, knarzend |
+| Glass Circuit | Glass Circuit Keys | Spitzen | **überarbeitet:** harmonischer Modulator, weicherer Anschlag, Hall | hallig, weich |
+| Glass Circuit | Restless Poly Pulse | Akkord | wie 0.1.0 | knarzend |
+| Glass Circuit | Signal Sparrow | Spitzen | analog, Sweep von unten, Fiepen | fiepsend |
+| Spiral Goa, Open Trance, House Motion, Machine Pop, Dark Pop | je zwei wie in 0.1.0 | | bitgleich | siehe Preset-Wahl |
+
+Überarbeitet wurden die beiden Keys, weil Christian sie am 9. November «am schlimmsten» fand. Alle anderen Presets aus 0.1.0 klingen in 0.2.0 bitgleich (Test). Makro «Charakter» heisst in den neuen Familien Bellen (Velvet), Jawari (Raga) und Glanz (Ice).
+
+## Melodie: vier Schichten statt einer Oberstimme (`kern/sequenzen.js`)
+
+Christian (10. November 2026): keine Popmelodien; «Melodie» heisst lange, sich verändernde Flächen, helle Spitzen, unregelmässige Off-Beats und Anleihen an Dvořák, Tschaikowsky, Rachmaninow.
+
+- **Fläche:** lange Klänge, Harmonie alle 8, 4 oder 2 Takte (Wandel; bei Halftime doppelt so lang, bis 16 Takte), Stimmführung mit kleinsten Schritten, 3–6 Stimmen (Weite). Einzelne Stimmen wandern (Wechselnoten), die anderen halten mit `=`.
+- **Spitzen:** 0–3 helle Einzelklänge je Viertakt-Phrase, kurz nach einer Snare oder am Phrasenende, nie auf jeder Snare.
+- **Off-Beat:** Akkordfetzen neben dem Schlag, nur in den Lücken der Drums (aus den Drumspuren gelesen), mal dicht, mal lange nichts; bei raga- und maqam-inspirierten Tonleitern nach einem Zyklus von 7 oder 10 Sechzehnteln gegen den 4/4-Takt.
+- **Ruf** (selten, Horn oder Flöte, pentatonisch), **Alap** (Ton für Ton vom Grundton aufwärts, Meend und Gamak-artiges Pendeln), **Tanpura** (Pa, Sa, Sa, Sa tief; der Grundton bleibt).
+- **Klassik** wirkt in allen Schichten: Orgelpunkt, Vorhalt 4–3, chromatisch absteigende Innenstimme (Oktave, Septime, kleine Septime, Sexte), weite Lage, Glockenklang aus Oktave und Quinte bei den Spitzen. Keine Zitate.
+- **Regler** im Klang-Reiter jeder Synthspur: Wandel, Weite, Spitzen, Off-Beat, Klassik, Ruhe. Skala über die Tonleiter des Basses, Ausdruck im Klang. Dazu **sechs Melodie-Varianten** (1–6, aus einem gemeinsamen Startwert) und «neue sechs». Alles bleibt im Muster editierbar.
+- Die älteren Rollen (Pad, Keys, Arp, Lead …) bleiben für bestehende Projekte und als Werkzeug, stehen aber hinten in der Liste.
+- **Track erzeugen:** Ornament und Drum and Bass bekommen zur Schwebe zwei leise Schichten: Spitzen (Music Box Frost) und Off-Beats (Worn Electric Keys bzw. Velvet Rhodes Haze). Indien bekommt den Tanpura-Drone.
+
+## Quellen und Lizenzen
+
+Keine fremden Assets, Samples, Presets oder Wellenformdateien; kein GPL-Code. Karplus-Strong, additive Glocken, FDN-Hall und Körner-Tonhöhenverschiebung sind allgemein bekannte Verfahren, selbst geschrieben. Die Klassik-Anleihen sind Satztechniken, keine Melodiezitate. Ein Asset-Manifest ist darum weiterhin nicht nötig.
+
+## Prüfung
+
+- `node --test tests/composer.test.mjs`: 43 grün, darunter
+  - alle 24 Presets endlich, Spitze ≤ 0,5, mono-verträglich (Korrelation über 0,25), ohne Rumpeln, reproduzierbar; jede Familie mindestens zwei Presets; alle sechs Charaktere vertreten
+  - die zwölf nicht überarbeiteten Presets aus 0.1.0 bitgleich
+  - jede Färbung endlich, gleiche Spitze, hörbar anders
+  - `=` hält Töne ohne neuen Anschlag; Spitzen selten; Off-Beats nie auf belegten Schritten oder auf dem Schlag; Ruhe macht nicht dichter
+  - Maqam Bayati: zweite Stufe 150 Cent über dem Grundton, gemessen auf 3 Cent genau
+- Browser (Chromium, headless, Linux): Track «Ornament» (88 s, 17 Spuren) in etwa 6 s; Breathing Choir dazu über den Charakter-Filter, Variante 3, Klassik 90, Abspielen; keine Fehler in der Konsole.
+- Hörproben mit `node tools/composer-synth-hoerproben.mjs <ordner>`.
+- **Nicht geprüft:** der Klang. Claude kann nicht hören; Messwerte sagen nichts darüber, ob es gut klingt.
+
+## Vorbereitet, nicht gebaut
+
+- Zyklen frei wählbar (heute aus der Tonleiter abgeleitet), Phrasengrenzen aus dem Arrangement für die Schichten, Wiederkehr mit Veränderung über den ganzen Track
+- Stimmungen mit freien Cent-Werten je Stufe (heute als Tonleitern in Viertelton-Schritten)
+- MIDI und Tastatur, Pitch Bend, Modwheel, Sustain-Pedal; Automation der Makros über die Zeit
+- Wellenformen aus AKWF (CC0) mit Manifest, Vocoder mit der Klonstimme, DX7-Import, Faust- oder WASM-Fassung
+
+---
+
 # Synth 0.1.0 und ganze Tracks
 
 Auftrag: `synthesizer.md` (Baustein-Prompt zum Masterprompt), 9. November 2026. Dazu Christians Wunsch: einen ganzen Track (z. B. 90 Sekunden) mit allen Spuren und Effekten erzeugen, um mögliche Ergebnisse zu hören und dann von Hand weiterzuarbeiten.

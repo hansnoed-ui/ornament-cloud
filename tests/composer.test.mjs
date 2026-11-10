@@ -356,7 +356,7 @@ test("Sequenzen: jede Rolle ergibt lesbare Takte; Kammerton verschiebt die Stimm
     const z = sequenzErzeugen({ rolle: r.key, akkorde: [1, 4, 6, 5], kicks: [[0, 7, 10]], anzahl: 8, seed: 3, halftime: r.key === "pad" });
     if (r.key === "schwebe") assert.ok([3, 5, 7].includes(z.length)); else assert.equal(z.length, 8);
     const n = L.notenLesen(z, { bpm: 100, anzahl: 8, leiter: "phrygisch" });
-    assert.ok(n.length >= 4 && n.every((x) => Number.isFinite(x.halbtoene)), r.key);
+    assert.ok(n.length >= (["spitzen", "offbeat", "ruf"].includes(r.key) ? 1 : 4) && n.every((x) => Number.isFinite(x.halbtoene)), r.key);   // Spitzen, Off-Beats, Rufe sind selten
   }
   assert.ok(Math.abs(L.grundFrequenz(9, 440) / L.grundFrequenz(9) - 440 / 432) < 1e-12);
 });
@@ -609,4 +609,81 @@ test("ornament.lucerne: Plan mit Gerüst 88 Takte, Groove auf 1-basierten Schrit
   const st = LU.planen({ sammlung: s, seed: 1, studie: true });
   assert.equal(st.takte, 16); assert.ok(st.spuren.some((x) => x.rolle === "main_motif"));
   for (const sp of st.spuren.filter((x) => x.quelle.erzeuger === SA.SAMPLER)) { const r = SA.samplerSpurRechnen(sp.quelle, RATE, material); assert.ok(r.kanaele[0].every(Number.isFinite), sp.key); assert.deepEqual(r.fehlt, []); }
+});
+
+// ---------- Synth 0.2.0, Klangcharaktere, die vier Schichten der Melodie, Vierteltöne ----------
+const S2 = await c("erzeuger/synth-0.2.0.js");
+
+test("Synth 0.2.0: 24 Presets in 11 Familien klingen, bleiben endlich, sind mono-verträglich und reproduzierbar; alle sechs Charaktere vertreten", () => {
+  const syn = ERZEUGER["synth@0.2.0"], R = 32000;
+  assert.equal(Object.keys(S2.PATCHES).length, 24); assert.equal(Object.keys(syn.stimmen).length, 11);
+  const fam = new Map(); for (const p of Object.values(S2.PATCHES)) fam.set(p.familie, (fam.get(p.familie) ?? 0) + 1);
+  for (const [f, n] of fam) assert.ok(n >= 2, `${f}: mindestens zwei Presets`);
+  for (const ch of S2.CHARAKTERE) assert.ok(Object.values(S2.PATCHES).some((p) => p.charaktere?.includes(ch.key)), `Charakter ${ch.key} fehlt`);
+  for (const [f, st] of Object.entries(syn.stimmen)) for (const k of st.parameter[0].wahl.map((o) => o.wert)) {
+    const p = S2.PATCHES[k], takte = sequenzErzeugen({ rolle: p.rolle, akkorde: [1, 6], kicks: [[0, 10]], anzahl: 2, seed: 2, regler: { spitzen: 100, offbeat: 100, ruhe: 0 } });
+    const q = { erzeuger: "synth@0.2.0", stimme: f, werte: { patch: k }, takte, anzahl: 2, bpm: 110, grundton: 2, leiter: "dorisch", seed: 1 };
+    const r = spurRechnen(q, R);
+    let m = 0; for (const s of r.kanaele) for (const x of s) { assert.ok(Number.isFinite(x), p.name); m = Math.max(m, Math.abs(x)); }
+    assert.ok(m > 0.3 && m <= 0.51, `${p.name}: Spitze ${m}`);
+    const me = messen(r.kanaele, R);
+    assert.ok(me.korrelation > 0.25, `${p.name}: Korrelation ${me.korrelation}`);
+    assert.ok(me.baender.unter120 < 0.5, `${p.name}: Rumpeln ${me.baender.unter120}`);
+    gleich(spurRechnen(q, R).kanaele[0], r.kanaele[0], `${p.name}: reproduzierbar`);
+  }
+});
+
+test("Synth 0.2.0: nicht überarbeitete Presets aus 0.1.0 klingen bitgleich", () => {
+  const R = 24000, takte = ["1+3+5! - - - . . 5,~ - 1 - - - 3 - - -", "6,+1+3 - - - - - - - 4 - 5 - - - - -"];
+  for (const [k, p] of Object.entries(PATCHES)) {
+    if (k === "glassKeys" || k === "wornKeys") continue;   // ausdrücklich überarbeitet
+    const q = { stimme: p.familie, werte: { patch: k }, takte, anzahl: 2, bpm: 96, grundton: 4, leiter: "moll", seed: 9 };
+    gleich(spurRechnen({ ...q, erzeuger: "synth@0.2.0" }, R).kanaele[1], spurRechnen({ ...q, erzeuger: "synth@0.1.0" }, R).kanaele[1], p.name);
+  }
+});
+
+test("Synth 0.2.0: jede Färbung verändert den Klang, bleibt endlich und auf derselben Spitze", () => {
+  const R = 24000, takte = ["1+3+5! - - - - - - - 4 - - - . . . .", ". . . . 5 - - - - - - - - - - -"];
+  const q = { erzeuger: "synth@0.2.0", stimme: "shadow", werte: { patch: "shadowChord" }, takte, anzahl: 2, bpm: 90, grundton: 2, leiter: "moll", seed: 4 };
+  const roh = spurRechnen(q, R).kanaele[0];
+  for (const ch of S2.CHARAKTERE) {
+    const k = spurRechnen({ ...q, werte: { patch: "shadowChord", faerbung: ch.key, faerbungMenge: 80 } }, R).kanaele;
+    let m = 0, d = 0; for (let i = 0; i < k[0].length; i++) { assert.ok(Number.isFinite(k[0][i]) && Number.isFinite(k[1][i]), ch.key); m = Math.max(m, Math.abs(k[0][i]), Math.abs(k[1][i])); d += Math.abs(k[0][i] - roh[i]); }
+    assert.ok(m > 0.3 && m <= 0.51, `${ch.key}: Spitze ${m}`); assert.ok(d / roh.length > 1e-3, `${ch.key}: hörbar anders`);
+  }
+});
+
+test("Melodie: Fläche hält Stimmen mit «=» (kein neuer Anschlag), Spitzen selten, Off-Beats nur in Lücken, Ruhe macht stiller", () => {
+  const n = L.notenLesen(["1+3+5! - - - 1=+4+5= - - - 1=+3+5= - - -"], { bpm: 120, anzahl: 1, leiter: "moll" });
+  assert.equal(n.length, 5, "1 und 5 klingen durch, nur 4 und 3 werden neu angeschlagen");
+  assert.equal(n.find((x) => x.halbtoene === 0).dauer, 2);
+  for (let seed = 1; seed <= 12; seed++) {
+    const fl = sequenzErzeugen({ rolle: "flaeche", akkorde: [1, 6, 4, 5], anzahl: 8, seed, regler: { klassik: 90 } });
+    assert.ok(fl.join(" ").includes("="), "Fläche hält Stimmen");
+    const sp = sequenzErzeugen({ rolle: "spitzen", akkorde: [1, 4], anzahl: 8, seed, snares: [[4, 12]] }), zahl = sp.join(" ").split(/\s+/).filter((t) => t !== "." && t !== "-").length;
+    assert.ok(zahl <= 2 * 3 * 2, `Spitzen selten (${zahl})`);
+    const belegt = [[0, 4, 6, 8, 10, 12, 14]], ob = sequenzErzeugen({ rolle: "offbeat", akkorde: [1], anzahl: 8, seed, belegt, regler: { offbeat: 100 } });
+    for (const z of ob) z.split(" ").forEach((t, i) => { if (t !== "." && t !== "-") assert.ok(!belegt[0].includes(i) && i % 4 !== 0, `Off-Beat auf ${i}`); });
+    const viel = (r) => sequenzErzeugen({ rolle: "offbeat", akkorde: [1], anzahl: 8, seed, regler: { offbeat: 80, ruhe: r } }).join(" ").split(/\s+/).filter((t) => t !== "." && t !== "-").length;
+    assert.ok(viel(100) <= viel(0) + 2, "Ruhe macht nicht dichter");
+  }
+  for (const r of ["flaeche", "spitzen", "offbeat", "ruf", "alap", "tanpura"]) {
+    const z = sequenzErzeugen({ rolle: r, akkorde: [1, 6, 4, 5], anzahl: 8, seed: 3 });
+    const no = L.notenLesen(z, { bpm: 90, anzahl: z.length, leiter: "bhairav" });
+    assert.ok(no.length >= 1 && no.every((x) => Number.isFinite(x.halbtoene) && x.dauer > 0), r);
+  }
+});
+
+test("Tonleitern: Maqam mit Vierteltönen ergibt Cent-genaue Frequenzen; Raga-Tonvorrat", () => {
+  assert.equal(L.halbtoene(L.tonLesen("2"), "bayati"), 1.5);
+  assert.equal(L.halbtoene(L.tonLesen("3"), "rast"), 3.5);
+  assert.deepEqual(L.LEITERN.yaman.stufen, [0, 2, 4, 6, 7, 9, 11]);
+  const syn = ERZEUGER["synth@0.2.0"].stimmen.raga, R = 48000;
+  // eine Note auf der zweiten Stufe von Bayati, über den Notenweg der Spur: 150 Cent über dem Grundton (Spieldose ohne obere Teiltöne)
+  const no = L.notenLesen(["2! - - -"], { bpm: 60, anzahl: 1, leiter: "bayati" })[0], ice = ERZEUGER["synth@0.2.0"].stimmen.ice, w = { patch: "musicBoxFrost", helligkeit: 0, charakter: 0, bewegung: 40, waerme: 50, alter: 0, breite: 60, oktave: 0 };
+  const f0 = L.grundFrequenz(9, 432) * 2 ** ice.oktaveVon(w), soll = f0 * 2 ** (no.halbtoene / 12), k = ice.rechne(w, R, { frequenz: soll, dauer: 2, staerke: 0.8, seed: 1 })[0];
+  let z0 = 0, erst = -1, letzt = -1; for (let i = R * 0.2; i < R * 1.2; i++) if (k[i - 1] < 0 && k[i] >= 0) { z0++; if (erst < 0) erst = i; letzt = i; }
+  const f = ((z0 - 1) * R) / (letzt - erst);
+  assert.ok(Math.abs(1200 * Math.log2(f / (f0 * 2 ** (1.5 / 12)))) < 3, `${f.toFixed(2)} Hz statt ${(f0 * 2 ** (1.5 / 12)).toFixed(2)} Hz`);
+  assert.ok(syn.poly({ patch: "tanpuraGlow" }) && !syn.poly({ patch: "sitarGlide" }));
 });
