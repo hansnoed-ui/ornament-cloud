@@ -152,6 +152,13 @@ function spurenAnpassen(plan) {
       if (a.ohneWaerme) kl.schritte = kl.schritte.filter((x) => x.art !== "waerme");
       if (a.schritteDazu) kl.schritte = [...kl.schritte, ...a.schritteDazu];
     }
+    // «stumm»: [[vonTakt1, bisTakt1], …] (Zählung ab 1, bis einschliesslich) – Ereignisse in diesen Takten fallen weg, der Rest bleibt
+    if (a.stumm && sp.quelle.ereignisse) {
+      const T = 240 / plan.bpm, takt = (e) => (sp.quelle.frei ? e.t / T : e.t) + 1, vorher = sp.quelle.ereignisse.length;
+      sp.quelle.ereignisse = sp.quelle.ereignisse.filter((e) => !a.stumm.some(([v, b]) => takt(e) >= v && takt(e) < b + 1));
+      plan.marker = plan.marker.filter((m) => !(m.art === "motiv" && key === "motiv" && a.stumm.some(([v, b]) => m.takt + 1 >= v && m.takt + 1 < b + 1)));
+      console.log(`  stumm ${key}: ${vorher - sp.quelle.ereignisse.length} Ereignisse entfernt`);
+    }
     console.log(`  angepasst: ${key} ${JSON.stringify(a)}`);
   }
 }
