@@ -7,7 +7,7 @@
   "abtastrate": 44100,
   "tracks": [
     {
-      "titel": "the dancer",
+      "titel": "directer",
       "startSample": 0,
       "samples": 10824545,
       "datei": "audio/the-i-01-the-dancer.wav"
@@ -19,7 +19,7 @@
       "datei": "audio/the-i-02-making-movies.wav"
     },
     {
-      "titel": "the dancer reprise",
+      "titel": "directer reprise",
       "startSample": 22878545,
       "samples": 16554462,
       "datei": "audio/the-i-03-the-dancer-reprise.wav"
