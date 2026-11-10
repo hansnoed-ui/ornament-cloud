@@ -1316,16 +1316,32 @@ function zeigerAuf(c) {
   let start = null;
   const sek = (e) => { const r = c.getBoundingClientRect(); return Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * laenge(); };
   const raster = (s, e) => { if (e.shiftKey) return s; const t = PR.taktDauer(z.projekt) / (e.altKey ? z.projekt.tempo.taktart[0] : 1), b = z.projekt.tempo.beginn; return b + Math.round((s - b) / t) * t; };
-  c.onpointerdown = (e) => { c.setPointerCapture(e.pointerId); start = { x: e.clientX, s: sek(e), gezogen: false }; };
-  c.onpointermove = (e) => {
+  // Am Handy: senkrecht wischen scrollt die Seite (touch-action: pan-y), erst ein deutlich waagrechter Zug markiert. Bricht der Browser
+  // die Berührung zum Scrollen ab, bleibt die bisherige Markierung stehen.
+  c.onpointerdown = (e) => {
+    c.setPointerCapture(e.pointerId);
+    start = { x: e.clientX, y: e.clientY, s: sek(e), gezogen: false, scroll: false, touch: e.pointerType !== "mouse", vorher: z.schleife ? { ...z.schleife } : null, vorherAn: z.schleifeAn };
+  };
+  c.onpointercancel = () => {
     if (!start) return;
-    if (Math.abs(e.clientX - start.x) > 5) start.gezogen = true;
+    if (start.gezogen) { z.schleife = start.vorher; z.schleifeAn = start.vorherAn; zeichnen(); }
+    start = null;
+  };
+  c.onpointermove = (e) => {
+    if (!start || start.scroll) return;
+    const dx = Math.abs(e.clientX - start.x), dy = Math.abs(e.clientY - start.y);
+    if (!start.gezogen) {
+      if (!start.touch) start.gezogen = dx > 5;
+      else if (dy > 8 && dy >= dx) start.scroll = true;
+      else start.gezogen = dx > 12 && dx > 2 * dy;
+    }
     if (!start.gezogen) return;
     const a = raster(Math.min(start.s, sek(e)), e), b = raster(Math.max(start.s, sek(e)), e);
     if (b - a > 0.05) { z.schleife = { a, b }; z.schleifeAn = true; zeichnen(); }
   };
   c.onpointerup = (e) => {
     if (!start) return;
+    if (start.scroll) { start = null; return; }
     if (start.gezogen && z.schleife) {
       schleifeSenden(); z.projekt.schleife = { ...z.schleife }; z.auswahl = true; knoepfeAuffrischen();
       // gezogen auf einer Spur: der Bereich gilt für diese Spur; auf dem Lineal: für die Summe
@@ -1471,7 +1487,7 @@ function herunterladen(blob, name) {
   a.onclick = () => setTimeout(() => leiste.remove(), 1500);
   zu.onclick = () => leiste.remove();
   leiste.append(el("span", { textContent: `Fertig: ${name} (${(blob.size / 1e6).toFixed(1).replace(".", ",")} MB)` }), a, zu);
-  // in den Fluss gleich unter die Export-Knöpfe (feste Positionen liegen am Handy bei breiter Seite ausserhalb des sichtbaren Bereichs)
+  // in den Fluss gleich unter die Export-Knöpfe (feste Positionen können am Handy ausserhalb des sichtbaren Bereichs liegen)
   $("exportieren").parentElement.after(leiste);
   leiste.scrollIntoView({ block: "nearest", behavior: "smooth" });
 }
