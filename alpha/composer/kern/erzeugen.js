@@ -82,7 +82,8 @@ export function notenSpurRechnen(q, rate) {
     let bis = hl.length;
     if (poly) {   // ein langer Ausklang endet spätestens 2 s nach dem Beginn des übernächsten Akkords (weich ausgeblendet)
       const spaeter = noten.find((x, j) => j > k && x.gruppe > no.gruppe + 1)?.beginn;
-      if (spaeter !== undefined) bis = Math.min(hl.length, Math.round((spaeter - no.beginn + 2) * rate));
+      // (gehaltene Töne «=» klingen über mehrere Akkorde: nie vor ihrem eigenen Ende abschneiden)
+      if (spaeter !== undefined) bis = Math.min(hl.length, Math.round(Math.max(spaeter - no.beginn + 2, no.dauer + 0.3) * rate));
       const aus = Math.min(bis, Math.round(0.3 * rate));
       if (bis < hl.length) for (let i = bis - aus; i < bis; i++) { const g = (bis - i) / aus; hl[i] *= g; hr[i] *= g; }
     } else {

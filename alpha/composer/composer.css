@@ -66,6 +66,9 @@ kbd { font: inherit; font-size: 0.75em; color: var(--muted); border: 1px solid v
 .bass-zeile select, .klang-zeile select { border: 1px solid var(--border); border-radius: 999px; background: var(--bg); padding: 3px 8px; }
 .klang-zeile { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 4px 0 12px; }
 .klang-zeile .mini { border-color: var(--border); color: var(--text); height: 28px; }
+.regler-klein { display: inline-flex; flex-direction: column; gap: 2px; min-width: 110px; }
+.regler-klein input { width: 110px; }
+.klang-zeile .mini[aria-pressed="true"] { background: var(--text); color: var(--bg); }
 .muster { width: 100%; font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 0.85rem; border: 1px solid var(--border); border-radius: 8px; background: none; padding: 8px; line-height: 1.5; resize: vertical; }
 .muster:focus { outline: none; border-color: var(--accent); }
 .spur-name .erz { color: #8fb0ff; font-size: 0.75rem; }
