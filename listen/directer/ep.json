@@ -6,7 +6,7 @@
   "audio": "audio/the-i-directer.wav",
   "abtastrate": 44100,
   "tracks": [
-    { "titel": "PLATZHALTER Track 1", "startSample": 0, "samples": null },
+    { "titel": "the dancer", "startSample": 0, "samples": null },
     { "titel": "making movies", "startSample": null, "samples": null },
     { "titel": "PLATZHALTER Track 3", "startSample": null, "samples": null },
     { "titel": "PLATZHALTER Track 4", "startSample": null, "samples": null }
