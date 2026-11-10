@@ -1,7 +1,7 @@
 // Baut aus den fertigen Masterdateien einer EP EINE durchgehende WAV (PCM, Stereo, 16 Bit, 44,1 kHz) und schreibt die Startmarken der Tracks
 // in die Konfiguration der Hörseite (ep.json). Die Masterdateien werden nur gelesen.
 //
-//   node tools/ep-wav.mjs [--ep listen/directer/ep.json] [--aus <ziel.wav>] [--behalten] <master1> <master2> <master3> <master4>
+//   node tools/ep-wav.mjs [--ep listen/directer/ep.json] [--aus <ziel.wav>] [--behalten] <master1> <master2> <master3>
 //
 // Reihenfolge der Master = Reihenfolge der Tracks in ep.json. Ohne --aus landet die WAV dort, wohin «audio» in ep.json zeigt
 // (listen/directer/audio/the-i-directer.wav, von Git ignoriert). Braucht ffmpeg und ffprobe im PATH.
@@ -12,6 +12,7 @@
 //      Ist ein Master schon 16 Bit / 44,1 kHz / Stereo, bleiben die Samples bitgleich.
 //   2. Die Samplezahl jeder vorbereiteten Spur steht in ihrem data-Chunk. Die Startmarke eines Tracks ist die Summe der Samples davor.
 //   3. Die Samples werden ohne Lücke hintereinander in eine WAV geschrieben, die Marken (startSample, samples) in ep.json.
+//   4. Hat ein Track in ep.json ein Feld «datei», entsteht dort zusätzlich seine Einzeldatei zum Herunterladen (dieselben Samples).
 // Die Zwischenexporte werden danach gelöscht (--behalten lässt sie liegen und nennt den Ordner).
 import { spawnSync } from "node:child_process";
 import { openSync, readSync, closeSync, writeSync, readFileSync, writeFileSync, mkdtempSync, rmSync, statSync, existsSync, mkdirSync, realpathSync } from "node:fs";
@@ -176,6 +177,16 @@ function main(argv) {
       return { datei, info, quelle, sp };
     });
     const frames = zusammenfuegen(spuren, aus);
+    // Einzeldateien zum Herunterladen: dieselben Samples wie in der durchgehenden WAV, je Track eine Datei («datei» in ep.json)
+    const einzeln = [];
+    ep.tracks.forEach((t, i) => {
+      if (!t.datei) return;
+      if (/^[a-z]+:/i.test(t.datei)) throw new Error(`Track ${i + 1}: «datei» ist eine Adresse, keine Datei`);
+      const ziel = resolve(dirname(epPfad), t.datei);
+      if (master.some((m) => echt(m) === echt(ziel)) || echt(ziel) === echt(aus)) throw new Error(`Track ${i + 1}: «datei» zeigt auf einen Master oder auf die EP-Datei`);
+      zusammenfuegen([spuren[i]], ziel);
+      einzeln.push(ziel);
+    });
     const liste = marken(spuren.map((s) => s.info.frames));
     const kontrolle = wavInfo(aus);
     if (kontrolle.frames !== frames) throw new Error(`Kontrolle: ${kontrolle.frames} statt ${frames} Samples in ${aus}`);
@@ -184,6 +195,7 @@ function main(argv) {
     console.log(`\n${aus}\n  PCM Stereo 16 Bit 44 100 Hz, ${frames} Samples (${zeit(frames)}), ${(statSync(aus).size / 1e6).toFixed(1)} MB`);
     console.log(`\nMarken in ${epPfad}:`);
     liste.forEach((m, i) => console.log(`  ${i + 1}  ${zeit(m.startSample).padStart(10)}  Sample ${String(m.startSample).padStart(10)}  ${ep.tracks[i].titel}`));
+    if (einzeln.length) { console.log("\nEinzeldateien zum Herunterladen:"); for (const z of einzeln) console.log(`  ${z}  ${(statSync(z).size / 1e6).toFixed(1)} MB`); }
     if (spuren.some((s) => s.sp.anschlag)) console.log("\nHinweis: Samples am Anschlag. Beim Umrechnen auf 44,1 kHz können Spitzen zwischen den Samples hörbar werden; der Pegel wurde nicht verändert.");
     if (statSync(aus).size > 100e6) console.log("\nDie Datei ist grösser als 100 MB: nicht in Git (GitHub nimmt das nicht an), sondern separat hochladen (docs/ep-directer.md).");
     if (behalten) console.log(`\nZwischenexporte: ${arbeit}`);

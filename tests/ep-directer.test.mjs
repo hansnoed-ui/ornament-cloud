@@ -14,11 +14,15 @@ const { wavKopf, wavInfo, marken, markenEintragen } = await import(new URL("tool
 const { startServer, bereich } = await import(new URL("tools/ep-server.mjs", root).href);
 const { pruefeRange } = await import(new URL("tools/ep-range.mjs", root).href);
 const ep = JSON.parse(lies("listen/directer/ep.json"));
+/** für die Exporttests: vier Tracks ohne Einzeldateien, unabhängig von der echten EP */
+const ep4 = { ...ep, tracks: ["Eins", "Zwei", "Drei", "Vier"].map((titel) => ({ titel, startSample: null, samples: null })) };
 
 test("ep.json: vollständig und ohne Fehler; Platzhalter sind als solche erkennbar", () => {
   const { fehler, platzhalter } = pruefeEp(ep);
   assert.deepEqual(fehler, []);
-  assert.equal(ep.tracks.length, 4, "vier Tracks");
+  assert.equal(ep.tracks.length, 3, "drei Tracks (10. November 2026: ohne «outro»)");
+  assert.deepEqual(platzhalter, [], "keine Platzhalter mehr");
+  for (const t of ep.tracks) assert.match(t.datei, /^audio\/[a-z0-9-]+\.wav$/, "Einzeldatei zum Herunterladen neben der EP-Datei (nicht in Git, vor rsync geschützt)");
   assert.equal(ep.abtastrate, 44100);
   assert.equal(ep.tracks[0].startSample, 0, "Track 1 beginnt am Anfang der Datei");
   for (const c of [ep.cover, ep.coverKlein].filter(Boolean)) assert.ok(existsSync(new URL(`listen/directer/${c}`, root)), `Cover ${c} liegt im Repository`);
@@ -78,10 +82,10 @@ test("WAV: Kopf, Marken aus Samplezahlen, Eintrag in die Konfiguration", () => {
     const i = wavInfo(f);
     assert.deepEqual([i.format, i.kanaele, i.rate, i.bits, i.frames, i.dataStart], [1, 2, 44100, 16, 1000, 44]);
     assert.deepEqual(marken([100, 250, 50, 7]).map((m) => m.startSample), [0, 100, 350, 400]);
-    const e = markenEintragen(structuredClone(ep), marken([100, 250, 50, 7]));
+    const e = markenEintragen(structuredClone(ep4), marken([100, 250, 50, 7]));
     assert.deepEqual(e.tracks.map((t) => [t.startSample, t.samples]), [[0, 100], [100, 250], [350, 50], [400, 7]]);
-    assert.deepEqual(e.tracks.map((t) => t.titel), ep.tracks.map((t) => t.titel), "Titel bleiben");
-    assert.throws(() => markenEintragen(structuredClone(ep), marken([1, 2])), /4 Tracks/);
+    assert.deepEqual(e.tracks.map((t) => t.titel), ep4.tracks.map((t) => t.titel), "Titel bleiben");
+    assert.throws(() => markenEintragen(structuredClone(ep4), marken([1, 2])), /4 Tracks/);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
@@ -95,7 +99,8 @@ test("Export: vier Master → eine WAV 16 Bit / 44,1 kHz Stereo, Marken in ep.js
     ff("-f", "lavfi", "-i", "anullsrc=r=44100:cl=stereo:d=0.25", "-c:a", "pcm_s16le", join(dir, "3.wav"));
     ff("-f", "lavfi", "-i", "sine=f=440:d=0.75", "-ar", "96000", "-ac", "1", "-c:a", "pcm_f32le", join(dir, "4.wav"));
     const vorher = [1, 2, 3, 4].map((n) => readFileSync(join(dir, `${n}.wav`)));
-    writeFileSync(join(dir, "ep.json"), JSON.stringify(ep));
+    ep4.tracks[1].datei = "einzeln/zwei.wav";
+    writeFileSync(join(dir, "ep.json"), JSON.stringify(ep4));
     const r = spawnSync(process.execPath, [new URL("tools/ep-wav.mjs", root).pathname, "--ep", join(dir, "ep.json"), "--aus", join(dir, "ep.wav"), ...[1, 2, 3, 4].map((n) => join(dir, `${n}.wav`))], { encoding: "utf8" });
     assert.equal(r.status, 0, r.stderr);
     [1, 2, 3, 4].forEach((n, i) => assert.ok(readFileSync(join(dir, `${n}.wav`)).equals(vorher[i]), `Master ${n} unverändert`));
@@ -106,6 +111,9 @@ test("Export: vier Master → eine WAV 16 Bit / 44,1 kHz Stereo, Marken in ep.js
     assert.equal(info.frames, 77175 + 33075, "keine Lücke, nichts gekürzt");
     const quelle = wavInfo(join(dir, "2.wav")), ganz = readFileSync(join(dir, "ep.wav")), zwei = readFileSync(join(dir, "2.wav"));
     assert.ok(ganz.subarray(44 + 44100 * 4, 44 + 66150 * 4).equals(zwei.subarray(quelle.dataStart, quelle.dataStart + quelle.dataBytes)), "16/44,1-Master bitgleich übernommen");
+    const einzel = readFileSync(join(dir, "einzeln/zwei.wav"));
+    assert.deepEqual([wavInfo(join(dir, "einzeln/zwei.wav")).frames, neu.tracks[1].datei], [22050, "einzeln/zwei.wav"]);
+    assert.ok(einzel.subarray(44).equals(ganz.subarray(44 + 44100 * 4, 44 + 66150 * 4)), "Einzeldatei = derselbe Ausschnitt der EP");
     assert.throws(() => { const x = spawnSync(process.execPath, [new URL("tools/ep-wav.mjs", root).pathname, "--ep", join(dir, "ep.json"), "--aus", join(dir, "1.wav"), ...[1, 2, 3, 4].map((n) => join(dir, `${n}.wav`))], { encoding: "utf8" }); if (x.status) throw new Error(x.stderr); }, /Master/);
     assert.ok(readFileSync(join(dir, "1.wav")).equals(vorher[0]), "Ziel = Master wird abgelehnt");
   } finally { rmSync(dir, { recursive: true, force: true }); }
@@ -119,7 +127,7 @@ test("Server und Prüfung: Range-Anfragen ergeben 206 Partial Content", async ()
   const dir = mkdtempSync(join(tmpdir(), "ep-range-"));
   const seite = join(dir, "listen/directer");
   spawnSync("mkdir", ["-p", join(seite, "audio")]);
-  writeFileSync(join(seite, "ep.json"), JSON.stringify({ ...ep, audio: "audio/ep.wav" }));
+  writeFileSync(join(seite, "ep.json"), JSON.stringify({ ...ep4, audio: "audio/ep.wav" }));
   writeFileSync(join(seite, "audio/ep.wav"), Buffer.concat([wavKopf(200000), Buffer.alloc(800000, 1)]));
   const server = await startServer(0, dir);
   try {

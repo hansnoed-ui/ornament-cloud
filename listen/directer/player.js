@@ -45,6 +45,7 @@ export function pruefeEp(ep) {
   ep.tracks.forEach((t, i) => {
     if (typeof t.titel !== "string" || !t.titel.trim()) fehler.push(`Track ${i + 1}: Titel fehlt`);
     else if (t.titel.startsWith(PLATZHALTER)) platzhalter.push(`Titel von Track ${i + 1}`);
+    if (t.datei != null && (typeof t.datei !== "string" || (/^[a-z]+:/i.test(t.datei) && !/^https:\/\//i.test(t.datei)))) fehler.push(`Track ${i + 1}: «datei» muss relativ oder eine https-Adresse sein`);
     if (t.startSample == null) platzhalter.push(`Startmarke von Track ${i + 1}`);
     else if (!Number.isInteger(t.startSample) || t.startSample < 0) fehler.push(`Track ${i + 1}: startSample ist keine ganze Zahl ≥ 0`);
   });
@@ -105,6 +106,16 @@ async function starte() {
     b.disabled = starts[i] == null;
     b.addEventListener("click", () => springeZu(i));
     li.append(b);
+    if (typeof t.datei === "string" && t.datei.trim()) {
+      const a = document.createElement("a");
+      a.className = "laden";
+      a.href = new URL(t.datei, document.baseURI).href;
+      a.download = `${ep.anzeigename} - ${String(i + 1).padStart(2, "0")} ${t.titel}${(t.datei.match(/\.[a-z0-9]+$/i) || [""])[0]}`;
+      a.setAttribute("aria-label", `«${t.titel}» herunterladen`);
+      a.title = "Herunterladen";
+      a.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 19.5h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      li.append(a);
+    }
     liste.append(li);
     return b;
   });

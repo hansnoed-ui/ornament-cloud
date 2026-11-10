@@ -99,7 +99,12 @@ body {
 .marken span { position: absolute; top: 0; width: 2px; height: 12px; margin-left: -1px; background: var(--leise); opacity: 0.7; }
 
 .tracks { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--linie); }
-.tracks li { border-bottom: 1px solid var(--linie); }
+.tracks li { border-bottom: 1px solid var(--linie); display: flex; align-items: center; }
+.track { flex: 1; min-width: 0; }
+.laden { flex: none; width: 44px; height: 44px; display: grid; place-items: center; color: var(--leise); border-radius: 50%; }
+.laden svg { width: 22px; height: 22px; }
+.laden:hover { color: var(--text); }
+.laden:focus-visible { outline: 2px solid var(--akzent); outline-offset: 2px; }
 .track {
   width: 100%;
   min-height: 52px;
