@@ -795,3 +795,75 @@ test("Worklet: ■ blendet aus und hält an (der Pegel steigt nicht, die Stelle 
   assert.equal(w.m.laeuft, false);
   const pos = w.m.pos; w.process([], out); assert.equal(w.m.pos, pos); assert.equal(spitze(), 0);
 });
+
+// ---------- Perkussion 0.2.0 und Rhythmus 0.1.0 (Zyklen, prompts/perkussion.md Phase A) ----------
+test("Perkussion 0.2.0: jede Stimme, Variante und Artikulation klingt endlich und unter 0 dBFS; die Stimmen aus 0.1.0 sind bitgleich", async () => {
+  const { ERZEUGER } = await c("erzeuger/register.js");
+  const neu = ERZEUGER["perkussion@0.2.0"].stimmen, alt = ERZEUGER["perkussion@0.1.0"].stimmen;
+  assert.ok(Object.keys(neu).length >= 15);
+  for (const st of Object.values(neu)) {
+    assert.ok(st.klassen && ["M", "B", "BC", "H", "HC"].every((k) => st.artikulationen.some((a) => a.key === st.klassen[k])), `${st.key}: Klassen`);
+    const w0 = Object.fromEntries(st.parameter.map((p) => [p.key, p.std]));
+    for (const v of st.varianten) for (const a of st.artikulationen) {
+      const k = st.rechne({ ...w0, ...v.werte }, 24000, { art: a.key, staerke: 0.9, seed: 5 });
+      let m = 0; for (const s of k) for (const x of s) { assert.ok(Number.isFinite(x), `${st.key} ${v.name} ${a.key}`); m = Math.max(m, Math.abs(x)); }
+      assert.ok(m > 0.05 && m <= 1, `${st.key} ${v.name} ${a.key}: Spitze ${m}`);
+    }
+  }
+  for (const key of Object.keys(alt)) {
+    const st = alt[key], w0 = Object.fromEntries(st.parameter.map((p) => [p.key, p.std])), art = st.artikulationen[0].key;
+    gleich(neu[key].rechne(w0, RATE, { art, staerke: 0.8, seed: 3 })[0], st.rechne(w0, RATE, { art, staerke: 0.8, seed: 3 })[0], key);
+  }
+});
+
+test("Zyklen: Vorlagen haben die richtige Länge, jeder Bol hat eine Artikulation", async () => {
+  const Z = await c("kern/zyklen.js"), { ERZEUGER } = await c("erzeuger/register.js");
+  const soll = { teentaal: 16, ektaal: 12, jhaptal: 10, rupak: 7, dadra: 6, keharwa: 8, maqsum: 8, baladi: 8, saidi: 8, malfuf: 8, samai: 10, zarbi68: 6, frei7: 7, frei9: 9, frei5: 5 };
+  for (const [k, n] of Object.entries(soll)) assert.equal(Z.matrasVon(k), n, k);
+  for (const v of Object.values(Z.VORLAGEN)) assert.ok(v.quelle && v.tradition && v.name);
+  for (const st of Object.values(ERZEUGER["perkussion@0.2.0"].stimmen)) {
+    const inst = Z.instrumentVon(st);
+    for (const v of Object.values(Z.VORLAGEN)) for (const m of Z.zyklusLesen(v)) for (const b of m.schlaege) assert.ok(inst.arten.has(Z.bolFuer(b, inst)), `${st.key}: ${b}`);
+  }
+});
+
+test("Zyklus-Generator: Startwert gleich, Zeilen gleich; Sam am Beginn jedes Abschnitts; nur gültige Schläge; Dichte wirkt", async () => {
+  const Z = await c("kern/zyklen.js"), { ERZEUGER } = await c("erzeuger/register.js"), { taktLesen } = await c("kern/muster.js");
+  const P2 = ERZEUGER["perkussion@0.2.0"].stimmen, abschnitte = [{ von: 0, bis: 8, typ: "intro" }, { von: 8, bis: 20, typ: "haupt" }, { von: 20, bis: 28, typ: "gas" }, { von: 28, bis: 32, typ: "outro" }];
+  for (const vorlage of Object.keys(Z.VORLAGEN)) for (const key of ["tabla", "darbuka", "mridangam", "davul", "sagat"]) for (const bpm of [92, 174]) {
+    const o = { vorlage, stimme: P2[key], anzahl: 32, bpm, dichte: 55, komplex: 60, variation: 70, poly: 60, seed: 9, abschnitte };
+    const a = Z.zyklusTakte(o), b = Z.zyklusTakte(o);
+    assert.deepEqual(a.takte, b.takte);
+    assert.equal(a.takte.length, 32);
+    const arten = new Set(P2[key].artikulationen.map((x) => x.key));
+    a.takte.forEach((zl) => { const t = zl.split(" "); assert.ok([8, 16, 32].includes(t.length), zl); for (const s of taktLesen(zl)) assert.ok(arten.has(s.art), `${vorlage} ${key}: ${s.art}`); });
+    for (const ab of abschnitte) assert.ok(a.takte[ab.von].split(" ")[0].endsWith("!"), `${vorlage} ${key} ${bpm}: kein Sam bei Takt ${ab.von}: ${a.takte[ab.von]}`);
+  }
+  const zahl = (d) => Z.zyklusTakte({ vorlage: "teentaal", stimme: P2.tabla, anzahl: 16, bpm: 92, dichte: d, komplex: 20, variation: 0, seed: 2 }).takte.join(" ").split(" ").filter((x) => x !== ".").length;
+  assert.ok(zahl(0) < zahl(30) && zahl(30) < zahl(50) && zahl(50) < zahl(90), `${zahl(0)} ${zahl(30)} ${zahl(50)} ${zahl(90)}`);
+  assert.notDeepEqual(Z.zyklusTakte({ vorlage: "teentaal", stimme: P2.tabla, anzahl: 16, bpm: 92, seed: 2 }).takte, Z.zyklusTakte({ vorlage: "teentaal", stimme: P2.tabla, anzahl: 16, bpm: 92, seed: 3 }).takte);
+});
+
+test("Tihai: dreimal dieselbe Figur in gleichen Abständen, der letzte Schlag fällt auf den Sam des nächsten Abschnitts", async () => {
+  const Z = await c("kern/zyklen.js"), { ERZEUGER } = await c("erzeuger/register.js"), { taktLesen } = await c("kern/muster.js");
+  const tabla = ERZEUGER["perkussion@0.2.0"].stimmen.tabla;
+  // Dichte 0: nur der Sam bleibt; was sonst klingt, ist der Tihai (Komplexität 0: die Figur «dha»)
+  const r = Z.zyklusTakte({ vorlage: "teentaal", stimme: tabla, anzahl: 8, bpm: 92, dichte: 0, komplex: 0, variation: 0, seed: 1, abschnitte: [{ von: 0, bis: 4, typ: "haupt" }, { von: 4, bis: 8, typ: "haupt" }] });
+  const zeiten = []; r.takte.forEach((zl, b) => { for (const s of taktLesen(zl)) zeiten.push({ t: b + s.stelle, art: s.art }); });
+  const vorWechsel = zeiten.filter((e) => e.t > 2 && e.t < 4), sam = zeiten.find((e) => e.t === 4);
+  assert.equal(vorWechsel.length, 2, JSON.stringify(zeiten));
+  assert.ok(sam && sam.art === "dha");
+  const d1 = vorWechsel[1].t - vorWechsel[0].t, d2 = sam.t - vorWechsel[1].t;
+  assert.ok(Math.abs(d1 - d2) < 1e-9, `${d1} ≠ ${d2}`);
+  assert.ok(vorWechsel.every((e) => e.art === "dha"));
+});
+
+test("Zyklus-Spur: rechnet über die Spur wie ein handgeschriebenes Muster", async () => {
+  const Z = await c("kern/zyklen.js"), { ERZEUGER } = await c("erzeuger/register.js"), { spurRechnen } = await c("kern/erzeugen.js");
+  const st = ERZEUGER["perkussion@0.2.0"].stimmen.mridangam, w = Object.fromEntries(st.parameter.map((p) => [p.key, p.std]));
+  const { takte } = Z.zyklusTakte({ vorlage: "rupak", stimme: st, anzahl: 4, bpm: 96, dichte: 60, komplex: 50, variation: 50, poly: 40, seed: 4 });
+  const { kanaele, schlaege } = spurRechnen({ erzeuger: "perkussion@0.2.0", stimme: "mridangam", werte: w, takte, anzahl: 4, bpm: 96, seed: 4 }, 24000);
+  assert.ok(schlaege > 20);
+  let m = 0; for (const s of kanaele) for (const x of s) { assert.ok(Number.isFinite(x)); m = Math.max(m, Math.abs(x)); }
+  assert.ok(m > 0.1);
+});

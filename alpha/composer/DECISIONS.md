@@ -4,6 +4,14 @@ Hier steht, was Christian entschieden hat und wie er Klänge beurteilt hat, dami
 
 ## 10. November 2026
 
+**Perkussion aus Zyklen (Auftrag `prompts/perkussion.md`, Phase A)**
+- Christian schickte einen langen Masterprompt «Global Percussion Engine», gemeint für den Composer allgemein, nicht für ornament.lucerne. Gestrafft zu `prompts/perkussion.md` in drei Phasen; «Phase A los».
+- Umgesetzt: Rhythmus 0.1.0 (`kern/zyklen.js`) mit 15 Vorlagen (Tala, Iqa, persisch, frei) und einem Generator (Dichte, Komplexität, Variation, Polyrhythmus, Tihai vor jedem Abschnittswechsel, Sam am Beginn jedes Abschnitts); Perkussion 0.2.0 mit Mridangam, Kanjira, Ghatam, Dholak, Daf, Davul/Dohol, Naqareh, Manjira, Sagat. Einzelheiten in `PERKUSSION.md`.
+- Die Stile nehmen ihre Perkussion jetzt aus Zyklen (Schalter «Perkussion aus Zyklen», an); die alten festen Muster bleiben über den Schalter. Rückwärtskompatibilität nicht nötig, 0.1.0 bleibt trotzdem bitgleich.
+- Lizenzen der vorgeschlagenen Sample-Quellen geprüft: Mridangam-Dataset CC BY-NC (nur Messvorlage), Berklee BISA CC BY 4.0, M III D O und Black Octopus ohne Weitergabe, Freesound-API nur nicht-kommerziell gratis. Samples kommen später und nur lokal.
+- Handy: Die Reiter einer Spur (Klang, Unterbrechungen, … Raum) machten die Seite bei Perkussion mit Raum breiter als 412 px; sie brechen jetzt um.
+- Ehrlich: nichts davon ist gehört. Urteil steht aus.
+
 **ornament.lucerne: Urteil zum ganzen Track**
 - Christian: «Sehr geile Arbeit», erster Teil «noch nicht top», zweiter «genial», «etwas viel gebraucht», Beat «etwas schleppender und knarzender», die Melodie «könnte auch mal unterbrochen werden».
 - Umgesetzt: 84 statt 88 BPM, Snare und Ghosts hinter dem Schlag, mehr Swing auf den Hi-Hats; Makros «Knarzen» (Sättigung, Bits, Abtastrate, Knistern auf den Drums) und «Unterbrechung» (Motivaussagen still oder abgerissen). «Viel gebraucht» als «das Motiv kommt zu oft» gelesen. Einzelheiten in `LUCERNE.md`.
