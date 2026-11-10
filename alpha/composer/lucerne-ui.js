@@ -191,7 +191,7 @@ function neuRechnenAlle() { for (const sp of A.z.projekt.spuren.filter((x) => x.
 // ---------- Vorhören (lautheitsgleich) ----------
 let vorhoerQuelle = null;
 async function vorhoeren(kanaele, rate) {
-  await A.kontext(48000);
+  await A.kontext(48000); await A.tonWecken();   // nie direkt resume(): nach Sperre oder Unterbrechung baut tonWecken den Kontext neu
   const ctx = A.z.ctx, k = S.bearbeiten(kanaele, rate, [{ art: "normal", db: -20 }]), b = ctx.createBuffer(2, k[0].length, rate);
   b.copyToChannel(k[0], 0); b.copyToChannel(k[1] ?? k[0], 1);
   vorhoerQuelle?.stop();
@@ -398,6 +398,10 @@ export { samplerRechnen };
 
 export async function lucerneEinbauen(api) {
   A = api;
+  // Vorhören hält an, wenn die Seite verschwindet (Sperre, Tab gewechselt), wie die Wiedergabe des Motors
+  const vorhoerenAus = () => { try { vorhoerQuelle?.stop(); } catch { /* schon beendet */ } vorhoerQuelle = null; };
+  document.addEventListener("visibilitychange", () => { if (document.hidden) vorhoerenAus(); });
+  addEventListener("pagehide", vorhoerenAus);
   try { const s = await idb("stand", "get", "sammlung"); if (s?.format === K.SAMMLUNG_FORMAT) L.sammlung = s; } catch (e) { A.melde(`Klangsammlung: Speicher nicht verfügbar (${e.message}); sie gilt nur bis zum Neuladen.`, 8000); }
   aufbauen();
   return { erzeugen, aufbauen };
