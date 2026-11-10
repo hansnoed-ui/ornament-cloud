@@ -1456,7 +1456,25 @@ async function aufZielBringen() {
   melde(`Summe ${zahl(z.projekt.master.pegel)} dB → ${zahl(z.messungen.nach.lufs)} LUFS, ${zahl(z.messungen.nach.tp)} dBTP`, 6000);
 }
 const dateiname = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "composer";
-function herunterladen(blob, name) { const a = el("a", { href: URL.createObjectURL(blob), download: name }); document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000); }
+// Chrome (vor allem auf Android) lässt einen Download nur kurz nach einem Tippen oder Klick zu; nach längerem Rechnen wird er sonst
+// still verworfen. Darum: liegt die letzte Geste länger als 4 s zurück, erscheint ein Knopf «Speichern», der den Download selbst auslöst.
+let letzteGeste = 0;
+for (const art of ["pointerdown", "keydown"]) addEventListener(art, () => { letzteGeste = performance.now(); }, true);
+function herunterladen(blob, name) {
+  const url = URL.createObjectURL(blob);
+  setTimeout(() => URL.revokeObjectURL(url), 15 * 60000);
+  if (performance.now() - letzteGeste < 4000) { const a = el("a", { href: url, download: name }); document.body.append(a); a.click(); a.remove(); return; }
+  document.querySelector(".speichern")?.remove();
+  const leiste = el("div", { className: "speichern", role: "status" });
+  const a = el("a", { className: "knopf voll", href: url, download: name, textContent: "Speichern" });
+  const zu = el("button", { className: "mini", textContent: "×", title: "schliessen" });
+  a.onclick = () => setTimeout(() => leiste.remove(), 1500);
+  zu.onclick = () => leiste.remove();
+  leiste.append(el("span", { textContent: `Fertig: ${name} (${(blob.size / 1e6).toFixed(1).replace(".", ",")} MB)` }), a, zu);
+  // in den Fluss gleich unter die Export-Knöpfe (feste Positionen liegen am Handy bei breiter Seite ausserhalb des sichtbaren Bereichs)
+  $("exportieren").parentElement.after(leiste);
+  leiste.scrollIntoView({ block: "nearest", behavior: "smooth" });
+}
 
 async function exportieren() {
   await bisFertig();

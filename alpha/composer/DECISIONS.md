@@ -141,3 +141,7 @@ Christian: Stopp funktioniert nicht, der Ton «überschlägt» sich bzw. verdopp
 - Neu gebaut wird nach Ablauf der Wartezeit (jetzt 1,5 s) nur noch, wenn der Kontext wirklich nicht läuft.
 - ■ gilt sofort, auch während ▶ noch auf den Ton wartet; der Start fällt dann weg.
 - Nachtrag 2: Die eigentliche Ursache war ein Vorzeichenfehler in der Ausblende des Worklets (#695): Beim ■ stieg der Pegel, statt zu fallen, die Wiedergabe hielt nie an und wurde immer lauter. Behoben; ein Test prüft jetzt, dass ■ leiser wird und die Stelle steht.
+
+## Export am Handy: Knopf «Speichern» (10. November 2026)
+
+Christian (Samsung S23, Chrome): Nach «rechne … %» kam beim Export nichts. Chrome lässt einen Download nur kurz nach einem Tippen zu; nach längerem Rechnen wird er still verworfen. Liegt die letzte Geste länger als 4 s zurück, startet der Download darum nicht mehr selbst: Unter den Export-Knöpfen erscheint «Fertig: Datei (MB) · Speichern», das Tippen darauf lädt herunter. Die Leiste steht im Fluss der Seite, nicht fest am Rand (feste Elemente liegen am Handy bei breiter Seite ausserhalb des sichtbaren Bereichs). Gilt für Track (WAV), Export (ZIP), Bereich als WAV und alle anderen Downloads.
