@@ -110,7 +110,7 @@ function akkordKlang(kandidaten, grundton, art) {
  */
 export function materialWaehlen(sammlung, { seed = 1, auswahl = null } = {}) {
   const rnd = zufall(hash(seed, "material")), wahl = {}, quellen = auswahl ? new Set(auswahl) : null;
-  const von = (rolle) => sammlung.ausschnitte.filter((a) => (a.rollen ?? [a.rolle]).includes(rolle) && (!quellen || quellen.has(a.quelle)) && !a.aus);
+  const von = (rolle) => sammlung.ausschnitte.filter((a) => (a.rollen ?? [a.rolle]).includes(rolle) && (!quellen || quellen.has(a.quelle)) && !a.aus && !a.nurErsetzen);   // «nurErsetzen»: nur ausdrücklich über «Quelle ersetzen»
   for (const r of ["main_motif", "harmonic_layer"]) wahl[r] = von(r).map((a) => a.id);
   // Startwert 1 nimmt je Rolle die erste Wahl (höchster «vorrang»), weitere Startwerte gehen die Kandidaten der Reihe nach durch
   const reihe = (k) => [...k].sort((a, b) => (b.vorrang ?? 0) - (a.vorrang ?? 0) || a.id.localeCompare(b.id));

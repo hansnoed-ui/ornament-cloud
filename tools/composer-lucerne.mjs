@@ -41,7 +41,12 @@ function sammlungAktualisieren(ordner, { nur = null } = {}) {
   const auswahl = existsSync(join(ordner, "lucerne-auswahl.json")) ? JSON.parse(readFileSync(join(ordner, "lucerne-auswahl.json"), "utf8")).quellen : {};
   for (const name of readdirSync(ordner).filter((f) => /\.wav$/i.test(f) && (!nur || nur.includes(f))).sort()) {
     const bytes = readFileSync(join(ordner, name)), h = sha(bytes), id = K.quelleId(h);
-    if (s.quellen.some((q) => q.id === id)) { console.log(`= ${name} (${id}): bekannt, Analyse wiederverwendet`); continue; }
+    if (s.quellen.some((q) => q.id === id)) {
+      // bekannte Quelle: Analyse bleibt; neu kuratierte Ausschnitte (gleiche ID = schon da) kommen dazu
+      const neu = (auswahl[name] ?? []).map((c) => ({ ...c, id: K.ausschnittId(id, c.von, c.bis, c.rolle), quelle: id, rollen: [c.rolle], kuratiert: true })).filter((c) => !s.ausschnitte.some((a) => a.id === c.id));
+      if (neu.length) s = K.ausschnitteHinzufuegen(s, neu);
+      console.log(`= ${name} (${id}): bekannt, Analyse wiederverwendet${neu.length ? `, ${neu.length} kuratierte Ausschnitte ergänzt` : ""}`); continue;
+    }
     const t0 = Date.now(), w = wavSpuren(new Uint8Array(bytes)), an = K.analysieren(w.spuren, w.rate);
     const test = /TEST/i.test(name);
     const r = K.quelleHinzufuegen(s, { name, sha256: h, bytes: bytes.length, rate: w.rate, kanaele: w.spuren.length, dauer: an.dauer, herkunft: test ? "test" : "eigen", notiz: test ? "synthetische Testquelle (kein musikalisches Material)" : "" }, an);
@@ -178,6 +183,23 @@ if (modus === "sammlung") {
   await exportZip(join(ziel, `ornament-lucerne-erinnerung-${seed}.zip`), plan, p, spuren, s);
   writeFileSync(join(ziel, `plan-${seed}.json`), JSON.stringify(plan, null, 1));
   console.log(plan.abschnitte.map((a) => `T${a.von + 1}–${a.bis}: ${a.name} (${r2((a.von * 240) / plan.bpm)} s)`).join("\n"));
+} else if (modus === "fassung") {
+  // dieselbe Komposition (Startwert, Motiv, Groove, Bass, Tempo, Tonart gesperrt) mit anderem Material je Rolle:
+  //   node tools/composer-lucerne.mjs fassung <ordner> <ziel> <seed> "main_motif=Schimmer" "texture=helle Stelle" …  (Teil des Ausschnittnamens)
+  const s = sammlungAktualisieren(ordner), m = materialLaden(ordner, s); mkdirSync(ziel, { recursive: true });
+  const vorher = LU.planen({ sammlung: s, seed }), ersetze = {};
+  for (const a of process.argv.slice(6)) {
+    const [rolle, namen] = a.split("=");
+    ersetze[rolle] = namen.split(";").map((n) => { const c = s.ausschnitte.find((x) => (x.name ?? "").includes(n.trim()) && !x.aus); if (!c) throw new Error(`kein Ausschnitt «${n}»`); return c.id; });
+  }
+  const plan = LU.planen({ sammlung: s, seed, vorher, sperren: { motiv: true, groove: true, bass: true, tempo: true, tonart: true, material: true }, ersetze });
+  for (const h of plan.hinweise) console.log(`  Hinweis: ${h}`);
+  console.log(herkunftTabelle(plan, s));
+  const { p, spuren } = await planRechnen(plan, m);
+  const basis = join(ziel, `ornament-lucerne-erinnerung-${seed}-fassung-b`);
+  speichern(`${basis}.wav`, await mischen(p, spuren, -14));
+  await exportZip(`${basis}.zip`, plan, p, spuren, s);
+  writeFileSync(`${basis}-plan.json`, JSON.stringify(plan, null, 1));
 } else if (modus === "test4") {
   // eine synthetische TESTQUELLE (deutlich so benannt): gestimmte Glockenschläge auf Cis und eine Rauschfläche
   mkdirSync(ziel, { recursive: true });
