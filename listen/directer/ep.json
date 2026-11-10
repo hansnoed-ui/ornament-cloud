@@ -1,0 +1,28 @@
+{
+  "anzeigename": "the i",
+  "titel": "directer",
+  "cover": "cover.jpg",
+  "coverKlein": "cover-512.jpg",
+  "audio": "audio/the-i-directer.wav",
+  "abtastrate": 44100,
+  "tracks": [
+    {
+      "titel": "the dancer",
+      "startSample": 0,
+      "samples": 10824545,
+      "datei": "audio/the-i-01-the-dancer.wav"
+    },
+    {
+      "titel": "making movies",
+      "startSample": 10824545,
+      "samples": 12054000,
+      "datei": "audio/the-i-02-making-movies.wav"
+    },
+    {
+      "titel": "the dancer reprise",
+      "startSample": 22878545,
+      "samples": 16554462,
+      "datei": "audio/the-i-03-the-dancer-reprise.wav"
+    }
+  ]
+}

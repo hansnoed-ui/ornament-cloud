@@ -1,0 +1,131 @@
+/* Hörseite der EP: schlicht, fürs Telefon zuerst. Immer dunkel, wie die Website (Wunsch vom 27. Oktober 2026). */
+:root {
+  --bg: #121110;
+  --flaeche: #1d1c1a;
+  --text: #ece8e1;
+  --leise: #a39d93;
+  --linie: #34312c;
+  --akzent: #ffd84d;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.45 var(--font);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ep {
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
+  padding: max(16px, env(safe-area-inset-top)) 16px max(32px, env(safe-area-inset-bottom));
+  display: grid;
+  gap: 18px;
+}
+
+.cover { margin: 0; }
+.cover img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  background: var(--flaeche);
+  border-radius: 6px;
+}
+
+/* Name und EP-Titel stehen schon auf dem Cover; hier nur für Screenreader und Suchfunktion des Browsers */
+.unsichtbar { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.kopf { display: grid; gap: 2px; }
+.name { margin: 0; color: var(--leise); font-size: 0.95rem; letter-spacing: 0.02em; }
+.titel { margin: 0; font-size: 1.6rem; font-weight: 600; line-height: 1.15; letter-spacing: -0.01em; }
+
+.steuerung { display: flex; align-items: center; gap: 16px; }
+
+.play {
+  flex: none;
+  width: 64px;
+  height: 64px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--text);
+  color: var(--bg);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.play svg { width: 28px; height: 28px; fill: currentColor; }
+.play .symbol-pause, .play.laeuft .symbol-play { display: none; }
+.play.laeuft .symbol-pause { display: block; }
+.play:disabled { opacity: 0.35; cursor: default; }
+.play:focus-visible, .track:focus-visible, .regler input:focus-visible { outline: 2px solid var(--akzent); outline-offset: 3px; }
+
+.jetzt { min-width: 0; }
+.jetzt p { margin: 0; }
+.jetzt-titel { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.jetzt-zeit { color: var(--leise); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+
+/* Fortschrittsregler über die ganze EP, mit feinen Strichen an den Trackgrenzen */
+.regler { position: relative; height: 32px; }
+.regler input {
+  -webkit-appearance: none;
+  appearance: none;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 32px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  touch-action: pan-y;
+}
+.regler input::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: var(--linie); }
+.regler input::-moz-range-track { height: 4px; border-radius: 2px; background: var(--linie); }
+.regler input::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; margin-top: -7px; border-radius: 50%; background: var(--text); border: 0; }
+.regler input::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: var(--text); border: 0; }
+.regler input:disabled { cursor: default; opacity: 0.5; }
+.marken { position: absolute; left: 9px; right: 9px; top: 50%; height: 12px; transform: translateY(-50%); pointer-events: none; }
+.marken span { position: absolute; top: 0; width: 2px; height: 12px; margin-left: -1px; background: var(--leise); opacity: 0.7; }
+
+.tracks { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--linie); }
+.tracks li { border-bottom: 1px solid var(--linie); display: flex; align-items: center; }
+.track { flex: 1; min-width: 0; }
+.laden { flex: none; width: 44px; height: 44px; display: grid; place-items: center; color: var(--leise); border-radius: 50%; }
+.laden svg { width: 22px; height: 22px; }
+.laden:hover { color: var(--text); }
+.laden:focus-visible { outline: 2px solid var(--akzent); outline-offset: 2px; }
+.track {
+  width: 100%;
+  min-height: 52px;
+  padding: 10px 4px;
+  border: 0;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  display: grid;
+  grid-template-columns: 1.8em 1fr auto;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.track .nr { color: var(--leise); font-variant-numeric: tabular-nums; }
+.track .tt { min-width: 0; overflow-wrap: anywhere; }
+.track .td { color: var(--leise); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+.track[aria-current="true"] .nr, .track[aria-current="true"] .tt { color: var(--akzent); font-weight: 600; }
+.track:disabled { cursor: default; opacity: 0.45; }
+
+.hinweis { margin: 0; padding: 12px 14px; border: 1px solid var(--linie); border-radius: 8px; background: var(--flaeche); }
+.platzhalter { margin: 0; padding: 10px 14px; border: 1px dashed #c98a3a; border-radius: 8px; color: #f0c48a; font-size: 0.9rem; }
