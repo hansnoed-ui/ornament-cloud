@@ -10,6 +10,13 @@ Hier steht, was Christian entschieden hat und wie er Klänge beurteilt hat, dami
 - Ornament: dazu Delfine singen und Kosmos «Tiefer Raum». Drum and Bass: dazu Teich bei Nacht und Kosmos «Magnetosphäre».
 - Urteil zu den Hörproben: alle Delfine «gut», Nachtwald gut bis auf «der hohe Uhu ist komisch» (jetzt tiefer, runder). Kosmos: Vela, Magnetosphäre, Verschmelzung «gut»; der Pulsar als einzelne Schläge «zu dominant, zu wenig fein», «zu grell», «muss raus». Die langsamen Pulsare sind entfernt. Vorgeschlagen, noch nicht gebaut: Elefanten-Grollen, Fledermäuse, Wolfsheulen, Specht.
 
+**ornament.lucerne (Auftrag `Masterprompt_Claude_Code_ornament_lucerne.md`)**
+- Neuer Stil aus Christians eigenen Aufnahmen, zuerst drei: `ly_trailer1.wav`, `ly_trailer_2.wav`, `ly_trailer_3.wav` in `ornament-material/samples/`. Weitere Samples kündigt er an («heute Abend und morgen sehr viele»); deshalb von Anfang an Klangsammlung mit stabilen IDs, Analyse nur neuer Dateien, Rollen getrennt von Dateien.
+- Umgesetzt: Klangsammlung 0.1.0, Sampler 0.1.0, Profil ornament.lucerne 0.1.0 (Ausprägung Erinnerung, 88 BPM, Fis-Moll aus dem Material, 88 Takte), Oberfläche `lucerne-ui.js`, Werkzeug `tools/composer-lucerne.mjs`. Einzelheiten, Zeitmarken und Makro-Zuordnung in `LUCERNE.md`.
+- Charakteristische Quelle des ersten Tracks: das ruhige Outro von `ly_trailer1.wav` (96–107 s) – Akkordschatten, Motivtöne, Umgebung. Das Hauptmotiv ist eine eigene Zelle, gespielt mit den Oberstimmen dieses Outros.
+- Kammerton der Lucerne-Projekte 440 Hz (das Material ist so gestimmt), nicht 432.
+- Ehrlich: nichts davon ist gehört. Urteil steht aus.
+
 **Synth 0.2.0 und Melodien (Aufträge `synthesizer.md` und `melodien.md`)**
 - Umgesetzt in einem Cloud-Strang (das Terminal war belegt), auf eigenem Zweig, Merge nur mit Christians OK.
 - Synth 0.2.0 als neue Version neben 0.1.0 (alte Projekte klingen gleich). Neu: Velvet Dub, Raga Drift, Ice Organism, Signal Sparrow; Verfahren Saite und Glocke; sechs Klangcharaktere als Schlagwort, Filter und Färbung. 24 Presets.
@@ -18,6 +25,18 @@ Hier steht, was Christian entschieden hat und wie er Klänge beurteilt hat, dami
 - Track erzeugen: Ornament und DnB bekommen leise Spitzen und Off-Beats zur Schwebe dazu, Indien den Tanpura-Drone. Die bisherige Schwebe bleibt (gefiel).
 - Raga- und Maqam-Tonleitern (Bayati, Rast, Saba, Shur mit Vierteltönen) als Inspiration bezeichnet.
 - Kein GPL-Code, keine fremden Assets.
+
+**Off-Beats neu (Urteil auf der Hörseite, 10.11.: «das meiste gefällt gut. die offbeats gehen noch nicht»)**
+- Ursache: Die Off-Beats wichen allen Drumschlägen aus, auch der offenen Hi-Hat, die genau auf den Achtel-Off-Beats liegt. Übrig blieben zufällige Sechzehntel, dazu Zweiklänge, die in der Lage sprangen (teils Sekunden), rund 20 dB unter den Drums.
+- Jetzt: kurze Akkord-Stiche auf den Achtel-Off-Beats (2, 6, 10, 14; Halftime 4 und 12), nie auf Kick oder Snare. Unregelmässig ist nur, in welchen Takten sie kommen: eine Figur, die wiederkehrt und ab und zu einen Stich verliert oder dazugewinnt. Enge Lage (Terz, Quinte, Septime oder Dreiklang, immer die nächste Umkehrung), Quartvorhalt mit Klassik.
+- Off-Beats 6 dB lauter in Ornament und DnB, Echo-Anteil mindestens 40 % (Dub-Echo). Ornament nimmt Velvet Rhodes Haze statt Worn Electric Keys («nein» zweimal).
+- Urteil zu den neuen Off-Beats: alle drei Dichten «gut» (30 «sehr gut»), Velvet Rhodes und Shadow Chord «gut», Glass Circuit Keys «nein». Vorgabe jetzt Off-Beat 30, Ornament bleibt bei Velvet Rhodes.
+
+**Unregelmässiger verteilt (Notizen 10.11.: «haze und tampure könnten noch unregelmässiger verteilt sein, auch in der tonlänge», «fläche könnte noch unregelmässiger verteilt sein»)**
+- Fläche, Spitzen, Off-Beats und Tanpura wiederholen sich erst nach bis zu 32 Takten statt nach 8; vorher wurde jede Unregelmässigkeit über den Track zur Schleife. Der ganze Track rechnet dadurch etwa 1 s länger.
+- Tanpura: wechselnde Abstände (drei Viertel bis doppeltes Grundmass), manche Zupfer früh abgedämpft, ab und zu ein oder zwei Takte Pause; der Zyklus beginnt danach wieder mit Pa.
+- Fläche: Harmonien halb bis doppelt so lang wie das Mass aus «Wandel», späte Einsätze, manchmal ein oder zwei Takte Luft; nach der Luft setzen alle Stimmen neu ein.
+- Off-Beats: wechselnde Tonlänge, manchmal klingt ein Akkord über mehrere Schläge.
 
 ## 9. November 2026
 
