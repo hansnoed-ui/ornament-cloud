@@ -39,6 +39,8 @@ ErrorDocument 404 /404.html
   AddType image/webp .webp
   AddType video/mp4 .mp4
   AddType video/webm .webm
+  AddType audio/wav .wav
+  AddType audio/mpeg .mp3
   AddType text/markdown .md
   AddCharset utf-8 .html .css .js .mjs .json .xml .webmanifest .md .txt .svg
 </IfModule>

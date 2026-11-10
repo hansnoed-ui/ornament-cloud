@@ -1,0 +1,14 @@
+{
+  "anzeigename": "the i",
+  "titel": "directer",
+  "cover": "cover.jpg",
+  "coverKlein": "cover-512.jpg",
+  "audio": "audio/the-i-directer.wav",
+  "abtastrate": 44100,
+  "tracks": [
+    { "titel": "PLATZHALTER Track 1", "startSample": 0, "samples": null },
+    { "titel": "PLATZHALTER Track 2", "startSample": null, "samples": null },
+    { "titel": "PLATZHALTER Track 3", "startSample": null, "samples": null },
+    { "titel": "PLATZHALTER Track 4", "startSample": null, "samples": null }
+  ]
+}

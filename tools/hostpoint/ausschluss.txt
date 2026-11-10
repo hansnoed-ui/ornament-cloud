@@ -22,3 +22,5 @@ alpha/lab/docs/
 alpha/lab/werkzeuge/
 alpha/lab/starten.mjs
 alpha/lab/README.md
+# Hörseite der EP «directer»: die WAV (rund 200 MB) ist nicht in Git, sie wird von Hand per SFTP hochgeladen und darf von rsync --delete nicht gelöscht werden (docs/ep-directer.md).
+listen/directer/audio/

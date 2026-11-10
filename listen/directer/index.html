@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- Hörseite der EP «directer» von the i (10. November 2026, Wunsch von Christian): nur per Direktlink für Freunde, nicht in der Sitemap, für Suchmaschinen gesperrt.
+       Alles Veränderliche steht in ep.json (Anzeigename, EP-Titel, Cover, Audioquelle, Tracktitel und Trackmarken). Titel und Beschreibung hier unten
+       sind für Linkvorschauen (die lesen kein JavaScript) und müssen zu ep.json passen; tests/ep-directer.test.mjs prüft das. Anleitung: docs/ep-directer.md -->
+  <meta name="robots" content="noindex">
+  <title>the i – directer</title>
+  <meta name="description" content="the i – directer. Die EP zum Hören, vier Tracks am Stück.">
+  <meta property="og:title" content="the i – directer">
+  <meta property="og:description" content="Die EP zum Hören, vier Tracks am Stück.">
+  <meta property="og:type" content="music.album">
+  <meta property="og:image" content="https://ornament.cloud/listen/directer/cover.jpg">
+  <meta name="theme-color" content="#121110">
+  <link rel="stylesheet" href="player.css?v=1">
+  <script type="module" src="player.js?v=1"></script>
+</head>
+<body>
+  <main class="ep" id="ep">
+    <figure class="cover">
+      <img id="cover" alt="Cover der EP" width="1000" height="1000" decoding="async">
+    </figure>
+
+    <header class="kopf unsichtbar">
+      <p class="name" id="name">the i</p>
+      <h1 class="titel" id="titel">directer</h1>
+    </header>
+
+    <section class="steuerung" aria-label="Wiedergabe">
+      <button class="play" id="play" type="button" aria-label="Abspielen" disabled>
+        <svg class="symbol-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg>
+        <svg class="symbol-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.6v14H7zM13.4 5H17v14h-3.6z"/></svg>
+      </button>
+      <div class="jetzt">
+        <p class="jetzt-titel" id="jetzt-titel">&nbsp;</p>
+        <p class="jetzt-zeit" id="jetzt-zeit"><span id="zeit-track">0:00</span> / <span id="dauer-track">–:––</span></p>
+      </div>
+    </section>
+
+    <div class="regler">
+      <input type="range" id="regler" min="0" max="0" step="0.1" value="0" aria-label="Position in der EP" disabled>
+      <div class="marken" id="marken" aria-hidden="true"></div>
+    </div>
+
+    <ol class="tracks" id="tracks" aria-label="Tracks"></ol>
+
+    <p class="hinweis" id="hinweis" role="status" hidden></p>
+    <p class="platzhalter" id="platzhalter" hidden></p>
+
+    <audio id="audio" preload="metadata"></audio>
+    <noscript><p class="hinweis">Zum Hören bitte JavaScript einschalten.</p></noscript>
+  </main>
+</body>
+</html>
