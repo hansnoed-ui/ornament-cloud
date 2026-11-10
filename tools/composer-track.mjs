@@ -67,8 +67,8 @@ function aufbauen(stil, anzahl, { seed = 1, synths = null, natur, arrangement = 
   }
   const naturListe = natur === undefined ? besetzung.natur ?? [] : natur ? [natur] : [];
   for (const [ni, nat] of naturListe.entries()) {
-    const st = stimmeVon("natur@0.2.0", nat[0]), vv = nat[1]?.variante, nv = st.varianten.find((x) => x.name === vv) ?? st.varianten[0];
-    const q = { erzeuger: "natur@0.2.0", stimme: nat[0], werte: { ...nv.werte, ...Object.fromEntries(Object.entries(nat[1] ?? {}).filter(([k]) => k !== "variante")) }, flaeche: true, anzahl, bpm: stil.bpm, grundton: 2, leiter: b.leiter, seed: seed * 100 + 90 + ni };
+    const st = stimmeVon("natur@0.3.0", nat[0]), vv = nat[1]?.variante, nv = st.varianten.find((x) => x.name === vv) ?? st.varianten[0];
+    const q = { erzeuger: "natur@0.3.0", stimme: nat[0], werte: { ...nv.werte, ...Object.fromEntries(Object.entries(nat[1] ?? {}).filter(([k]) => k !== "variante")) }, flaeche: true, anzahl, bpm: stil.bpm, grundton: 2, leiter: b.leiter, seed: seed * 100 + 90 + ni };
     const einsaetze = []; for (const s of stil.spuren.filter((x) => ["kick", "snare", "rahmen", "darbuka"].includes(x.stimme))) for (let t = 0; t < anzahl; t++) for (const e of taktLesen(s.takte[t % s.takte.length])) einsaetze.push(t * takt + e.stelle * takt);
     const h = RATE / 100, huelle = Float32Array.from({ length: Math.floor(bk[0].length / h) }, (_, j) => { let s2 = 0; for (let i = j * h; i < (j + 1) * h; i += 4) s2 += bk[0][i] ** 2; return Math.sqrt(s2 / (h / 4)); });
     spuren.push({ sp: PR.erzeugteSpurDazu(p, q, { name: st.name, typ: "flaeche", pegel: st.pegel + (nat[2]?.pegel ?? 0), glanz: arrangement ? { menge: 20, luft: 2 } : null, raum: { anteil: 30, nachhall: 3.6, daempfung: 4500, vorverz: 25, groesse: 1.6, tiefschnitt: 200, bewegung: 40 } }),
