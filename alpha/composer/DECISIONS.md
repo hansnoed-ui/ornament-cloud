@@ -32,6 +32,10 @@ Hier steht, was Christian entschieden hat und wie er Klänge beurteilt hat, dami
 - Fläche: Harmonien halb bis doppelt so lang wie das Mass aus «Wandel», späte Einsätze, manchmal ein oder zwei Takte Luft; nach der Luft setzen alle Stimmen neu ein.
 - Off-Beats: wechselnde Tonlänge, manchmal klingt ein Akkord über mehrere Schläge.
 
+**Spiral Goa entfernt** (Urteil auf der Hörseite «nein», dann «spiral goa soll raus»; «auf alte projekte musst du nicht schauen»)
+- Familie und beide Presets aus Synth 0.2.0 gelöscht, nicht nur ausgeblendet: Projekte gelten in der Alpha nicht als zu schützender Bestand. 0.1.0 bleibt unverändert.
+- Der Stil «Goa, Psytrance» spielt statt Spiral Acid Lead die Schichten: Schwebe, Spitzen (Music Box Frost), Off-Beats (Crystal Trance Pluck, Dichte 30).
+
 ## 9. November 2026
 
 **Bereiche und Fassungen (Auftrag `bereiche-und-spuren.md`)**

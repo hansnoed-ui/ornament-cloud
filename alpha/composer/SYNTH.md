@@ -14,7 +14,9 @@ Aufträge: `synthesizer.md` (Fassung vom 10. November 2026, mit Velvet Dub, Raga
 - **Notation:** `3=` in einem Akkord heisst «dieser Ton klingt aus dem vorigen Akkord ohne neuen Anschlag weiter». So wandert in einer Fläche eine einzelne Stimme, während die anderen liegen. Alte Zeilen ohne `=` lesen sich wie bisher.
 - **Tonleitern:** Raga-inspiriert Bhairav, Bhairavi, Yaman, Todi, Marwa (Tonvorrat, keine Raga-Praxis); Maqam Bayati, Rast, Saba, Kurd und Dastgah Shur, die meisten mit Vierteltönen (Halbtöne mit Nachkommastelle, gemessen auf 3 Cent genau, bezogen auf den Kammerton).
 
-## Presets (24 in 11 Familien)
+## Presets (22 in 10 Familien)
+
+Spiral Goa (Spiral Acid Lead, Liquid Resonance Arp) ist seit dem 10. November 2026 entfernt: Urteil «nein», «spiral goa soll raus». Der Stil «Goa, Psytrance» bekommt stattdessen Schwebe, Spitzen (Music Box Frost) und Off-Beats (Crystal Trance Pluck). In Synth 0.1.0 bleibt die Familie.
 
 | Familie | Preset | Rolle | Verfahren | Charaktere |
 |---|---|---|---|---|
@@ -31,7 +33,7 @@ Aufträge: `synthesizer.md` (Fassung vom 10. November 2026, mit Velvet Dub, Raga
 | Glass Circuit | Glass Circuit Keys | Spitzen | **überarbeitet:** harmonischer Modulator, weicherer Anschlag, Hall | hallig, weich |
 | Glass Circuit | Restless Poly Pulse | Akkord | wie 0.1.0 | knarzend |
 | Glass Circuit | Signal Sparrow | Spitzen | analog, Sweep von unten, Fiepen | fiepsend |
-| Spiral Goa, Open Trance, House Motion, Machine Pop, Dark Pop | je zwei wie in 0.1.0 | | bitgleich | siehe Preset-Wahl |
+| Open Trance, House Motion, Machine Pop, Dark Pop | je zwei wie in 0.1.0 | | bitgleich | siehe Preset-Wahl |
 
 Überarbeitet wurden die beiden Keys, weil Christian sie am 9. November «am schlimmsten» fand. Alle anderen Presets aus 0.1.0 klingen in 0.2.0 bitgleich (Test). Makro «Charakter» heisst in den neuen Familien Bellen (Velvet), Jawari (Raga) und Glanz (Ice).
 
@@ -56,7 +58,7 @@ Keine fremden Assets, Samples, Presets oder Wellenformdateien; kein GPL-Code. Ka
 ## Prüfung
 
 - `node --test tests/composer.test.mjs`: 43 grün, darunter
-  - alle 24 Presets endlich, Spitze ≤ 0,5, mono-verträglich (Korrelation über 0,25), ohne Rumpeln, reproduzierbar; jede Familie mindestens zwei Presets; alle sechs Charaktere vertreten
+  - alle 22 Presets endlich, Spitze ≤ 0,5, mono-verträglich (Korrelation über 0,25), ohne Rumpeln, reproduzierbar; jede Familie mindestens zwei Presets; alle sechs Charaktere vertreten
   - die zwölf nicht überarbeiteten Presets aus 0.1.0 bitgleich
   - jede Färbung endlich, gleiche Spitze, hörbar anders
   - `=` hält Töne ohne neuen Anschlag; Spitzen selten; Off-Beats nur auf den Achtel-Off-Beats, nie auf Kick oder Snare, in enger Lage, in mindestens zwei und nicht allen Takten; Ruhe macht nicht dichter

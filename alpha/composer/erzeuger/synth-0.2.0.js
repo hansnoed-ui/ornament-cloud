@@ -1,4 +1,4 @@
-// Synth 0.2.0 – musikalische Synthesizerspuren: eine gemeinsame Engine mit sieben Verfahren, elf Klangfamilien, 24 Presets und sechs
+// Synth 0.2.0 – musikalische Synthesizerspuren: eine gemeinsame Engine mit sieben Verfahren, zehn Klangfamilien, 22 Presets und sechs
 // Klangcharakteren (warm, weich, fiepsend, strahlen-flächig, knarzend, hallig-glänzend). Auftrag: synthesizer.md, 10. November 2026.
 //
 // Verfahren (alle im selben Notenweg: Tonhöhe → Oszillator → Filter → Hüllkurve, danach Spur-Nachbearbeitung):
@@ -16,7 +16,8 @@
 // Knistern (Vinyl, Mikro-Klicks), Bitcrusher, Wavefolder, Wärme um 250 Hz, Schimmer (Oktave hoch im Hall), Glanzhall mit Vorverzögerung,
 // Fiepen (kleine hohe Figuren in den Lücken der Spur). Hall und Schimmer rechnen die Schleife zweimal: kein Abriss an der Naht.
 //
-// Die zwölf Patches aus 0.1.0, die nicht ausdrücklich überarbeitet sind, klingen bitgleich wie in 0.1.0 (Test). Überarbeitet (Urteil
+// Die zehn Patches aus 0.1.0, die nicht ausdrücklich überarbeitet sind, klingen bitgleich wie in 0.1.0 (Test). Spiral Goa ist seit
+// dem 10.11.2026 entfernt (Urteil «nein», «spiral goa soll raus»); in 0.1.0 bleibt die Familie. Überarbeitet (Urteil
 // 9.11.2026: «am schlimmsten die Glass Keys und die Keys allgemein»): Glass Circuit Keys und Worn Electric Keys.
 //
 // Die Zuordnung der Familien zu Künstlern ist ein gestalterischer Auftrag (synthesizer.md), keine Behauptung über deren Geräte oder Patches.
@@ -58,15 +59,6 @@ export const PATCHES = Object.freeze({
     osc: { w1: "puls", w2: "puls", pw: 0.3, mix: 0.5, verstimmung: 5, sub: 0, rauschen: 0, unisono: 1, spread: 0 },
     filter: { typ: 24, f: 900, res: 0.35, env: 1.5, key: 0.4, vel: 0.5 }, fenv: ADSR(0.005, 0.25, 0.2, 0.3), amp: ADSR(0.005, 0.5, 0.6, 0.35),
     lfo: { rate: 0, takt: 16, filter: 0.9, pwm: 0.2 }, drift: 2, tape: { wow: 2, flutter: 0, rauschen: 0, saettigung: 3 }, chorus: 0.15, breite: 0.4, echo: 0.3 },
-  // Spiral Goa – ineinandergreifende Sequenzen, Acid, Plucks
-  spiralAcid: { name: "Spiral Acid Lead", familie: "goa", rolle: "acid", verfahren: "analog", poly: false, oktave: 2, charaktere: ["knarzend"],
-    osc: { w1: "saege", w2: "saege", pw: 0.5, mix: 0, verstimmung: 0, sub: 0, rauschen: 0, unisono: 1, spread: 0 },
-    filter: { typ: 24, f: 260, res: 0.72, env: 3.2, key: 0.2, vel: 0.3 }, fenv: ADSR(0.002, 0.22, 0, 0.1), amp: ADSR(0.002, 0.4, 0.75, 0.04),
-    akzent: 1, gleitZeit: 0.06, lfo: { rate: 0, ton: 0 }, drift: 0, tape: { wow: 0, flutter: 0, rauschen: 0, saettigung: 9 }, chorus: 0, breite: 0.1, echo: 0.25 },
-  liquidArp: { name: "Liquid Resonance Arp", familie: "goa", rolle: "arp", verfahren: "analog", poly: true, oktave: 3, charaktere: ["fiepsend", "hallig"],
-    osc: { w1: "saege", w2: "puls", pw: 0.25, mix: 0.4, verstimmung: 4, sub: 0, rauschen: 0, unisono: 1, spread: 0 },
-    filter: { typ: 24, f: 500, res: 0.6, env: 2.4, key: 0.5, vel: 0.5 }, fenv: ADSR(0.001, 0.12, 0.05, 0.1), amp: ADSR(0.001, 0.18, 0.1, 0.12),
-    lfo: { rate: 0, takt: 64, filter: 1.2 }, drift: 0, tape: { wow: 0, flutter: 0, rauschen: 0, saettigung: 4 }, chorus: 0.1, breite: 0.5, echo: 0.4 },
   // Open Trance – Supersaw, Plucks
   openSky: { name: "Open Sky Saw", familie: "trance", rolle: "pad", verfahren: "supersaw", poly: true, oktave: 3, charaktere: ["strahlend"],
     ss: { stimmen: 7, spread: 22, mitte: 0.6 }, filter: { typ: 12, f: 4500, res: 0.05, env: 0.3, key: 0.3, vel: 0.2 }, fenv: ADSR(0.3, 2, 0.8, 1.5), amp: ADSR(0.25, 1, 0.9, 1.2),
@@ -220,7 +212,7 @@ const wowFlutter = (t, wow, flutter) => wow * (0.6 * Math.sin(TAU * 0.55 * t) + 
 /** die Makros auf einen Patch anwenden: gibt den wirksamen Patch zurück (Zuordnung siehe MAKROS) */
 function wirksam(p, w) {
   const h = (w.helligkeit - 50) / 50, bw = w.bewegung / 40, wa = w.waerme / 50, al = w.alter / 30, br = w.breite / 60, ch = w.charakter / 50;
-  const f = { ...p.filter, f: Math.min(16000, p.filter.f * 2 ** (h * 1.6 - (wa - 1) * 0.4)), env: p.filter.env * (0.6 + 0.4 * bw), res: Math.min(0.92, p.filter.res * (p.familie === "goa" || p.verfahren === "analog" ? ch : 1)) };
+  const f = { ...p.filter, f: Math.min(16000, p.filter.f * 2 ** (h * 1.6 - (wa - 1) * 0.4)), env: p.filter.env * (0.6 + 0.4 * bw), res: Math.min(0.92, p.filter.res * (p.verfahren === "analog" ? ch : 1)) };
   const lfo = { ...p.lfo, ton: (p.lfo.ton ?? 0) * bw, filter: (p.lfo.filter ?? 0) * bw, pwm: (p.lfo.pwm ?? 0) * bw, amp: (p.lfo.amp ?? 0) * bw };
   const tape = { wow: p.tape.wow * al, flutter: p.tape.flutter * al, rauschen: p.tape.rauschen * al, saettigung: p.tape.saettigung * wa + (al - 1) * 1.5 };
   const fm = p.fm ? { ...p.fm, i1: p.fm.i1 * ch * 2 ** (h * 0.6), i2: p.fm.i2 * ch * 2 ** (h * 0.6) } : null;
@@ -513,7 +505,7 @@ const makros = (charakter, std = {}) => [
 ];
 export const MAKROS = Object.freeze(Object.fromEntries(Object.entries({
   shadow: { name: "Spannung", hilfe: "Resonanz des Filters" }, tape: { name: "Glanz", hilfe: "FM-Index der Keys, Resonanz des Pads" }, glass: { name: "Metall", hilfe: "FM-Index: von weich zu gläsern-metallisch; beim Puls die Resonanz" },
-  goa: { name: "Resonanz", hilfe: "Resonanz des Acid-Filters" }, trance: { name: "Biss", hilfe: "Resonanz" }, house: { name: "Biss", hilfe: "Resonanz" },
+  trance: { name: "Biss", hilfe: "Resonanz" }, house: { name: "Biss", hilfe: "Resonanz" },
   machine: { name: "Resonanz", hilfe: "Resonanz" }, darkpop: { name: "Metall", hilfe: "FM-Index der Glocken, Resonanz des Brass" },
   velvet: { name: "Bellen", hilfe: "FM-Index der Keys (fester Anschlag öffnet Glocke und Bellen), bei der Flöte der Atem" },
   raga: { name: "Jawari", hilfe: "Schnarren am Steg: wie stark die Obertöne beim Ausklingen wandern" },
@@ -528,7 +520,6 @@ const FAMILIEN = [
   { key: "raga", name: "Raga Drift", patches: ["tanpuraGlow", "sitarGlide"], std: { helligkeit: 50, alter: 10 } },
   { key: "tape", name: "Tape Memory", patches: ["amberMemory", "wornKeys"], std: { alter: 60, helligkeit: 40, waerme: 60 } },
   { key: "glass", name: "Glass Circuit", patches: ["glassKeys", "restlessPulse", "signalSparrow"], std: { helligkeit: 55 } },
-  { key: "goa", name: "Spiral Goa", patches: ["spiralAcid", "liquidArp"], std: { helligkeit: 45, charakter: 60, alter: 0 } },
   { key: "trance", name: "Open Trance", patches: ["openSky", "crystalPluck"], std: { helligkeit: 60, breite: 80, alter: 0 } },
   { key: "house", name: "House Motion", patches: ["velvetOrgan", "warmStab"], std: { helligkeit: 50, alter: 10 } },
   { key: "machine", name: "Machine Pop", patches: ["motorPulse", "machineStrings"], std: { alter: 0, bewegung: 30 } },
@@ -554,7 +545,7 @@ const stimme = (f) => {
 
 export default {
   id: "synth", version: "0.2.0", name: "Synth", melodisch: true,
-  beschreibung: "Synthesizerspuren: Velvet Dub, Shadow Dub, Ice Organism, Raga Drift, Tape Memory, Glass Circuit, Spiral Goa, Open Trance, House Motion, Machine Pop, Dark Pop.",
+  beschreibung: "Synthesizerspuren: Velvet Dub, Shadow Dub, Ice Organism, Raga Drift, Tape Memory, Glass Circuit, Open Trance, House Motion, Machine Pop, Dark Pop.",
   stimmen: Object.fromEntries(FAMILIEN.map((f) => [f.key, stimme(f)])),
 };
 export const FAMILIEN_LISTE = FAMILIEN;
