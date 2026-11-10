@@ -2,6 +2,50 @@
 
 Hier steht, was Christian entschieden hat und wie er Klänge beurteilt hat, damit spätere Sitzungen es kennen. Neueste oben.
 
+## 10. November 2026
+
+**ornament.lucerne: Urteil zum ganzen Track**
+- Christian: «Sehr geile Arbeit», erster Teil «noch nicht top», zweiter «genial», «etwas viel gebraucht», Beat «etwas schleppender und knarzender», die Melodie «könnte auch mal unterbrochen werden».
+- Umgesetzt: 84 statt 88 BPM, Snare und Ghosts hinter dem Schlag, mehr Swing auf den Hi-Hats; Makros «Knarzen» (Sättigung, Bits, Abtastrate, Knistern auf den Drums) und «Unterbrechung» (Motivaussagen still oder abgerissen). «Viel gebraucht» als «das Motiv kommt zu oft» gelesen. Einzelheiten in `LUCERNE.md`.
+
+**Natur 0.3.0: Tiere und Kosmos**
+- Christian: mehr Natur- und vor allem Tierklänge für Ornament und Drum and Bass, «der walchor ist grosse spitze», dazu «eine ebene mit astronomischen signalen aus dem universum».
+- Umgesetzt in einem Cloud-Strang: Delfine, Nachtwald (Unken, Frösche, Uhu, Blätter) und Kosmos (Pulsar, Plasmawellen, Gravitationswellen, Radiorauschen), alles synthetisch nach veröffentlichten Messwerten. Keine fremden Aufnahmen (Lizenzen von NASA-Sonifikationen und ESA-Material uneinheitlich). Ausführlich in `NATUR.md`.
+- Ornament: dazu Delfine singen und Kosmos «Tiefer Raum». Drum and Bass: dazu Teich bei Nacht und Kosmos «Magnetosphäre».
+- Urteil zu den Hörproben: alle Delfine «gut», Nachtwald gut bis auf «der hohe Uhu ist komisch» (jetzt tiefer, runder). Kosmos: Vela, Magnetosphäre, Verschmelzung «gut»; der Pulsar als einzelne Schläge «zu dominant, zu wenig fein», «zu grell», «muss raus». Die langsamen Pulsare sind entfernt. Vorgeschlagen, noch nicht gebaut: Elefanten-Grollen, Fledermäuse, Wolfsheulen, Specht.
+
+**ornament.lucerne (Auftrag `Masterprompt_Claude_Code_ornament_lucerne.md`)**
+- Neuer Stil aus Christians eigenen Aufnahmen, zuerst drei: `ly_trailer1.wav`, `ly_trailer_2.wav`, `ly_trailer_3.wav` in `ornament-material/samples/`. Weitere Samples kündigt er an («heute Abend und morgen sehr viele»); deshalb von Anfang an Klangsammlung mit stabilen IDs, Analyse nur neuer Dateien, Rollen getrennt von Dateien.
+- Umgesetzt: Klangsammlung 0.1.0, Sampler 0.1.0, Profil ornament.lucerne 0.1.0 (Ausprägung Erinnerung, 88 BPM, Fis-Moll aus dem Material, 88 Takte), Oberfläche `lucerne-ui.js`, Werkzeug `tools/composer-lucerne.mjs`. Einzelheiten, Zeitmarken und Makro-Zuordnung in `LUCERNE.md`.
+- Charakteristische Quelle des ersten Tracks: das ruhige Outro von `ly_trailer1.wav` (96–107 s) – Akkordschatten, Motivtöne, Umgebung. Das Hauptmotiv ist eine eigene Zelle, gespielt mit den Oberstimmen dieses Outros.
+- Kammerton der Lucerne-Projekte 440 Hz (das Material ist so gestimmt), nicht 432.
+- Ehrlich: nichts davon ist gehört. Urteil steht aus.
+
+**Synth 0.2.0 und Melodien (Aufträge `synthesizer.md` und `melodien.md`)**
+- Umgesetzt in einem Cloud-Strang (das Terminal war belegt), auf eigenem Zweig, Merge nur mit Christians OK.
+- Synth 0.2.0 als neue Version neben 0.1.0 (alte Projekte klingen gleich). Neu: Velvet Dub, Raga Drift, Ice Organism, Signal Sparrow; Verfahren Saite und Glocke; sechs Klangcharaktere als Schlagwort, Filter und Färbung. 24 Presets.
+- Glass Circuit Keys und Worn Electric Keys überarbeitet (Urteil 9.11.: «am schlimmsten die Glass Keys und die Keys allgemein»). Die übrigen zwölf Presets aus 0.1.0 bleiben bitgleich.
+- Christian: «ich will keine popmelodien mit synthies». Der Melodie-Generator erzeugt jetzt vier Schichten (Fläche mit wandernden Stimmen, Spitzen, unregelmässige Off-Beats, klassische Anleihen über den Regler Klassik) statt einer Oberstimme; dazu Ruf, Alap, Tanpura. Notation `=` für gehaltene Stimmen.
+- Track erzeugen: Ornament und DnB bekommen leise Spitzen und Off-Beats zur Schwebe dazu, Indien den Tanpura-Drone. Die bisherige Schwebe bleibt (gefiel).
+- Raga- und Maqam-Tonleitern (Bayati, Rast, Saba, Shur mit Vierteltönen) als Inspiration bezeichnet.
+- Kein GPL-Code, keine fremden Assets.
+
+**Off-Beats neu (Urteil auf der Hörseite, 10.11.: «das meiste gefällt gut. die offbeats gehen noch nicht»)**
+- Ursache: Die Off-Beats wichen allen Drumschlägen aus, auch der offenen Hi-Hat, die genau auf den Achtel-Off-Beats liegt. Übrig blieben zufällige Sechzehntel, dazu Zweiklänge, die in der Lage sprangen (teils Sekunden), rund 20 dB unter den Drums.
+- Jetzt: kurze Akkord-Stiche auf den Achtel-Off-Beats (2, 6, 10, 14; Halftime 4 und 12), nie auf Kick oder Snare. Unregelmässig ist nur, in welchen Takten sie kommen: eine Figur, die wiederkehrt und ab und zu einen Stich verliert oder dazugewinnt. Enge Lage (Terz, Quinte, Septime oder Dreiklang, immer die nächste Umkehrung), Quartvorhalt mit Klassik.
+- Off-Beats 6 dB lauter in Ornament und DnB, Echo-Anteil mindestens 40 % (Dub-Echo). Ornament nimmt Velvet Rhodes Haze statt Worn Electric Keys («nein» zweimal).
+- Urteil zu den neuen Off-Beats: alle drei Dichten «gut» (30 «sehr gut»), Velvet Rhodes und Shadow Chord «gut», Glass Circuit Keys «nein». Vorgabe jetzt Off-Beat 30, Ornament bleibt bei Velvet Rhodes.
+
+**Unregelmässiger verteilt (Notizen 10.11.: «haze und tampure könnten noch unregelmässiger verteilt sein, auch in der tonlänge», «fläche könnte noch unregelmässiger verteilt sein»)**
+- Fläche, Spitzen, Off-Beats und Tanpura wiederholen sich erst nach bis zu 32 Takten statt nach 8; vorher wurde jede Unregelmässigkeit über den Track zur Schleife. Der ganze Track rechnet dadurch etwa 1 s länger.
+- Tanpura: wechselnde Abstände (drei Viertel bis doppeltes Grundmass), manche Zupfer früh abgedämpft, ab und zu ein oder zwei Takte Pause; der Zyklus beginnt danach wieder mit Pa.
+- Fläche: Harmonien halb bis doppelt so lang wie das Mass aus «Wandel», späte Einsätze, manchmal ein oder zwei Takte Luft; nach der Luft setzen alle Stimmen neu ein.
+- Off-Beats: wechselnde Tonlänge, manchmal klingt ein Akkord über mehrere Schläge.
+
+**Spiral Goa entfernt** (Urteil auf der Hörseite «nein», dann «spiral goa soll raus»; «auf alte projekte musst du nicht schauen»)
+- Familie und beide Presets aus Synth 0.2.0 gelöscht, nicht nur ausgeblendet: Projekte gelten in der Alpha nicht als zu schützender Bestand. 0.1.0 bleibt unverändert.
+- Der Stil «Goa, Psytrance» spielt statt Spiral Acid Lead die Schichten: Schwebe, Spitzen (Music Box Frost), Off-Beats (Crystal Trance Pluck, Dichte 30).
+
 ## 9. November 2026
 
 **Bereiche und Fassungen (Auftrag `bereiche-und-spuren.md`)**
@@ -79,3 +123,21 @@ Hier steht, was Christian entschieden hat und wie er Klänge beurteilt hat, dami
 **Urteil (Christian, 9. November 2026, nach den Hörproben):** «Es tönt recht fett, und dank den Möglichkeiten des Mischens ist vieles veränderbar.» Drums 0.1.0 und Perkussion 0.1.0 bleiben als erste Version so. Weitere Perkussionsinstrumente kommen später dazu, Christian liefert dafür Vorlagen. Hörseite: https://claude.ai/artifact/Wn2jNitGDPDVymJzk86aMZ (Urteile im Speicher `urteile`).
 
 **Einzelurteile:** noch keine. Die Urteile aus dem Feld «Urteil festhalten» werden mit dem Projekt gespeichert und hier gesammelt.
+
+## Seite verlassen und Bildschirmsperre (10. November 2026)
+
+Christian: Läuft Musik und die Seite wird verlassen oder der Bildschirm sperrt, bricht der Ton ab und knistert danach lange. Ursache: Mobil (vor allem iOS) hält das System den AudioContext an oder unterbricht ihn; kommt er zurück, liefert er oft gestört weiter, bis die Seite neu geladen wird.
+
+- Verschwindet die Seite, während Musik läuft, wird sie in 15 ms ausgeblendet und angehalten, der AudioContext ruht. Die Stelle bleibt; beim Zurückkommen sagt eine Meldung, dass ▶ dort weiterspielt. Kein automatisches Weiterspielen nach der Sperre.
+- Mobil wird der AudioContext beim nächsten ▶ neu gebaut und mit Spuren, Referenz, Zustand, Schleife und Stelle gefüllt; ebenso überall, wenn das System den Ton unterbrochen hat oder der Kontext nicht innerhalb einer Sekunde wieder läuft.
+- Start und Halt blenden im Worklet 15 ms ein und aus (auch beim normalen ■), der Motor selbst bleibt bitgleich zum Export.
+- Weiterspielen im Hintergrund wurde nicht gewählt: Web Audio läuft mobil im Hintergrund nicht verlässlich, und der Motor rechnet in Echtzeit.
+
+## Stopp und Neuaufbau der Tonausgabe (10. November 2026, Nachtrag)
+
+Christian: Stopp funktioniert nicht, der Ton «überschlägt» sich bzw. verdoppelt sich. Ursache im Neuaufbau aus dem Eintrag oben: Kam `resume()` nicht innerhalb einer Sekunde zurück (belastetes Gerät), wurde die Ausgabe neu gebaut, auch wenn eine andere Anfrage schon dabei war. So konnten sich Aufbauten überholen, Motoren auf dem falschen Kontext landen und einer davon unerreichbar weiterspielen; Stopp erreichte nur den neuesten.
+
+- Es gibt höchstens einen Aufbau gleichzeitig (Kontext, Neuaufbau und Wecken warten jeweils auf den laufenden). Ein Motor, der nicht mehr der aktuelle ist, wird sofort stumm geschaltet und abgehängt; seine Meldungen werden ignoriert.
+- Neu gebaut wird nach Ablauf der Wartezeit (jetzt 1,5 s) nur noch, wenn der Kontext wirklich nicht läuft.
+- ■ gilt sofort, auch während ▶ noch auf den Ton wartet; der Start fällt dann weg.
+- Nachtrag 2: Die eigentliche Ursache war ein Vorzeichenfehler in der Ausblende des Worklets (#695): Beim ■ stieg der Pegel, statt zu fallen, die Wiedergabe hielt nie an und wurde immer lauter. Behoben; ein Test prüft jetzt, dass ■ leiser wird und die Stelle steht.

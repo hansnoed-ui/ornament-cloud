@@ -11,9 +11,14 @@ import { zipBlob } from "./kern/zip.js";
 import { STILE, stilVon, halbeZeit } from "./kern/muster.js";
 import { ARTEN as UNTER, SCHNELL, anwenden, werteVon } from "./kern/unterbrechungen.js";
 import { spurRechnen, schlagRechnen, flaechenSpurRechnen } from "./kern/erzeugen.js";
-import { MAKROS } from "./erzeuger/natur-0.2.0.js";
-import { PATCHES, FAMILIEN_LISTE, MAKROS as SYNTH_MAKROS } from "./erzeuger/synth-0.1.0.js";
-import { ROLLEN, sequenzErzeugen } from "./kern/sequenzen.js";
+import { MAKROS } from "./erzeuger/natur-0.3.0.js";
+import * as SYNTH010 from "./erzeuger/synth-0.1.0.js";
+import * as SYNTH020 from "./erzeuger/synth-0.2.0.js";
+import { ROLLEN, REGLER, REGLER_STD, sequenzErzeugen } from "./kern/sequenzen.js";
+// neue Synthspuren nehmen Synth 0.2.0; ältere Spuren behalten ihre Version (und deren Presets)
+const SYNTH_NEU = "synth@0.2.0", SYNTH_MODUL = { "synth@0.1.0": SYNTH010, "synth@0.2.0": SYNTH020 };
+const { PATCHES, FAMILIEN_LISTE, CHARAKTERE } = SYNTH020;
+const synthModul = (q) => SYNTH_MODUL[q?.erzeuger] ?? SYNTH020;
 import { abschnitte as abschnitteVon, ereignisseFuer, funktionVon, BESETZUNG, wechselPerkussion, teileAus } from "./kern/arrangement.js";
 import { taktLesen } from "./kern/muster.js";
 import { stimmeVon, ERZEUGER } from "./erzeuger/register.js";
@@ -21,6 +26,7 @@ import { LINIEN, LEITERN, NOTEN, linieErzeugen, kickSchritte, grundFrequenz, ton
 import { wavSpuren, abtastrateLesen, mono, tempoSchaetzen, einsaetzeFinden, wavSchreiben, rateWandeln, dehnen } from "../lab/kern/klangwerk.js";
 import * as BE from "./kern/bereiche.js";
 import * as FA from "./kern/fassungen.js";
+import { lucerneEinbauen, klangPanel, istSampler, samplerRechnen } from "./lucerne-ui.js";
 
 const $ = (id) => document.getElementById(id);
 const atmen = () => new Promise((ok) => setTimeout(ok, 0));
@@ -47,20 +53,82 @@ function melde(text, dauer = 3500) { const m = $("meldung"); m.textContent = tex
 const zahl = (x, s = 1) => (Number.isFinite(x) ? x.toFixed(s).replace(".", ",").replace("-", "−") : "–");
 
 // ---------- Ton ----------
-async function kontext(rate) {
-  if (z.ctx) return z.ctx;
+// Es gibt immer höchstens einen Kontext mit einem Motor. Wer während des Aufbaus fragt, wartet auf denselben Aufbau (sonst entstehen
+// zwei Motoren, von denen einer nicht mehr erreichbar ist und weiterspielt).
+let kontextBau = null;
+function kontext(rate) {
+  if (z.ctx && z.node) return Promise.resolve(z.ctx);
+  return (kontextBau ??= kontextBauen(rate).finally(() => { kontextBau = null; }));
+}
+async function kontextBauen(rate) {
   const AC = globalThis.AudioContext ?? globalThis.webkitAudioContext;
-  try { z.ctx = new AC({ sampleRate: rate, latencyHint: "interactive" }); } catch { z.ctx = new AC({ latencyHint: "interactive" }); }
-  z.rate = z.ctx.sampleRate; z.projekt.rate = z.rate;
-  await z.ctx.audioWorklet.addModule(new URL("./worklet/motor-worklet.js", import.meta.url));
-  z.node = new AudioWorkletNode(z.ctx, "composer-motor", { numberOfInputs: 0, numberOfOutputs: 1, outputChannelCount: [2] });
-  z.node.connect(z.ctx.destination);
-  z.node.port.onmessage = ({ data: d }) => {
+  let ctx;
+  try { ctx = new AC({ sampleRate: rate, latencyHint: "interactive" }); } catch { ctx = new AC({ latencyHint: "interactive" }); }
+  z.ctx = ctx; z.node = null;
+  z.rate = ctx.sampleRate; z.projekt.rate = z.rate;
+  await ctx.audioWorklet.addModule(new URL("./worklet/motor-worklet.js", import.meta.url));
+  const node = new AudioWorkletNode(ctx, "composer-motor", { numberOfInputs: 0, numberOfOutputs: 1, outputChannelCount: [2] });
+  node.connect(ctx.destination);
+  node.port.onmessage = ({ data: d }) => {
+    if (node !== z.node) return;
     if (d.art === "anzeige") { z.anzeige = d; z.pos = d.pos; }
     else if (d.art === "ende") { z.laeuft = false; knoepfeAuffrischen(); }
     else if (d.art === "fehler") melde(`Motor: ${d.text}`, 8000);
   };
-  return z.ctx;
+  z.node = node;
+  // Das System kann den Ton selbst anhalten (iOS: Bildschirmsperre, Anruf, anderer Ton → «interrupted»). Dann sauber halten statt weiterzuzählen.
+  ctx.onstatechange = () => { if (ctx === z.ctx && ctx.state !== "running" && (z.laeuft || z.startet) && !z.selbstAngehalten) verlassen("unterbrochen"); };
+  return ctx;
+}
+
+// ---------- Seite verlassen, Bildschirmsperre ----------
+// Läuft die Musik, wenn die Seite verschwindet (anderer Tab, App-Wechsel, Sperre), wird sie ausgeblendet und angehalten; die Stelle
+// bleibt, ▶ spielt dort weiter. Mobil kommt ein AudioContext nach einer Sperre oft beschädigt zurück (knistert lange, falsche Abtastrate):
+// darum wird er dort beim nächsten ▶ neu aufgebaut, mit allen Spuren, der Referenz und dem Zustand.
+const MOBIL = typeof navigator !== "undefined" && (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent)));
+function verlassen(grund) {
+  if (!z.ctx) return;
+  const lief = z.laeuft || z.startet;
+  z.startet = false;
+  if (lief) { post({ art: "stop", sofort: grund === "unterbrochen" }); z.laeuft = false; z.angehaltenBeimVerlassen = true; knoepfeAuffrischen(); }
+  if (lief || grund === "unterbrochen") z.neuAufbauen ||= MOBIL || grund === "unterbrochen";
+  // nach der Blende den Kontext ruhen lassen (spart Strom; der Motor rechnet nicht im Hintergrund weiter)
+  const ctx = z.ctx;
+  if (ctx.state === "running") { z.selbstAngehalten = true; setTimeout(() => { if (ctx === z.ctx && !z.laeuft && document.hidden) ctx.suspend().catch(() => {}); }, 60); }
+}
+function zurueck() {
+  if (!z.angehaltenBeimVerlassen) return;
+  z.angehaltenBeimVerlassen = false;
+  melde("Angehalten, als die Seite verlassen wurde. ▶ spielt an derselben Stelle weiter.", 6000);
+}
+document.addEventListener("visibilitychange", () => (document.hidden ? verlassen("versteckt") : zurueck()));
+addEventListener("pagehide", () => verlassen("versteckt"));
+
+/** einen frischen AudioContext bauen und den Motor neu füllen (Spuren, Referenz, Zustand, Schleife, Stelle); nie zweimal gleichzeitig */
+let neuBau = null;
+function motorNeuAufbauen() { return (neuBau ??= motorNeuBauen().finally(() => { neuBau = null; })); }
+async function motorNeuBauen() {
+  if (kontextBau) await kontextBau.catch(() => {});
+  const alt = z.ctx, altNode = z.node, rate = z.rate;
+  z.neuAufbauen = false; z.ctx = null; z.node = null;
+  // der alte Motor schweigt sofort und wird abgehängt, bevor sein Kontext schliesst
+  try { altNode?.port.postMessage({ art: "stop", sofort: true }); altNode?.disconnect(); } catch { /* schon weg */ }
+  try { await alt?.close(); } catch { /* schon zu */ }
+  await kontext(rate);
+  for (const [id, d] of z.daten) { const kopie = d.kanaele.map((x) => x.slice()); post({ art: "spur", id, kanaele: kopie }, kopie.map((x) => x.buffer)); }
+  if (z.referenz?.kanaele) { const kopie = z.referenz.kanaele.map((x) => x.slice()); post({ art: "referenz", kanaele: kopie }, kopie.map((x) => x.buffer)); }
+  post({ art: "zustand", zustand: PR.motorZustand(z.projekt, { ausgleich: z.ausgleich, allesVorher: z.allesVorher, referenzAn: z.referenzAn }) });
+  schleifeSenden(); post({ art: "stelle", pos: z.pos });
+}
+/** den Kontext laufen lassen; mobil oder nach einer Unterbrechung wird er neu gebaut, ebenso wenn er nicht innerhalb von 1,5 s läuft */
+let wecken = null;
+function tonWecken() { return (wecken ??= tonWeckenJetzt().finally(() => { wecken = null; })); }
+async function tonWeckenJetzt() {
+  if (z.neuAufbauen || !z.ctx || z.ctx.state === "closed") await motorNeuAufbauen();
+  z.selbstAngehalten = false;
+  const ctx = z.ctx;
+  const ok = await Promise.race([ctx.resume().then(() => ctx.state === "running", () => false), new Promise((r) => setTimeout(() => r(false), 1500))]);
+  if (!ok && ctx.state !== "running") { await motorNeuAufbauen(); await z.ctx.resume().catch(() => {}); }
 }
 const post = (d, transfer) => z.node?.port.postMessage(d, transfer ?? []);
 let sendenGeplant = false;
@@ -291,14 +359,15 @@ function varianteWaehlen(i) {
 function stileAufbauen() {
   const sel = $("stil"), gruppen = {}, NAMEN = { ornament: "Ornament", elektronisch: "Drums, elektronisch", organisch: "Perkussion, organisch" };
   for (const s of STILE.filter((x) => !x.versteckt)) (gruppen[s.gruppe] ??= []).push(s);
-  for (const [g, liste] of Object.entries(gruppen)) sel.append(el("optgroup", { label: NAMEN[g] ?? g }, ...liste.map((s) => el("option", { value: s.key, textContent: `${s.name} · ${s.bpm}` }))));
+  for (const [g, liste] of Object.entries(gruppen)) sel.append(el("optgroup", { label: NAMEN[g] ?? g }, ...(g === "ornament" ? [el("option", { value: "lucerne", textContent: "ornament.lucerne · Erinnerung · 88 (eigene Aufnahmen)" })] : []), ...liste.map((s) => el("option", { value: s.key, textContent: `${s.name} · ${s.bpm}` }))));
   const bass = ERZEUGER["bass@0.1.0"].stimmen;
   $("bassStimme").append(...Object.values(bass).map((b) => el("option", { value: b.key, textContent: b.name })));
   $("bassLinie").append(...LINIEN.map((l) => el("option", { value: l.key, textContent: l.name, title: l.hilfe })));
   $("tonart").append(...NOTEN.map((n, i) => el("option", { value: i, textContent: n, selected: i === 2 })));
-  $("flaecheStimme").append(...Object.values(ERZEUGER["natur@0.2.0"].stimmen).map((b) => el("option", { value: b.key, textContent: b.name })));
+  $("flaecheStimme").append(...Object.values(ERZEUGER["natur@0.3.0"].stimmen).map((b) => el("option", { value: b.key, textContent: b.name })));
   $("leiter").append(...Object.entries(LEITERN).map(([k, l]) => el("option", { value: k, textContent: l.name })));
   sel.onchange = () => {
+    if (sel.value === "lucerne") { $("erzBpm").value = 88; $("lucerne")?.scrollIntoView({ behavior: "smooth", block: "nearest" }); return; }
     const st = stilVon(sel.value); $("erzBpm").value = st.bpm;
     if (st.bass) { $("bassStimme").value = st.bass.stimme; $("bassLinie").value = st.bass.linie; $("leiter").value = st.bass.leiter; }
   };
@@ -338,17 +407,26 @@ function bassErzeugen({ anzahl, bpm, seed, stil }) {
 let rechner = null, auftragNr = 0;
 const offen = new Map(), stand = new Map();
 // mehrere Worker (höchstens drei): Spuren eines ganzen Tracks rechnen gleichzeitig; ein Auftrag geht an den Worker mit den wenigsten offenen
-function imWorker(q, bezug) {
+function imWorker(q, bezug, nurStarten = false) {
   if (!rechner) {
     const anzahl = Math.max(1, Math.min(3, (navigator.hardwareConcurrency || 2) - 1));
-    rechner = Array.from({ length: anzahl }, () => { const w = new Worker(new URL("./worker/rechnen-worker.js", import.meta.url), { type: "module" }); w.offen = 0; w.onmessage = ({ data }) => { w.offen--; const o = offen.get(data.id); offen.delete(data.id); if (o) data.fehler ? o.nein(new Error(data.fehler)) : o.ja(data.kanaele); }; return w; });
+    rechner = Array.from({ length: anzahl }, () => { const w = new Worker(new URL("./worker/rechnen-worker.js", import.meta.url), { type: "module" }); w.offen = 0; w.onmessage = ({ data }) => { w.offen--; const o = offen.get(data.id); offen.delete(data.id); if (o) data.fehler ? o.nein(new Error(data.fehler)) : o.ja(data.kanaele ?? data.ergebnis); }; return w; });
   }
+  if (nurStarten) return null;
   const id = ++auftragNr, b = { ...bezug }, w = rechner.reduce((a, x) => (x.offen < a.offen ? x : a));
   if (b.sample) b.sample = { kanaele: b.sample.kanaele.map((k) => k.slice()), rate: b.sample.rate };
   w.offen++;
   return new Promise((ja, nein) => { offen.set(id, { ja, nein }); w.postMessage({ id, q: JSON.parse(JSON.stringify(q)), bezug: b, rate: z.rate }); });
 }
+/** ein beliebiger Auftrag an einen Worker (z. B. die Analyse einer Aufnahme für die Klangsammlung) */
+function imWorkerRoh(nachricht) {
+  imWorker(null, null, true);
+  const id = ++auftragNr, w = rechner.reduce((a, x) => (x.offen < a.offen ? x : a));
+  w.offen++;
+  return new Promise((ja, nein) => { offen.set(id, { ja, nein }); w.postMessage({ ...nachricht, id }); });
+}
 function spurNeuRechnen(sp) {
+  if (istSampler(sp)) return samplerRechnen(sp);
   if (sp.quelle.flaeche || istSynth(sp)) {
     // je Spur höchstens ein Auftrag unterwegs; Änderungen während der Rechnung werden danach in einem Durchgang nachgeholt
     const st = stand.get(sp.id) ?? { laeuft: null, nochmal: false };
@@ -400,7 +478,22 @@ function akkordeVomBass(anzahl) {
   return Array.from({ length: Math.min(8, anzahl) }, (_, t) => { const z0 = String(bass.quelle.takte[t % bass.quelle.takte.length]).trim().split(/\s+/).map(tonLesen).find((x) => x && x !== "-"); return z0 ? ((z0.stufe - 1 + 70) % 7) + 1 : 1; });
 }
 function synthSequenz(q) {
-  return sequenzErzeugen({ rolle: q.rolle, akkorde: akkordeVomBass(q.anzahl), kicks: kickVorlage(), anzahl: q.anzahl, seed: q.seed, halftime: q.bpm >= 140 && ["pad", "chord", "keys", "drone"].includes(q.rolle) });   // «schwebe» läuft ohnehin quer
+  const { belegt, snares } = drumLuecken();
+  return sequenzErzeugen({ rolle: q.rolle, akkorde: akkordeVomBass(q.anzahl), kicks: kickVorlage(), anzahl: q.anzahl, seed: q.seed, halftime: q.bpm >= 140 && ["pad", "chord", "keys", "drone", "flaeche", "tanpura"].includes(q.rolle),   // «schwebe» läuft ohnehin quer
+    regler: q.regler, belegt, snares, zyklus: ZYKLUS_LEITER[q.leiter] ?? 0 });
+}
+// Off-Beats in raga- und maqam-inspirierten Tonleitern folgen einem Zyklus gegen den 4/4-Takt (Rupak 7, Jhaptal 10, Sama'i-artig 10)
+const ZYKLUS_LEITER = { bhairav: 7, bhairavi: 10, yaman: 7, todi: 10, marwa: 7, bayati: 10, rast: 7, saba: 10, kurd: 7, shur: 10, hijaz: 7 };
+/** wo die Drums schlagen (je Takt die belegten Sechzehntel aller Schlagspuren) und wo die Snare liegt: Lücken für Off-Beats und Spitzen */
+function drumLuecken() {
+  const sp = z.projekt.spuren.filter(istDrums); if (!sp.length) return { belegt: null, snares: null };
+  const n = Math.min(8, Math.max(...sp.map((s) => s.quelle.takte.length))), belegt = [], snares = [];
+  for (let b = 0; b < n; b++) {
+    const bel = new Set(), sn = [];
+    for (const s of sp) for (const x of taktLesen(s.quelle.takte[b % s.quelle.takte.length])) { const st = Math.round(x.stelle * 16); if (x.staerke >= 0.6) bel.add(st); if (["snare", "clap"].includes(s.quelle.stimme)) sn.push(st); }
+    belegt.push([...bel]); snares.push(sn);
+  }
+  return { belegt, snares };
 }
 /** Synths folgen Tempo, Länge, Tonart und (wenn nicht von Hand geändert) den Akkorden des Basses */
 function synthsFolgen({ anzahl, bpm }) {
@@ -415,14 +508,14 @@ function synthsFolgen({ anzahl, bpm }) {
 }
 async function synthDazu(vorgabe = null) {
   await kontext(48000);
-  const [fam, patch] = vorgabe ?? $("synthPreset").value.split(":"), st = stimmeVon("synth@0.1.0", fam), pt = PATCHES[patch], bass = z.projekt.spuren.find(istBass), drums = z.projekt.spuren.find(istDrums);
+  const [fam, patch] = vorgabe ?? $("synthPreset").value.split(":"), st = stimmeVon(SYNTH_NEU, fam), pt = PATCHES[patch], bass = z.projekt.spuren.find(istBass), drums = z.projekt.spuren.find(istDrums);
   const v = st.varianten.find((x) => x.werte.patch === patch) ?? st.varianten[0], bpm = z.projekt.tempo.bpm || Number($("erzBpm").value), anzahl = drums?.quelle.anzahl ?? Number($("takte").value);
   const rolle = vorgabe ? vorgabe[2] ?? pt.rolle : $("synthRolle").value === "auto" ? pt.rolle : $("synthRolle").value;
-  const q = { art: "erzeugt", erzeuger: "synth@0.1.0", stimme: fam, variante: v.name, werte: { ...v.werte }, rolle, sequenzAuto: true, anzahl, bpm,
+  const q = { art: "erzeugt", erzeuger: SYNTH_NEU, stimme: fam, variante: v.name, werte: { ...v.werte }, rolle, regler: { ...REGLER_STD, ...(vorgabe?.[3]?.regler ?? {}) }, sequenzAuto: true, anzahl, bpm,
     grundton: bass?.quelle.grundton ?? Number($("tonart").value), leiter: bass?.quelle.leiter ?? $("leiter").value, kammerton: kammerton(), swing: drums?.quelle.swing ?? 0, menschlich: 2, versatz: 0, seed: 1 + Math.floor(Math.random() * 99998) };
   q.takte = synthSequenz(q);
   const echoMs = Math.round((0.75 * 60000) / (bpm >= 140 ? bpm / 2 : bpm));
-  const sp = PR.erzeugteSpurDazu(z.projekt, q, { name: `${st.name} · ${pt.name}`, typ: "synth", pegel: st.pegel, glanz: vorgabe ? { menge: 35, biss: 55, luft: 3 } : null, echo: { anteil: Math.round((pt.echo ?? 0.2) * 100), zeit: echoMs }, raum: { anteil: 18, nachhall: 2.6, daempfung: 5000, vorverz: 20 } });
+  const sp = PR.erzeugteSpurDazu(z.projekt, q, { name: `${st.name} · ${pt.name}`, typ: "synth", pegel: st.pegel + (vorgabe?.[3]?.pegel ?? 0), glanz: vorgabe ? { menge: 35, biss: 55, luft: 3 } : null, echo: { anteil: Math.round(Math.max(pt.echo ?? 0.2, rolle === "offbeat" ? 0.4 : 0) * 100), zeit: echoMs }, raum: { anteil: 18, nachhall: 2.6, daempfung: 5000, vorverz: 20 } });
   melde(`${pt.name} wird gerechnet …`, 0); await atmen();
   const fertig = spurNeuRechnen(sp);
   if (vorgabe) return fertig;
@@ -430,11 +523,11 @@ async function synthDazu(vorgabe = null) {
   z.gewaehlt = sp.id; z.glied = -1; senden(); allesAufbauen();
   melde(`${pt.name}: ${ROLLEN.find((r) => r.key === rolle).name}, ${NOTEN[q.grundton]} ${LEITERN[q.leiter].name}${bass ? ", Akkorde vom Bass" : ""}`, 4000);
 }
-/** Preset-Wahl, Rolle, Sequenz, Variation für eine Synthspur */
+/** Preset-Wahl, Rolle, Sequenz, sechs Varianten, Regler der Melodie, Variation für eine Synthspur */
 function synthSteuerung(sp) {
-  const q = sp.quelle, box = el("div", { className: "herkunft" });
-  const preset = el("select", { title: "Preset (Familie und Klang)" }, ...FAMILIEN_LISTE.map((f) => el("optgroup", { label: f.name }, ...f.patches.map((k) => el("option", { value: `${f.key}:${k}`, textContent: `${PATCHES[k].name} (${PATCHES[k].rolle}, ${PATCHES[k].verfahren})`, selected: q.stimme === f.key && q.werte.patch === k })))));
-  preset.onchange = () => { const [fam, k] = preset.value.split(":"); q.stimme = fam; q.werte = { ...q.werte, patch: k }; q.variante = PATCHES[k].name; sp.name = `${stimmeVon("synth@0.1.0", fam).name} · ${PATCHES[k].name}`; spurNeuRechnen(sp); spurenAufbauen(); pluginAufbauen(); };
+  const q = sp.quelle, box = el("div", { className: "herkunft" }), M = synthModul(q);
+  const preset = el("select", { title: "Preset (Familie und Klang)" }, ...M.FAMILIEN_LISTE.map((f) => el("optgroup", { label: f.name }, ...f.patches.map((k) => el("option", { value: `${f.key}:${k}`, textContent: `${M.PATCHES[k].name} (${M.PATCHES[k].rolle}, ${M.PATCHES[k].verfahren}${M.PATCHES[k].charaktere?.length ? ", " + M.PATCHES[k].charaktere.join(", ") : ""})`, selected: q.stimme === f.key && q.werte.patch === k })))));
+  preset.onchange = () => { const [fam, k] = preset.value.split(":"); q.stimme = fam; q.werte = { ...q.werte, patch: k }; q.variante = M.PATCHES[k].name; sp.name = `${stimmeVon(q.erzeuger, fam).name} · ${M.PATCHES[k].name}`; spurNeuRechnen(sp); spurenAufbauen(); pluginAufbauen(); };
   const rolle = el("select", { title: "Rolle: bestimmt die erzeugte Sequenz" }, ...ROLLEN.map((r) => el("option", { value: r.key, textContent: r.name, selected: r.key === q.rolle })));
   const neu = el("button", { className: "mini", textContent: "Sequenz neu", title: "neue Sequenz dieser Rolle aus Bass und Drums (neuer Startwert)" });
   const neuRechnen = () => { q.rolle = rolle.value; q.seed = (q.seed % 100000) + 7919; q.sequenzAuto = true; q.takte = synthSequenz(q); spurNeuRechnen(sp); pluginAufbauen(); };
@@ -444,19 +537,38 @@ function synthSteuerung(sp) {
   variation.onclick = () => { sp._vorVariation = { ...q.werte }; const r = () => (Math.random() - 0.5) * 30; for (const k of ["helligkeit", "bewegung", "waerme", "alter", "breite", "charakter"]) q.werte[k] = Math.max(0, Math.min(100, Math.round((q.werte[k] ?? 50) + r()))); q.variante = null; spurNeuRechnen(sp); pluginAufbauen(); };
   zurueck.onclick = () => { if (!sp._vorVariation) return; q.werte = sp._vorVariation; sp._vorVariation = null; spurNeuRechnen(sp); pluginAufbauen(); };
   box.append(el("div", { className: "klang-zeile" }, el("span", { className: "leise-text", textContent: "Preset" }), preset, el("span", { className: "leise-text", textContent: "Rolle" }), rolle, neu, variation, zurueck));
-  box.append(el("p", { className: "hinweis", textContent: `${NOTEN[q.grundton]} ${LEITERN[q.leiter].name}, A = ${q.kammerton ?? 432} Hz${z.projekt.spuren.some(istBass) ? ", Tonart und Akkorde vom Bass" : ""}${q.sequenzAuto === false ? ", Sequenz von Hand geändert (folgt dem Bass nicht mehr)" : ""}` }));
-  const m = SYNTH_MAKROS[q.stimme];
-  if (m) box.append(el("details", {}, el("summary", { className: "leise-text", textContent: "Was die Makros hier tun" }), el("ul", { className: "hinweis" }, ...["helligkeit", "bewegung", "waerme", "alter", "breite"].map((k) => el("li", { textContent: `${k}: ${m[k]}` })), el("li", { textContent: `${m.charakterName}: ${m.charakter}` }))));
+  // sechs Varianten derselben Situation (Startwerte aus einem gemeinsamen Grund): vergleichen, die beste behalten
+  q.variantenGrund ??= q.seed;
+  const varianten = el("div", { className: "klang-zeile" }, el("span", { className: "leise-text", textContent: "Melodie-Varianten" }), ...Array.from({ length: 6 }, (_, i) => {
+    const s0 = q.variantenGrund + i * 7919, b = el("button", { className: "mini", textContent: String(i + 1), title: `Startwert ${s0}: dieselbe Rolle und dieselben Regler, andere Variante` });
+    b.setAttribute("aria-pressed", String(q.seed === s0 && q.sequenzAuto !== false));
+    b.onclick = () => { q.seed = s0; q.sequenzAuto = true; q.takte = synthSequenz(q); spurNeuRechnen(sp); pluginAufbauen(); };
+    return b;
+  }), (() => { const b = el("button", { className: "mini", textContent: "neue sechs", title: "sechs neue Varianten" }); b.onclick = () => { q.variantenGrund = 1 + Math.floor(Math.random() * 90000); q.seed = q.variantenGrund; q.sequenzAuto = true; q.takte = synthSequenz(q); spurNeuRechnen(sp); pluginAufbauen(); }; return b; })());
+  box.append(varianten);
+  // Regler der Melodie (melodien.md): Wandel, Weite, Spitzen, Off-Beat, Klassik, Ruhe; Skala über die Tonleiter des Basses, Ausdruck im Klang
+  q.regler = { ...REGLER_STD, ...(q.regler ?? {}) };
+  const regler = el("div", { className: "klang-zeile" }, ...REGLER.map((r) => {
+    const i = el("input", { type: "range", min: 0, max: 100, step: 5, value: q.regler[r.key], title: r.hilfe }), w = el("span", { className: "leise-text", textContent: `${r.name} ${q.regler[r.key]}` });
+    i.setAttribute("aria-label", r.name); i.oninput = () => { w.textContent = `${r.name} ${i.value}`; };
+    i.onchange = () => { q.regler[r.key] = Number(i.value); if (q.sequenzAuto !== false) { q.takte = synthSequenz(q); spurNeuRechnen(sp); } };
+    return el("label", { className: "regler-klein", title: r.hilfe }, w, i);
+  }));
+  box.append(el("details", { open: ["flaeche", "spitzen", "offbeat", "ruf", "alap"].includes(q.rolle) }, el("summary", { className: "leise-text", textContent: "Regler der Melodie (wirken auf neu erzeugte Sequenzen)" }), regler));
+  box.append(el("p", { className: "hinweis", textContent: `${NOTEN[q.grundton]} ${LEITERN[q.leiter]?.name ?? q.leiter}, A = ${q.kammerton ?? 432} Hz${z.projekt.spuren.some(istBass) ? ", Tonart und Akkorde vom Bass" : ""}${q.sequenzAuto === false ? ", Sequenz von Hand geändert (folgt dem Bass nicht mehr)" : ""}${q.erzeuger !== SYNTH_NEU ? `. Ältere Fassung ${q.erzeuger}: klingt wie beim Erzeugen; neue Presets gibt es in einer neuen Synthspur.` : ""}` }));
+  const m = M.MAKROS[q.stimme];
+  if (m) box.append(el("details", {}, el("summary", { className: "leise-text", textContent: "Was die Makros hier tun" }), el("ul", { className: "hinweis" }, ...["helligkeit", "bewegung", "waerme", "alter", "breite"].map((k) => el("li", { textContent: `${k}: ${m[k]}` })), el("li", { textContent: `${m.charakterName}: ${m.charakter}` }),
+    ...(M.CHARAKTERE ?? []).map((c) => el("li", { textContent: `Färbung «${c.name}»: ${c.hilfe}` })))));
   return box;
 }
 
 /** eine Flächenspur dazu */
 async function flaecheDazu(vorgabe = null) {
   await kontext(48000);
-  const st = stimmeVon("natur@0.2.0", vorgabe?.[0] ?? $("flaecheStimme").value), vv = vorgabe?.[1]?.variante, v = st.varianten.find((x) => x.name === vv) ?? st.varianten[0];
+  const st = stimmeVon("natur@0.3.0", vorgabe?.[0] ?? $("flaecheStimme").value), vv = vorgabe?.[1]?.variante, v = st.varianten.find((x) => x.name === vv) ?? st.varianten[0];
   const drums = z.projekt.spuren.find(istDrums), bass = z.projekt.spuren.find(istBass);
   const anzahl = drums?.quelle.anzahl ?? Number($("takte").value), bpm = z.projekt.tempo.bpm || Number($("erzBpm").value);
-  const quelle = { art: "erzeugt", erzeuger: "natur@0.2.0", stimme: st.key, variante: vorgabe?.[1] && !vv ? null : v.name, werte: { ...v.werte, ...Object.fromEntries(Object.entries(vorgabe?.[1] ?? {}).filter(([k]) => k !== "variante")) }, flaeche: true, anzahl, bpm, grundton: bass?.quelle.grundton ?? Number($("tonart").value), leiter: bass?.quelle.leiter ?? $("leiter").value, kammerton: kammerton(), seed: 1 + Math.floor(Math.random() * 99998), sample: null, messdaten: null };
+  const quelle = { art: "erzeugt", erzeuger: "natur@0.3.0", stimme: st.key, variante: vorgabe?.[1] && !vv ? null : v.name, werte: { ...v.werte, ...Object.fromEntries(Object.entries(vorgabe?.[1] ?? {}).filter(([k]) => k !== "variante")) }, flaeche: true, anzahl, bpm, grundton: bass?.quelle.grundton ?? Number($("tonart").value), leiter: bass?.quelle.leiter ?? $("leiter").value, kammerton: kammerton(), seed: 1 + Math.floor(Math.random() * 99998), sample: null, messdaten: null };
   const sp = PR.erzeugteSpurDazu(z.projekt, quelle, { name: st.name, typ: "flaeche", pegel: st.pegel + (vorgabe?.[2]?.pegel ?? 0), pan: 0, glanz: vorgabe ? { menge: 20, luft: 2 } : null, raum: { anteil: 30, nachhall: 3.6, daempfung: 4500, vorverz: 25, groesse: 1.6, tiefschnitt: 200, bewegung: 40 } });
   melde(`${st.name} wird gerechnet …`, 0);
   const fertig = spurNeuRechnen(sp);
@@ -496,6 +608,7 @@ function spurBald(sp) {
 }
 
 async function erzeugen({ anzahlVorgabe = null, still = false } = {}) {
+  if ($("stil").value === "lucerne") return LUI.erzeugen({ studie: true });
   const stil = stilVon($("stil").value), bpm = Number($("erzBpm").value) || stil.bpm, anzahl = anzahlVorgabe ?? Number($("takte").value), seed = Math.max(1, Math.round(Number($("seed").value) || 1));
   await kontext(48000);
   if (z.laeuft) await spielen();
@@ -529,6 +642,7 @@ async function erzeugen({ anzahlVorgabe = null, still = false } = {}) {
  * Ereignis, jeder Regler lässt sich ändern. Geladene Dateien bleiben, erzeugte Spuren werden ersetzt.
  */
 async function trackErzeugen() {
+  if ($("stil").value === "lucerne") return LUI.erzeugen({ studie: false });
   const stil = stilVon($("stil").value), bpm = Number($("erzBpm").value) || stil.bpm, sek = Number($("trackDauer").value), seed = Math.max(1, Math.round(Number($("seed").value) || 1));
   await kontext(48000);
   if (z.laeuft) await spielen();
@@ -617,7 +731,7 @@ function stimmVariante(sp, i) {
 }
 
 async function schlagHoeren(sp, art) {
-  await kontext(48000); await z.ctx.resume();
+  await kontext(48000); await tonWecken();
   const st = stimmeVon(sp.quelle.erzeuger, sp.quelle.stimme), q = sp.quelle;
   if (q.flaeche) { const d = z.daten.get(sp.id); if (!d) return; const n = Math.min(d.roh[0].length, z.rate * 6); const b = z.ctx.createBuffer(2, n, z.rate); b.copyToChannel(d.roh[0].subarray(0, n), 0); b.copyToChannel(d.roh[1].subarray(0, n), 1); const qk = z.ctx.createBufferSource(), g = z.ctx.createGain(); g.gain.value = 0.7; qk.buffer = b; qk.connect(g).connect(z.ctx.destination); qk.start(); return; }
   if (istSynth(sp)) {
@@ -634,6 +748,7 @@ async function schlagHoeren(sp, art) {
 }
 
 function klangAufbauen(box, sp, wahl) {
+  if (istSampler(sp)) { klangPanel(box, sp, wahl); return; }
   const q = sp.quelle, st = stimmeVon(q.erzeuger, q.stimme), e = ERZEUGER[q.erzeuger];
   box.append(el("div", { className: "plugin-kopf" }, el("h2", { textContent: `${sp.name}: ${e.name} ${e.version}` }), wahl,
     el("span", { className: "leise-text", textContent: `Eigene Synthese, Startwert ${q.seed}. Jede Änderung rechnet die Spur neu; jeder Schlag und jeder Ton ist auf dieselbe Spitze gebracht, damit Klangfarbe nicht als Lautstärke gehört wird.` })));
@@ -683,7 +798,7 @@ function klangAufbauen(box, sp, wahl) {
   };
   box.append(el("div", { className: "gruppe", style: "margin-top:16px" }, el("h3", {}, el("span", { textContent: "Muster (eine Zeile je Takt, «fill:» für den Wirbel)" })), ta,
     el("p", { className: "hinweis", textContent: q.leiter
-      ? "16 Zeichen = Sechzehntel, 8 = Achtel, 4 = Viertel. 1–7 Stufe der Tonleiter, b3 #4 mit Vorzeichen, 1' 1, Oktave höher, tiefer, «-» Ton hält, «.» Pause, «~» gleiten, «!» betont, «_» leise."
+      ? "16 Zeichen = Sechzehntel, 8 = Achtel, 4 = Viertel. 1–7 Stufe der Tonleiter, b3 #4 mit Vorzeichen, 1' 1, Oktave höher, tiefer, «-» Ton hält, «.» Pause, «~» gleiten, «!» betont, «_» leise, «1+3+5» Akkord, «3=» im Akkord: Ton klingt ohne neuen Anschlag weiter."
       : `16 Zeichen = Sechzehntel, 8 = Achtel, 12 = Triolen. «.» Pause, x o g (laut, mittel, Geisternote), oder Artikulationen: ${arten}. «!» betont, «_» leise.` })));
 }
 
@@ -1243,20 +1358,22 @@ const schleifeSenden = () => post({ art: "schleife", schleife: z.schleifeAn && z
 
 // ---------- Transport ----------
 async function spielen() {
-  if (!z.ctx || !z.daten.size) return;
-  if (z.laeuft) { post({ art: "stop" }); z.laeuft = false; }
-  else {
-    await z.ctx.resume();
-    let pos = z.pos;
-    if (z.schleifeAn && z.schleife && (pos < z.schleife.a * z.rate || pos >= z.schleife.b * z.rate)) pos = Math.round(z.schleife.a * z.rate);
-    if (pos >= laenge() * z.rate) pos = 0;
-    post({ art: "start", pos }); z.laeuft = true;
-  }
+  // Halt gilt sofort, auch wenn ein Start noch auf den Ton wartet (der Start fällt dann weg)
+  if (z.laeuft || z.startet) { z.startet = false; post({ art: "stop" }); z.laeuft = false; knoepfeAuffrischen(); return; }
+  if (!z.daten.size || (!z.ctx && !neuBau)) return;
+  z.startet = true; z.angehaltenBeimVerlassen = false; knoepfeAuffrischen();
+  try { await tonWecken(); } catch (e) { z.startet = false; knoepfeAuffrischen(); melde(`Ton: ${e?.message ?? e}`, 8000); return; }
+  if (!z.startet) return;
+  z.startet = false;
+  let pos = z.pos;
+  if (z.schleifeAn && z.schleife && (pos < z.schleife.a * z.rate || pos >= z.schleife.b * z.rate)) pos = Math.round(z.schleife.a * z.rate);
+  if (pos >= laenge() * z.rate) pos = 0;
+  post({ art: "start", pos }); z.laeuft = true;
   knoepfeAuffrischen();
 }
 function knoepfeAuffrischen() {
   const hat = z.daten.size > 0;
-  $("spielen").disabled = !hat; $("spielen").textContent = z.laeuft ? "■" : "▶";
+  $("spielen").disabled = !hat; $("spielen").textContent = z.laeuft || z.startet ? "■" : "▶";
   for (const id of ["projektSpeichern"]) $(id).disabled = !z.projekt.spuren.length;
   for (const id of ["exportieren", "trackLaden", "messenKnopf", "zielKnopf"]) $(id).disabled = !hat;
   $("schleifeAn").setAttribute("aria-pressed", String(z.schleifeAn)); $("allesVorher").setAttribute("aria-pressed", String(z.allesVorher));
@@ -1292,7 +1409,7 @@ function anzeigen() {
 // ---------- Messen und Export ----------
 async function bisFertig() { while (offen.size || [...stand.values()].some((x) => x.laeuft)) await new Promise((r) => setTimeout(r, 100)); }
 function renderAuftrag(extra = {}) {
-  const spuren = z.projekt.spuren.filter((s) => z.daten.has(s.id)).map((s) => ({ id: s.id, kanaele: z.daten.get(s.id).kanaele }));
+  const spuren = z.projekt.spuren.filter((s) => z.daten.has(s.id) && !s.nurVorschau).map((s) => ({ id: s.id, kanaele: z.daten.get(s.id).kanaele }));   // Metronom nie im Export
   return { rate: z.rate, plugins: PLUGINS, spuren, zustand: { ...PR.motorZustand(z.projekt), ...extra }, melden: async (a) => { melde(`rechne … ${Math.round(a * 100)} %`, 0); await atmen(); } };
 }
 async function mischungMessen({ vorher = true } = {}) {
@@ -1390,7 +1507,7 @@ async function projektOeffnen(f) {
     for (const id of z.daten.keys()) post({ art: "weg", id });
     z.projekt = p; z.daten.clear(); z.fassungRoh.clear(); z.original.clear(); z.auswahl = false; z.gewaehlt = p.spuren[0]?.id ?? null; z.schleife = p.schleife; z.schleifeAn = false; z.messungen = null;
     if (p.spuren.some((s) => s.quelle)) { await kontext(p.rate); for (const s of p.spuren) if (s.quelle) spurNeuRechnen(s); senden(); }
-    allesAufbauen();
+    allesAufbauen(); LUI.aufbauen();
     const fehlen = p.spuren.filter((s) => s.datei).map((s) => s.datei.name);
     melde(fehlen.length ? `«${p.titel}» geöffnet. Jetzt die Tondateien laden (${fehlen.join(", ")}).` : `«${p.titel}» geöffnet, alle Spuren neu gerechnet.`, 9000);
   } catch (e) { melde(String(e.message ?? e), 8000); }
@@ -1469,13 +1586,14 @@ $("kammerton").onchange = () => {
 };
 for (const r of ["synthRolle"]) $(r).append(el("option", { value: "auto", textContent: "Rolle des Presets" }), ...ROLLEN.map((x) => el("option", { value: x.key, textContent: x.name })));
 function synthListe() {
-  const rolle = $("synthFilterRolle").value, verf = $("synthFilterVerfahren").value, alt = $("synthPreset").value;
-  $("synthPreset").replaceChildren(...FAMILIEN_LISTE.map((f) => { const ps = f.patches.filter((k) => (!rolle || PATCHES[k].rolle === rolle) && (!verf || PATCHES[k].verfahren === verf)); return ps.length ? el("optgroup", { label: f.name }, ...ps.map((k) => el("option", { value: `${f.key}:${k}`, textContent: `${PATCHES[k].name} · ${PATCHES[k].rolle}, ${PATCHES[k].verfahren}` }))) : null; }).filter(Boolean));
+  const rolle = $("synthFilterRolle").value, verf = $("synthFilterVerfahren").value, cha = $("synthFilterCharakter").value, alt = $("synthPreset").value;
+  $("synthPreset").replaceChildren(...FAMILIEN_LISTE.map((f) => { const ps = f.patches.filter((k) => (!rolle || PATCHES[k].rolle === rolle) && (!verf || PATCHES[k].verfahren === verf) && (!cha || PATCHES[k].charaktere?.includes(cha))); return ps.length ? el("optgroup", { label: f.name }, ...ps.map((k) => el("option", { value: `${f.key}:${k}`, textContent: `${PATCHES[k].name} · ${PATCHES[k].rolle}, ${PATCHES[k].verfahren}${PATCHES[k].charaktere?.length ? " · " + PATCHES[k].charaktere.join(", ") : ""}` }))) : null; }).filter(Boolean));
   if ([...$("synthPreset").options].some((o) => o.value === alt)) $("synthPreset").value = alt;
 }
 $("synthFilterRolle").append(el("option", { value: "", textContent: "alle Rollen" }), ...[...new Set(Object.values(PATCHES).map((p) => p.rolle))].map((r) => el("option", { value: r, textContent: r })));
 $("synthFilterVerfahren").append(el("option", { value: "", textContent: "alle Verfahren" }), ...[...new Set(Object.values(PATCHES).map((p) => p.verfahren))].map((r) => el("option", { value: r, textContent: r })));
-$("synthFilterRolle").onchange = synthListe; $("synthFilterVerfahren").onchange = synthListe; synthListe();
+$("synthFilterCharakter").append(el("option", { value: "", textContent: "alle Charaktere" }), ...CHARAKTERE.map((c) => el("option", { value: c.key, textContent: c.name, title: c.hilfe })));
+$("synthFilterRolle").onchange = synthListe; $("synthFilterVerfahren").onchange = synthListe; $("synthFilterCharakter").onchange = synthListe; synthListe();
 $("flaecheDazu").onclick = () => flaecheDazu().catch((e) => melde(`Fläche: ${e.message}`, 8000));
 $("bassDazu").onclick = async () => {
   try {
@@ -1509,4 +1627,6 @@ $("ersatzDatei").onchange = (e) => { const f = e.target.files[0], sp = spurVon(z
 zeigerAuf($("lineal"));
 stileAufbauen();
 allesAufbauen();
+// ornament.lucerne: Klangsammlung und Steuerung (eigenes Modul, bekommt nur, was es braucht)
+const LUI = await lucerneEinbauen({ z, $, el, melde, atmen, PR, post, senden, allesAufbauen, spurSenden, spurNeuRechnen, kontext, spielen, bisFertig, schnellEinpegeln, schleifeSenden, zeichnen, zeigeRechnen, herunterladen, sha256, imWorker, imWorkerRoh, tonWecken, NOTEN });
 requestAnimationFrame(anzeigen);

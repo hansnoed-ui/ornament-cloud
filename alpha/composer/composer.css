@@ -66,6 +66,9 @@ kbd { font: inherit; font-size: 0.75em; color: var(--muted); border: 1px solid v
 .bass-zeile select, .klang-zeile select { border: 1px solid var(--border); border-radius: 999px; background: var(--bg); padding: 3px 8px; }
 .klang-zeile { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 4px 0 12px; }
 .klang-zeile .mini { border-color: var(--border); color: var(--text); height: 28px; }
+.regler-klein { display: inline-flex; flex-direction: column; gap: 2px; min-width: 110px; }
+.regler-klein input { width: 110px; }
+.klang-zeile .mini[aria-pressed="true"] { background: var(--text); color: var(--bg); }
 .muster { width: 100%; font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 0.85rem; border: 1px solid var(--border); border-radius: 8px; background: none; padding: 8px; line-height: 1.5; resize: vertical; }
 .muster:focus { outline: none; border-color: var(--accent); }
 .spur-name .erz { color: #8fb0ff; font-size: 0.75rem; }
@@ -205,3 +208,42 @@ canvas.lineal, canvas.welle { width: 100%; display: block; cursor: crosshair; to
 .kopfzelle { min-width: 0; overflow: hidden; }
 .regler input[type="range"] { min-width: 0; }
 .ereignis.markiert { outline: 2px solid #8fb0ff; outline-offset: 2px; }
+
+/* ornament.lucerne: Klangsammlung, Makros, Sperren, Groove-Editor */
+.lucerne { padding: 14px 24px 18px; border-bottom: 1px solid var(--border); display: grid; gap: 8px; }
+.lucerne h2 { margin: 0; font-size: 1rem; }
+.lucerne > p { margin: 0; }
+.luc-makros { display: flex; flex-wrap: wrap; gap: 6px 22px; }
+.luc-makro { display: inline-flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--muted); }
+.luc-makro input { width: 130px; accent-color: var(--accent); }
+.luc-makro b { color: var(--text); font-variant-numeric: tabular-nums; min-width: 3ch; }
+.luc-teil { border-top: 1px solid var(--border); padding-top: 6px; }
+.luc-teil > summary { cursor: pointer; font-size: 0.9rem; padding: 4px 0; }
+.luc-teil ul { margin: 4px 0; padding-left: 18px; font-size: 0.85rem; }
+.luc-quelle { margin: 6px 0 6px 6px; }
+.luc-quelle > summary { cursor: pointer; font-size: 0.88rem; }
+.luc-quelle code { font-size: 0.78rem; color: var(--muted); }
+.luc-cuts { display: grid; gap: 4px; margin: 6px 0 4px 14px; }
+.luc-cut { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 0.82rem; }
+.luc-cut.aus { opacity: 0.5; }
+.luc-cut input[type="number"] { border: 0; border-bottom: 1px solid var(--border); background: none; color: var(--text); font-variant-numeric: tabular-nums; }
+.luc-cut-name { min-width: 16ch; }
+.warn { color: var(--warn); }
+.luc-raster { display: grid; grid-template-columns: 7ch repeat(32, minmax(18px, 1fr)); gap: 2px; overflow-x: auto; padding: 6px 0; }
+.luc-kopf { font-size: 0.66rem; color: var(--muted); text-align: center; }
+.luc-kopf.zaehl { color: var(--text); }
+.luc-kopf:nth-child(18) { border-left: 2px solid var(--border); }
+.luc-name { font-size: 0.78rem; color: var(--muted); align-self: center; }
+.luc-zelle { min-height: 24px; border: 1px solid var(--border); background: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; color: var(--text); padding: 0; }
+.luc-zelle.zaehl { border-color: var(--muted); }
+.luc-zelle[aria-pressed="true"] { background: var(--text); color: var(--bg); }
+.luc-zelle:focus-visible { outline: 2px solid var(--accent); }
+@media (max-width: 700px) { .lucerne { padding: 12px 16px; } .luc-makro input { width: 100px; } }
+.lucerne .mini { color: var(--text); border-color: var(--border); }
+
+/* Handy: nichts darf die Seite verbreitern, sonst zoomt der Browser heraus, die Handy-Ansicht greift nicht und die Bereich-Leiste
+   oben ist beim Scrollen nicht mehr zu sehen. Lange Auswahllisten werden schmaler, breite Teile scrollen in sich. */
+.lucerne { grid-template-columns: minmax(0, 1fr); }
+select { max-width: min(100%, calc(100vw - 40px)); }
+.feld { max-width: 100%; } .feld select { min-width: 0; }
+.erzeugen, .lucerne { max-width: 100vw; box-sizing: border-box; overflow-x: auto; }

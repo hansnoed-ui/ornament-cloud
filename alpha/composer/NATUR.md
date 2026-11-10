@@ -30,6 +30,23 @@ Die Makros sind in `MAKROS` in `natur-0.1.0.js` je Familie beschrieben und im Kl
 - Flächen lassen dem Bass den Raum unter etwa 120 Hz (Hochpass). Ausgenommen sind die Varianten «Sub-Drone».
 - Alle Makros sind Parameter der Spur. Sie lassen sich in Varianten speichern und mit den Unterbrechungen aufbrechen. Eine Automation über die Zeit fehlt noch.
 
+## Natur 0.3.0: Delfine, Nachtwald, Kosmos (10. November 2026)
+
+Wunsch Christian: mehr Natur- und vor allem Tierklänge für Ornament und Drum and Bass («der Walchor ist grosse Spitze») und «eine Ebene mit astronomischen Signalen aus dem Universum». `erzeuger/natur-0.3.0.js`, registriert als `natur@0.3.0`. Alle Familien aus 0.2.0 klingen unverändert (getestet). Neue Flächenspuren und «Track erzeugen» nutzen 0.3.0; ältere Projekte behalten ihre Version.
+
+| Familie | Modell | Varianten |
+|---|---|---|
+| Delfine | Pfeiftöne mit eigener «Signatur»-Kontur je Tier (Bogen, Welle, Schleife, steigend, fallend), Klicksalven der Echoortung, die sich zum Buzz beschleunigen; unter Wasser gedämpft mit leisem Grollen. Tonlage wählbar: echt (6–15 kHz) bis zwei Oktaven tiefer | Schule, nah und hell, Echoortung (Klicks auf den Drums), Delfine singen (gestimmt, −24), Tiefe Bucht, Delfinfläche |
+| Nachtwald | Unken (weiches, glockiges «Uh» um 400–500 Hz, jedes Tier im eigenen Takt), Froschknarren (Pulsfolge durch zwei Formanten), Uhu («Uu-hu» um 190 Hz, rund, wenig Atem), Blätterrauschen in Böen | Teich bei Nacht, Unkenchor (gestimmt), Froschknarren, Uhu im Nebel, Wind im Wald, Nachtfläche |
+| Kosmos | Pulsar (nur schnelle: Vela, Krebsnebel): Rauschpulse, die durch die Dispersion hoch beginnen und nach unten gleiten und zu einem schnarrenden Ton verschmelzen. Plasmawellen: Whistler nach f = (D / t)² und Chorus (Gruppen steigender Zirpen). Gravitationswellen-Chirp nach f ∝ (1 − t/tc)^(−3/8), Amplitude ∝ f^(2/3), danach Ringdown. Radiorauschen als Wellen (wie Jupiters L-Bursts) und feines Hintergrundrauschen | Tiefer Raum, Vela schnarrt, Magnetosphäre, Verschmelzung, Kosmische Fläche |
+
+- **Pulsare:** Die langsamen Pulsare als einzelne Schläge (B0329+54, auch im Takt) sind nach Christians Urteil vom 10. November 2026 wieder raus: «zu dominant, zu wenig fein», «zu grell», «puls geht gar nicht». Geblieben ist nur der schnelle Pulsar als schnarrender Ton («Vela schnarrt» gefiel), standardmässig aus. Damit die Schleife ohne Naht bleibt, passt eine ganze Zahl von Pulsen in die Spur.
+- **Arrangement:** Delfine und Nachtwald zählen wie Vögel und Insekten als perkussive Naturklänge und spielen nur in den ruhigen Teilen. Kosmos läuft wie Walchor und Gezeiten durch.
+- **Besetzung:** Ornament bekommt zu Gezeiten, Walchor und Vögeln «Delfine singen» und Kosmos «Tiefer Raum» (ohne Pulsar). Drum and Bass bekommt zu Gezeiten und Insekten den «Teich bei Nacht» und die «Magnetosphäre».
+- **Quellen und Lizenzen:** nur Synthese nach veröffentlichten Messwerten (Frequenzen, Perioden, Dispersionsgesetz, Chirp-Formel). Zahlen und Naturgesetze sind nicht urheberrechtlich geschützt. Keine Aufnahme und kein Code übernommen. Echte Aufnahmen kämen nur einzeln geprüft über «eigene Aufnahme laden»: NASA meist gemeinfrei (aber Sonifikationen teils von externen Urhebern, z. B. bei Chandra), ESA oft CC BY-SA 3.0 IGO (Weitergabe unter gleicher Lizenz), Plasmawellen der University of Iowa ohne klare Freigabe.
+- **Hörproben:** `node tools/composer-natur-0.3-hoerproben.mjs <ordner>` rechnet jede Variante allein (24 s, 80 BPM, D-Moll) und je Familie ein Beispiel mit Drums und Bass.
+- **Nicht geprüft:** der Klang selbst. Geprüft sind Pegel, Länge, Wiederholbarkeit und Spektrogramme (Dispersion der Pulse, Whistler, Chirp sichtbar). Das Urteil liegt bei Christian.
+
 ## Quellen und Lizenzen
 
 - **Synthetische Quellen** sind im Klang-Reiter als «synthetisches Modell» bezeichnet. Wasser, Wind und Blasen folgen den Modellen aus Andy Farnells «Designing Sound»; die Ideen sind nachgebaut, kein Code ist übernommen.

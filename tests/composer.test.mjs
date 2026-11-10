@@ -356,7 +356,7 @@ test("Sequenzen: jede Rolle ergibt lesbare Takte; Kammerton verschiebt die Stimm
     const z = sequenzErzeugen({ rolle: r.key, akkorde: [1, 4, 6, 5], kicks: [[0, 7, 10]], anzahl: 8, seed: 3, halftime: r.key === "pad" });
     if (r.key === "schwebe") assert.ok([3, 5, 7].includes(z.length)); else assert.equal(z.length, 8);
     const n = L.notenLesen(z, { bpm: 100, anzahl: 8, leiter: "phrygisch" });
-    assert.ok(n.length >= 4 && n.every((x) => Number.isFinite(x.halbtoene)), r.key);
+    assert.ok(n.length >= (["spitzen", "offbeat", "ruf"].includes(r.key) ? 1 : 4) && n.every((x) => Number.isFinite(x.halbtoene)), r.key);   // Spitzen, Off-Beats, Rufe sind selten
   }
   assert.ok(Math.abs(L.grundFrequenz(9, 440) / L.grundFrequenz(9) - 440 / 432) < 1e-12);
 });
@@ -420,6 +420,25 @@ test("Natur 0.2.0: Regen, Feuer, Insekten klingen und sind Schleifen; die Famili
   }
   const q = { stimme: "gezeiten", werte: {}, flaeche: true, anzahl: 2, bpm: 120, grundton: 2, leiter: "moll", seed: 3 };
   gleich(flaechenSpurRechnen({ ...q, erzeuger: "natur@0.2.0" }, R, {}).kanaele[0], flaechenSpurRechnen({ ...q, erzeuger: "natur@0.1.0" }, R, {}).kanaele[0], "Gezeiten 0.2.0 = 0.1.0");
+});
+
+test("Natur 0.3.0: Delfine, Nachtwald, Kosmos klingen und sind reproduzierbar; die Familien aus 0.2.0 klingen wie in 0.2.0", () => {
+  const R = 24000, n3 = ERZEUGER["natur@0.3.0"];
+  for (const k of ["delfine", "nachtwald", "kosmos"]) for (const v of n3.stimmen[k].varianten) {
+    const q = { erzeuger: "natur@0.3.0", stimme: k, werte: v.werte, flaeche: true, anzahl: 2, bpm: 174, grundton: 2, leiter: "moll", seed: 2 };
+    const [L0] = flaechenSpurRechnen(q, R, { einsaetze: [0, 0.69, 1.38] }).kanaele;
+    assert.equal(L0.length, Math.round(2 * (240 / 174) * R), `${k} ${v.name}: Länge`);
+    let m = 0, e = 0; for (const x of L0) { assert.ok(Number.isFinite(x), `${k} ${v.name}`); m = Math.max(m, Math.abs(x)); e += x * x; }
+    assert.ok(m <= 0.61 && Math.sqrt(e / L0.length) > 0.005, `${k} ${v.name}: Spitze ${m}`);
+    gleich(flaechenSpurRechnen(q, R, { einsaetze: [0, 0.69, 1.38] }).kanaele[0], L0, `${k} ${v.name}: reproduzierbar`);
+  }
+  for (const k of ["walchor", "regen", "insekten"]) {
+    const q = { stimme: k, werte: {}, flaeche: true, anzahl: 2, bpm: 120, grundton: 2, leiter: "moll", seed: 3 };
+    gleich(flaechenSpurRechnen({ ...q, erzeuger: "natur@0.3.0" }, R, {}).kanaele[0], flaechenSpurRechnen({ ...q, erzeuger: "natur@0.2.0" }, R, {}).kanaele[0], `${k} 0.3.0 = 0.2.0`);
+  }
+  assert.ok(A.BESETZUNG.ornament.natur.some(([s]) => s === "kosmos") && A.BESETZUNG.dnb.natur.some(([s]) => s === "nachtwald"));
+  assert.equal(A.funktionVon({ flaeche: true, stimme: "delfine" }), "naturklang");
+  assert.equal(A.funktionVon({ flaeche: true, stimme: "kosmos" }), "natur");
 });
 
 test("Ornament Style: zuoberst, Pop und ECM ausgeblendet, Perkussion wechselt je Abschnitt", () => {
@@ -515,4 +534,264 @@ test("Fassungen: verschieben, wiederholen, angleichen; Ausrichten findet den Ver
   assert.equal(sp.fassungen[0].datei.name, "neu.wav"); assert.ok(!("versatz" in sp.fassungen[0]));
   FA.fassungWechseln(sp, sp.fassungen[0].id);
   assert.equal(sp.datei.name, "neu.wav"); assert.ok(!("versatz" in sp));
+});
+
+// ---------- ornament.lucerne (synthetische Testquellen; eigene Aufnahmen kommen nie ins Repo) ----------
+const K = await c("kern/klangsammlung.js");
+const SA = await c("kern/sampler.js");
+const LU = await c("kern/lucerne.js");
+const { spurRechnen: spurR } = await c("kern/erzeugen.js");
+
+/** Testquelle: Ausklang eines A-Dur-Akkords (8 s), dann Schläge (8 s) – so bezeichnet */
+function testquelle() {
+  const n = 16 * RATE, L = new Float32Array(n), R = new Float32Array(n);
+  for (let i = 0; i < 8 * RATE; i++) { const t = i / RATE, e = 0.25 * Math.exp(-t / 4); for (const f of [220, 277.18, 329.63, 659.26]) { const v = e * Math.sin(2 * Math.PI * f * t); L[i] += v; R[i] += v * 0.9; } }
+  for (let k = 0; k < 40; k++) { const i0 = Math.round((8.1 + k * 0.18 + (k % 3) * 0.03) * RATE); for (let i = 0; i < 4000; i++) { const v = 0.6 * Math.exp(-i / 500) * Math.sin(i * 0.05); L[i0 + i] += v; R[i0 + i] += v; } }
+  return [L, R];
+}
+function testsammlung() {
+  const k = testquelle(), an = K.analysieren(k, RATE);
+  let s = K.quelleHinzufuegen(K.neueSammlung(), { name: "TESTQUELLE_akkord_schlaege.wav", sha256: "a".repeat(64), rate: RATE, kanaele: 2, dauer: an.dauer, herkunft: "test" }, an).sammlung;
+  s = K.ausschnitteHinzufuegen(s, K.ausschnitteVorschlagen(s.quellen[0]));
+  return { s, material: new Map([[s.quellen[0].id, { kanaele: k, rate: RATE }]]) };
+}
+
+test("Klangsammlung: stabile IDs, bekannte Quelle wird nicht neu angelegt, Vorschläge mit Rollen aus dem Material", () => {
+  const { s } = testsammlung(), q = s.quellen[0];
+  assert.equal(q.id, K.quelleId("a".repeat(64))); assert.ok(q.test);
+  const nochmal = K.quelleHinzufuegen(s, { name: "anders.wav", sha256: "a".repeat(64) }, null);
+  assert.equal(nochmal.neu, false); assert.equal(nochmal.sammlung, s, "gleiche Prüfsumme: nichts ändert sich");
+  const rollen = new Set(s.ausschnitte.map((a) => a.rolle));
+  assert.ok(rollen.has("harmonic_layer"), [...rollen].join()); assert.ok(rollen.has("accent") || rollen.has("fragment"));
+  const ak = s.ausschnitte.find((a) => a.rolle === "harmonic_layer").akkord;
+  assert.deepEqual([ak.grundton, ak.art], [9, "dur"], "A-Dur erkannt");
+  for (const a of s.ausschnitte) { assert.ok(a.bis > a.von && a.von >= 0 && a.bis <= q.dauer + 1e-6); assert.ok(K.herkunft(s, a.id).quelle.id === q.id); }
+  assert.ok(s.ausschnitte.length >= 3 && s.ausschnitte.length <= 8);
+});
+
+test("Sampler: Band ändert Tonhöhe und Dauer gemeinsam, Zeitdehnung nur die Dauer; Original bleibt", () => {
+  const n = RATE, s = Float32Array.from({ length: n }, (_, i) => Math.sin((2 * Math.PI * 440 * i) / RATE) * 0.5), k = [s, s.slice()];
+  const kopie = s.slice();
+  const b = SA.bearbeiten(k, RATE, [{ art: "band", halbtoene: -12 }]);
+  assert.ok(Math.abs(b[0].length - 2 * n) < 4, "eine Oktave tiefer = doppelt so lang");
+  const d = SA.bearbeiten(k, RATE, [{ art: "dehnung", faktor: 2, halbtoene: 0 }]);
+  assert.ok(Math.abs(d[0].length - 2 * n) < 4);
+  const nullDurchgaenge = (x) => { let z = 0; for (let i = 1000; i < x.length - 1000; i++) if ((x[i] >= 0) !== (x[i - 1] >= 0)) z++; return z / ((x.length - 2000) / RATE) / 2; };
+  assert.ok(Math.abs(nullDurchgaenge(b[0]) - 220) < 5, `Band: ${nullDurchgaenge(b[0])} Hz`);
+  assert.ok(Math.abs(nullDurchgaenge(d[0]) - 440) < 8, `Dehnung: ${nullDurchgaenge(d[0])} Hz`);
+  gleich(s, kopie, "Original unverändert");
+  const norm = SA.bearbeiten(k, RATE, [{ art: "normal", db: -20 }]); let e = 0; for (const v of norm[0]) e += v * v;
+  assert.ok(Math.abs(10 * Math.log10(e / n) + 20) < 0.5, "lautheitsgleich auf −20 dB");
+});
+
+test("Sampler-Spur: Ereignisse in musikalischer Zeit, Swing nur auf ungeraden Sechzehnteln, fehlende Quelle gemeldet, reproduzierbar", () => {
+  const imp = new Float32Array(RATE); imp[200] = 1;   // nach der 2-ms-Einblendung des Ausschnitts
+  const material = new Map([["q", { kanaele: [imp, imp], rate: RATE }]]);
+  const q = { erzeuger: SA.SAMPLER, rolle: "accent", anzahl: 2, bpm: 120, seed: 1, swing: 0.1, klaenge: { a: { quelle: "q", von: 0, bis: 0.1, schritte: [] }, b: { quelle: "fehlt", von: 0, bis: 1, schritte: [] } },
+    ereignisse: [{ t: 0, klang: "a", staerke: 1 }, { t: 1 / 16, klang: "a", staerke: 1 }, { t: 1 + 4 / 16, klang: "a", staerke: 1 }, { t: 1.5, klang: "b" }] };
+  const r = SA.samplerSpurRechnen(q, RATE, material), T = 2, sech = T / 16;
+  const stellen = []; r.kanaele[0].forEach((v, i) => { if (Math.abs(v) > 0.5) stellen.push(i); });
+  assert.deepEqual(stellen, [0, Math.round((sech + 0.1 * sech) * RATE), Math.round((T + 4 * sech) * RATE)].map((x) => x + 200));
+  assert.deepEqual(r.fehlt, ["fehlt"]);
+  gleich(SA.samplerSpurRechnen(q, RATE, material).kanaele[0], r.kanaele[0], "gleiches Rezept, gleiche Abtastwerte");
+});
+
+test("Choke: die offene Hi-Hat endet beim nächsten Schlag der geschlossenen", () => {
+  const basis = { erzeuger: "drums@0.1.0", stimme: "offen", werte: {}, anzahl: 1, bpm: 120, swing: 0, menschlich: 0, versatz: 0, seed: 1, takte: ["x . . . . . . . . . . . . . . ."] };
+  const frei = spurR(basis, RATE).kanaele[0], gechokt = spurR({ ...basis, choke: { zeiten: [0.25] } }, RATE).kanaele[0];
+  const e = (x, a, b) => { let s = 0; for (let i = Math.round(a * RATE); i < Math.round(b * RATE); i++) s += x[i] * x[i]; return s; };
+  assert.ok(e(frei, 0.26, 0.4) > 1e-4, "ohne Choke klingt sie weiter");
+  assert.equal(e(gechokt, 0.26, 0.4), 0);
+  gleich(gechokt.subarray(0, Math.round(0.249 * RATE)), frei.subarray(0, Math.round(0.249 * RATE)), "vorher unverändert");
+});
+
+test("ornament.lucerne: Plan mit Gerüst 88 Takte, Groove auf 1-basierten Schritten, Sperren, Zeitmarken", () => {
+  const { s, material } = testsammlung();
+  const plan = LU.planen({ sammlung: s, seed: 1 });
+  assert.equal(plan.profil, "ornament.lucerne"); assert.equal(plan.schema, "0.1.0");
+  assert.equal(plan.takte, 88); assert.equal(plan.bpm, 84, "schleppender als die erste Fassung (88)");
+  assert.deepEqual(plan.abschnitte.map((a) => [a.typ, a.von + 1, a.bis]), [["auftauchen", 1, 8], ["gedanke", 9, 24], ["vertiefung", 25, 40], ["freistellung", 41, 48], ["verwandlung", 49, 64], ["wiederkehr", 65, 80], ["nachbild", 81, 88]]);
+  const z = (k, b) => plan.spuren.find((x) => x.key === k).quelle.takte[b].split(" ").flatMap((t, i) => (t === "." ? [] : [i + 1]));
+  assert.deepEqual(z("kick", 8), [1, 7, 9]); assert.deepEqual(z("snare", 8), [5, 13]); assert.deepEqual(z("hat", 8), [1, 3, 5, 7, 9, 11, 13, 15]); assert.deepEqual(z("ghost", 8), [12]);
+  assert.deepEqual(z("kick", 9), [1, 8, 11]); assert.deepEqual(z("offen", 9), [15]); assert.deepEqual(z("hat", 9), [1, 3, 5, 7, 9, 11]);
+  assert.deepEqual(z("kick", 0), [], "im Auftauchen keine Kick");
+  assert.ok(plan.spuren.find((x) => x.key === "offen").quelle.choke.zeiten.length > 100);
+  assert.ok(plan.marker.some((m) => m.art === "abschnitt") && plan.marker.some((m) => m.art === "motiv") && plan.marker.some((m) => m.art === "akzent"));
+  const mz = LU.markerMitZeit(plan).find((m) => m.art === "abschnitt" && m.text === "Freistellung");
+  assert.equal(mz.takt1, 41); assert.ok(Math.abs(mz.zeit - (40 * 240) / 84) < 1e-3);
+  assert.equal(JSON.stringify(LU.planen({ sammlung: s, seed: 1 })), JSON.stringify(plan), "reproduzierbar");
+  const v = LU.planen({ sammlung: s, seed: 1, seeds: { ...plan.seeds, groove: 99, motiv: 99, bass: 99 }, vorher: plan, sperren: { motiv: true, bass: true } });
+  assert.deepEqual(v.motivNoten, plan.motivNoten); assert.deepEqual(v.bassZeilen, plan.bassZeilen);
+  assert.notDeepEqual(v.drumZeilen, plan.drumZeilen);
+  const w = LU.planen({ sammlung: s, seed: 1, seeds: { ...plan.seeds, groove: 77 }, vorher: plan, sperren: { abschnitte: ["vertiefung"] } });
+  for (let b = 24; b < 40; b++) assert.equal(w.drumZeilen.kick[b], plan.drumZeilen.kick[b]);
+  const st = LU.planen({ sammlung: s, seed: 1, studie: true });
+  assert.equal(st.takte, 16); assert.ok(st.spuren.some((x) => x.rolle === "main_motif"));
+  for (const sp of st.spuren.filter((x) => x.quelle.erzeuger === SA.SAMPLER)) { const r = SA.samplerSpurRechnen(sp.quelle, RATE, material); assert.ok(r.kanaele[0].every(Number.isFinite), sp.key); assert.deepEqual(r.fehlt, []); }
+});
+
+test("ornament.lucerne: Motiv wird unterbrochen (Pausen, Abbrüche), erste Aussage bleibt; Unterbrechung 0 spielt durch", () => {
+  const { s } = testsammlung();
+  const zaehle = (plan) => { const m = plan.marker.filter((x) => x.art === "motiv"); return { pause: m.filter((x) => /Pause/.test(x.text)).length, ab: m.filter((x) => /reisst/.test(x.text)).length, m }; };
+  let pausen = 0, abbrueche = 0;
+  for (let seed = 1; seed <= 6; seed++) {
+    const plan = LU.planen({ sammlung: s, seed }), z = zaehle(plan);
+    pausen += z.pause; abbrueche += z.ab;
+    for (const a of plan.abschnitte.filter((x) => ["gedanke", "vertiefung", "wiederkehr"].includes(x.typ))) assert.ok(!z.m.some((x) => x.takt === a.von && /Pause/.test(x.text)), `erste Aussage in ${a.name} bleibt`);
+    const still = z.m.filter((x) => /Pause/.test(x.text)).map((x) => x.takt);
+    for (const t of still) assert.ok(!still.includes(t + 4), "nie zwei stille Aussagen hintereinander");
+    for (const t of still) assert.ok(!plan.motivNoten.some((n) => n.t >= t && n.t < t + 4 && !n.umkehr), `Takt ${t + 1} ist still`);
+    assert.ok(plan.motivNoten.filter((n) => n.abgerissen).every((n) => n.d <= 1 / 16));
+  }
+  assert.ok(pausen >= 6 && abbrueche >= 4, `${pausen} Pausen, ${abbrueche} Abbrüche in sechs Tracks`);
+  const ohne = zaehle(LU.planen({ sammlung: s, seed: 1, makros: { unterbrechung: 0 } }));
+  assert.ok(ohne.pause + ohne.ab <= 3, "bei 0 fast keine Unterbrechungen");
+});
+
+test("ornament.lucerne: Beat schleppt (Snare hinter dem Schlag) und knarzt (Bearbeitung auf den Drums, Knistern), Knarzen 0 ist sauber", () => {
+  const { s } = testsammlung(), plan = LU.planen({ sammlung: s, seed: 1 }), q = (k) => plan.spuren.find((x) => x.key === k).quelle;
+  assert.ok(q("snare").versatz >= 15 && q("ghost").versatz > 0 && q("kick").versatz === 0, "Snare und Ghosts hinter dem Schlag, Kick vorn");
+  assert.ok(q("hat").swing > q("motiv").swing);
+  assert.ok(q("snare").nach.some((x) => x.art === "alterung" && x.rate < 20000) && q("hat").nach.some((x) => x.art === "knistern"));
+  assert.deepEqual(LU.planen({ sammlung: s, seed: 1, makros: { knarzen: 0 } }).spuren.find((x) => x.key === "snare").quelle.nach, []);
+  const kurz = { ...q("snare"), anzahl: 2, takte: q("snare").takte.slice(8, 10) }, roh = spurR({ ...kurz, nach: [] }, RATE), krumm = spurR(kurz, RATE);
+  assert.equal(krumm.kanaele[0].length, roh.kanaele[0].length);
+  assert.ok(krumm.kanaele[0].every(Number.isFinite));
+  let d = 0; for (let i = 0; i < roh.kanaele[0].length; i++) d += Math.abs(krumm.kanaele[0][i] - roh.kanaele[0][i]);
+  assert.ok(d / roh.kanaele[0].length > 1e-4, "hörbar anders");
+  gleich(spurR(kurz, RATE).kanaele[0], krumm.kanaele[0], "reproduzierbar");
+  const stille = [new Float32Array(RATE), new Float32Array(RATE)]; stille[0][10] = 1;
+  const kn = SA.bearbeiten(stille, RATE, [{ art: "knistern", dichte: 20, db: -20, seed: 1 }]);
+  assert.ok(kn[0].filter((v) => Math.abs(v) > 1e-4).length > 20, "Knackser da");
+});
+
+// ---------- Synth 0.2.0, Klangcharaktere, die vier Schichten der Melodie, Vierteltöne ----------
+const S2 = await c("erzeuger/synth-0.2.0.js");
+
+test("Synth 0.2.0: 22 Presets in 10 Familien (ohne Spiral Goa) klingen, bleiben endlich, sind mono-verträglich und reproduzierbar; alle sechs Charaktere vertreten", () => {
+  const syn = ERZEUGER["synth@0.2.0"], R = 32000;
+  assert.equal(Object.keys(S2.PATCHES).length, 22); assert.equal(Object.keys(syn.stimmen).length, 10);
+  assert.ok(!syn.stimmen.goa && !S2.PATCHES.spiralAcid && !S2.PATCHES.liquidArp, "Spiral Goa ist entfernt");
+  const fam = new Map(); for (const p of Object.values(S2.PATCHES)) fam.set(p.familie, (fam.get(p.familie) ?? 0) + 1);
+  for (const [f, n] of fam) assert.ok(n >= 2, `${f}: mindestens zwei Presets`);
+  for (const ch of S2.CHARAKTERE) assert.ok(Object.values(S2.PATCHES).some((p) => p.charaktere?.includes(ch.key)), `Charakter ${ch.key} fehlt`);
+  for (const [f, st] of Object.entries(syn.stimmen)) for (const k of st.parameter[0].wahl.map((o) => o.wert)) {
+    const p = S2.PATCHES[k], takte = sequenzErzeugen({ rolle: p.rolle, akkorde: [1, 6], kicks: [[0, 10]], anzahl: 2, seed: 2, regler: { spitzen: 100, offbeat: 100, ruhe: 0 } });
+    const q = { erzeuger: "synth@0.2.0", stimme: f, werte: { patch: k }, takte, anzahl: 2, bpm: 110, grundton: 2, leiter: "dorisch", seed: 1 };
+    const r = spurRechnen(q, R);
+    let m = 0; for (const s of r.kanaele) for (const x of s) { assert.ok(Number.isFinite(x), p.name); m = Math.max(m, Math.abs(x)); }
+    assert.ok(m > 0.3 && m <= 0.51, `${p.name}: Spitze ${m}`);
+    const me = messen(r.kanaele, R);
+    assert.ok(me.korrelation > 0.25, `${p.name}: Korrelation ${me.korrelation}`);
+    assert.ok(me.baender.unter120 < 0.5, `${p.name}: Rumpeln ${me.baender.unter120}`);
+    gleich(spurRechnen(q, R).kanaele[0], r.kanaele[0], `${p.name}: reproduzierbar`);
+  }
+});
+
+test("Synth 0.2.0: nicht überarbeitete Presets aus 0.1.0 klingen bitgleich", () => {
+  const R = 24000, takte = ["1+3+5! - - - . . 5,~ - 1 - - - 3 - - -", "6,+1+3 - - - - - - - 4 - 5 - - - - -"];
+  for (const [k, p] of Object.entries(PATCHES)) {
+    if (k === "glassKeys" || k === "wornKeys") continue;   // ausdrücklich überarbeitet
+    if (!S2.PATCHES[k]) continue;   // in 0.2.0 entfernt (Spiral Goa)
+    const q = { stimme: p.familie, werte: { patch: k }, takte, anzahl: 2, bpm: 96, grundton: 4, leiter: "moll", seed: 9 };
+    gleich(spurRechnen({ ...q, erzeuger: "synth@0.2.0" }, R).kanaele[1], spurRechnen({ ...q, erzeuger: "synth@0.1.0" }, R).kanaele[1], p.name);
+  }
+});
+
+test("Synth 0.2.0: jede Färbung verändert den Klang, bleibt endlich und auf derselben Spitze", () => {
+  const R = 24000, takte = ["1+3+5! - - - - - - - 4 - - - . . . .", ". . . . 5 - - - - - - - - - - -"];
+  const q = { erzeuger: "synth@0.2.0", stimme: "shadow", werte: { patch: "shadowChord" }, takte, anzahl: 2, bpm: 90, grundton: 2, leiter: "moll", seed: 4 };
+  const roh = spurRechnen(q, R).kanaele[0];
+  for (const ch of S2.CHARAKTERE) {
+    const k = spurRechnen({ ...q, werte: { patch: "shadowChord", faerbung: ch.key, faerbungMenge: 80 } }, R).kanaele;
+    let m = 0, d = 0; for (let i = 0; i < k[0].length; i++) { assert.ok(Number.isFinite(k[0][i]) && Number.isFinite(k[1][i]), ch.key); m = Math.max(m, Math.abs(k[0][i]), Math.abs(k[1][i])); d += Math.abs(k[0][i] - roh[i]); }
+    assert.ok(m > 0.3 && m <= 0.51, `${ch.key}: Spitze ${m}`); assert.ok(d / roh.length > 1e-3, `${ch.key}: hörbar anders`);
+  }
+});
+
+test("Melodie: Fläche hält Stimmen mit «=» (kein neuer Anschlag), Spitzen selten, Off-Beats auf dem Off-Beat, Ruhe macht stiller", () => {
+  const n = L.notenLesen(["1+3+5! - - - 1=+4+5= - - - 1=+3+5= - - -"], { bpm: 120, anzahl: 1, leiter: "moll" });
+  assert.equal(n.length, 5, "1 und 5 klingen durch, nur 4 und 3 werden neu angeschlagen");
+  assert.equal(n.find((x) => x.halbtoene === 0).dauer, 2);
+  for (let seed = 1; seed <= 12; seed++) {
+    const fl = sequenzErzeugen({ rolle: "flaeche", akkorde: [1, 6, 4, 5], anzahl: 8, seed, regler: { klassik: 90 } });
+    assert.ok(fl.join(" ").includes("="), "Fläche hält Stimmen");
+    const sp = sequenzErzeugen({ rolle: "spitzen", akkorde: [1, 4], anzahl: 8, seed, snares: [[4, 12]] }), zahl = sp.join(" ").split(/\s+/).filter((t) => t !== "." && t !== "-").length;
+    assert.ok(zahl <= 2 * 3 * 2, `Spitzen selten (${zahl})`);
+    // Off-Beats: nur auf den Achtel-Off-Beats (bei Halftime 4 und 12, dazu 14), nie auf Kick oder Snare, als enger Akkord in einer Lage
+    for (const [snares, erlaubt] of [[[[4, 12]], [2, 6, 14]], [[[8]], [4, 6, 12, 14]]]) for (const offb of [20, 50, 100]) {
+      const ob = sequenzErzeugen({ rolle: "offbeat", akkorde: [1, 6, 4, 5], anzahl: 8, seed, kicks: [[0, 10]], snares, belegt: [[0, 2, 4, 6, 8, 10, 12, 14]], regler: { offbeat: offb, klassik: 80 } });
+      let takte = 0;
+      for (const z of ob) {
+        const t = z.split(" "); if (t.some((x) => x !== "." && x !== "-")) takte++;
+        t.forEach((x, i) => {
+          if (x === "." || x === "-") return;
+          assert.ok(erlaubt.includes(i), `Off-Beat auf ${i} (${z})`);
+          const st = x.split("+").map((y) => { const m = y.match(/^(\d)(['’,]*)/); return Number(m[1]) + 7 * ((m[2].match(/'/g) ?? []).length - (m[2].match(/,/g) ?? []).length); });
+          assert.ok(st.length >= 3 && Math.max(...st) - Math.min(...st) <= 6, `enge Lage: ${x}`);
+        });
+      }
+      assert.ok(takte >= 2 && (offb < 100 ? takte < 8 : true), `unregelmässig in ${takte} von 8 Takten`);
+    }
+    const ohneDrums = sequenzErzeugen({ rolle: "offbeat", akkorde: [1], anzahl: 8, seed, regler: { offbeat: 100 } });
+    for (const z of ohneDrums) z.split(" ").forEach((x, i) => { if (x !== "." && x !== "-") assert.ok([2, 6, 10, 14].includes(i), `ohne Drums auf ${i}`); });
+    const viel = (r) => sequenzErzeugen({ rolle: "offbeat", akkorde: [1], anzahl: 8, seed, regler: { offbeat: 80, ruhe: r } }).join(" ").split(/\s+/).filter((t) => t !== "." && t !== "-").length;
+    assert.ok(viel(100) <= viel(0) + 2, "Ruhe macht nicht dichter");
+  }
+  for (const r of ["flaeche", "spitzen", "offbeat", "ruf", "alap", "tanpura"]) {
+    const z = sequenzErzeugen({ rolle: r, akkorde: [1, 6, 4, 5], anzahl: 8, seed: 3 });
+    const no = L.notenLesen(z, { bpm: 90, anzahl: z.length, leiter: "bhairav" });
+    assert.ok(no.length >= 1 && no.every((x) => Number.isFinite(x.halbtoene) && x.dauer > 0), r);
+  }
+});
+
+test("Schichten: Fläche, Off-Beats und Tanpura wiederholen sich erst nach 32 Takten und wechseln Abstände und Tonlängen", () => {
+  for (const rolle of ["flaeche", "offbeat", "tanpura", "spitzen"]) {
+    const z = sequenzErzeugen({ rolle, akkorde: [1, 6, 4, 5], kicks: [[0, 10]], snares: [[4, 12]], anzahl: 64, seed: 7, halftime: rolle !== "offbeat" });
+    assert.equal(z.length, 32, rolle);
+    assert.notDeepEqual(z.slice(0, 8), z.slice(8, 16), `${rolle}: kein Achttakt-Kreis`);
+  }
+  for (let seed = 1; seed <= 6; seed++) {
+    const t = sequenzErzeugen({ rolle: "tanpura", anzahl: 32, seed, halftime: true }).join(" ").split(" ");
+    const an = t.flatMap((x, i) => (x !== "." && x !== "-" ? [i] : [])), abst = new Set(an.slice(1).map((x, i) => x - an[i]));
+    assert.ok(abst.size >= 3, `Tanpura mit wechselnden Abständen (${[...abst]})`);
+    const ob = sequenzErzeugen({ rolle: "offbeat", akkorde: [1, 4], kicks: [[0, 10]], snares: [[4, 12]], anzahl: 32, seed, regler: { offbeat: 70 } }).join(" ").split(" ");
+    const laengen = new Set(); ob.forEach((x, i) => { if (x !== "." && x !== "-") { let d = 1; while (ob[i + d] === "-") d++; laengen.add(d); } });
+    assert.ok(laengen.size >= 2, `Off-Beats mit wechselnder Tonlänge (${[...laengen]})`);
+  }
+});
+
+test("Tonleitern: Maqam mit Vierteltönen ergibt Cent-genaue Frequenzen; Raga-Tonvorrat", () => {
+  assert.equal(L.halbtoene(L.tonLesen("2"), "bayati"), 1.5);
+  assert.equal(L.halbtoene(L.tonLesen("3"), "rast"), 3.5);
+  assert.deepEqual(L.LEITERN.yaman.stufen, [0, 2, 4, 6, 7, 9, 11]);
+  const syn = ERZEUGER["synth@0.2.0"].stimmen.raga, R = 48000;
+  // eine Note auf der zweiten Stufe von Bayati, über den Notenweg der Spur: 150 Cent über dem Grundton (Spieldose ohne obere Teiltöne)
+  const no = L.notenLesen(["2! - - -"], { bpm: 60, anzahl: 1, leiter: "bayati" })[0], ice = ERZEUGER["synth@0.2.0"].stimmen.ice, w = { patch: "musicBoxFrost", helligkeit: 0, charakter: 0, bewegung: 40, waerme: 50, alter: 0, breite: 60, oktave: 0 };
+  const f0 = L.grundFrequenz(9, 432) * 2 ** ice.oktaveVon(w), soll = f0 * 2 ** (no.halbtoene / 12), k = ice.rechne(w, R, { frequenz: soll, dauer: 2, staerke: 0.8, seed: 1 })[0];
+  let z0 = 0, erst = -1, letzt = -1; for (let i = R * 0.2; i < R * 1.2; i++) if (k[i - 1] < 0 && k[i] >= 0) { z0++; if (erst < 0) erst = i; letzt = i; }
+  const f = ((z0 - 1) * R) / (letzt - erst);
+  assert.ok(Math.abs(1200 * Math.log2(f / (f0 * 2 ** (1.5 / 12)))) < 3, `${f.toFixed(2)} Hz statt ${(f0 * 2 ** (1.5 / 12)).toFixed(2)} Hz`);
+  assert.ok(syn.poly({ patch: "tanpuraGlow" }) && !syn.poly({ patch: "sitarGlide" }));
+});
+
+test("Worklet: ■ blendet aus und hält an (der Pegel steigt nicht, die Stelle steht)", async () => {
+  let Klasse;
+  globalThis.sampleRate = RATE;
+  globalThis.AudioWorkletProcessor = class { constructor() { this.port = { postMessage() {}, onmessage: null }; } };
+  globalThis.registerProcessor = (_n, k) => { Klasse = k; };
+  await c("worklet/motor-worklet.js");
+  const w = new Klasse(), sende = (d) => w.port.onmessage({ data: d });
+  sende({ art: "spur", id: "a", kanaele: klang(2) });
+  sende({ art: "start", pos: 0 });
+  const out = [[new Float32Array(BLOCK), new Float32Array(BLOCK)]];
+  const spitze = () => Math.max(...out[0][0].map(Math.abs), ...out[0][1].map(Math.abs));
+  let vorher = 0;
+  for (let i = 0; i < 100; i++) { w.process([], out); vorher = Math.max(vorher, spitze()); }
+  sende({ art: "stop" });
+  let nachher = 0;
+  for (let i = 0; i < 20; i++) { w.process([], out); nachher = Math.max(nachher, spitze()); }
+  assert.ok(nachher <= vorher + 1e-6, `nach ■ lauter: ${nachher} > ${vorher}`);
+  assert.equal(w.m.laeuft, false);
+  const pos = w.m.pos; w.process([], out); assert.equal(w.m.pos, pos); assert.equal(spitze(), 0);
 });

@@ -6,6 +6,8 @@
 //   …~           in diesen Ton gleiten (vom vorigen her)
 //   …!  …_       betont, leise
 //   -            der vorige Ton klingt weiter (auch über den Taktstrich)
+//   …=           (in einem Akkord) dieser Ton klingt aus dem vorigen Akkord weiter, ohne neuen Anschlag: so wandert in einer Fläche eine
+//                einzelne Stimme, während die anderen liegen bleiben (seit Synth 0.2.0)
 //   .            Pause
 // Aus den Stufen wird mit Grundton und Tonleiter die Frequenz.
 
@@ -20,6 +22,18 @@ export const LEITERN = Object.freeze({
   hijaz: { name: "Hijaz", stufen: [0, 1, 4, 5, 7, 8, 10] },
   harmonisch: { name: "harmonisch Moll (Nahawand)", stufen: [0, 2, 3, 5, 7, 8, 11] },
   dur: { name: "Dur", stufen: [0, 2, 4, 5, 7, 9, 11] },
+  // raga-inspiriert (Thaat-Tonvorrat, keine Raga-Praxis: Bewegungsregeln, Vadi und Pakad fehlen)
+  bhairav: { name: "Bhairav (Raga-Inspiration)", stufen: [0, 1, 4, 5, 7, 8, 11] },
+  bhairavi: { name: "Bhairavi (Raga-Inspiration)", stufen: [0, 1, 3, 5, 7, 8, 10] },
+  yaman: { name: "Yaman (Raga-Inspiration)", stufen: [0, 2, 4, 6, 7, 9, 11] },
+  todi: { name: "Todi (Raga-Inspiration)", stufen: [0, 1, 3, 6, 7, 8, 11] },
+  marwa: { name: "Marwa (Raga-Inspiration, ohne 5)", stufen: [0, 1, 4, 6, 9, 11, 12] },
+  // Maqamat mit Vierteltönen (Halbtöne mit Nachkommastelle: 1,5 = 150 Cent), Ausgangspunkt der arabischen Praxis, regional verschieden
+  bayati: { name: "Maqam Bayati (Viertelton)", stufen: [0, 1.5, 3, 5, 7, 8, 10] },
+  rast: { name: "Maqam Rast (Viertelton)", stufen: [0, 2, 3.5, 5, 7, 9, 10.5] },
+  saba: { name: "Maqam Saba (Viertelton)", stufen: [0, 1.5, 3, 4, 7, 8, 10] },
+  kurd: { name: "Maqam Kurd", stufen: [0, 1, 3, 5, 7, 8, 10] },
+  shur: { name: "Dastgah Shur (Viertelton)", stufen: [0, 1.5, 3, 5, 7, 8, 10] },
 });
 
 /** Frequenz des Grundtons (0 = C … 11 = H) in der tiefsten Bass-Oktave: zwischen 30 und 60 Hz */
@@ -34,10 +48,10 @@ export function grundFrequenz(grundton, kammerton = KAMMERTON) {
 export function tonLesen(tok) {
   if (tok === "-") return "-";
   if (tok === "." || !tok) return null;
-  const m = /^([b#]?)(\d+)(['’,]*)(~?)([!_]?)$/.exec(tok);
+  const m = /^([b#]?)(\d+)(['’,]*)(~?)([!_]?)(=?)$/.exec(tok);
   if (!m) return null;
   const okt = [...m[3]].reduce((s, c) => s + (c === "," ? -1 : 1), 0);
-  return { stufe: Number(m[2]), vorzeichen: m[1] === "b" ? -1 : m[1] === "#" ? 1 : 0, oktave: okt, gleiten: m[4] === "~", staerke: m[5] === "!" ? 1 : m[5] === "_" ? 0.5 : 0.8 };
+  return { stufe: Number(m[2]), vorzeichen: m[1] === "b" ? -1 : m[1] === "#" ? 1 : 0, oktave: okt, gleiten: m[4] === "~", staerke: m[5] === "!" ? 1 : m[5] === "_" ? 0.5 : 0.8, ...(m[6] ? { halten: true } : {}) };
 }
 
 /** Halbtöne über dem Grundton */
@@ -58,15 +72,21 @@ export function notenLesen(zeilen, { bpm, anzahl, leiter, swing = 0, menschlich 
     t.forEach((tok, i) => {
       const beginn = b * takt + i * schritt;
       if (tok === "-") { for (const l of letzte) l.ende = beginn + schritt; return; }
-      for (const l of letzte) if (l.ende > beginn) l.ende = beginn;   // eine neue Note oder Pause beendet die vorigen
       // ein Akkord: Stufen mit «+» verbunden (1+3+5); Betonung und Gleiten eines Teils gelten für alle
       const teile = tok.split("+").map(tonLesen).filter((x) => x && x !== "-");
+      // «=»: ein Ton, der schon klingt, klingt weiter (wird mit dem Akkord verlängert); alle anderen enden hier
+      const weiter = new Set();
+      for (const x of teile) if (x.halten) { const h = halbtoene(x, leiter), l = letzte.find((y) => y.halbtoene === h && !weiter.has(y)); if (l) weiter.add(l); }
+      for (const l of letzte) if (!weiter.has(l) && l.ende > beginn) l.ende = beginn;   // eine neue Note oder Pause beendet die vorigen
       if (!teile.length) { letzte = []; return; }
       const sw = i % 2 === 1 ? swing * schritt : 0, jitter = ((rnd() * 2 - 1) * menschlich + versatz) / 1000;
+      const neu = teile.filter((x) => !(x.halten && [...weiter].some((l) => l.halbtoene === halbtoene(x, leiter))));
       const staerke = Math.max(...teile.map((x) => x.staerke)), gleiten = teile.some((x) => x.gleiten);
       gruppe++;
-      letzte = teile.map((x) => ({ beginn: beginn + sw + jitter, ende: beginn + schritt, halbtoene: halbtoene(x, leiter), staerke, gleiten, gruppe }));
-      noten.push(...letzte);
+      for (const l of weiter) l.ende = beginn + schritt;
+      const frisch = neu.map((x) => ({ beginn: beginn + sw + jitter, ende: beginn + schritt, halbtoene: halbtoene(x, leiter), staerke, gleiten, gruppe }));
+      letzte = [...weiter, ...frisch];
+      noten.push(...frisch);
     });
   }
   return noten.map((x) => ({ beginn: x.beginn, dauer: Math.max(0.02, x.ende - x.beginn), halbtoene: x.halbtoene, staerke: x.staerke, gleiten: x.gleiten, gruppe: x.gruppe }));
@@ -81,6 +101,10 @@ const FOLGEN = {
   hijaz: [[1, 2, 1, 7], [1, 1, 2, 1], [1, 4, 2, 1]],
   harmonisch: [[1, 6, 5, 1], [1, 4, 5, 1], [1, 6, 2, 5]],
   dur: [[1, 6, 4, 5], [1, 4, 1, 5]],
+  // raga- und maqam-inspiriert: der Grundton bleibt (Drone), Wechsel nur zu Nachbarstufen
+  bhairav: [[1, 1, 2, 1], [1, 4, 2, 1]], bhairavi: [[1, 1, 2, 1], [1, 7, 2, 1]], yaman: [[1, 1, 2, 1], [1, 5, 2, 1]], todi: [[1, 1, 2, 1], [1, 2, 7, 1]],
+  marwa: [[1, 1, 2, 1], [1, 2, 6, 1]], bayati: [[1, 1, 2, 1], [1, 4, 2, 1], [1, 7, 1, 2]], rast: [[1, 1, 4, 5], [1, 4, 1, 5]], saba: [[1, 1, 2, 1], [1, 3, 2, 1]],
+  kurd: [[1, 1, 2, 1], [1, 7, 6, 7]], shur: [[1, 1, 2, 1], [1, 7, 2, 1]],
 };
 
 export const LINIEN = Object.freeze([
