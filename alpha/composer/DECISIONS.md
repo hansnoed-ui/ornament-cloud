@@ -20,6 +20,18 @@ Hier steht, was Christian entschieden hat und wie er Klänge beurteilt hat, dami
 - Raga- und Maqam-Tonleitern (Bayati, Rast, Saba, Shur mit Vierteltönen) als Inspiration bezeichnet.
 - Kein GPL-Code, keine fremden Assets.
 
+**Off-Beats neu (Urteil auf der Hörseite, 10.11.: «das meiste gefällt gut. die offbeats gehen noch nicht»)**
+- Ursache: Die Off-Beats wichen allen Drumschlägen aus, auch der offenen Hi-Hat, die genau auf den Achtel-Off-Beats liegt. Übrig blieben zufällige Sechzehntel, dazu Zweiklänge, die in der Lage sprangen (teils Sekunden), rund 20 dB unter den Drums.
+- Jetzt: kurze Akkord-Stiche auf den Achtel-Off-Beats (2, 6, 10, 14; Halftime 4 und 12), nie auf Kick oder Snare. Unregelmässig ist nur, in welchen Takten sie kommen: eine Figur, die wiederkehrt und ab und zu einen Stich verliert oder dazugewinnt. Enge Lage (Terz, Quinte, Septime oder Dreiklang, immer die nächste Umkehrung), Quartvorhalt mit Klassik.
+- Off-Beats 6 dB lauter in Ornament und DnB, Echo-Anteil mindestens 40 % (Dub-Echo). Ornament nimmt Velvet Rhodes Haze statt Worn Electric Keys («nein» zweimal).
+- Urteil zu den neuen Off-Beats: alle drei Dichten «gut» (30 «sehr gut»), Velvet Rhodes und Shadow Chord «gut», Glass Circuit Keys «nein». Vorgabe jetzt Off-Beat 30, Ornament bleibt bei Velvet Rhodes.
+
+**Unregelmässiger verteilt (Notizen 10.11.: «haze und tampure könnten noch unregelmässiger verteilt sein, auch in der tonlänge», «fläche könnte noch unregelmässiger verteilt sein»)**
+- Fläche, Spitzen, Off-Beats und Tanpura wiederholen sich erst nach bis zu 32 Takten statt nach 8; vorher wurde jede Unregelmässigkeit über den Track zur Schleife. Der ganze Track rechnet dadurch etwa 1 s länger.
+- Tanpura: wechselnde Abstände (drei Viertel bis doppeltes Grundmass), manche Zupfer früh abgedämpft, ab und zu ein oder zwei Takte Pause; der Zyklus beginnt danach wieder mit Pa.
+- Fläche: Harmonien halb bis doppelt so lang wie das Mass aus «Wandel», späte Einsätze, manchmal ein oder zwei Takte Luft; nach der Luft setzen alle Stimmen neu ein.
+- Off-Beats: wechselnde Tonlänge, manchmal klingt ein Akkord über mehrere Schläge.
+
 ## 9. November 2026
 
 **Bereiche und Fassungen (Auftrag `bereiche-und-spuren.md`)**

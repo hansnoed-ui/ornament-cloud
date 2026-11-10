@@ -497,7 +497,7 @@ async function synthDazu(vorgabe = null) {
     grundton: bass?.quelle.grundton ?? Number($("tonart").value), leiter: bass?.quelle.leiter ?? $("leiter").value, kammerton: kammerton(), swing: drums?.quelle.swing ?? 0, menschlich: 2, versatz: 0, seed: 1 + Math.floor(Math.random() * 99998) };
   q.takte = synthSequenz(q);
   const echoMs = Math.round((0.75 * 60000) / (bpm >= 140 ? bpm / 2 : bpm));
-  const sp = PR.erzeugteSpurDazu(z.projekt, q, { name: `${st.name} · ${pt.name}`, typ: "synth", pegel: st.pegel + (vorgabe?.[3]?.pegel ?? 0), glanz: vorgabe ? { menge: 35, biss: 55, luft: 3 } : null, echo: { anteil: Math.round((pt.echo ?? 0.2) * 100), zeit: echoMs }, raum: { anteil: 18, nachhall: 2.6, daempfung: 5000, vorverz: 20 } });
+  const sp = PR.erzeugteSpurDazu(z.projekt, q, { name: `${st.name} · ${pt.name}`, typ: "synth", pegel: st.pegel + (vorgabe?.[3]?.pegel ?? 0), glanz: vorgabe ? { menge: 35, biss: 55, luft: 3 } : null, echo: { anteil: Math.round(Math.max(pt.echo ?? 0.2, rolle === "offbeat" ? 0.4 : 0) * 100), zeit: echoMs }, raum: { anteil: 18, nachhall: 2.6, daempfung: 5000, vorverz: 20 } });
   melde(`${pt.name} wird gerechnet …`, 0); await atmen();
   const fertig = spurNeuRechnen(sp);
   if (vorgabe) return fertig;
