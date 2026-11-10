@@ -174,7 +174,7 @@ export const BESETZUNG = Object.freeze({
   hiphop: { mix: [["orient", "darbuka"]], linie: "kick", synths: [["tape", "amberMemory", "schwebe"]], natur: [["regen", {}], ["walchor", { verwandlung: 50 }]] },
   pop: { mix: [["persisch", "zarb"]], linie: "zyklus", synths: [["darkpop", "darkBrass", "schwebe"]], natur: [["vogel", { dichte: 25 }]] },
   minimal: { mix: [["ecm", "udu"]], linie: "zyklus", synths: [["shadow", "deepRoomDrone", "schwebe"]], natur: [["regen", { verwandlung: 30 }], ["feuer", { variante: "Glut" }]] },
-  goa: { mix: [["persisch", "zarb"]], linie: "zyklus", synths: [["goa", "spiralAcid"], ["shadow", "deepRoomDrone", "schwebe"]], natur: [["insekten", { verwandlung: 70 }], ["gezeiten", { verwandlung: 80 }]] },
+  goa: { mix: [["persisch", "zarb"]], linie: "zyklus", synths: [["shadow", "deepRoomDrone", "schwebe"], ["ice", "musicBoxFrost", "spitzen", { pegel: -7, regler: { spitzen: 40 } }], ["trance", "crystalPluck", "offbeat", { pegel: 0, regler: { offbeat: 30 } }]], natur: [["insekten", { verwandlung: 70 }], ["gezeiten", { verwandlung: 80 }]] },
   house: { mix: [["orient", "riq"]], linie: "offbeat", synths: [["house", "velvetOrgan"], ["trance", "openSky", "schwebe"]], natur: [["regen", { verwandlung: 40 }]] },
   indien: { mix: [["dnb", "hat"]], linie: "zyklus", synths: [["tape", "amberMemory", "schwebe"], ["raga", "tanpuraGlow", "tanpura", { pegel: -3 }]], natur: [["vogel", { dichte: 25 }], ["regen", {}]] },
   orient: { ohne: ["riq"], mix: [["dnb", "hat"]], linie: "zyklus", synths: [["shadow", "shadowChord", "schwebe"]], natur: [["gezeiten", { wellen: 50, wind: 40 }], ["feuer", {}]] },

@@ -614,9 +614,10 @@ test("ornament.lucerne: Plan mit Gerüst 88 Takte, Groove auf 1-basierten Schrit
 // ---------- Synth 0.2.0, Klangcharaktere, die vier Schichten der Melodie, Vierteltöne ----------
 const S2 = await c("erzeuger/synth-0.2.0.js");
 
-test("Synth 0.2.0: 24 Presets in 11 Familien klingen, bleiben endlich, sind mono-verträglich und reproduzierbar; alle sechs Charaktere vertreten", () => {
+test("Synth 0.2.0: 22 Presets in 10 Familien (ohne Spiral Goa) klingen, bleiben endlich, sind mono-verträglich und reproduzierbar; alle sechs Charaktere vertreten", () => {
   const syn = ERZEUGER["synth@0.2.0"], R = 32000;
-  assert.equal(Object.keys(S2.PATCHES).length, 24); assert.equal(Object.keys(syn.stimmen).length, 11);
+  assert.equal(Object.keys(S2.PATCHES).length, 22); assert.equal(Object.keys(syn.stimmen).length, 10);
+  assert.ok(!syn.stimmen.goa && !S2.PATCHES.spiralAcid && !S2.PATCHES.liquidArp, "Spiral Goa ist entfernt");
   const fam = new Map(); for (const p of Object.values(S2.PATCHES)) fam.set(p.familie, (fam.get(p.familie) ?? 0) + 1);
   for (const [f, n] of fam) assert.ok(n >= 2, `${f}: mindestens zwei Presets`);
   for (const ch of S2.CHARAKTERE) assert.ok(Object.values(S2.PATCHES).some((p) => p.charaktere?.includes(ch.key)), `Charakter ${ch.key} fehlt`);
@@ -637,6 +638,7 @@ test("Synth 0.2.0: nicht überarbeitete Presets aus 0.1.0 klingen bitgleich", ()
   const R = 24000, takte = ["1+3+5! - - - . . 5,~ - 1 - - - 3 - - -", "6,+1+3 - - - - - - - 4 - 5 - - - - -"];
   for (const [k, p] of Object.entries(PATCHES)) {
     if (k === "glassKeys" || k === "wornKeys") continue;   // ausdrücklich überarbeitet
+    if (!S2.PATCHES[k]) continue;   // in 0.2.0 entfernt (Spiral Goa)
     const q = { stimme: p.familie, werte: { patch: k }, takte, anzahl: 2, bpm: 96, grundton: 4, leiter: "moll", seed: 9 };
     gleich(spurRechnen({ ...q, erzeuger: "synth@0.2.0" }, R).kanaele[1], spurRechnen({ ...q, erzeuger: "synth@0.1.0" }, R).kanaele[1], p.name);
   }
