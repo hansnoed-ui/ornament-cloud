@@ -79,3 +79,12 @@ Hier steht, was Christian entschieden hat und wie er Klänge beurteilt hat, dami
 **Urteil (Christian, 9. November 2026, nach den Hörproben):** «Es tönt recht fett, und dank den Möglichkeiten des Mischens ist vieles veränderbar.» Drums 0.1.0 und Perkussion 0.1.0 bleiben als erste Version so. Weitere Perkussionsinstrumente kommen später dazu, Christian liefert dafür Vorlagen. Hörseite: https://claude.ai/artifact/Wn2jNitGDPDVymJzk86aMZ (Urteile im Speicher `urteile`).
 
 **Einzelurteile:** noch keine. Die Urteile aus dem Feld «Urteil festhalten» werden mit dem Projekt gespeichert und hier gesammelt.
+
+## Seite verlassen und Bildschirmsperre (10. November 2026)
+
+Christian: Läuft Musik und die Seite wird verlassen oder der Bildschirm sperrt, bricht der Ton ab und knistert danach lange. Ursache: Mobil (vor allem iOS) hält das System den AudioContext an oder unterbricht ihn; kommt er zurück, liefert er oft gestört weiter, bis die Seite neu geladen wird.
+
+- Verschwindet die Seite, während Musik läuft, wird sie in 15 ms ausgeblendet und angehalten, der AudioContext ruht. Die Stelle bleibt; beim Zurückkommen sagt eine Meldung, dass ▶ dort weiterspielt. Kein automatisches Weiterspielen nach der Sperre.
+- Mobil wird der AudioContext beim nächsten ▶ neu gebaut und mit Spuren, Referenz, Zustand, Schleife und Stelle gefüllt; ebenso überall, wenn das System den Ton unterbrochen hat oder der Kontext nicht innerhalb einer Sekunde wieder läuft.
+- Start und Halt blenden im Worklet 15 ms ein und aus (auch beim normalen ■), der Motor selbst bleibt bitgleich zum Export.
+- Weiterspielen im Hintergrund wurde nicht gewählt: Web Audio läuft mobil im Hintergrund nicht verlässlich, und der Motor rechnet in Echtzeit.
