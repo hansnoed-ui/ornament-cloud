@@ -74,11 +74,11 @@ async function starte() {
     if (!antwort.ok) throw new Error(`HTTP ${antwort.status}`);
     ep = await antwort.json();
   } catch (e) {
-    zeige("Die Angaben zur EP (ep.json) konnten nicht geladen werden. Bitte die Seite neu laden.");
+    zeige("Die Angaben zur Maxi (ep.json) konnten nicht geladen werden. Bitte die Seite neu laden.");
     return;
   }
   const { fehler, platzhalter } = pruefeEp(ep);
-  if (fehler.length) { zeige(`Die Angaben zur EP sind unvollständig: ${fehler.join("; ")}.`); return; }
+  if (fehler.length) { zeige(`Die Angaben zur Maxi sind unvollständig: ${fehler.join("; ")}.`); return; }
 
   const starts = startzeiten(ep);
   const coverUrl = new URL(ep.cover, document.baseURI).href;
