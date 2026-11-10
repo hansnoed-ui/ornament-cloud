@@ -16,6 +16,7 @@ Seit 10. November 2026 (Wunsch von Christian): eine schlichte Seite für Freunde
 | `listen/directer/player.js` | Wiedergabe, Trackliste, Media Session; die reinen Rechnungen sind exportiert und ohne Browser getestet |
 | `listen/directer/player.css` | Gestaltung, fürs Telefon zuerst, immer dunkel |
 | `listen/directer/cover.jpg`, `cover-512.jpg` | Christians Cover (1254 × 1254, «the i» oben links, «directer» unten rechts) |
+| `listen/directer/vorschau.jpg` | das Cover in 800 × 800 unter 300 KB als Vorschaubild für Linkvorschauen (`og:image`); WhatsApp lässt grössere Bilder weg |
 | `listen/directer/audio/the-i-directer.wav` und `audio/the-i-01-….wav` bis `03` | **die EP und die drei Einzeldateien zum Herunterladen, nicht in Git** (`.gitignore`) und von `rsync --delete` ausgenommen (`tools/hostpoint/ausschluss.txt`) |
 | `tools/ep-wav.mjs` | baut die WAV und schreibt die Marken in `ep.json` |
 | `tools/ep-range.mjs` | prüft eine Audioquelle auf 206 Partial Content |
