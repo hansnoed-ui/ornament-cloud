@@ -39,8 +39,8 @@ const sammlungSpeichern = (ordner, s) => writeFileSync(join(ordner, "klangsammlu
 function sammlungAktualisieren(ordner, { nur = null } = {}) {
   let s = sammlungLaden(ordner);
   const auswahl = existsSync(join(ordner, "lucerne-auswahl.json")) ? JSON.parse(readFileSync(join(ordner, "lucerne-auswahl.json"), "utf8")).quellen : {};
-  for (const name of readdirSync(ordner).filter((f) => /\.wav$/i.test(f) && (!nur || nur.includes(f))).sort()) {
-    const bytes = readFileSync(join(ordner, name)), h = sha(bytes), id = K.quelleId(h);
+  for (const name of wavListe(ordner).filter((f) => !nur || nur.includes(f))) {
+    const bytes = readFileSync(join(ordner, name)), h = sha(bytes), id = K.quelleId(h), hk = herkunftVon(ordner, name);
     if (s.quellen.some((q) => q.id === id)) {
       // bekannte Quelle: Analyse bleibt; neu kuratierte Ausschnitte (gleiche ID = schon da) kommen dazu
       const neu = (auswahl[name] ?? []).map((c) => ({ ...c, id: K.ausschnittId(id, c.von, c.bis, c.rolle), quelle: id, rollen: [c.rolle], kuratiert: true })).filter((c) => !s.ausschnitte.some((a) => a.id === c.id));
@@ -49,7 +49,8 @@ function sammlungAktualisieren(ordner, { nur = null } = {}) {
     }
     const t0 = Date.now(), w = wavSpuren(new Uint8Array(bytes)), an = K.analysieren(w.spuren, w.rate);
     const test = /TEST/i.test(name);
-    const r = K.quelleHinzufuegen(s, { name, sha256: h, bytes: bytes.length, rate: w.rate, kanaele: w.spuren.length, dauer: an.dauer, herkunft: test ? "test" : "eigen", notiz: test ? "synthetische Testquelle (kein musikalisches Material)" : "" }, an);
+    const r = K.quelleHinzufuegen(s, { name, sha256: h, bytes: bytes.length, rate: w.rate, kanaele: w.spuren.length, dauer: an.dauer, herkunft: test ? "test" : hk?.herkunft ?? "eigen", lizenz: hk?.lizenz, notiz: test ? "synthetische Testquelle (kein musikalisches Material)" : hk?.notiz ?? "" }, an);
+    if (hk?.nichtVeroeffentlichen) r.quelle.nichtVeroeffentlichen = true;
     s = r.sammlung;
     const kur = auswahl[name];
     const cuts = kur ? kur.map((c) => ({ ...c, id: K.ausschnittId(id, c.von, c.bis, c.rolle), quelle: id, rollen: [c.rolle], kuratiert: true })) : K.ausschnitteVorschlagen(r.quelle);
@@ -58,6 +59,22 @@ function sammlungAktualisieren(ordner, { nur = null } = {}) {
   }
   sammlungSpeichern(ordner, s);
   return s;
+}
+
+/** alle WAV im Ordner und in Unterordnern (Name = Pfad relativ zum Ordner, mit «/») */
+function wavListe(ordner, pre = "") {
+  const out = [];
+  for (const e of readdirSync(join(ordner, pre), { withFileTypes: true })) {
+    if (e.isDirectory() && !/^(sammlung-test|\.)/.test(e.name)) out.push(...wavListe(ordner, pre ? `${pre}/${e.name}` : e.name));
+    else if (/\.wav$/i.test(e.name)) out.push(pre ? `${pre}/${e.name}` : e.name);
+  }
+  return out.sort();
+}
+/** Herkunft je Unterordner: herkunft.json { herkunft: "extern", lizenz, notiz, nichtVeroeffentlichen } */
+function herkunftVon(ordner, name) {
+  const teile = name.split("/"); if (teile.length < 2) return null;
+  const f = join(ordner, ...teile.slice(0, -1), "herkunft.json");
+  return existsSync(f) ? JSON.parse(readFileSync(f, "utf8")) : null;
 }
 
 function materialLaden(ordner, s) {
@@ -118,6 +135,14 @@ async function exportZip(datei, plan, p, spuren, sammlung) {
   console.log(`  → ${datei}: ${p.spuren.length} Stems, ${marker.length} Zeitmarken`);
 }
 
+/** Warnung, wenn fremdes, geschütztes Material im Plan steckt (wie NC beim Export des Composers) */
+function warnenExtern(plan, s) {
+  const ids = new Set(Object.values(plan.material).flat().map((id) => s.ausschnitte.find((a) => a.id === id)?.quelle));
+  const ext = s.quellen.filter((q) => ids.has(q.id) && (q.herkunft === "extern" || q.nichtVeroeffentlichen));
+  if (ext.length) console.log(`  ACHTUNG: fremdes Material (${ext.map((q) => `${q.name}: ${q.lizenz ?? "Lizenz unbekannt"}`).join("; ")}) – nur privat, nicht veröffentlichen`);
+  return ext;
+}
+
 /** Herkunft jedes verwendeten Ausschnitts (für die Dokumentation) */
 function herkunftTabelle(plan, s) {
   const zeilen = [];
@@ -173,14 +198,19 @@ if (modus === "sammlung") {
   writeFileSync(join(ziel, "studie.json"), JSON.stringify(ergebnis, null, 1));
 } else if (modus === "track") {
   const s = sammlungAktualisieren(ordner), m = materialLaden(ordner, s); mkdirSync(ziel, { recursive: true });
-  const plan = LU.planen({ sammlung: s, seed });
+  const auswahl = process.env.LUC_QUELLEN ? s.quellen.filter((q) => q.name.startsWith(process.env.LUC_QUELLEN)).map((q) => q.id) : null;
+  // LUC_MATERIAL='{"rolle": ["Name oder Teil davon", …], …}' legt das Material je Rolle ausdrücklich fest
+  const ersetze = process.env.LUC_MATERIAL ? Object.fromEntries(Object.entries(JSON.parse(process.env.LUC_MATERIAL)).map(([r, namen]) => [r, namen.map((n) => { const c = s.ausschnitte.find((x) => x.name === n) ?? s.ausschnitte.find((x) => (x.name ?? "").includes(n)); if (!c) throw new Error(`kein Ausschnitt «${n}»`); return c.id; })])) : null;
+  const plan = LU.planen({ sammlung: s, seed, auswahl, ersetze, bpm: process.env.LUC_BPM ? Number(process.env.LUC_BPM) : undefined, variieren: !!process.env.LUC_VARIIEREN, makros: process.env.LUC_MAKROS ? JSON.parse(process.env.LUC_MAKROS) : undefined });
   console.log(`Tonart ${plan.grundton} ${plan.leiter} (${plan.tonartGrund}), ${plan.bpm} BPM, ${plan.takte} Takte + ${LU.AUSKLANG} Ausklang, ${plan.spuren.length} Spuren`);
   for (const h of plan.hinweise) console.log(`  Hinweis: ${h}`);
   console.log(herkunftTabelle(plan, s));
+  warnenExtern(plan, s);
   const t0 = Date.now(), { p, spuren } = await planRechnen(plan, m);
   console.log(`  gerechnet in ${Math.round((Date.now() - t0) / 1000)} s`);
-  speichern(join(ziel, `ornament-lucerne-erinnerung-${seed}.wav`), await mischen(p, spuren, -14));
-  await exportZip(join(ziel, `ornament-lucerne-erinnerung-${seed}.zip`), plan, p, spuren, s);
+  const nameT = process.env.LUC_NAME ?? `ornament-lucerne-erinnerung-${seed}`;
+  speichern(join(ziel, `${nameT}.wav`), await mischen(p, spuren, -14));
+  if (!process.env.LUC_OHNE_ZIP) await exportZip(join(ziel, `${nameT}.zip`), plan, p, spuren, s);
   writeFileSync(join(ziel, `plan-${seed}.json`), JSON.stringify(plan, null, 1));
   console.log(plan.abschnitte.map((a) => `T${a.von + 1}–${a.bis}: ${a.name} (${r2((a.von * 240) / plan.bpm)} s)`).join("\n"));
 } else if (modus === "fassung") {
