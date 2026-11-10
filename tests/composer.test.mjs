@@ -595,6 +595,22 @@ test("Melodie: Fläche hält Stimmen mit «=» (kein neuer Anschlag), Spitzen se
   }
 });
 
+test("Schichten: Fläche, Off-Beats und Tanpura wiederholen sich erst nach 32 Takten und wechseln Abstände und Tonlängen", () => {
+  for (const rolle of ["flaeche", "offbeat", "tanpura", "spitzen"]) {
+    const z = sequenzErzeugen({ rolle, akkorde: [1, 6, 4, 5], kicks: [[0, 10]], snares: [[4, 12]], anzahl: 64, seed: 7, halftime: rolle !== "offbeat" });
+    assert.equal(z.length, 32, rolle);
+    assert.notDeepEqual(z.slice(0, 8), z.slice(8, 16), `${rolle}: kein Achttakt-Kreis`);
+  }
+  for (let seed = 1; seed <= 6; seed++) {
+    const t = sequenzErzeugen({ rolle: "tanpura", anzahl: 32, seed, halftime: true }).join(" ").split(" ");
+    const an = t.flatMap((x, i) => (x !== "." && x !== "-" ? [i] : [])), abst = new Set(an.slice(1).map((x, i) => x - an[i]));
+    assert.ok(abst.size >= 3, `Tanpura mit wechselnden Abständen (${[...abst]})`);
+    const ob = sequenzErzeugen({ rolle: "offbeat", akkorde: [1, 4], kicks: [[0, 10]], snares: [[4, 12]], anzahl: 32, seed, regler: { offbeat: 70 } }).join(" ").split(" ");
+    const laengen = new Set(); ob.forEach((x, i) => { if (x !== "." && x !== "-") { let d = 1; while (ob[i + d] === "-") d++; laengen.add(d); } });
+    assert.ok(laengen.size >= 2, `Off-Beats mit wechselnder Tonlänge (${[...laengen]})`);
+  }
+});
+
 test("Tonleitern: Maqam mit Vierteltönen ergibt Cent-genaue Frequenzen; Raga-Tonvorrat", () => {
   assert.equal(L.halbtoene(L.tonLesen("2"), "bayati"), 1.5);
   assert.equal(L.halbtoene(L.tonLesen("3"), "rast"), 3.5);

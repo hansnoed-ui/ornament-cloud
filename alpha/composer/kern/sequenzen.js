@@ -19,7 +19,7 @@ export const REGLER = Object.freeze([
   { key: "klassik", name: "Klassik", hilfe: "Orgelpunkt, Vorhalte, chromatisch absteigende Innenstimme, Glockenakkorde, Sequenzen" },
   { key: "ruhe", name: "Ruhe", hilfe: "Anteil an Pausen und Stillstand" },
 ]);
-export const REGLER_STD = Object.freeze({ wandel: 40, weite: 60, spitzen: 40, offbeat: 45, klassik: 50, ruhe: 40 });
+export const REGLER_STD = Object.freeze({ wandel: 40, weite: 60, spitzen: 40, offbeat: 30, klassik: 50, ruhe: 40 });
 
 export const ROLLEN = Object.freeze([
   { key: "flaeche", name: "Fläche (wandernde Stimmen)" }, { key: "spitzen", name: "Spitzen (helle Einzelklänge)" }, { key: "offbeat", name: "Off-Beat (unregelmässig)" },
@@ -45,12 +45,15 @@ export function sequenzErzeugen({ rolle = "pad", akkorde = [1], kicks = null, an
   const rnd = zufall(seed), takte = Math.min(anzahl, 8), zeilen = [];
   if (rolle === "schwebe") return schwebe(akkorde, rnd);
   const R = { ...REGLER_STD, ...(regler ?? {}) }, a = akkorde.length ? akkorde : [1];
-  if (rolle === "flaeche") return flaeche(a, rnd, R, Math.min(anzahl, R.wandel < 34 && anzahl >= 16 ? 16 : 8), halftime);
-  if (rolle === "spitzen") return spitzen(a, rnd, R, takte, snares);
-  if (rolle === "offbeat") return offbeat(a, rnd, R, takte, { belegt, kicks, snares, zyklus });
+  // Fläche, Spitzen, Off-Beats und Tanpura wiederholen sich erst nach bis zu 32 Takten: in acht Takten wäre jede Unregelmässigkeit nach
+  // dem zweiten Durchlauf eine Regel (Urteil 10.11.: «könnten noch unregelmässiger verteilt sein, auch in der Tonlänge»)
+  const lang = Math.min(anzahl, 32);
+  if (rolle === "flaeche") return flaeche(a, rnd, R, lang, halftime);
+  if (rolle === "spitzen") return spitzen(a, rnd, R, lang, snares);
+  if (rolle === "offbeat") return offbeat(a, rnd, R, lang, { belegt, kicks, snares, zyklus });
   if (rolle === "ruf") return ruf(a, rnd, R, takte);
   if (rolle === "alap") return alap(rnd, R, takte);
-  if (rolle === "tanpura") return tanpura(rnd, takte, halftime);
+  if (rolle === "tanpura") return tanpura(rnd, R, lang, halftime);
   const stufe = (b) => { const a = akkorde.length ? akkorde : [1]; return a[(halftime ? Math.floor(b / 2) * 2 : b) % a.length]; };
   const vier = rnd() < 0.5 ? [0, 2, 4, 6] : [0, 2, 4, 8];   // Septime oder None oben
   const richtung = ["auf", "ab", "aufab", "zufall"][Math.floor(rnd() * 4)];
@@ -136,8 +139,17 @@ function flaeche(akkorde, rnd, R, L, halftime) {
   let span = R.wandel > 66 ? 2 : R.wandel > 33 ? 4 : 8; if (halftime) span = Math.min(L, span * 2);
   const nSt = 3 + Math.round((R.weite / 100) * 3), weit = R.weite / 100, orgel = k > 0.3 && rnd() < 0.4 + k * 0.5;
   let vorher = null;
-  for (let b0 = 0; b0 < L; b0 += span) {
-    const g = akkorde[b0 % akkorde.length], leiter = [0, 2, 4, 6, 8, 11, 13, 15, 18, 20];   // 1 3 5 7 9, dann 5 7 9 … eine Oktave höher
+  // Harmonien unterschiedlich lang (halb bis doppelt so lang wie «span»), manchmal ein oder zwei Takte Luft dazwischen
+  const bloecke = [];
+  let nachLuft = false, pedalKlingt = false;
+  for (let b = 0; b < L;) {
+    const len = Math.min(L - b, Math.max(1, Math.round(span * [0.5, 1, 1, 1.5, 2][Math.floor(rnd() * 5)])));
+    bloecke.push([b, len]); b += len;
+    if (b < L - 1 && rnd() < 0.1 + (R.ruhe / 100) * 0.3) { const luft = Math.min(L - b - 1, 1 + Math.floor(rnd() * 2)); bloecke.push([b, -luft]); b += luft; }
+  }
+  for (const [b0, len0] of bloecke) {
+    if (len0 < 0) { z[b0 * 16] = "."; for (let p2 = b0 * 16 + 1; p2 < (b0 - len0) * 16; p2++) z[p2] = "-"; nachLuft = true; pedalKlingt = false; continue; }   // Luft: die Fläche schweigt
+    const span = len0, g = akkorde[b0 % akkorde.length], leiter = [0, 2, 4, 6, 8, 11, 13, 15, 18, 20];   // 1 3 5 7 9, dann 5 7 9 … eine Oktave höher
     // Kandidaten: aufsteigend aus Akkordtönen, mit Sprüngen je nach Weite; der nächste am vorigen Klang gewinnt
     let best = null, bestD = Infinity;
     for (let c = 0; c < 8; c++) {
@@ -146,15 +158,17 @@ function flaeche(akkorde, rnd, R, L, halftime) {
       const d = vorher ? st.reduce((s2, x, i) => s2 + Math.abs(x - (vorher[i] ?? vorher.at(-1))), 0) : 0;
       if (d < bestD) { bestD = d; best = st; }
     }
-    const stimmen = best.map((x) => ({ stufe: x, vz: 0 })), anf = b0 * 16 + (rnd() < 0.5 ? 0 : 1 + Math.floor(rnd() * 2)), ende = Math.min(S, (b0 + span) * 16);
+    const stimmen = best.map((x) => ({ stufe: x, vz: 0 })), anf = b0 * 16 + (rnd() < 0.4 ? 0 : [1, 2, 3, 4, 6][Math.floor(rnd() * 5)]), ende = Math.min(S, (b0 + span) * 16);
     // Vorhalt: die Terz (g+2) beginnt als Quarte (g+3) und löst sich in der Mitte auf
     const terz = stimmen.findIndex((x) => x.stufe % 7 === (g + 2) % 7 && x.stufe > g), vorhalt = terz > 0 && rnd() < k * 0.8;
     if (vorhalt) stimmen[terz] = { stufe: stimmen[terz].stufe + 1, vz: 0 };
     const pedal = orgel ? [{ stufe: 1, vz: 0, okt: -1 }] : [];
-    const schreibe = (pos, liste, neu, st = "") => { z[pos] = [...pedal.map((p) => ton({ ...p, halten: pos > 0 })), ...liste.map((x, i) => ton({ ...x, st: i === liste.length - 1 ? st : "", halten: !neu.includes(i) }))].join("+"); };
+    const schreibe = (pos, liste, neu, st = "") => { z[pos] = [...pedal.map((p) => ton({ ...p, halten: pedalKlingt })), ...liste.map((x, i) => ton({ ...x, st: i === liste.length - 1 ? st : "", halten: !neu.includes(i) }))].join("+"); pedalKlingt = true; };
     // ein neuer Klang: Stimmen, die gleich bleiben, klingen weiter (Stimmführung über die Harmoniegrenze)
     const gleich = vorher ? stimmen.map((x, i) => (vorher[i] === x.stufe ? -1 : i)).filter((i) => i >= 0) : stimmen.map((_, i) => i);
-    schreibe(anf, stimmen, vorher ? gleich : stimmen.map((_, i) => i), b0 === 0 ? "!" : "");
+    if (anf > b0 * 16 && vorher === null) z[b0 * 16] = ".";
+    schreibe(anf, stimmen, vorher && !nachLuft ? gleich : stimmen.map((_, i) => i), b0 === 0 || nachLuft ? "!" : "");
+    nachLuft = false;
     // Bewegung innerhalb der Harmonie: Vorhalt auflösen, Lamento-Gang, Wechselnoten in einer Innenstimme
     const punkte = []; for (let b = b0 + 1; b < Math.min(L, b0 + span); b++) punkte.push(b * 16 + (rnd() < 0.6 ? 0 : 2 + Math.floor(rnd() * 3)));
     if (vorhalt) punkte.unshift(anf + Math.max(4, Math.round((ende - anf) / 2 / 4) * 4 - 4));
@@ -206,7 +220,8 @@ function spitzen(akkorde, rnd, R, takte, snares) {
 /**
  * Off-Beats: kurze Akkord-Stiche auf den Achtel-Off-Beats, also zwischen den Schlägen, dort wo die offene Hi-Hat liegt, nie auf Kick oder
  * Snare. Unregelmässig ist, in welchen Takten sie kommen, nicht wo im Takt: je Sequenz eine Figur (ein, zwei oder mehr Stiche), die in
- * unregelmässig verteilten Takten wiederkehrt, ab und zu einen Stich verliert oder dazugewinnt; ab Takt 5 manchmal eine zweite Figur.
+ * unregelmässig verteilten Takten wiederkehrt, ab und zu einen Stich verliert oder dazugewinnt; in der zweiten Hälfte manchmal eine zweite
+ * Figur. Die Tonlänge wechselt: meist kurz, manchmal klingt ein Akkord über mehrere Schläge.
  * Die Stimmen bleiben eng in einer Lage (Terz, Quinte, Septime ohne Grundton oder Dreiklang; immer die nächste Umkehrung), das Echo der
  * Spur trägt sie weiter. Mit Klassik ein Quartvorhalt, der sich auf den nächsten Stich in die Terz löst. Das Raster folgt der Snare:
  * Snare auf 2 und 4 → Off-Beats auf 2, 6, 10, 14; Halftime (Snare auf 3) → 4 und 12. Mit «zyklus» (7, 10 oder 16 Sechzehntel, z. B. Rupak,
@@ -232,7 +247,9 @@ function offbeat(akkorde, rnd, R, takte, { belegt, kicks, snares, zyklus }) {
   const dichte = () => (p < 0.35 ? "selten" : p < 0.7 ? (rnd() < 0.5 ? "selten" : "mittel") : rnd() < 0.4 ? "mittel" : "dicht");
   const figurA = wahl(fig[dichte()]), figurB = rnd() < 0.4 ? wahl(fig[dichte()]) : figurA;
   const lage = R.weite > 70 ? [2, 4, 6, 8] : rnd() < 0.6 ? [2, 4, 6] : [0, 2, 4], mitte = 6;
-  const lang = halb ? 2 + (rnd() < 0.5 ? 1 : 0) : rnd() < 0.5 ? 1 : 2;
+  // Tonlänge je Stich: meist kurz, manchmal klingt ein Akkord über mehrere Schläge (bis zum nächsten Stich)
+  const dauer = () => (rnd() < 0.2 + 0.1 * k ? (halb ? 6 : 3) + Math.floor(rnd() * (halb ? 7 : 5)) : (halb ? 2 : 1) + (rnd() < 0.45 ? 1 : 0));
+  const haelfte = Math.max(4, Math.floor(takte / 2));
   // welche Takte: unregelmässig, mindestens zwei, mit Ruhe weniger
   const anteil = Math.max(0.12, Math.min(0.95, 0.3 + 0.55 * p - 0.25 * ruhe));
   const aktiv = Array.from({ length: takte }, () => rnd() < anteil);
@@ -243,9 +260,9 @@ function offbeat(akkorde, rnd, R, takte, { belegt, kicks, snares, zyklus }) {
     let stellen;
     if (ZYKLEN[zyklus]) {
       const im = []; for (let s2 = 0; s2 < 16; s2++) if (ZYKLEN[zyklus].includes((b * 16 + s2) % zyklus) && s2 % 4 !== 0 && !sperre.includes(s2)) im.push(s2);
-      stellen = []; for (let c = 0; c < (b < 4 ? figurA : figurB).length && im.length; c++) stellen.push(im.splice(Math.floor(rnd() * im.length), 1)[0]);
+      stellen = []; for (let c = 0; c < (b < haelfte ? figurA : figurB).length && im.length; c++) stellen.push(im.splice(Math.floor(rnd() * im.length), 1)[0]);
     } else {
-      stellen = [...(b < 4 ? figurA : figurB)];
+      stellen = [...(b < haelfte ? figurA : figurB)];
       if (stellen.length > 1 && rnd() < 0.25) stellen.splice(Math.floor(rnd() * stellen.length), 1);   // einen Stich auslassen
       else if (rnd() < 0.15 + 0.2 * p) { const dazu = raster.filter((x) => !stellen.includes(x)); if (dazu.length) stellen.push(wahl(dazu)); }
       stellen = stellen.filter((s2) => !sperre.includes(s2));
@@ -256,7 +273,7 @@ function offbeat(akkorde, rnd, R, takte, { belegt, kicks, snares, zyklus }) {
     stellen.forEach((s2, i) => {
       const pos = b * 16 + s2, toene = vorhalt && i === 0 ? lage.map((t) => (t === 2 ? 3 : t)) : lage;
       z[pos] = enge(g, toene, mitte, i > 0 && rnd() < 0.4 ? "_" : "");
-      for (let j = 1; j < lang && s2 + j < 16 && z[pos + j] === "."; j++) z[pos + j] = "-";
+      for (let j = 1, d = dauer(); j < d && pos + j < S && z[pos + j] === "."; j++) z[pos + j] = "-";
     });
   }
   return zeilenAus(z);
@@ -303,11 +320,20 @@ function alap(rnd, R, takte) {
   return zeilenAus(z);
 }
 
-/** Tanpura: Pa (Quinte unten), Sa, Sa, Sa (tief): vier Zupfer je Takt (bei Halftime je zwei Takte), jeder klingt bis zum nächsten */
-function tanpura(rnd, takte, halftime) {
-  const zeilen = [], muster = ["5,", "1", "1", "1,"], weit = halftime ? 8 : 4;
-  const z = [];
-  for (let s2 = 0; s2 < takte * 16; s2++) z.push(s2 % weit === 0 ? muster[(s2 / weit) % 4] + ((s2 / weit) % 4 === 0 ? "!" : "") : "-");
-  for (let b = 0; b < takte; b++) zeilen.push(z.slice(b * 16, b * 16 + 16).join(" "));
-  return zeilen;
+/**
+ * Tanpura: Pa (Quinte unten), Sa, Sa, Sa (tief), jeder Zupfer klingt bis zum nächsten. Das Grundmass ist ein Viertel (bei Halftime eine
+ * Halbe), die Abstände wechseln aber (knapp, gedehnt, ein Zupfer ausgelassen), manche Zupfer werden früh abgedämpft, und mit Ruhe setzt
+ * der Spieler ab und zu einen oder zwei Takte ab und beginnt den Zyklus wieder mit Pa.
+ */
+function tanpura(rnd, R, takte, halftime) {
+  const S = takte * 16, z = leerZeilen(S), muster = ["5,", "1", "1", "1,"], weit = halftime ? 8 : 4, ruhe = R.ruhe / 100;
+  for (let pos = 0, i = 0; pos < S;) {
+    if (i > 0 && i % 4 === 0 && rnd() < 0.08 + ruhe * 0.25) { z[pos] = "."; pos += 16 * (1 + Math.floor(rnd() * 2)) - (pos % 16); i = 0; continue; }
+    z[pos] = muster[i % 4] + (i % 4 === 0 ? "!" : rnd() < 0.3 ? "_" : "");
+    const d = Math.max(2, Math.round(weit * [0.75, 1, 1, 1.25, 1.5, 2][Math.floor(rnd() * 6)]));
+    const klingt = rnd() < 0.2 ? Math.max(2, Math.round(d * (0.4 + rnd() * 0.4))) : d;
+    for (let j = 1; j < klingt && pos + j < S; j++) z[pos + j] = "-";
+    pos += d; i++;
+  }
+  return zeilenAus(z);
 }

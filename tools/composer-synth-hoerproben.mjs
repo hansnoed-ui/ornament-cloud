@@ -7,7 +7,8 @@
 //                 alt (Synth 0.1.0, Keys und Lead) gegen neu mit demselben Groove; Klassik 0, 50, 100
 //   offbeats/     die neuen Off-Beats (Achtel-Off-Beats, enge Lage) nur mit Drums und Bass: DnB mit Off-Beat 30, 60, 85; Ornament mit drei
 //                 Klängen; dann DnB und Ornament mit allen Schichten
-//   node tools/composer-synth-hoerproben.mjs <ziel-ordner> [presets|familien|charaktere|melodien|offbeats]
+//   unregelmaessig/ Fläche, Off-Beats und Tanpura über 32 Takte ohne Wiederholung, mit wechselnden Abständen und Tonlängen
+//   node tools/composer-synth-hoerproben.mjs <ziel-ordner> [presets|familien|charaktere|melodien|offbeats|unregelmaessig]
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -28,7 +29,7 @@ const { taktLesen } = await imp("composer/kern/muster.js");
 const { wavSchreiben } = await imp("lab/kern/klangwerk.js");
 
 const ziel = process.argv[2] ?? "hoerproben-synth", RATE = 48000, nur = process.argv[3] ?? "";
-for (const d of ["presets", "familien", "charaktere", "melodien", "offbeats"]) mkdirSync(join(ziel, d), { recursive: true });
+for (const d of ["presets", "familien", "charaktere", "melodien", "offbeats", "unregelmaessig"]) mkdirSync(join(ziel, d), { recursive: true });
 const name = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 const schreibe = (pfad, k) => { writeFileSync(join(ziel, pfad), wavSchreiben(k, RATE, { bits: "24" })); };
 const log = [];
@@ -161,4 +162,14 @@ if (!nur || nur === "offbeats") {
   for (const [fam, k] of [["velvet", "velvetRhodes"], ["shadow", "shadowChord"], ["glass", "glassKeys"]]) schreibe(`offbeats/ornament-2-${name(S2.PATCHES[k].name)}-mit-drums-und-bass.wav`, await schichten("ornament", 16, { seed: 1, regler: { offbeat: 60 }, schicht: [["offbeat", fam, k, 0]] }));
   for (const stil of ["dnb", "ornament"]) schreibe(`offbeats/${stil}-3-alle-schichten-mit-neuen-off-beats.wav`, await schichten(stil, 32, { seed: 1 }));
   console.log("Off-Beats");
+}
+
+// ---------- Unregelmässiger: Fläche, Off-Beats und Tanpura über 32 Takte ohne Wiederholung ----------
+if (!nur || nur === "unregelmaessig") {
+  for (const stil of ["dnb", "ornament"]) schreibe(`unregelmaessig/${stil}-1-alle-schichten.wav`, await schichten(stil, 32, { seed: 1 }));
+  schreibe("unregelmaessig/dnb-2-flaeche-mit-drums-und-bass.wav", await schichten("dnb", 32, { seed: 1, schicht: [["flaeche", "ice", "breathingChoir", 0]] }));
+  schreibe("unregelmaessig/ornament-2-tanpura-mit-drums-und-bass.wav", await schichten("ornament", 32, { seed: 1, schicht: [["drone", "raga", "tanpuraGlow", -2, "tanpura"]] }));
+  schreibe("unregelmaessig/ornament-3-off-beats-mit-drums-und-bass.wav", await schichten("ornament", 32, { seed: 1, schicht: [["offbeat", "velvet", "velvetRhodes", 0]] }));
+  schreibe("unregelmaessig/indien-1-alle-schichten.wav", await schichten("indien", 16, { seed: 1 }));
+  console.log("Unregelmässig");
 }
