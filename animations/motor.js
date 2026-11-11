@@ -1,10 +1,10 @@
 // Animationen – der Motor: ein WebGL-2-Kontext rechnet bis zu drei Ebenen übereinander (je Effekt, Quelle, Mischmodus, Deckkraft)
 // und gibt das Bild auf eine eigene Leinwand aus, die Reel, Werke und Mischpult abzeichnen. Alles hängt nur von der Zeit t in der
 // Schlaufe ab (phi = 2π·t/DAUER, ganzzahlige Frequenzen): Bild N ist wieder Bild 0, und das MP4 entsteht Bild für Bild.
-import { EFFEKTE, wertVon } from "./effekte.js?v=34";
-import { t } from "./sprache.js?v=34";
-import { physikLaden, kachelBahn, lageZur } from "./schwerkraft.js?v=34";
-import { VIDEO_AN, videoZeit } from "./video.js?v=34";
+import { EFFEKTE, wertVon } from "./effekte.js?v=35";
+import { t } from "./sprache.js?v=35";
+import { physikLaden, kachelBahn, lageZur } from "./schwerkraft.js?v=35";
+import { VIDEO_AN, videoZeit } from "./video.js?v=35";
 
 export const DAUER = 12, FPS = 30, LAENGEN = [12, 30, 60];
 /** Länge der Schlaufe eines Stapels in Sekunden (Vorgabe 12) */
@@ -277,8 +277,15 @@ export function motorErstellen({ sparsam = SPARSAM, verloren = () => {}, zurueck
     e.video?.speicher.freigeben();
     bilder.delete(schluessel);
   }
-  async function bildLaden(schluessel, url) {
-    const img = new Image(); img.decoding = "async"; img.src = url; await img.decode();
+  /** lädt ein Bild als Textur; max > 0 verkleinert es vorher auf höchstens max Pixel Kantenlänge (Kacheln der gesicherten Werke) */
+  async function bildLaden(schluessel, url, max = 0) {
+    let img = new Image(); img.decoding = "async"; img.src = url; await img.decode();
+    const k = max > 0 ? Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight)) : 1;
+    if (k < 1) {
+      const c = document.createElement("canvas"); c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      img = c; img.naturalWidth = c.width; img.naturalHeight = c.height;
+    }
     freigeben(schluessel);
     bilder.set(schluessel, { tex: gl.isContextLost() ? null : hochladen(img), img, b: img.naturalWidth, h: img.naturalHeight });
   }
@@ -504,7 +511,7 @@ export function motorErstellen({ sparsam = SPARSAM, verloren = () => {}, zurueck
     return [...motor.kaputt.values()];
   }
 
-  return Object.assign(motor, { zeichnen, vorbereiten, bildLaden, videoLaden, videoBereit, pruefen, hatBild: (s) => bilder.has(s), istVideo: (s) => !!bilder.get(s)?.video });
+  return Object.assign(motor, { zeichnen, vorbereiten, bildLaden, bildFreigeben: freigeben, videoLaden, videoBereit, pruefen, hatBild: (s) => bilder.has(s), istVideo: (s) => !!bilder.get(s)?.video });
 }
 
 // ——— MP4: 1080 × 1350, 30 fps, eine Schlaufe; WebCodecs mit mp4-muxer (lokal in vendor/), sonst MediaRecorder in Echtzeit ———

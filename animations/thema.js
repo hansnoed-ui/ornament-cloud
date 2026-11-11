@@ -4,7 +4,7 @@
 // Bogen läuft um den Knopf (hell bernstein, dunkel blauviolett), und die Seite wechselt in einem Kreis vom Schalter aus.
 // Die Wahl steht in <html data-thema="hell|dunkel"> und im Browser (localStorage); ohne Wahl gilt die Einstellung des Geräts.
 // Das kleine Skript im <head> von index.html setzt data-thema vor dem ersten Bild, damit nichts aufblitzt.
-import { t } from "./sprache.js?v=34";
+import { t } from "./sprache.js?v=35";
 // die Mechanik des Schalters (Pixel, Bogen, Kreis) liegt seit dem Multiverse (8. November 2026) als Baustein in assets/pixel-schalter.js
 import { pixelSchalter, kreisWechsel } from "../assets/pixel-schalter.js?v=1";
 

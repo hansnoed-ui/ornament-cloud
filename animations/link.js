@@ -7,7 +7,7 @@
 // d<s> Länge in Sekunden, f<1|2> Format 1:1 bzw. 16:9. Ebene = Effekt "_" Werte "_" Modus Quelle Aus "_" Deckkraft "_" Seed;
 // Unterstrich statt Punkt, weil Messenger einen Punkt am Ende eines Links gern abschneiden.
 // ein leeres Feld heisst «nicht gesetzt», so kommt die Mischung genau so zurück, wie sie war.
-import { MODI } from "./motor.js?v=34";
+import { MODI } from "./motor.js?v=35";
 
 const MODUS = Object.keys(MODI);
 const FORMAT = { "1x1": "1", "16x9": "2" }, FORMAT_ZURUECK = { 1: "1x1", 2: "16x9" };
