@@ -88,3 +88,26 @@ test("Grenze: mehr als zwölf Werke in der Stunde von derselben Adresse werden a
   assert.deepEqual(stati.slice(11), [429, 429]);
   assert.equal(readdirSync(werkeOrdner).filter((f) => f.endsWith(".jpg")).length, 11);
 });
+
+test("Kurzlinks: die Mischung (mit Werk) liegt unter sechs Zeichen, dieselbe Mischung gibt denselben Link, nur bekannte Werke und Felder", { skip: ohnePhp && "php fehlt" }, async () => {
+  const json = (b, origin = HERKUNFT) => fetch(basis, { method: "POST", body: JSON.stringify(b), headers: { origin, "content-type": "application/json" } });
+  const w = await (await senden(formular({ titel: "Für den Kurzlink" }))).json().catch(() => null);
+  const werk = w?.id ?? (await (await fetch(`${basis}?liste`)).json()).werke[0].id;
+  const fassung = { ...stapel, ebenen: [{ ...stapel.ebenen[0], werte: [.37, .4] }], format: "16x9", ohneBild: true };
+  assert.equal((await json({ aktion: "kurz", werk, stapel: fassung }, "https://fremd.example")).status, 403);
+  const r = await json({ aktion: "kurz", werk, stapel: fassung });
+  assert.ok([200, 201].includes(r.status), String(r.status));
+  const { kurz } = await r.json();
+  assert.match(kurz, /^[0-9A-Za-z]{6}$/);
+  assert.equal((await (await json({ aktion: "kurz", werk, stapel: fassung })).json()).kurz, kurz, "dieselbe Mischung, derselbe Link");
+  const d = await (await fetch(`${basis}?kurz=${kurz}`)).json();
+  assert.equal(d.werk, werk);
+  assert.deepEqual(d.stapel, { grund: "schwarz", ebenen: [{ effekt: "relief", werte: [.37, .4], modus: "normal", deckkraft: 1, quelle: "bild", seed: 2, aus: false }], ohneBild: true, durchlauf: true, dauer: 30, format: "16x9" });
+  const ohne = await (await json({ aktion: "kurz", werk: "", stapel: fassung })).json();
+  assert.notEqual(ohne.kurz, kurz, "ohne Werk ein anderer Link");
+  assert.equal((await (await fetch(`${basis}?kurz=${ohne.kurz}`)).json()).werk, null);
+  assert.equal((await json({ aktion: "kurz", werk: "0123456789", stapel: fassung })).status, 404, "unbekanntes Werk");
+  assert.equal((await json({ aktion: "kurz", werk, stapel: { ebenen: [{ effekt: "böse;rm" }] } })).status, 400);
+  assert.equal((await fetch(`${basis}?kurz=nichtda`)).status, 404);
+  assert.equal((await fetch(`${basis}?kurz=../../x`)).status, 404);
+});

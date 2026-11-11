@@ -1,0 +1,2 @@
+KONSTELLATION 0.3.1, statische Fassung, gebaut 2026-11-06T18:41:39.959Z
+Quelle: https://github.com/hansnoed-ui/konstellation

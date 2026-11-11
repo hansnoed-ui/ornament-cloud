@@ -12,7 +12,7 @@ Die Richtung ist nicht mit UXKIN an fremden Seiten geprüft (nicht verbunden), s
 
 ## Farbe
 
-Dunkel ist der Normalfall (die Animationen leben auf Schwarz), hell folgt `prefers-color-scheme`. Alle Grautöne sind kalt (ein Hauch Blau), nichts ist warm.
+Dunkel ist der Normalfall (die Animationen leben auf Schwarz), hell folgt `prefers-color-scheme`. Seit 8. November 2026 übersteuert der Schalter im Kopf (`thema.js`) das Gerät: `data-thema="hell|dunkel"` auf `<html>`, gemerkt im Browser. Alle Grautöne sind kalt (ein Hauch Blau), nichts ist warm.
 
 | Token | Dunkel | Hell | Rolle |
 |---|---|---|---|
@@ -64,6 +64,12 @@ geschlossenen Formen, eng in gross). Geprüft gegen Inter (optische Grösse), Sc
 
 ## Bausteine
 
+- **Schalter Hell / Dunkel** (8. November 2026, nach Christians Video, `thema.js`): im Kopf vor den Sprachen, 68 × 38 px (Handy 58 × 32). Die eine bewusste
+  Ausnahme von «kein Glas, keine Schatten, keine Verläufe»: Knauf mit Verlauf und Schatten, Pixelzeichen auf 13 × 13 (hell Sonne, dunkel Mond mit Stern),
+  leuchtender Bogen um den Knauf (hell Bernstein `#ffb21c` oben rechts, dunkel Blauviolett `#8f8cff` unten links). Umschalten: Pixel zerstieben und setzen sich
+  neu, der Bogen wandert, die Seite wechselt in einem Kreis vom Schalter aus (View Transitions). `role="switch"`, ohne Bewegung bei `prefers-reduced-motion`.
+  Unter 420 px Breite weicht dafür der Seitenname neben der Marke.
+
 - **Kopf**: Marke links («ornament.cloud», Punkt im Akzent), Zeile in der Mitte, rechts die zwei Ansichten mit Nummer; die aktive trägt den Akzentpunkt.
   Auf dem Handy wandern die Ansichten in eine feste Leiste am unteren Rand (Daumenweite), der Kopf behält nur die Marke.
 - **Mischpult**: Bühne links (klebt beim Rollen), darunter Uhr, Fortschrittslinie und Schlaufe, dann die Haupttaste **«Neu mischen»** (gefüllt, mit
@@ -75,7 +81,7 @@ geschlossenen Formen, eng in gross). Geprüft gegen Inter (optische Grösse), Sc
   «von Name · Datum»; eigene Werke mit «Löschen». Darüberfahren lässt die Animation laufen, Klick lädt sie ins Mischpult.
 - **Info**: grosse Zeile, Kolophon (Technik, Schlaufe, Werke, Schrift), drei nummerierte Listen (So geht es, Effekte, Ebenen) mit Haarlinien.
 - **Fuss**: Haarlinie, eine Zeile: zurück zur Website, Hinweis auf die Namen der Werke, alles im Browser gerechnet.
-- **Vorschaukarte** (`og-animationen.jpg`, 1200 × 630, `tools/animations-og.mjs`): links «Animationen.» und darunter «Mischpult» leicht im Akzent, rechts sechs Effekte
-  ohne Bild als Kacheln, getrennt durch Haarlinien.
+- **Vorschaukarte** (`og-de.jpg`, `og-en.jpg`, `og-es.jpg`, 1200 × 630, `tools/animations-og.mjs`): links nur Marke, «Animationen.» und darunter «Mischpult» im Akzent, kein Satz; das untere linke Viertel bleibt frei (X legt dort den Titel darüber); rechts sechs Effekte auf Werken
+  (Christians Werke, bunt und schwarzweiss im Wechsel) als Kacheln.
 - **Zustände**: Hover unterstreicht oder kehrt um, Fokus ist ein 2-px-Ring im Akzent, Gedrücktes ist gefüllt (`aria-pressed`), Abgeschaltetes hat 35 % Deckkraft.
   Meldungen beim Sichern stehen unter der Taste (Erfolg im Akzent). Ansichten blenden in 240 ms ein; mit `prefers-reduced-motion` sofort. Touch-Ziele mindestens 44 px hoch.

@@ -178,7 +178,7 @@ function zeigeStart() {
     $("#ansicht").innerHTML = `<section class="wortseite">
       <p class="notiz-kopf">${N} Beiträge · ${datum(BEITRAEGE[0].d).split(".").pop()}–${datum(BEITRAEGE[N - 1].d).split(".").pop()}</p>
       <h1>Kunst, Kommunikation, Wahrnehmung, Psyche, Gesellschaft</h1>
-      <p class="leer">Facebook-Beiträge zu Kunst, Kommunikation, Wahrnehmung, psychischem System, Psyche und Gesellschaft, verknüpft über ihre Schlagwörter. Oben links wählst du ein Thema. Öffne einen Beitrag, folge den unterstrichenen Wörtern, markiere bis zu vier Beiträge und montiere daraus einen neuen.</p>
+      <p class="leer">Facebook-Beiträge zu Kunst, Kommunikation, Wahrnehmung, psychischem System, Psyche und Gesellschaft, verknüpft über ihre Schlagwörter. Oben links wählst du ein Thema. Öffne einen Beitrag, folge den unterstrichenen Wörtern<span class="nur-breit-text">, markiere bis zu vier Beiträge und montiere daraus einen neuen</span>.</p>
       <p class="marken" style="margin-top:1.5rem">${top.map(([st, l]) => `<a href="#w=${encodeURIComponent(st)}">${esc(wortName(st))} <span class="leise">${l.length}</span></a>`).join("")}</p>
     </section>`;
   }

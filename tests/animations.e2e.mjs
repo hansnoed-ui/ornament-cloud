@@ -26,7 +26,7 @@ async function check(name, fn) {
 
 // werke.php vorgetäuscht: eine Ablage im Speicher je Browserkontext; das Bild aus dem Formular wird unter werke/ID.jpg wieder ausgeliefert
 function ablage() {
-  const werke = [], bilder = new Map();
+  const werke = [], bilder = new Map(), kurze = new Map();
   const teil = (buf, name) => {   // ein Feld aus multipart/form-data
     const kopf = Buffer.from(`name="${name}"`);
     const i = buf.indexOf(kopf); if (i < 0) return null;
@@ -34,13 +34,16 @@ function ablage() {
     return buf.subarray(a, b);
   };
   return {
-    werke, bilder,
+    werke, bilder, kurze,
     async route(route, request) {
       const url = new URL(request.url());
+      const json = (status, d) => route.fulfill({ status, contentType: "application/json", body: JSON.stringify(d) });
+      if (url.searchParams.has("kurz")) { const d = kurze.get(url.searchParams.get("kurz")); return d ? json(200, d) : json(404, { fehler: "Diesen Link gibt es nicht." }); }
       if (/\/werke\/[a-f0-9]+\.jpg$/.test(url.pathname)) { const b = bilder.get(url.pathname.split("/").pop()); return b ? route.fulfill({ status: 200, contentType: "image/jpeg", body: b }) : route.fulfill({ status: 404 }); }
       if (request.method() === "GET") return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ werke: [...werke].reverse(), anzahl: werke.length }) });
       if ((request.headers()["content-type"] || "").startsWith("application/json")) {
         const d = JSON.parse(request.postData());
+        if (d.aktion === "kurz") { const kurz = `kz${String(kurze.size + 1).padStart(4, "0")}`; kurze.set(kurz, { kurz, werk: d.werk || null, stapel: d.stapel }); return json(201, { kurz }); }
         const i = werke.findIndex((w) => w.id === d.id && w.schluessel === d.schluessel);
         if (i < 0) return route.fulfill({ status: 403, contentType: "application/json", body: '{"fehler":"Der Schlüssel passt nicht."}' });
         werke.splice(i, 1);
@@ -85,7 +88,7 @@ await check("leere Bühne: fordert ein Bild, Sichern und MP4 warten; mit Bild ze
   await page.getByRole("button", { name: "Neu mischen" }).click();
   await page.waitForTimeout(200);
   assert.notEqual(await page.evaluate(() => JSON.stringify(window.animationen.S.mix)), vorher);
-  assert.match(page.url(), /#m=/);
+  assert.match(page.url(), /#k=[^#]{10,200}$/, "kurzer Link");
   assert.equal(await page.evaluate(() => window.animationen.S.mix.bild), "eigen", "Neu mischen behält das Bild");
   // Format 16:9 (PR #615): die Bühne wird breit, die Leinwand rechnet im Seitenverhältnis, das Format steht im Link
   await page.getByRole("button", { name: "16:9", exact: true }).click();
@@ -94,7 +97,7 @@ await check("leere Bühne: fordert ein Bild, Sichern und MP4 warten; mit Bild ze
   assert.equal(await page.evaluate(() => document.documentElement.dataset.format), "16x9");
   const [cb, ch, rb, rh] = await page.evaluate(() => { const c = document.getElementById("pult-bild"), r = c.getBoundingClientRect(); return [c.width, c.height, r.width, r.height]; });
   assert.ok(Math.abs(cb / ch - 16 / 9) < .02, `Leinwand ${cb} × ${ch}`); assert.ok(Math.abs(rb / rh - 16 / 9) < .02, `Bühne ${rb} × ${rh}`);
-  assert.match(decodeURIComponent(escape(atob(decodeURIComponent(page.url().split("#m=")[1])))), /"format":"16x9"/);
+  assert.match(page.url().split("#k=")[1].split("~")[0], /^_.*f2$/, "16:9 steht im kurzen Link");
   assert.deepEqual(fehler, []);
   await ctx.close();
 });
@@ -150,6 +153,34 @@ await check("Werk sichern: mit Titel und Name abgelegt, erscheint bei den Werken
   assert.ok(!(await zweite.locator("#pult-leer").isVisible()), "die Bühne zeigt das Werk");
   assert.match(await zweite.locator("#pult-meldung").textContent(), /von Testerin/);
   assert.equal(await zweite.locator("input#sichern-titel").inputValue(), "Probe am Abend (Variante)");
+  // kurze Links: das unveränderte Werk bleibt #w=ID; weitergemischt wird es ein kurzer #k-Link, der das Werk mit der Änderung öffnet
+  assert.equal(zweite.url(), url, "ein geöffnetes, unverändertes Werk teilt sich mit seiner Kennung");
+  await zweite.locator('.regler input[type="range"]').first().evaluate((r) => { r.value = "0.37"; r.dispatchEvent(new Event("input")); r.dispatchEvent(new Event("change")); });
+  const weiter = zweite.url();
+  assert.match(weiter, /#k=[a-f0-9]{10}_[^#]{0,190}$/, `kurzer Link zum Weiterarbeiten: ${weiter}`);
+  const geordnet = () => { const o = (v) => Array.isArray(v) ? v.map(o) : v && typeof v === "object" ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, o(v[k])])) : v; return JSON.stringify(o(window.animationen.S.mix)); };
+  const mix = await zweite.evaluate(geordnet);
+  const dritte = await ctx.newPage(); await dritte.goto(weiter, { timeout: 120000 });
+  await dritte.waitForFunction(() => document.documentElement.classList.contains("bereit"), null, { timeout: 120000 });
+  assert.equal(await dritte.evaluate(geordnet), mix, "der kurze Link bringt die weitergemischte Fassung zurück");
+  assert.ok(!(await dritte.locator("#pult-leer").isVisible()), "mit dem Bild des Werks");
+  await dritte.close();
+  // «Link kopieren» gibt einen Kurzlink /a/KURZ (5. November 2026: «immer noch seeeehr lang»); #a=KURZ (dorthin leitet .htaccess) öffnet die Fassung
+  await zweite.getByRole("button", { name: "Link kopieren" }).click();
+  await zweite.waitForFunction(() => /\/a\/kz\d{4}$/.test(document.getElementById("pult-meldung").textContent), null, { timeout: 10000 });
+  assert.equal(speicher.kurze.size, 1);
+  const k = [...speicher.kurze.values()][0];
+  assert.match(k.werk, /^[a-f0-9]{10}$/, "der Kurzlink kennt das Werk"); assert.ok(!("werk" in k.stapel) && !("bild" in k.stapel));
+  const vierte = await ctx.newPage(); await vierte.goto(`${base}#a=${k.kurz}`, { timeout: 120000 });
+  await vierte.waitForFunction(() => document.documentElement.classList.contains("bereit"), null, { timeout: 120000 });
+  assert.equal(await vierte.evaluate(geordnet), mix, "der Kurzlink bringt die weitergemischte Fassung zurück");
+  assert.ok(!(await vierte.locator("#pult-leer").isVisible()), "mit dem Bild des Werks");
+  await vierte.close();
+  // Anhängsel von Facebook (?fbclid=…) verschwinden beim Öffnen aus der Adresse
+  const fuenfte = await ctx.newPage(); await fuenfte.goto(url.replace("#", "?fbclid=IwAR0abcdefghijklmnopqrstuvwxyz_aem_123#"), { timeout: 120000 });
+  await fuenfte.waitForFunction(() => document.documentElement.classList.contains("bereit"), null, { timeout: 120000 });
+  assert.equal(fuenfte.url(), url, "ohne ?fbclid");
+  await fuenfte.close();
   await zweite.close();
   // löschen
   page.once("dialog", (d) => d.accept());
@@ -235,6 +266,56 @@ await check("Handy: kein seitliches Scrollen in beiden Ansichten, die Ansichten 
   }
   const lage = await page.evaluate(() => getComputedStyle(document.querySelector(".ansichten")).position);
   assert.equal(lage, "fixed");
+  await ctx.close();
+});
+
+await check("Sprachen (5. November 2026): /animations/en/ und /es/ mischen, sichern und zeigen die Werke in ihrer Sprache, der Umschalter nimmt die Mischung mit", async () => {
+  const speicher = ablage();
+  for (const [sprache, mischen, sichern, gesichert, effekt, ebene] of [["en", "Remix", "Save work", /^Saved: “Abendprobe” by Testerin/, "Contour lines", "Layer 1"], ["es", "Mezclar de nuevo", "Guardar obra", /^Guardada: «Abendprobe» de Testerin/, "Curvas de nivel", "Capa 1"]]) {
+    const ctx = await browser.newContext({ viewport: { width: 1300, height: 900 } });
+    await ctx.route(/werke\.php|\/werke\/[a-f0-9]+\.jpg$/, (route, request) => speicher.route(route, request));
+    const page = await ctx.newPage();
+    const fehler = [];
+    page.on("pageerror", (e) => fehler.push(e.message));
+    page.on("console", (m) => { if (m.type() === "error") fehler.push(m.text()); });
+    const anfragen = [];
+    page.on("request", (r) => { if (/werke/.test(r.url())) anfragen.push(new URL(r.url()).pathname); });
+    await page.goto(`${base}${sprache}/`, { timeout: 120000 });
+    await page.waitForFunction(() => document.documentElement.classList.contains("bereit"), null, { timeout: 120000 });
+    await bildBringen(page);
+    await page.getByRole("button", { name: mischen }).click();
+    await page.locator("#pult-ebenen select").first().selectOption("hoehenlinien");
+    assert.equal(await page.locator("#pult-ebenen select").first().locator("option:checked").textContent(), effekt);
+    assert.equal(await page.locator("#pult-ebenen legend").first().textContent(), ebene);
+    await page.fill("#sichern-titel", "Abendprobe"); await page.fill("#sichern-name", "Testerin");
+    await page.getByRole("button", { name: sichern, exact: true }).click();
+    await page.waitForFunction((n) => document.querySelectorAll("#werke-raster .kachel").length >= n, speicher.werke.length, { timeout: 30000 });
+    assert.match(await page.locator("#sichern-meldung").textContent(), gesichert);
+    assert.ok(anfragen.every((a) => a.startsWith("/animations/werke")), `die Ablage liegt neben dem Modul: ${anfragen.join(", ")}`);
+    // die Kachel zeichnet das Werk (Bild aus /animations/werke/ID.jpg, nicht aus /animations/en/werke/)
+    await page.locator("#werke-raster .kachel").first().scrollIntoViewIfNeeded();
+    await page.waitForFunction(() => { const c = document.querySelector("#werke-raster canvas"), d = c.getContext("2d").getImageData(0, 0, c.width, c.height).data; let s = 0; for (let i = 0; i < d.length; i += 40) s += d[i]; return s > 0; }, null, { timeout: 30000 });
+    // Info: die Effekte in der Sprache der Seite
+    await page.click('[data-ansicht="info"]');
+    assert.match(await page.locator("#info-effekte").textContent(), sprache === "en" ? /Contour lines/ : /Curvas de nivel/);
+    await page.click('[data-ansicht="mischpult"]');
+    // Umschalter: Deutsch mit derselben Mischung
+    const hash = new URL(page.url()).hash;
+    await page.click('.sprachen a[hreflang="de"]');
+    await page.waitForFunction(() => document.documentElement.classList.contains("bereit"), null, { timeout: 120000 });
+    assert.equal(new URL(page.url()).pathname, "/animations/");
+    assert.equal(new URL(page.url()).hash, hash, "die Mischung geht mit");
+    assert.equal(await page.evaluate(() => document.documentElement.lang), "de");
+    assert.deepEqual(fehler, []);
+    await ctx.close();
+  }
+  // Handy: kein seitliches Scrollen mit dem Umschalter im Kopf
+  const ctx = await browser.newContext({ viewport: { width: 360, height: 760 } });
+  const page = await ctx.newPage();
+  await page.goto(`${base}es/`, { timeout: 120000 });
+  await page.waitForFunction(() => document.documentElement.classList.contains("bereit"), null, { timeout: 120000 });
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth), 0);
+  assert.ok(await page.locator('.sprachen a[hreflang="en"]').isVisible());
   await ctx.close();
 });
 
