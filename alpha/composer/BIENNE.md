@@ -13,7 +13,7 @@ synthetisch. Christians eigene Aufnahmen können später über die Klangsammlung
 |---|---|---|
 | 1 | **Harmonik 0.1.0** (`kern/harmonik.js`): Vokabular, Modi, Stimmführung, harmonischer Rhythmus, Spannung, Generator, Voicings für Fläche, Klavier, Gitarre und Bass; dazu `lydisch`/`mixolydisch` in `LEITERN` und Noten als Ereignisse in `erzeugen.js` | fertig |
 | 2 | **Metrum** (`kern/metrum.js`): zentrale Taktlänge `taktSek(tempo, taktart)` statt `240 / bpm`, Taktarten 3/4–12/8, Gruppierungen, echte Tuplets (rationale Zeiten), Polymetrik mit geplanten Treffpunkten, Humanisierung als Profil je Rolle (mit Korrelation) | fertig (a Taktarten, b Tuplets, c Polymetrik, d Humanisierung) |
-| 3 | **Instrumente** als Proben: Gitarre (sechs Saiten auf der Karplus-Strong-Saite), E-Bass und Muted Bass (Bass 0.2.0), Drums 0.2.0 (Ghost-Stufen, Cross-Stick, Besen), Klavier (akustisch, präpariert), Streicherfläche, dunkler Mono-Lead | offen |
+| 3 | **Instrumente** als Proben: Gitarre (sechs Saiten auf der Karplus-Strong-Saite), E-Bass und Muted Bass (Bass 0.2.0), Drums 0.2.0 (Ghost-Stufen, Cross-Stick, Besen), Klavier (akustisch, präpariert), Streicherfläche, dunkler Mono-Lead | a Gitarre, b Bass fertig; Drums, Klavier, Streicher, Lead offen |
 | 4 | **Interlocking** (Verteiler, Eigenständigkeit und Zusammengehörigkeit), **Echo 0.2.0** und Echos als Ereignisse im Plan | offen |
 | 5 | **`kern/bienne.js`**: Profil, Ausprägung *Schichtung*, ganzer Track, drei Startwerte, Oberfläche | offen |
 
@@ -221,3 +221,14 @@ je Saite eine Note mit kleinem Versatz (ab/auf).
 gedämpft 11/8 C dorisch). Griffe aus `harmonik.js`. Timing mit den Profilen aus Phase 2.
 
 Urteil (11.11.): gut Schwelle und gedämpft; geht Arpeggio (Hals rund) und Stahl geschlagen; weg Steg glasig und Nylon – die bleiben im Erzeuger, Bienne wählt sie nicht von sich aus.
+
+## Bass 0.2.0 (Phase 3, Schritt b)
+
+`erzeuger/bass-0.2.0.js`: alle Stimmen aus 0.1.0 als dieselben Objekte (bitgleich), neu **gedaempft** (Muted Bass: Schaumstoff am Steg,
+Daumenanschlag, Körper; Varianten Schaumstoff, Handballen, Filz tief) und **verzerrt** (Post-Rock: Plektrum, unten sauber, oben
+Verzerrung mit Mittenbetonung; Varianten Post-Rock, Fuzz, angeraut). Beide bauen auf der E-Bass-Saite von 0.1.0 auf.
+
+`node tools/bienne-hoerproben.mjs bass <ziel>`: sechs Proben mit eigener Linie (Achtel, Riff, Puls, Melodie), Taktart, Modus und
+Startwert; dazu Drums und leise die Schwellen-Gitarre.
+
+Urteil (11.11.): gut Muted Schaumstoff, Muted Filz tief, Fretless; geht verzerrt angeraut; weg verzerrt Post-Rock, E-Bass Plektrum.
