@@ -4,6 +4,8 @@ Das Format heisst «Maxi», nicht EP; die Dateinamen `ep.json`, `ep-wav.mjs` usw
 
 Seit 10. November 2026 (Wunsch von Christian): eine schlichte Seite für Freunde. Link öffnen, einmal auf Play tippen, die ganze EP läuft durch, auch mit gesperrtem Bildschirm oder in einer anderen App. Die drei Tracks sind einzeln anwählbar und einzeln herunterladbar (seit 10. November 2026 drei statt vier: ohne «outro»).
 
+Seit 11. November 2026 (Wunsch: «beim 3. track die ersten 35 sekunden wegschneiden und direkt mit dem hellen sample einsteigen … einen schönen, fliessenden einstieg»): «directer reprise» beginnt bei 36,46 s des bisherigen Masters, ein halbe Sekunde vor dem hellen Sample (Takt 12 bei 78 BPM, Marker «Fragment · wörtlich»), mit einer weichen Einblendung (sin², 0,5 s), die genau beim Anschwellen des Samples voll ist. Neuer Master `the dancer reprise (ab 36,46 s).wav` in `ornament-material/hoerproben/lucerne-feinschliff/`, das Original bleibt. Länge 5:39 statt 6:15, die Maxi 14:18. Neue Dateinamen `the-i-directer-2.wav` und `the-i-03-directer-reprise-2.wav` (Zwischenspeicher); Track 1 und 2 sind unverändert.
+
 - **Route:** `https://ornament.cloud/listen/directer/` (nur per Direktlink, `noindex`, nicht in der Sitemap, nicht im Menü; Ausnahme in `tests/navigation.test.mjs`)
 - **Lokal:** `node tools/ep-server.mjs` → http://localhost:8795/listen/directer/ (beantwortet Range-Anfragen mit 206 wie Apache; auf dem Telefon im selben WLAN `http://<IP des Rechners>:8795/listen/directer/`)
 
