@@ -3,6 +3,8 @@
 Einfache statische Website (reines HTML/CSS), die eine Auswahl meiner Claude-Artefakte präsentiert.
 Alles liegt auf dem eigenen Server – es werden keine Dateien von claude.ai, CDNs oder Google geladen.
 
+Prüfen und bauen: `npm test`, `npm run test:e2e` (nach `npm install`, nur Playwright) und die `build:*`-Skripte in `package.json`; Überblick über Quellen, erzeugte Dateien und Versionsmarken in `docs/entwicklung.md` (seit 11. November 2026, aus PR #241).
+
 - `index.html` – Startseite (Neuordnung vom 2. Oktober 2026, Wunsch von Christian; seit 3. Oktober ohne sichtbaren Titel, seit 5. Oktober auch ohne den Satz
   «Beobachtung ist Anlass für Veränderungen in der Realität.», der nur noch in Beschreibung und Vorschaukarte zum Teilen steht, `tests/teilen.test.mjs` hält beides zusammen;
   der Lead «Dreh- und Wendepunkte für Theorie und Praxis» (9. bis 10. Oktober 2026) ist auf Wunsch von Christian wieder weg; der Titel `<h1>` bleibt unsichtbar.
