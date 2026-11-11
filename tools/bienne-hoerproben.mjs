@@ -250,4 +250,72 @@ if (modus === "harmonik") {
     liste.push({ datei: `${name}.mp3`, taktart, takte: TK, fassung: key, text });
   }
   writeFileSync(join(ziel, "mensch.json"), JSON.stringify({ profile: ME.MENSCH_PROFILE, fassungen: liste }, null, 1));
-} else console.log("node tools/bienne-hoerproben.mjs harmonik|metrum|tuplets|poly|mensch <ziel-ordner> [seed]");
+} else if (modus === "gitarre") {
+  // Phase 3, Schritt a: Gitarre 0.1.0. Sechs Proben, je eine Stimme mit eigener Spielweise, Taktart, Modus und eigenem Startwert
+  // (Grundsatz Vielfalt). Begleitung nur Bass und leise Kick/Hi-Hat, damit die Gitarre zu beurteilen ist. Griffe aus harmonik.js.
+  const ME = await imp("composer/kern/metrum.js");
+  mkdirSync(ziel, { recursive: true });
+  const liste = [];
+  const PROBEN = [
+    { key: "clean-arpeggio", stimme: "clean", variante: "Hals rund", taktart: "12/8", modus: "dorisch", zentrum: 2, bpm: 72, spiel: "arpeggio", text: "E-Gitarre clean, Halstonabnehmer: Arpeggio in Achteln, die Saiten klingen über den Akkord hinweg (12/8, D dorisch)" },
+    { key: "clean-glasig", stimme: "clean", variante: "Steg glasig", taktart: "7/8", modus: "aeolisch", zentrum: 9, bpm: 96, spiel: "zerlegt", text: "E-Gitarre, Stegtonabnehmer glasig: zerlegte Akkorde (7/8, A äolisch)" },
+    { key: "schwelle", stimme: "schwelle", variante: "weit", taktart: "4/4", modus: "lydisch", zentrum: 7, bpm: 70, spiel: "schwelle", text: "E-Gitarre mit Schwellen: Akkorde ohne Anschlag, steigen langsam an (4/4, G lydisch)" },
+    { key: "akustisch-schlag", stimme: "akustisch", variante: "offen", taktart: "4/4", modus: "mixolydisch", zentrum: 4, bpm: 100, spiel: "schlag", text: "Stahlsaiten mit Plektrum: Akkorde geschlagen, ab und auf in Achteln (4/4, E mixolydisch)" },
+    { key: "nylon-finger", stimme: "nylon", variante: "warm", taktart: "6/8", modus: "phrygisch", zentrum: 4, bpm: 80, spiel: "finger", text: "Nylonsaiten mit den Fingern: Daumen auf dem Bass, Finger oben (6/8, E phrygisch)" },
+    { key: "clean-gedaempft", stimme: "clean", variante: "gedämpft", taktart: "11/8", modus: "dorisch", zentrum: 0, bpm: 92, spiel: "gedaempft", text: "E-Gitarre gedämpft (Handballen): Sechzehntel auf den tiefen Saiten, betont auf den Gruppen (11/8, C dorisch)" },
+  ];
+  for (const [k, pr] of PROBEN.entries()) {
+    const TK = 8, a = ME.taktartLesen(pr.taktart), n = ME.schritte(a), anf = ME.gruppenAnfaenge(a), sd = seed * 100 + k * 7 + 1, s16 = 1 / n;
+    const v = H.verlaufErzeugen({ zentrum: pr.zentrum, modus: pr.modus, seed: sd, abschnitte: [{ takte: 4, kurve: "steigt", hoehe: 0.5 }, { takte: 4, kurve: "plateau", hoehe: 0.6 }], bruch: 35, wandel: 45, wiederkehr: 55, statementTakte: 4 });
+    const griffe = H.voicingsFuer(v.ereignisse, "gitarre", { bruch: 35, seed: sd, zentrum: pr.zentrum, modus: pr.modus }).filter((g) => g.midi.length);
+    const bassV = H.voicingsFuer(v.ereignisse, "bass", { bruch: 35, seed: sd, zentrum: pr.zentrum, modus: pr.modus });
+    let x0 = sd; const rnd = () => ((x0 = (Math.imul(x0, 1664525) + 1013904223) >>> 0) / 4294967296);
+    const gt = [];
+    for (const g of griffe) {
+      const m = [...g.midi].sort((x, y) => x - y), ende = g.t + g.d;
+      if (pr.spiel === "arpeggio" || pr.spiel === "zerlegt") {
+        const folge = pr.spiel === "arpeggio" ? [0, 2, 1, 3, 2, 4, 3, 5, 4, 2, 3, 1] : [0, 3, 2, 4, 1, 3, 5];
+        for (let i = 0, t = g.t; t < ende - 1e-6; i++, t += 2 * s16) gt.push({ t, d: ende - t + 0.15, midi: m[folge[i % folge.length] % m.length], staerke: (i === 0 ? 0.9 : 0.62) + rnd() * 0.12 });
+      } else if (pr.spiel === "schwelle") {
+        m.forEach((mi, i) => gt.push({ t: g.t, d: g.d * 0.98, midi: mi, staerke: 0.8 - i * 0.05, versatz: i * 25 }));
+      } else if (pr.spiel === "schlag") {
+        const muster = ["v", ".", "v", "^", ".", "^", "v", "^"];
+        for (let i = 0, t = g.t; t < ende - 1e-6; i++, t += 2 * s16) {
+          const x = muster[i % muster.length]; if (x === ".") continue;
+          const runter = x === "v", saiten = runter ? m : m.slice(-4).reverse(), st = (runter ? 0.85 : 0.6) * (i % 4 === 0 ? 1 : 0.85);
+          saiten.forEach((mi, j) => gt.push({ t, d: Math.min(4 * s16, ende - t) + 0.02, midi: mi, staerke: st * (1 - j * 0.04), versatz: j * (runter ? 9 : 7) }));
+        }
+      } else if (pr.spiel === "finger") {
+        for (let i = 0, t = g.t; t < ende - 1e-6; i++, t += 2 * s16) {
+          const daumen = i % 3 === 0;
+          gt.push({ t, d: ende - t + 0.1, midi: daumen ? m[0] : m[[2, 3, 4, 3][i % 4] % m.length], staerke: daumen ? 0.85 : 0.6 + rnd() * 0.1 });
+        }
+      } else if (pr.spiel === "gedaempft") {
+        for (let st = 0; st < Math.round(g.d * n); st++) {
+          const t = g.t + st * s16, imAnf = anf.includes(st % n);
+          if (!imAnf && rnd() < 0.3) continue;
+          gt.push({ t, d: s16 * 0.9, midi: m[0] + (imAnf && rnd() < 0.3 ? 12 : 0), staerke: imAnf ? 0.95 : 0.55 });
+          if (imAnf) gt.push({ t, d: s16 * 0.9, midi: m[1] ?? m[0] + 7, staerke: 0.7 });
+        }
+      }
+    }
+    const bassNoten = [];
+    for (let b = 0; b < TK; b++) anf.forEach((s, j) => { if (j % 2) return; const t = b + s / n, mm = bassV.find((x) => t >= x.t - 1e-6 && t < x.t + x.d - 1e-6)?.midi ?? []; if (mm.length) bassNoten.push({ t, d: Math.min(((anf[j + 2] ?? n) - s) / n, 1) - 0.03, midi: Math.min(...mm), staerke: 0.7 }); });
+    const p = PR.neuesProjekt({ rate: RATE }); p.kammerton = 440;
+    const spur = (q, opt) => { q = { anzahl: TK + 1, bpm: pr.bpm, taktart: pr.taktart, kammerton: 440, seed: sd, ...q }; const sp = PR.erzeugteSpurDazu(p, q, opt); return { id: sp.id, kanaele: spurRechnen(q, RATE).kanaele }; };
+    const kick = Array.from({ length: n }, (_, i) => (i === 0 ? "x" : anf.indexOf(i) === 2 ? "x_" : ".")).join(" ");
+    const hat = Array.from({ length: n }, (_, i) => (anf.includes(i) ? "x_" : ".")).join(" ");
+    const hall = pr.stimme === "schwelle" ? { anteil: 38, nachhall: 3.4 } : { anteil: 22, nachhall: 1.9 };
+    const spuren = [
+      spur({ erzeuger: "gitarre@0.1.0", stimme: pr.stimme, werte: werteVon("gitarre@0.1.0", pr.stimme, pr.variante), noten: gt, mensch: { rolle: "tasten", seed: sd, gemeinsamSeed: sd } }, { name: `Gitarre · ${pr.variante}`, typ: "synth", pegel: -3, raum: hall }),
+      spur({ erzeuger: "bass@0.1.0", stimme: "rund", werte: werteVon("bass@0.1.0", "rund", "weich"), noten: bassNoten, mensch: { rolle: "bass", seed: sd + 1, gemeinsamSeed: sd } }, { name: "Bass", typ: "bass", pegel: -11 }),
+      spur({ erzeuger: "drums@0.1.0", stimme: "kick", werte: werteVon("drums@0.1.0", "kick"), takte: [kick], anzahl: TK, swing: 0, versatz: 0, mensch: { rolle: "kick", seed: sd + 2, gemeinsamSeed: sd } }, { name: "Kick", typ: "drums", pegel: -14 }),
+      spur({ erzeuger: "drums@0.1.0", stimme: "hat", werte: werteVon("drums@0.1.0", "hat"), takte: [hat], anzahl: TK, swing: 0, versatz: 0, mensch: { rolle: "hat", seed: sd + 3, gemeinsamSeed: sd } }, { name: "Hi-Hat", typ: "drums", pegel: -22, pan: 0.2 }),
+    ];
+    const name = `gitarre-${pr.key}`;
+    console.log(`${pr.text}: ${gt.length} Saitentöne`);
+    speichern(join(ziel, `${name}.wav`), await mischen(p, spuren));
+    liste.push({ datei: `${name}.mp3`, ...pr, sekunden: Math.round(TK * ME.taktSek(pr.bpm, a)), griffe: griffe.map((g) => `T${Math.floor(g.t) + 1} ${g.art}: ${g.midi.map(H.midiName).join(" ")}`) });
+  }
+  writeFileSync(join(ziel, "gitarre.json"), JSON.stringify(liste, null, 1));
+} else console.log("node tools/bienne-hoerproben.mjs harmonik|metrum|tuplets|poly|mensch|gitarre <ziel-ordner> [seed]");
