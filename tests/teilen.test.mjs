@@ -20,6 +20,7 @@ const SEITEN = [
   { datei: "alpha/lab/index.html", url: "https://ornament.cloud/alpha/lab/", titel: "ornament.lab", bild: "assets/kacheln/lab.png", art: "png", canonical: false, erzeuger: "tools/b-kacheln.mjs" },   // seit 25. Oktober 2026, nur per Direktlink, die Karte holen die Dienste trotzdem
   { datei: "animations/index.html", url: "https://ornament.cloud/animations/", titel: "Animationen", bild: "animations/og-de.jpg", art: "jpg", canonical: false, erzeuger: "tools/animations-og.mjs" },   // seit 4. November 2026 («eine tolle vorschaukachel für social media»), gerechnet mit dem Motor der Seite
   { datei: "multiverse/index.html", url: "https://ornament.cloud/multiverse/", titel: "ornament.cloud · Multiverse", bild: "multiverse/og-multiverse.png", art: "png", canonical: false, erzeuger: "tools/b-kacheln.mjs" },   // seit 8. November 2026, vier Anwendungen zugleich
+  { datei: "alpha/konstellation/index.html", url: "https://ornament.cloud/alpha/konstellation/", titel: "KONSTELLATION", bild: "alpha/konstellation/og-konstellation.png", art: "png", canonical: false, erzeuger: "tools/b-kacheln.mjs" },   // seit 8. November 2026, eine echte Konstellation aus dem Bestand
 ];
 /** alle meta-Angaben einer Seite: property oder name → content */
 const metas = (html) => new Map([...html.matchAll(/<meta (?:property|name)="([^"]+)" content="([^"]*)">/g)].map((m) => [m[1], m[2]]));
