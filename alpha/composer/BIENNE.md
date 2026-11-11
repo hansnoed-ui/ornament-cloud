@@ -208,3 +208,16 @@ Erzeuger lesen `quelle.mensch = { rolle, seed, gemeinsamSeed, menge }` für Drum
 alte `menschlich` (Zufall je Schlag) bleibt daneben bestehen.
 
 `node tools/bienne-hoerproben.mjs mensch <ziel>`: das Bass-Riff in 11/8 dreimal – starr, alter Zufall (±8 ms), Profile.
+
+## Gitarre 0.1.0 (Phase 3, Schritt a)
+
+`erzeuger/gitarre-0.1.0.js`: jede Note eine Saite (Karplus-Strong mit zwei leicht verstimmten Schwingungsebenen, Finger bis Plektrum,
+Zupfpunkt). Stimmen: **clean** (Tonabnehmer, Ton-Regler, Röhre; Varianten Hals rund, Steg glasig, gedämpft, angezerrt), **schwelle**
+(Lautstärke steigt an, der Anschlag verschwindet), **akustisch** (Stahl, Holzkorpus), **nylon**. Akkorde schlägt das Arrangement an:
+je Saite eine Note mit kleinem Versatz (ab/auf).
+
+`node tools/bienne-hoerproben.mjs gitarre <ziel>`: sechs Proben, jede mit eigener Spielweise, Taktart, Modus und Startwert
+(Arpeggio 12/8 D dorisch, zerlegt 7/8 A äolisch, Schwellen 4/4 G lydisch, geschlagen 4/4 E mixolydisch, Finger 6/8 E phrygisch,
+gedämpft 11/8 C dorisch). Griffe aus `harmonik.js`. Timing mit den Profilen aus Phase 2.
+
+Urteil (11.11.): gut Schwelle und gedämpft; geht Arpeggio (Hals rund) und Stahl geschlagen; weg Steg glasig und Nylon – die bleiben im Erzeuger, Bienne wählt sie nicht von sich aus.

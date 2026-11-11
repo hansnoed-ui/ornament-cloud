@@ -1014,3 +1014,21 @@ test("Metrum: Humanisierung je Rolle – Lage, langsamer Verlauf, gemeinsames At
   assert.equal(roh.length, mit.length);
   assert.ok(roh.some((x, i) => x !== mit[i]));
 });
+
+// ---------- Gitarre 0.1.0 (ornament.bienne, Phase 3) ----------
+test("Gitarre: vier Stimmen, Ton stimmt, klingt ab, Schwelle ohne Anschlag", async () => {
+  const { stimmeVon: sv } = await c("erzeuger/register.js");
+  for (const k of ["clean", "schwelle", "akustisch", "nylon"]) {
+    const st = sv("gitarre@0.1.0", k), w = Object.fromEntries(st.parameter.map((p) => [p.key, p.std]));
+    const [L] = st.rechne(w, 48000, { frequenz: 220, dauer: 1.5, staerke: 0.8, seed: 4 });
+    assert.ok(L.every(Number.isFinite), k);
+    // Grundton über Autokorrelation in 0,3–0,6 s (nach dem Anschlag), Suche 150–300 Hz, mit Parabel verfeinert
+    const a0 = Math.round(0.3 * 48000), N = 14400, ak = (lag) => { let s = 0; for (let i = 0; i < N; i++) s += L[a0 + i] * L[a0 + i + lag]; return s; };
+    let best = 0, bl = 0; for (let lag = 160; lag <= 320; lag++) { const v = ak(lag); if (v > best) { best = v; bl = lag; } }
+    const y1 = ak(bl - 1), y2 = ak(bl + 1), f = 48000 / (bl + (0.5 * (y1 - y2)) / (y1 - 2 * best + y2));
+    assert.ok(Math.abs(1200 * Math.log2(f / 220)) < 8, `${k}: ${f} Hz`);
+    const rms = (a, b) => Math.sqrt(L.slice(a * 48000, b * 48000).reduce((s, x) => s + x * x, 0) / ((b - a) * 48000));
+    if (k === "schwelle") assert.ok(rms(0, 0.05) < rms(0.6, 0.7), "Schwelle steigt an");
+    else assert.ok(rms(0.05, 0.15) > rms(1.2, 1.4), `${k} klingt ab`);
+  }
+});
