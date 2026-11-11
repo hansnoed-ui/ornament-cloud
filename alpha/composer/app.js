@@ -78,11 +78,25 @@ async function kontextBauen(rate) {
     if (d.art === "anzeige") { z.anzeige = d; z.pos = d.pos; }
     else if (d.art === "ende") { z.laeuft = false; knoepfeAuffrischen(); }
     else if (d.art === "fehler") melde(`Motor: ${d.text}`, 8000);
+    else if (d.art === "last") lastMelden(d.wert);
   };
   z.node = node;
   // Das System kann den Ton selbst anhalten (iOS: Bildschirmsperre, Anruf, anderer Ton → «interrupted»). Dann sauber halten statt weiterzuzählen.
   ctx.onstatechange = () => { if (ctx === z.ctx && ctx.state !== "running" && (z.laeuft || z.startet) && !z.selbstAngehalten) verlassen("unterbrochen"); };
   return ctx;
+}
+
+// ---------- Last ----------
+// Der Motor rechnet jede Spur mit ihrer Kette live. Braucht er zwei Sekunden lang mehr als 85 % der Echtzeit, kommt der Ton ins Stocken
+// oder bricht weg (so auf einem langsamen PC nach einem ganzen Track mit 18 Spuren und acht Hallräumen): dann ein Hinweis, höchstens alle 30 s.
+let lastHoch = 0, lastGemeldet = -Infinity;
+function lastMelden(wert) {
+  z.last = wert;
+  lastHoch = wert > 0.85 ? lastHoch + 1 : 0;
+  if (lastHoch >= 2 && performance.now() - lastGemeldet > 30000) {
+    lastGemeldet = performance.now();
+    melde(`Der Rechner kommt beim Abspielen kaum nach (Last ${Math.round(wert * 100)} %), darum stockt der Ton. Stumm geschaltete Spuren rechnen nicht mit: z. B. Natur- oder Synth-Spuren stumm schalten. Der Export ist davon nicht betroffen.`, 12000);
+  }
 }
 
 // ---------- Seite verlassen, Bildschirmsperre ----------
@@ -121,7 +135,7 @@ async function motorNeuBauen() {
   await kontext(rate);
   for (const [id, d] of z.daten) { const kopie = d.kanaele.map((x) => x.slice()); post({ art: "spur", id, kanaele: kopie }, kopie.map((x) => x.buffer)); }
   if (z.referenz?.kanaele) { const kopie = z.referenz.kanaele.map((x) => x.slice()); post({ art: "referenz", kanaele: kopie }, kopie.map((x) => x.buffer)); }
-  post({ art: "zustand", zustand: PR.motorZustand(z.projekt, { ausgleich: z.ausgleich, allesVorher: z.allesVorher, referenzAn: z.referenzAn }) });
+  post({ art: "zustand", zustand: PR.motorZustand(z.projekt, motorExtra()) });
   schleifeSenden(); post({ art: "stelle", pos: z.pos });
 }
 /** den Kontext laufen lassen; mobil oder nach einer Unterbrechung wird er neu gebaut, ebenso wenn er nicht innerhalb von 1,5 s läuft */
@@ -134,11 +148,13 @@ async function tonWeckenJetzt() {
   const ok = await Promise.race([ctx.resume().then(() => ctx.state === "running", () => false), new Promise((r) => setTimeout(() => r(false), 1500))]);
   if (!ok && ctx.state !== "running") { await motorNeuAufbauen(); await z.ctx.resume().catch(() => {}); }
 }
+/** was der Motor ausser dem Projekt braucht; beobachtet: die gewählte Spur, nur dort laufen die Lautheitsfolger für die Anzeige */
+const motorExtra = () => ({ ausgleich: z.ausgleich, allesVorher: z.allesVorher, referenzAn: z.referenzAn, beobachtet: z.gewaehlt });
 const post = (d, transfer) => z.node?.port.postMessage(d, transfer ?? []);
 let sendenGeplant = false;
 function senden() {
   if (sendenGeplant) return; sendenGeplant = true;
-  requestAnimationFrame(() => { sendenGeplant = false; post({ art: "zustand", zustand: PR.motorZustand(z.projekt, { ausgleich: z.ausgleich, allesVorher: z.allesVorher, referenzAn: z.referenzAn }) }); });
+  requestAnimationFrame(() => { sendenGeplant = false; post({ art: "zustand", zustand: PR.motorZustand(z.projekt, motorExtra()) }); });
 }
 
 async function dekodieren(bytes) {
@@ -281,7 +297,7 @@ function spurenAufbauen() {
   zeichnen();
 }
 
-function waehle(id) { z.gewaehlt = id; z.glied = erzeugt(id) ? -1 : 0; summeKopf(); spurenAufbauen(); pluginAufbauen(); bereichLeisteAuffrischen(); }
+function waehle(id) { z.gewaehlt = id; z.glied = erzeugt(id) ? -1 : 0; senden(); summeKopf(); spurenAufbauen(); pluginAufbauen(); bereichLeisteAuffrischen(); }
 const erzeugt = (id) => !!z.projekt.spuren.find((s) => s.id === id)?.quelle;
 
 // ---------- Plugin ----------

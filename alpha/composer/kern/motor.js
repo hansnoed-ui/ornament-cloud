@@ -42,7 +42,7 @@ export class Motor {
     this.master = { kette: new Kette(plugins, rate), pegel: 1 };
     this.referenz = null;      // { kanaele, laenge, folger, g }
     this.folgerSumme = new Folger(rate);
-    this.pos = 0; this.laeuft = false; this.schleife = null; this.ausgleich = true; this.referenzAn = false; this.allesVorher = false;
+    this.pos = 0; this.laeuft = false; this.schleife = null; this.beobachtet = null; this.ausgleich = true; this.referenzAn = false; this.allesVorher = false;
     this.k = [new Float32Array(BLOCK), new Float32Array(BLOCK)]; this.t = [new Float32Array(BLOCK), new Float32Array(BLOCK)];
     this.messung = { tp: [new WahrerSpitzenwert(), new WahrerSpitzenwert()], bloecke: new Float64Array(Math.ceil((3 * rate) / BLOCK)), i: 0, energie: new KEnergie(rate), tpMax: 0 };
   }
@@ -67,6 +67,7 @@ export class Motor {
     for (const s of z.spuren ?? []) { const sp = this.spuren.get(s.id); if (!sp) continue; sp.zustand = s; sp.kette.setze(s.kette); }
     if (z.master) { this.master.kette.setze(z.master.kette); this.master.pegel = ausDB(z.master.pegel ?? 0); }
     for (const k of ["ausgleich", "allesVorher", "referenzAn"]) if (k in z) this[k] = !!z[k];
+    if ("beobachtet" in z) this.beobachtet = z.beobachtet;
   }
 
   /**
@@ -82,19 +83,24 @@ export class Motor {
     let p = this.pos;
     for (let i = 0; i < n; i++) { if (this.schleife && p >= this.schleife.b) p = this.schleife.a; stellen[i] = p++; }
     for (const [id, s] of this.spuren) {
-      const z = s.zustand;
+      const z = s.zustand, e = einzeln?.get(id);
+      const vorher = z.vorher || this.allesVorher, still = z.stumm || (solo && !z.solo);
+      // Die Lautheitsfolger (ein Viertel der Rechenzeit) laufen nur, wo sie gebraucht werden: auf «vorher» und auf der gewählten Spur
+      // (für die Anzeige des Ausgleichs). Seit 11.11.2026; vorher liefen sie auf jeder Spur, und langsame Rechner kamen nicht mehr nach.
+      const folgen = vorher || id === this.beobachtet;
+      // eine stumme Spur, deren Ausblende vorbei ist, trägt nichts bei: ihre Kette ruht (entlastet langsame Rechner, die Summe bleibt gleich)
+      if (still && s.gAus === 0 && !folgen) { if (e) { e[0].fill(0, 0, n); e[1].fill(0, 0, n); } s.spitze *= 0.9; continue; }
       for (let i = 0; i < n; i++) { const q = stellen[i]; const da = q < s.laenge; kL[i] = da ? s.kanaele[0][q] : 0; kR[i] = da ? s.kanaele[1][q] : 0; }
-      tL.set(kL.subarray(0, n)); tR.set(kR.subarray(0, n));
+      if (folgen) { tL.set(kL.subarray(0, n)); tR.set(kR.subarray(0, n)); }
       s.kette.prozess(this.k, n);
-      s.folgerTrocken.schritt(this.t, n); s.folgerNass.schritt(this.k, n);
+      if (folgen) { s.folgerTrocken.schritt(this.t, n); s.folgerNass.schritt(this.k, n); }
+      else { s.folgerTrocken.erst = s.folgerNass.erst = true; }
       // Pegelausgleich für «vorher»
       let gv = 1;
-      if (this.ausgleich && s.folgerTrocken.m > 1e-12 && s.folgerNass.m > 1e-12) gv = Math.min(ausDB(AUSGLEICH_GRENZE), Math.max(ausDB(-AUSGLEICH_GRENZE), Math.sqrt(s.folgerNass.m / s.folgerTrocken.m)));
+      if (folgen && this.ausgleich && s.folgerTrocken.m > 1e-12 && s.folgerNass.m > 1e-12) gv = Math.min(ausDB(AUSGLEICH_GRENZE), Math.max(ausDB(-AUSGLEICH_GRENZE), Math.sqrt(s.folgerNass.m / s.folgerTrocken.m)));
       s.ausgleichDB = dB(gv);
-      const vorher = z.vorher || this.allesVorher, still = z.stumm || (solo && !z.solo);
       const gZiel = still ? 0 : ausDB(z.pegel ?? 0), pan = z.pan ?? 0, gl = pan <= 0 ? 1 : 1 - pan, gr = pan >= 0 ? 1 : 1 + pan;
       const quelle = vorher ? this.t : this.k, fv = vorher ? gv : 1;
-      const e = einzeln?.get(id);
       let spitze = 0;
       for (let i = 0; i < n; i++) {
         const g = s.gAus + ((gZiel - s.gAus) * (i + 1)) / n;
