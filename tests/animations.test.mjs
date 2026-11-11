@@ -76,10 +76,11 @@ test("Teilen: die Seite trägt die Vorschaukarte (Open Graph und X) mit absolute
   const m = new Map([...html.matchAll(/<meta (?:property|name)="([^"]+)" content="([^"]*)">/g)].map((x) => [x[1], x[2]]));
   assert.equal(m.get("og:url"), "https://ornament.cloud/animations/");
   assert.equal(m.get("og:title"), "Animationen");
-  assert.equal(m.get("og:image"), "https://ornament.cloud/animations/og-animationen.jpg");
+  assert.equal(m.get("og:image"), "https://ornament.cloud/animations/og-de.jpg");
+  for (const s of ["en", "es"]) assert.ok(lies(`animations/${s}/index.html`).includes(`content="https://ornament.cloud/animations/og-${s}.jpg"`), `${s}: eigene Vorschaukarte`);
   assert.equal(m.get("twitter:card"), "summary_large_image");
-  assert.ok(existsSync(new URL("animations/og-animationen.jpg", root)), "animations/og-animationen.jpg fehlt (NODE_PATH=$(npm root -g) node tools/animations-og.mjs)");
-  assert.ok(lies("tools/animations-og.mjs").includes("og-animationen.jpg"));
+  for (const s of ["de", "en", "es"]) assert.ok(existsSync(new URL(`animations/og-${s}.jpg`, root)), `animations/og-${s}.jpg fehlt (NODE_PATH=$(npm root -g) node tools/animations-og.mjs <ordner-mit-bildern>)`);
+  assert.ok(lies("tools/animations-og.mjs").includes("og-${sprache}.jpg"));
 });
 
 test("Bild zeigen: aus (4. November 2026): Motor setzt uZeigen, Ql zeigt ein Raster, Kl liest weiter das Bild", () => {
@@ -124,11 +125,26 @@ test("Versionsmarke: index.html und alle Importe der Module tragen dieselbe ?v= 
   const html = lies("animations/index.html");
   const marke = html.match(/src="seite\.js\?v=(\d+)"/)?.[1];
   assert.ok(marke, "seite.js mit ?v= eingebunden");
-  for (const f of ["seite.js", "rezepte.js", "motor.js", "video.js"]) {
+  for (const f of ["seite.js", "rezepte.js", "motor.js", "video.js", "thema.js"]) {
     const importe = [...lies(`animations/${f}`).matchAll(/from "\.\/([a-z]+\.js)([^"]*)"/g)];
     assert.ok(importe.length, f);
     for (const [, modul, v] of importe) assert.equal(v, `?v=${marke}`, `${f} → ${modul}`);
   }
+});
+
+test("Schalter Hell / Dunkel (8. November 2026, nach Christians Video): thema.js baut ihn in den Kopf, data-thema übersteuert das Gerät, kein Aufblitzen", async () => {
+  const html = lies("animations/index.html"), thema = lies("animations/thema.js");
+  assert.match(html, /:root\[data-thema="hell"\] \{ --grund: #eceef2;/);
+  assert.match(html, /:root:not\(\[data-thema="dunkel"\]\) \{ --grund: #eceef2;/);
+  assert.ok(html.indexOf('localStorage.getItem("animationen-thema")') < html.indexOf("<style>"), "die gemerkte Wahl steht vor dem ersten Bild");
+  assert.match(lies("animations/seite.js"), /import "\.\/thema\.js\?v=\d+";/);
+  assert.match(thema, /export const SCHLUESSEL = "animationen-thema";/);
+  // die Mechanik liegt seit dem Multiverse (8. November 2026) im Baustein assets/pixel-schalter.js, thema.js nutzt ihn
+  assert.match(thema, /import \{ pixelSchalter, kreisWechsel \} from "\.\.\/assets\/pixel-schalter\.js\?v=\d+";/);
+  assert.match(lies("assets/pixel-schalter.js"), /setAttribute\("role", "switch"\)/);
+  const { sonne, mond } = await import(new URL("animations/thema.js", root).href);
+  for (const p of [...sonne(), ...mond()]) assert.ok(p[0] >= 0 && p[0] < 13 && p[1] >= 0 && p[1] < 13, String(p));
+  assert.ok(sonne().length > 25 && mond().length > 25);
 });
 
 test("Werk sichern: leere Ebenen («— keine —») gehen nicht mit, werke.php überspringt sie (Fehler live am 4. November 2026)", () => {
@@ -250,7 +266,7 @@ test("Sprachen (5. November 2026: «Bitte die seite Animations auch in Spanisch 
     for (const id of [...de.matchAll(/id="([a-z-]+)"/g)].map((m) => m[1])) assert.ok(html.includes(`id="${id}"`), `${sprache}: id ${id}`);
   }
   // jeder Text aus seite.js und motor.js (t("…")), jeder Effekt, Regler und jede Stufe hat beide Übersetzungen
-  const schluessel = ["seite.js", "motor.js", "video.js"].flatMap((f) => [...lies(`animations/${f}`).matchAll(/\bt\("((?:[^"\\]|\\.)*)"/g)]).map((m) => m[1]);
+  const schluessel = ["seite.js", "motor.js", "video.js", "thema.js"].flatMap((f) => [...lies(`animations/${f}`).matchAll(/\bt\("((?:[^"\\]|\\.)*)"/g)]).map((m) => m[1]);
   assert.ok(schluessel.length > 60);
   for (const k of schluessel) assert.equal(UEBERSETZUNGEN[k]?.length, 2, `fehlt: ${k}`);
   for (const [id, e] of Object.entries(EFFEKTE)) {

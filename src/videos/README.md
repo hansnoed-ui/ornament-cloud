@@ -17,6 +17,7 @@ src/
     Wachstum.ts       die Simulation (Punkte, Abstossung, Feder, Kantenteilung, Grenze), deterministisch
     Formen.ts         die beiden Grenzen: atmende Wolke aus Kreisen, Buchstaben des Namens (Maske, Abstandsfeld, Keime)
     Video.tsx         Zeitplan T und Szenen
+  untitled/           «Untitled»: Cézanne zerfällt, Karussell, Strudel, Jet-Ski; Film aus Seedance (24. Oktober 2026)
   orna/               Erklärvideo zu ORNA (5. Oktober 2026)
     Video.tsx         Zeitplan T und Szenen
     Rad.tsx           das Doppelrad, nachgezeichnet nach portfolio/nebeneinander-nacheinander/js/wheel.js
@@ -175,6 +176,15 @@ ffmpeg -i out/start-hell.mp4 -vf "scale=in_range=pc:out_range=tv:in_color_matrix
 # dunkel ebenso mit out/start-dunkel.mp4 nach ../../assets/start-animation-dunkel.mp4
 ```
 
+## «Untitled» – Cézanne, Rothko, Kapoor, Holzinger (24. Oktober 2026)
+
+39 s: Intro mit «Untitled» und «Cézanne • Rothko • Kapoor • Holzinger» (3 s), ein mit Seedance erzeugter Film (30 s, aus dem Grund ein- und ausgeblendet), Outro (6 s).
+Im Film zerfällt Cézannes «Montagne Sainte-Victoire» in Farbflächen, daraus wird ein Karussell von Farbfeldern, das in einen schwarzen Strudel im Galerieboden abfliesst; auf dem Strudel fährt eine anonyme Performerin Jet-Ski.
+Der Prompt (und warum Rothko und Kapoor nicht genannt sind und die Fahrerin anonym bleibt) steht in `src/untitled/seedance-prompt.md`.
+
+Der Film ist nicht eingecheckt: den Clip von Seedance (720 × 1280) mit dem Skill `video-hochrendern` auf 1080 × 1920 bringen und als `public/untitled/clip.mp4` ablegen, dann
+`npx remotion render UntitledVideo out/untitled.mp4 --codec=h264 --crf=20` und nach `yuv420p` umwandeln (siehe unten). Ohne Ton: der Clip wird stumm eingebunden.
+
 ## «Wissen» – der Obsidian-Tresor als Netz (27. Oktober 2026)
 
 Wunsch: «ein spektakulären video, das den aktuellen stand meiner obisidian inhalte zeigt, ca 90 sekunden inklusive kleine (lab) intro und outro».
@@ -263,6 +273,20 @@ Dasselbe Video wie «Reise» (`src/reise/Video.tsx`) mit dem Parameter `auftrag`
 cd src/videos && node src/reise/daten.mjs
 npx remotion render ProfilVideo out/profil-4x5.mp4    # ebenso ProfilQuer (16:9)
 ```
+
+### Fassungen «organisch» und «Gewebe» (Tests vom 29. Oktober 2026, noch nicht der Standard)
+
+Wunsch: «wie die verbindungen noch etwas organischer wirken könnten … das ganze video darf gerne eine art digitales kunstwerk sein», dann «etwas neuronales»
+und «ein viel organischeres netzwerk … mehr ein gewebe, nicht einfach pünktchen … differenzierter als beim PHORMA III effekte». Schalter am Video: `organisch`, `gewebe`.
+
+- **organisch** (`KoerperOrganisch`, `KoerperOrganischQuer`): Verbindungen als langsam schwingende Kurven, die Spur als weicher, leuchtender Bogen, Lichtpunkte an der
+  Station; neuronal: spontane Impulse auf jeder dritten Verbindung, an der Station eine Welle über zwei Schritte mit Blitz an den Knoten. Ohne Zahlen und Listen
+  in Intro, Aufbau und Schluss.
+- **Gewebe** (`KoerperGewebe`, `KoerperGewebeQuer`, `src/reise/Gewebe.tsx`): WebGL 2 ohne Bibliothek, darüber das SVG (Beschriftung, Spur) mit derselben Projektion.
+  Jede Verbindung ein Band aus 4–16 Fasern, an den Enden zu Knoten gezogen, in der Mitte offen, verdreht und flatternd; die Farbe läuft entlang der Faser,
+  die Leuchtkraft je Faser sehr verschieden; an der Station spannt sich das Band, Impulse laufen als Licht durch die Fasern. An der Station treten die übrigen
+  Namen zurück, die gewählten stehen gross und zuoberst. Schrift Inter Display (`src/reise/schrift.ts`, im Stil von Helvetica Now; `vorbereiten.mjs` kopiert sie).
+  Rendern mit `--gl=angle`, etwa 4 Minuten je 40 s.
 
 ## Rendern ohne Internetzugang zu remotion.media
 

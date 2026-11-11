@@ -1,12 +1,13 @@
 // Animationen – die Seite: Mischpult (das eigene Bild, Grund, drei Ebenen, Schalter, Sichern) mit den gesicherten Werken darunter
 // (gestreutes Raster, beim Darüberfahren lebendig, Klick lädt ins Mischpult) und Info. Ein Motor zeichnet für alles; die sichtbare
 // Leinwand übernimmt sein Bild. Seit 4. November 2026 ohne Reel, Beispielbilder und vorgefertigte Werke.
-import { motorErstellen, videoErstellen, DAUER, LAENGEN, MODI } from "./motor.js?v=33";
-import { EFFEKTE, EFFEKT_IDS, stufe, wertVon } from "./effekte.js?v=33";
-import { zufall, EIGEN } from "./rezepte.js?v=33";
-import { kurz, lang } from "./link.js?v=33";
-import { t, herkunft, fehlerText, SPRACHE, GEBIET } from "./sprache.js?v=33";
-import { VIDEO_AN, VIDEO_PX, VIDEO_PX_SPARSAM, istVideo, videoZerlegen } from "./video.js?v=33";
+import { motorErstellen, videoErstellen, DAUER, LAENGEN, MODI } from "./motor.js?v=36";
+import "./thema.js?v=36";
+import { EFFEKTE, EFFEKT_IDS, stufe, wertVon } from "./effekte.js?v=36";
+import { zufall, EIGEN } from "./rezepte.js?v=36";
+import { kurz, lang } from "./link.js?v=36";
+import { t, herkunft, fehlerText, SPRACHE, GEBIET } from "./sprache.js?v=36";
+import { VIDEO_AN, VIDEO_PX, VIDEO_PX_SPARSAM, istVideo, videoZerlegen } from "./video.js?v=36";
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, attr = {}, ...kinder) => {
@@ -419,19 +420,23 @@ function kachel(w, nr) {
   k.beobachter = new IntersectionObserver((eintraege) => {
     if (!eintraege.some((e) => e.isIntersecting)) return;
     k.beobachter.disconnect();
-    bildHolen(w).then(() => { k.geladen = true; malen(c, stapelVon(w), DAUER * .35, kachelGr(w.stapel), wieEs); }).catch(() => {});
+    bildHolen(w, true).then(() => { k.geladen = true; malen(c, stapelVon(w), DAUER * .35, kachelGr(w.stapel), wieEs); }).catch(() => {});
   }, { rootMargin: "400px" });
   k.beobachter.observe(a);
   kacheln.set(w.id, k);
   return a;
 }
-const stapelVon = (w) => ({ ...w.stapel, bild: werkBild(w) });
+// Kacheln zeichnen mit einer kleinen Kopie des Bildes (höchstens KACHEL_BILD px): vorher lag jedes gesicherte Werk in voller Grösse mit
+// allen Mip-Stufen auf der Grafik (bis 13 MB je Werk), mit vielen Werken lief am 5. November 2026 der Grafikspeicher eines Laptops voll
+const KACHEL_BILD = 480, kachelBild = (w) => `k:${w.id}`;
+const stapelVon = (w) => ({ ...w.stapel, bild: kachelBild(w) });
 const wieEs = (stapel) => stapel;   // Kacheln zeichnen das Werk mit seinen eigenen Schaltern (Format, Länge, Bild zeigen), nicht mit denen des Pults
 const holend = new Map();
-function bildHolen(w) {
-  if (motor.hatBild(werkBild(w))) return Promise.resolve();
-  if (!holend.has(w.id)) holend.set(w.id, motor.bildLaden(werkBild(w), w.bild).finally(() => holend.delete(w.id)));
-  return holend.get(w.id);
+function bildHolen(w, klein = false) {
+  const schluessel = klein ? kachelBild(w) : werkBild(w);
+  if (motor.hatBild(schluessel)) return Promise.resolve();
+  if (!holend.has(schluessel)) holend.set(schluessel, motor.bildLaden(schluessel, w.bild, klein ? KACHEL_BILD : 0).finally(() => holend.delete(schluessel)));
+  return holend.get(schluessel);
 }
 function kachelnMalen() { for (const k of kacheln.values()) if (k.geladen) malen(k.c, stapelVon(k.w), DAUER * .35, kachelGr(k.w.stapel), wieEs); }
 async function werkOeffnen(w) {
@@ -439,6 +444,7 @@ async function werkOeffnen(w) {
   const s = kopie(w.stapel);
   S.ohneBild = !!s.ohneBild; S.durchlauf = !!s.durchlauf; S.dauer = LAENGEN.includes(s.dauer) ? s.dauer : DAUER; S.format = FORMATE[s.format] ? s.format : "4x5";
   delete s.ohneBild; delete s.durchlauf; delete s.dauer; delete s.format;
+  if (S.werk && S.werk.id !== w.id) motor.bildFreigeben(werkBild(S.werk));   // nur das Werk im Mischpult liegt in voller Grösse auf der Grafik
   S.werk = w; S.mix = { ...s, bild: werkBild(w) };
   document.documentElement.dataset.format = S.format;
   S.t0 = performance.now(); S.tPause = S.dauer * .35;

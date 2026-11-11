@@ -5,7 +5,7 @@
 //
 // Die Liste unten schreibt tools/build-app.ts – nicht von Hand pflegen.
 // <!-- APP:START -->
-const VERSION = "9019c6a32eef";
+const VERSION = "fca644f01a96";
 const PRECACHE = [
   "../../icons.js?v=15",
   "../../styles.css?v=53",
@@ -26,7 +26,7 @@ const PRECACHE = [
   "js/data/constellations.en.js?v=1",
   "js/data/constellations.js?v=v6",
   "js/data/theorists.js?v=v6",
-  "js/intro.js?v=3",
+  "js/intro.js?v=4",
   "js/lib/geometry.js",
   "js/lib/random.js",
   "js/lib/spin.js",
