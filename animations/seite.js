@@ -1,11 +1,13 @@
 // Animationen – die Seite: Mischpult (das eigene Bild, Grund, drei Ebenen, Schalter, Sichern) mit den gesicherten Werken darunter
 // (gestreutes Raster, beim Darüberfahren lebendig, Klick lädt ins Mischpult) und Info. Ein Motor zeichnet für alles; die sichtbare
 // Leinwand übernimmt sein Bild. Seit 4. November 2026 ohne Reel, Beispielbilder und vorgefertigte Werke.
-import { motorErstellen, videoErstellen, DAUER, LAENGEN, MODI } from "./motor.js?v=28";
-import { EFFEKTE, EFFEKT_IDS, stufe, wertVon } from "./effekte.js?v=28";
-import { zufall, EIGEN } from "./rezepte.js?v=28";
-import { kurz, lang } from "./link.js?v=28";
-import { t, herkunft, fehlerText, SPRACHE, GEBIET } from "./sprache.js?v=28";
+import { motorErstellen, videoErstellen, DAUER, LAENGEN, MODI } from "./motor.js?v=34";
+import "./thema.js?v=34";
+import { EFFEKTE, EFFEKT_IDS, stufe, wertVon } from "./effekte.js?v=34";
+import { zufall, EIGEN } from "./rezepte.js?v=34";
+import { kurz, lang } from "./link.js?v=34";
+import { t, herkunft, fehlerText, SPRACHE, GEBIET } from "./sprache.js?v=34";
+import { VIDEO_AN, VIDEO_PX, VIDEO_PX_SPARSAM, istVideo, videoZerlegen } from "./video.js?v=34";
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, attr = {}, ...kinder) => {
@@ -201,7 +203,8 @@ function pultAufbauen() {
   const m = S.mix;
   while (m.ebenen.length < 3) m.ebenen.push(leer());
   const bilder = [];
-  if (motor.hatBild(EIGEN)) bilder.push(el("button", { type: "button", "aria-pressed": String(m.bild === EIGEN), text: S.bildName ? t("Dein Bild · {name}", { name: S.bildName }) : t("Dein Bild"), onclick: () => { m.bild = EIGEN; pultAufbauen(); adresse(); } }));
+  const eigenText = motor.istVideo(EIGEN) ? t("Dein Video · {name}", { name: S.bildName }) : S.bildName ? t("Dein Bild · {name}", { name: S.bildName }) : t("Dein Bild");
+  if (motor.hatBild(EIGEN)) bilder.push(el("button", { type: "button", "aria-pressed": String(m.bild === EIGEN), text: eigenText, onclick: () => { m.bild = EIGEN; pultAufbauen(); adresse(); } }));
   if (S.werk && motor.hatBild(werkBild(S.werk))) bilder.push(el("button", { type: "button", "aria-pressed": String(m.bild === werkBild(S.werk)), text: t("Werk von {name}", { name: S.werk.name }), onclick: () => { m.bild = werkBild(S.werk); pultAufbauen(); adresse(); } }));
   bilder.push(el("button", { type: "button", class: "hochladen", text: motor.hatBild(EIGEN) ? t("Anderes Bild …") : t("Bild wählen …"), onclick: () => $("pult-datei").click() }));
   $("pult-bilder").replaceChildren(...bilder);
@@ -272,6 +275,7 @@ $("pult-zufall").addEventListener("click", () => { S.mix = zufall(Math.random, S
 
 // Eigenes Bild: Datei wählen oder auf die Bühne ziehen; verkleinert auf höchstens 1600 px, bleibt im Browser, bis das Werk gesichert wird
 async function eigenesBild(datei) {
+  if (istVideo(datei)) return eigenesVideo(datei);   // Video: siehe video.js (VIDEO_AN)
   if (!datei || !datei.type.startsWith("image/")) { pultMeldung(t("Das ist kein Bild. Möglich sind JPEG, PNG oder WebP.")); return; }
   pultMeldung(t("Bild wird geladen …"));
   try {
@@ -288,6 +292,29 @@ async function eigenesBild(datei) {
     pultAufbauen(); adresse();
     pultMeldung(t("{name} · {b} × {h} · bleibt in diesem Browser, bis du dein Werk sicherst", { name: datei.name, b: c.width, h: c.height }));
   } catch (f) { pultMeldung(t("Das Bild liess sich nicht öffnen: {fehler}", { fehler: fehlerText(f) })); }
+}
+// Video (Prototyp, 7. November 2026): einmal in Einzelbilder zerlegt, höchstens 13 s, bleibt im Browser; als Werk sichern geht noch nicht
+let zerlegen = null;
+async function eigenesVideo(datei) {
+  if (zerlegen) { zerlegen.abbrechen = true; }
+  const stand = { abbrechen: false }; zerlegen = stand;
+  pultMeldung(t("Video wird vorbereitet … {p} %", { p: 0 }));
+  try {
+    const sp = await videoZerlegen(datei, { px: motor.sparsam ? VIDEO_PX_SPARSAM : VIDEO_PX,
+      fortschritt: (p) => pultMeldung(t("Video wird vorbereitet … {p} %", { p: Math.round(p * 100) })), abbruch: () => stand.abbrechen });
+    if (!sp) return;
+    motor.videoLaden(EIGEN, sp);
+    S.bildBlob = null; S.bildName = datei.name;
+    S.mix.bild = EIGEN;
+    pultAufbauen(); adresse();
+    pultMeldung(t("{name} · {b} × {h} · {s} s Video · bleibt in diesem Browser. MP4 laden geht, als Werk sichern noch nicht.", { name: datei.name, b: sp.b, h: sp.h, s: (sp.n / sp.fps).toFixed(1) }));
+  } catch (f) { pultMeldung(t("Das Video liess sich nicht öffnen: {fehler}", { fehler: fehlerText(f) })); }
+  finally { if (zerlegen === stand) zerlegen = null; }
+}
+if (VIDEO_AN) {
+  $("pult-datei").accept = "image/*,video/*";
+  const hinweis = document.querySelector("#pult-leer .hinweis");
+  if (hinweis) hinweis.textContent = t("JPEG, PNG, WebP oder ein kurzes Video (bis 12 s, MP4). Es bleibt auf deinem Gerät, bis du dein Werk sicherst.");
 }
 const pultMeldung = (text) => { $("pult-meldung").textContent = text; };
 $("pult-datei").addEventListener("change", (e) => { eigenesBild(e.target.files[0]); e.target.value = ""; });
@@ -323,6 +350,7 @@ $("sichern-name").addEventListener("change", () => merken("animationen.name", $(
 const sichernMeldung = (text, gut = false) => { const p = $("sichern-meldung"); p.textContent = text; p.classList.toggle("gut", gut); };
 async function sichern() {
   if (!hatBild()) { sichernMeldung(t("Zuerst ein Bild wählen.")); return; }
+  if (motor.istVideo(S.mix.bild)) { sichernMeldung(t("Ein Werk mit Video lässt sich noch nicht sichern. «MP4 laden» geht.")); return; }
   const name = $("sichern-name").value.trim(), titel = $("sichern-titel").value.trim();
   if (!name) { sichernMeldung(t("Bitte deinen Namen angeben.")); $("sichern-name").focus(); return; }
   const knopf = $("pult-sichern");

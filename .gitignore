@@ -10,3 +10,7 @@ tools/hochrendern/__pycache__/
 
 # Animationen: gesicherte Werke entstehen auf dem Server (animations/werke.php), lokal nur beim Testen
 animations/werke/
+
+# Hörseite der EP «directer» (listen/directer/): die durchgehende WAV ist zu gross für Git und wird separat auf den Webspace geladen (docs/ep-directer.md)
+listen/directer/audio/
+*.ep-zwischen.wav
