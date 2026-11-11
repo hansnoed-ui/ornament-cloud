@@ -171,3 +171,5 @@ Takt hat und wie er gegliedert ist.
 `node tools/bienne-hoerproben.mjs metrum <ziel>`: dieselbe Musik (D dorisch, gleicher Startwert, Rhodes und Bass «Rund») in 4/4, 5/4,
 7/8, 6/8, 12/8 und 11/8, je 8 Takte bei 90 BPM, −16 LUFS. Kick auf geraden, Snare auf ungeraden Gruppenanfängen, Hi-Hat in Achteln mit
 Betonung aus der Gliederung, Bass auf jedem Gruppenanfang. `metrum.json` nennt die Muster.
+
+Urteil Christian (11.11.): gut 4/4, 7/8, 12/8, 11/8; geht 5/4, 6/8.
