@@ -937,3 +937,20 @@ test("Metrum: Taktlänge zentral, 4/4 genau wie vorher, ungerade Takte mit Glied
   assert.equal(spurRechnenM({ ...q, taktart: "7/8" }, 48000).kanaele[0].length, Math.round(2 * 1.75 * 48000));
   assert.equal(spurRechnenM(q, 48000).kanaele[0].length, Math.round(2 * 2 * 48000));
 });
+
+test("Metrum: Tuplets in Musterzeilen – «[x x x]:4» legt drei Schläge über vier Schritte, alte Zeilen bleiben gleich", async () => {
+  const { taktLesen } = await c("kern/muster.js");
+  const t = taktLesen("x . . . [x x_ x_]:4 . . . . . . . .");
+  assert.equal(t.length, 4);
+  assert.deepEqual(t.map((s) => s.n), [16, 16, 16, 16]);
+  assert.ok(Math.abs(t[2].stelle - (4 + 4 / 3) / 16) < 1e-12 && Math.abs(t[3].stelle - (4 + 8 / 3) / 16) < 1e-12);
+  assert.equal(t[2].tuplet, 3);
+  assert.equal(t[2].staerke, 0.45);
+  const alt = taktLesen("x . x_ . x! . . tek_");
+  assert.deepEqual(alt.map((s) => [s.stelle, s.schritt, s.n]), [[0, 0, 8], [0.25, 2, 8], [0.5, 4, 8], [0.875, 7, 8]]);
+  assert.ok(alt.every((s) => !("tuplet" in s)));
+  // Quintole auf der letzten Zweiergruppe von 11/8
+  const q = taktLesen(". ".repeat(18) + "[x x x x x]:4");
+  assert.equal(q[0].n, 22);
+  assert.ok(Math.abs(q[4].stelle - (18 + 16 / 5) / 22) < 1e-12);
+});
