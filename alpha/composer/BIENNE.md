@@ -219,3 +219,5 @@ je Saite eine Note mit kleinem Versatz (ab/auf).
 `node tools/bienne-hoerproben.mjs gitarre <ziel>`: sechs Proben, jede mit eigener Spielweise, Taktart, Modus und Startwert
 (Arpeggio 12/8 D dorisch, zerlegt 7/8 A äolisch, Schwellen 4/4 G lydisch, geschlagen 4/4 E mixolydisch, Finger 6/8 E phrygisch,
 gedämpft 11/8 C dorisch). Griffe aus `harmonik.js`. Timing mit den Profilen aus Phase 2.
+
+Urteil (11.11.): gut Schwelle und gedämpft; geht Arpeggio (Hals rund) und Stahl geschlagen; weg Steg glasig und Nylon – die bleiben im Erzeuger, Bienne wählt sie nicht von sich aus.
