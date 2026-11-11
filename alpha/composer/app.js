@@ -29,6 +29,7 @@ import * as BE from "./kern/bereiche.js";
 import * as FA from "./kern/fassungen.js";
 import { lucerneEinbauen, klangPanel, istSampler, samplerRechnen } from "./lucerne-ui.js";
 import { VORLAGEN, STIL_ZYKLEN, zyklusTakte, matraAuto } from "./kern/zyklen.js";
+import { grooveErzeugen, FAMILIEN as GROOVE_FAMILIEN, STIL_GROOVES } from "./kern/grooves.js";
 const PERK_NEU = "perkussion@0.2.0";
 
 const $ = (id) => document.getElementById(id);
@@ -623,10 +624,14 @@ async function erzeugen({ anzahlVorgabe = null, still = false } = {}) {
   if (!anzahlVorgabe) z.projekt.abschnitte = null;
   melde(`erzeuge ${stil.name} …`, 0); await atmen();
   let erste = null;
+  // Drums aus dem Groove-Generator (Groove 0.1.0): je Startwert ein eigener Groove statt der festen Zeilen des Stils
+  const groove = $("grooves").checked && STIL_GROOVES[stil.key] ? { stil: stil.key, seed, familie: "auto", dichte: 50, komplex: 50 } : null;
+  const gr = groove ? grooveErzeugen(groove) : null;
   for (const [i, s] of stil.spuren.entries()) {
     const st = stimmeVon(s.erzeuger, s.stimme), v = st.varianten.find((x) => x.name === s.variante) ?? st.varianten[0];
     const quelle = { art: "erzeugt", erzeuger: s.erzeuger, stimme: s.stimme, variante: v.name, werte: { ...v.werte }, takte: [...s.takte], fill: s.fill ?? null,
       anzahl, bpm, swing: stil.swing, menschlich: s.menschlich ?? stil.menschlich, versatz: s.versatz ?? 0, seed: seed * 100 + i, stil: stil.key };
+    if (gr?.spuren[s.stimme] && s.erzeuger.startsWith("drums@")) { quelle.groove = { ...groove }; grooveAnwenden(quelle, gr); }
     const zy = $("zyklen").checked ? STIL_ZYKLEN[stil.key]?.[s.stimme] : null;
     if (zy) zyklusSetzen(quelle, zy);
     const sp = PR.erzeugteSpurDazu(z.projekt, quelle, { name: st.name, typ: st.rolle === "perkussion" ? "perkussion" : "drums", pegel: s.pegel ?? st.pegel, pan: st.pan, raum: stil.raum ?? null });
@@ -664,7 +669,11 @@ async function trackErzeugen() {
   await erzeugen({ anzahlVorgabe: takte, still: true });
   $("mitBass").checked = mitBass;
   // je Abschnitt eigene Grooves und Basslinien (seit Composer 0.3)
-  for (const sp of z.projekt.spuren.filter(istDrums)) { const def = stil.spuren.find((x) => x.stimme === sp.quelle.stimme)?.teile; if (def) { sp.quelle.teile = teileAus(def, abschnitte); spurNeuRechnen(sp); } }
+  // mit Groove-Generator: jeder Abschnitt eine eigene Abwandlung des Track-Grooves; sonst die festen Teile des Stils
+  for (const sp of z.projekt.spuren.filter(istDrums)) {
+    if (sp.quelle.groove) { grooveAnwenden(sp.quelle, grooveErzeugen({ ...sp.quelle.groove, abschn: abschnitte })); spurNeuRechnen(sp); continue; }
+    const def = stil.spuren.find((x) => x.stimme === sp.quelle.stimme)?.teile; if (def) { sp.quelle.teile = teileAus(def, abschnitte); spurNeuRechnen(sp); }
+  }
   // Perkussion aus Zyklen: jeder Abschnitt beginnt auf dem Sam, vor jedem Wechsel ein Tihai, Dichte je Abschnitt (Rhythmus 0.1.0)
   for (const sp of z.projekt.spuren.filter((x) => istDrums(x) && x.quelle.zyklus)) { zyklusNeu(sp.quelle, abschnitte); spurNeuRechnen(sp); }
   const bassSp = z.projekt.spuren.find(istBass);
@@ -731,6 +740,43 @@ function stilSpurDazu(stilKey, stimme, { anzahl, bpm, seed, swing, abschnitte = 
   const sp = PR.erzeugteSpurDazu(z.projekt, quelle, { name: `${st.name} (aus ${s0.name.split(/ \(|,/)[0]})`, typ: st.rolle === "perkussion" ? "perkussion" : "drums", pegel: (s.pegel ?? st.pegel) - 5, pan: -(st.pan || 0.2), raum: s0.raum ?? { anteil: 18, nachhall: 1.6 } });
   spurNeuRechnen(sp);
   return sp;
+}
+
+// ---------- Drums aus dem Groove-Generator (Groove 0.1.0) ----------
+/** die Zeilen einer Stimme aus einem erzeugten Groove in die Quelle (Grundzeilen, Wirbel, Teile je Abschnitt, Swing) */
+function grooveAnwenden(q, g) {
+  const s = g.spuren[q.stimme];
+  if (!s) return;
+  q.takte = [...s.takte]; q.fill = s.fill ?? null; q.teile = s.teile ? s.teile.map((t) => ({ ...t })) : null;
+  if (s.swing !== undefined) q.swing = s.swing;
+  q.groove = { ...q.groove, gewaehlt: g.familie, vonHand: false };
+}
+/** alle Groove-Spuren des Projekts mit denselben Einstellungen neu erzeugen (sie gehören zusammen) */
+function grooveAlleNeu(werte) {
+  let g = null;
+  for (const sp of z.projekt.spuren.filter((x) => istDrums(x) && x.quelle.groove)) {
+    const q = sp.quelle; q.groove = { ...q.groove, ...werte };
+    g = grooveErzeugen({ ...q.groove, abschn: abschnitteFuer(q) });
+    grooveAnwenden(q, g); spurBald(sp);
+  }
+  return g;
+}
+function grooveSteuerung(sp, box) {
+  const q = sp.quelle, gr = q.groove, k = el("div", { className: "gruppe" }, el("h3", {}, el("span", { textContent: "Groove" })));
+  const info = el("p", { className: "hinweis" });
+  const zeigen = (g) => { info.textContent = `${g.info} Gilt für alle Drums dieses Grooves (Kick, Snare, Hats …); jeder Abschnitt des Tracks hat eine eigene Abwandlung. Der Bass folgt der Kick erst nach «nur Bass neu».${q.groove.vonHand ? " Das Muster ist von Hand geändert; ein Regler hier erzeugt es neu." : ""}`; };
+  const neu = (werte) => { const g = grooveAlleNeu(werte); const ta = box.querySelector("textarea.muster"); if (ta) ta.value = [...q.takte, ...(q.fill ? [`fill: ${q.fill}`] : [])].join("\n"); if (g) zeigen(g); };
+  const sel = el("select", {}, el("option", { value: "auto", textContent: `aus dem Startwert (jetzt ${GROOVE_FAMILIEN[gr.gewaehlt]?.name ?? "–"})`, selected: gr.familie === "auto" }),
+    ...Object.entries(GROOVE_FAMILIEN).map(([key, f]) => el("option", { value: key, textContent: f.name, selected: gr.familie === key })));
+  sel.onchange = () => neu({ familie: sel.value });
+  k.append(el("label", { className: "param" }, el("span", { textContent: "Familie" }), el("output"), sel));
+  for (const [key, name, hilfe] of [["dichte", "Dichte", "Geisternoten, leise Kicks, volle Hats"], ["komplex", "Komplexität", "wechselnde Kicks, Läufe, Rimshots, öfter ein zerhackter Break bei «Gas geben»"]])
+    k.append(paramRegler({ key, name, min: 0, max: 100, std: 50, einheit: "", hilfe, schritt: 1 }, gr[key] ?? 50, (v) => neu({ [key]: Math.round(v) })));
+  const w = el("button", { className: "mini", textContent: "neu würfeln", title: "anderer Groove: neuer Startwert für alle Drums dieses Grooves" });
+  w.onclick = () => neu({ seed: 1 + Math.floor(Math.random() * 99998) });
+  k.append(el("div", { className: "klang-zeile" }, w), info);
+  zeigen(grooveErzeugen({ ...gr }));
+  return el("div", { className: "gruppen" }, k);
 }
 
 // ---------- Perkussion aus Zyklen (Rhythmus 0.1.0, Perkussion 0.2.0) ----------
@@ -824,6 +870,7 @@ function klangAufbauen(box, sp, wahl) {
   else box.append(el("div", { className: "klang-zeile" }, el("span", { className: "leise-text", textContent: "anhören (A):" }),
     ...st.artikulationen.map((a) => { const b = el("button", { className: "mini", textContent: a.name, title: "ein Schlag, ohne Kanalzug und Raum" }); b.onclick = () => schlagHoeren(sp, a.key); return b; })));
   if (q.zyklus) box.append(zyklusSteuerung(sp, box));
+  if (q.groove) box.append(grooveSteuerung(sp, box));
   // Varianten der Stimme
   box.append(el("div", { className: "varianten" }, ...st.varianten.map((v, i) => {
     const b = el("button", { className: "variante-k", title: `Taste ${i + 1}` }, el("b", { textContent: `${i + 1} · ${v.name}` }), el("small", { textContent: v.beschreibung }));
@@ -860,7 +907,7 @@ function klangAufbauen(box, sp, wahl) {
     const zeilen = ta.value.split("\n").map((x) => x.trim()).filter(Boolean), fill = zeilen.find((x) => x.startsWith("fill:"));
     const takte = zeilen.filter((x) => !x.startsWith("fill:"));
     if (!takte.length) return;
-    q.takte = takte; q.fill = fill ? fill.slice(5).trim() : null; if (istSynth(sp)) q.sequenzAuto = false; if (q.zyklus) q.zyklus.vonHand = true; spurBald(sp);
+    q.takte = takte; q.fill = fill ? fill.slice(5).trim() : null; if (istSynth(sp)) q.sequenzAuto = false; if (q.zyklus) q.zyklus.vonHand = true; if (q.groove) q.groove.vonHand = true; spurBald(sp);
   };
   box.append(el("div", { className: "gruppe", style: "margin-top:16px" }, el("h3", {}, el("span", { textContent: "Muster (eine Zeile je Takt, «fill:» für den Wirbel)" })), ta,
     el("p", { className: "hinweis", textContent: q.leiter
