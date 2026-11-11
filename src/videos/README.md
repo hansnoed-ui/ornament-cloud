@@ -175,6 +175,109 @@ ffmpeg -i out/start-hell.mp4 -vf "scale=in_range=pc:out_range=tv:in_color_matrix
 # dunkel ebenso mit out/start-dunkel.mp4 nach ../../assets/start-animation-dunkel.mp4
 ```
 
+## «Wissen» – der Obsidian-Tresor als Netz (27. Oktober 2026)
+
+Wunsch: «ein spektakulären video, das den aktuellen stand meiner obisidian inhalte zeigt, ca 90 sekunden inklusive kleine (lab) intro und outro».
+4:5 (1080 × 1350), etwa 86 s, ohne Ton, nur als Datei (nicht auf der Website). Composition `WissenVideo`, Quellcode `src/wissen/`.
+
+- **Look des Labs** statt der Vorlage: schwarzer Grund, die Re-entry-Schlaufe mit dem blauen Punkt und «ornament.lab» als Intro und Outro (`LabSignet.tsx`,
+  wie das Intro der Landing-Page `beta/lab/`), je Bereich eine Farbe (`farben.ts`). Die Vorlage (`vorlage/`) bleibt unverändert.
+- **Daten** (`daten.mjs` → `data/wissen.json`, nicht eingecheckt) aus Christians Tresor «Wissen» (neben dem Repository unter
+  `Documents/GitHub/Wissen`, sonst Umgebungsvariable `WISSEN`): jede Notiz, jeder Link `[[…]]`, die Bereiche nach Ordnern, der Stand aus dem
+  letzten Commit des Tresors, zwei Anordnungen des Netzes aus einer Kraftsimulation mit festem Startwert. Auszüge sind der Leitsatz einer Notiz,
+  wörtlich, nur mit «[…]» gekürzt und gegen den Text geprüft. Fehlt der Tresor (Cloud-Sitzung), überspringt das Skript ihn.
+- **Szenen:** Intro mit «Wissen» und dem Stand · das Netz entsteht (Notizen und Verbindungen zählen mit) · die Bereiche · vier Werke (ORNA,
+  Formen der Zeit, Zu seiner Zeit – Zyklus I, Prüfraster – Übersicht) · drei Konzepte mit ihren Quellen (Zeit und Eigenzeit, Kontingenz und
+  Anschlussüberschuss, Zukunft als Überschuss) · die fünf meistverlinkten Notizen · das ganze Netz · Outro. Jede Station steht so lange, wie ihr
+  Auszug zum Lesen braucht (1 s je 4 Wörter, dazu 2 s).
+- «Verbindungen» im Zähler sind die Verweise (jedes `[[…]]` auf eine Notiz des Tresors); bei einer Station steht die Zahl der verknüpften Notizen.
+
+```bash
+cd src/videos && node vorbereiten.mjs
+npx remotion render WissenVideo out/wissen.mp4 --codec=h264 --crf=20 --pixel-format=yuv420p
+```
+
+## «Fahrt» – 360°-Kamerafahrt um ein Bild als 3D-Modell (27./28. Oktober 2026)
+
+Wunsch: «eine 360 grad kamerafahrt um das portrait» (Bild aus Christians Ordner KUNST). 4:5 (1080 × 1350), 18,5 s, ohne Ton, nur als Datei.
+Composition `FahrtVideo`, Quellcode `src/fahrt/`: Lab-Intro (`wissen/LabSignet.tsx`), eine Umdrehung aus 300 Einzelbildern, Lab-Outro.
+
+- **Modell** (`modell/modell.py`, kostenlos auf Hugging Face mit dem Token aus `hf auth login`, nach `data/<verfahren>.glb`, nicht eingecheckt):
+  `trellis` (Form und Textur, weich; am besten gefallen, aber deutlich schwächer als eine Kamerafahrt aus ChatGPT/Descript),
+  `hunyuan` (nur Form, am feinsten; die Textur übersteigt die Gratis-GPU-Zeit), `sf3d` (Textur, flach wie eine Maske, hinten ein zweites Gesicht).
+- **Fahrt** (`modell/render.mjs` mit `modell/fahrt.html`): Three.js 0.185.1 in Chromium ohne Grafikkarte; Raumlicht, die Lichter fahren mit der Kamera,
+  Grund #242424 (auf Schwarz verschwinden dunkle Teile). `MATERIAL=gips` für ein Modell ohne Textur, `MATERIAL=matt` nimmt SF3D das Metall.
+- `probe` rendert erst acht Winkel zum Anschauen (`data/probe-<verfahren>/`), `fahrt` dann die 300 Bilder nach `public/fahrt-<verfahren>/`.
+
+```bash
+cd src/videos/src/fahrt/modell
+py -P modell.py trellis pfad/zum/bild.png
+THREE=…/node_modules/three NODE_PATH="$(npm root -g)" node render.mjs probe trellis
+THREE=…/node_modules/three NODE_PATH="$(npm root -g)" node render.mjs fahrt trellis 0   # Startwinkel: wo das Gesicht zur Kamera schaut
+cd ../../.. && npx remotion render FahrtVideo out/fahrt.mp4 --props='{"ordner":"fahrt-trellis"}'
+```
+
+## «Reise» – durch den Zettelkasten und ORNA (28. Oktober 2026)
+
+Wunsch: «eine weitere obsidian animation als video: diesmal eine reise durch orna und den zettelkasten: mit begriffen, verweise, quellen und namen»,
+«in der obsidian ästhetik mit viel bewegung, aber auch lesbarkeit», ohne den eigenen Namen. Etwa 94 s, ohne Ton, nur als Datei.
+Drei Formate aus derselben Zeitachse: `ReiseHoch` (9:16, 1080 × 1920), `ReiseVideo` (4:5, 1080 × 1350), `ReiseQuer` (16:9, 1920 × 1080). Quellcode `src/reise/`.
+
+- **Look** der Graphansicht von Obsidian: dunkler Grund, ruhende Punkte gedämpft, Beschriftung unter dem Punkt, die aktive Notiz und ihre Nachbarn leuchten,
+  alles atmet leise. Farben aus der Palette des Neubaus: Strophen weiss, Werke Senf, Namen Blaupause, ORNA Rosa, Zyklen Tannengrün, die Spur Rot.
+  Intro und Outro wie bei «Wissen» (`wissen/LabSignet.tsx`, im Querformat verkleinert).
+- **Daten** (`daten.mjs` → `data/reise.json`): Zyklen, Strophen, Kernsätze und Verweise («Name, Werk») aus `src/data/zu-seiner-zeit.json`, die Personen aus
+  `zu-seiner-zeit/zsz-daten.json`, ORNA aus `portfolio/nebeneinander-nacheinander/js/data/`. Knoten Zyklus, Strophe, Werk, Name; ein Name aus beiden Werken ist
+  ein Knoten (19 Brücken). Anordnung aus einer Kraftsimulation mit festem Startwert, ORNA als Doppelrad daneben.
+- **Spur**: sieben Stationen, jede über echte Kanten (das Skript prüft sie): 1 Die Brücke → über das Werk von Karen Barad → 28 Die Koppelung → über Karen Barad →
+  Mona Hatoum × Karen Barad → über Mona Hatoum → 22 Die Grenze → über Susan Leigh Star → On Kawara × Susan Leigh Star → über On Kawara → 2 Das Ereignis →
+  über das Werk von Whitehead → 49 Die Zukunft. Bei einer Strophe stehen Begriff, Kernsatz und die vier Verweise, bei einer Konstellation die Frage und die Strophen des Brückennamens.
+
+```bash
+cd src/videos && WISSEN=… node vorbereiten.mjs   # ohne Tresor fehlt data/wissen.json, und Root.tsx lässt sich nicht bündeln
+npx remotion render ReiseHoch out/reise-9x16.mp4 --codec=h264 --crf=20 --pixel-format=yuv420p   # ebenso ReiseVideo (4:5) und ReiseQuer (16:9)
+```
+
+## Suchaufträge – weitere Reisen durch Zettelkasten und ORNA (seit 29. Oktober 2026)
+
+Wunsch: «weitere "Reisen" durch den Zettelkasten und ORNA im Obsidian-Stil … statt der Titelsequenz eine Animation des Zettelkastens (Punktkugel, Gitter, Raster)
+wie im ersten Teil des Intros des ornament lab, danach den jeweiligen "Suchauftrag" … 90–120 Sekunden, 4:5 und 16:9».
+Dasselbe Video wie «Reise» (`src/reise/Video.tsx`) mit dem Parameter `auftrag`; die Aufträge stehen in `AUFTRAEGE` in `src/reise/daten.mjs`.
+
+- **Stationen von Hand, Wege vom Skript:** Eine Station ist eine Strophe (`{ strophe: 36 }`) oder ein ORNA-Paar (`{ orna: [Künstler:in, Theoretiker:in] }`).
+  Den Weg dazwischen sucht `daten.mjs` als kürzesten über echte Kanten (Werke, Namen, Konstellationen; erst wenn es keinen gibt, über den Zyklus) und
+  beschreibt ihn («über On Kawara · Judith Butler»). ORNA-Stationen zeigen die Praxis (den ersten Satz der Konstellation) und die Frage.
+- **Adressen:** `FRAUEN` und `MAENNER` ordnen jeden Namen einer Spur ein; das Skript bricht ab, wenn ein Name fehlt oder weniger als die Hälfte weiblich ist.
+- **Intro** (`src/reise/ZettelIntro.tsx`, 280 Bilder): Punktkugel → Box mit Lichtweg → Feld 7 × 7 aus dem Intro von `beta/lab/`, als Funktion der Zeit.
+  Das Feld sind die 49 Strophen (Zeilen = Zyklen); die Ziele leuchten rot, die Umwege weiss, die Spur verbindet sie in der Reihenfolge der Reise.
+- **1. Auftrag `profil`** «Vom Profil zum Feed zur Plattform», mit Umwegen über Ereignis, Person und Archiv: 36 Das Profil · Hanne Darboven × Elena Esposito ·
+  2 Das Ereignis · 17 Die Person · Louise Bourgeois × Judith Butler · 13 Das Archiv · 41 Der Feed · Marina Abramović × Wendy Hui Kyong Chun · 42 Die Plattform.
+  16 von 28 Adressen weiblich, 119,7 s. Compositions `ProfilVideo` (4:5) und `ProfilQuer` (16:9).
+- **2. Auftrag `koerper`** «Vom Körper zum blinden Fleck zum Material zur Kunst», ORNA frei gewählt, **nicht über dasselbe Werk** (`gleichesWerk: false`):
+  25 Der Körper · Mona Hatoum × Susan Leigh Star · 5 Der blinde Fleck · Agnes Martin × George Spencer-Brown · Eva Hesse × Karen Barad · 29 Das Material ·
+  Doris Salcedo × Hannah Arendt · 35 Die Kunst. 14 von 22 Adressen weiblich, 114,7 s. Compositions `KoerperVideo` (4:5) und `KoerperQuer` (16:9).
+  Die Suche ohne dasselbe Werk (`ohneGleichesWerk`) verbietet Strophe → Werk → Strophe und Werk → Name → Werk mit demselben Titel (dasselbe Werk, anders
+  zitiert); ein Schritt über den Zyklus kostet 2, alle anderen 1.
+
+```bash
+cd src/videos && node src/reise/daten.mjs
+npx remotion render ProfilVideo out/profil-4x5.mp4    # ebenso ProfilQuer (16:9)
+```
+
+### Fassungen «organisch» und «Gewebe» (Tests vom 29. Oktober 2026, noch nicht der Standard)
+
+Wunsch: «wie die verbindungen noch etwas organischer wirken könnten … das ganze video darf gerne eine art digitales kunstwerk sein», dann «etwas neuronales»
+und «ein viel organischeres netzwerk … mehr ein gewebe, nicht einfach pünktchen … differenzierter als beim PHORMA III effekte». Schalter am Video: `organisch`, `gewebe`.
+
+- **organisch** (`KoerperOrganisch`, `KoerperOrganischQuer`): Verbindungen als langsam schwingende Kurven, die Spur als weicher, leuchtender Bogen, Lichtpunkte an der
+  Station; neuronal: spontane Impulse auf jeder dritten Verbindung, an der Station eine Welle über zwei Schritte mit Blitz an den Knoten. Ohne Zahlen und Listen
+  in Intro, Aufbau und Schluss.
+- **Gewebe** (`KoerperGewebe`, `KoerperGewebeQuer`, `src/reise/Gewebe.tsx`): WebGL 2 ohne Bibliothek, darüber das SVG (Beschriftung, Spur) mit derselben Projektion.
+  Jede Verbindung ein Band aus 4–16 Fasern, an den Enden zu Knoten gezogen, in der Mitte offen, verdreht und flatternd; die Farbe läuft entlang der Faser,
+  die Leuchtkraft je Faser sehr verschieden; an der Station spannt sich das Band, Impulse laufen als Licht durch die Fasern. An der Station treten die übrigen
+  Namen zurück, die gewählten stehen gross und zuoberst. Schrift Inter Display (`src/reise/schrift.ts`, im Stil von Helvetica Now; `vorbereiten.mjs` kopiert sie).
+  Rendern mit `--gl=angle`, etwa 4 Minuten je 40 s.
+
 ## Rendern ohne Internetzugang zu remotion.media
 
 Remotion lädt sonst einen eigenen Browser herunter; stattdessen einen vorhandenen angeben:

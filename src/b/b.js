@@ -78,8 +78,8 @@ function buehne(el) {
     const z = zettel.find((x) => x.n === n); if (!z) return;
     aktuell = n;
     satz.textContent = z.leitsatz;
-    if (vt) { vt.querySelector(".n").textContent = `Zettel ${z.n}`; vt.querySelector(".t").textContent = z.titel; }
-    woher.href = `/b/zettel/${z.slug}/`;
+    if (vt) { vt.querySelector(".n").textContent = `${EN ? "Note" : "Zettel"} ${z.n}`; vt.querySelector(".t").textContent = z.titel; }
+    woher.href = `${EN ? "/b/en/" : "/b/"}zettel/${z.slug}/`;   // auf Englisch zum englischen Zettel (22. Oktober 2026: «lande ich in der deutschen Version»)
     if (!ruhig) { satz.classList.remove("wechsel"); void satz.offsetWidth; satz.classList.add("wechsel"); }
     if (f && markieren) f.zellen.forEach((c) => c.classList.toggle("aktiv", +c.dataset.n === n));
   }
@@ -194,3 +194,9 @@ const start = document.querySelector(".buehne");
 if (start) buehne(start); else document.querySelectorAll(".feld-rahmen").forEach(feld);
 document.querySelectorAll(".teilen-knopf").forEach(teilen);
 document.querySelectorAll("form.brief").forEach(briefing);
+
+/* ---------- «Beta» in der Hauptnavigation: schliesst bei einem Klick daneben und mit Escape (28. Oktober 2026) ---------- */
+// am Telefon öffnet die Beta-Liste zur freien Bildschirmhälfte hin (b.css .nach-rechts)
+for (const d of document.querySelectorAll("details.beta")) d.addEventListener("toggle", () => { if (!d.open) return; const r = d.getBoundingClientRect(); d.classList.toggle("nach-rechts", r.left + r.width / 2 < innerWidth / 2); });
+document.addEventListener("click", (e) => { for (const d of document.querySelectorAll("details.beta[open]")) if (!d.contains(e.target)) d.open = false; });
+document.addEventListener("keydown", (e) => { if (e.key !== "Escape") return; const d = document.querySelector("details.beta[open]"); if (d) { d.open = false; d.querySelector("summary").focus(); } });

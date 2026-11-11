@@ -38,10 +38,11 @@ function fehler(page) {
   page.on("console", (m) => { if (m.type() === "error" && !/Failed to load resource/.test(m.text())) liste.push(m.text()); });
   return liste;
 }
-async function startseite(opts = {}, url = "/") {
+async function startseite(opts = {}, url = "/?bisher") {   // seit 20. Oktober 2026 leitet / in den Neubau (/b/); die bisherige Startseite unter /?bisher
   const ctx = await browser.newContext(opts);
   const page = await ctx.newPage();
   const errors = fehler(page);
+  await page.route(/\/b\/(en\/)?$/, (r) => r.fulfill({ status: 204 }));   // ohne Skript führte der meta refresh der Startseite nach /b/; 204 lässt die Seite stehen
   await page.goto(origin + url);
   return { ctx, page, errors };
 }
@@ -77,14 +78,14 @@ await check("Startseite ohne Skript: kein Zettel von selbst, ein Hinweis mit den
   await ctx.close();
 });
 
-await check("Startseite (Handy): der Zettel mit Hauptlinks, darunter die Welle, darunter die fünf Kästchen des Menüs in einer Reihe; kein seitliches Wischen", async () => {
+await check("Startseite (Handy): der Zettel mit Hauptlinks, darunter die Welle, darunter die sechs Kästchen des Menüs in einer Reihe; kein seitliches Wischen", async () => {
   for (const opts of [{ ...devices["Pixel 7"] }, { ...devices["iPhone 13"] }, { viewport: { width: 320, height: 640 }, isMobile: true, hasTouch: true }]) {
     const { ctx, page, errors } = await startseite({ ...opts, reducedMotion: "reduce" });
     await page.waitForURL(/\/zu-seiner-zeit\/strophe\//);
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
     const m = await page.locator(".menu-item").evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return [Math.round(r.x), Math.round(r.y)]; }));
     assert.equal(new Set(m.map((p) => p[1])).size, 1, "eine Reihe");
-    assert.equal(new Set(m.map((p) => p[0])).size, 5, "fünf Spalten (seit 19. Oktober 2026 mit «Social»)");
+    assert.equal(new Set(m.map((p) => p[0])).size, 6, "sechs Spalten (seit 27. Oktober 2026 mit «Lab»)");
     const links = await box(page.locator(".seitenweg")), welle = await box(page.locator(".divider")), menu = await box(page.locator(".menu"));
     assert.ok(links.b <= welle.y + 1 && welle.b <= menu.y + 1 && menu.b <= page.viewportSize().height, "Hauptlinks, Welle, Menü, alles beim Laden im Fenster");
     assert.deepEqual(errors, []);
@@ -105,25 +106,26 @@ await check("Rückkanal in der Spalte der Seite, bündig mit dem Fuss, nie am Fe
 });
 
 // ---------- Menü ----------
-await check("Menü: fünf Kästchen (Apps, Prompts, Zettel, Social, Art) mit Symbol auf allen Breiten in einer Reihe, gleich breit, nichts überlappt, kein seitliches Wischen; Handy unter der Welle, Computer rechts oben über der Welle", async () => {
+await check("Menü: sechs Kästchen (Lab, Apps, Prompts, Zettel, Social, Art) mit Symbol auf allen Breiten in einer Reihe, gleich breit, nichts überlappt, kein seitliches Wischen; Handy unter der Welle, Computer rechts oben über der Welle", async () => {
   const ctx = await browser.newContext();
-  for (const pfad of ["/apps/", "/masterprompts/", "/web/", "/news/", "/social-media/", "/zu-seiner-zeit/", "/zu-seiner-zeit/en/strophe/17-die-person/", "/alpha/sketchory/", "/alpha/omna-color/", "/art/", "/art/harbouring/"]) {
+  for (const pfad of ["/apps/", "/masterprompts/", "/web/", "/news/", "/social-media/", "/zu-seiner-zeit/", "/zu-seiner-zeit/en/strophe/17-die-person/", "/alpha/sketchory/", "/art/", "/art/harbouring/"]) {
     for (const w of [320, 360, 390, 412, 600, 768, 1024, 1280]) {
       const page = await ctx.newPage();
       await page.addInitScript(() => { try { sessionStorage.setItem("start-animation", "1"); } catch {} });
       await page.setViewportSize({ width: w, height: 800 });
       await page.goto(origin + pfad);
       const items = page.locator(".menu-item");
-      assert.equal(await items.count(), 5);
-      assert.deepEqual(await items.locator("span").allTextContents(), ["Apps", "Prompts", "Zettel", "Social", "Art"], `${pfad} ${w}: Namen`);
+      assert.equal(await items.count(), 6);
+      assert.deepEqual(await items.locator("span").allTextContents(), ["Apps", "Prompts", "Zettel", "Social", "Art", "Beta"], `${pfad} ${w}: Namen`);
       const bs = [];
-      for (let i = 0; i < 5; i++) { assert.ok(await items.nth(i).isVisible(), `${pfad} ${w}: Kästchen ${i + 1} sichtbar`); bs.push(await box(items.nth(i))); }
-      for (let i = 0; i < 5; i++) for (let j = i + 1; j < 5; j++) assert.ok(!sich(bs[i], bs[j]), `${pfad} ${w}: Kästchen ${i + 1} und ${j + 1} überlappen`);
+      for (let i = 0; i < 6; i++) { assert.ok(await items.nth(i).isVisible(), `${pfad} ${w}: Kästchen ${i + 1} sichtbar`); bs.push(await box(items.nth(i))); }
+      for (let i = 0; i < 6; i++) for (let j = i + 1; j < 6; j++) assert.ok(!sich(bs[i], bs[j]), `${pfad} ${w}: Kästchen ${i + 1} und ${j + 1} überlappen`);
       assert.equal(new Set(bs.map((b) => Math.round(b.y))).size, 1, `${pfad} ${w}: eine Reihe`);
-      // seit 19. Oktober 2026 fünf Kästchen: auf den schmalsten Handys (bis 400 px) mindestens 48 px breit, sonst wie vorher 60 px
-      const minB = w <= 400 ? 48 : 60;
+      // seit 19. Oktober 2026 fünf Kästchen: auf den schmalsten Handys (bis 400 px) mindestens 48 px breit, sonst wie vorher 60 px;
+      // seit 27. Oktober 2026 sechs: auf 320 px noch 40 px, bis 440 px 54 px
+      const minB = w <= 340 ? 40 : w <= 400 ? 48 : w <= 440 ? 54 : 60;
       assert.ok(bs.every((b) => Math.abs(b.w - bs[0].w) < 1 && b.w >= minB && b.h >= 56), `${pfad} ${w}: gleich gross, mindestens ${minB} × 56 px (${Math.round(bs[0].w)} × ${Math.round(bs[0].h)})`);
-      for (let i = 0; i < 5; i++) {
+      for (let i = 0; i < 6; i++) {
         const svg = await box(items.nth(i).locator("svg"));
         assert.ok(svg.w >= 22 && svg.h >= 22, `${pfad} ${w}: Symbol ${i + 1} sichtbar`);
         const t = await items.nth(i).locator("span").evaluate((e) => e.scrollWidth <= e.clientWidth + 0.5);
@@ -155,7 +157,7 @@ await check("Menü: das Kästchen der Seite hat einen kräftigeren Rand (aria-cu
     const c = getComputedStyle(e);
     return { rand: c.borderTopColor, schatten: c.boxShadow, schrift: c.color, aktiv: e.getAttribute("aria-current") };
   });
-  for (const [pfad, aktiv, art] of [["/apps/", "Apps", "page"], ["/masterprompts/", "Prompts", "page"], ["/art/", "Art", "page"], ["/art/harbouring/", "Art", "true"], ["/web/", null, null], ["/portfolio/nebeneinander-nacheinander/", "Apps", "true"], ["/zu-seiner-zeit/", "Zettel", "page"], ["/zu-seiner-zeit/strophe/17-die-person/", "Zettel", "true"], ["/alpha/omna-color/", "Apps", "true"], ["/alpha/sketchory/", null, null], ["/news/", null, null]]) {
+  for (const [pfad, aktiv, art] of [["/apps/", "Apps", "page"], ["/masterprompts/", "Prompts", "page"], ["/art/", "Art", "page"], ["/art/harbouring/", "Art", "true"], ["/web/", null, null], ["/portfolio/nebeneinander-nacheinander/", "Apps", "true"], ["/zu-seiner-zeit/", "Zettel", "page"], ["/zu-seiner-zeit/strophe/17-die-person/", "Zettel", "true"], ["/alpha/sketchory/", null, null], ["/news/", null, null]]) {
     await page.goto(origin + pfad);
     for (const name of ["Apps", "Prompts", "Zettel", "Social", "Art"]) {
       const s = await rand(name);
@@ -191,14 +193,14 @@ await check("Menü: das Kästchen der Seite hat einen kräftigeren Rand (aria-cu
 await check("Menü: serifenlose Schrift der Seite in mittlerem Gewicht (Wunsch vom 2. Oktober 2026: moderner als die frühere Serife); die Überschriften bleiben in der Serife", async () => {
   const ctx = await browser.newContext({ viewport: { width: 1200, height: 800 } });
   const page = await ctx.newPage();
-  for (const pfad of ["/alpha/sketchory/", "/apps/", "/masterprompts/", "/web/", "/news/", "/portfolio/nebeneinander-nacheinander/"]) {
+  for (const pfad of ["/alpha/sketchory/", "/apps/", "/masterprompts/", "/web/", "/news/"]) {   // ORNA seit 20. Oktober 2026 in der Gestaltung des Neubaus (Instrument Sans als Schrift der Seite), ihr Kopf wird zum Kopf der App
     await page.goto(origin + pfad);
     const s = await page.evaluate(() => {
       const st = (e) => getComputedStyle(e);
       return { menu: [...document.querySelectorAll(".menu-item")].map((e) => ({ familie: st(e).fontFamily, gewicht: st(e).fontWeight, px: parseFloat(st(e).fontSize), aktiv: e.hasAttribute("aria-current") })),
         text: st(document.body).fontFamily, h1: st(document.querySelector("h1")).fontFamily };
     });
-    assert.equal(s.menu.length, 5, pfad);   // seit 19. Oktober 2026 fünf Kästchen
+    assert.equal(s.menu.length, 6, pfad);   // seit 19. Oktober 2026 fünf Kästchen, seit 27. Oktober 2026 sechs
     for (const [i, m] of s.menu.entries()) {
       assert.equal(m.familie, s.text, `${pfad}: Eintrag ${i + 1} in der Schrift der Seite`);
       assert.ok(/^system-ui/.test(m.familie) && /sans-serif$/.test(m.familie) && !/Georgia|Times/.test(m.familie), `${pfad}: Eintrag ${i + 1} serifenlos (${m.familie})`);
@@ -229,8 +231,8 @@ await check("Menü führt zu den Seiten: Apps, Prompts, Art und Zettel direkt in
   await page.locator(".work-kicker").getByRole("link", { name: "Apps" }).click();
   await page.waitForURL(/\/apps\/$/);
   await page.goto(origin + "/portfolio/nebeneinander-nacheinander/");
-  await page.getByRole("link", { name: "← Zu den Apps" }).click();
-  await page.waitForURL(/\/apps\/$/);
+  await page.getByRole("link", { name: "Alle Apps" }).click();            // seit 21. Oktober 2026 in den Neubau
+  await page.waitForURL(/\/b\/apps\/$/);
   await ctx.close();
 });
 
@@ -316,7 +318,7 @@ await check("Web: sechs Karten mit Bild (640 × 800; OMNA COLOR seit 19. Oktober
   await karte("OMNA COLOR").getByRole("link", { name: "Im Browser spielen" }).click();
   await page.waitForURL(/\/alpha\/omna-color\/$/);
   assert.ok(await page.locator("#wheel").isVisible());
-  assert.ok(await page.locator(".seitenweg").isVisible(), "allein auf der Seite mit den Hauptlinks");
+  assert.ok(await page.locator(".app-kopf").isVisible(), "allein auf der Seite, mit dem Kopf der App (seit 20. Oktober 2026)");
   assert.equal(await page.evaluate(() => document.documentElement.classList.contains("eingebettet")), false);
   await page.goto(origin + "/web/");
   await karte("Das Dritte Rad").getByRole("link", { name: "Öffnen" }).click();
@@ -363,11 +365,12 @@ const stubVideo = () => {
   HTMLMediaElement.prototype.play = function () { window.__start.play += 1; return new Promise(() => {}); };
   HTMLMediaElement.prototype.load = function () {};
 };
-async function startKontext(opts = {}, { stub = true, url = "/" } = {}) {
+async function startKontext(opts = {}, { stub = true, url = "/?bisher" } = {}) {
   const ctx = await neuerKontext({ viewport: { width: 1200, height: 800 }, ...opts });
   if (stub) await ctx.addInitScript(stubVideo);
   const page = await ctx.newPage();
   const errors = fehler(page);
+  await page.route(/\/b\/(en\/)?$/, (r) => r.fulfill({ status: 204 }));   // wie in startseite(): ohne Skript bleibt die Seite stehen
   await page.goto(origin + url);
   return { ctx, page, errors };
 }
@@ -382,7 +385,7 @@ await check("Startanimation: verweigert der Browser den Ton (noch nicht getippt)
     HTMLMediaElement.prototype.play = function () { if (!this.muted) { window.__start.play += 1; return Promise.reject(new DOMException("noch nicht getippt", "NotAllowedError")); } return stumm.call(this); };
   });
   const page = await ctx.newPage(), errors = fehler(page);
-  await page.goto(origin + "/");
+  await page.goto(origin + "/?bisher");
   await page.waitForFunction(() => window.__start.play >= 2);
   assert.equal(await startAn(page), true, "die Animation läuft weiter");
   assert.deepEqual(await page.evaluate(() => [document.querySelector("#start video").muted, document.querySelector(".start-ton").textContent, document.querySelector(".start-ton").getAttribute("aria-pressed")]), [true, "Ton an", "false"]);
@@ -431,11 +434,11 @@ await check("Startanimation: neue Sitzung deckt die Seite schwarz ab, spielt das
   await page.getByRole("button", { name: "Skip intro" }).click();
   await page.waitForURL(/\/zu-seiner-zeit\/strophe\/[^/]+\/$/);
   assert.equal(await page.evaluate(() => document.documentElement.style.overflow), "", "Blättern möglich");
-  await page.goto(origin + "/");
+  await page.goto(origin + "/?bisher");
   await page.waitForURL(/\/zu-seiner-zeit\/strophe\//);
   assert.equal(await startAn(page), false, "in derselben Sitzung läuft sie nicht noch einmal: gleich ein Zettel");
   assert.equal(await page.evaluate(() => window.__start.play), 0);
-  await page.goto(origin + "/?start");
+  await page.goto(origin + "/?start&bisher");
   assert.equal(await startAn(page), true, "?start zeigt sie wieder (Vorschau)");
   assert.deepEqual(errors, []);
   await ctx.close();
@@ -465,14 +468,15 @@ await check("Startanimation: bei «weniger Bewegung», bei «Daten sparen» und 
     await ctx.addInitScript(stubVideo);
     if (init) await ctx.addInitScript(init);
     const page = await ctx.newPage();
-    await page.goto(origin + "/");
+    await page.route(/\/b\/(en\/)?$/, (r) => r.fulfill({ status: 204 }));   // ohne Skript bleibt die bisherige Startseite stehen (sonst der meta refresh nach /b/)
+    await page.goto(origin + "/?bisher");
     if (opts.javaScriptEnabled === false) assert.equal(await page.locator("#start").evaluate((e) => getComputedStyle(e).display), "none", `${name}: nichts verdeckt die Seite`);
     else {
       await page.waitForURL(/\/zu-seiner-zeit\/strophe\//);                 // ohne Intro gleich ein Zettel
       assert.equal(await page.evaluate(() => window.__start.play), 0, `${name}: nichts wird geladen`);
     }
     assert.equal(await startAn(page), false, name);
-    await page.goto(origin + "/?start");
+    await page.goto(origin + "/?start&bisher");
     if (opts.reducedMotion) assert.equal(await startAn(page), false, "auch ?start hält sich an «weniger Bewegung»");
     await ctx.close();
   }
@@ -502,7 +506,7 @@ await check("Startanimation: lässt der Browser das Video nicht von selbst spiel
     HTMLMediaElement.prototype.load = function () {};
   });
   const page = await ctx.newPage();
-  await page.goto(origin + "/");
+  await page.goto(origin + "/?bisher");
   await startFrei(page);
   await ctx.close();
 });

@@ -1,0 +1,14 @@
+{
+  "format": "ornament-lab-werk",
+  "version": 1,
+  "titel": "Lab und PHORMA III",
+  "jahr": 2026,
+  "text": "",
+  "bild": "bild.jpg",
+  "breite": 720,
+  "hoehe": 900,
+  "film": "film.mp4",
+  "operationen": ["PHORMA III"],
+  "exportiert": "2026-10-23T21:34:00Z",
+  "veroeffentlicht": true
+}

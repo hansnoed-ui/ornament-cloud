@@ -10,10 +10,13 @@ import { readFileSync, existsSync, readdirSync } from "node:fs";
 const root = new URL("../", import.meta.url);
 const lies = (p) => readFileSync(new URL(p, root), "utf8");
 
-const MENU = [["Apps", "apps/"], ["Prompts", "masterprompts/"], ["Zettel", "zu-seiner-zeit/"], ["Social", "social-media/"], ["Art", "art/"]];   // seit 19. Oktober 2026 (abends) ohne «Web» (die Seite bleibt, nur nicht im Menü), dahinter «Art»;   // «Social» seit 19. Oktober 2026;   // seit 10. Oktober 2026 Kästchen mit Symbol (vorher die Wörter Zettelkasten, Apps, Masterprompts, Web)
-const ORNA = "portfolio/nebeneinander-nacheinander/";
+// seit 28. Oktober 2026 «Beta» statt «Lab»: aufklappbar (<details>), darin «Lab» und «Das 3. Rad», beide in einem neuen Fenster
+const BETA = [["Lab", "beta/lab/"], ["Das 3. Rad", "beta/drittes-rad/"]];
+// seit 31. Oktober 2026 ganz rechts neben «Beta» das Kästchen «Gamma» (ornament.cloud/gamma/, neues Fenster)
+const GAMMA = ["Gamma", "gamma/"];
+const MENU = [["Apps", "apps/"], ["Prompts", "masterprompts/"], ["Zettel", "zu-seiner-zeit/"], ["Social", "social-media/"], ["Art", "art/"], ["Beta", null]];   // «Beta» seit dem Abend des 28. Oktober 2026 ganz rechts   // «Lab» seit 27. Oktober 2026 (ornament.lab, öffnet in einem neuen Fenster), am selben Tag an die erste Stelle;   // seit 19. Oktober 2026 (abends) ohne «Web» (die Seite bleibt, nur nicht im Menü), dahinter «Art»;   // «Social» seit 19. Oktober 2026;   // seit 10. Oktober 2026 Kästchen mit Symbol (vorher die Wörter Zettelkasten, Apps, Masterprompts, Web)
 // Seiten mit dem Menü → Eintrag, der aktiv ist ([Ordner, aria-current]); null: keiner (die Seite hängt an keinem Menüpunkt)
-const MENUSEITEN = {
+const MENUSEITEN = {   // OMNA COLOR (alpha/omna-color/, rad/) seit 20. Oktober 2026 mit dem Kopf der App statt des Menüs; ihre App-Seite app/ bleibt
   "index.html": null,
   "news/index.html": null,
   "termine/index.html": null,
@@ -24,12 +27,7 @@ const MENUSEITEN = {
   "web/orna-erklaervideo/index.html": null,
   "web/poststrukturalismus/index.html": null,
   "web/mensch-niklas/index.html": null,
-  [`${ORNA}index.html`]: ["apps/", "true"],           // ORNA gehört zu den Apps
-  [`${ORNA}feld/index.html`]: ["apps/", "true"],
-  [`${ORNA}app/index.html`]: ["apps/", "true"],       // die App-Seiten sind Abschriften, ihre Kopfzeile ist ausgeblendet
-  [`${ORNA}app/feld/index.html`]: ["apps/", "true"],
-  "alpha/omna-color/index.html": ["apps/", "true"],         // OMNA COLOR ist seit dem 19. Oktober 2026 eine App auf «Apps» (vorher ein Beitrag auf «Web»)
-  "alpha/omna-color/rad/index.html": ["apps/", "true"],     // die Seite der installierten App, eine Abschrift (tools/build-omna-app.mjs)
+  // ORNA (portfolio/nebeneinander-nacheinander/, feld/, app/) seit 20. Oktober 2026 wie OMNA COLOR mit dem Kopf der App statt des Menüs
   "art/index.html": ["art/", "page"],                       // «Art» (19. Oktober 2026): Übersicht; Werkseiten und «Danke» darunter
   "zu-seiner-zeit/index.html": ["zu-seiner-zeit/", "page"],
   "social-media/index.html": ["social-media/", "page"],      // Social Media (19. Oktober 2026): die Zeitleiste; alle Seiten darunter (Zettel, Register, Redaktion) unter «Social»
@@ -59,7 +57,7 @@ const jpegMass = (buf) => {            // Breite und Höhe aus dem ersten Rahmen
   throw new Error("kein JPEG");
 };
 
-test("Menü: fünf Kästchen mit Symbol und Namen (Apps, Prompts, Zettel, Social, Art; bis 19. Oktober 2026 mit Web statt Art) in fester Reihenfolge auf allen Seiten der Website; aktiv ist, wo man ist", () => {
+test("Menü: sechs Kästchen mit Symbol und Namen (Lab, Apps, Prompts, Zettel, Social, Art; Lab seit 27. Oktober 2026 zuerst, bis 19. Oktober 2026 mit Web statt Art) in fester Reihenfolge auf allen Seiten der Website; aktiv ist, wo man ist", () => {
   const mitKopf = htmlSeiten().filter((p) => lies(p).includes('<nav class="seitenweg"') && !p.startsWith("alpha/drittes-rad/")).sort();
   assert.ok(mitKopf.length > 580, `alle Seiten mit Kopf (${mitKopf.length})`);
   for (const datei of mitKopf) {
@@ -69,18 +67,31 @@ test("Menü: fünf Kästchen mit Symbol und Namen (Apps, Prompts, Zettel, Social
     // seit 10. Oktober 2026: die Welle direkt unter den beiden Hauptlinks, darunter das Menü
     assert.match(html, /<div class="topbar">\s*<nav class="seitenweg" aria-label="Ornament Cloud">[\s\S]*?<\/nav>\s*<svg class="divider" data-icon="wave" aria-hidden="true" preserveAspectRatio="none"><\/svg>\s*<nav class="menu"/, `${datei}: Hauptlinks, Welle, Menü`);
     assert.ok(!/data-icon|menu-sub|menu-title/.test(nav[1]), `${datei}: keine animierten Symbole, keine Untertitel`);
-    const eintraege = [...nav[1].matchAll(/<a class="menu-item" href="([^"]+)"(?: aria-current="(page|true)")?>(<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">[\s\S]*?<\/svg>)<span>([^<]+)<\/span><\/a>/g)];
-    assert.equal(eintraege.length, MENU.length, `${datei}: fünf Kästchen mit verborgenem Symbol und Namen`);
-    assert.deepEqual(eintraege.map((e) => e[4]), MENU.map((m) => m[0]), `${datei}: Reihenfolge Apps, Prompts, Zettel, Social, Art (Web seit 19. Oktober 2026 nicht mehr im Menü, Art zuletzt)`);
+    const basis = html.match(/<base href="([^"]+)"/)?.[1], zielVon = (href) => new URL(href, new URL(basis ?? "", new URL(datei, root)));   // die Werkbank steht mit <base href="../">
+    // dann «Beta» (aufklappbar), darin «Lab» und «Das 3. Rad», beide in einem neuen Fenster, zuletzt «Gamma» (neues Fenster)
+    const beta = nav[1].match(/<details class="menu-auf"><summary class="menu-item">(<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">[\s\S]*?<\/svg>)<span>Beta<\/span><\/summary><span class="menu-liste">([\s\S]*?)<\/span><\/details>\s*<a class="menu-item" href="([^"]+)" target="_blank" rel="noopener">(<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">[\s\S]*?<\/svg>)<span>Gamma<\/span><\/a>\s*$/);
+    assert.ok(beta, `${datei}: «Beta» zum Aufklappen, zuletzt «Gamma»`);
+    assert.equal(zielVon(beta[3]).pathname, new URL(GAMMA[1], root).pathname, `${datei}: Gamma führt nach ${GAMMA[1]}`);
+    assert.ok(existsSync(new URL(GAMMA[1] + "index.html", root)), `${datei}: ${GAMMA[1]} gibt es`);
+    const unter = [...beta[2].matchAll(/<a href="([^"]+)" target="_blank" rel="noopener">([^<]+)<\/a>/g)];
+    assert.deepEqual(unter.map((u) => u[2]), BETA.map((b) => b[0]), `${datei}: unter «Beta» Lab und Das 3. Rad`);
+    for (const [i, u] of unter.entries()) {
+      assert.equal(zielVon(u[1]).pathname, new URL(BETA[i][1], root).pathname, `${datei}: ${BETA[i][0]} führt nach ${BETA[i][1]}`);
+      assert.ok(existsSync(new URL(BETA[i][1] + "index.html", root)), `${datei}: ${BETA[i][1]} gibt es`);
+    }
+    const eintraege = [...nav[1].matchAll(/<a class="menu-item" href="([^"]+)"(?: aria-current="(page|true)")?( target="_blank" rel="noopener")?>(<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">[\s\S]*?<\/svg>)<span>([^<]+)<\/span><\/a>/g)].filter((e) => e[5] !== GAMMA[0]);
+    const rest = MENU.slice(0, -1);
+    assert.equal(eintraege.length, rest.length, `${datei}: davor fünf Kästchen mit verborgenem Symbol und Namen`);
+    assert.deepEqual(eintraege.map((e) => e[5]), rest.map((m) => m[0]), `${datei}: Reihenfolge Apps, Prompts, Zettel, Social, Art, Beta (Web seit 19. Oktober 2026 nicht mehr im Menü)`);
+    assert.ok(eintraege.every((e) => !e[3]), `${datei}: nur die Einträge unter «Beta» und «Gamma» öffnen ein neues Fenster`);
     for (const [i, e] of eintraege.entries()) {
-      const basis = html.match(/<base href="([^"]+)"/)?.[1], ziel = new URL(e[1], new URL(basis ?? "", new URL(datei, root)));   // die Werkbank steht mit <base href="../">
-      assert.equal(ziel.pathname, new URL(MENU[i][1], root).pathname, `${datei}: ${MENU[i][0]} führt nach ${MENU[i][1]}`);
-      assert.ok(existsSync(new URL(MENU[i][1] + "index.html", root)), `${datei}: ${MENU[i][1]} gibt es`);
+      assert.equal(zielVon(e[1]).pathname, new URL(rest[i][1], root).pathname, `${datei}: ${rest[i][0]} führt nach ${rest[i][1]}`);
+      assert.ok(existsSync(new URL(rest[i][1] + "index.html", root)), `${datei}: ${rest[i][1]} gibt es`);
     }
     // überall dieselben Symbole
-    if (datei !== "index.html") assert.deepEqual(eintraege.map((e) => e[3]), [...lies("index.html").match(/<nav class="menu"[\s\S]*?<\/nav>/)[0].matchAll(/<svg[\s\S]*?<\/svg>/g)].map((m) => m[0]), `${datei}: dieselben Symbole wie auf der Startseite`);
+    if (datei !== "index.html") assert.deepEqual([...eintraege.map((e) => e[4]), beta[1], beta[4]], [...lies("index.html").match(/<nav class="menu"[\s\S]*?<\/nav>/)[0].matchAll(/<svg[\s\S]*?<\/svg>/g)].map((m) => m[0]), `${datei}: dieselben Symbole wie auf der Startseite`);
     // genau der Eintrag der Seite ist aktiv (page: man ist auf der Seite, true: auf einer Seite darunter), sonst keiner
-    assert.deepEqual(eintraege.map((e) => e[2] ?? null), MENU.map((m) => (aktiv && m[1] === aktiv[0] ? aktiv[1] : null)), `${datei}: aktiver Eintrag`);
+    assert.deepEqual(eintraege.map((e) => e[2] ?? null), rest.map((m) => (aktiv && m[1] === aktiv[0] ? aktiv[1] : null)), `${datei}: aktiver Eintrag`);
   }
   // das Menü gibt es genau auf den Seiten mit Kopf (nicht im Dritten Rad, in ORMA, den Werken und den Anwendungen im Vollbild)
   assert.ok(!lies("alpha/drittes-rad/index.html").includes('<nav class="menu"'), "das Dritte Rad bleibt ohne Menü");
@@ -93,12 +104,12 @@ test("Menü: fünf Kästchen mit Symbol und Namen (Apps, Prompts, Zettel, Social
     assert.equal(regel(lies("kopfleiste.css"), sel), regel(lies("styles.css"), sel), `kopfleiste.css: ${sel} wie in styles.css`);
 });
 
-test("Menü: Kästchen in der serifenlosen Schrift der Seite, fünf in einer Reihe (auch auf dem Handy), der aktive mit kräftigerem Rand", () => {
+test("Menü: Kästchen in der serifenlosen Schrift der Seite, sechs in einer Reihe (auch auf dem Handy), der aktive mit kräftigerem Rand", () => {
   const css = lies("styles.css");
   assert.ok(!/menu-icon|menu-sub|menu-text|menu-title/.test(css), "keine Regeln für das Menü vor dem 2. Oktober 2026");
   const regel = (sel) => css.match(new RegExp(`(?:^|\\n)${sel.replace(/[.[\]()*+?^$|\\]/g, "\\$&")}\\s*\\{([^}]*)\\}`))?.[1] ?? "";
   assert.match(regel(".menu"), /display:\s*grid/);
-  assert.match(regel(".menu"), /grid-template-columns:\s*repeat\(5, minmax\(0, 1fr\)\)/, "fünf gleich breite Spalten, auf allen Breiten (seit 19. Oktober 2026)");
+  assert.match(regel(".menu"), /grid-template-columns:\s*repeat\(7, minmax\(0, 1fr\)\)/, "sieben gleich breite Spalten, auf allen Breiten (seit 31. Oktober 2026, vorher sechs, bis 27. Oktober 2026 fünf)");
   assert.match(regel(".menu-item"), /font-family:\s*var\(--font\)/, "Schrift der Seite");
   assert.doesNotMatch(regel(".menu-item"), /var\(--serif\)|Georgia|Times/, "keine Serife");
   assert.match(css, /--font:\s*system-ui[^;]*,\s*sans-serif;/, "die Schrift der Seite ist serifenlos (system-ui … sans-serif)");
@@ -237,7 +248,7 @@ test("Stellenfeld eingebettet: senkrechtes Wischen und das Mausrad blättern die
 });
 
 const SEITEN = {
-  apps: { titel: "Apps", karten: [["PHORMA III", "../alpha/phorma-iii/app/"], ["PHORMA II", "../alpha/phorma-ii/"], ["PHORMA I", "../alpha/bildfragmentieren/app/"], ["The Fictory", "../alpha/the-fictory/app/"], ["ORMA", "../alpha/orma/"], ["ORNA", "../portfolio/nebeneinander-nacheinander/"], ["OMNA COLOR", "../alpha/omna-color/app/"]] },   // seit 19. Oktober 2026 in drei Gruppen   // OMNA COLOR seit 19. Oktober 2026 als letzte   // The Fictory vom 11. Oktober 2026 an zuerst, seit 17. Oktober 2026 PHORMA I
+  apps: { titel: "Apps", karten: [["PHORMA III", "../alpha/phorma-iii/app/"], ["PHORMA II", "../alpha/phorma-ii/app/"], ["PHORMA I", "../alpha/bildfragmentieren/app/"], ["The Fictory", "../alpha/the-fictory/app/"], ["ORMA", "../alpha/orma/"], ["ORNA", "../portfolio/nebeneinander-nacheinander/"], ["OMNA COLOR", "../alpha/omna-color/app/"]] },   // seit 19. Oktober 2026 in drei Gruppen   // OMNA COLOR seit 19. Oktober 2026 als letzte   // The Fictory vom 11. Oktober 2026 an zuerst, seit 17. Oktober 2026 PHORMA I
   masterprompts: { titel: "Masterprompts", karten: [] },     // die Reihenfolge kommt aus der Alpha-Übersicht, siehe unten
   web: { titel: "Web", karten: [["Sketchory", "../alpha/sketchory/"], ["The Fictory", "../alpha/the-fictory/"], ["Das Dritte Rad", "../alpha/drittes-rad/"], ["Stellenfeld", "../werke/stellenfeld/"], ["ORNA – Zufällige Begegnungen", "orna-erklaervideo/"], ["Liebling, ich habe den Poststrukturalismus strukturiert", "poststrukturalismus/"]] },
 };
@@ -273,11 +284,11 @@ test("Apps: drei Gruppen (seit 19. Oktober 2026) – Bild und Video: PHORMA III,
   assert.match(k[0].html, /<img src="\.\.\/assets\/vorschau-phorma-iii\.jpg" alt="" width="640" height="800" loading="lazy">/);
   assert.deepEqual(jpegMass(readFileSync(new URL("assets/vorschau-phorma-iii.jpg", root))), [640, 800]);
   assert.ok(k[0].tags.includes("App") && k[0].tags.includes("Video") && /installieren/.test(k[0].html) && /ohne Netz/.test(k[0].html) && /Aus Klang wird Bild/.test(k[0].html));
-  // PHORMA II (seit 19. Oktober 2026): die Montage als Beitragsbild (tools/phorma-ii-bilder.mjs), im Browser, keine App
+  // PHORMA II (seit 19. Oktober 2026): die Montage als Beitragsbild (tools/phorma-ii-bilder.mjs); seit 21. Oktober 2026 als App
   assert.match(k[1].html, /<img src="\.\.\/assets\/vorschau-phorma-ii\.jpg" srcset="\.\.\/assets\/vorschau-phorma-ii\.jpg 1x, \.\.\/assets\/vorschau-phorma-ii-2x\.jpg 1\.6875x" alt="" width="640" height="800" loading="lazy">/);
   assert.deepEqual(jpegMass(readFileSync(new URL("assets/vorschau-phorma-ii-2x.jpg", root))), [1080, 1350]);
   assert.deepEqual(jpegMass(readFileSync(new URL("assets/vorschau-phorma-ii.jpg", root))), [640, 800]);
-  assert.ok(k[1].tags.includes("Video") && !k[1].tags.includes("App"));
+  assert.ok(k[1].tags.includes("App") && k[1].tags.includes("Video") && /installieren/.test(k[1].html) && /ohne Netz/.test(k[1].html));
   assert.deepEqual(jpegMass(readFileSync(new URL("alpha/phorma-ii/og-phorma-ii.jpg", root))), [1200, 630], "Vorschaukachel zum Teilen");
   assert.match(lies("alpha/phorma-ii/index.html"), /<meta property="og:image" content="https:\/\/ornament\.cloud\/alpha\/phorma-ii\/og-phorma-ii\.jpg">/);
   // PHORMA I: eine Kristallansicht aus der Anwendung als Beitragsbild (tools/phorma-bilder.mjs), dazu der Satz vom 17. Oktober 2026
@@ -434,7 +445,7 @@ test("Videoseite web/mensch-niklas/: «Mensch, Niklas!» (3 : 4) spielt von selb
 
 test("Versionsmarken: styles.css und icons.js tragen auf allen Seiten dieselbe Marke, icons.js kennt nur Symbole, die es noch gibt", () => {
   const marken = (re, texte) => [...new Set(texte.flatMap((t) => [...t.matchAll(re)].map((m) => m[1])))];
-  const dateien = [...htmlSeiten().filter((p) => !p.startsWith("zu-seiner-zeit/")), "tools/build-alpha-texte.ts", `${ORNA}sw.js`];
+  const dateien = [...htmlSeiten().filter((p) => !p.startsWith("zu-seiner-zeit/")), "tools/build-alpha-texte.ts", "portfolio/nebeneinander-nacheinander/sw.js"];
   const texte = dateien.map(lies);
   const css = marken(/styles\.css\?v=(\d+)/g, texte), js = marken(/icons\.js\?v=(\d+)/g, texte);
   assert.equal(css.length, 1, `styles.css: eine Marke, gefunden ${css}`);
@@ -492,10 +503,10 @@ test("Kontakt: «Fragen und Anmerkungen zur Website» unten auf allen Seiten mit
     "alpha/index.html", "alpha/pruefraster/index.html", "alpha/verteilapparat/index.html", "alpha/gesellschaftskonzepte/index.html", "alpha/journalistische-texte/index.html"];
   for (const s of seiten) {
     const html = lies(s);
-    assert.match(html, new RegExp(`</main>[\\s\\S]*<footer class="site-footer">[\\s\\S]*<p>Fragen und Anmerkungen zur Website: ${MAIL.replace(/[.]/g, "\\.")}</p>[\\s\\S]*</footer>`), s);
+    assert.match(html, new RegExp(`</main>[\\s\\S]*<footer class="site-footer">[\\s\\S]*<p(?: data-t="fuss\\.fragen")?>Fragen und Anmerkungen zur Website: ${MAIL.replace(/[.]/g, "\\.")}</p>[\\s\\S]*</footer>`), s);
   }
   const omna = lies("alpha/omna-color/index.html");
-  assert.ok(omna.includes(`<footer class="kontakt">\n  <p>Fragen und Anmerkungen zur Website: ${MAIL}</p>`), "OMNA COLOR");
+  assert.ok(omna.includes(`<footer class="kontakt">\n  <p data-t="fuss.fragen">Fragen und Anmerkungen zur Website: ${MAIL}</p>`), "OMNA COLOR (der Satz mit data-t: auf Englisch übersetzt, seit 20. Oktober 2026)");
   assert.ok(omna.includes(".eingebettet .kontakt { display: none; }"), "OMNA COLOR eingebettet ohne Kontakt (die Startseite hat ihn im Fuss)");
   for (const [s, satz] of [["zu-seiner-zeit/index.html", "Fragen und Anmerkungen zur Website"], ["zu-seiner-zeit/en/index.html", "Questions and comments about the website"], ["zu-seiner-zeit/es/spur/index.html", "Preguntas y comentarios sobre el sitio web"]]) {
     assert.ok(lies(s).includes(`<footer class="zsz-fuss">`) && lies(s).includes(`<p>${satz}: ${MAIL}</p>`), s);
@@ -519,14 +530,14 @@ test("Impressum (19. Oktober 2026, Pflicht für den Verkauf auf «Art»): eigene
   // seit demselben Tag auch AGB und Datenschutz auf dieser Seite (Wunsch: «AGB und Datenschutz beim Impressum»); die Werkseiten auf «Art» verweisen auf die AGB
   assert.match(html, /<section class="recht" id="agb"[\s\S]*<h2 id="agb-titel">Allgemeine Geschäftsbedingungen<\/h2>[\s\S]*<\/ol>\s*<\/section>/);
   assert.equal([...html.matchAll(/<li><strong>[^<]+\.<\/strong>/g)].length, 9, "neun Punkte");
-  assert.match(html, /<section class="recht" id="datenschutz"[\s\S]*Verantwortlich:[\s\S]*GitHub Pages[\s\S]*GoatCounter[\s\S]*EDÖB/);
+  assert.match(html, /<section class="recht" id="datenschutz"[\s\S]*Verantwortlich:[\s\S]*Hostpoint AG in Rapperswil-Jona \(Schweiz\)[\s\S]*GoatCounter[\s\S]*EDÖB/);
   assert.match(lies("art/harbouring/index.html"), /Es gelten die <a href="\.\.\/\.\.\/impressum\/#agb">AGB<\/a>\./);
   const kontakt = /(Fragen und Anmerkungen zur Website|Questions and comments about the website|Preguntas y comentarios sobre el sitio web): <a href="mailto:hansnoed@gmail\.com">/;
   for (const p of htmlSeiten()) {
     if (p === "impressum/index.html" || p === "alpha/metastabilitaet/index.html") continue;
     const s = lies(p);
     if (!kontakt.test(s)) continue;
-    const m = s.match(/<a href="([^"]*)impressum\/"(?: hreflang="de")?>(Impressum|Legal notice|Aviso legal)<\/a>/);
+    const m = s.match(/<a href="([^"]*)impressum\/"(?: hreflang="de")?(?: data-t="fuss\.impressum")?>(Impressum|Legal notice|Aviso legal)<\/a>/);   // data-t: die Apps übersetzen den Fuss (20. Oktober 2026)
     assert.ok(m, `${p}: Impressum im Fuss`);
     const basis = s.match(/<base href="([^"]+)"/)?.[1] ?? "";
     assert.equal(new URL(basis + m[1] + "impressum/", new URL(p, root)).pathname, new URL("impressum/", root).pathname, `${p}: der Link führt zum Impressum`);

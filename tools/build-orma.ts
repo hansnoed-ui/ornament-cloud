@@ -1,11 +1,12 @@
-// Produktionsbuild von ORMA: src/orma/app/ + src/orma/redaktion/pilot.json → src/orma/dist/
+// Produktionsbuild von ORMA: src/orma/app/ + src/orma/redaktion/pilot.json (+ pilot.en.json, Englisch) → src/orma/dist/
 //
 //   node --experimental-strip-types tools/build-orma.ts           → src/orma/dist/ (Vorschau, nicht eingecheckt)
 //   node --experimental-strip-types tools/build-orma.ts --alpha   → alpha/orma/ (Alpha-Seite der Website, eingecheckt)
 //
 // – prüft die Redaktionsdatei gegen den Bestand (IDs, Einstieg 40–70 Wörter, drei Aufträge);
 // – schreibt js/data.js: Paarung, Originaltext und Originalfrage wörtlich aus dem Bestand,
-//   dazu Einstieg und Aufträge der ORMA-Redaktion, Zeichen und Radplätze;
+//   dazu Einstieg und Aufträge der ORMA-Redaktion, Zeichen und Radplätze, und unter «en» dasselbe auf Englisch
+//   (Einstieg und Aufträge aus pilot.en.json, Text und Frage aus src/doppelspalt/src/data/en/, 20. Oktober 2026);
 // – kopiert die App, hängt an Stylesheet und Module eine Inhaltsversion (?v=…) und setzt Version und
 //   Dateiliste in den eigenen Service Worker.
 // Die Ausgabe ist in sich geschlossen und nutzt nur relative Pfade: Sie läuft unter jedem Website-Pfad.
@@ -18,10 +19,12 @@ import { tmpdir } from "node:os";
 import { artists } from "../src/doppelspalt/src/data/artists.ts";
 import { theorists } from "../src/doppelspalt/src/data/theorists.ts";
 import { constellations } from "../src/doppelspalt/src/data/constellations.ts";
+import { lesen as konstellationenEn } from "./build-konstellationen-en.mjs";   // die Konstellationen von ORNA auf Englisch (text, question)
 
 const ROOT = fileURLToPath(new URL("../", import.meta.url));
 export const SRC = join(ROOT, "src/orma/app");
 export const PILOT_FILE = join(ROOT, "src/orma/redaktion/pilot.json");
+export const PILOT_EN_FILE = join(ROOT, "src/orma/redaktion/pilot.en.json");   // Einstieg und Aufträge auf Englisch, je ID (20. Oktober 2026)
 export const OUT = join(ROOT, "src/orma/dist");
 export const ALPHA = join(ROOT, "alpha/orma");
 const META = JSON.parse(readFileSync(join(ROOT, "src/orma/orma.json"), "utf8"));
@@ -33,9 +36,12 @@ export const RING_SLOTS = 12;                                   // Plätze je Ri
 export const words = (s: string) => s.trim().split(/\s+/).filter(Boolean).length;
 
 /** Redaktionsdatei prüfen und mit dem Bestand verbinden */
-export function buildPilot(pilotText: string = readFileSync(PILOT_FILE, "utf8")) {
+export function buildPilot(pilotText: string = readFileSync(PILOT_FILE, "utf8"), pilotEnText: string = readFileSync(PILOT_EN_FILE, "utf8")) {
   const pilot = JSON.parse(pilotText);
   const errors: string[] = [];
+  // Englisch: dieselben IDs, Einstieg 35–85 Wörter, dieselben sechs Aufträge; Text und Frage aus src/doppelspalt/src/data/en/
+  const pilotEn = JSON.parse(pilotEnText).konstellationen ?? {};
+  const en = konstellationenEn();
   const list = pilot.konstellationen;
   if (!Array.isArray(list) || list.length !== PILOT_SIZE) errors.push(`genau ${PILOT_SIZE} Konstellationen erwartet, gefunden: ${Array.isArray(list) ? list.length : "keine"}`);
   if (typeof pilot.inhaltsversion !== "string" || !pilot.inhaltsversion) errors.push("inhaltsversion fehlt");
@@ -52,6 +58,17 @@ export function buildPilot(pilotText: string = readFileSync(PILOT_FILE, "utf8"))
       // Modus allein: dieselben Aufträge in der Du-Form (eine Person)
       if (typeof k.auftraege_allein?.[a] !== "string" || !k.auftraege_allein[a].trim()) errors.push(`${k.id}: Auftrag «${a}» für den Modus allein fehlt`);
     }
+    const u = pilotEn[k.id];
+    if (!u) errors.push(`${k.id}: fehlt in pilot.en.json`);
+    else {
+      const we = words(u.einstieg || "");
+      if (we < 35 || we > 85) errors.push(`${k.id}: Einstieg auf Englisch hat ${we} Wörter (erlaubt 35–85)`);
+      for (const a of AUFTRAEGE) {
+        if (typeof u.auftraege?.[a] !== "string" || !u.auftraege[a].trim()) errors.push(`${k.id}: Auftrag «${a}» auf Englisch fehlt`);
+        if (typeof u.auftraege_allein?.[a] !== "string" || !u.auftraege_allein[a].trim()) errors.push(`${k.id}: Auftrag «${a}» für den Modus allein auf Englisch fehlt`);
+      }
+    }
+    if (!en[k.id]) errors.push(`${k.id}: nicht in src/doppelspalt/src/data/en/ (Text und Frage auf Englisch)`);
     const ai = artists.findIndex(p => p.id === c.artistId), ti = theorists.findIndex(p => p.id === c.theoristId);
     return {
       id: c.id, nr: c.editorialNumber,
@@ -61,6 +78,11 @@ export function buildPilot(pilotText: string = readFileSync(PILOT_FILE, "utf8"))
       einstieg: k.einstieg.trim(),
       auftraege: Object.fromEntries(AUFTRAEGE.map(a => [a, k.auftraege[a].trim()])),
       auftraegeAllein: Object.fromEntries(AUFTRAEGE.map(a => [a, k.auftraege_allein[a].trim()])),
+      en: u && en[k.id] ? {
+        text: en[k.id].text, question: en[k.id].question, einstieg: u.einstieg.trim(),
+        auftraege: Object.fromEntries(AUFTRAEGE.map(a => [a, String(u.auftraege?.[a] ?? "").trim()])),
+        auftraegeAllein: Object.fromEntries(AUFTRAEGE.map(a => [a, String(u.auftraege_allein?.[a] ?? "").trim()])),
+      } : null,
     };
   }).filter(Boolean) as any[];
   // Das Rad hat zwölf Plätze je Ring: genau zwölf Künstler:innen und zwölf Theoretiker:innen
@@ -68,6 +90,7 @@ export function buildPilot(pilotText: string = readFileSync(PILOT_FILE, "utf8"))
     const n = new Set(items.map((x: any) => x[key].id)).size;
     if (items.length && n !== RING_SLOTS) errors.push(`${key === "artist" ? "Künstler:innen" : "Theoretiker:innen"}: ${n} verschiedene, das Rad hat ${RING_SLOTS} Plätze`);
   }
+  for (const id of Object.keys(pilotEn)) if (!(list || []).some((k: any) => k.id === id)) errors.push(`${id}: in pilot.en.json, aber nicht im Pilot`);
   if (errors.length) throw new Error("ORMA-Redaktion ungültig:\n  " + errors.join("\n  "));
   // Radplätze gehören den Personen (eine Person kann in mehreren Konstellationen vorkommen):
   // Reihenfolge der Ringe wie in ORNA, unter den ausgewählten Personen
@@ -122,7 +145,7 @@ export function buildOrma(out: string = OUT) {
   // Die installierte App startet in app/ (Manifest: start_url und scope). So bleiben Links der Website auf
   // alpha/orma/ ausserhalb ihres Geltungsbereichs und öffnen im Browser, nicht in der App (wie bei ORNA).
   // app/index.html ist dieselbe Seite, alle relativen Adressen zeigen eine Ebene höher.
-  files.set("app/index.html", html.replace(/(href|src)="(?![a-z]+:|\/|#|%)([^"]+)"/g, '$1="../$2"'));
+  files.set("app/index.html", html.replace(/(?<![-\w])(href|src)="(?![a-z]+:|\/|#|%)([^"]+)"/g, '$1="../$2"'));   // nicht data-t-href (der Kopf der App, absolute Adressen)
   const precache = ["./", "app/", ...[...files.keys()]
     .filter(k => k !== "sw.js" && k !== "index.html" && k !== "app/index.html")
     .map(k => (k === "orma.css" || k.startsWith("js/") ? v(k) : k))].sort();

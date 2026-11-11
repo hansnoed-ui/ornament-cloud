@@ -11,6 +11,7 @@ export const ZEICHEN = {
   orma: svg(`<path d="M12 3a9 9 0 0 0 0 18" ${P}/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor" ${P}/><path d="M12 3v18" ${P}/>`),
   farbe: svg(`<circle cx="12" cy="12" r="9" ${P}/><circle cx="12" cy="12" r="3.5" ${P}/><path d="M12 3v5.5" ${P}/><path d="M20.1 8.4l-4.9 2" ${P}/><path d="M19.4 17.5l-4.6-3" ${P}/><path d="M12 21v-5.5" ${P}/><path d="M4.6 17.5l4.6-3" ${P}/><path d="M3.9 8.4l4.9 2" ${P}/>`),
   scherbe: svg(`<path d="M12 2.8l8 4.6v9.2l-8 4.6-8-4.6V7.4z" ${P}/><path d="M12 2.8v9.2l8 4.6" ${P}/><path d="M12 12l-8 4.6" ${P}/><path d="M4 7.4l8 4.6 8-4.6" ${P}/>`),
+  netz: svg(`<path d="M5 7l8 5 5-7" ${P}/><path d="M13 12l-6 6" ${P}/><path d="M13 12l6 5" ${P}/><path d="M5 7l13-2" ${P}/><circle cx="13" cy="12" r="1.5" fill="currentColor" ${P}/>`),
   linie: svg(`<path d="M3 17c3-9 6 2 9-4s4-9 7-4-1 9-5 8" ${P}/><circle cx="14" cy="17" r="1.3" fill="currentColor" ${P}/>`),
   faden: svg(`<path d="M5 8l7-4 7 4v8l-7 4-7-4z" ${P}/><path d="M5 8l7 4 7-4" ${P}/><path d="M12 12v8" ${P}/><path d="M8 14c2-3 5 1 8-2" ${P}/>`),
   teile: svg(`<path d="M4 4h7v7H4z" ${P}/><path d="M14 3h7v7h-7z" ${P}/><path d="M3 14h7v7H3z" ${P}/><path d="M13 13h7v7h-7z" ${P}/>`),

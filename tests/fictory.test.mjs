@@ -190,7 +190,13 @@ test("Seite: ruft keinen Dienst auf (nur das Beispielbild) und hält keine Schl�
 test("Alpha: Seite mit Navigation, noindex, in der Übersicht oben (seit dem 12. Oktober 2026 gleich nach Sketchory), nicht in der Sitemap", () => {
   const html = readFileSync(new URL("index.html", dir), "utf8");
   assert.match(html, /<meta name="robots" content="noindex">/);
-  assert.match(html, /<nav class="seitenweg" aria-label="Ornament Cloud">\s*<a href="\.\.\/\.\.\/" aria-current="true">Ornament Cloud<\/a>\s*<a href="\.\.\/drittes-rad\/">Das Dritte Rad<\/a>\s*<\/nav>/);
+  // seit 21. Oktober 2026 zweisprachig mit dem Kopf der App (Signet nach /b/, d · e, «Über die App») statt der Kopfleiste; die App-Seite app/ behält sie
+  assert.ok(!html.includes('class="seitenweg"') && !html.includes('class="menu"'), "ohne die Kopfleiste der bisherigen Website");
+  assert.match(html, /<header class="app-kopf wrap">\s*<a class="app-kopf-signet" href="\.\.\/\.\.\/b\/" data-t-href="\.\.\/\.\.\/b\/\|\.\.\/\.\.\/b\/en\/"/, "Signet mit Weg in den Neubau");
+  assert.match(html, /<nav class="sprache" aria-label="Sprache"[^>]*><button type="button" data-sprache="de" lang="de" title="Deutsch">d<\/button><button type="button" data-sprache="en" lang="en" title="English">e<\/button><\/nav>/);
+  assert.match(html, /<a class="app-kopf-zurueck" href="\.\.\/\.\.\/b\/apps\/the-fictory\/" data-t-href="[^"]+" data-t="kopf.ueber">Über die App<\/a>/);
+  assert.ok(html.indexOf('<script src="sprache.js?v=') < html.indexOf('<script type="module" src="app.js?v='), "sprache.js vor den Modulen");
+  assert.match(readFileSync(new URL("app/index.html", dir), "utf8"), /<nav class="seitenweg" aria-label="Ornament Cloud">/, "die App-Seite behält die Kopfleiste");
   const uebersicht = readFileSync(new URL("alpha/index.html", root), "utf8");
   const eintraege = [...uebersicht.matchAll(/<li>\s*(?:<img[^>]*>\s*)?<div>\s*<a href="([^"]+)"/g)].map((m) => m[1]);
   assert.deepEqual(eintraege.slice(0, 2), ["sketchory/", "the-fictory/"]);
@@ -216,8 +222,7 @@ test("App (11. Oktober 2026): Manifest, Symbole und Anmeldung des Service Worker
   assert.match(html, /<link rel="manifest" href="manifest\.webmanifest">/);
   assert.match(html, /<link rel="apple-touch-icon" href="icons\/apple-touch-icon\.png">/);
   assert.match(html, /<link rel="icon" href="icons\/favicon-32\.png"/);
-  assert.match(html, /<meta name="theme-color" content="#ffffff" media="\(prefers-color-scheme: light\)">/);   // seit 20. Oktober 2026 Papier und Tinte (neubau.css)
-  assert.match(html, /<meta name="theme-color" content="#000000" media="\(prefers-color-scheme: dark\)">/);
+  assert.match(html, /<meta name="theme-color" content="#000000">/);   // seit 20. Oktober 2026 Papier und Tinte (neubau.css), seit 27. Oktober 2026 dunkel als Standard
   assert.match(html, /<script type="module" src="pwa\.js\?v=\d+"><\/script>/);
   assert.match(html, /<div class="installieren" id="installieren" hidden>[\s\S]*?id="installieren-knopf"[\s\S]*?The Fictory als App installieren/);
   const pwa = readFileSync(new URL("pwa.js", dir), "utf8");
@@ -299,4 +304,20 @@ test("Strömung und Tinte: die bewegten Teile treiben den Grund an und färben i
   const z = O.bis(b.M, O.SCHLUESSEL[3] + 1);
   assert.ok(summe(z.tinte) < summe(zustaende[3].tinte), "Gegenprobe: vor Schritt 4 gelöscht");
   assert.equal(M.fw * M.fh * 3, zustaende[0].tinte.length);
+});
+
+test("Sprache: Sätze, die app.js über einen Schlüssel holt, stehen auf Deutsch und Englisch da, nie als roher Schlüssel", async () => {
+  const vm = await import("node:vm");
+  const src = readFileSync(new URL("sprache.js", dir), "utf8");
+  const app = readFileSync(new URL("app.js", dir), "utf8");
+  // analyseKurz, erzeugt und uhr fragt app.js nur auf Englisch ab (sprache.en()), auf Deutsch steht der Satz dort selbst
+  const nurEn = new Set(["analyseKurz", "erzeugt", "uhr"]);
+  const schluessel = [...new Set([...app.matchAll(/\bT\("([a-zA-Z]+)",/g)].map((m) => m[1]))];
+  assert.ok(schluessel.includes("videoLaeuft"));
+  for (const l of ["de", "en"]) {
+    const g = {};
+    vm.runInNewContext(src, { globalThis: g });
+    g.sprache.setze(l);
+    for (const k of schluessel) if (l === "en" || !nurEn.has(k)) assert.notEqual(g.sprache.t(k, 1, 2, 3, 4, 5, 6), k, `${l}: ${k}`);
+  }
 });

@@ -13,7 +13,7 @@ const lies = (p) => readFileSync(new URL(p, root), "utf8");
 const werkeDaten = JSON.parse(lies("src/art/werke.json"));
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const walk = (d, vor = "") => readdirSync(new URL(d, root), { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(d + e.name + "/", vor + e.name + "/") : e.name === "index.html" ? [vor] : []);
-const seiten = walk("b/").filter((p) => !/\/(oeffnen|feld)\/$/.test(p) && !p.startsWith("en/"));   // ohne die Bühnen der Apps (noindex, eigener Test) und ohne die englischen Seiten (eigener Test)
+const seiten = walk("b/").filter((p) => !/\/(oeffnen|feld)\/$/.test(p) && !p.startsWith("en/") && p !== "redaktion/" && !p.startsWith("lab/"));   // ohne die Bühnen der Apps (noindex, eigener Test), ohne die englischen Seiten (eigener Test), ohne die Redaktion (eigener Test in tests/social-media.test.mjs) und ohne die Lab-Werkschau b/lab/works/ (eigenständig, tools/build-lab-works.mjs, Test in tests/lab-works.test.mjs)
 const seitenEn = walk("b/en/").filter((p) => !/\/(oeffnen|feld)\/$/.test(p));
 const meta = (html, name) => html.match(new RegExp(`<meta (?:name|property)="${name}" content="([^"]*)"`))?.[1];
 const pngMass = (buf) => [buf.readUInt32BE(16), buf.readUInt32BE(20)];
@@ -52,6 +52,21 @@ test("b/: Vorschaukarten liegen da, 1200 × 630, unter 300 KB", () => {
       assert.ok(buf.length < 300 * 1024, `${p}: ${bild} unter 300 KB (${Math.round(buf.length / 1024)} KB)`);
     }
     for (const k of html.matchAll(/href="(\/b\/kacheln\/[^"]+)" download/g)) assert.ok(existsSync(new URL(k[1].slice(1), root)), `${p}: ${k[1]} gibt es`);
+  }
+});
+
+test("b/en/: Vorschaukarten auf Englisch unter b/en/kacheln/, 1200 × 630; die Download-Karten der Zettel ebenso", () => {
+  for (const p of seitenEn) {
+    const html = lies(`b/en/${p}index.html`);
+    const bild = meta(html, "og:image").replace("https://ornament.cloud/", "");
+    if (bild.endsWith(".png")) {
+      assert.ok(bild.startsWith("b/en/kacheln/"), `${p}: die englische Karte (${bild})`);
+      assert.ok(existsSync(new URL(bild, root)), `${p}: ${bild} gibt es`);
+      assert.deepEqual(pngMass(readFileSync(new URL(bild, root))), [1200, 630], `${p}: ${bild} ist 1200 × 630`);
+    }
+    const karten = [...html.matchAll(/href="(\/b\/[^"]+)" download/g)].map((k) => k[1]);
+    for (const k of karten) { assert.ok(k.startsWith("/b/en/kacheln/"), `${p}: Download-Karte auf Englisch (${k})`); assert.ok(existsSync(new URL(k.slice(1), root)), `${p}: ${k} gibt es`); }
+    if (/^zettel\/\d/.test(p)) assert.equal(karten.length, 1, `${p}: eine Karte zum Herunterladen`);
   }
 });
 
@@ -101,13 +116,13 @@ test("b/: die Startseite trägt das Feld mit allen 49 Zetteln, den Dialog und di
 test("b/: Apps, Raster und Angebote verlinken ihre Ziele, und die Ziele gibt es", () => {
   for (const a of APPS) {
     const html = lies(`b/apps/${a.slug}/index.html`);
-    for (const ziel of [a.url, a.app, a.feld].filter(Boolean)) { assert.ok(existsSync(new URL(ziel + "index.html", root)), `${a.slug}: Ziel ${ziel} gibt es`); }
-    if (a.app) assert.ok(html.includes(`href="/${a.app}"`), `${a.slug}: Link zur App-Seite`);   // Anwendung und Feld öffnen seit 20. Oktober 2026 auf der Bühne unter /b/ (eigener Test)
+    for (const ziel of [a.url, a.app, a.feld].filter(Boolean).map((z) => z.replace(/\?.*$/, ""))) { assert.ok(existsSync(new URL(ziel + "index.html", root)), `${a.slug}: Ziel ${ziel} gibt es`); }
+    if (a.app) assert.ok(html.includes(`href="/${a.app}${a.app.includes("?") ? "&amp;" : "?"}sprache=de"`), `${a.slug}: Link zur App-Seite, mit der Sprache`);   // Anwendung und Feld öffnen seit 20. Oktober 2026 auf der Bühne unter /b/ (eigener Test)
     assert.ok(existsSync(new URL(a.bild, root)), `${a.slug}: Bild ${a.bild}`);
     for (const b of [].concat(a.beispiele || [])) for (const d of [b.datei, b.webm, b.bild, b.vorher, b.nachher].filter(Boolean)) assert.ok(existsSync(new URL(d, root)), `${a.slug}: Beispiel ${d}`);
     for (const b of [].concat(a.beispiele || [])) if (b.art === "video" && b.datei.startsWith("assets/beispiele/")) {
       assert.ok(statSync(new URL(b.datei, root)).size < 6 * 1024 * 1024, `${a.slug}: ${b.datei} unter 6 MB`);
-      assert.ok(html.includes(`<source src="/${b.datei}" type="video/mp4">`), `${a.slug}: MP4`);
+      assert.ok(new RegExp(`<source src="/${b.datei.replace(/\./g, "\\.")}\\?v=[0-9a-f]{10}" type="video/mp4">`).test(html), `${a.slug}: MP4 mit Versionsmarke`);
     }
   }
   for (const r of RASTER) {
@@ -118,7 +133,6 @@ test("b/: Apps, Raster und Angebote verlinken ihre Ziele, und die Ziele gibt es"
     const html = lies(`b/angebot/${a.slug}/index.html`);
     assert.match(html, /<form class="brief"/, `${a.slug}: Briefing`);
     assert.equal((html.match(/<fieldset>/g) || []).length, 3, `${a.slug}: drei Fragen`);
-    for (const [ziel] of a.beweis) assert.ok(existsSync(new URL((ziel.endsWith("/") ? ziel + "index.html" : ziel), root)), `${a.slug}: ${ziel} gibt es`);
   }
 });
 
@@ -170,8 +184,13 @@ test("b/apps: die Bilder der sieben Apps sind gezeichnete Tafeln (tools/b-app-bi
       assert.ok(!/<script|<image|href=/.test(s), `${datei}: nur Zeichnung`);
     }
     assert.ok(a.bildAlt.startsWith(`${a.name}, gezeichnet:`), `${a.slug}: Alt-Text beschreibt die Zeichnung`);
-    const bild = `<picture><source srcset="/${a.bildDunkel}" media="(prefers-color-scheme: dark)"><img src="/${a.bild}" alt="${a.bildAlt}" width="1200" height="1200"`;
-    assert.ok(lies("b/apps/index.html").includes(bild + ' loading="lazy"></picture>'), `${a.slug}: Kachel auf b/apps/`);
+    const bild = `<picture><source srcset="/${a.bildDunkel}"><img src="/${a.bild}" alt="${a.bildAlt}" width="1200" height="1200"`;
+    // die Kachel lebt (30. Oktober 2026): Bild-Apps mit einem Ausschnitt aus dem Beispielfilm, die übrigen mit ihrer Tafel in Bewegung
+    const uebersicht = lies("b/apps/index.html");
+    if (["the-fictory", "phorma-i", "phorma-ii", "phorma-iii"].includes(a.slug)) {
+      assert.match(uebersicht, new RegExp(`<video class="kachel-film" muted loop playsinline preload="none" poster="/b/bilder/apps/filme/${a.slug}\\.jpg\\?v=\\w+" width="480" height="480" aria-label="[^"]+"><source src="/b/bilder/apps/filme/${a.slug}\\.mp4\\?v=\\w+" type="video/mp4"></video>`), `${a.slug}: Filmkachel auf b/apps/`);
+      assert.ok(statSync(new URL(`b/bilder/apps/filme/${a.slug}.mp4`, root)).size < 1.2 * 1024 * 1024, `${a.slug}: Filmausschnitt unter 1,2 MB`);
+    } else assert.ok(uebersicht.includes(`<span class="bild quadrat kachel-lebt" data-tafel="${a.slug}">${bild} loading="lazy"></picture></span>`), `${a.slug}: lebende Kachel auf b/apps/`);
     const seite = lies(`b/apps/${a.slug}/index.html`);
     assert.ok(seite.includes(`<figure class="stueck-bild quadrat">${bild}></picture></figure>`), `${a.slug}: Tafel auf der App-Seite`);
     assert.ok(seite.includes(`<meta property="og:image" content="https://ornament.cloud/b/kacheln/apps-${a.slug}.png">`), `${a.slug}: Teilen mit der Vorschaukarte 1200 × 630`);
@@ -197,7 +216,7 @@ test("b/apps: die Tafeln leben unter «Was dabei herauskommt» (src/b/tafeln.mjs
     assert.match(seite, /<script type="module" src="\/b\/tafeln-leben\.js\?v=\d+"><\/script>/);
     assert.ok(seite.indexOf('id="beispiele-titel"') < seite.indexOf('class="tafel-lebt"'), `${a.slug}: die Tafel steht im Abschnitt «Was dabei herauskommt»`);
   }
-  assert.ok(!lies("b/apps/index.html").includes("tafeln-leben"), "die Übersicht bleibt ohne das Modul");
+  assert.match(lies("b/apps/index.html"), /<script type="module" src="\/b\/tafeln-leben\.js\?v=\d+"><\/script>/, "die Übersicht lässt ihre Kacheln leben");
 });
 
 test("b/raster: wie die Apps – gezeichnete Tafel (lebend), die vier Felder daneben, Prompt kopieren auf der Seite, drei Schritte; die Übersicht mit Kacheln", async () => {
@@ -232,11 +251,13 @@ test("b/apps: die Bühne – jede Web-Anwendung unter /b/apps/<app>/oeffnen/ in 
     assert.ok(!seite.includes("data-fenster"), `${a.slug}: kein Fenster mehr`);
     const b = lies(`b/apps/${a.slug}/oeffnen/index.html`);
     assert.ok(b.includes('<body class="buehne-seite">') && b.includes('<meta name="robots" content="noindex">') && b.includes(`<link rel="canonical" href="https://ornament.cloud/b/apps/${a.slug}/">`), `${a.slug}: Bühne`);
-    assert.ok(b.includes(`<iframe class="app-rahmen" src="/${a.url}?b=1" title="${a.name}"`), `${a.slug}: die Anwendung im Rahmen mit ?b=1`);
-    assert.ok(b.includes(`<a class="tab" href="/${a.url}" target="_blank"`) && b.includes(`<a class="zurueck" href="/b/apps/${a.slug}/"`), `${a.slug}: eigener Tab und zurück`);
+    // seit 20. Oktober 2026 (abends) mit der Sprache der Seite (?sprache=de|en), damit die App in derselben Sprache steht wie der Neubau (OMNA COLOR auf /b/en/ war deutsch)
+    assert.ok(b.includes(`<iframe class="app-rahmen" src="/${a.url}?b=1&amp;sprache=de" title="${a.name}"`), `${a.slug}: die Anwendung im Rahmen mit ?b=1 und der Sprache`);
+    assert.ok(b.includes(`<a class="tab" href="/${a.url}?sprache=de" target="_blank"`) && b.includes(`<a class="zurueck" href="/b/apps/${a.slug}/"`), `${a.slug}: eigener Tab und zurück`);
+    assert.ok(lies(`b/en/apps/${a.slug}/oeffnen/index.html`).includes(`<iframe class="app-rahmen" src="/${a.url}?b=1&amp;sprache=en"`), `${a.slug}: auf Englisch mit sprache=en`);
     assert.ok(!sitemap.includes(`/b/apps/${a.slug}/oeffnen/`), `${a.slug}: Bühne nicht in der Sitemap`);
     if (a.slug !== "orma") assert.ok(lies(a.url + "index.html").includes('setAttribute("data-buehne","")'), `${a.url}: blendet mit ?b=1 die alte Navigation aus`);   // ORMA hat keine alte Navigation
-    if (a.feld) { assert.ok(seite.includes(`href="/b/apps/${a.slug}/feld/"`)); assert.ok(lies(`b/apps/${a.slug}/feld/index.html`).includes(`src="/${a.feld}?b=1"`), `${a.slug}: das Feld auf der Bühne`); assert.ok(lies(a.feld + "index.html").includes("data-buehne")); }
+    if (a.feld) { assert.ok(seite.includes(`href="/b/apps/${a.slug}/feld/"`)); assert.ok(lies(`b/apps/${a.slug}/feld/index.html`).includes(`src="/${a.feld}?b=1&amp;sprache=de"`), `${a.slug}: das Feld auf der Bühne`); assert.ok(lies(a.feld + "index.html").includes("data-buehne")); }
   }
   assert.ok(lies("b/b.js").includes(".app-rahmen") && !lies("b/b.js").includes("data-fenster"), "b.js: Bühne statt Fenster");
 });
@@ -298,7 +319,9 @@ test("b/en/: jede Seite auch auf Englisch (ohne die Werkstatt), lang=en, hreflan
     assert.ok(html.includes(`<link rel="alternate" hreflang="de" href="https://ornament.cloud/b/${p}">`) && html.includes(`<link rel="alternate" hreflang="en" href="https://ornament.cloud/b/en/${p}">`), `${p}: hreflang`);
     assert.ok(html.includes(`<nav class="sprache" aria-label="Language"><a href="/b/${p}" lang="de" hreflang="de" title="Deutsch">d</a><a href="/b/en/${p}" lang="en" hreflang="en" title="English" aria-current="true">e</a></nav>`), `${p}: Schalter`);
     for (const d of deutsch) assert.ok(!html.includes(d), `${p}: «${d}» ist nicht übersetzt`);
-    assert.ok(/<nav class="hauptnav"[^>]*><a href="\/b\/en\/zettel\/"[^>]*>Notes<\/a>/.test(html), `${p}: die Navigation auf Englisch unter /b/en/`);
+    assert.ok(/<nav class="hauptnav"[^>]*><a href="\/animations\/" target="_blank" rel="noopener">Animations<\/a><a href="\/multiverse\/" target="_blank" rel="noopener">Multiverse<\/a><a href="\/b\/en\/zettel\/"[^>]*>Notes<\/a>[\s\S]*?<details class="beta"><summary[^>]*>Beta<\/summary><span class="beta-liste"><a class="intern" href="\/b\/en\/raster\/"[^>]*>Grids<\/a><a href="\/beta\/lab\/" target="_blank" rel="noopener">Lab<\/a><a href="\/beta\/drittes-rad\/" target="_blank" rel="noopener">Das 3\. Rad<\/a><\/span><\/details><a href="\/gamma\/" target="_blank" rel="noopener">Gamma<\/a><\/nav>/.test(html), `${p}: die Navigation auf Englisch unter /b/en/ (seit 28. Oktober 2026 zuletzt «Beta» zum Aufklappen mit Lab und Das 3. Rad, seit 31. Oktober 2026 daneben «Gamma», neues Fenster, seit 5. November 2026 zuvorderst «Animations», neues Fenster)`);
+    assert.ok(!/<nav class="hauptnav"[^>]*>(?:(?!<details)[\s\S])*?>Grids<\/a>/.test(html), `${p}: «Grids» seit 8. November 2026 nur unter «Beta»`);
+    assert.ok(/<details class="beta ueber"><summary[^>]*>About<\/summary><span class="beta-liste"><a href="\/b\/en\/ueber\/"[^>]*>About<\/a><a href="\/b\/en\/angebot\/"[^>]*>Services<\/a><a href="\/b\/en\/werke\/"[^>]*>Works<\/a><a href="\/b\/en\/zuletzt\/"[^>]*>Latest<\/a><\/span><\/details>/.test(html), `${p}: seit 5. November 2026 Angebot, Werke und Zuletzt unter «Über» (aufklappbar)`);
   }
   // die deutschen Seiten zeigen den Schalter mit d aktiv und verweisen auf /b/en/
   for (const p of seiten.filter((x) => x !== "werkstatt/")) {

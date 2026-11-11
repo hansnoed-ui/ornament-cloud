@@ -48,6 +48,20 @@ body {
 :focus-visible { outline: 2px solid var(--faden); outline-offset: 3px; }
 a { color: inherit; }
 
+/* ---------- Kopf der App (20. Oktober 2026, wie OMNA COLOR und ORNA): Signet, d · e, «Über die App»; auf der Bühne (?b=1) nicht ---------- */
+.app-kopf { max-width: 40rem; margin: 0 auto; padding: max(12px, env(safe-area-inset-top)) 20px 0; display: flex; align-items: center; gap: 16px; font-size: 0.95rem; }
+.app-kopf-signet { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--tinte); font-weight: 500; letter-spacing: 0.01em; }
+.app-kopf-signet svg { width: 34px; height: 24px; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.6; }
+.app-kopf-signet circle { fill: var(--faden); stroke: none; }
+.app-kopf-zurueck { margin-left: auto; color: var(--grau); text-decoration: none; }
+.app-kopf-zurueck:hover, .app-kopf-zurueck:focus-visible { color: var(--tinte); text-decoration: underline; }
+.sprache { display: flex; gap: 2px; }
+.sprache button { font: inherit; font-size: 0.85rem; line-height: 1; color: var(--grau); background: none; border: 0; border-bottom: 1px solid transparent; padding: 6px 5px 5px; min-width: 24px; cursor: pointer; }
+.sprache button[aria-current] { color: var(--tinte); border-bottom-color: var(--faden); }
+.sprache button:hover, .sprache button:focus-visible { color: var(--tinte); outline: none; border-bottom-color: currentColor; }
+[data-buehne] .app-kopf { display: none; }
+.app-kopf + .orma-top { padding-top: 6px; }
+
 /* ---------- Kopf: Bildmarke, der Punkt läuft über die Schnittstelle ---------- */
 .orma-top { max-width: 40rem; margin: 0 auto; padding: max(14px, env(safe-area-inset-top)) 20px 0; }
 .orma-home {
@@ -117,6 +131,16 @@ a { color: inherit; }
 /* Zusätze der Startansicht (Runde verwerfen, Installieren, Hinweise): untereinander, nie in einer Zeile */
 .orma-extra { display: flex; flex-direction: column; align-items: flex-start; }
 .orma-extra > p { margin: 0 0 8px; }
+/* das Feld zum Installieren ganz oben, wenn man vom Neubau mit ?installieren kommt (21. Oktober 2026) */
+.orma-install-oben { position: relative; margin: 0 0 28px; padding: 22px 20px 20px; border: 1.5px solid var(--tinte); border-radius: 16px; text-align: center; display: grid; justify-items: center; gap: 0; }
+.orma-install-oben h2 { margin: 0 0 6px; padding: 0 28px; font-size: 1.3rem; line-height: 1.2; }
+.orma-install-oben-satz { margin: 0 auto 16px; max-width: 30em; line-height: 1.45; color: var(--grau); }
+.orma-install-oben .orma-install-help { margin: 12px auto 0; max-width: 32em; }
+.orma-install-oben-zu { position: absolute; top: 6px; right: 8px; width: 40px; height: 40px; border: 0; background: none; color: inherit; font: inherit; font-size: 1.6rem; line-height: 1; cursor: pointer; opacity: 0.6; }
+.orma-install-oben-zu:hover, .orma-install-oben-zu:focus-visible { opacity: 1; }
+@keyframes orma-install-blinkt { 0%, 100% { opacity: 1; } 30% { opacity: 0.25; } }
+.orma-install-blinkt { animation: orma-install-blinkt 0.5s ease-in-out 2; }
+@media (prefers-reduced-motion: reduce) { .orma-install-blinkt { animation: none; } }
 
 /* ---------- Formularfelder ---------- */
 .orma-field { display: block; margin: 1rem 0; }

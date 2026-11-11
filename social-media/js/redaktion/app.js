@@ -103,7 +103,7 @@ async function verbindungPruefen() {
 async function sammlungLaden() {
   try {
     const g = gh();
-    const text = g ? await g.lesen(DATEN) : await (await fetch(`../daten/eintraege.json?t=${Date.now()}`, { cache: "no-store" })).text();
+    const text = g ? await g.lesen(DATEN) : await (await fetch(`/social-media/daten/eintraege.json?t=${Date.now()}`, { cache: "no-store" })).text();
     sammlung = JSON.parse(text ?? '{"eintraege":[]}');
   } catch (err) {
     sammlung ??= { eintraege: [] };
@@ -239,7 +239,7 @@ async function ausschnitteErneuern() {
 /** [{ schluessel, quelle: "bestehend"|"datei"|"bereich", typ: "bild"|"video", vorschau, breite, hoehe, alt, ... }] in der Reihenfolge des Beitrags */
 function medienEntwurf() {
   const liste = [];
-  for (const m of e.bearbeiten?.medien ?? []) if (!e.entfernt.includes(m.datei)) liste.push({ schluessel: `b:${m.datei}`, quelle: "bestehend", typ: m.typ, vorschau: `../${m.datei}`, poster: m.poster ? `../${m.poster}` : null, breite: m.breite, hoehe: m.hoehe, alt: e.alt[`b:${m.datei}`] ?? m.alt ?? "", m });
+  for (const m of e.bearbeiten?.medien ?? []) if (!e.entfernt.includes(m.datei)) liste.push({ schluessel: `b:${m.datei}`, quelle: "bestehend", typ: m.typ, vorschau: `/social-media/${m.datei}`, poster: m.poster ? `/social-media/${m.poster}` : null, breite: m.breite, hoehe: m.hoehe, alt: e.alt[`b:${m.datei}`] ?? m.alt ?? "", m });
   for (const d of e.dateien.filter((x) => x.typ === "bild" || x.typ === "video")) liste.push({ schluessel: `d:${d.schluessel}`, quelle: "datei", typ: d.typ, vorschau: url(d.blob), alt: e.alt[`d:${d.schluessel}`] ?? "", d });
   for (const r of e.bereiche.filter((x) => x.art === "bild" || x.art === "video")) {
     const a = ausschnitte.get(r.id);
@@ -459,7 +459,7 @@ function vorschauEintrag() {
   const nr = e.bearbeiten?.nr ?? neueId(alle, e.felder.titel || "vorschau").nr;
   const medien = medienEntwurf().map((m) => ({ typ: m.typ, datei: m.vorschau, breite: m.breite, hoehe: m.hoehe, alt: m.alt, poster: m.poster }));
   const avatarBereich = e.bereiche.find((r) => r.art === "avatar");
-  const avatar = avatarBereich && ausschnitte.get(avatarBereich.id) ? ausschnitte.get(avatarBereich.id).url : e.bearbeiten?.autor?.avatar ? `../${e.bearbeiten.autor.avatar}` : null;
+  const avatar = avatarBereich && ausschnitte.get(avatarBereich.id) ? ausschnitte.get(avatarBereich.id).url : e.bearbeiten?.autor?.avatar ? `/social-media/${e.bearbeiten.autor.avatar}` : null;
   const x = eintragAus({ nr, id: e.bearbeiten?.id ?? `${nr}-vorschau`, medien, avatar });
   if (!x.erfasst) x.erfasst = new Date().toISOString();
   return x;
@@ -567,7 +567,7 @@ async function medienErzeugen(nr) {
     avatar = ordner + name;
     avatarBitmap = await B.bitmap(ausschnitte.get(ab.id).blob);
   } else if (avatar) {
-    try { avatarBitmap = await B.bitmap(await (await fetch(`../${avatar}`)).blob()); } catch {}
+    try { avatarBitmap = await B.bitmap(await (await fetch(`/social-media/${avatar}`)).blob()); } catch {}
   }
   // Beleg
   let beleg = e.bearbeiten?.beleg ?? null;
@@ -624,7 +624,7 @@ async function veroeffentlichen() {
     sammlung = ergebnis.daten;
     await A.entwurfLoeschen();
     const s4 = schritt("Warten, bis GitHub Pages den Zettel online stellt (meist eine Minute) …", "warten");
-    const ziel = `../${eintrag.id}/`;
+    const ziel = `/social-media/${eintrag.id}/`;
     const online = await warten(() => istOnline(eintrag));
     s4.className = online ? "rd-ok" : "rd-warten";
     s4.innerHTML = online ? `Online: <a href="${esc(ziel)}">Zettel ${eintrag.nr} öffnen</a>` : `Noch nicht online. Der Commit ist geschrieben; <a href="${esc(ziel)}">Zettel ${eintrag.nr}</a> erscheint gleich.`;
@@ -641,7 +641,7 @@ async function veroeffentlichen() {
 
 async function istOnline(eintrag) {
   try {
-    const r = await fetch(`../daten/eintraege.json?t=${Date.now()}`, { cache: "no-store" });
+    const r = await fetch(`/social-media/daten/eintraege.json?t=${Date.now()}`, { cache: "no-store" });
     if (!r.ok) return false;
     const d = await r.json();
     return eintrag ? d.eintraege?.some((x) => x.id === eintrag.id && x.geaendert === eintrag.geaendert) : true;
@@ -659,7 +659,7 @@ function alleZeigen() {
   const alle = [...(sammlung?.eintraege ?? [])].sort((a, b) => b.nr - a.nr);
   $("alle").innerHTML = alle.length ? alle.map((x) => `<li>
     <span class="rd-alle-nr">${x.nr}</span>
-    <span class="rd-alle-titel"><a href="../${esc(x.id)}/">${esc(titelVon(x))}</a><span class="leise">${esc(PLATTFORM_NAME[x.plattform])}, ${esc(x.autor?.name ?? "")}, gesichert ${esc(datum(x.erfasst, { uhr: false }))}</span></span>
+    <span class="rd-alle-titel"><a href="/social-media/${esc(x.id)}/">${esc(titelVon(x))}</a><span class="leise">${esc(PLATTFORM_NAME[x.plattform])}, ${esc(x.autor?.name ?? "")}, gesichert ${esc(datum(x.erfasst, { uhr: false }))}</span></span>
     <span class="rd-alle-tun"><button type="button" class="knopf-leise" data-bearbeiten="${esc(x.id)}">Bearbeiten</button> <button type="button" class="knopf-leise" data-loeschen="${esc(x.id)}">Löschen</button></span>
   </li>`).join("") : `<li class="rd-leer">Noch keine Zettel.</li>`;
 }

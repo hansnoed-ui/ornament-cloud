@@ -35,7 +35,7 @@ const browser = await chromium.launch();
 const pairs = new Set((await import(new URL("../portfolio/nebeneinander-nacheinander/js/data/constellations.js", import.meta.url).href)).constellations.map(c => c.id));
 
 async function open(ctxOpts = {}, query = "") {
-  const ctx = await browser.newContext(ctxOpts);
+  const ctx = await browser.newContext({ locale: "de-CH", ...ctxOpts });
   const page = await ctx.newPage();
   const errors = [];
   page.on("pageerror", e => errors.push(e.message));
@@ -300,7 +300,7 @@ await check("Adresse: nach jeder Drehung steht ?pair=<id> in der Leiste, ohne ne
 });
 
 await check("Link kopieren: mit Tastatur erreichbar, kopiert die Adresse ohne ?debug, Rückmeldung in der Live-Region", async () => {
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, reducedMotion: "reduce", permissions: ["clipboard-read", "clipboard-write"] });
+  const ctx = await browser.newContext({ locale: "de-CH", viewport: { width: 1280, height: 900 }, reducedMotion: "reduce", permissions: ["clipboard-read", "clipboard-write"] });
   await ctx.addInitScript(() => { Object.defineProperty(Navigator.prototype, "share", { value: undefined, configurable: true }); });
   const page = await ctx.newPage();
   await page.goto(base + "?debug");
@@ -323,7 +323,7 @@ await check("Link kopieren: mit Tastatur erreichbar, kopiert die Adresse ohne ?d
 });
 
 await check("Teilen: navigator.share wird mit der Adresse aufgerufen, falls vorhanden", async () => {
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
+  const ctx = await browser.newContext({ locale: "de-CH", viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
   await ctx.addInitScript(() => { window.__shared = []; Object.defineProperty(Navigator.prototype, "share", { value: d => { window.__shared.push(d); return Promise.resolve(); }, configurable: true }); });
   const page = await ctx.newPage();
   await page.goto(base + "?pair=agnes-martin__niklas-luhmann");
@@ -337,7 +337,7 @@ await check("Teilen: navigator.share wird mit der Adresse aufgerufen, falls vorh
 });
 
 await check("Rückfall ohne Teilen und Zwischenablage: Adresse erscheint markiert zum Kopieren", async () => {
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
+  const ctx = await browser.newContext({ locale: "de-CH", viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
   await ctx.addInitScript(() => {
     Object.defineProperty(Navigator.prototype, "share", { value: undefined, configurable: true });
     Object.defineProperty(Navigator.prototype, "clipboard", { value: undefined, configurable: true });
@@ -358,7 +358,7 @@ await check("Rückfall ohne Teilen und Zwischenablage: Adresse erscheint markier
 // ---------- Paket 2: Feldansicht ----------
 const feldUrl = base + "feld/";
 await check("Feld ohne JavaScript, Desktop: Matrix 20 × 20 mit allen Konstellationen als Links, freie Felder leer", async () => {
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, javaScriptEnabled: false });
+  const ctx = await browser.newContext({ locale: "de-CH", viewport: { width: 1280, height: 900 }, javaScriptEnabled: false });
   const page = await ctx.newPage();
   await page.goto(feldUrl);
   assert.equal(await page.$eval(".feld-matrix-wrap", e => getComputedStyle(e).display), "block");
@@ -375,7 +375,7 @@ await check("Feld ohne JavaScript, Desktop: Matrix 20 × 20 mit allen Konstellat
 
 await check("Feld ohne JavaScript, Telefon 320 und 390 px: Liste statt Matrix, nichts rutscht horizontal weg", async () => {
   for (const width of [320, 390]) {
-    const ctx = await browser.newContext({ viewport: { width, height: 800 }, javaScriptEnabled: false, isMobile: true, hasTouch: true });
+    const ctx = await browser.newContext({ locale: "de-CH", viewport: { width, height: 800 }, javaScriptEnabled: false, isMobile: true, hasTouch: true });
     const page = await ctx.newPage();
     await page.goto(feldUrl);
     assert.equal(await page.$eval(".feld-matrix-wrap", e => getComputedStyle(e).display), "none");
@@ -406,7 +406,7 @@ await check("Feld: ein Link führt zum Rad mit genau dieser Konstellation; Matri
 });
 
 await check("Verweise auf das Feld: von der Radseite und vom Portfolio", async () => {
-  const ctx = await browser.newContext({ javaScriptEnabled: false });
+  const ctx = await browser.newContext({ locale: "de-CH", javaScriptEnabled: false });
   const page = await ctx.newPage();
   await page.goto(base);
   assert.equal(await page.$eval('.rad-about a[href="feld/"]', a => a.textContent.includes("Das Feld")), true);
@@ -498,7 +498,7 @@ await check("Reduzierte Bewegung: Namen am Rad ohne Ein- und Ausblenden", async 
 
 // ---------- Installierbare Web-App ----------
 await check("App: Service Worker übernimmt, danach funktionieren Rad, Direktlink und Feld der App (app/) ohne Netz", async () => {
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce", serviceWorkers: "allow" });
+  const ctx = await browser.newContext({ locale: "de-CH", viewport: { width: 390, height: 844 }, reducedMotion: "reduce", serviceWorkers: "allow" });
   const page = await ctx.newPage();
   const errors = [];
   page.on("pageerror", e => errors.push(e.message));
@@ -532,7 +532,7 @@ await check("App: Service Worker übernimmt, danach funktionieren Rad, Direktlin
 });
 
 await check("App: ältere Installation auf der Website-Adresse wird zur App-Adresse app/ weitergeleitet; im Browser nicht", async () => {
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
+  const ctx = await browser.newContext({ locale: "de-CH", viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
   await ctx.addInitScript(() => { Object.defineProperty(Navigator.prototype, "standalone", { value: true, configurable: true }); });
   const page = await ctx.newPage();
   await page.goto(base + "?pair=agnes-martin__niklas-luhmann");
@@ -546,7 +546,7 @@ await check("App: ältere Installation auf der Website-Adresse wird zur App-Adre
 });
 
 await check("App: «Link kopieren» in der App teilt die Adresse der Website, nicht die der App", async () => {
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce", permissions: ["clipboard-read", "clipboard-write"] });
+  const ctx = await browser.newContext({ locale: "de-CH", viewport: { width: 390, height: 844 }, reducedMotion: "reduce", permissions: ["clipboard-read", "clipboard-write"] });
   await ctx.addInitScript(() => { Object.defineProperty(Navigator.prototype, "share", { value: undefined, configurable: true }); });
   const page = await ctx.newPage();
   await page.goto(base + "app/?pair=agnes-martin__niklas-luhmann");
@@ -590,7 +590,7 @@ await check("ORNA-Startbild: nicht im normalen Browser, nicht bei reduzierter Be
 });
 
 await check("ORNA-Startbild: vor der Animation blitzt die Seite nicht auf; ohne Startbild wird sie trotzdem sichtbar", async () => {
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const ctx = await browser.newContext({ locale: "de-CH", viewport: { width: 390, height: 844 } });
   const page = await ctx.newPage();
   await page.route("**/js/intro.js*", async r => { await new Promise(res => setTimeout(res, 1200)); r.continue(); });
   await page.goto(base + "?intro", { waitUntil: "commit" });
@@ -602,7 +602,7 @@ await check("ORNA-Startbild: vor der Animation blitzt die Seite nicht auf; ohne 
   assert.equal(await page.evaluate(() => document.documentElement.classList.contains("orna-pre")), false);
   await ctx.close();
   // kommt das Startbild gar nicht, erscheint die Seite nach kurzer Zeit dennoch
-  const ctx2 = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const ctx2 = await browser.newContext({ locale: "de-CH", viewport: { width: 390, height: 844 } });
   const p2 = await ctx2.newPage();
   await p2.route("**/js/intro.js*", r => r.abort());
   await p2.goto(base + "?intro");
@@ -623,20 +623,20 @@ await check("App: neue Fassung sofort beim nächsten Öffnen, auch wenn der Serv
     const r = await fetch(origin + req.url);
     let body = Buffer.from(await r.arrayBuffer());
     const type = r.headers.get("content-type") || "";
-    if (type.includes("text/html")) body = Buffer.from(String(body).replace("<title>", `<title>[${++n}] `));
+    if (type.includes("text/html")) body = Buffer.from(String(body).replace('<meta charset="utf-8">', `<meta charset="utf-8"><meta name="ausgabe" content="${++n}">`));   // nicht im Titel: sprache.js setzt ihn beim Laden neu
     res.writeHead(r.status, { "content-type": type, "cache-control": "max-age=600" });
     res.end(body);
   });
   await new Promise(ok => proxy.listen(0, ok));
   try {
     const url = `http://localhost:${proxy.address().port}${new URL(base).pathname}app/`;
-    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce", serviceWorkers: "allow" });
+    const ctx = await browser.newContext({ locale: "de-CH", viewport: { width: 390, height: 844 }, reducedMotion: "reduce", serviceWorkers: "allow" });
     const page = await ctx.newPage();
     await page.goto(url);
     await page.waitForFunction(async () => { const r = await navigator.serviceWorker.getRegistration(); return !!(r && r.active); }, null, { timeout: 15000 });
     for (let i = 0; i < 5 && !(await page.evaluate(() => !!navigator.serviceWorker.controller)); i++) await page.reload();
     // zweimal neu öffnen: jedes Mal fragt der Service Worker beim Server nach, statt die Browser-Kopie zu nehmen
-    const nr = async () => Number((await page.title()).match(/^\[(\d+)\]/)[1]);
+    const nr = () => page.$eval('meta[name="ausgabe"]', (m) => Number(m.content));
     await page.goto(url); const a = await nr();
     await page.goto(url); const b = await nr();
     assert.ok(b > a, `Seite kam aus dem Zwischenspeicher (${a} → ${b})`);
@@ -694,7 +694,7 @@ await check("Installationsknopf: überall sichtbar ausser in der App; Chrome öf
   await b.ctx.close();
 
   // in der geöffneten App: kein Knopf
-  const ctx = await browser.newContext({ ...devices["iPhone 13"] });
+  const ctx = await browser.newContext({ locale: "de-CH", ...devices["iPhone 13"] });
   await ctx.addInitScript(() => { Object.defineProperty(Navigator.prototype, "standalone", { value: true, configurable: true }); });
   const page = await ctx.newPage();
   await page.goto(base + "app/");
@@ -729,7 +729,7 @@ await check("Installationsknopf, Rückfall «Verknüpfung erstellen»: auf Andro
 
 await check("Installationsknopf im Facebook-Browser: Android öffnet die Seite in Chrome, iPhone erklärt den Weg nach Safari", async () => {
   const fbAndroid = "Mozilla/5.0 (Linux; Android 14; SM-S921B Build/UP1A; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/128.0.0.0 Mobile Safari/537.36 [FB_IAB/FB4A;FBAV/480.0.0.0;]";
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, userAgent: fbAndroid, isMobile: true, hasTouch: true });
+  const ctx = await browser.newContext({ locale: "de-CH", viewport: { width: 390, height: 844 }, userAgent: fbAndroid, isMobile: true, hasTouch: true });
   // den Sprung nach Chrome abfangen und festhalten, statt ihn auszuführen
   await ctx.addInitScript(() => {
     window.__chrome = null;
@@ -745,7 +745,7 @@ await check("Installationsknopf im Facebook-Browser: Android öffnet die Seite i
   assert.match(await page.$eval(".rad-install-hilfe", e => e.textContent), /Chrome/);
   await ctx.close();
 
-  const ios = await browser.newContext({ ...devices["iPhone 13"], userAgent: devices["iPhone 13"].userAgent + " [FBAN/FBIOS;FBAV/480.0.0.0]" });
+  const ios = await browser.newContext({ locale: "de-CH", ...devices["iPhone 13"], userAgent: devices["iPhone 13"].userAgent + " [FBAN/FBIOS;FBAV/480.0.0.0]" });
   const p2 = await ios.newPage();
   await p2.goto(base);
   await p2.tap(".rad-install-btn");

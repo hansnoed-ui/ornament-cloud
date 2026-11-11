@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ORNAMENT LAB 0.1</title>
+  <!-- Online unter /alpha/lab/ nur per Direktlink (Entscheid von Christian, 23. Oktober 2026): nicht verlinkt, nicht in der Suche. -->
+  <meta name="robots" content="noindex">
+  <meta name="description" content="ORNAMENT LAB: Operationen erzeugen, beobachten und weiterführen – Bild, Konstellation, Transformation, Varianten.">
+  <!-- Vorschaukarte zum Teilen (Open Graph und X, 25. Oktober 2026), gezeichnet von tools/b-kacheln.mjs alt -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ornament.cloud">
+  <meta property="og:locale" content="de_CH">
+  <meta property="og:url" content="https://ornament.cloud/alpha/lab/">
+  <meta property="og:title" content="ornament.lab">
+  <meta property="og:description" content="ORNAMENT LAB: Operationen erzeugen, beobachten und weiterführen – Bild, Konstellation, Transformation, Varianten.">
+  <meta property="og:image" content="https://ornament.cloud/assets/kacheln/lab.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Vorschaukarte von ornament.lab: der Name, der Leitsatz Erzeugen, Beobachten, Weiterführen und ein Punkt im Feld mit Fäden zu sechs anderen">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ornament.lab">
+  <meta name="twitter:description" content="ORNAMENT LAB: Operationen erzeugen, beobachten und weiterführen – Bild, Konstellation, Transformation, Varianten.">
+  <meta name="twitter:image" content="https://ornament.cloud/assets/kacheln/lab.png">
+  <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
+  <link rel="stylesheet" href="lab.css">
+</head>
+<body>
+  <header class="kopf">
+    <p class="heimzeile"><a class="heim" href="../../">← ornament.cloud</a></p>
+    <div class="marke">
+      <h1>ORNAMENT LAB <span class="version">0.1</span></h1>
+      <p class="leitsatz">Erzeugen · Beobachten · Weiterführen</p>
+    </div>
+    <fieldset class="modus" aria-label="Arbeitsmodus">
+      <label><input type="radio" name="modus" value="manuell" checked><span>Manuell</span></label>
+      <label><input type="radio" name="modus" value="jev"><span>jev-assistiert</span></label>
+      <label><input type="radio" name="modus" value="experimentell"><span>Experimentell</span></label>
+    </fieldset>
+    <div class="projekt">
+      <input id="titel" type="text" value="Ohne Titel" aria-label="Titel des Projekts" maxlength="80">
+      <button id="speichern" class="knopf voll" type="button">Projekt speichern</button>
+      <label class="knopf" for="oeffnen">Projekt öffnen</label>
+      <input id="oeffnen" type="file" accept=".zip,application/zip" hidden>
+      <button id="neu" class="knopf leise" type="button">Neu</button>
+    </div>
+  </header>
+
+  <main class="labor">
+    <section id="material" class="bereich" aria-labelledby="h-material">
+      <h2 id="h-material"><span class="nr">1</span> Material</h2>
+      <div class="ablage" id="ablage">
+        <label class="knopf voll" for="datei">Bild wählen</label>
+        <input id="datei" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif,image/bmp" hidden>
+        <button id="beispiel" class="knopf leise" type="button">Beispielbild</button>
+        <label class="knopf" for="tondatei">Ton wählen (MP3, WAV …)</label>
+        <label class="knopf" for="videodatei">Video wählen</label>
+        <input id="videodatei" type="file" accept="video/mp4,video/webm,video/quicktime,video/x-m4v,.mp4,.m4v,.mov,.webm" hidden>
+        <input id="tondatei" type="file" accept="audio/wav,audio/x-wav,audio/mpeg,audio/ogg,audio/flac,audio/mp4,audio/x-m4a,audio/aac,audio/webm,audio/opus,.wav,.mp3,.ogg,.flac,.m4a,.aac,.opus" hidden>
+        <p class="hinweis">oder hineinziehen. Bild, Ton und Video bleiben auf diesem Gerät.</p>
+      </div>
+      <ul id="materialien" class="streifen"></ul>
+      <div id="vorschlag30" class="vorschlag30" hidden></div>
+      <div id="beat" class="vorschlag30 beat" hidden></div>
+    </section>
+
+    <section id="operationen" class="bereich" aria-labelledby="h-operationen">
+      <h2 id="h-operationen"><span class="nr">2</span> Operationen</h2>
+      <div id="ausgang" class="ausgang"></div>
+      <div id="vorschlaege" class="vorschlaege" hidden></div>
+      <div id="experimentell" class="experimentell" hidden></div>
+      <div id="op-liste" class="op-liste"></div>
+      <form id="op-form" class="op-form" hidden></form>
+    </section>
+
+    <section id="experiment" class="bereich breit" aria-labelledby="h-experiment">
+      <div class="zeile">
+        <h2 id="h-experiment"><span class="nr">3</span> Experiment</h2>
+        <fieldset class="ansicht" aria-label="Ansicht">
+          <label><input type="radio" name="ansicht" value="neben" checked><span>Nebeneinander</span></label>
+          <label><input type="radio" name="ansicht" value="nach"><span>Nacheinander</span></label>
+        </fieldset>
+      </div>
+      <div id="buehne" class="buehne"></div>
+    </section>
+
+    <section id="protokoll" class="bereich" aria-labelledby="h-protokoll">
+      <h2 id="h-protokoll"><span class="nr">4</span> Protokoll</h2>
+      <div id="ketten" class="ketten"></div>
+      <div id="exporte" class="exporte"></div>
+      <ol id="ereignisse" class="ereignisse" reversed></ol>
+    </section>
+  </main>
+
+  <div id="status" class="status" role="status" aria-live="polite"></div>
+  <!-- three.js für die Szenen von PHORMA III (operationen/phorma.js lädt alpha/phorma-iii/buehne.js erst im Browser), wie in alpha/phorma-iii/index.html -->
+  <script type="importmap">
+  { "imports": { "three": "../../vendor/three-0.185.1/three.module.min.js", "three/addons/": "../../vendor/three-0.185.1/addons/" } }
+  </script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

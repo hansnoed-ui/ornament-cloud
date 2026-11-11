@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ORNAMENT COMPOSER 0.1</title>
+  <!-- Online unter /alpha/composer/ nur per Direktlink, wie das Lab: nicht verlinkt, nicht in der Suche (9. November 2026). -->
+  <meta name="robots" content="noindex">
+  <meta name="description" content="ORNAMENT COMPOSER: Spuren mischen mit eigenen, versionierten Plugins, vorher und nachher hören, gegen eine Referenz messen.">
+  <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
+  <link rel="stylesheet" href="composer.css?v=7">
+</head>
+<body>
+  <header class="kopf">
+    <p class="heimzeile"><a class="heim" href="../../">← ornament.cloud</a></p>
+    <div class="marke">
+      <h1>ORNAMENT COMPOSER <span class="version">0.1</span></h1>
+      <p class="leitsatz">Spuren · Plugins · Hören · Messen</p>
+    </div>
+    <div class="aktionen">
+      <label class="knopf voll"><input type="file" id="dateien" accept="audio/*,.wav,.flac,.mp3,.ogg,.m4a" multiple hidden>Spuren laden</label>
+      <label class="knopf"><input type="file" id="ordner" webkitdirectory hidden>Ordner</label>
+      <label class="knopf"><input type="file" id="referenzDatei" accept="audio/*,.wav,.flac,.mp3" hidden>Referenz</label>
+      <label class="knopf leise"><input type="file" id="projektDatei" accept=".json,application/json" hidden>Projekt öffnen</label>
+      <button class="knopf leise" id="projektSpeichern" disabled>Projekt speichern</button>
+      <button class="knopf" id="trackLaden" disabled title="nur der fertige Track: die ganze Mischung als WAV, 24 Bit, wie gemastert">Track (WAV)</button>
+      <button class="knopf leise" id="exportieren" disabled title="ZIP mit Track, allen Einzelspuren und dem Projekt (für das AV Studio)">Exportieren (ZIP)</button>
+    </div>
+  </header>
+
+  <section class="transport" aria-label="Wiedergabe">
+    <button class="knopf voll spielen" id="spielen" disabled aria-keyshortcuts="Space" title="Abspielen / Anhalten (Leertaste)">▶</button>
+    <div class="stelle"><span id="takt">1.1</span><span id="zeit">0:00,0</span></div>
+    <label class="feld">Tempo <input type="number" id="bpm" min="40" max="240" step="0.1" value="120"> <span id="bpmQuelle" class="leise-text"></span></label>
+    <label class="feld">erste Eins <input type="number" id="beginn" min="0" step="0.01" value="0"> s</label>
+    <span class="trenner"></span>
+    <button class="umschalter" id="schleifeAn" aria-pressed="false" title="Schleife über den gezogenen Bereich (L)">Schleife <kbd>L</kbd></button>
+    <button class="umschalter" id="allesVorher" aria-pressed="false" title="alle Spuren ohne Kanalzug (V)">alles vorher <kbd>V</kbd></button>
+    <button class="umschalter" id="referenzAn" aria-pressed="false" disabled title="die Referenz an derselben Stelle, gleich laut wie die Mischung (R)">Referenz <kbd>R</kbd></button>
+    <label class="feld klein"><input type="checkbox" id="ausgleich" checked> Pegelausgleich</label>
+    <div class="anzeige" aria-live="off">
+      <span title="momentane Lautheit (400 ms)">M <b id="lufsM">–</b></span>
+      <span title="kurzzeitige Lautheit (3 s)">S <b id="lufsS">–</b> LUFS</span>
+      <span title="wahrer Spitzenwert">TP <b id="tp">–</b></span>
+      <span title="Reduktion der Grenze">GR <b id="grMaster">–</b></span>
+    </div>
+    <div class="bereich-leiste" id="bereichLeiste" hidden aria-label="Bereich bearbeiten">
+      <span class="bereich-ort" id="bereichOrt"></span>
+      <span class="bereich-spur">
+        <button class="mini" id="bStumm" title="den Bereich stumm schalten, mit kurzen Blenden (M)">stumm <kbd>M</kbd></button>
+        <button class="mini" id="bLeiser" title="den Bereich 6 dB leiser (−)">leiser <kbd>−</kbd></button>
+        <button class="mini" id="bLauter" title="den Bereich 3 dB lauter (+)">lauter <kbd>+</kbd></button>
+        <button class="mini" id="bAbfall" title="über den Bereich ausblenden (Pegel 0 → −30 dB)">ausblenden</button>
+        <button class="mini" id="bSteigerung" title="über den Bereich einblenden (Pegel −30 → 0 dB)">einblenden</button>
+        <select id="bEffekt" aria-label="Effekt auf den Bereich" title="Effekt, der nur in diesem Bereich wirkt (E legt den gewählten an)"></select>
+        <button class="mini" id="bEffektDazu" title="den gewählten Effekt auf den Bereich legen (E)">Effekt <kbd>E</kbd></button>
+        <select id="bUnter" aria-label="Unterbrechung auf den Bereich" title="eine Unterbrechung genau auf diesen Bereich"></select>
+        <label class="feld klein" title="auf allen Spuren gleichzeitig"><input type="checkbox" id="bAlle"> alle Spuren</label>
+      </span>
+      <span class="bereich-summe" id="bereichSumme">
+        <button class="mini" id="bNeuerTrack" title="ein neues Projekt aus diesem Bereich: alle Einzelspuren mit Kanalzug und Plugins, gleiches Tempo, die Summe als Referenz">neuer Track aus diesem Bereich</button>
+        <button class="mini" id="bWav" title="nur die Mischung dieses Bereichs als WAV, 24 Bit (für die Bibliothek)">Bereich als WAV</button>
+      </span>
+      <button class="mini leise" id="bWeg" title="Auswahl aufheben (Esc)">✕</button>
+    </div>
+  </section>
+
+  <section class="erzeugen" aria-label="Spuren erzeugen">
+    <h2>Erzeugen</h2>
+    <label class="feld">Stil <select id="stil"></select></label>
+    <label class="feld">Takte <select id="takte"><option>4</option><option selected>8</option><option>16</option></select></label>
+    <label class="feld">Tempo <input type="number" id="erzBpm" min="40" max="240" step="1"></label>
+    <label class="feld">Startwert <input type="number" id="seed" min="1" max="99999" step="1" value="1"></label>
+    <button class="knopf klein leise" id="wuerfeln" title="neuer Startwert: andere kleine Abweichungen, gleiche Muster">neu würfeln</button>
+    <label class="feld klein"><input type="checkbox" id="ersetzen" checked> erzeugte Spuren ersetzen</label>
+    <label class="feld klein" title="Perkussion der Stile aus Tala- und Iqa-Zyklen (Rhythmus 0.1.0) statt aus den festen Mustern"><input type="checkbox" id="zyklen" checked> Perkussion aus Zyklen</label>
+    <button class="knopf voll" id="erzeugen">Spuren erzeugen</button>
+    <div class="bass-zeile">
+      <label class="feld klein"><input type="checkbox" id="mitBass" checked> Bass</label>
+      <label class="feld">Stimme <select id="bassStimme"></select></label>
+      <label class="feld">Linie <select id="bassLinie"></select></label>
+      <label class="feld">Tonart <select id="tonart"></select></label>
+      <select id="leiter" aria-label="Tonleiter"></select>
+      <button class="knopf klein" id="bassDazu" title="nur den Bass neu erzeugen, aus der Kick der vorhandenen Drums">nur Bass neu</button>
+    </div>
+    <div class="bass-zeile track-zeile">
+      <span class="feld"><b>Ganzer Track</b></span>
+      <label class="feld">Dauer <select id="trackDauer"><option value="60">1 Minute</option><option value="90" selected>90 Sekunden</option><option value="120">2 Minuten</option><option value="180">3 Minuten</option></select></label>
+      <label class="feld klein"><input type="checkbox" id="trackZiel" checked> etwa −14 LUFS</label>
+      <button class="knopf voll" id="trackErzeugen" title="Stil oben: Drums, Bass, Synths, Fläche und ein Arrangement mit Übergängen; danach ist alles von Hand änderbar">Track erzeugen</button>
+      <span class="leise-text">Atmen, Stocken, Gas geben, Sich verlieren, Wiederfinden – der Ablauf kommt aus dem Startwert («neu würfeln» = anderer Ablauf). Stilmix mit Perkussion aus einem zweiten Stil, zwei Naturschichten. Ersetzt alle erzeugten Spuren.</span>
+    </div>
+    <div class="bass-zeile">
+      <span class="feld">Synth</span>
+      <select id="synthFilterRolle" aria-label="nach Rolle filtern"></select>
+      <select id="synthFilterVerfahren" aria-label="nach Verfahren filtern"></select>
+      <select id="synthFilterCharakter" aria-label="nach Klangcharakter filtern"></select>
+      <select id="synthPreset" aria-label="Synth-Preset"></select>
+      <select id="synthRolle" aria-label="Rolle der Sequenz"></select>
+      <button class="knopf klein" id="synthDazu" title="eine Synthspur dazu; Tonart und Akkorde vom Bass, Rhythmus und Akzente von den Drums">Synth dazu</button>
+      <label class="feld klein" title="Kammerton des Projekts">A = <input type="number" id="kammerton" min="400" max="466" step="1" value="432"> Hz</label>
+    </div>
+    <div class="bass-zeile">
+      <span class="feld">Perkussion</span>
+      <select id="perkStimme" aria-label="Instrument"></select>
+      <select id="perkZyklus" aria-label="Zyklus: Tala, Iqa oder frei"></select>
+      <button class="knopf klein" id="perkDazu" title="eine Perkussionsspur aus einem Zyklus dazu; in einem ganzen Track mit dessen Abschnitten, Tihai vor jedem Wechsel">Perkussion dazu</button>
+      <span class="leise-text">Tabla, Mridangam, Kanjira, Ghatam, Dholak, Darbuka, Daf, Zarb, Davul, Naqareh, Manjira, Sagat und mehr, eigene Synthese. Dichte, Komplexität, Variation und Polyrhythmus in der Spur.</span>
+    </div>
+    <div class="bass-zeile">
+      <span class="feld">Fläche, Natur</span>
+      <select id="flaecheStimme" aria-label="Fläche oder Naturklang"></select>
+      <button class="knopf klein" id="flaecheDazu" title="eine Flächenspur dazu; sie nimmt Tonart und Akkorde vom Bass, Einsätze von den Drums">Fläche dazu</button>
+      <span class="leise-text">Walchor, Delfine, Vogelschwarm, Nachtwald, Kosmos, Gezeiten und mehr. Ohne eigene Aufnahme mit synthetischer Quelle (so bezeichnet).</span>
+    </div>
+  </section>
+
+  <section class="lucerne" id="lucerne" aria-label="ornament.lucerne"></section>
+
+  <main class="buehne" id="buehne">
+    <div class="leer" id="leer">
+      <h2>Spuren erzeugen oder laden</h2>
+      <p>Oben einen Stil wählen und «Spuren erzeugen»: Drums aus eigener Synthese (Drum and Bass, Hip-Hop, Pop, Minimal, Goa, House) oder organische Perkussion (Tabla, Darbuka, Rahmentrommel, Riq, Zarb, Udu) mit Raum.</p>
+      <p>Oder Stems eines Tracks wählen (WAV, FLAC, MP3) oder einen ganzen Ordner, zum Beispiel <code>ornament-material/stems/neuland-primo</code>. Die Dateien bleiben auf diesem Gerät.</p>
+      <p>Die Spurtypen erkennt der Composer am Namen (drums, bass, rest, stimme …). Für den Vergleich eine Referenz dazu laden, etwa Spellbound.</p>
+    </div>
+    <div class="spuren" id="spuren" hidden>
+      <div class="lineal-zeile"><div class="kopfzelle summe-kopf" id="summeKopf"></div><canvas class="lineal" id="lineal" height="28"></canvas></div>
+      <div id="spurliste"></div>
+      <div class="kopf-strich" id="strich" aria-hidden="true"></div>
+    </div>
+  </main>
+
+  <section class="unten" id="unten" hidden>
+    <div class="plugin" id="plugin" aria-label="Plugin"></div>
+    <div class="messung">
+      <div class="messung-kopf">
+        <h2>Messung</h2>
+        <select id="ausgabeZiel" aria-label="Ausgabe">
+          <option value="reels">Reels, YouTube: −14 LUFS, −1 dBTP</option>
+          <option value="museum">Museum, Performance: −18 LUFS, −1 dBTP</option>
+          <option value="leise">Film, Rundfunk: −23 LUFS, −1 dBTP</option>
+        </select>
+        <button class="knopf klein" id="messenKnopf" disabled>Messen</button>
+        <button class="knopf klein leise" id="zielKnopf" disabled title="den Summenpegel so setzen, dass die Mischung das Ziel trifft (zwei Durchgänge)">auf Ziel bringen</button>
+      </div>
+      <p class="hinweis" id="messHinweis">Messen rechnet die ganze Mischung offline, mit genau dem Code der Vorschau.</p>
+      <table class="werte" id="messTabelle" hidden></table>
+      <svg class="spektrum" id="spektrum" viewBox="0 0 600 180" role="img" aria-label="Spektrum der Mischung und der Referenz" hidden></svg>
+    </div>
+  </section>
+
+  <section class="urteile" id="urteilBereich" hidden>
+    <h2>Urteil festhalten</h2>
+    <form id="urteilForm"><input type="text" id="urteilText" placeholder="z. B. Drums «staubig» klar besser als «warm», Bass zu weich" autocomplete="off"><button class="knopf klein" type="submit">festhalten</button></form>
+    <ol id="urteilListe" reversed></ol>
+  </section>
+
+  <input type="file" id="ersatzDatei" accept="audio/*,.wav,.flac,.mp3,.ogg,.m4a,.aif,.aiff" hidden>
+  <div class="meldung" id="meldung" role="status" hidden></div>
+  <footer class="fuss"><p>ORNAMENT COMPOSER 0.1 · Drums, Perkussion, Bass, Synth 0.2.0 · Natur 0.3.0 · Unterbrechungen 0.2.0 · Arrangement 0.2.0 · Bereiche, Fassungen 0.1.0 · Klangsammlung, Sampler, ornament.lucerne 0.1.0 · Kanalzug, Raum, Bassfett, Echo, Glanz, Grenze 0.1.0 · Tasten: Leertaste spielen, V vorher, R Referenz, L Schleife, 1–7 Varianten, A Schlag anhören, ↑ ↓ Spur wählen · Bereich ziehen (auf der Summe oder einer Spur), dann M stumm, − leiser, + lauter, E Effekt, Esc aufheben</p></footer>
+  <script type="module" src="app.js?v=10"></script>
+</body>
+</html>

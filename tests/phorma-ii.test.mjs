@@ -1,9 +1,9 @@
-// PHORMA II (alpha/phorma-ii/) – Tests ohne Browser: Ablauf und Kette, Plan der Montage, Bahn des Wachstums, Bildanalyse (Tiefe, Kanten, Keime, Tonumfang), Bahn des Tuchs, MP4,
+// PHORMA II (alpha/phorma-ii/) – Tests ohne Browser: Ablauf und Kette, Plan der Montage, Bildanalyse (Tiefe, Kanten, Keime, Tonumfang), Bahn des Tuchs, MP4,
 // Seite. Die Tests fürs Gewebe (Ton, Höhenlinien, Verfrickeln) stehen seit dem 18. Oktober 2026 in tests/phorma-iii.test.mjs.
 //   node --test tests/phorma-ii.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync } from "node:fs";
 
 const root = new URL("../", import.meta.url);
 const P = new URL("alpha/phorma-ii/", root);
@@ -14,19 +14,47 @@ const lies = (p) => readFileSync(new URL(p, P), "utf8");
 test("Ablauf: Effekte in fester Reihenfolge, Unbekanntes ergibt die ganze Kette", () => {
   assert.equal(A.ablaufName("tuch+physarum"), "physarum+tuch");
   assert.equal(A.ablaufName("quatsch"), A.KETTE);
-  assert.equal(A.ablaufName(null), "physarum+tiefe+tuch");
+  assert.equal(A.ablaufName(null), "physarum+tiefe+welle+tuch+raster+montage", "die ganze Kette: alle sechs (seit 25. Oktober 2026)");
+  assert.equal(A.KETTE, A.EFFEKTE.join("+"));
+  // die früheren Karten «Alle drei» und «Alle vier» (bis 25. Oktober 2026): gemerkt bleiben sie eigene Ketten
+  assert.equal(A.ablaufName("physarum+tiefe+tuch"), "physarum+tiefe+tuch");
+  assert.equal(A.ablaufName("physarum+tiefe+tuch+montage"), "physarum+tiefe+tuch+montage");
   assert.deepEqual(A.effekte("tuch+tiefe"), ["tiefe", "tuch"]);
-  // seit 19. Oktober 2026 das Wachstum zuerst (Wunsch: «Wachstum, Physarum, Tiefe (Scan), Tuch, Montage»); es geht über die Zeitfront ins Netz
-  assert.deepEqual(A.effekte("montage+tuch+tiefe+physarum+wachstum"), ["wachstum", "physarum", "tiefe", "tuch", "montage"]);
-  const W = A.kette("wachstum+physarum").teile[0];
-  assert.equal(W.uebergang, "front"); assert.ok(!W.phasen.some((p) => p[0] === "bild"), "kein Foto zwischen Wachstum und Netz");
+  assert.deepEqual(A.effekte("montage+tuch+tiefe+physarum"), ["physarum", "tiefe", "tuch", "montage"]);
+  // das Wachstum ist seit dem 21. Oktober 2026 weg (Wunsch: «Ich möchte wachstum weg»): eine gemerkte Kette mit ihm verliert es nur
+  assert.equal(A.ablaufName("wachstum+physarum+tiefe+tuch+montage"), "physarum+tiefe+tuch+montage");
+  assert.equal(A.ablaufName("wachstum"), A.KETTE, "das Wachstum allein ergibt die ganze Kette");
   assert.equal(A.ablaufName("stich"), A.KETTE, "der frühere Stich ergibt die ganze Kette");
   assert.equal(A.ablaufName("physarum+muster+tuch"), "physarum+tuch", "die frühere Morphogenese fällt weg");
   assert.equal(A.ablaufName("gewebe"), A.KETTE, "ein gemerktes Gewebe (seit dem 18. Oktober 2026 PHORMA III) ergibt die ganze Kette");
   assert.equal(A.ablaufName("struktur"), A.KETTE);
   assert.equal(A.ablaufName("montage+tuch"), "tuch+montage", "die Montage steht immer am Schluss");
-  for (const k of ["wachstum+montage", "physarum+montage", "tiefe+montage"]) assert.equal(A.kette(k).teile[0].uebergang, "felder", `${k}: in Rechtecken in die Montage`);
-  assert.equal(A.kette("wachstum+montage").teile[0].phasen.at(-1)[0], "farbe", "das Wachstum zeigt vor der Montage das Foto nicht");
+  for (const k of ["physarum+montage", "tiefe+montage", "raster+montage", "welle+montage"]) assert.equal(A.kette(k).teile[0].uebergang, "felder", `${k}: in Rechtecken in die Montage`);
+});
+
+test("Wellenwanne und Rasterdruck (22. Oktober 2026): ihr Platz in der Kette, kurz; die Wellenwanne endet im Foto, der Rasterdruck im Druck", () => {
+  assert.deepEqual(A.effekte("montage+raster+tuch+welle+tiefe+physarum"), ["physarum", "tiefe", "welle", "tuch", "raster", "montage"]);
+  assert.equal(A.TITEL.welle, "Wellenwanne"); assert.equal(A.TITEL.raster, "Rasterdruck");
+  // der Rasterdruck ersetzt die Pixel-Sortierung («mit der Pixelsortierung noch nicht ganz zufrieden»): eine gemerkte Wahl wird zu ihm
+  assert.equal(A.ablaufName("sortierung"), "raster"); assert.equal(A.ablaufName("tuch+sortierung+montage"), "tuch+raster+montage");
+  // Wunsch: Wellen «insgesamt maximal 8 Sekunden», seit dem Abend «ohne Doppelspalt und langsamere Animation, ganz ruhig»; Rasterdruck ebenso knapp
+  const W = A.kette("welle").teile[0], S = A.kette("raster").teile[0];
+  assert.deepEqual(W.phasen.map((p) => p[0]), ["duenung", "wellen", "bild"]);
+  assert.ok(W.dauer <= 8 + 1e-9, `Wellenwanne ${W.dauer} s`);
+  assert.ok(!A.kette("welle").teile.some((t) => t.phasen.some((p) => p[0] === "spalt")), "ohne Doppelspalt");
+  // der Rasterdruck endet nicht im Foto («Es sollte aber nicht im Anfangsbild enden»): keine Phase «Bild», danach steht der Druck
+  assert.deepEqual(S.phasen.map((p) => p[0]), ["raster", "versatz"]);
+  assert.ok(S.dauer >= 6 && S.dauer <= 8, `Rasterdruck ${S.dauer} s`);
+  assert.equal(A.zeitachse({ ablauf: "raster" }).druck, true); assert.equal(A.zeitachse({ ablauf: "physarum+raster" }).druck, true);
+  assert.equal(A.zeitachse({ ablauf: "raster+montage" }).druck, false); assert.equal(A.zeitachse({ ablauf: "welle" }).druck, false);
+  // vom Druck zum Signet kurz (Rückmeldung: «Der Übergang vom Rasterdruckeffekt zum Logo ist zu lang»): höchstens 1,6 s, sonst wie bisher 4,25 s
+  const zr = A.zeitachse({ ablauf: "raster" }), zw = A.zeitachse({ ablauf: "welle" });
+  assert.ok(zr.ab.signet[0] - zr.abschnitt.bis <= 1.6 + 1e-9, `Rasterdruck bis zum Signet ${(zr.ab.signet[0] - zr.abschnitt.bis).toFixed(2)} s`);
+  assert.ok(Math.abs(zw.ab.signet[0] - zw.abschnitt.bis - 4.25) < 1e-9, "nach dem Foto wie bisher");
+  // in der Kette ohne Bild: sie gehen über die Zeitfront weiter
+  const K = A.kette("tiefe+welle+tuch+raster");
+  assert.deepEqual(K.teile.map((t) => [t.art, t.uebergang, t.phasen.some((p) => p[0] === "bild")]),
+    [["tiefe", "front", false], ["welle", "front", false], ["tuch", "schnitt", true], ["raster", "schnitt", false]]);
 });
 
 test("Montage: der Plan – Schnitte im Takt, Felder ohne Lücke und Überlappung, geerbte Ausschnitte, Anfang dunkel, Ende exakt, wiederholbar", async () => {
@@ -102,8 +130,8 @@ test("Montage: der Plan – Schnitte im Takt, Felder ohne Lücke und Überlappun
 });
 
 test("Kette: Physarum geht über eine Zeitfront in die Tiefe über, die Tiefe über eine kurze Front ins Tuch", () => {
-  const K = A.kette(A.KETTE);
-  assert.deepEqual(K.teile.map((t) => t.art), ["physarum", "tiefe", "tuch"], "die Karte «Alle drei» ohne die Montage");
+  const K = A.kette("physarum+tiefe+tuch");
+  assert.deepEqual(K.teile.map((t) => t.art), ["physarum", "tiefe", "tuch"], "die frühere Karte «Alle drei»");
   const [p, t, u] = K.teile;
   assert.equal(p.uebergang, "front"); assert.ok(Math.abs(t.von - (p.bis - 1.8)) < 1e-9, "die Tiefe setzt 1,8 s vor dem Ende des Netzes ein");
   assert.ok(!t.vonFoto, "die Tiefe beginnt unter der Zeitfront, nicht beim Foto");
@@ -111,17 +139,18 @@ test("Kette: Physarum geht über eine Zeitfront in die Tiefe über, die Tiefe ü
   assert.ok(!p.phasen.some(([n]) => n === "bild"), "nur der letzte Effekt hat eine Phase «Bild»");
   assert.equal(u.phasen.at(-1)[0], "bild");
   for (let i = 1; i < K.phasen.length; i++) assert.ok(K.phasen[i].von >= K.phasen[i - 1].von && K.phasen[i - 1].bis <= K.phasen[i].von + 1e-9, "Phasen hintereinander");
-  for (const e of A.EFFEKTE) { const k = A.kette(e); assert.equal(k.teile.length, 1); assert.equal(k.teile[0].phasen.at(-1)[1], "Bild", `${e} allein endet beim Bild`); }
+  // allein endet jeder beim Bild, ausser dem Rasterdruck (er endet im Druck, seit dem 22. Oktober 2026)
+  for (const e of A.EFFEKTE) { const k = A.kette(e); assert.equal(k.teile.length, 1); assert.equal(k.teile[0].phasen.at(-1)[1], e === "raster" ? "Versatz" : "Bild", `${e} allein endet beim Bild`); }
   assert.ok(K.dauer < 21, `kürzer als mit vier Effekten (${K.dauer.toFixed(1)} s)`);
 });
 
 test("Zeitachse: Vorlauf, Kette im Tempo, Stehen und Signet; laufend gibt beim Übergang beide", () => {
-  const z = A.zeitachse({ ablauf: A.KETTE });
+  const z = A.zeitachse({ ablauf: "physarum+tiefe+tuch" });
   assert.equal(z.ab.vor[1], z.abschnitt.von);
-  assert.ok(Math.abs(z.abschnitt.bis - z.abschnitt.von - A.kette(A.KETTE).dauer) < 1e-9);
+  assert.ok(Math.abs(z.abschnitt.bis - z.abschnitt.von - A.kette("physarum+tiefe+tuch").dauer) < 1e-9);
   assert.ok(z.ab.signet && z.dauer > z.abschnitt.bis + 3.2 + A.SIGNET);
   assert.equal(z.bilder, Math.round(z.dauer * 30));
-  const ruhig = A.zeitachse({ ablauf: A.KETTE, tempo: "ruhig", signet: false });
+  const ruhig = A.zeitachse({ ablauf: "physarum+tiefe+tuch", tempo: "ruhig", signet: false });
   assert.ok(Math.abs((ruhig.abschnitt.bis - ruhig.abschnitt.von) / (z.abschnitt.bis - z.abschnitt.von) - 1.3) < 1e-9);
   assert.equal(ruhig.ab.signet, undefined);
   const [p, s] = z.teile, mitte = (s.von + p.bis) / 2, L = A.laufend(z, mitte);
@@ -181,40 +210,10 @@ test("Tuch: die Bahn wird ganz vorausgerechnet, ist wiederholbar und endet genau
   }
 });
 
-test("Wachstum: die Linie wächst aus dem Keim ins Motiv (nicht in den Grund), dicht im Hellen, wiederholbar", async () => {
-  const W = await import(new URL("wachstumsim.js", P).href);
-  // ein heller Kreis (Motiv) vor einer ruhigen grünen Wand
-  const w = 80, h = 100, rgb = new Uint8ClampedArray(w * h * 4), hell = new Float32Array(w * h);
-  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-    const i = y * w + x, drin = Math.hypot(x - 40, y - 48) < 26, c = drin ? [200 + (x % 7) * 5, 150, 120] : [150, 205, 185];
-    rgb.set([...c, 255], i * 4); hell[i] = (0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]) / 255 * (drin && x > 40 ? 1 : 0.6);
-  }
-  const maske = W.wachsfeld({ w, h, rgb });
-  assert.ok(maske && maske[48 * w + 40] > 0.9 && maske[5 * w + 5] < 0.1, "der Grund ist aus der Farbe des Rands erkannt");
-  assert.equal(W.wachsfeld({ w, h, rgb: new Uint8ClampedArray(w * h * 4).fill(128) }), null, "ein einfarbiges Bild: überall");
-  const { abstand } = W.abstandsfeld({ w, h, hell, maske });
-  assert.ok(abstand[48 * w + 60] < abstand[48 * w + 20], "im Hellen enger");
-  const teil = A.kette("wachstum").teile[0], auftrag = { teil, w, h, hell, rgb, dichte: 1.2 };
-  assert.deepEqual(teil.phasen.map((p) => p[0]), ["keim", "wachstum", "farbe", "bild"]);
-  const b = W.wachstumBahn(auftrag), b2 = W.wachstumBahn(auftrag);
-  assert.equal(b.bilder, Math.round((1.2 + 6.6 + 2.4) * 30) + 1);
-  assert.ok(b.anzahl[0] < 40 && b.anzahl.at(-1) > 300, `wächst (${b.anzahl[0]} → ${b.anzahl.at(-1)} Punkte)`);
-  let drin = 0;
-  const n = b.anzahl.at(-1), o = b.ab.at(-2) * 2;
-  for (let i = 0; i < n; i++) { const x = b.lagen[o + i * 2] / W.ACHTEL, y = b.lagen[o + i * 2 + 1] / W.ACHTEL; if (Math.hypot(x - 40, y - 48) < 30) drin++; }
-  assert.ok(drin / n > 0.9, `die Linie bleibt im Motiv (${(100 * drin / n).toFixed(0)} %)`);
-  assert.deepEqual(b.lagen, b2.lagen, "wiederholbar");
-  // in Päckchen (für die Vorschau, während der Rest rechnet): dieselben Bilder
-  const einzeln = [], jeBild = (f, l) => { einzeln[f] = l; };
-  W.wachstumBahn({ ...auftrag, jeBild });
-  assert.equal(jeBild.bilder, b.bilder);
-  assert.deepEqual(Array.from(einzeln.at(-1)), Array.from(b.lagen.subarray(b.ab.at(-2) * 2)), "das letzte Bild gleich");
-});
-
 test("Video als Quelle: es läuft durch die ganze Kette, vom ersten bis zum letzten Bild; ist es kürzer, mehrmals", async () => {
   const F = await import(new URL("filmquelle.js", P).href);
   const K = A.kette("physarum+tiefe+tuch"), p = F.videoPlan("physarum+tiefe+tuch");
-  assert.ok(p.lebendig && p.faktor === 1 && Math.abs(p.dauer - K.dauer) < 1e-9, "genug Video: in Echtzeit, auch ohne Montage und Wachstum");
+  assert.ok(p.lebendig && p.faktor === 1 && Math.abs(p.dauer - K.dauer) < 1e-9, "genug Video: in Echtzeit, auch ohne Montage");
   assert.equal(F.videoStelle(p, 0), 0); assert.ok(Math.abs(F.videoStelle(p, 2) - 2) < 1e-9);
   const kurz = F.videoPlan("physarum+tiefe+tuch", 6), runden = Math.floor(K.dauer / 6);
   assert.ok(runden >= 2 && kurz.runden === runden && Math.abs(kurz.faktor - (runden * 6) / K.dauer) < 1e-9, "ein kurzes Video läuft mehrmals (Wunsch: «wiederholen statt Zeitlupe»)");
@@ -226,7 +225,7 @@ test("Video als Quelle: es läuft durch die ganze Kette, vom ersten bis zum letz
   assert.ok(F.videoStelle(kurz, runde * 1.01) < 0.2, "nach einer Runde wieder am Anfang");
   assert.equal(F.videoStelle(kurz, K.dauer), 6, "am Ende sein letztes Bild"); assert.equal(F.videoStelle(kurz, 999), 6);
   assert.equal(F.videoPlan("physarum+tiefe+tuch", K.dauer * 0.6).runden, 1, "passt es nur einmal hinein: einmal, etwas langsamer");
-  const lang = A.kette("physarum+tiefe+tuch+wachstum+montage"), pl = F.videoPlan("physarum+tiefe+tuch+wachstum+montage", 120);
+  const lang = A.kette("physarum+tiefe+tuch+montage"), pl = F.videoPlan("physarum+tiefe+tuch+montage", 120);
   assert.equal(pl.dauer, Math.min(F.HOECHSTENS, lang.dauer), "höchstens 30 s");
   assert.ok(Math.abs(F.videoStelle(pl, lang.dauer) - pl.dauer) < 1e-9);
   const z = A.zeitachse({ ablauf: "montage", tempo: "ruhig" }), pm = F.videoPlan("montage");
@@ -268,9 +267,10 @@ test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Mar
   assert.match(html, /"three": "\.\.\/\.\.\/vendor\/three-0\.185\.1\/three\.module\.min\.js"/);
   assert.ok(!/<script[^>]+src="https?:/.test(html), "keine Skripte von aussen");
   for (const e of A.EFFEKTE) { assert.match(html, new RegExp(`data-effekt="${e}"`)); assert.match(html, new RegExp(`data-wahl="${e}"`), `${e} einzeln wählbar`); }
-  assert.match(html, /data-wahl="physarum\+tiefe\+tuch"/, "die ganze Kette als Karte");
+  assert.match(html, /data-wahl="physarum\+tiefe\+welle\+tuch\+raster\+montage" aria-pressed="true"><b data-t="wahl\.alle">Alle sechs als Kette/, "die ganze Kette als erste Karte");
+  assert.equal(html.match(/data-wahl="[a-z]+\+/g).length, 1, "nur eine Karte für eine Kette (die früheren «Alle drei» und «Alle vier» sind in ihr aufgegangen)");
   assert.ok(!/data-wahl="(gewebe|struktur)"|data-quelle=|id="(tondatei|videodatei|text|frickeln)"/.test(html), "kein Gewebe, kein Ton, kein Text: das ist PHORMA III");
-  assert.match(html, /id="datei" accept="image\/\*,video\/\*"/, "Foto oder Video (seit Etappe 2 von Montage und Wachstum)");
+  assert.match(html, /id="datei" accept="image\/\*,video\/\*"/, "Foto oder Video (seit Etappe 2 der Montage)");
   assert.match(html, /href="\.\.\/phorma-iii\/"/, "Hinweis auf PHORMA III");
   for (const f of ["gewebe.js", "ton.js", "tonspur.js", "frickeln.js", "kurven.js", "textbild.js"]) assert.ok(!readdirSync(P).includes(f), `ohne ${f}`);
   assert.ok(!/data-(wahl|effekt)="(stich|muster)"|data-(strich|muster)=/.test(html), "weder Stich noch Morphogenese");
@@ -283,4 +283,61 @@ test("Seite: Alpha (noindex), three.js lokal mit fester Version, gleiche ?v=-Mar
   assert.match(lies("tiefe-ki.js"), /const VERSION = "3\.8\.1";[\s\S]*@huggingface\/transformers@\$\{VERSION\}\/dist\//, "transformers.js mit fester Version");
   assert.equal(marken.size, 1, `eine Marke für alle eigenen Module (${[...marken]})`);
   assert.match(lies("app.js"), /import\("\.\/tiefe-ki\.js\?v=\d+"\)/, "die KI erst auf Wunsch geladen");
+});
+
+test("App (21. Oktober 2026): Manifest, Symbole, Service Worker mit eigenem Cache, studio/ aktuell, App-Seite, Eintrag auf der Alpha-Seite und im Neubau", async () => {
+  const html = lies("index.html"), app = lies("app/index.html");
+  // Manifest und Symbole (tools/phorma-ii-symbole.mjs); eigene Adresse studio/ wie bei PHORMA I: die Website (./ und app/) bleibt im Browser
+  const m = JSON.parse(lies("manifest.webmanifest"));
+  assert.equal(m.name, "PHORMA II"); assert.equal(m.short_name, "PHORMA II"); assert.equal(m.id, "phorma-ii");
+  assert.equal(m.start_url, "studio/"); assert.equal(m.scope, "studio/"); assert.equal(m.display, "standalone"); assert.equal(m.lang, "de-CH");
+  for (const seite of ["/alpha/phorma-ii/", "/alpha/phorma-ii/app/"]) assert.ok(!seite.startsWith(new URL(m.scope, "https://x/alpha/phorma-ii/").pathname), `${seite} liegt ausserhalb der installierten App`);
+  const png = (f) => { const b = readFileSync(new URL(f, P)); return [b.readUInt32BE(16), b.readUInt32BE(20)]; };
+  for (const i of m.icons) assert.deepEqual(png(i.src).map(String), i.sizes.split("x"), i.src);
+  assert.deepEqual(png("icons/apple-touch-icon.png"), [180, 180]); assert.deepEqual(png("icons/favicon-32.png"), [32, 32]);
+  assert.ok(m.icons.some((i) => i.purpose === "maskable"));
+  for (const h of [html, app]) {
+    assert.match(h, /<link rel="manifest" href="(\.\.\/)?manifest\.webmanifest">/);
+    assert.match(h, /<link rel="apple-touch-icon" href="(\.\.\/)?icons\/apple-touch-icon\.png">/);
+    assert.match(h, /id="installieren-knopf"[^>]*>.*PHORMA II als App installieren/);
+    assert.match(h, /<meta property="og:image" content="https:\/\/ornament\.cloud\/alpha\/phorma-ii\/og-phorma-ii\.jpg">/);
+  }
+  assert.equal(html.match(/pwa\.js\?v=(\d+)/)[1], html.match(/app\.js\?v=(\d+)/)[1], "pwa.js mit der Marke der Anwendung");
+  assert.equal(app.match(/pwa\.js\?v=(\d+)/)[1], html.match(/app\.js\?v=(\d+)/)[1], "App-Seite: pwa.js mit der Marke der Anwendung");
+  assert.ok(existsSync(new URL("og-phorma-ii.jpg", P)), "Vorschaukachel (die der Anwendung)");
+  // Service Worker: eigener Cache, der nicht mit «phorma-» beginnt – der von PHORMA I löscht alle «phorma-…» Caches beim Aktualisieren
+  const sw = lies("sw.js"), cache = sw.match(/const CACHE = "([^"]+)"/)[1];
+  assert.ok(!cache.startsWith("phorma-"), `Cache ${cache} überlebt das Aufräumen von PHORMA I`);
+  assert.match(sw, new RegExp(`k\\.startsWith\\("${cache.replace(/\d+$/, "")}"\\)`), "räumt nur die eigenen Caches auf");
+  const phormaI = readFileSync(new URL("alpha/bildfragmentieren/sw.js", root), "utf8").match(/k\.startsWith\("([^"]+)"\)/)[1];
+  assert.ok(!cache.startsWith(phormaI), "PHORMA I räumt diesen Cache nicht weg");
+  const phormaIII = readFileSync(new URL("alpha/phorma-iii/sw.js", root), "utf8").match(/k\.startsWith\("([^"]+)"\)/)[1];
+  assert.ok(!cache.startsWith(phormaIII), "PHORMA III räumt diesen Cache nicht weg");
+  assert.match(lies("pwa.js"), /new URL\("sw\.js", import\.meta\.url\)/);
+  // three.js über die Import-Map kann er nicht auflösen: alles, was die Bühne und die Effekte daraus laden, steht in seiner Liste
+  const dazu = new Function(`${sw.match(/const THREE = [^\n]+/)[0]}\n${sw.match(/const DAZU = [\s\S]*?\];/)[0]}\nreturn DAZU;`)();
+  for (const d of dazu) assert.ok(existsSync(new URL(d.endsWith("/") ? d + "index.html" : d, P)), `${d} gibt es`);
+  const geladen = new Set(["three.module.min.js", "three.core.min.js", "addons/shaders/CopyShader.js", "addons/shaders/LuminosityHighPassShader.js"]);
+  for (const f of readdirSync(P).filter((f) => f.endsWith(".js"))) for (const [, z] of lies(f).matchAll(/from "(three[^"]*)"/g)) geladen.add(z === "three" ? "three.module.min.js" : z.replace("three/addons/", "addons/"));
+  for (const z of geladen) assert.ok(dazu.includes(`../../vendor/three-0.185.1/${z}`), `sw.js speichert ${z}`);
+  // studio/: die aktuelle Abschrift mit <base href="../"> (sonst: node tools/build-phorma-ii-app.mjs)
+  const { bauen } = await import(new URL("tools/build-phorma-ii-app.mjs", root).href);
+  assert.equal(lies("studio/index.html"), bauen(html), "studio/ veraltet: node tools/build-phorma-ii-app.mjs");
+  assert.ok(sw.includes('"studio/"'), "der Service Worker speichert die Seite der App für den Start ohne Netz");
+  // App-Seite: Navigation oben links, noindex, Im Browser öffnen
+  assert.match(app, /<nav class="seitenweg" aria-label="Ornament Cloud">/);
+  assert.match(app, /<meta name="robots" content="noindex">/);
+  assert.match(app, /<a class="link" href="\.\.\/">Im Browser öffnen/);
+  // auf der Alpha-Seite: gleich nach Sketchory und The Fictory, mit dem Symbol, zur App-Seite
+  const alpha = readFileSync(new URL("alpha/index.html", root), "utf8");
+  const eintraege = [...alpha.matchAll(/<li>\s*(?:<img[^>]*>\s*)?<div>\s*<a href="([^"]+)"/g)].map((x) => x[1]);
+  assert.deepEqual(eintraege.slice(0, 4), ["sketchory/", "the-fictory/", "phorma-iii/app/", "phorma-ii/app/"]);
+  assert.match(alpha, /<img src="phorma-ii\/icons\/apple-touch-icon\.png" alt="" width="56" height="56">\s*<div>\s*<a href="phorma-ii\/app\/">PHORMA II<\/a>/);
+  assert.ok(!readFileSync(new URL("sitemap.xml", root), "utf8").includes("alpha/phorma-ii"), "nicht in der Sitemap");
+  // im Neubau: «Als App installieren» führt mit ?installieren in die App, wie bei PHORMA III
+  assert.match(readFileSync(new URL("b/apps/phorma-ii/index.html", root), "utf8"), /href="\/alpha\/phorma-ii\/\?installieren&amp;sprache=de"/);   // b/apps/phorma-ii/ (der Neubau, 20. Oktober 2026) darf
+});
+
+test("Shader ohne pow() mit möglicherweise negativer Basis (6. November 2026: «Tiefe» war am Telefon schwarz – NaN aus pow(nach, 2.0))", () => {
+  for (const f of readdirSync(P).filter((f) => f.endsWith(".js"))) assert.ok(!/exp\(\s*-\s*pow\(/.test(lies(f)), `${f}: Glockenkurve als exp(-q * q), nicht exp(-pow(q, 2.0))`);
 });

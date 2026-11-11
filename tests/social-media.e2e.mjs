@@ -297,7 +297,7 @@ async function redaktion(gh, claude) {
   // «online»: die Website liefert die Daten aus dem nachgebildeten Repository
   await s.ctx.route("**/social-media/daten/eintraege.json*", (r) => r.fulfill({ status: 200, contentType: "application/json", body: gh.text("social-media/daten/eintraege.json") ?? '{"eintraege":[]}' }));
   await s.ctx.route("**/social-media/medien/**", (r) => { const p = new URL(r.request().url()).pathname.slice(1), b = gh.aktuell().get(p); return b ? r.fulfill({ status: 200, body: b }) : r.fulfill({ status: 404 }); });
-  await s.page.goto(`${REPO}/social-media/redaktion/`);
+  await s.page.goto(`${REPO}/b/redaktion/`);
   await s.page.waitForSelector("body.rd-bereit");
   return s;
 }
@@ -467,7 +467,7 @@ await check("Redaktion ohne Anthropic-Schlüssel: Anweisung für claude.ai kopie
   await s.ctx.route("https://api.anthropic.com/**", (r) => claude.route(r));
   await s.ctx.grantPermissions(["clipboard-read", "clipboard-write"]);
   const { ctx, page, fehler } = s;
-  await page.goto(`${REPO}/social-media/redaktion/`);
+  await page.goto(`${REPO}/b/redaktion/`);
   await page.waitForSelector("body.rd-bereit");
   assert.equal(await page.locator("#chat").evaluate((d) => d.open), true, "ohne Schlüssel ist der Weg über claude.ai offen");
   assert.equal(await page.locator("#lesen").isDisabled(), true);
@@ -503,7 +503,7 @@ await check("Redaktion ohne Anthropic-Schlüssel: Anweisung für claude.ai kopie
 });
 
 await check("Redaktion: die Einstellungen bleiben offen, während man Schlüssel einträgt (Rückmeldung vom 19. Oktober 2026: «klappt sofort wieder ein»)", async () => {
-  const { ctx, page, fehler } = await seite(`${REPO}/social-media/redaktion/`);
+  const { ctx, page, fehler } = await seite(`${REPO}/b/redaktion/`);
   await page.waitForSelector("body.rd-bereit");
   assert.equal(await page.locator("#einstellungen").evaluate((d) => d.open), true, "ohne Schlüssel offen");
   await page.locator("#gh-schluessel").fill("github_pat_neu");
@@ -534,7 +534,7 @@ await check("Redaktion: der Entwurf übersteht das Neuladen (IndexedDB), ohne Gi
   await page.locator("#vergessen").click();
   assert.equal(await page.locator("#veroeffentlichen").isDisabled(), true);
   assert.match(await page.locator("#fehler").textContent(), /GitHub-Schlüssel/);
-  const html = readFileSync(join(ROOT, "social-media/redaktion/index.html"), "utf8");
+  const html = readFileSync(join(ROOT, "b/redaktion/index.html"), "utf8");
   assert.match(html, /<meta name="robots" content="noindex">/);
   assert.match(html, /Content-Security-Policy" content="default-src 'self'; script-src 'self';[^"]*connect-src 'self' https:\/\/api\.github\.com https:\/\/api\.anthropic\.com/);
   assert.deepEqual(fehler, []);

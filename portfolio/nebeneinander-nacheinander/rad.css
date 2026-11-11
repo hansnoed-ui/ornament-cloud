@@ -10,9 +10,7 @@
   --serif: "Newsreader", "Iowan Old Style", Georgia, serif;
   --bg-veil: rgba(255, 255, 255, 0.85);
 }
-@media (prefers-color-scheme: dark) {
-  :root { --bg: #000000; --surface: #000000; --text: #ffffff; --muted: #9a9a9a; --border: #2e2e2e; --accent: #8fb0ff; --bg-veil: rgba(0, 0, 0, 0.85); }
-}
+:root:not([data-theme="light"]) { --bg: #000000; --surface: #000000; --text: #ffffff; --muted: #9a9a9a; --border: #2e2e2e; --accent: #8fb0ff; --bg-veil: rgba(0, 0, 0, 0.85); }
 body { -webkit-font-smoothing: antialiased; }
 /* die Kopfzeile der Website (Hauptlinks und Menü) bleibt in der Schrift der Website: ein Browsertest misst sie auf allen Seiten gleich (REGELN §14) */
 .seitenweg a, .menu-item { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
@@ -358,19 +356,21 @@ body { -webkit-font-smoothing: antialiased; }
 }
 
 /* ---------- Einführung ---------- */
+/* Erklärung und Verweise unter dem Band (21. Oktober 2026, Rückmeldung: «das Layout unten beim Erklärungstext und den Links ist noch nicht gut»):
+   linksbündig wie der Neubau, der Text in Lesebreite, darunter die beiden Verweise in einer Zeile (auf dem Handy untereinander) */
 .rad-about {
-  margin: 56px 0 0;
+  margin: 56px 0 72px;
+  max-width: 62ch;
 }
 
 /* Beschreibung rechtsbündig am rechten Rand */
 .rad-intro {
-  max-width: 720px;
-  margin-left: auto !important;
-  text-align: right;
+  margin: 0;
+  text-align: left;
 }
 
 .rad-about p { margin: 0 0 14px; line-height: 1.55; }
-.rad-about .rad-intro { font-family: var(--serif); font-size: 1.2rem; }
+.rad-about .rad-intro { font-family: var(--serif); font-size: 1.2rem; line-height: 1.5; }
 
 /* Hinweise unter der Beschreibung (Geste und Ziehung, Herkunft der Texte): rechtsbündig, kleiner */
 .rad-about .rad-note {
@@ -443,12 +443,17 @@ body { -webkit-font-smoothing: antialiased; }
 .rad-install-alt[hidden] { display: none; }
 .rad-install-alt span { white-space: nowrap; }
 
-/* Verweis auf die Feldansicht, rechtsbündig unter der Beschreibung */
+/* die Verweise unter der Beschreibung: das Feld und alle Apps im Neubau */
 .rad-about .rad-more-link {
-  max-width: 720px;
-  margin: 8px 0 0 auto;
-  text-align: right;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 32px;
+  margin: 24px 0 0;
+  text-align: left;
 }
+.rad-about .rad-more-link a { color: inherit; text-decoration-color: var(--border); text-underline-offset: 4px; }
+.rad-about .rad-more-link a:hover, .rad-about .rad-more-link a:focus-visible { color: var(--accent); text-decoration-color: currentColor; }
+.rad-about .rad-more-link span { white-space: nowrap; }
 
 /* ---------- Diagnose (nur ?debug) ---------- */
 .rad-debug {
@@ -499,8 +504,7 @@ body { -webkit-font-smoothing: antialiased; }
 @media (display-mode: standalone) {
   .site-header .topbar,
   .site-header .divider,
-  .work-kicker,
-  main > .back { display: none; }
+  .work-kicker { display: none; }
   .site-header { padding-top: max(24px, env(safe-area-inset-top)); }
 }
 
@@ -604,3 +608,15 @@ body { -webkit-font-smoothing: antialiased; }
   .rad-wheel .rad-hint-arc { animation: none; stroke-dashoffset: 0; opacity: 0.8; }
   .rad-wheel .rad-hint-head { animation: none; opacity: 0.8; }
 }
+
+/* der Kopf der App (seit 20. Oktober 2026, zweisprachig): wie im Neubau, Signet mit Schlaufe und Punkt, daneben d · e, rechts der Weg zur Seite der App */
+.app-kopf { display: flex; align-items: center; gap: 16px; padding: 2px 0 14px; margin-bottom: 18px; border-bottom: 1px solid var(--line, rgba(128,128,128,.35)); font-size: .95rem; font-family: var(--font); }
+.app-kopf-signet { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: inherit; font-weight: 500; letter-spacing: .01em; }
+.app-kopf-signet svg { width: 34px; height: 24px; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.6; }
+.app-kopf-signet circle { fill: var(--accent); stroke: none; }
+.app-kopf-zurueck { margin-left: auto; color: var(--muted); text-decoration: none; }
+.app-kopf-zurueck:hover, .app-kopf-zurueck:focus-visible { color: inherit; text-decoration: underline; }
+.sprache { display: flex; gap: 2px; }
+.sprache button { font: inherit; font-size: .85rem; line-height: 1; color: var(--muted); background: none; border: 0; border-bottom: 1px solid transparent; padding: 6px 5px 5px; min-width: 24px; cursor: pointer; }
+.sprache button[aria-current] { color: inherit; border-bottom-color: var(--accent); }
+.sprache button:hover, .sprache button:focus-visible { color: inherit; outline: none; border-bottom-color: currentColor; }

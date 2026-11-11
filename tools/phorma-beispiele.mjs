@@ -3,14 +3,19 @@
 // zwei zusätzliche Effekte wünschen … innerhalb des einen Videos: zwei bis drei Effektphasen»).
 // Rechnet die Filme hier, Bild für Bild aus den Szenen der Apps (ohne Browser-Encoder, WebGL über SwiftShader), in halber Grösse (540 breit) und
 // kodiert sie mit ffmpeg klein: MP4 (H.264, crf 31, PHORMA III mit Korn und Ton crf 34; ein WebM wäre bei diesen feinen Linien nicht kleiner), dazu ein Standbild als Poster.
-//   PHORMA I:    «Fragmente» mit dem Beispielfoto der App, ohne Ton
-//   PHORMA II:   die Kette der App «Physarum → Tiefe → Tuch» mit dem Beispielfoto, ohne Ton
-//   PHORMA III:  «Gewebe», «Irrfahrt» und «Traube» nacheinander zu einem hier gerechneten Musikstück (tools/beispielton.mjs) – die App kennt je Film
+//   PHORMA I:    «Fragmente» mit dem Beispielfoto der App, ohne Ton – nur mit dem Namen phorma-i; der Film auf der Website ist seit dem
+//                21. Oktober 2026 einer von Christian (die «Verwandlung» mit einem Foto des Saturn), siehe VON_HAND
+//   PHORMA II:   die Kette der App «Physarum → Tiefe → Tuch» mit dem Beispielfoto, ohne Ton – auf der Website seit dem 21. Oktober 2026 einer
+//                von Christian (Physarum → Tuch → Montage), siehe VON_HAND
+//   PHORMA III:  (auf der Website seit dem 21. Oktober 2026 einer von Christian: das Gewebe mit Ton, siehe VON_HAND) «Gewebe», «Irrfahrt» und «Traube» nacheinander zu einem hier gerechneten Musikstück (tools/beispielton.mjs) – die App kennt je Film
 //                einen Effekt; hier laufen drei zur selben Musik, und der Film schneidet auf dem Taktanfang vom einen zum nächsten, wie die Effekte
 //                selbst bei jedem kräftigen Einsatz schneiden. Jeder Teil rechnet nur seine Sekunden; der Film trägt die Musik.
-//   The Fictory: der ganze Lauf von 30 Sekunden mit dem Beispielbild (die Bühne der App, Schritt für Schritt), ohne Ton
+//   The Fictory: der ganze Lauf von 30 Sekunden mit dem Beispielbild (die Bühne der App, Schritt für Schritt), ohne Ton – auf der Website seit dem
+//                21. Oktober 2026 einer von Christian (ein Gemälde), siehe VON_HAND
 // BILDER_ORDNER=… behält die Einzelbilder; HOECHSTENS_BILDER=24 rechnet nur die ersten Bilder (zum Messen); AUS=… schreibt anderswohin als nach
 // assets/beispiele/; PROBEN=2 mittelt Proben je Bild (Bewegungsunschärfe in PHORMA II und III, entsprechend langsamer).
+// BILDER_BEI=1,3,5 (Sekunden) rechnet nur diese Bilder und schreibt sie als <name>-<s>s.jpg nach AUS bzw. assets/beispiele/ – zum Abstimmen von Licht
+// und Farbe, ohne jedes Mal den ganzen Film zu rechnen (21. Oktober 2026, Rückmeldung «Physarum und Tiefe … immer noch zu hell»).
 //
 //   NODE_PATH=$(npm root -g) node tools/phorma-beispiele.mjs                  alle nach assets/beispiele/<name>.mp4 und .jpg
 //   NODE_PATH=$(npm root -g) node tools/phorma-beispiele.mjs phorma-iii       einzelne (phorma-i, phorma-ii, phorma-iii, the-fictory)
@@ -30,8 +35,13 @@ try { playwright = require("playwright"); } catch { playwright = require(join(pr
 const ROOT = new URL("../", import.meta.url), root = fileURLToPath(ROOT);
 const AUS = process.env.AUS ? pathToFileURL(process.env.AUS.replace(/\/?$/, "/")) : new URL("assets/beispiele/", ROOT); mkdirSync(AUS, { recursive: true });
 const FPS = 24, BREITE = 540, HOEHE = 675, PROBEN = Math.max(1, Number(process.env.PROBEN) || 1), HOECHSTENS = Number(process.env.HOECHSTENS_BILDER) || Infinity;
+const BILDER_BEI = process.env.BILDER_BEI ? process.env.BILDER_BEI.split(",").map(Number).filter((x) => x >= 0) : null;
 const nur = process.argv.slice(2);
-const will = (name) => !nur.length || nur.includes(name);
+// PHORMA I rechnet nur, wer es ausdrücklich nennt: seit dem 21. Oktober 2026 liegt dort ein Film von Christian («Ich habe hier bessere
+// Beispielvideos: PHORMA I»), den ein Lauf ohne Namen sonst überschreiben würde
+// von Christian gerechnet, hier nicht überschreiben (21. Oktober 2026: «Ich habe neue Beispiel Videos und möchte, dass du diese nutzt»)
+const VON_HAND = ["phorma-i", "phorma-ii", "phorma-iii", "the-fictory"];
+const will = (name) => (nur.length ? nur.includes(name) : !VON_HAND.includes(name));
 
 const types = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".mjs": "text/javascript", ".woff2": "font/woff2", ".jpg": "image/jpeg", ".png": "image/png", ".webp": "image/webp", ".json": "application/json", ".webmanifest": "application/manifest+json", ".svg": "image/svg+xml", ".wasm": "application/wasm", ".bin": "application/octet-stream" };
 const server = createServer((req, res) => { let p = decodeURIComponent(new URL(req.url, "http://x").pathname); if (p.endsWith("/")) p += "index.html"; let body; try { body = readFileSync(join(root, p)); } catch { res.writeHead(404).end(); return; } res.writeHead(200, { "content-type": types[extname(p)] || "application/octet-stream" }).end(body); }).listen(0);
@@ -56,6 +66,15 @@ async function film(name, { teile, ton = null, poster: posterBei = 0.6, crf = 31
     await teil.vorbereiten(page);
     await teil.bereit(page);
     const d = await page.evaluate(teil.dauerFn);
+    if (BILDER_BEI) {   // nur einzelne Bilder zum Abstimmen
+      for (const t of BILDER_BEI.filter((t) => t >= (teil.von ?? 0) && t < Math.min(d, teil.bis ?? d))) {
+        const data = await page.evaluate(teil.bildFn, [t, BREITE, HOEHE, PROBEN]);
+        writeFileSync(fileURLToPath(new URL(`${name}-${t}s.jpg`, AUS)), Buffer.from(data.split(",")[1], "base64"));
+        console.log(`${name}: Bild bei ${t} s`);
+      }
+      await page.close();
+      continue;
+    }
     const i0 = Math.round((teil.von ?? 0) * FPS), i1 = Math.min(HOECHSTENS, Math.ceil(Math.min(d, teil.bis ?? d) * FPS));
     for (let i = i0; i < i1; i++) {
       const data = await page.evaluate(teil.bildFn, [i / FPS, BREITE, HOEHE, PROBEN]);
@@ -67,6 +86,7 @@ async function film(name, { teile, ton = null, poster: posterBei = 0.6, crf = 31
     n = Math.max(n, i1); dauer = Math.max(dauer, Math.min(d, teil.bis ?? d));
     if (i1 >= HOECHSTENS) break;
   }
+  if (BILDER_BEI) { rmSync(ordner, { recursive: true, force: true }); return; }
   // kodieren: H.264, Poster bei 60 % der Dauer (oder wo der Effekt am besten zu sehen ist); mit Ton: AAC, ausgeblendet über die letzten 1,2 s wie im Export der App
   const mp4 = fileURLToPath(new URL(`${name}.mp4`, AUS)), poster = fileURLToPath(new URL(`${name}.jpg`, AUS));
   const filmDauer = n / FPS, tonArgs = [];
@@ -112,9 +132,9 @@ if (will("phorma-i")) {
   }] }).catch((e) => console.error("phorma-i:", e.message));
 }
 
-// PHORMA II: die Kette der App («Alle drei als Kette») mit dem Beispielfoto, Tiefe aus dem Bild (ohne Modell von aussen)
+// PHORMA II: die Kette der App («Alle sechs als Kette», seit 25. Oktober 2026) mit dem Beispielfoto, Tiefe aus dem Bild (ohne Modell von aussen)
 if (will("phorma-ii")) {
-  const KETTE = "physarum+tiefe+tuch";
+  const KETTE = "physarum+tiefe+welle+tuch+raster+montage";
   const html = readFileSync(new URL("alpha/phorma-ii/index.html", ROOT), "utf8"), v = version(html, "film.js") || version(readFileSync(new URL("alpha/phorma-ii/app.js", ROOT), "utf8"), "film.js");
   await film("phorma-ii", { poster: 0.45, teile: [{
     seite: "/alpha/phorma-ii/",
@@ -144,6 +164,25 @@ if (will("phorma-iii")) {
   });
   await film("phorma-iii", { ton, crf: 34, poster: 0.62, teile: [teil("gewebe", 0, takt(3)), teil("irrfahrt", takt(3), takt(6)), teil("traube", takt(6), undefined)] })
     .catch((e) => console.error("phorma-iii:", e.message));
+}
+
+// PHORMA III, nur die Traube: der Filmausschnitt für die Kachel auf /b/apps/ (30. Oktober 2026: «beim PHORMA III hätte ich gerne die Trauben Animation»);
+// nur mit Namen, ohne Ton, die ersten 12 Sekunden;
+// daraus das Quadrat: ffmpeg -i phorma-iii-traube.mp4 -vf "crop=540:540,scale=480:480,fade=in:0:12,fade=out:st=11.6:d=0.4" -crf 30 … b/bilder/apps/filme/phorma-iii.mp4
+if (nur.includes("phorma-iii-traube")) {
+  const v = version(readFileSync(new URL("alpha/phorma-iii/app.js", ROOT), "utf8"), "film.js"), ton = beispielton({ dauer: 28 });
+  await film("phorma-iii-traube", { poster: 0.5, teile: [{
+    seite: "/alpha/phorma-iii/", von: 0, bis: 12,   // von 0: ffmpeg liest die Bilder ab 0000.jpg
+    vorbereiten: async (page) => {
+      await page.evaluate((v) => { document.documentElement.dataset.film = v; }, v);
+      await page.click('[data-quelle="ton"]'); await page.click('[data-tonart="musik"]'); await page.click('[data-wahl="traube"]');
+      await page.evaluate(() => { const k = document.getElementById("frickeln"); if (k.checked) k.click(); });
+      await page.setInputFiles("#tondatei", { name: "beispiel.wav", mimeType: "audio/wav", buffer: ton });
+    },
+    bereit: (page) => page.waitForFunction(() => { const S = window.__phorma; return S?.ton && S.sz && S.buehne && S.buehneFertig && !document.getElementById("video").disabled && S.sz.zeit.ablauf === "traube"; }, null, { timeout: 600_000 }),
+    dauerFn: () => window.__phorma.sz.zeit.dauer,
+    bildFn: phormaBild,
+  }] }).catch((e) => console.error("phorma-iii-traube:", e.message));
 }
 
 if (will("the-fictory")) {

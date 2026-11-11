@@ -37,6 +37,9 @@ export const farbton = (rgb) => {
   const h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
   return ((h * 60) + 360) % 360;
 };
+// Sprache (sprache.js, nur im Browser): TF(schlüssel, deutscher Satz, …) gibt auf Englisch die Übersetzung, in Node (Tests) den deutschen Satz
+const TF = (k, de, ...a) => (globalThis.sprache?.en() ? globalThis.sprache.t(k, ...a) : de);   // auf der Seite und im Worker; in Node bleibt Deutsch
+const T = (k) => TF(k, k);
 const prozent = (x) => `${Math.round(x * 100)} %`;
 const grad = (w) => `${Math.round(((w * 180) / Math.PI + 180) % 180)}°`;
 
@@ -287,7 +290,7 @@ export function analysiere(bild, opt = {}) {
   // Regel für neue Nachbarschaften (Schritt 1): aus dem Befund, falls nicht von Hand gewählt
   const farbeAktiv = !verworfen.has("wiederholung") && farbWdh.length > 0;
   const regel = opt.regel ?? (farbeAktiv ? "farbe" : formGruppen.length ? "groesse" : "helligkeit");
-  const regelText = { farbe: "nach Farbgruppe (gleiche Farben werden Nachbarn)", groesse: "nach Fläche (von gross nach klein)", helligkeit: "nach Helligkeit (von dunkel nach hell)" }[regel];
+  const regelText = T({ farbe: "nach Farbgruppe (gleiche Farben werden Nachbarn)", groesse: "nach Fläche (von gross nach klein)", helligkeit: "nach Helligkeit (von dunkel nach hell)" }[regel]);
   const achseAktiv = !verworfen.has("anordnung");
   const achse = achseAktiv && achsStaerke >= 1.6 ? achsWinkel : (seite >= 1 ? 0 : Math.PI / 2);
   const name = (id) => `F${id + 1}`;
@@ -295,47 +298,48 @@ export function analysiere(bild, opt = {}) {
   const befunde = [
     {
       id: "flaechen", thema: "Grenzen, Konturen und Flächen", schaltbar: false,
-      befund: `${flaechen.length} zusammenhängende Flächen in ${zentren.length} Farbgruppen; mittlere Kantenstärke ${kantendichte.toFixed(1)} (Helligkeitsänderung je Pixel, Analyse ${w} × ${h} px).`,
-      lesart: kantendichte > 6 || flaechen.length > 40 ? "Das Bild ist kleinteilig gegliedert; die Flächen sind eine Vereinfachung, die feine Übergänge zusammenfasst." : "Das Bild lässt sich in wenige, klar begrenzte Flächen gliedern.",
-      eingriff: `Das ganze Bild wird Material: alle ${flaechen.length} Flächen werden zu Teilen, grosse in Kacheln zerschnitten. Figuren (${teile.map((f) => name(f.id)).join(", ")}) liegen obenauf; das Original verschwindet nach dem ersten Schritt.`,
+      befund: TF("befundFlaechen", `${flaechen.length} zusammenhängende Flächen in ${zentren.length} Farbgruppen; mittlere Kantenstärke ${kantendichte.toFixed(1)} (Helligkeitsänderung je Pixel, Analyse ${w} × ${h} px).`, flaechen.length, zentren.length, kantendichte.toFixed(1), w, h),
+      lesart: T(kantendichte > 6 || flaechen.length > 40 ? "Das Bild ist kleinteilig gegliedert; die Flächen sind eine Vereinfachung, die feine Übergänge zusammenfasst." : "Das Bild lässt sich in wenige, klar begrenzte Flächen gliedern."),
+      eingriff: TF("eingriffFlaechen", `Das ganze Bild wird Material: alle ${flaechen.length} Flächen werden zu Teilen, grosse in Kacheln zerschnitten. Figuren (${teile.map((f) => name(f.id)).join(", ")}) liegen obenauf; das Original verschwindet nach dem ersten Schritt.`, flaechen.length, teile.map((f) => name(f.id)).join(", ")),
       flaechen: teile.map((f) => f.id),
     },
     {
       id: "anordnung", thema: "Nachbarschaften, Abstände und Anordnungen", schaltbar: true,
-      befund: `Hauptachse der Teile ${grad(achsWinkel)} (Streckung ${achsStaerke.toFixed(1)} : 1); mittlerer Abstand zum nächsten Teil ${prozent(nnMittel)} der Bildhöhe, Streuung ${prozent(nnStreu)}.`,
-      lesart: achsStaerke >= 1.6 ? `Die Teile reihen sich eher entlang einer Richtung von ${grad(achsWinkel)}.` : "Die Teile verteilen sich ohne deutliche Vorzugsrichtung.",
-      eingriff: `Schritt 1 legt das Archiv-Raster entlang ${achsStaerke >= 1.6 && achseAktiv ? "dieser Achse" : "der längeren Bildseite"} an; Schritt 2 legt in dieser Richtung die Zeitachse.`,
+      befund: TF("befundAnordnung", `Hauptachse der Teile ${grad(achsWinkel)} (Streckung ${achsStaerke.toFixed(1)} : 1); mittlerer Abstand zum nächsten Teil ${prozent(nnMittel)} der Bildhöhe, Streuung ${prozent(nnStreu)}.`, grad(achsWinkel), achsStaerke.toFixed(1), prozent(nnMittel), prozent(nnStreu)),
+      lesart: achsStaerke >= 1.6 ? TF("lesartAchse", `Die Teile reihen sich eher entlang einer Richtung von ${grad(achsWinkel)}.`, grad(achsWinkel)) : T("Die Teile verteilen sich ohne deutliche Vorzugsrichtung."),
+      eingriff: TF("eingriffAnordnung", `Schritt 1 legt das Archiv-Raster entlang ${achsStaerke >= 1.6 && achseAktiv ? "dieser Achse" : "der längeren Bildseite"} an; Schritt 2 legt in dieser Richtung die Zeitachse.`, achsStaerke >= 1.6 && achseAktiv),
       flaechen: teile.map((f) => f.id),
     },
     {
       id: "wiederholung", thema: "Wiederholungen von Farben und Formen", schaltbar: farbWdh.length > 0,
-      befund: (farbWdh.length ? farbWdh.slice(0, 3).map(([k, ids]) => `Farbgruppe ${k + 1} kehrt in ${ids.length} getrennten Flächen wieder`).join("; ") : "Keine Farbgruppe kehrt in mehreren getrennten Figurflächen wieder")
-        + (formGruppen.length ? `; ähnliche Formen (Streckung, Füllung, Grösse): ${formGruppen.map((g) => g.map(name).join(" ~ ")).join(", ")}.` : "; keine ähnlichen Formen unter den Teilen."),
-      lesart: farbWdh.length ? "Gleiche Farbe kann als Zusammengehörigkeit getrennter Teile gelesen werden." : "Zusammengehörigkeit ergibt sich hier eher aus Lage und Grösse als aus Farbe.",
-      eingriff: `Neue Nachbarschaften ${regelText}.`,
+      befund: (farbWdh.length ? farbWdh.slice(0, 3).map(([k, ids]) => TF("farbWdh", `Farbgruppe ${k + 1} kehrt in ${ids.length} getrennten Flächen wieder`, k + 1, ids.length)).join("; ") : T("Keine Farbgruppe kehrt in mehreren getrennten Figurflächen wieder"))
+        + (formGruppen.length ? TF("formGruppen", `; ähnliche Formen (Streckung, Füllung, Grösse): ${formGruppen.map((g) => g.map(name).join(" ~ ")).join(", ")}.`, formGruppen.map((g) => g.map(name).join(" ~ ")).join(", ")) : T("; keine ähnlichen Formen unter den Teilen.")),
+      lesart: T(farbWdh.length ? "Gleiche Farbe kann als Zusammengehörigkeit getrennter Teile gelesen werden." : "Zusammengehörigkeit ergibt sich hier eher aus Lage und Grösse als aus Farbe."),
+      eingriff: TF("eingriffWdh", `Neue Nachbarschaften ${regelText}.`, regelText),
       flaechen: farbWdh.flatMap(([, ids]) => ids),
     },
     {
       id: "verbindung", thema: "Verbindungen und Unterbrechungen", schaltbar: kontakte.length > 0,
-      befund: `${kontakte.length} Berührungen zwischen Teilen${kontakte.length ? ` (${kontakte.slice(0, 5).map(([a, b]) => `${name(a)}–${name(b)}`).join(", ")}${kontakte.length > 5 ? " …" : ""})` : ""}; ${unterbrechungen.length} gleichfarbige Paare, zwischen denen eine andere Fläche liegt${unterbrechungen.length ? ` (${unterbrechungen.slice(0, 3).map((u) => `${name(u.a)} | ${name(u.durch)} | ${name(u.b)}`).join(", ")})` : ""}.`,
-      lesart: unterbrechungen.length ? "Eine gleichfarbige, unterbrochene Folge kann als eine durchlaufende Fläche gelesen werden, die an einer Stelle unterbrochen ist." : "Die Teile hängen eher über Nachbarschaft als über unterbrochene Linien zusammen.",
-      eingriff: "Gemeinsame Grenzen im Bild werden in Schritt 4 zu Kopplungen mit der ursprünglichen Distanz als Ruhelänge: Sie ziehen das zerlegte Bild wieder zusammen.",
+      befund: (() => { const liste = kontakte.length ? ` (${kontakte.slice(0, 5).map(([a, b]) => `${name(a)}–${name(b)}`).join(", ")}${kontakte.length > 5 ? " …" : ""})` : "", uliste = unterbrechungen.length ? ` (${unterbrechungen.slice(0, 3).map((u) => `${name(u.a)} | ${name(u.durch)} | ${name(u.b)}`).join(", ")})` : "";
+        return TF("befundVerbindung", `${kontakte.length} Berührungen zwischen Teilen${liste}; ${unterbrechungen.length} gleichfarbige Paare, zwischen denen eine andere Fläche liegt${uliste}.`, kontakte.length, liste, unterbrechungen.length, uliste); })(),
+      lesart: T(unterbrechungen.length ? "Eine gleichfarbige, unterbrochene Folge kann als eine durchlaufende Fläche gelesen werden, die an einer Stelle unterbrochen ist." : "Die Teile hängen eher über Nachbarschaft als über unterbrochene Linien zusammen."),
+      eingriff: T("Gemeinsame Grenzen im Bild werden in Schritt 4 zu Kopplungen mit der ursprünglichen Distanz als Ruhelänge: Sie ziehen das zerlegte Bild wieder zusammen."),
       flaechen: kontakte.flat(),
     },
     {
       id: "ueberlagerung", thema: "Überlagerungen und Verdeckungen", schaltbar: einschluesse.length + unterbrechungen.length > 0,
       befund: einschluesse.length || unterbrechungen.length
-        ? `${einschluesse.length ? `${einschluesse.slice(0, 4).map((e) => `${name(e.innen)} liegt ganz innerhalb von ${name(e.aussen)}`).join("; ")}` : "Keine Fläche liegt ganz in einer anderen"}${unterbrechungen.length ? `; ${unterbrechungen.length} Unterbrechung(en) durch eine dritte Fläche` : ""}.`
-        : "Keine eingeschlossenen Flächen und keine Unterbrechungen durch Dritte gefunden.",
-      lesart: einschluesse.length || unterbrechungen.length ? "Mögliche Verdeckung: Die innere oder trennende Fläche kann vor der anderen liegen – oder eine Öffnung in ihr sein. Die Gliederung entscheidet das nicht." : "Hinweise auf Überlagerung ergeben sich aus der Gliederung nicht.",
-      eingriff: "Schritt 2 legt die Teile auf der Zeitachse übereinander; eingeschlossene Teile bleiben dabei über ihrer Umgebung (wenn diese Lesart gilt).",
+        ? `${einschluesse.length ? `${einschluesse.slice(0, 4).map((e) => TF("einschluss", `${name(e.innen)} liegt ganz innerhalb von ${name(e.aussen)}`, name(e.innen), name(e.aussen))).join("; ")}` : T("Keine Fläche liegt ganz in einer anderen")}${unterbrechungen.length ? TF("unterbrechungen", `; ${unterbrechungen.length} Unterbrechung(en) durch eine dritte Fläche`, unterbrechungen.length) : ""}.`
+        : T("Keine eingeschlossenen Flächen und keine Unterbrechungen durch Dritte gefunden."),
+      lesart: T(einschluesse.length || unterbrechungen.length ? "Mögliche Verdeckung: Die innere oder trennende Fläche kann vor der anderen liegen – oder eine Öffnung in ihr sein. Die Gliederung entscheidet das nicht." : "Hinweise auf Überlagerung ergeben sich aus der Gliederung nicht."),
+      eingriff: T("Schritt 2 legt die Teile auf der Zeitachse übereinander; eingeschlossene Teile bleiben dabei über ihrer Umgebung (wenn diese Lesart gilt)."),
       flaechen: einschluesse.flatMap((e) => [e.innen, e.aussen]),
     },
     {
       id: "grund", thema: "Figur-Grund-Beziehungen und Gewichtungen", schaltbar: false,
-      befund: `Grund: ${grund.map((f) => name(f.id)).join(", ") || "–"} (${prozent(grundAnteil)} des Bildes, am Rand gelegen). Schwerpunkt der Teile ${lage(ax, ay)}.`,
-      lesart: "Randnahe, grosse Flächen werden als Grund gelesen, kleinere mit Kontrast als Figuren. Antippen in der Vorschau korrigiert das.",
-      eingriff: "Auch der Grund wird zu Teilen. Figuren liegen obenauf, und die gewichtigste trägt den Anstoss in Schritt 4.",
+      befund: TF("befundGrund", `Grund: ${grund.map((f) => name(f.id)).join(", ") || "–"} (${prozent(grundAnteil)} des Bildes, am Rand gelegen). Schwerpunkt der Teile ${lage(ax, ay)}.`, grund.map((f) => name(f.id)).join(", ") || "–", prozent(grundAnteil), lage(ax, ay)),
+      lesart: T("Randnahe, grosse Flächen werden als Grund gelesen, kleinere mit Kontrast als Figuren. Antippen in der Vorschau korrigiert das."),
+      eingriff: T("Auch der Grund wird zu Teilen. Figuren liegen obenauf, und die gewichtigste trägt den Anstoss in Schritt 4."),
       flaechen: grund.map((f) => f.id),
     },
   ].map((b) => ({ ...b, aktiv: !verworfen.has(b.id) }));

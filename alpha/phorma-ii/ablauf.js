@@ -10,9 +10,8 @@
 //   Tuch     – 01 Tuch (das Foto als Seidentuch im Wind) → 02 Bild (es wird glattgezogen und liegt als Foto da)
 //   Montage  – 01 Schnitte (das Foto zerfällt im Takt in immer mehr Rechtecke) → 02 Montage (jedes zeigt einen eigenen Ausschnitt, harte Schnitte
 //              zu neuen Aufteilungen) → 03 Bild (die Felder rasten ein); seit dem 19. Oktober 2026, nach dem Clip «UVA» (montageplan.js)
-//   Wachstum – 01 Keim (ein kleiner leuchtender Kreis) → 02 Wachstum (eine einzige Linie faltet sich und füllt das Motiv, Differential Growth) →
-//              03 Farbe (sie nimmt die Farben des Fotos an) → 04 Bild (das Foto erscheint); seit dem 19. Oktober 2026, nach dem Clip «algorigraph»
-//              (wachstumsim.js)
+// Das Wachstum (eine leuchtende Linie wächst aus einem Keim, Differential Growth) war vom 19. bis 21. Oktober 2026 ein Effekt; seither ist es weg
+// (Wunsch: «Ich möchte wachstum weg, das scheint nicht recht zu klappen» – die Bahn rechnete auf dem Telefon zu lange; im Verlauf von Git).
 // Das Gewebe (für Text, Foto, Video und Ton) war vom 17. bis 18. Oktober 2026 ein vierter Effekt, für sich; seither ist es PHORMA III
 // (alpha/phorma-iii/; Wunsch: «Es sind ja zwei ganz verschiedene Ansätze … all das soll aus PHORMA II ausgelagert werden»).
 // Danach steht das Foto, dann (wenn gewählt) das Signet von ornament.cloud.
@@ -29,16 +28,18 @@ export const ABSPANN = 0.9 + 0.15 + SIGNET + 0.6 + 0.6 + 0.2;
 
 export const TEMPO = { ruhig: 1.3, normal: 1, schnell: 0.75 };
 
-// die Reihenfolge in einer Kette; seit 19. Oktober 2026 das Wachstum zuerst (Wunsch: «Ich möchte einen anderen Ablauf: Wachstum, Physarum, Tiefe (Scan),
-// Tuch, Montage»), davor stand es nach dem Tuch
-export const EFFEKTE = ["wachstum", "physarum", "tiefe", "tuch", "montage"];
-export const TITEL = { physarum: "Physarum", tiefe: "Tiefe", tuch: "Tuch", wachstum: "Wachstum", montage: "Montage" };
-/** die Kette der Karte «Alle drei» (Montage und Wachstum kamen am 19. Oktober 2026 dazu und sind nur einzeln oder in einer eigenen Kette dabei) */
-export const KETTE = "physarum+tiefe+tuch";
+// die Reihenfolge in einer Kette (Wunsch vom 19. Oktober 2026: «Physarum, Tiefe (Scan), Tuch, Montage»; ein gemerktes «wachstum» fällt weg)
+// seit 22. Oktober 2026 dazu die Wellenwanne (nach der Tiefe) und die Pixel-Sortierung (vor der Montage), Wunsch: weitere Bildtransformationen,
+// «spektakulär, aber nicht zuuu viel Rechenzeit»; am selben Abend ersetzt der Rasterdruck die Pixel-Sortierung (ein gemerktes «sortierung» wird zu ihm)
+export const EFFEKTE = ["physarum", "tiefe", "welle", "tuch", "raster", "montage"];
+export const TITEL = { physarum: "Physarum", tiefe: "Tiefe", welle: "Wellenwanne", tuch: "Tuch", raster: "Rasterdruck", montage: "Montage" };
+/** die Kette der Karte «Alle sechs» (seit 25. Oktober 2026, Wunsch: «alle 3 als Kette» und «alle 4 als Kette» zusammenfassen in «alle 6 als Kette»;
+ *  ein gemerktes «physarum+tiefe+tuch» oder «physarum+tiefe+tuch+montage» bleibt als eigene Kette gültig) */
+export const KETTE = EFFEKTE.join("+");
 
 /** die gewählten Effekte in fester Reihenfolge, mit «+» verbunden; Unbekanntes oder nichts (auch ein gemerktes «gewebe») ergibt die ganze Kette */
 export function ablaufName(a) {
-  const teile = String(a ?? "").split("+");
+  const teile = String(a ?? "").split("+").map((e) => (e === "sortierung" ? "raster" : e));
   const liste = EFFEKTE.filter((e) => teile.includes(e));
   return liste.length ? liste.join("+") : KETTE;
 }
@@ -61,13 +62,18 @@ export function rolle(art, liste, i) {
     phasen = [["scan", "Scan", erst ? 3.4 : 3.0]];   // ohne «Raum» (seit 19. Oktober 2026): der Scan etwas länger, er baut das Relief auf
     if (letzt) phasen.push(["bild", "Bild", 2.8]);
     else { ueber = 0.7; uebergang = naechstes === "montage" ? "felder" : "front"; }
+  } else if (art === "welle" || art === "raster") {
+    // Wellenwanne und Rasterdruck (seit 22. Oktober 2026): die Wellenwanne als letzter Effekt mit Bild, sonst gehen sie wie Physarum über
+    // kurz (Wunsch nach den Probefilmen: Wellen «insgesamt maximal 8 Sekunden», seit dem Abend «ohne Doppelspalt und langsamere Animation, ganz ruhig»;
+    // der Rasterdruck kehrt nie ins Foto zurück: als letzter Effekt steht am Ende der Druck (Rückmeldung: «Es sollte aber nicht im Anfangsbild enden»),
+    // der Versatz kommt dafür langsam zur Ruhe)
+    phasen = art === "welle" ? [["duenung", "Dünung", 3.4], ["wellen", "Wellen", 3.2]]
+      : [["raster", "Raster", 2.4], ["versatz", "Versatz", letzt ? 4.4 : 4.0]];
+    if (letzt) { if (art === "welle") phasen.push(["bild", "Bild", 1.4]); }
+    else { ueber = 1.0; uebergang = naechstes === "montage" ? "felder" : "front"; }
   } else if (art === "tuch") {
     phasen = [["tuch", "Tuch", vorher === "tiefe" ? 4.6 : 5.0]];
     if (naechstes === "montage") { ueber = 0.8; uebergang = "felder"; } else phasen.push(["bild", "Bild", 3.4]);
-  } else if (art === "wachstum") {
-    phasen = [["keim", "Keim", 1.2], ["wachstum", "Wachstum", 6.6], ["farbe", "Farbe", 2.4]];
-    // vor einem anderen Effekt ohne Foto dazwischen: vor der Montage Rechtecke, sonst die Zeitfront (die leuchtende Linie geht ins Netz über)
-    if (naechstes === "montage") { ueber = 0.8; uebergang = "felder"; } else if (naechstes) { ueber = 1.2; uebergang = "front"; } else phasen.push(["bild", "Bild", 2.6]);
   } else {
     // die Montage steht immer am Schluss; nach einem anderen Effekt schneiden Rechtecke ihn weg, sie beginnt schon zerschnitten
     phasen = [["schnitte", "Schnitte", erst ? 2.5 : 2.0], ["montage", "Montage", 7.0], ["bild", "Bild", 2.6]];
@@ -111,12 +117,16 @@ export function zeitachse({ tempo = "normal", signet = true, ablauf = KETTE } = 
   // nochmals vor dem Logo»): die Montage rastet nicht ins Foto ein, sie schneidet geradewegs ins Signet
   const nahtlos = signet && effekte(art).at(-1) === "montage";
   if (nahtlos) { dazu("stehen", 0); dazu("signet", SIGNET); dazu("signetStehen", 0.6); dazu("signetAus", 0.6); dazu("schluss", 0.2); }
-  else {
-    dazu("stehen", 3.2);
-    if (signet) { dazu("bildAus", 0.9); dazu("pause", 0.15); dazu("signet", SIGNET); dazu("signetStehen", 0.6); dazu("signetAus", 0.6); dazu("schluss", 0.2); }   // zusammen ABSPANN
+  // endet die Kette mit dem Rasterdruck, steht danach der Druck statt des Fotos (film.js zeichnet dann das letzte Bild der Bühne weiter); er steht
+  // nur kurz und geht rasch ins Papier des Signets über – der Versatz kommt schon selbst zur Ruhe (22. Oktober 2026, Rückmeldung: «Der Übergang vom
+  // Rasterdruckeffekt zum Logo ist zu lang»; vorher 3,2 s stehen, 0,9 s aus und 0,15 s Pause wie nach dem Foto)
+  const druck = effekte(art).at(-1) === "raster";
+  if (!nahtlos) {
+    dazu("stehen", druck && signet ? 1.0 : 3.2);
+    if (signet) { dazu("bildAus", druck ? 0.6 : 0.9); dazu("pause", druck ? 0 : 0.15); dazu("signet", SIGNET); dazu("signetStehen", 0.6); dazu("signetAus", 0.6); dazu("schluss", 0.2); }   // ohne Druck zusammen ABSPANN
     else dazu("schluss", 0.3);
   }
-  return { ab, ablauf: art, abschnitt, teile, phasen, dauer: t, bilder: Math.round(t * 30), tempo: f, nahtlos };
+  return { ab, ablauf: art, abschnitt, teile, phasen, dauer: t, bilder: Math.round(t * 30), tempo: f, nahtlos, druck };
 }
 
 /** die Effekte, die zur Zeit t laufen (beim Übergang zwei), mit ihrer eigenen Zeit */

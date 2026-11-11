@@ -9,9 +9,7 @@
   --serif: "Newsreader", "Iowan Old Style", Georgia, serif;
   --bg-veil: rgba(255, 255, 255, 0.85);
 }
-@media (prefers-color-scheme: dark) {
-  :root { --bg: #000000; --surface: #000000; --text: #ffffff; --muted: #9a9a9a; --border: #2e2e2e; --accent: #8fb0ff; --bg-veil: rgba(0, 0, 0, 0.85); }
-}
+:root:not([data-theme="light"]) { --bg: #000000; --surface: #000000; --text: #ffffff; --muted: #9a9a9a; --border: #2e2e2e; --accent: #8fb0ff; --bg-veil: rgba(0, 0, 0, 0.85); }
 body { -webkit-font-smoothing: antialiased; }
 /* die Kopfzeile der Website (Hauptlinks und Menü) bleibt in der Schrift der Website: ein Browsertest misst sie auf allen Seiten gleich (REGELN §14) */
 .seitenweg a, .menu-item { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
@@ -205,3 +203,15 @@ body { -webkit-font-smoothing: antialiased; }
   .work-kicker { display: none; }
   .site-header { padding-top: max(24px, env(safe-area-inset-top)); }
 }
+
+/* der Kopf der App (seit 20. Oktober 2026, zweisprachig): wie im Neubau, Signet mit Schlaufe und Punkt, daneben d · e, rechts der Weg zur Seite der App */
+.app-kopf { display: flex; align-items: center; gap: 16px; padding: 2px 0 14px; margin-bottom: 18px; border-bottom: 1px solid var(--line, rgba(128,128,128,.35)); font-size: .95rem; font-family: var(--font); }
+.app-kopf-signet { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: inherit; font-weight: 500; letter-spacing: .01em; }
+.app-kopf-signet svg { width: 34px; height: 24px; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.6; }
+.app-kopf-signet circle { fill: var(--accent); stroke: none; }
+.app-kopf-zurueck { margin-left: auto; color: var(--muted); text-decoration: none; }
+.app-kopf-zurueck:hover, .app-kopf-zurueck:focus-visible { color: inherit; text-decoration: underline; }
+.sprache { display: flex; gap: 2px; }
+.sprache button { font: inherit; font-size: .85rem; line-height: 1; color: var(--muted); background: none; border: 0; border-bottom: 1px solid transparent; padding: 6px 5px 5px; min-width: 24px; cursor: pointer; }
+.sprache button[aria-current] { color: inherit; border-bottom-color: var(--accent); }
+.sprache button:hover, .sprache button:focus-visible { color: inherit; outline: none; border-bottom-color: currentColor; }

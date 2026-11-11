@@ -31,10 +31,10 @@ test("Deploy-Skript: rsync über SSH mit Prüfsummen, --delete und Ausschlusslis
 
 test("Ausschlussliste: Quellen, Werkzeuge, Tests, Dokumentation und Git bleiben zu Hause; keine veröffentlichte Seite lädt etwas von dort", () => {
   const liste = lies("tools/hostpoint/ausschluss.txt").split("\n").filter((z) => z && !z.startsWith("#"));
-  for (const e of [".git/", ".github/", ".claude/", "src/", "tools/", "tests/", "docs/", "README.md", "node_modules/", ".well-known/"]) assert.ok(liste.includes(e), e);
+  for (const e of [".git/", ".github/", ".claude/", "src/", "tools/", "tests/", "docs/", "README.md", "CLAUDE.md", "node_modules/", ".well-known/"]) assert.ok(liste.includes(e), e);
   const ordner = liste.filter((e) => e.endsWith("/")).map((e) => e.slice(0, -1));
   const re = new RegExp(`(?:href|src|url\\(|from |import\\(|fetch\\(|new URL\\()\\s*=?\\s*["']?(?:\\.\\./)*(${ordner.join("|")})/`);
-  const walk = (d, vor = "") => readdirSync(d, { withFileTypes: true }).flatMap((e) => liste.includes(e.name) || liste.includes(e.name + "/") || e.name === "vendor" ? []
+  const walk = (d, vor = "") => readdirSync(d, { withFileTypes: true }).flatMap((e) => liste.includes(e.name) || liste.includes(e.name + "/") || liste.includes(vor + e.name) || liste.includes(vor + e.name + "/") || e.name === "vendor" ? []
     : e.isDirectory() ? walk(new URL(e.name + "/", d), vor + e.name + "/") : /\.(html|css|js|mjs|xml|webmanifest)$/.test(e.name) ? [vor + e.name] : []);
   const treffer = walk(root).filter((p) => re.test(lies(p)));
   assert.deepEqual(treffer, [], "veröffentlichte Dateien verweisen auf Ausgeschlossenes");

@@ -78,7 +78,7 @@ Sobald `HOSTPOINT_HOST` gesetzt ist, läuft der Workflow bei jedem Push auf `mai
 
 - GitHub Pages abschalten: Settings → Pages → Source «None» (Christian; ich kann es nicht). Bis dahin stört es nicht: Die Domain zeigt ja schon auf Hostpoint.
 - `CNAME` löschen und den Test anpassen (`tests/orma.test.mjs` «Domain»).
-- Datenschutz im Impressum: «Die Seiten liegen bei GitHub Pages (GitHub Inc., USA)» → «Die Seiten liegen bei Hostpoint AG, Rapperswil-Jona (Schweiz) … Hostpoint speichert … Protokolle».
+- ~~Datenschutz im Impressum~~ erledigt am 22. Oktober 2026, gleich nach dem Umstellen der DNS: «Die Seiten liegen bei Hostpoint AG in Rapperswil-Jona (Schweiz) …».
 - README: Abschnitt «Veröffentlichung» mit dem neuen Weg; den Hinweis auf GitHub Pages bei der Versionsmarke um die `.htaccess` ergänzen (zehn Minuten bleiben).
 - Später, wenn gewünscht: Zwischenspeicher länger als zehn Minuten für Dateien mit Versionsmarke (dann müssen alle Bilder, die sich ändern, einen neuen Namen bekommen – das gilt heute schon für die Vorschaubilder).
 

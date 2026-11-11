@@ -12,6 +12,16 @@ tools/
 tests/
 docs/
 README.md
+CLAUDE.md
 CNAME
 .well-known/
 logs/
+# Animationen: die gesicherten Werke (Bilder und Mischungen der Besucher) entstehen auf dem Server (animations/werke.php) und bleiben dort.
+animations/werke/
+# ORNAMENT LAB (alpha/lab/): online sind die Oberfläche und die jev-Zwischenstelle jev/wahl.php; Dokumentation, Startskript und Werkzeuge bleiben im Repository.
+alpha/lab/docs/
+alpha/lab/werkzeuge/
+alpha/lab/starten.mjs
+alpha/lab/README.md
+# Hörseite der EP «directer»: die WAV (rund 200 MB) ist nicht in Git, sie wird von Hand per SFTP hochgeladen und darf von rsync --delete nicht gelöscht werden (docs/ep-directer.md).
+listen/directer/audio/

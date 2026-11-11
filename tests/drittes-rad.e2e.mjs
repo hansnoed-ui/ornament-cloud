@@ -27,7 +27,7 @@ async function check(name, fn) {
   catch (e) { results.push(["FAIL", name]); console.log("FAIL", name, "\n     ", e.message.split("\n").slice(0, 6).join("\n      ")); }
 }
 async function open(url, opts = { viewport: { width: 1200, height: 900 } }) {
-  const ctx = await browser.newContext({ reducedMotion: "reduce", ...opts });
+  const ctx = await browser.newContext({ locale: "de-CH", reducedMotion: "reduce", ...opts });
   const page = await ctx.newPage();
   const errors = [];
   page.on("pageerror", e => errors.push(e.message));
@@ -734,7 +734,7 @@ await check("Navigation oben links: «Ornament Cloud» und darunter «Das Dritte
   const seiten = ["", "news/", "termine/", "portfolio/", "portfolio/nebeneinander-nacheinander/", "portfolio/nebeneinander-nacheinander/feld/", "zu-seiner-zeit/", "zu-seiner-zeit/strophe/13-das-archiv/",
     "zu-seiner-zeit/verweis/yoko-ono/", "alpha/", "alpha/pruefraster/", "alpha/verteilapparat/", "alpha/gesellschaftskonzepte/", "alpha/journalistische-texte/", "alpha/omna-color/", "alpha/drittes-rad/"];
   for (const [wo, opts] of [["Computer", { viewport: { width: 1280, height: 800 } }], ["Handy", { viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true }]]) {
-    const ctx = await browser.newContext({ reducedMotion: "reduce", ...opts });
+    const ctx = await browser.newContext({ locale: "de-CH", reducedMotion: "reduce", ...opts });
     for (const u of seiten) {
       const page = await ctx.newPage(), fehler = [];
       page.on("pageerror", (e) => fehler.push(e.message));
@@ -837,7 +837,7 @@ await check("Navigation: die beiden Links sind Buttons mit ganz feinem Rahmen, d
   const farbe = (c) => { const z = c.match(/-?[\d.]+(?:e-?\d+)?/g).map(Number), k = c.startsWith("color(") ? 255 : 1; return { rgb: z.slice(0, 3).map((v) => v * k), a: z.length > 3 ? z[3] : 1 }; };
   const naheBei = (x, y, d) => x.every((v, i) => Math.abs(v - y[i]) <= d);
   for (const [modus, scheme] of [["hell", "light"], ["dunkel", "dark"]]) for (const [wo, opts] of [["Computer", { viewport: { width: 1280, height: 800 } }], ["Handy", HANDY]]) {
-    const ctx = await browser.newContext({ reducedMotion: "reduce", colorScheme: scheme, ...opts });
+    const ctx = await browser.newContext({ locale: "de-CH", reducedMotion: "reduce", colorScheme: scheme, ...opts });
     let website = null;
     for (const u of seiten) {
       const page = await ctx.newPage(), was = `${modus}, ${wo}, ${u || "Startseite"}`;
@@ -906,7 +906,7 @@ await check("Kopfzeile: unter den Hauptlinks steht eine feine Linie in deren Far
   };
   const rgb = (c) => c.match(/[\d.]+/g).slice(0, 3).map(Number);
   for (const [modus, scheme] of [["hell", "light"], ["dunkel", "dark"]]) for (const [wo, opts] of [["Computer", { viewport: { width: 1280, height: 800 } }], ["Handy", HANDY]]) {
-    const ctx = await browser.newContext({ reducedMotion: "reduce", colorScheme: scheme, ...opts });
+    const ctx = await browser.newContext({ locale: "de-CH", reducedMotion: "reduce", colorScheme: scheme, ...opts });
     for (const [u, art] of seiten) {
       const page = await ctx.newPage(), was = `${modus}, ${wo}, ${u || "Startseite"}`;
       await page.goto(base + u);
@@ -962,7 +962,7 @@ await check("Kopfzeile: unter den Hauptlinks steht eine feine Linie in deren Far
 
 await check("Navigation: in erzwungenen Farben (Windows, hoher Kontrast) fällt die Fläche weg, dort bleibt der aktive Button mit einem feinen Ring kenntlich und der andere hat keinen", async () => {
   for (const u of ["", "zu-seiner-zeit/", "alpha/omna-color/", "alpha/drittes-rad/"]) {
-    const ctx = await browser.newContext({ reducedMotion: "reduce", forcedColors: "active", viewport: { width: 1000, height: 700 } });
+    const ctx = await browser.newContext({ locale: "de-CH", reducedMotion: "reduce", forcedColors: "active", viewport: { width: 1000, height: 700 } });
     const page = await ctx.newPage();
     await page.goto(base + u);
     assert.equal(await page.evaluate(() => matchMedia("(forced-colors: active)").matches), true, "erzwungene Farben sind an");
@@ -1011,7 +1011,7 @@ await check("Navigation: «Ornament Cloud» führt zur Startseite (seit 18. Okto
 
 await check("Zwischenspeicher: hält der Browser nach einer Aktualisierung noch alte Module (zehn Minuten wie bei GitHub Pages), startet das Rad trotzdem, auch die Auswahl auf einer Originalseite", async () => {
   const pages = await pagesNachbildung();
-  const ctx = await browser.newContext({ viewport: { width: 1200, height: 900 } });
+  const ctx = await browser.newContext({ locale: "de-CH", viewport: { width: 1200, height: 900 } });
   const page = await ctx.newPage(), fehler = [];
   page.on("pageerror", (e) => fehler.push(e.message));
   try {
@@ -1047,7 +1047,7 @@ await check("Zwischenspeicher: hält der Browser nach einer Aktualisierung noch 
 
 await check("Hinweis bei Ladefehler: lädt das Rad nicht, steht kurz danach ein Hinweis mit dem harten Neuladen auf der Seite; sonst bleibt er verborgen", async () => {
   {
-    const ctx = await browser.newContext({ reducedMotion: "reduce", viewport: { width: 1200, height: 900 } });
+    const ctx = await browser.newContext({ locale: "de-CH", reducedMotion: "reduce", viewport: { width: 1200, height: 900 } });
     const page = await ctx.newPage();
     await page.route("**/alpha/drittes-rad/engine.js*", (route) => route.abort());
     await page.goto(base + "alpha/drittes-rad/");

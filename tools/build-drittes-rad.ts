@@ -30,11 +30,15 @@ export function marke(dateien: Record<string, string>): string {
   return h.digest("hex").slice(0, 8);
 }
 export const stempeln = (text: string, m: string) => text.replace(IMPORT, `"$1?v=${m}"`);
+// Die Beta-Fassung (beta/drittes-rad/, 28. Oktober 2026) lädt dieselben Module aus alpha/drittes-rad/ und trägt dieselbe Marke, sonst hätte sie zwei Stände im Speicher.
+export const BETA = ["beta/drittes-rad/index.html"];
+const IMPORT_BETA = /"(\.\.\/\.\.\/alpha\/drittes-rad\/(?:engine|kacheln|daten|jev)\.js)(?:\?v=[0-9a-f]{8})?"/g;
+export const stempelnBeta = (text: string, m: string) => text.replace(IMPORT_BETA, `"$1?v=${m}"`);
 
 export function build(): { pfad: string; inhalt: string }[] {
   const m = model();
   const omna = readFileSync(new URL("alpha/omna-color/index.html", ROOT), "utf8");
-  const ex = omna.match(/const EX = (\[.*?\]);\n/s);
+  const ex = omna.match(/const EX = (\[.*?\]);\r?\n/s);   // \r?: Arbeitskopien unter Windows haben CRLF
   const th = omna.match(/const THEMES = \[(.*?)\];/s);
   if (!ex || !th) throw new Error("alpha/omna-color/index.html: EX oder THEMES nicht gefunden");
   const uebungen = JSON.parse(ex[1]);
@@ -54,7 +58,8 @@ export function build(): { pfad: string; inhalt: string }[] {
     zeilen("ZYKLEN", zyklen) + zeilen("THEMEN", themen) + zeilen("STROPHEN", strophen) + zeilen("UEBUNGEN", uebungen);
   const lies = (f: string) => readFileSync(new URL(`alpha/drittes-rad/${f}`, ROOT), "utf8");
   const v = marke(Object.fromEntries(MODULE.map(n => [n, n === "daten.js" ? inhalt : lies(n)])));
-  return [{ pfad: AUSGABE, inhalt }, ...MIT_MARKE.map(f => ({ pfad: `alpha/drittes-rad/${f}`, inhalt: stempeln(lies(f), v) }))];
+  return [{ pfad: AUSGABE, inhalt }, ...MIT_MARKE.map(f => ({ pfad: `alpha/drittes-rad/${f}`, inhalt: stempeln(lies(f), v) })),
+    ...BETA.map(f => ({ pfad: f, inhalt: stempelnBeta(readFileSync(new URL(f, ROOT), "utf8"), v) }))];
 }
 
 if (import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {

@@ -1,0 +1,15 @@
+<!doctype html><meta charset="utf-8"><title>Kunst-Clip</title><body style="margin:0;background:#000">
+<!-- Hilfsseite für kunst_clip.mjs: rechnet mit dem Motor von /animations einzelne Bilder und legt Überblendungen auf einer 2D-Leinwand übereinander -->
+<canvas id="c"></canvas>
+<script type="module">
+import { motorErstellen } from "../../animations/motor.js?v=2";
+const m = motorErstellen(), c = document.getElementById("c"), ctx = c.getContext("2d");
+window.laden = async (bilder) => { for (const [name, url] of bilder) await m.bildLaden(name, url); return true; };
+// teile: [{ stapel, t, a }] werden mit Deckkraft a übereinander gelegt
+window.bild = (b, h, teile, q = 0.97) => {
+  c.width = b; c.height = h; ctx.fillStyle = "#000"; ctx.fillRect(0, 0, b, h);
+  for (const { stapel, t, a } of teile) { m.zeichnen(stapel, t, b, h); ctx.globalAlpha = a; ctx.drawImage(m.leinwand, 0, 0); }
+  ctx.globalAlpha = 1; return c.toDataURL("image/jpeg", q);
+};
+window.bereit = true;
+</script>

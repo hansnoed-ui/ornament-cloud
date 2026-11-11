@@ -9,17 +9,18 @@
 import * as THREE from "three";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
-import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=30";
-import { FPS, kette, laufend, TITEL } from "./ablauf.js?v=30";
-import { videoPlan, videoStelle, videoStelleBei } from "./filmquelle.js?v=30";
-import { physarum } from "./physarum.js?v=30";
-import { tiefe } from "./tiefe.js?v=30";
-import { tuch } from "./tuch.js?v=30";
-import { montage, montageSignet } from "./montage.js?v=30";
-import { wachstum } from "./wachstum.js?v=30";
+import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=40";
+import { FPS, kette, laufend, TITEL } from "./ablauf.js?v=40";
+import { videoPlan, videoStelle, videoStelleBei } from "./filmquelle.js?v=40";
+import { physarum } from "./physarum.js?v=40";
+import { tiefe } from "./tiefe.js?v=40";
+import { tuch } from "./tuch.js?v=40";
+import { montage, montageSignet } from "./montage.js?v=40";
+import { welle } from "./welle.js?v=40";
+import { raster, druckSignet } from "./raster.js?v=40";
 // das leuchtende Signet von PHORMA I (Glaskristall als Punkt, Halo und Bokeh auf seiner Bahn; Wunsch vom 17. Oktober 2026: «der Abspann darf wieder
 // das neue leuchtende Logo sein») – eigene Marke, damit kein älterer Stand ohne diesen Export aus dem Zwischenspeicher kommt
-import { glanzSignet } from "../bildfragmentieren/raum.js?v=34";
+import { glanzSignet } from "../bildfragmentieren/raum.js?v=35";
 
 const FRONT = /* glsl */ `
   uniform sampler2D tA, tB, tKarte; uniform float uP, uBreite; uniform vec3 uSaum; varying vec2 vUv;
@@ -27,7 +28,7 @@ const FRONT = /* glsl */ `
     float lokal = 1.0 - texture2D(tKarte, vUv).r;                       // nah zuerst
     float front = uP * (1.0 + 2.0 * uBreite) - uBreite;
     float m = smoothstep(front + uBreite, front - uBreite, lokal);       // 1: schon das neue Bild
-    float band = exp(-pow((lokal - front) / (uBreite * 0.45), 2.0)) * sin(3.14159 * uP);
+    float q = (lokal - front) / (uBreite * 0.45), band = exp(-q * q) * sin(3.14159 * uP);   // q * q statt pow(q, 2.0): negative Basis gibt auf Telefonen NaN
     vec2 zug = vec2(0.0, band * 0.02 * sign(lokal - front + 1e-4));       // Spalt: das alte Bild wird an der Front verzogen
     vec3 a = texture2D(tA, vUv + zug).rgb, b = texture2D(tB, vUv - zug * 0.4).rgb;
     gl_FragColor = vec4(mix(a, b, m) + uSaum * band * 0.18, 1.0);
@@ -67,7 +68,7 @@ const AUSGABE = /* glsl */ `
     gl_FragColor = vec4(o, 1.0);
   }`;
 
-const FABRIK = { physarum, tiefe, tuch, wachstum, montage };
+const FABRIK = { physarum, tiefe, welle, tuch, raster, montage };
 const leinwandWie = (q) => Object.assign(typeof document !== "undefined" ? document.createElement("canvas") : new OffscreenCanvas(q.width, q.height), { width: q.width, height: q.height });
 
 /**
@@ -101,18 +102,18 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
     loeschen(rt, farbe = 0x000000) { renderer.setRenderTarget(rt); renderer.setClearColor(farbe, 1); renderer.clear(true, true, true); } };
   const K = kette(ablauf);
   g.ablaufDauer = K.dauer;
-  // mit Video (film: { von, dauer, bild(sekunde, { vorschau }), klein(stellen, w, h) }): Montage und Wachstum holen das laufende Bild selbst
+  // mit Video (film: { von, dauer, bild(sekunde, { vorschau }) }): die Montage holt das laufende Bild selbst
   // (dazu frühere Stellen), die anderen nehmen fotoTex (filmquelle.js)
   let zuletzt = "";
   if (film) {
     const plan = videoPlan(ablauf, film.dauer);
-    g.film = { plan, stelle: (teil, tau) => videoStelle(plan, teil.von + tau), klein: film.klein,
+    g.film = { plan, stelle: (teil, tau) => videoStelle(plan, teil.von + tau),
       bild: (teil, tau, vorschau) => film.bild(film.von + videoStelle(plan, teil.von + tau), { vorschau }) };
   }
   const effekte = K.teile.map((teil) => { spur(`Effekt wird aufgebaut: ${teil.art}`); return FABRIK[teil.art](g, teil); });
   const art = (teil) => effekte[K.teile.findIndex((x) => x.art === teil.art)];
 
-  let w = 0, h = 0, rtA, rtB, rtMix, rtSumme, bloom, glanz = null, logo = null;
+  let w = 0, h = 0, rtA, rtB, rtMix, rtSumme, bloom, glanz = null, logo = null, druck = null;
   const front = quadMaterial(FRONT, { tA: { value: null }, tB: { value: null }, tKarte: { value: tiefeTex }, uP: { value: 0 }, uBreite: { value: 0.18 }, uSaum: { value: KUPFER.clone() } });
   const felder = quadMaterial(FELDER, { tA: { value: null }, tB: { value: null }, uP: { value: 0 }, uSeite: { value: B / H } });
   const summe = quadMaterial(SUMME, { tQuelle: { value: null }, uGewicht: { value: 1 } }, { blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, blendEquation: THREE.AddEquation, transparent: true });
@@ -193,13 +194,13 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
   // was erst im Hintergrund fertig wird (die Programme, die Bahn des Tuchs): die Vorschau beginnt danach, Video und Standbild warten darauf
   const bereit = Promise.all([warm, ...effekte.map((e) => e.bereit ?? null)]);
   const fortschritt = () => Math.min(1, ...effekte.map((e) => e.fortschritt?.() ?? 1));
-  /** die Effekte, deren Bahn noch rechnet (für die Meldung: «Das Tuch …», «Das Wachstum …») */
+  /** die Effekte, deren Bahn noch rechnet (für die Meldung: «Das Tuch …») */
   const rechnend = () => K.teile.filter((_, i) => (effekte[i].fortschritt?.() ?? 1) < 1).map((t) => TITEL[t.art]);
   return {
     canvas, B, H, effekte, ende: 0, warm, bereit, fortschritt, rechnend,
     /** mit Video: das laufende Bild der letzten Probe (ist ende = 1, zeichnet film.js es statt des Standbilds) */
     jetzt,                                     // ende: wie weit das letzte Bild schon das Foto war (1: exakt)
-    /** bis wohin (Filmzeit) alles gerechnet ist, was im Hintergrund rechnet (Wachstum, Tuch); Infinity, wenn alles da ist */
+    /** bis wohin (Filmzeit) alles gerechnet ist, was im Hintergrund rechnet (das Tuch); Infinity, wenn alles da ist */
     gerechnetBis(zeit) {
       let bis = Infinity;
       K.teile.forEach((_, i) => { const g = effekte[i].gerechnetBis?.() ?? Infinity; if (g < Infinity) bis = Math.min(bis, zeit.teile[i].von + g * zeit.tempo); });
@@ -207,6 +208,8 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
     },
     /** ist die Montage der letzte Effekt, kommt auch das Signet im Stil der Montage (signetMontage statt signet) */
     montageSchluss: K.teile.at(-1).art === "montage",
+    /** ist der Rasterdruck der letzte Effekt, kommt das Signet gedruckt (signetDruck) */
+    druckSchluss: K.teile.at(-1).art === "raster",
     get verloren() { return verloren; },
     /** für ?diagnose: Grafikchip und die Erweiterungen, auf die es ankommt */
     info() {
@@ -256,11 +259,22 @@ export function buehne(foto, A, ablauf, { grob = false, test = false, tiefeQuell
       this.ende = info.ende;
       return canvas;
     },
+    /** das Signet im Stil des Rasterdrucks (zeichnenBei(ctx, f): Papier und Signet bei Bild f; tau: Sekunden seit dem Anfang des Signets);
+     *  ende → 1: es steht scharf da, film.js zeichnet es dann selbst */
+    signetDruck(zeichnenBei, f, tau, nw = B, nh = H) {
+      groesse(Math.max(2, Math.round(nw)), Math.max(2, Math.round(nh)));
+      druck ??= druckSignet(g, zeichnenBei);
+      const info = druck.render(rtMix, f, tau, w), u = ausgabe.uniforms;
+      u.tSumme.value = rtMix.texture; u.uEnde.value = 0; u.uAktiv.value = 0; u.uSaumStaerke.value = info.saum; u.uBild.value = 0;
+      g.pass(ausgabe, null);
+      this.ende = info.ende;
+      return canvas;
+    },
     zaehler(zeit, t) { const L = laufend(zeit, t); return art(L.at(-1).teil).zaehler?.(L.at(-1).lokal) ?? ""; },
     entsorgen() {
       entsorgt = true;
       for (const e of effekte) e.entsorgen();
-      glanz?.entsorgen(); logo?.entsorgen();
+      glanz?.entsorgen(); logo?.entsorgen(); druck?.entsorgen();
       for (const r of [rtA, rtB, rtMix, rtSumme]) r?.dispose();
       bloom?.dispose(); front.dispose(); felder.dispose(); summe.dispose(); ausgabe.dispose(); quad.dispose();
       fotoTex.dispose(); tiefeTex.dispose(); nahrungTex.dispose();

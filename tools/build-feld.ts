@@ -69,7 +69,7 @@ export function buildFeld(gaps: Map<string, string> = readGaps()): string {
   // ---------- Matrix (ab 760 px) ----------
   out.push(`<div class="feld-matrix-wrap">`);
   out.push(`<table class="feld-matrix">`);
-  out.push(`<caption class="sr-only">Zeilen: Künstler:innen, Spalten: Theoretiker:innen. Besetzte Felder führen zur jeweiligen Konstellation.</caption>`);
+  out.push(`<caption class="sr-only" data-t="feld.caption">Zeilen: Künstler:innen, Spalten: Theoretiker:innen. Besetzte Felder führen zur jeweiligen Konstellation.</caption>`);
   out.push(`<thead><tr><td class="feld-corner"></td>${theorists.map(t => `<th scope="col"><span>${esc(t.name)}</span></th>`).join("")}</tr></thead>`);
   out.push(`<tbody>`);
   for (const a of artists) {
@@ -77,7 +77,7 @@ export function buildFeld(gaps: Map<string, string> = readGaps()): string {
       const c = byPair.get(`${a.id}__${t.id}`);
       if (c) return `<td class="feld-voll"><a href="${href(c.id)}" title="${esc(c.question)}"><span class="sr-only">${esc(a.name)} × ${esc(t.name)}</span></a></td>`;
       const g = gaps.get(`${a.id}__${t.id}`);
-      return `<td class="feld-leer${g ? ` feld-gap--${g}` : ""}"${g ? ` data-gap="${g}"` : ""}><span class="sr-only">keine Konstellation</span></td>`;
+      return `<td class="feld-leer${g ? ` feld-gap--${g}` : ""}"${g ? ` data-gap="${g}"` : ""}><span class="sr-only" data-t="feld.keine">keine Konstellation</span></td>`;
     }).join("");
     out.push(`<tr><th scope="row">${esc(a.name)}</th>${cells}</tr>`);
   }
@@ -87,7 +87,7 @@ export function buildFeld(gaps: Map<string, string> = readGaps()): string {
   out.push(`<div class="feld-liste">`);
   out.push(miniFeld());
   // Sprungmarken auf die zwanzig Abschnitte
-  out.push(`<nav class="feld-sprung" aria-label="Künstler:innen">${artists.map(a => `<a href="#feld-${a.id}">${esc(a.name)}</a>`).join(`<span aria-hidden="true"> · </span>`)}</nav>`);
+  out.push(`<nav class="feld-sprung" aria-label="Künstler:innen" data-t-attr="aria-label=feld.sprung">${artists.map(a => `<a href="#feld-${a.id}">${esc(a.name)}</a>`).join(`<span aria-hidden="true"> · </span>`)}</nav>`);
   for (const a of artists) {
     const own = theorists.map(t => byPair.get(`${a.id}__${t.id}`)).filter(Boolean) as typeof constellations[number][];
     const free = theorists.filter(t => !byPair.has(`${a.id}__${t.id}`));
@@ -99,7 +99,7 @@ export function buildFeld(gaps: Map<string, string> = readGaps()): string {
       out.push(`<li><a href="${href(c.id)}"><span class="feld-name">${esc(t.name)}</span><span class="feld-frage">${esc(c.question)}</span></a></li>`);
     }
     out.push(`</ul>`);
-    if (free.length) out.push(`<p class="feld-frei">Keine Konstellation mit ${free.map(t => esc(t.name)).join(", ")}.</p>`);
+    if (free.length) out.push(`<p class="feld-frei" data-namen="${free.map(t => esc(t.name)).join(", ")}">Keine Konstellation mit ${free.map(t => esc(t.name)).join(", ")}.</p>`);   // data-namen: feld/feld.js setzt den Satz nach der Sprache (20. Oktober 2026)
     out.push(`</section>`);
   }
   out.push(`</div>`);

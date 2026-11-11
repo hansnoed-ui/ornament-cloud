@@ -1,4 +1,4 @@
-// PHORMA II (alpha/phorma-ii/) – Browser-Tests (Playwright, Chromium, WebGL über SwiftShader): ein Testfoto analysieren (Physarum, Tiefe, Tuch, Wachstum, Montage), jede Phase der Kette
+// PHORMA II (alpha/phorma-ii/) – Browser-Tests (Playwright, Chromium, WebGL über SwiftShader): ein Testfoto analysieren (Physarum, Tiefe, Tuch, Montage), jede Phase der Kette
 // zeigt etwas und etwas anderes, jeder Effekt beginnt im Dunkeln und endet exakt beim Foto, dasselbe Bild nach einem Sprung zurück (Simulationen
 // mit Wiedereinstiegspunkten), Bewegungsunschärfe, Video über WebCodecs (Ersatz-Encoder), Standbild, KI-Tiefe ohne Netz fällt auf die geschätzte
 // zurück, keine Anfragen nach aussen, Handy ohne seitliches Scrollen. Mit ?test (weniger Agenten, gröbere Netze). Die Tests fürs Gewebe (Text, Ton,
@@ -25,7 +25,7 @@ async function check(name, fn) {
   catch (e) { ergebnisse.push(false); console.log("FAIL", name, "\n     ", e.message.split("\n").slice(0, 8).join("\n      ")); }
 }
 async function oeffne({ vorher = null, ablauf = null, ...opts } = {}) {
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 950 }, acceptDownloads: true, ...opts });
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 950 }, acceptDownloads: true, locale: "de-CH", ...opts });
   const page = await ctx.newPage();
   const fehler = [], fremd = [];
   page.on("pageerror", (e) => fehler.push(e.message));
@@ -38,7 +38,7 @@ async function oeffne({ vorher = null, ablauf = null, ...opts } = {}) {
 }
 // Testfoto, im Browser gezeichnet: Himmel, Sonne, eine rote Fläche, Wiese; quer (3 : 2)
 const FOTO = await (async () => {
-  const p = await (await browser.newContext()).newPage();
+  const p = await (await browser.newContext({ locale: "de-CH" })).newPage();
   const url = await p.evaluate(() => {
     const w = 1500, h = 1000, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
     const g = x.createLinearGradient(0, 0, 0, h * 0.6); g.addColorStop(0, "#2f5fb0"); g.addColorStop(1, "#9cc2ee");
@@ -57,7 +57,7 @@ const bereit = (page) => page.waitForFunction(() => !document.getElementById("vi
 
 /** ein Bild des Films zur Zeit t in halber Grösse: mittlere Helligkeit und ihre Streuung, Anteil Tinte (deutlich anders als das Papier: leer 0), Anteil fast schwarz, grösste Abweichung vom Foto, ein Fingerabdruck */
 const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]) => {
-  const { bild } = await import("./film.js?v=30");
+  const { bild } = await import("./film.js?v=37");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false };   // die Szene der Seite (mit Ton, Text und Signet wie eingestellt)
   const w = S.mass[0] / 2, h = S.mass[1] / 2, c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -75,7 +75,7 @@ const messe = (page, t, { proben = 1 } = {}) => page.evaluate(async ([t, proben]
     const a = Math.max(Math.abs(d[i] - q[i]), Math.abs(d[i + 1] - q[i + 1]), Math.abs(d[i + 2] - q[i + 2])); if (a > abw) abw = a; mittelAbw += a;
     abdruck = (abdruck * 31 + d[i] * 7 + d[i + 1] * 3 + d[i + 2]) >>> 0;
   }
-  return { hell: hell / n, streu: Math.sqrt(Math.max(0, hell2 / n - (hell / n) ** 2)), tinte: tinte / n, schwarz: schwarz / n, abw, mittelAbw: mittelAbw / n, abdruck, dauer: sz.zeit.dauer, zeit: { teile: sz.zeit.teile.map((tl) => [tl.art, tl.von, tl.bis]), phasen: sz.zeit.phasen.map((p) => [p.art, p.name, p.von, p.bis]), abschnitt: sz.zeit.abschnitt, stehen: sz.zeit.ab.stehen } };
+  return { hell: hell / n, streu: Math.sqrt(Math.max(0, hell2 / n - (hell / n) ** 2)), tinte: tinte / n, schwarz: schwarz / n, abw, mittelAbw: mittelAbw / n, abdruck, dauer: sz.zeit.dauer, zeit: { teile: sz.zeit.teile.map((tl) => [tl.art, tl.von, tl.bis]), phasen: sz.zeit.phasen.map((p) => [p.art, p.name, p.von, p.bis]), abschnitt: sz.zeit.abschnitt, stehen: sz.zeit.ab.stehen, ab: sz.zeit.ab } };
 }, [t, proben]);
 
 // Ersatz für den H.264-Encoder (SwiftShader hat keinen): liefert kleine Stücke und eine Beschreibung
@@ -94,16 +94,16 @@ const ERSATZ_ENCODER = () => {
   };
 };
 
-await check("Testfoto: wird analysiert, die Bühne steht, die Kette aller drei Effekte als Sprungknöpfe; nichts von aussen", async () => {
+await check("Testfoto: wird analysiert, die Bühne steht, die Kette aller sechs Effekte als Sprungknöpfe; nichts von aussen", async () => {
   const { ctx, page, fehler, fremd } = await oeffne();
   assert.equal(await page.getAttribute('[data-format="4:5"]', "aria-pressed"), "true");
-  for (const e of ["physarum", "tiefe", "tuch"]) assert.equal(await page.getAttribute(`[data-effekt="${e}"]`, "aria-pressed"), "true", `${e} gewählt`);
+  for (const e of ["physarum", "tiefe", "welle", "tuch", "raster", "montage"]) assert.equal(await page.getAttribute(`[data-effekt="${e}"]`, "aria-pressed"), "true", `${e} gewählt`);
   await laden(page);
   await bereit(page);
   assert.match(await page.textContent("#auswertung"), /^\d+ Keime · Kanten · Tiefe/);
-  assert.equal(await page.textContent("#kette"), "Physarum → Tiefe → Tuch");
+  assert.equal(await page.textContent("#kette"), "Physarum → Tiefe → Wellenwanne → Tuch → Rasterdruck → Montage");
   const knoepfe = await page.$$eval(".phasen button", (b) => b.map((x) => x.textContent));
-  assert.deepEqual(knoepfe, ["01 Keime", "02 Netz", "03 Scan", "04 Tuch", "05 Bild"]);
+  assert.deepEqual(knoepfe, ["01 Keime", "02 Netz", "03 Scan", "04 Dünung", "05 Wellen", "06 Tuch", "07 Bild", "08 Raster", "09 Versatz", "10 Schnitte", "11 Montage", "12 Bild"]);
   assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
   await ctx.close();
 });
@@ -112,7 +112,7 @@ await check("Effekte einzeln anwählen: eine Karte wählt genau einen Effekt, di
   const { ctx, page, fehler } = await oeffne();
   await laden(page); await bereit(page);
   const gedrueckt = () => page.$$eval("[data-wahl], [data-effekt]", (b) => b.filter((x) => x.getAttribute("aria-pressed") === "true").map((x) => x.dataset.wahl ?? `+${x.dataset.effekt}`));
-  assert.deepEqual(await gedrueckt(), ["physarum+tiefe+tuch", "+physarum", "+tiefe", "+tuch"], "am Anfang die ganze Kette");
+  assert.deepEqual(await gedrueckt(), ["physarum+tiefe+welle+tuch+raster+montage", "+physarum", "+tiefe", "+welle", "+tuch", "+raster", "+montage"], "am Anfang die ganze Kette, alle sechs");
   for (const e of ["tiefe", "physarum"]) {
     await page.click(`[data-wahl="${e}"]`);
     await page.waitForFunction((e) => window.__phorma.ablauf === e && window.__phorma.buehne && window.__phorma.sz.zeit.teile.length === 1, e, { timeout: 60_000 });
@@ -128,15 +128,15 @@ await check("Effekte einzeln anwählen: eine Karte wählt genau einen Effekt, di
   assert.deepEqual(await gedrueckt(), ["tuch", "+tuch"]);
   await page.reload(); await laden(page); await bereit(page);
   assert.equal(await page.evaluate(() => window.__phorma.ablauf), "tuch", "die Wahl bleibt nach dem Neuladen");
-  await page.click('[data-wahl="physarum+tiefe+tuch"]');
-  await page.waitForFunction(() => window.__phorma.sz.zeit.teile.length === 3);
-  assert.equal(await page.textContent("#kette"), "Physarum → Tiefe → Tuch");
+  await page.click('[data-wahl="physarum+tiefe+welle+tuch+raster+montage"]');
+  await page.waitForFunction(() => window.__phorma.sz.zeit.teile.length === 6);
+  assert.equal(await page.textContent("#kette"), "Physarum → Tiefe → Wellenwanne → Tuch → Rasterdruck → Montage");
   assert.deepEqual(fehler, []);
   await ctx.close();
 });
 
 await check("Kette: jede Phase zeigt etwas, jede etwas anderes; am Anfang dunkel, am Ende exakt das Foto, nach einem Sprung zurück dasselbe Bild", async () => {
-  const { ctx, page, fehler } = await oeffne();
+  const { ctx, page, fehler } = await oeffne({ ablauf: "physarum+tiefe+tuch" });   // die frühere Karte «Alle drei», gemerkt: lädt als eigene Kette
   await laden(page); await bereit(page);
   const { zeit } = await messe(page, 0);
   const anfang = await messe(page, 0.2);
@@ -165,20 +165,28 @@ await check("Kette: jede Phase zeigt etwas, jede etwas anderes; am Anfang dunkel
   await ctx.close();
 });
 
-await check("Jeder Effekt allein: beginnt im Dunkeln und endet exakt beim Foto", async () => {
-  for (const e of ["physarum", "tiefe", "tuch", "wachstum", "montage"]) {
+await check("Jeder Effekt allein: beginnt im Dunkeln und endet exakt beim Foto (der Rasterdruck im Druck, der stehen bleibt)", async () => {
+  for (const e of ["physarum", "tiefe", "welle", "tuch", "raster", "montage"]) {
     const { ctx, page, fehler } = await oeffne({ ablauf: e });
     await laden(page); await bereit(page);
     // mit Signet rastet die Montage nicht ins Foto ein (sie schneidet geradewegs ins Signet): hier ohne
     if (e === "montage") { await page.uncheck("#signet"); await bereit(page); }
-    assert.equal(await page.textContent("#kette"), { physarum: "Physarum", tiefe: "Tiefe", tuch: "Tuch", wachstum: "Wachstum", montage: "Montage" }[e]);
+    assert.equal(await page.textContent("#kette"), { physarum: "Physarum", tiefe: "Tiefe", welle: "Wellenwanne", tuch: "Tuch", raster: "Rasterdruck", montage: "Montage" }[e]);
     const { zeit } = await messe(page, 0);
     assert.equal(zeit.teile.length, 1);
     const anfang = await messe(page, zeit.abschnitt.von + 0.15), mitte = await messe(page, (zeit.abschnitt.von + zeit.abschnitt.bis) / 2);
     const ende = await messe(page, zeit.abschnitt.bis - 1 / 30);
     assert.ok(anfang.hell < 12, `${e}: Anfang dunkel (${anfang.hell.toFixed(1)})`);
     assert.ok(mitte.mittelAbw > 5, `${e}: in der Mitte nicht das Foto (${mitte.mittelAbw.toFixed(1)})`);
-    assert.ok(ende.abw <= 3, `${e}: Ende exakt (${ende.abw})`);
+    if (e === "raster") {
+      // «Es sollte aber nicht im Anfangsbild enden»: am Ende und im Stehen danach der Druck, beide gleich
+      const stehen = await messe(page, (zeit.ab.stehen[0] + zeit.ab.stehen[1]) / 2);   // seit 22. Oktober 2026 nur 1 s («Übergang … zu lang»)
+      assert.ok(ende.mittelAbw > 5, `${e}: Ende ist nicht das Foto (${ende.mittelAbw.toFixed(1)})`);
+      assert.ok(Math.abs(stehen.mittelAbw - ende.mittelAbw) < 1.5, `${e}: der Druck bleibt stehen (${stehen.mittelAbw.toFixed(1)} / ${ende.mittelAbw.toFixed(1)})`);
+      // danach das Signet gedruckt, auf dem Papier des Drucks (hell) statt leuchtend auf Schwarz
+      const signet = await messe(page, zeit.ab.signetStehen[0] + 0.2);
+      assert.ok(signet.hell > 180, `${e}: Signet auf Papier (${signet.hell.toFixed(1)})`);
+    } else assert.ok(ende.abw <= 3, `${e}: Ende exakt (${ende.abw})`);
     assert.deepEqual(fehler, []);
     await ctx.close();
   }
@@ -232,7 +240,7 @@ const zaehlvideo = (page, { sekunden = 16 } = {}) => page.evaluate(async (sekund
 /** die Nummer des Zählvideos in einem Bild (quelle: "film" – das Bild des Films zur Zeit t, wie der Export; "foto" – das Standbild; "jetzt" – das
  *  laufende Bild, das die Bühne zur Zeit t allen Effekten gibt) */
 const nummer = (page, t, quelle = "film") => page.evaluate(async ([t, quelle]) => {
-  const { bild } = await import("./film.js?v=30");
+  const { bild } = await import("./film.js?v=37");
   const S = window.__phorma; S.laeuft = false;
   const sz = { ...S.sz, buehne: S.buehne, beschriftung: false }, w = S.mass[0] / 2, h = S.mass[1] / 2;
   const c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
@@ -245,7 +253,7 @@ const nummer = (page, t, quelle = "film") => page.evaluate(async ([t, quelle]) =
   return nr;
 }, [t, quelle]);
 
-await check("Video als Quelle: Montage zeigt das laufende Video, es kommt am Ende beim Standbild an; Wachstum und die Kette ohne beide auch", async () => {
+await check("Video als Quelle: Montage zeigt das laufende Video, es kommt am Ende beim Standbild an; die Kette ohne sie auch", async () => {
   const { ctx, page, fehler } = await oeffne({ ablauf: "montage" });
   await page.uncheck("#signet");   // ohne Signet rastet die Montage ins Standbild ein
   await page.setInputFiles("#datei", { name: "zaehler.mp4", mimeType: "video/mp4", buffer: await zaehlvideo(page) });
@@ -262,17 +270,11 @@ await check("Video als Quelle: Montage zeigt das laufende Video, es kommt am End
     assert.ok(Math.abs(n - Math.round(tau * 30)) <= 1, `bei ${tau.toFixed(2)} s das Bild ${Math.round(tau * 30)} des Videos (gelesen ${n})`);
   }
   assert.ok((await messe(page, zeit.abschnitt.bis - 1 / 30)).abw <= 3, "endet exakt beim Standbild");
-  // ein anderer Effekt: das Wachstum (dauert länger, also ein anderes Standbild)
-  await page.click('[data-wahl="wachstum"]');
-  await page.waitForFunction(() => window.__phorma.ablauf === "wachstum" && window.__phorma.buehneFertig && window.__phorma.sz?.zeit.ablauf === "wachstum", null, { timeout: 240_000 });
-  const z2 = (await messe(page, 0)).zeit, d2 = z2.abschnitt.bis - z2.abschnitt.von;
-  assert.equal(await nummer(page, 0, "foto"), Math.round(d2 * 30), "neues Standbild am Ende des Wachstums");
-  assert.ok((await messe(page, z2.abschnitt.bis - 1 / 30)).abw <= 3, "Wachstum endet exakt beim Standbild");
-  // die Vorschau wartet nur, solange das Wachstum rechnet (Rückmeldung vom 19. Oktober 2026: «Wachstum stockt wieder gegen Ende der Sequenz»)
-  assert.equal(await page.evaluate(() => window.__phorma.buehne.gerechnetBis(window.__phorma.sz.zeit) === Infinity), true, "fertig gerechnet: keine Grenze mehr");
   // seit dem 19. Oktober 2026 läuft es durch alle Effekte (Rückmeldung: «bleibt ständig ein "altes" Video in den ersten drei Schritten hängen»):
-  // auch die Kette ohne Montage und Wachstum kommt am Ende beim Standbild an, nicht beim ersten Bild
-  await page.click('[data-wahl="physarum+tiefe+tuch"]');
+  // auch die Kette ohne Montage kommt am Ende beim Standbild an, nicht beim ersten Bild
+  await page.click('[data-wahl="physarum"]'); await page.waitForFunction(() => window.__phorma.ablauf === "physarum");
+  await page.click('[data-effekt="tiefe"]'); await page.waitForFunction(() => window.__phorma.ablauf === "physarum+tiefe");
+  await page.click('[data-effekt="tuch"]');
   await page.waitForFunction(() => window.__phorma.ablauf === "physarum+tiefe+tuch" && window.__phorma.buehneFertig && window.__phorma.sz?.zeit.ablauf === "physarum+tiefe+tuch", null, { timeout: 240_000 });
   const z3 = (await messe(page, 0)).zeit, d3 = z3.abschnitt.bis - z3.abschnitt.von;
   assert.equal(await nummer(page, 0, "foto"), Math.round(d3 * 30), "Standbild am Ende der Kette");
