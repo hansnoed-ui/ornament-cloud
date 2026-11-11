@@ -12,15 +12,28 @@ const TONNAMEN = ["C", "Cis", "D", "Es", "E", "F", "Fis", "G", "As", "A", "B", "
 export const tonName = (pc) => TONNAMEN[((pc % 12) + 12) % 12];
 export const midiName = (m) => `${tonName(m)}${Math.floor(m / 12) - 1}`;
 
-/** Modi mit ihrem charakteristischen Ton (Halbtöne über dem Zentrum), der in Akkorden und Oberstimme hörbar vorkommen soll */
+/** Modi mit ihrem charakteristischen Ton (Halbtöne über dem Zentrum), der in Akkorden und Oberstimme hörbar vorkommen soll.
+ * gewicht: wie oft ein Stil den Modus von sich aus wählt (modusWaehlen). Ionisch hat 0 (Christian, 11.11.2026: Hörproben Phase 1,
+ * «die ersten gefallen noch nicht so»): er bleibt als Tonvorrat und für Modal Interchange erhalten, wird aber nur gespielt, wenn er
+ * ausdrücklich verlangt ist. */
 export const MODI = Object.freeze({
-  ionisch: { name: "Ionisch (Dur)", stufen: [0, 2, 4, 5, 7, 9, 11], charakter: 11, hell: 5 },
-  lydisch: { name: "Lydisch", stufen: [0, 2, 4, 6, 7, 9, 11], charakter: 6, hell: 6 },
-  mixolydisch: { name: "Mixolydisch", stufen: [0, 2, 4, 5, 7, 9, 10], charakter: 10, hell: 4 },
-  dorisch: { name: "Dorisch", stufen: [0, 2, 3, 5, 7, 9, 10], charakter: 9, hell: 3 },
-  aeolisch: { name: "Äolisch (Moll)", stufen: [0, 2, 3, 5, 7, 8, 10], charakter: 8, hell: 2 },
-  phrygisch: { name: "Phrygisch", stufen: [0, 1, 3, 5, 7, 8, 10], charakter: 1, hell: 1 },
+  ionisch: { name: "Ionisch (Dur)", stufen: [0, 2, 4, 5, 7, 9, 11], charakter: 11, hell: 5, gewicht: 0 },
+  lydisch: { name: "Lydisch", stufen: [0, 2, 4, 6, 7, 9, 11], charakter: 6, hell: 6, gewicht: 20 },
+  mixolydisch: { name: "Mixolydisch", stufen: [0, 2, 4, 5, 7, 9, 10], charakter: 10, hell: 4, gewicht: 20 },
+  dorisch: { name: "Dorisch", stufen: [0, 2, 3, 5, 7, 9, 10], charakter: 9, hell: 3, gewicht: 20 },
+  aeolisch: { name: "Äolisch (Moll)", stufen: [0, 2, 3, 5, 7, 8, 10], charakter: 8, hell: 2, gewicht: 20 },
+  phrygisch: { name: "Phrygisch", stufen: [0, 1, 3, 5, 7, 8, 10], charakter: 1, hell: 1, gewicht: 20 },
 });
+
+/** Wählt einen Modus nach Gewicht. rnd: Zufallsfunktion 0–1 (zufall(seed)). gewichte überschreibt einzelne Gewichte je Stil,
+ * etwa { phrygisch: 5 }; Modi mit Gewicht 0 kommen nie, ausser alle sind 0 (dann der erste). */
+export function modusWaehlen(rnd, gewichte = {}) {
+  const liste = Object.keys(MODI).map((k) => [k, Math.max(0, gewichte[k] ?? MODI[k].gewicht)]), summe = liste.reduce((s, [, g]) => s + g, 0);
+  if (!summe) return liste[0][0];
+  let r = rnd() * summe;
+  for (const [k, g] of liste) { r -= g; if (r < 0 && g > 0) return k; }
+  return liste.filter(([, g]) => g > 0).at(-1)[0];
+}
 
 /** Akkordtypen: Intervalle über dem Grundton → Kürzel. Der Name eines Klangs wird hieraus bestimmt, nicht gespeichert. */
 const TYPEN = [

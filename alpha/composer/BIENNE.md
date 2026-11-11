@@ -44,6 +44,11 @@ benannt. Verminderte Dreiklänge kommen nur als m7b5 vor. sus4 gibt es nur auf S
 Jede Grundidee enthält mindestens einen Klang mit dem charakteristischen Ton; fehlt er, wird ein Klang ersetzt. In Voicings, die den Ton
 enthalten, wird er belohnt.
 
+**Gewichtung der Modi** (`MODI[m].gewicht`, `modusWaehlen(rnd, gewichte)`): Wählt der Stil den Modus selbst, geschieht das nach Gewicht.
+Ionisch hat Gewicht 0 (Christian, 11.11.2026, nach den Hörproben der Phase 1: «die ersten gefallen noch nicht so»): er wird nur gespielt,
+wenn er ausdrücklich verlangt ist, bleibt aber als Tonvorrat und für geliehene Klänge erhalten. Die anderen fünf Modi sind gleich
+gewichtet (20), bis weitere Urteile vorliegen; `kern/bienne.js` (Phase 5) kann die Gewichte je Ausprägung überschreiben.
+
 **Vorrat** (Kandidaten-Graph):
 
 - alle Stufen des Modus als Dreiklang, Septakkord, add9, sus2 und sus4

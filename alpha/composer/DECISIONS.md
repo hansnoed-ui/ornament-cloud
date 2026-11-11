@@ -2,6 +2,12 @@
 
 Hier steht, was Christian entschieden hat und wie er Klänge beurteilt hat, damit spätere Sitzungen es kennen. Neueste oben.
 
+## 11. November 2026
+
+**ornament.bienne, Hörproben Phase 1 (Harmonik)**
+- Christian: «diese sounds sind nice», die Klänge (Rhodes, Fläche, Bass) und die Verläufe stimmen. **Ionisch gefällt nicht** («die ersten gefallen noch nicht so», die beiden Ionisch-Proben).
+- Folge: `MODI[m].gewicht`, Ionisch 0, die anderen fünf gleich (20). `modusWaehlen(rnd, gewichte)` wählt danach; Ionisch nur noch, wenn ausdrücklich verlangt. Lydisch, Mixolydisch, Dorisch, Äolisch, Phrygisch bleiben, bis weitere Urteile kommen.
+
 ## 10. November 2026
 
 **ornament.bienne (Auftrag `bienne.md`), Phase 1: Harmonik 0.1.0**

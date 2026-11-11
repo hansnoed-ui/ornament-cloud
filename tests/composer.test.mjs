@@ -827,3 +827,15 @@ test("Harmonik: Verlauf reproduzierbar, Stimmführung glatt unter vier Halbtöne
   const v = HA.verlaufErzeugen({ zentrum: 0, modus: "ionisch", seed: 5, abschnitte: [{ takte: 16 }, { takte: 16 }] });
   assert.ok(HA.mittlereBewegung(HA.voicingsFuer(v.ereignisse, "flaeche", { bruch: 100, seed: 5 })) > HA.mittlereBewegung(HA.voicingsFuer(v.ereignisse, "flaeche", { bruch: 0, seed: 5 })));
 });
+
+test("Harmonik: modusWaehlen wählt nach Gewicht, Ionisch (Gewicht 0) nie von sich aus", async () => {
+  const { zufall } = await c("erzeuger/grund.js");
+  const rnd = zufall(7), zaehl = {};
+  for (let i = 0; i < 600; i++) { const m = HA.modusWaehlen(rnd); zaehl[m] = (zaehl[m] || 0) + 1; }
+  assert.equal(zaehl.ionisch, undefined, "Ionisch kommt nicht");
+  for (const m of ["lydisch", "mixolydisch", "dorisch", "aeolisch", "phrygisch"]) assert.ok(zaehl[m] > 60, `${m}: ${zaehl[m]}`);
+  assert.equal(HA.MODI.ionisch.gewicht, 0);
+  // ausdrücklich verlangt bleibt Ionisch spielbar
+  assert.equal(HA.modusWaehlen(zufall(1), { ionisch: 1, lydisch: 0, mixolydisch: 0, dorisch: 0, aeolisch: 0, phrygisch: 0 }), "ionisch");
+  assert.ok(HA.verlaufErzeugen({ zentrum: 0, modus: "ionisch", seed: 2, abschnitte: [{ takte: 8 }] }).ereignisse.length > 0);
+});
