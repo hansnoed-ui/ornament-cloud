@@ -132,9 +132,9 @@ if (will("phorma-i")) {
   }] }).catch((e) => console.error("phorma-i:", e.message));
 }
 
-// PHORMA II: die Kette der App («Alle drei als Kette») mit dem Beispielfoto, Tiefe aus dem Bild (ohne Modell von aussen)
+// PHORMA II: die Kette der App («Alle sechs als Kette», seit 25. Oktober 2026) mit dem Beispielfoto, Tiefe aus dem Bild (ohne Modell von aussen)
 if (will("phorma-ii")) {
-  const KETTE = "physarum+tiefe+tuch";
+  const KETTE = "physarum+tiefe+welle+tuch+raster+montage";
   const html = readFileSync(new URL("alpha/phorma-ii/index.html", ROOT), "utf8"), v = version(html, "film.js") || version(readFileSync(new URL("alpha/phorma-ii/app.js", ROOT), "utf8"), "film.js");
   await film("phorma-ii", { poster: 0.45, teile: [{
     seite: "/alpha/phorma-ii/",
@@ -164,6 +164,25 @@ if (will("phorma-iii")) {
   });
   await film("phorma-iii", { ton, crf: 34, poster: 0.62, teile: [teil("gewebe", 0, takt(3)), teil("irrfahrt", takt(3), takt(6)), teil("traube", takt(6), undefined)] })
     .catch((e) => console.error("phorma-iii:", e.message));
+}
+
+// PHORMA III, nur die Traube: der Filmausschnitt für die Kachel auf /b/apps/ (30. Oktober 2026: «beim PHORMA III hätte ich gerne die Trauben Animation»);
+// nur mit Namen, ohne Ton, die ersten 12 Sekunden;
+// daraus das Quadrat: ffmpeg -i phorma-iii-traube.mp4 -vf "crop=540:540,scale=480:480,fade=in:0:12,fade=out:st=11.6:d=0.4" -crf 30 … b/bilder/apps/filme/phorma-iii.mp4
+if (nur.includes("phorma-iii-traube")) {
+  const v = version(readFileSync(new URL("alpha/phorma-iii/app.js", ROOT), "utf8"), "film.js"), ton = beispielton({ dauer: 28 });
+  await film("phorma-iii-traube", { poster: 0.5, teile: [{
+    seite: "/alpha/phorma-iii/", von: 0, bis: 12,   // von 0: ffmpeg liest die Bilder ab 0000.jpg
+    vorbereiten: async (page) => {
+      await page.evaluate((v) => { document.documentElement.dataset.film = v; }, v);
+      await page.click('[data-quelle="ton"]'); await page.click('[data-tonart="musik"]'); await page.click('[data-wahl="traube"]');
+      await page.evaluate(() => { const k = document.getElementById("frickeln"); if (k.checked) k.click(); });
+      await page.setInputFiles("#tondatei", { name: "beispiel.wav", mimeType: "audio/wav", buffer: ton });
+    },
+    bereit: (page) => page.waitForFunction(() => { const S = window.__phorma; return S?.ton && S.sz && S.buehne && S.buehneFertig && !document.getElementById("video").disabled && S.sz.zeit.ablauf === "traube"; }, null, { timeout: 600_000 }),
+    dauerFn: () => window.__phorma.sz.zeit.dauer,
+    bildFn: phormaBild,
+  }] }).catch((e) => console.error("phorma-iii-traube:", e.message));
 }
 
 if (will("the-fictory")) {

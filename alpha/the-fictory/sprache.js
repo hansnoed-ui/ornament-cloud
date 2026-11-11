@@ -5,7 +5,19 @@
 // behalten die Sprache, in der er erzeugt wurde; ein neuer Lauf nimmt die gewählte. Die Wahl: ?sprache= (Bühne und Links des Neubaus), sonst
 // localStorage «ornament.sprache», sonst das Gerät.
 (() => {
-  const DE = { _titel: "The Fictory – Ornament Cloud · Alpha" };
+  // Sätze mit Werten, die app.js über T(schlüssel, …) holt, brauchen auch eine deutsche Fassung, sonst stünde der rohe Schlüssel da.
+  const DE = {
+    _titel: "The Fictory – Ornament Cloud · Alpha",
+    standbilderRechnen: (n) => `${n} Standbilder werden gerechnet …`,
+    zipFertig: (n, m) => `ZIP mit ${n} PNG (${m} px) und dem Protokoll.`,
+    videoLaeuft: (s) => `Video wird aufgenommen (${s} s in Echtzeit) …`,
+    videoFertig: (e, m, w, h, s, mb) => `Video: ${e} (${m}), ${w} × ${h} px, ${s} s und eine Sekunde Halt, ${mb} MB.`,
+    protokollFremd: (n) => `Das Protokoll gehört zu einem anderen Bild (${n}). Lade zuerst dieses Bild.`,
+    protokollGleich: (n) => `Lauf aus dem Protokoll wiederholt: alle ${n} Schlüsselzustände stimmen überein.`,
+    gegenMit: (n, g) => `Mit wirksamen Spuren (Standbild ${n}). Gerissene Kopplungen: ${g}.`,
+    gegenOhne: (g, v) => `Spurenfeld vor Schritt 4 gelöscht. Gerissene Kopplungen: ${g}. Die Teile stehen im Mittel ${v} % der Bildhöhe anders.`,
+    integrationen: (n, jev, video) => `Läuft ganz im Browser, nichts wird hochgeladen. ORNA: ${n} Konstellationen. jev: ${jev}. Video: ${video}.`,
+  };
   const EN = {
     _titel: "The Fictory – Ornament Cloud · Alpha",
     "kopf.sprache": "Language", "kopf.ueber": "About the app",

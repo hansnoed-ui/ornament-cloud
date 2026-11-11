@@ -6,6 +6,7 @@
 // Wiederholung: Zufall), würfelt hier jede Zelle für sich. Das Ergebnis im Projekt bleibt das der CPU; die Grafikkarte rechnet nur Filmbilder.
 // Ohne WebGL 2 gibt gpuEffekte() null zurück, dann bleibt der Film wie bisher (Stationen, Kamera, Überblendung).
 import { farbdrehung, NACHT } from "../kern/bilddaten.js";
+import { lagenWinkel, lagen0 } from "../operationen/schraffur.js";
 
 const ECKE = `#version 300 es
 in vec2 aLage; void main() { gl_Position = vec4(aLage, 0.0, 1.0); }`;
@@ -168,8 +169,186 @@ void main() {
   aus(uMischart == 1 ? 1.0 - (1.0 - q) * (1.0 - min(g, 1.0)) : uMischart == 2 ? g : q + g);
 }`;
 
+// Linienbilder (seit Lab 0.1.36, operationen/linienbild.js): der Ton aus einer gröberen Stufe der Textur (der Stift mittelt eine kleine
+// Fläche), Grund und Tinte nach der Wahl «Farben», ein Würfel und Wertrauschen für Zufall und Zittern
+const LINIEN = `${KOPF}
+uniform float u_gewicht, u_umkehren, uZeit; uniform int uFarbe;
+float deck(float a) { return clamp(0.5 - a, 0.0, 1.0); }
+float stufeFuer(float px) { return log2(max(1.0, px * float(textureSize(uBild, 0).x) / uG.x)); }
+float ton(vec2 p, float lod) {
+  float l = lum(textureLod(uBild, clamp(p, vec2(0.5), uG - 0.5) / uG, lod).rgb);
+  return pow(clamp(u_umkehren > 0.5 ? l : 1.0 - l, 0.0, 1.0), u_gewicht);
+}
+vec3 grund() { return uFarbe == 2 ? NACHT : PAPIER; }
+vec3 tinte(vec2 p) { return uFarbe == 0 ? NACHT : roh(clamp(p, vec2(0.5), uG - 0.5)); }
+void zeichne(float d, vec2 p) { aus(mix(grund(), tinte(p), d)); }
+float wuerfel(vec2 g, float s) { return hash(uvec3(uint(int(g.x) + 65536), uint(int(g.y) + 65536), uint(s))); }
+float rausch(vec2 x, float s) {
+  vec2 i = floor(x), f = x - i, u = f * f * (3.0 - 2.0 * f);
+  float a = wuerfel(i, s), b = wuerfel(i + vec2(1.0, 0.0), s), c = wuerfel(i + vec2(0.0, 1.0), s), d = wuerfel(i + 1.0, s);
+  return a + (b - a) * u.x + (c - a) * u.y + (a - b - c + d) * u.x * u.y;
+}
+`;
+
+// Pulslinien: die Phase ist das Integral der Frequenz entlang des Trägers, hier mit 48 festen Stützstellen je Linie oder Windung (die CPU: je Linie eine Tabelle)
+const PULS = `${LINIEN}
+uniform float u_abstand, u_hub, u_dichte, u_ruhe, u_strich, u_winkel, u_mitteX, u_mitteY, u_phase; uniform int uTraeger, uWelle;
+const float TAU = 6.2831853, PI = 3.14159265;
+float freq(float T, float c) { return u_dichte * (u_ruhe + (1.0 - u_ruhe) * T) / c; }
+vec2 welle(float f) {
+  if (uWelle == 1) return vec2(0.63662 * asin(sin(f)), 0.63662 * sign(cos(f)));
+  if (uWelle == 2) { float t = tanh(3.0 * sin(f)), n = tanh(3.0); return vec2(t / n, 3.0 * cos(f) * (1.0 - t * t) / n); }
+  if (uWelle == 3) return vec2(0.0);
+  return vec2(sin(f), cos(f));
+}
+void main() {
+  vec2 P = lage(); float L = max(uG.x, uG.y), c = max(2.0, u_abstand * L), halb = max(0.5, u_strich * c * 0.5), lod = stufeFuer(c * 0.5);
+  float v = 0.0, T = 0.0, phi = 0.0, dphi = 0.0, zentrum = 1.0, j = 0.0; bool da = true;
+  const int K = 48;
+  if (uTraeger == 0) {
+    float a = radians(u_winkel); vec2 e = vec2(cos(a), sin(a)), q = vec2(-e.y, e.x), C = uG / 2.0, d = P - C;
+    float u = dot(d, e), w = dot(d, q); j = floor(w / c + 0.5); v = w - j * c;
+    // feste Stützstellen entlang der ganzen Linie, damit die Phase von Pixel zu Pixel stetig bleibt
+    float R = ceil(length(uG) / 2.0) + 2.0, h = 2.0 * R / float(K), s = u + R;
+    for (int k = 0; k < K; k++) phi += freq(ton(C + ((float(k) + 0.5) * h - R) * e + j * c * q, lod), c) * h * clamp((s - float(k) * h) / h, 0.0, 1.0);
+    T = ton(C + u * e + j * c * q, lod); dphi = freq(T, c);
+  } else {
+    vec2 M = vec2(u_mitteX, u_mitteY) * uG, d = P - M; float r = length(d), th = atan(d.y, d.x) + PI;
+    zentrum = min(1.0, r / (2.0 * c));
+    if (uTraeger == 2) { j = floor(r / c + 0.5); da = j >= 1.0; } else { j = floor(r / c - th / TAU + 0.5); da = j >= 0.0; }
+    if (da) {
+      float tot = 0.0, teil = 0.0, dt = TAU / float(K);
+      for (int k = 0; k < K; k++) {
+        float tk = (float(k) + 0.5) * dt, rho = uTraeger == 2 ? j * c : c * (j + tk / TAU);
+        float x = freq(ton(M + rho * vec2(cos(tk - PI), sin(tk - PI)), lod), c) * rho * dt;
+        tot += x; teil += x * clamp((th - (tk - 0.5 * dt)) / dt, 0.0, 1.0);
+      }
+      float rho = uTraeger == 2 ? j * c : c * (j + th / TAU), st = max(1.0, floor(tot + 0.5)) / max(tot, 1e-6);
+      v = r - rho; T = ton(M + rho * vec2(cos(th - PI), sin(th - PI)), lod); phi = teil * st; dphi = freq(T, c) * st;
+    }
+  }
+  float D = 0.0;
+  if (da) {
+    float A = u_hub * T * zentrum * max(0.0, c / 2.0 - halb);
+    vec2 w = welle(TAU * (phi + u_phase / 360.0 + uZeit)); float sg = A * w.y * TAU * dphi;
+    D = deck(abs(v - A * w.x) / sqrt(1.0 + sg * sg) - halb);
+    if (uWelle == 3) { float s = (mod(j, 4.0) + 0.5) / 4.0; D *= smoothstep(s - 0.04, s + 0.04, T); }
+  }
+  zeichne(D, P);
+}`;
+
+// Schraffur in Lagen: Winkel und Schwellen der Lagen kommen aus operationen/schraffur.js
+const SCHRAFFUR = `${LINIEN}
+uniform float u_abstand, u_strich, u_weich, u_zittern, u_anschwellen, uW0, uW1, uW2, uW3, uS0, uS1, uS2, uS3; uniform int uN;
+void main() {
+  vec2 P = lage(), d = P - uG / 2.0; float c = max(2.0, u_abstand * max(uG.x, uG.y)), halb = max(0.5, u_strich * c * 0.5), T = ton(P, stufeFuer(c * 0.5)), D = 0.0;
+  for (int k = 0; k < 4; k++) {
+    if (k >= uN) break;
+    float s = k == 0 ? uS0 : k == 1 ? uS1 : k == 2 ? uS2 : uS3, a = radians(k == 0 ? uW0 : k == 1 ? uW1 : k == 2 ? uW2 : uW3);
+    if (T < s - u_weich) continue;
+    vec2 e = vec2(cos(a), sin(a)); float u = dot(d, e), w = -e.y * d.x + e.x * d.y + (fract(float(k) * 0.37) + uZeit) * c;
+    float j0 = floor(w / c + 0.5); w += u_zittern * c * 0.7 * (rausch(vec2(u / (4.0 * c), j0 + 17.0 * float(k)), 3.0) - 0.5);
+    float v = w - floor(w / c + 0.5) * c;
+    float st = u_anschwellen > 0.5 ? 0.35 + 0.65 * min(1.0, clamp((T - s) / max(0.05, 1.0 - s), 0.0, 1.0) * 1.4 + 0.2) : 1.0;
+    D = max(D, deck(abs(v) - halb * st) * smoothstep(s - u_weich, s + u_weich, T));
+  }
+  zeichne(D, P);
+}`;
+
+// Fliessfeld: zehn Schritte je Richtung entlang des Feldes, das Korn gemittelt mit einer laufenden Welle im Kern
+const FLUSS = `${LINIEN}
+uniform float u_laenge, u_koernung, u_kontrast, u_skala, u_drehung, uWandel, uSaat; uniform int uFeld;
+float L, korn, ns, rg, lodG, cd, sd;
+vec2 feld(vec2 q) {
+  float a = 12.566371 * rausch(q / ns + uWandel * vec2(1.0, -0.7), uSaat); vec2 e = vec2(cos(a), sin(a));
+  if (uFeld <= 1) {
+    float g1 = max(1.0, rg * 0.5);
+    vec2 g = vec2(ton(q + vec2(g1, 0.0), lodG) - ton(q - vec2(g1, 0.0), lodG), ton(q + vec2(0.0, g1), lodG) - ton(q - vec2(0.0, g1), lodG)) / (2.0 * g1);
+    float b = length(g), w = min(1.0, b * rg * 6.0);
+    if (b > 1e-6) { vec2 t = uFeld == 0 ? vec2(-g.y, g.x) / b : g / b; if (dot(t, e) < 0.0) t = -t; e = mix(e, t, w); }
+  } else if (uFeld == 3) { vec2 d = q - uG / 2.0; float r = max(length(d), 1.0); e = e * 0.25 + vec2(-d.y, d.x) / r * 0.75; }
+  e = normalize(e + 1e-6);
+  return vec2(cd * e.x - sd * e.y, sd * e.x + cd * e.y);
+}
+float koernchen(vec2 q) { return wuerfel(floor(q / korn), uSaat + 7.0); }
+float kernw(float k) { return (0.5 + 0.5 * cos(3.14159265 * k / 11.0)) * (0.6 + 0.4 * sin(6.2831853 * (0.15 * k - uZeit))); }
+void main() {
+  vec2 P = lage(); L = max(uG.x, uG.y); korn = max(1.0, u_koernung * L); ns = max(4.0, u_skala * L);
+  float lang = u_laenge * L, h = lang / 10.0; rg = max(2.0, lang / 3.0); lodG = stufeFuer(rg); cd = cos(radians(u_drehung)); sd = sin(radians(u_drehung));
+  float g0 = kernw(0.0), summe = koernchen(P) * g0, gs = g0;
+  vec2 f0 = feld(P);
+  for (int r = 0; r < 2; r++) {
+    vec2 q = P, v = r == 0 ? f0 : -f0;
+    for (int k = 1; k <= 10; k++) {
+      q += v * h;
+      if (q.x < 0.0 || q.y < 0.0 || q.x >= uG.x || q.y >= uG.y) break;
+      vec2 f = feld(q); if (dot(f, v) < 0.0) f = -f; v = f;
+      float w = kernw(float(k)); summe += koernchen(q) * w; gs += w;
+    }
+  }
+  float st = clamp(0.5 + (summe / gs - 0.5) * u_kontrast, 0.0, 1.0), T = ton(P, stufeFuer(korn * 0.75));
+  zeichne(smoothstep(0.95 - T, 1.05 - T, st) * smoothstep(0.0, 0.12, T), P);
+}`;
+
+// Punktieren: neun Nachbarzellen, je ein gewürfelter Punkt, der bleibt, wenn ein zweiter Würfel unter dem Ton liegt; im Film schimmern sie
+const PUNKTIEREN = `${LINIEN}
+uniform float u_abstand, u_punkt, u_wachsen, u_linie, u_zittern, uSaat; uniform int uArt;
+void main() {
+  vec2 P = lage(); float c = max(3.0, u_abstand * max(uG.x, uG.y)), lod = stufeFuer(c * 0.5), halb = max(0.5, u_linie * c * 0.5);
+  float mind = uArt == 0 ? 0.0 : uArt == 1 ? 0.2 : 0.3, d1 = 1e9, d2 = 1e9, dp = 0.0; vec2 p1 = vec2(-1.0), pp = vec2(-1.0); vec2 g = floor(P / c);
+  for (int oy = -1; oy <= 1; oy++) for (int ox = -1; ox <= 1; ox++) {
+    vec2 z = g + vec2(ox, oy);
+    float h1 = wuerfel(z, uSaat), h2 = wuerfel(z, uSaat + 1.0), h3 = wuerfel(z, uSaat + 2.0);
+    vec2 sch = 0.15 * vec2(sin(6.2831853 * (uZeit + h1)) - sin(6.2831853 * h1), cos(6.2831853 * (0.8 * uZeit + h2)) - cos(6.2831853 * h2));
+    vec2 q = (z + 0.5 + u_zittern * 0.9 * (vec2(h1, h2) - 0.5) + sch) * c;
+    float T = ton(q, lod);
+    if (h3 >= mind + (1.0 - mind) * T) continue;
+    float d = length(P - q);
+    if (d < d1) { d2 = d1; d1 = d; p1 = q; } else if (d < d2) d2 = d;
+    if (uArt == 0) { float dd = deck(d - u_punkt * c * (1.0 - u_wachsen + u_wachsen * sqrt(T))); if (dd > dp) { dp = dd; pp = q; } }
+  }
+  if (uArt == 0) { zeichne(dp, pp.x < 0.0 ? P : pp); return; }
+  if (p1.x < 0.0) { zeichne(0.0, P); return; }
+  float kante = deck((d2 - d1) / 2.0 - halb);
+  if (uArt == 1) { zeichne(max(kante, deck(d1 - max(0.8, halb * 1.6))), p1); return; }
+  aus(mix(roh(clamp(p1, vec2(0.5), uG - 0.5)), uFarbe == 1 ? PAPIER : NACHT, kante));
+}`;
+
+// Teilung: geviertelt, solange das Feld dunkel (oder seine Viertel verschieden) genug ist; gemittelt über eine gröbere Stufe der Textur
+const TEILUNG = `${LINIEN}
+uniform float u_tiefe, u_schwelle, u_anstieg, u_strich, u_linien; uniform int uFuellung, uKriterium;
+void main() {
+  vec2 P = lage(); float Lg = max(uG.x, uG.y), halb = max(0.5, u_strich * Lg * 0.5), n = max(1.0, floor(u_linien + 0.5)), tiefe = floor(u_tiefe + 0.5);
+  vec2 O = (uG - Lg) / 2.0, x0 = O, ij = vec2(0.0); float s = Lg, T = 0.0, t = 0.0;
+  for (int k = 0; k < 9; k++) {
+    t = float(k); s = Lg / exp2(t); ij = floor((P - O) / s); x0 = O + ij * s;
+    T = ton(x0 + s / 2.0, stufeFuer(s));
+    float m = T;
+    if (uKriterium == 1) {
+      float v = 0.0, l = stufeFuer(s / 2.0);
+      for (int q = 0; q < 4; q++) { vec2 a = vec2(float(q % 2), float(q / 2)); float x = ton(x0 + (a + 0.5) * s / 2.0, l) - T; v += x * x; }
+      m = min(1.0, 4.0 * sqrt(v / 4.0));
+    }
+    if (t >= tiefe - 1.0 || s < 8.0 || m <= u_schwelle + t * u_anstieg) break;
+  }
+  vec2 l = P - x0; float rand = min(min(l.x, s - l.x), min(l.y, s - l.y));
+  if (uFuellung == 0) { aus(mix(textureLod(uBild, clamp(x0 + s / 2.0, vec2(0.5), uG - 0.5) / uG, stufeFuer(s)).rgb, uFarbe == 1 ? PAPIER : NACHT, deck(rand - halb))); return; }
+  float D;
+  if (uFuellung == 1) D = deck(rand - halb);
+  else if (uFuellung == 3) D = deck(max(abs(l.x - s / 2.0), abs(l.y - s / 2.0)) - s * 0.46 * sqrt(T));
+  else {
+    float h = wuerfel(ij, t + 101.0), h2 = wuerfel(ij, t + 202.0);
+    bool quer = T + 0.35 * (sin(6.2831853 * (uZeit + h2)) - sin(6.2831853 * h2)) > h;
+    vec2 u = l / s; float ax = quer ? 1.0 : 0.0, r = min(length(u - vec2(ax, 0.0)), length(u - vec2(1.0 - ax, 1.0))), q = r * n - 0.5;
+    D = r <= 1.0 ? deck(abs(q - floor(q + 0.5)) / n * s - halb) : 0.0;
+  }
+  zeichne(D, P);
+}`;
+
 const index = (wert, liste) => Math.max(0, liste.indexOf(wert));
 const RAND = ["spiegeln", "wiederholen", "grund"];
+/** Ton und Farben der Linienbilder; uZeit: wie weit die Zeichnung von selbst gelaufen ist (Umläufe) */
+const tonU = (p, t) => ({ u_gewicht: p.gewicht, u_umkehren: p.umkehren ? 1 : 0, uFarbe: { i: index(p.farbe, ["tinte", "papier", "nacht"]) }, uZeit: (p.lauf ?? 0) * t });
 
 /** je Operation: Programm und Uniforms aus den Parametern; t (s) und schritt (Bild der Station) für das, was sich von selbst bewegt */
 const EFFEKTE = {
@@ -189,6 +368,20 @@ const EFFEKTE = {
   "lab.feedback": { quelle: FEEDBACK, rueckkopplung: true, uniforms: (p) => ({ uDreh: farbdrehung(p.farbdrehung), u_zoom: p.zoom, u_drehung: p.drehung, u_versatzX: p.versatzX, u_versatzY: p.versatzY,
     u_mischung: p.mischung, u_abklingen: p.abklingen, uMischart: { i: index(p.mischart, ["mischen", "heller", "differenz"]) }, uRand: { i: index(p.rand, RAND) } }) },
   "lab.licht": { licht: true },
+  // die Linienbilder (seit 0.1.36): «lauf» bewegt die Zeichnung von selbst (uZeit in Umläufen), die Modulation folgt dem Klang
+  "lab.puls": { quelle: PULS, uniforms: (p, { t }) => ({ ...tonU(p, t), u_abstand: p.abstand, u_hub: p.hub, u_dichte: p.dichte, u_ruhe: p.ruhe, u_strich: p.strich, u_winkel: p.winkel,
+    u_mitteX: p.mitteX, u_mitteY: p.mitteY, u_phase: p.phase, uTraeger: { i: index(p.traeger, ["linien", "spirale", "kreise"]) }, uWelle: { i: index(p.welle, ["sinus", "zickzack", "rechteck", "schwelle"]) } }) },
+  "lab.schraffur": { quelle: SCHRAFFUR, uniforms: (p, { t }) => {
+    const w = lagenWinkel(p), n = w.length;
+    return { ...tonU(p, t), u_abstand: p.abstand, u_strich: p.strich, u_weich: p.weich, u_zittern: p.zittern, u_anschwellen: p.anschwellen ? 1 : 0, uN: { i: n },
+      ...Object.fromEntries([0, 1, 2, 3].flatMap((k) => [[`uW${k}`, w[k] ?? 0], [`uS${k}`, k < n ? lagen0(p, k) : 2]])) };
+  } },
+  "lab.fluss": { quelle: FLUSS, uniforms: (p, { t, seed }) => ({ ...tonU(p, t), u_laenge: p.laenge, u_koernung: p.koernung, u_kontrast: p.kontrast, u_skala: p.skala, u_drehung: p.drehung,
+    uWandel: p.wandel * t, uSaat: seed % 65536, uFeld: { i: index(p.feld, ["kanten", "quer", "rauschen", "wirbel"]) } }) },
+  "lab.punktieren": { quelle: PUNKTIEREN, uniforms: (p, { t, seed }) => ({ ...tonU(p, t), u_abstand: p.abstand, u_punkt: p.punkt, u_wachsen: p.wachsen, u_linie: p.linie, u_zittern: p.zittern,
+    uSaat: seed % 65536, uArt: { i: index(p.art, ["punkte", "zellen", "mosaik"]) } }) },
+  "lab.teilung": { quelle: TEILUNG, uniforms: (p, { t }) => ({ ...tonU(p, t), u_tiefe: p.tiefe, u_schwelle: p.schwelle, u_anstieg: p.anstieg, u_strich: p.strich, u_linien: p.linien,
+    uFuellung: { i: index(p.fuellung, ["flaeche", "rahmen", "truchet", "boxen"]) }, uKriterium: { i: index(p.kriterium, ["dunkel", "kontrast"]) } }) },
 };
 /** die Operationen, die die Grafikkarte lebendig rechnet */
 export const LEBENDIG = Object.freeze(Object.keys(EFFEKTE));

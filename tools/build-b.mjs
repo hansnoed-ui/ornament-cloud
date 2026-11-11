@@ -19,7 +19,14 @@ import { createHash } from "node:crypto";
 
 const ROOT = new URL("../", import.meta.url);
 const AUS_DE = new URL("b/", ROOT);
-const V = 25;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+// Hauptnavigation: seit 5. November 2026 zuvorderst «Animations» (/animations/, neues Fenster), Wunsch: «ich möchte es zuvorderst auf der hauptseite (vor Zettel)».
+// Gleich dahinter seit 8. November 2026 «Multiverse» (/multiverse/, neues Fenster), Wunsch: «nimm das multiverse ins hauptmenu der seite».
+// Seit 5. November 2026 stehen Angebot, Werke und Zuletzt unter «Über» (aufklappbar wie «Beta», mit der Seite «Über» zuoberst);
+// Wunsch: «Nimm Angebote, zuletzt und werke mal unter "über"».
+const UNTER_UEBER = ["ueber/", "angebot/", "werke/", "zuletzt/"];
+// Seit 8. November 2026 steht «Raster» unter «Beta», zuoberst und in derselben Seite (Wunsch: «du kannst die raster unter "beta" nehmen»).
+const UNTER_BETA = ["raster/"];
+const V = 44;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 const INHALT = { de: DE, en: EN };
@@ -82,10 +89,12 @@ const TRENNUNG = { Beobachter: "Beob&shy;achter", Verspätung: "Ver&shy;spätung
 const weich = (titel) => esc(titel).replace(/\S+$/, (w) => `<span class="w${w.length >= 14 ? " sehr-lang" : w.length >= 11 ? " lang" : ""}">${TRENNUNG[w] || w}</span>`);
 
 /** Das Signet in Bewegung (tools/b-app-bilder.mjs schreibt das Ruhebild; b/tafeln-leben.js lässt es leben) */
-const SIGNET_TAFEL = `<figure class="tafel-lebt signet-tafel" data-tafel="signet"><picture><source srcset="/b/bilder/signet/signet-dunkel.svg" media="(prefers-color-scheme: dark)"><img src="/b/bilder/signet/signet.svg" alt="Das Signet von ornament.cloud, gezeichnet: die Re-entry-Schlaufe mit dem Punkt, der sie abläuft" width="1200" height="1200"></picture></figure>`;
+const SIGNET_TAFEL = `<figure class="tafel-lebt signet-tafel" data-tafel="signet"><picture><source srcset="/b/bilder/signet/signet-dunkel.svg"><img src="/b/bilder/signet/signet.svg" alt="Das Signet von ornament.cloud, gezeichnet: die Re-entry-Schlaufe mit dem Punkt, der sie abläuft" width="1200" height="1200"></picture></figure>`;
 /** Das Bild einer App: die gezeichnete Tafel (tools/b-app-bilder.mjs), hell oder dunkel nach dem Modus des Geräts */
+/** Bild-Apps, deren Kachel einen Ausschnitt aus dem Beispielfilm zeigt (b/bilder/apps/filme/<slug>.mp4 und .jpg) */
+const KACHEL_FILME = new Set(["the-fictory", "phorma-i", "phorma-ii", "phorma-iii"]);
 function appBild(a, extra = "") {
-  return `<picture><source srcset="/${attr(a.bildDunkel)}" media="(prefers-color-scheme: dark)"><img src="/${attr(a.bild)}" alt="${attr(a.bildAlt)}" width="1200" height="1200"${extra}></picture>`;
+  return `<picture><source srcset="/${attr(a.bildDunkel)}"><img src="/${attr(a.bild)}" alt="${attr(a.bildAlt)}" width="1200" height="1200"${extra}></picture>`;
 }
 
 const sitemapSeiten = [];   // b/… und b/en/… für die Sitemap
@@ -162,15 +171,18 @@ function bau(sprache) {
   const fAngebot = (a) => a && { artId: "angebot", href: `${B}angebot/${a.slug}/`, was: a.name, klein: a.kurz };
   const fOrma = (k) => k && { artId: "konstellation", href: `/portfolio/nebeneinander-nacheinander/?pair=${k.id}`, was: `${k.kuenstler} × ${k.theoretiker}${T.konstellationDeutsch}`, klein: k.frage, deutsch: true };
 
-  /** Eine App als Kachel: immer quadratisch */
+  /** Eine App als Kachel: immer quadratisch. Seit 30. Oktober 2026 lebt das Bild («diese App-Bilder etwas sehr langweilig»): die Bild-Apps zeigen
+   *  10 Sekunden aus ihrem Beispielfilm (b/bilder/apps/filme/, quadratisch, stumm; PHORMA III die Traube, Wunsch vom selben Tag, tools/phorma-beispiele.mjs), die übrigen ihre Tafel in Bewegung
+   *  (b/tafeln-leben.js spielt beides nur, solange es im Bild ist, nie bei reduzierter Bewegung) */
   function appKachel(a) {
-    return `<a class="stueck" href="${B}apps/${a.slug}/"><span class="bild quadrat">${appBild(a, ' loading="lazy"')}</span><h3>${zeichen(a.zeichen)}${esc(a.name)}</h3><p>${esc(a.kurz)}</p></a>`;
+    const bild = KACHEL_FILME.has(a.slug)
+      ? `<span class="bild quadrat"><video class="kachel-film" muted loop playsinline preload="none" poster="${attr(mitMarke(`b/bilder/apps/filme/${a.slug}.jpg`))}" width="480" height="480" aria-label="${attr(a.bildAlt)}"><source src="${attr(mitMarke(`b/bilder/apps/filme/${a.slug}.mp4`))}" type="video/mp4"></video></span>`
+      : `<span class="bild quadrat kachel-lebt" data-tafel="${attr(a.slug)}">${appBild(a, ' loading="lazy"')}</span>`;
+    return `<a class="stueck" href="${B}apps/${a.slug}/">${bild}<h3>${zeichen(a.zeichen)}${esc(a.name)}</h3><p>${esc(a.kurz)}</p></a>`;
   }
 
   /** ein Beispielvideo mit Versionsmarke an Film und Poster */
   const video = (b) => `<video controls muted loop playsinline preload="metadata" poster="${attr(mitMarke(b.bild))}" width="${b.mass?.[0] || 1080}" height="${b.mass?.[1] || 1350}">${b.webm ? `<source src="${attr(mitMarke(b.webm))}" type="video/webm">` : ""}<source src="${attr(mitMarke(b.datei))}" type="video/mp4"></video>`;
-  /** der gerechnete Film einer App (der letzte unter assets/beispiele/: bei PHORMA III der Film mit drei Effekten, nicht das Intro) */
-  const filmVon = (a) => [].concat(a.beispiele || []).filter((b) => b.art === "video" && b.datei.startsWith("assets/beispiele/")).at(-1);
 
   /** Beispiele: was aus einer App herauskommt (Bildpaar vorher/nachher, Video, Texte aus ORNA, ORMA und OMNA COLOR – auf Englisch als «texte» übersetzt im Inhalt) */
   function beispiele(a, { kurz = false } = {}) {
@@ -220,8 +232,7 @@ function bau(sprache) {
   ${noindex ? '<meta name="robots" content="noindex">' : `<link rel="canonical" href="${attr(url)}">`}${kopfMehr ? `\n  ${kopfMehr}` : ""}
   ${noindex || nurDe ? "" : `<link rel="alternate" hreflang="de" href="${BASIS}/b/${pfad}">\n  <link rel="alternate" hreflang="en" href="${BASIS}/b/en/${pfad}">\n  <link rel="alternate" hreflang="x-default" href="${BASIS}/b/${pfad}">`}
   <meta name="author" content="${attr(SEITE.person.name)}">
-  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#000000">
   <link rel="icon" href="${ICON}">
   <!-- Vorschaukarte beim Teilen (Open Graph, X); Bild: tools/b-kacheln.mjs -->
   <meta property="og:type" content="${typ}">
@@ -245,12 +256,12 @@ function bau(sprache) {
   <link rel="stylesheet" href="/b/b.css?v=${V}">
   <script type="application/ld+json">${JSON.stringify(ld).replace(/</g, "\\u003c")}</script>
 </head>
-<body>
+<body${aktiv ? ` data-bereich="${aktiv.replace(/\/$/, "")}"` : ""}>
   <a class="sprung" href="#inhalt">${esc(T.sprung)}</a>
   <header class="kopf">
     <div class="spalte">
       <div class="marke"><a class="signet" href="${B}"${pfad === "" ? ' aria-current="page"' : ""}>${SIGNET}<span>ornament.cloud</span></a>${sprachwahl(pfad, nurDe)}</div>
-      <nav class="hauptnav" aria-label="${attr(T.hauptnav)}">${Object.entries(T.nav).map(([p, n]) => `<a href="${B}${p}"${aktiv === p ? ' aria-current="page"' : ""}>${n}</a>`).join("")}</nav>
+      <nav class="hauptnav" aria-label="${attr(T.hauptnav)}"><a href="/animations/" target="_blank" rel="noopener">Animations</a><a href="/multiverse/" target="_blank" rel="noopener">Multiverse</a>${Object.entries(T.nav).filter(([p]) => !UNTER_UEBER.includes(p) && !UNTER_BETA.includes(p)).map(([p, n]) => `<a href="${B}${p}"${aktiv === p ? ' aria-current="page"' : ""}>${n}</a>`).join("")}<details class="beta ueber"><summary${UNTER_UEBER.includes(aktiv) ? ' class="aktiv"' : ""}>${T.nav["ueber/"]}</summary><span class="beta-liste">${UNTER_UEBER.map((p) => `<a href="${B}${p}"${aktiv === p ? ' aria-current="page"' : ""}>${T.nav[p]}</a>`).join("")}</span></details><details class="beta"><summary${UNTER_BETA.includes(aktiv) ? ' class="aktiv"' : ""}>Beta</summary><span class="beta-liste">${UNTER_BETA.map((p) => `<a class="intern" href="${B}${p}"${aktiv === p ? ' aria-current="page"' : ""}>${T.nav[p]}</a>`).join("")}<a href="/beta/lab/" target="_blank" rel="noopener">Lab</a><a href="/beta/drittes-rad/" target="_blank" rel="noopener">Das 3. Rad</a></span></details><a href="/gamma/" target="_blank" rel="noopener">Gamma</a></nav>
     </div>
   </header>
   <main id="inhalt">
@@ -296,8 +307,7 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
   <title>${esc(name)} – ornament.cloud</title>
   <meta name="robots" content="noindex">
   <link rel="canonical" href="${BASIS}${B}${zurueck}">
-  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#000000">
   <link rel="icon" href="${ICON}">
   <link rel="stylesheet" href="/vendor/fonts/fonts.css">
   <link rel="stylesheet" href="/b/b.css?v=${V}">
@@ -341,7 +351,7 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
     const erster = zettel[0];
     const daten = zettel.map((z) => ({ n: z.number, slug: z.slug, titel: z.title, leitsatz: z.bottom_line }));
     const body = `
-<section class="einstieg" aria-labelledby="einstieg-titel">
+<section class="einstieg kapitel kapitel-gruen" aria-labelledby="einstieg-titel">
   <div class="spalte">
     <div class="einstieg-kopf">
       <h1 class="titel" id="einstieg-titel">${esc(SEITE.titel)}<small>${esc(SEITE.lead)}</small></h1>
@@ -352,7 +362,7 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
   </div>
 </section>
 
-<section class="buehne" data-aktuell="${erster.number}" aria-labelledby="feld-titel">
+<section class="buehne kapitel kapitel-papier" data-aktuell="${erster.number}" aria-labelledby="feld-titel">
   <div class="spalte">
     <div class="abschnitt-kopf"><h2 id="feld-titel">${zeichen("zettel")}${esc(T.start.kasten)}</h2><p>${esc(T.start.kastenText)}</p><a class="weiter" href="${B}zettel/">${esc(T.start.alleZettel)}</a></div>
   </div>
@@ -368,7 +378,7 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
   <script type="application/json" id="zettel-daten">${JSON.stringify(daten).replace(/</g, "\\u003c")}</script>
 </section>
 
-<section class="dialog" aria-labelledby="dialog-titel">
+<section class="dialog kapitel kapitel-rot" aria-labelledby="dialog-titel">
   <div class="spalte">
     <h2 id="dialog-titel">${esc(DIALOG.frage)}</h2>
     <div class="chips" role="radiogroup" aria-label="${attr(DIALOG.frage)}">
@@ -379,35 +389,35 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
 </section>
 
 <!-- Prüfraster (seit 21. Oktober 2026 statt «Denken»: die sieben Zyklen standen doppelt, der Zettelkasten hat oben seinen Abschnitt; die Raster hatten keinen Titel) -->
-<section class="abschnitt" aria-labelledby="raster-titel">
+<section class="abschnitt kapitel tinte" aria-labelledby="raster-titel">
   <div class="spalte">
     <div class="abschnitt-kopf"><h2 id="raster-titel">${zeichen("raster")}${esc(T.start.raster)}</h2><p>${esc(T.start.rasterText)}</p><a class="weiter" href="${B}raster/">${esc(T.start.alleRaster)}</a></div>
     <ul class="liste-linien">${RASTER.map((r) => `<li><a href="${B}raster/${r.slug}/"><span class="n">${zeichen(r.slug)}</span><span class="name">${esc(r.name)}</span><span class="pfeil">${esc(r.stand)}</span><span class="kurz">${esc(r.kurz)}</span></a></li>`).join("")}</ul>
   </div>
 </section>
 
-<section class="abschnitt" aria-labelledby="spielen-titel">
+<section class="abschnitt kapitel kapitel-senf" aria-labelledby="spielen-titel">
   <div class="spalte">
     <div class="abschnitt-kopf"><h2 id="spielen-titel">${zeichen("spielen")}${esc(T.start.spielen)}</h2><p>${esc(T.start.spielenText)}</p><a class="weiter" href="${B}apps/">${esc(T.start.alleApps)}</a></div>
     <div class="reihe zeilen">${APPS.map(appKachel).join("")}</div>
   </div>
 </section>
 
-<section class="abschnitt" aria-labelledby="werke-titel">
+<section class="abschnitt kapitel tinte" aria-labelledby="werke-titel">
   <div class="spalte">
     <div class="abschnitt-kopf"><h2 id="werke-titel">${zeichen("werke")}${esc(T.start.werke)}</h2><p>${esc(echteWerke.length ? T.start.werkeText : T.start.werkeBald)}</p><a class="weiter" href="${B}werke/">${esc(echteWerke.length ? T.start.alleWerke : T.start.wasKommt)}</a></div>
     ${echteWerke.length ? `<div class="reihe zeilen">${echteWerke.map((w) => `<a class="stueck" href="${B}werke/#${w.slug}"><span class="bild"><img src="/art/bilder/${w.slug}-1-800.webp" alt="${attr(w.bilder[0].alt)}" loading="lazy" width="800" height="1067"></span><h3>${esc(w.titel)}</h3><p>${esc(w.technik)}, ${w.masse.b} × ${w.masse.h} cm</p></a>`).join("")}</div>` : ""}
   </div>
 </section>
 
-<section class="abschnitt" aria-labelledby="zuletzt-titel">
+<section class="abschnitt kapitel tinte" aria-labelledby="zuletzt-titel">
   <div class="spalte">
     <div class="abschnitt-kopf"><h2 id="zuletzt-titel">${zeichen("zuletzt")}${esc(T.start.zuletzt)}</h2><p>${esc(T.start.zuletztText)}${T.beitraegeDeutsch ? ` ${esc(T.beitraegeDeutsch)}` : ""}</p><a class="weiter" href="${B}zuletzt/">${esc(T.start.alleBeitraege)}</a></div>
     ${beitraege.eintraege.slice(-2).reverse().map(beitrag).join("")}
   </div>
 </section>
 
-<section class="abschnitt" aria-labelledby="liste-titel">
+<section class="abschnitt kapitel kapitel-papier" aria-labelledby="liste-titel">
   <div class="spalte">
     <div class="liste-kasten" style="margin-top:0;border-top:0;padding-top:0">
       <h2 id="liste-titel">${esc(UEBER.liste.titel)}</h2>
@@ -505,14 +515,13 @@ ${gruppen.map((g) => `<section class="abschnitt" aria-labelledby="g-${g.replace(
 </div></section>`).join("\n")}
 <section class="abschnitt" aria-labelledby="resultate-titel"><div class="spalte">
   <div class="abschnitt-kopf"><h2 id="resultate-titel">${esc(T.apps.ergebnis)}</h2><p>${esc(T.apps.ergebnisText)}</p></div>
-  <!-- die vier gerechneten Filme klein nebeneinander (21. Oktober 2026, Rückmeldung: «schlecht lesbar, weil gross», und es fehlten die neu
-       gerechneten Beispiele), die Beschreibung steht auf der Seite der App; darunter eine Konstellation und eine Übung -->
-  <div class="galerie-filme">${["the-fictory", "phorma-i", "phorma-ii", "phorma-iii"].map((sl) =>   /* wie auf «Apps» (21. Oktober 2026, Wunsch: «zuerst THE FICTORY, dann PHORMA I, PHORMA II, PHORMA III») */ { const a = appVon(sl), b = filmVon(a); return b ? `<figure class="galerie-film">${video(b)}<figcaption class="klein"><a href="${B}apps/${a.slug}/">${esc(a.name)}</a></figcaption></figure>` : ""; }).join("")}</div>
+  <!-- die vier Filme stehen hier nicht mehr (30. Oktober 2026: die Kacheln oben zeigen sie schon, «dann kann das gespart werden»);
+       die ganzen Filme stehen auf der Seite der App -->
   <div class="galerie">
     ${["orna", "omna-color"].map((sl) => { const a = appVon(sl); return `<div class="galerie-stueck"><p class="klein"><a href="${B}apps/${a.slug}/">${esc(a.name)}</a></p>${beispiele(a, { kurz: true })}</div>`; }).join("")}
   </div>
 </div></section>`;
-    veroeffentliche({ pfad: "apps/", aktiv: "apps/", titel: T.apps.seitenTitel, beschreibung: T.apps.beschreibung, body, bildAlt: T.apps.bildAlt });
+    veroeffentliche({ pfad: "apps/", aktiv: "apps/", titel: T.apps.seitenTitel, beschreibung: T.apps.beschreibung, body, bildAlt: T.apps.bildAlt, module: ["tafeln-leben.js"] });
   }
   for (const a of APPS) {
     const zs = zettelZu("app", a.slug, 3);
@@ -722,8 +731,8 @@ ${form}</div>`;
       kopfMehr: [
         `<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; media-src 'self' blob:; font-src 'self'; connect-src 'self' https://api.github.com https://api.anthropic.com; object-src 'none'; base-uri 'self'; form-action 'none'">`,
         `<meta name="referrer" content="no-referrer">`,
-        `<link rel="stylesheet" href="/social-media/social.css?v=1">`,
-        `<link rel="stylesheet" href="/social-media/redaktion/redaktion.css?v=3">`,
+        `<link rel="stylesheet" href="/social-media/social.css?v=2">`,
+        `<link rel="stylesheet" href="/social-media/redaktion/redaktion.css?v=4">`,
       ].join("\n  "),
       skripte: ["/social-media/js/redaktion/app.js?v=4", "/social-media/js/redaktion/schritte.js?v=2"] });
   }
@@ -768,7 +777,7 @@ copyFileSync(new URL("src/b/b.js", ROOT), new URL("b.js", AUS_DE));
 copyFileSync(new URL("src/b/tafeln.mjs", ROOT), new URL("tafeln.mjs", AUS_DE));
 writeFileSync(new URL("tafeln-leben.js", AUS_DE), readFileSync(new URL("src/b/tafeln-leben.js", ROOT), "utf8").replace('from "./tafeln.mjs"', `from "./tafeln.mjs?v=${V}"`));
 mkdirSync(new URL("kacheln/", AUS_DE), { recursive: true });
-writeFileSync(new URL("kacheln/liste.json", AUS_DE), JSON.stringify(kachelSeiten.de.concat(["werkstatt/"]), null, 1) + "\n");
+writeFileSync(new URL("kacheln/liste.json", AUS_DE), JSON.stringify(kachelSeiten.de.concat(["werkstatt/", "redaktion/"]), null, 1) + "\n");
 mkdirSync(new URL("en/kacheln/", AUS_DE), { recursive: true });
 writeFileSync(new URL("en/kacheln/liste.json", AUS_DE), JSON.stringify(kachelSeiten.en, null, 1) + "\n");
 

@@ -2,7 +2,7 @@
 // stilvoll re-designt, nicht dieses farbige Durcheinander. Gerne die eine oder andere Farbe, aber alles stilisiert, zur Seite passend.»).
 // Sieben Tafeln, 1200 × 1200, als SVG geschrieben (scharf in jeder Grösse, wenige Kilobyte): das Ruhebild der Tafeln aus src/b/tafeln.mjs,
 // die auf den App-Seiten auch in Bewegung zu sehen sind (b/tafeln-leben.js). Jede Tafel hell und dunkel (echte Umkehr, wie die Seite;
-// die Seite wählt mit <picture> nach prefers-color-scheme). Nur OMNA COLOR trägt Farbe – dort ist Farbe der Inhalt.
+// die Seite zeigt seit 27. Oktober 2026 immer das dunkle, hell bleibt für data-theme="light"). Nur OMNA COLOR trägt Farbe – dort ist Farbe der Inhalt.
 //
 //   node tools/b-app-bilder.mjs                                   alle nach b/bilder/apps/<slug>.svg bzw. b/bilder/raster/<slug>.svg, dazu <slug>-dunkel.svg
 //   node tools/b-app-bilder.mjs phorma                            nur Apps, deren Kennung so beginnt

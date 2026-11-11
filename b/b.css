@@ -10,6 +10,7 @@
   --flaeche: #f3f3f1;
   --faden: #1d3fd6;
   --faden-hell: rgba(29, 63, 214, 0.18);
+  --lab: #c2185b;   /* «Lab» in der Hauptnavigation führt aus der Seite weg: Rosa (27. Oktober 2026) */
   --sans: "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --serif: "Newsreader", "Iowan Old Style", Georgia, serif;
   --spalte: 1120px;
@@ -17,16 +18,17 @@
   --takt: 8px;
   color-scheme: light dark;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --papier: #000000;
-    --tinte: #ffffff;
-    --grau: #9a9a9a;
-    --linie: #2e2e2e;
-    --flaeche: #141414;
-    --faden: #8fb0ff;
-    --faden-hell: rgba(143, 176, 255, 0.22);
-  }
+/* Dunkel ist der Standard, unabhängig vom Gerät (27. Oktober 2026); data-theme="light" auf <html> holt Papier und Tinte hell zurück. */
+:root:not([data-theme="light"]) {
+  --papier: #000000;
+  --tinte: #ffffff;
+  --grau: #9a9a9a;
+  --linie: #2e2e2e;
+  --flaeche: #141414;
+  --faden: #8fb0ff;
+  --faden-hell: rgba(143, 176, 255, 0.22);
+  --lab: #ffa3d1;
+  color-scheme: dark;
 }
 @media (min-width: 760px) { :root { --rand: 32px; } }
 
@@ -73,6 +75,30 @@ ul, ol { padding: 0; list-style: none; }
 .hauptnav a { text-decoration: none; padding: 4px 0; border-bottom: 1px solid transparent; }
 .hauptnav a[aria-current] { border-bottom-color: var(--faden); color: var(--faden); }
 .hauptnav a:hover { border-bottom-color: currentColor; }
+/* «Beta» (28. Oktober 2026, statt «Lab»; Wunsch: «anstatt den menu punkt "lab" den menupunkt "beta", aufklappbar und darin "lab" und "das 3. rad"»): ein <details>, b.js schliesst es bei einem Klick daneben und mit Escape */
+.hauptnav .beta { position: relative; }
+.hauptnav .beta > summary { list-style: none; cursor: pointer; padding: 4px 0; border-bottom: 1px solid transparent; }
+.hauptnav .beta > summary::-webkit-details-marker { display: none; }
+.hauptnav .beta > summary::after { content: " ▾"; font-size: 0.8em; }
+.hauptnav .beta > summary:hover, .hauptnav .beta[open] > summary { border-bottom-color: currentColor; }
+.hauptnav .beta > summary:focus-visible { outline: 2px solid var(--faden); outline-offset: 3px; }
+/* umgekehrt gesetzt (Rückmeldung: «sieht noch nicht gut aus, weil es genau die selbe farbe wie der seitenhintergrund hat»): Fläche in der Schriftfarbe des Kopfs, Schrift in seiner Grundfarbe – auf dem grünen Kopf weiss mit Grün, auf hellen Seiten schwarz mit Weiss */
+/* In der Farbe des Kopfs mit feiner Linie statt als weisser Kasten (28. Oktober 2026, Wunsch: «Auf der anderen Bildschirmhälfte zeigen?»);
+   am Telefon setzt b.js .nach-rechts, wenn «Beta» in der linken Bildschirmhälfte steht, dann öffnet die Liste nach rechts. */
+.beta-liste { position: absolute; top: calc(100% + 8px); right: -14px; z-index: 30; display: grid; width: max-content; min-width: 170px; max-width: calc(100vw - 2 * var(--rand)); padding: 4px 0; background: var(--papier); color: var(--tinte); border: 1px solid var(--linie); box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28); }
+.hauptnav .beta-liste a { display: flex; align-items: center; min-height: 44px; padding: 0 18px; border-bottom: 0; white-space: nowrap; color: var(--tinte); }
+.hauptnav .beta-liste a + a { border-top: 1px solid var(--linie); }
+.hauptnav .beta-liste a::after { content: "\00a0↗"; opacity: 0.7; }
+.hauptnav .beta-liste a:hover, .hauptnav .beta-liste a:focus-visible { background: color-mix(in srgb, var(--tinte) 12%, transparent); outline: none; }
+@media (max-width: 760px) { .beta.nach-rechts .beta-liste { right: auto; left: -18px; } }
+/* «Über» (5. November 2026, Wunsch: «Nimm Angebote, zuletzt und werke mal unter "über"»): gleiches Aufklappmenü wie «Beta», aber Seiten der Website, darum ohne Pfeil */
+.hauptnav .ueber .beta-liste a::after { content: none; }
+.hauptnav .ueber .beta-liste a[aria-current] { font-weight: 600; }
+.hauptnav .beta > summary.aktiv { border-bottom-color: var(--faden); color: var(--faden); }
+/* «Raster» unter «Beta» (8. November 2026): öffnet in derselben Seite, darum ohne ↗; die aktive fett wie unter «Über» */
+.hauptnav .beta-liste a.intern::after { content: none; }
+.hauptnav .beta-liste a.intern[aria-current] { font-weight: 600; }
+/* .hauptnav a[target="_blank"] (Lab) hatte Rosa; seit die Seiten farbige Köpfe haben, wieder wie die anderen Menüpunkte (27. Oktober 2026, Wunsch: «mach ihn wieder in die selbe farbe wie die anderen menupunkte») */
 .kopf::after { content: ""; display: block; max-width: var(--spalte); margin: 18px auto 0; height: 1px; background: var(--linie); }
 @media (min-width: 760px) { .kopf::after { margin-left: auto; margin-right: auto; width: calc(100% - 2 * var(--rand)); } }
 
@@ -182,7 +208,9 @@ a.feldchen:focus-visible { outline: 2px solid var(--faden); outline-offset: 2px;
 .signet-tafel { margin: 0; max-width: 300px; justify-self: end; }
 .tafel-lebt.signet-tafel picture, .tafel-lebt.signet-tafel svg { border: 0; background: none; }
 .ueber-signet { max-width: 240px; justify-self: start; margin-bottom: 28px; }
-@media (max-width: 760px) { .einstieg-kopf { grid-template-columns: minmax(0, 1fr); } .signet-tafel { max-width: 200px; justify-self: start; } }
+/* am Handy steht das Signet klein über dem Titel, damit es ganz im ersten Bild ist (27. Oktober 2026, Rückmeldung: «die Animation auf der Titelseite wieder
+   abgeschnitten» – unter Titel und Text lag es halb unter dem Bildschirmrand; mittig nach «so müsste das logo schon eingemittet sein», 154 px nach «ca 20% grösser») */
+@media (max-width: 760px) { .einstieg-kopf { grid-template-columns: minmax(0, 1fr); gap: 12px; } .signet-tafel { order: -1; width: 154px; max-width: 154px; justify-self: center; } }
 .angebote { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 24px; border-top: 1px solid var(--tinte); }
 .angebot { display: grid; align-content: start; gap: 10px; padding: 22px 0 26px; border-bottom: 1px solid var(--linie); text-decoration: none; color: inherit; }
 .angebot + .angebot { border-left: 0; }
@@ -226,6 +254,67 @@ a.feldchen:focus-visible { outline: 2px solid var(--faden); outline-offset: 2px;
 .dialog:has(#mit-bild:checked) .weg-bild, .dialog:has(#mit-frage:checked) .weg-frage, .dialog:has(#mit-auftrag:checked) .weg-auftrag,
 .dialog:has(#mit-begriff:checked) .weg-begriff, .dialog:has(#mit-gruppe:checked) .weg-gruppe { display: block; }
 
+/* ---------- Kapitel: jeder Bereich der Startseite ein eigenes Farbfeld (27. Oktober 2026, Wunsch: «um die startseite etwas übersichtlicher zu
+   machen … die dort präsentierten kapitelbereiche … jeweils eine verschiedene hintergrundfarbe … teilweise auch reverse»). Ein Feld setzt
+   Papier, Tinte, Grau, Linie und Faden für sich neu; alles darin (Knöpfe, Chips, das Feld der 49 Zettel, die Tafeln) folgt von selbst.
+   Die Felder stossen ohne Abstand aneinander; Folge: Tannengrün (seit 27. Oktober 2026 statt Blaupause, Wunsch: «etwas anderes … als das blau am anfang»), Papier (Umkehr), Rot, Tinte, Senf, Tinte, Papier. ---------- */
+.kapitel { padding: clamp(56px, 8vw, 104px) 0; background: var(--papier); color: var(--tinte); }
+.kapitel .abschnitt-kopf h2, .kapitel.dialog h2 { font-size: clamp(1.9rem, 4.4vw, 3.2rem); letter-spacing: -0.03em; line-height: 1.02; }
+.kapitel.tinte + .kapitel.tinte { padding-top: 0; }   /* zwei Kapitel auf Tinte nacheinander: ein Feld */
+.kapitel-gruen,
+body[data-bereich="angebot"] :is(.kopf, main > :first-child) {
+  --papier: #1f4d3a; --tinte: #ffffff; --grau: rgba(255, 255, 255, 0.8); --linie: rgba(255, 255, 255, 0.34);
+  --flaeche: #1a4232; --faden: #ffffff; --faden-hell: rgba(255, 255, 255, 0.2);
+  color-scheme: dark;
+}
+.kapitel-papier,
+body[data-bereich="zettel"] :is(.kopf, main > :first-child) {
+  --papier: #ffffff; --tinte: #000000; --grau: #5f5f5f; --linie: #d6d6d6;
+  --flaeche: #f1f1ef; --faden: #1d3fd6; --faden-hell: rgba(29, 63, 214, 0.16);
+  color-scheme: light;
+}
+.kapitel-rot,
+body[data-bereich="raster"] :is(.kopf, main > :first-child), body[data-bereich="angebot"] .briefing {
+  --papier: #e0503c; --tinte: #000000; --grau: rgba(0, 0, 0, 0.74); --linie: rgba(0, 0, 0, 0.26);
+  --flaeche: #d4442f; --faden: #000000; --faden-hell: rgba(0, 0, 0, 0.14);
+  color-scheme: light;
+}
+.kapitel-senf,
+body[data-bereich="apps"] :is(.kopf, main > :first-child) {
+  --papier: #e6b117; --tinte: #000000; --grau: rgba(0, 0, 0, 0.72); --linie: rgba(0, 0, 0, 0.24);
+  --flaeche: #000000; --faden: #000000; --faden-hell: rgba(0, 0, 0, 0.14);
+  color-scheme: light;
+}
+.kapitel-rosa,
+body[data-bereich="werke"] :is(.kopf, main > :first-child), body[data-bereich="ueber"] :is(.kopf, main > :first-child) {
+  --papier: #f2b2c0; --tinte: #000000; --grau: rgba(0, 0, 0, 0.72); --linie: rgba(0, 0, 0, 0.24);
+  --flaeche: #e9a1b1; --faden: #000000; --faden-hell: rgba(0, 0, 0, 0.14);
+  color-scheme: light;
+}
+.kapitel ::selection { background: var(--tinte); color: var(--papier); }
+/* Bereiche: die Farben der Startseite auf den anderen Seiten (27. Oktober 2026, Wunsch: «Mir gefällt das Farbkonzept mit dem grün, orange, gelb …
+   Schau … ob es auf anderen Seiten auch passt, die Pakette etwas zu erweitern»). Kopf und erster Abschnitt jeder Seite tragen die Farbe ihres
+   Bereichs (data-bereich auf <body>, tools/build-b.mjs): Angebot Tannengrün wie der Einstieg, Apps Senf wie «Spielen», Zettel Papier wie der
+   Zettelkasten, Raster Rot, Werke und Über Rosa (neu in der Palette), Zuletzt bleibt Tinte. Auf den Angebotsseiten steht das Briefing auf Rot. */
+body[data-bereich] :is(.kopf, main > :first-child), body[data-bereich="angebot"] .briefing { background: var(--papier); color: var(--tinte); }
+body[data-bereich] .kopf::after { background: transparent; }
+body[data-bereich]:not([data-bereich="zuletzt"]) main > :first-child { padding-top: clamp(24px, 3.5vw, 44px); padding-bottom: clamp(44px, 6vw, 80px); }
+body[data-bereich="angebot"] .briefing { margin-top: 48px; padding-bottom: clamp(44px, 6vw, 80px); }
+body[data-bereich="zettel"] .buehne-zettel { padding-top: clamp(48px, 7vw, 88px); }   /* das Feld nicht direkt an den Farbwechsel («etwas knapp an den farbwechsel gesetzt») */
+body[data-bereich] :is(main > :first-child, .briefing) ::selection { background: var(--tinte); color: var(--papier); }
+/* der Kopf trägt die Farbe des ersten Kapitels, die Linie darunter fällt weg; der Fuss schliesst ohne Lücke an */
+body:has(main > .kapitel-gruen:first-child) .kopf { --papier: #1f4d3a; --tinte: #ffffff; --grau: rgba(255, 255, 255, 0.8); --faden: #ffffff; --lab: #ffa3d1; background: var(--papier); color: var(--tinte); }
+body:has(main > .kapitel:first-child) .kopf::after { background: transparent; }
+body:has(main > .kapitel:first-child) .kopf + main > .kapitel:first-child { padding-top: clamp(28px, 4vw, 48px); }
+main:has(> .kapitel:last-child) + .fuss { margin-top: 0; border-top: 0; padding-top: 48px; }
+/* auf Rot und Senf: was aktiv ist, wird Tinte statt Blaupause; auf Grün wird es Papier */
+.kapitel-rot .chips input:checked + .chip, .kapitel-senf .chips input:checked + .chip { color: var(--papier); }
+.kapitel .stueck .bild::after { border-color: transparent; }
+.kapitel-papier .feld a:hover, .kapitel-papier .feld a.aktiv { color: #ffffff; }
+.kapitel-gruen .feld a:hover, .kapitel-gruen .feld a.aktiv, .kapitel-gruen .knopf.voll, .kapitel-gruen .knopf:hover { color: var(--papier); }
+.kapitel .liste-kasten h2 { font-size: clamp(1.9rem, 4.4vw, 3.2rem); letter-spacing: -0.03em; line-height: 1.02; }
+@media (max-width: 760px) { .kapitel { padding: 56px 0; } }
+
 /* Reihen auf der Startseite */
 .reihe { display: grid; gap: 24px; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
 .stueck { display: grid; gap: 10px; align-content: start; text-decoration: none; }
@@ -233,6 +322,7 @@ a.feldchen:focus-visible { outline: 2px solid var(--faden); outline-offset: 2px;
 .stueck .bild img, .stueck .bild video { width: 100%; height: 100%; object-fit: cover; }
 .stueck .bild.quer { aspect-ratio: 1200 / 630; }
 .stueck .bild.quadrat { aspect-ratio: 1; }
+.stueck .bild.kachel-lebt svg { display: block; width: 100%; height: 100%; }   /* die Tafel in Bewegung (b/tafeln-leben.js) */
 .stueck h3 { font-weight: 500; font-size: 1.1rem; letter-spacing: -0.01em; }
 .stueck p { color: var(--grau); font-size: 0.95rem; line-height: 1.4; }
 .stueck:hover h3 { color: var(--faden); }
@@ -390,11 +480,6 @@ a.feldchen:focus-visible { outline: 2px solid var(--faden); outline-offset: 2px;
 .uebung ol { list-style: decimal; padding-left: 1.3em; display: grid; gap: 4px; }
 .auftraege { display: grid; gap: 8px; }
 .auftraege li { display: grid; gap: 2px; }
-/* die gerechneten Filme der Apps: vier nebeneinander, auf dem Handy zwei; darunter die Texte */
-.galerie-filme { display: grid; gap: 24px 16px; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: start; margin-bottom: 40px; }
-.galerie-film { display: grid; gap: 8px; margin: 0; }
-.galerie-film video { width: 100%; height: auto; background: #000; }
-@media (max-width: 760px) { .galerie-filme { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 12px; } }
 .galerie { display: grid; gap: 32px 24px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
 .galerie-stueck { display: grid; gap: 10px; align-content: start; }
 .galerie-stueck .paar { max-width: none; }
@@ -412,6 +497,13 @@ a.feldchen:focus-visible { outline: 2px solid var(--faden); outline-offset: 2px;
 .werk img, .werk video { width: 100%; height: 100%; object-fit: cover; }
 .werk h3 { font-weight: 500; font-size: 1.15rem; }
 .werk .preis { font-variant-numeric: tabular-nums; }
+/* die drei Ankündigungen: Text immer in derselben Spalte und gleiche Abstände (28. Oktober 2026, Rückmeldung: «einen kleinen layout fehler» – ein kurzer
+   Text rutschte mit space-between nach rechts, und unter jeder Zeile lag noch der Abstand für Inhalte, die es noch nicht gibt) */
+body[data-bereich="werke"] .abschnitt-kopf { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: baseline; gap: 8px 32px; margin-bottom: 0; }
+body[data-bereich="werke"] .abschnitt-kopf p { max-width: 56ch; }
+body[data-bereich="werke"] .abschnitt-kopf + .knopfreihe { margin-top: 20px; }
+@media (min-width: 761px) { body[data-bereich="werke"] .abschnitt-kopf + .knopfreihe { margin-left: calc((100% - 32px) * 5 / 12 + 32px); } }
+@media (max-width: 760px) { body[data-bereich="werke"] .abschnitt-kopf { grid-template-columns: minmax(0, 1fr); } }
 .beitrag { display: grid; gap: 10px; padding: 18px 0; border-bottom: 1px solid var(--linie); max-width: 62ch; }
 .beitrag .wer { display: flex; gap: 10px; align-items: center; font-size: 0.92rem; color: var(--grau); }
 .beitrag .wer img { width: 28px; height: 28px; border-radius: 50%; }
@@ -474,8 +566,6 @@ body.buehne-seite { height: 100dvh; display: grid; grid-template-rows: 48px minm
 .spalte > .tafel-lebt:not(.signet-tafel) figcaption { grid-column: 2; }
 /* Filme im Querformat (PHORMA III «Traube», 16 : 9): breiter, damit sie nicht winzig werden; auf dem Handy über die ganze Breite, Text darunter */
 .beispiel-video.quer { grid-template-columns: 400px minmax(0, 1fr); }
-/* in der Galerie der Apps-Seite alle im selben Hochformat, ein Querfilm auf die Mitte zugeschnitten */
-.galerie-film video { aspect-ratio: 4 / 5; object-fit: cover; }
 @media (max-width: 560px) {
   .beispiel-video, .spalte > .tafel-lebt:not(.signet-tafel) { grid-template-columns: 150px minmax(0, 1fr); column-gap: 14px; }
   .beispiel-video figcaption { font-size: 0.9rem; }
@@ -491,4 +581,11 @@ body.buehne-seite { height: 100dvh; display: grid; grid-template-rows: 48px minm
   .app-oben > .stueck-bild.quadrat { grid-column: 2; grid-row: 1; margin-top: 0; max-width: 340px; width: 100%; }
   .app-oben > .app-oben-text { grid-column: 1; grid-row: 1; }
   .app-oben > .stueck-text { grid-column: 1 / -1; }
+}
+
+/* Kapitelköpfe der Startseite: Titel, Text und Link in festen Spalten, damit der Text in jedem Kapitel an derselben Stelle beginnt
+   (30. Oktober 2026, Christian: «layout verschiebung» zwischen Werke und Zuletzt; vorher Flex mit space-between, der Text stand je nach Länge anders). */
+@media (min-width: 761px) {
+  .kapitel .abschnitt-kopf { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr) 10rem; align-items: baseline; gap: 8px 32px; }
+  .kapitel .abschnitt-kopf a.weiter { justify-self: end; }
 }

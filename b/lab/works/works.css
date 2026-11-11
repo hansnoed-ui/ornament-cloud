@@ -22,9 +22,7 @@
   --dock-h: 60px;
   color-scheme: light dark;
 }
-@media (prefers-color-scheme: dark) {
-  :root { --papier: #000000; --tinte: #f2f2f2; --grau: #8a8a8a; --leise: #6c6c6c; --linie: #262626; --flaeche: #141414; --glas: rgba(28, 28, 28, 0.82); --buehne: #000; --faden: #8fb0ff; }
-}
+:root:not([data-theme="light"]) { --papier: #000000; --tinte: #f2f2f2; --grau: #8a8a8a; --leise: #6c6c6c; --linie: #262626; --flaeche: #141414; --glas: rgba(28, 28, 28, 0.82); --buehne: #000; --faden: #8fb0ff; color-scheme: dark; }
 @media (min-width: 760px) { :root { --rand: 24px; } }
 
 *, *::before, *::after { box-sizing: border-box; }

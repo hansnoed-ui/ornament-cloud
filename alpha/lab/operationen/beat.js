@@ -19,7 +19,7 @@ export const beat = {
   name: "Beat aus Bild",
   version: BEAT_VERSION,
   klasse: "zeitlich",
-  herkunft: { art: "neu", quelle: "ORNAMENT LAB", referenz: "Drum-Machine (Roland TR-808: Bassdrum mit fallender Tonhöhe, Becken aus sechs Rechtecken), euklidische Rhythmen (Toussaint), Bild als Partitur wie beim Klangerzeuger", datei: "alpha/lab/operationen/beat.js, alpha/lab/kern/beat.js" },
+  herkunft: { art: "neu", quelle: "ORNAMENT LAB", referenz: "Drum-Machine (Roland TR-808: Bassdrum mit fallender Tonhöhe, Becken aus sechs Rechtecken), euklidische Rhythmen (Toussaint), Bild als Partitur wie beim Klangerzeuger; seit 0.1.45 gezupfte Saite nach Karplus und Strong (Oud), FM-E-Piano (Rhodes, DX7), Maqsum, Bayati mit Viertelton, Neurofunk-Bass, Glitch", datei: "alpha/lab/operationen/beat.js, alpha/lab/kern/beat.js, alpha/lab/kern/mischpult.js" },
   beschreibung: "Macht aus einem Bild oder den Standbildern eines Videos einen kurzen Beat mit Schlagzeug, Bass und Melodie. Farbe, Helligkeit, Feinheit, Komposition und Bewegung wählen Tempo, Groove, Klänge und Tonart, nach Regeln oder durch jev.",
   eingaenge: [{ name: "bild", typ: "IMAGE" }, ...weitere],
   ausgaenge: [{ name: "beat", typ: "AUDIO" }, { name: "schlaege", typ: "EVENT_SEQUENCE" }],
@@ -29,6 +29,7 @@ export const beat = {
     { id: "grundton", name: "Grundton", art: "wahl", standard: "auto", optionen: [{ wert: "auto", name: "aus dem Farbton" }, ...NOTEN.map((n, i) => ({ wert: String(i), name: n }))] },
     { id: "kammerton", name: "Stimmung (Kammerton A)", art: "wahl", standard: "432", optionen: [{ wert: "432", name: "432 Hz" }, { wert: "440", name: "440 Hz" }] },
     { id: "nachhall", name: "Nachhall", art: "zahl", min: 0, max: 0.8, standard: 0.25, schritt: 0.05 },
+    { id: "mischung", name: "Mischung", art: "wahl", standard: "fertig", optionen: [{ wert: "fertig", name: "fertig gemischt (−14 LUFS, Kompressor, Limiter)" }, { wert: "roh", name: "roh (Spitze auf −1 dBFS, wie bis 0.1.44)" }] },
   ],
   voraussetzungen: ["keine (reines JavaScript); zum Anhören ein Browser mit <audio>"],
   ressourcen: { zeit: "Messen auf höchstens 128 Pixeln je Seite, dann je Schlag einige tausend Schritte (15 s: unter einer Sekunde)", speicher: "der Beat in Stereo, 44,1 kHz, höchstens 60 s" },
@@ -45,7 +46,7 @@ export const beat = {
       details: { merkmale: messung.merkmale, werte: messung.werte, gruende: Object.fromEntries(nachRegeln.map((k) => [k, regeln.gruende[k]])), version: BEAT_VERSION } }] : [];
     kontext.melden?.(`Beat: ${NAMEN.tempo} ${plan.tempo}, ${plan.groove}, ${plan.kit} …`);
     kontext.abbrechen?.throwIfAborted?.();
-    const r = beatRechnen({ messung, plan, dauer: p.dauer, grundton, kammerton: Number(p.kammerton), nachhall: p.nachhall, seed: kontext.seed ?? 1 });
+    const r = beatRechnen({ messung, plan, dauer: p.dauer, grundton, kammerton: Number(p.kammerton), nachhall: p.nachhall, seed: kontext.seed ?? 1, mischung: p.mischung });
     const name = (k) => kurz(BEAT_FRAGEN[k].katalog[plan[k]]);
     return {
       ausgaben: [

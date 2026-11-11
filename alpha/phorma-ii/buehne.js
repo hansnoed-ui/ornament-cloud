@@ -9,15 +9,15 @@
 import * as THREE from "three";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
-import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=38";
-import { FPS, kette, laufend, TITEL } from "./ablauf.js?v=38";
-import { videoPlan, videoStelle, videoStelleBei } from "./filmquelle.js?v=38";
-import { physarum } from "./physarum.js?v=38";
-import { tiefe } from "./tiefe.js?v=38";
-import { tuch } from "./tuch.js?v=38";
-import { montage, montageSignet } from "./montage.js?v=38";
-import { welle } from "./welle.js?v=38";
-import { raster, druckSignet } from "./raster.js?v=38";
+import { KUPFER, anteil, weich, inOut, datenTextur, ziel, quadMaterial } from "./gemeinsam.js?v=40";
+import { FPS, kette, laufend, TITEL } from "./ablauf.js?v=40";
+import { videoPlan, videoStelle, videoStelleBei } from "./filmquelle.js?v=40";
+import { physarum } from "./physarum.js?v=40";
+import { tiefe } from "./tiefe.js?v=40";
+import { tuch } from "./tuch.js?v=40";
+import { montage, montageSignet } from "./montage.js?v=40";
+import { welle } from "./welle.js?v=40";
+import { raster, druckSignet } from "./raster.js?v=40";
 // das leuchtende Signet von PHORMA I (Glaskristall als Punkt, Halo und Bokeh auf seiner Bahn; Wunsch vom 17. Oktober 2026: «der Abspann darf wieder
 // das neue leuchtende Logo sein») – eigene Marke, damit kein älterer Stand ohne diesen Export aus dem Zwischenspeicher kommt
 import { glanzSignet } from "../bildfragmentieren/raum.js?v=35";
@@ -28,7 +28,7 @@ const FRONT = /* glsl */ `
     float lokal = 1.0 - texture2D(tKarte, vUv).r;                       // nah zuerst
     float front = uP * (1.0 + 2.0 * uBreite) - uBreite;
     float m = smoothstep(front + uBreite, front - uBreite, lokal);       // 1: schon das neue Bild
-    float band = exp(-pow((lokal - front) / (uBreite * 0.45), 2.0)) * sin(3.14159 * uP);
+    float q = (lokal - front) / (uBreite * 0.45), band = exp(-q * q) * sin(3.14159 * uP);   // q * q statt pow(q, 2.0): negative Basis gibt auf Telefonen NaN
     vec2 zug = vec2(0.0, band * 0.02 * sign(lokal - front + 1e-4));       // Spalt: das alte Bild wird an der Front verzogen
     vec3 a = texture2D(tA, vUv + zug).rgb, b = texture2D(tB, vUv - zug * 0.4).rgb;
     gl_FragColor = vec4(mix(a, b, m) + uSaum * band * 0.18, 1.0);

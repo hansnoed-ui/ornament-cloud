@@ -1,0 +1,48 @@
+/* ORNAMENT AV STUDIO 0.1 – ruhig und dunkel (av-studio.md §4), in der Sprache von /animations: kalte Grautöne, Haarlinien, ein Akzent. */
+:root {
+  --grund: #08090c; --flaeche: #11131a; --buehne: #000; --tinte: #e9ecf2; --leise: rgba(233,236,242,.58); --linie: rgba(233,236,242,.14); --akzent: #c9ff3d;
+  --font: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--grund); color: var(--tinte); font: 15px/1.45 var(--font); -webkit-font-smoothing: antialiased; }
+button, input, select { font: inherit; color: inherit; }
+h1, h2 { font-weight: 500; margin: 0; letter-spacing: -0.015em; }
+h2 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--leise); margin-bottom: 10px; }
+a { color: var(--tinte); }
+.kopf { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: center; padding: 16px max(16px, env(safe-area-inset-left, 0px)); border-bottom: 1px solid var(--linie); }
+.heimzeile { flex-basis: 100%; margin: 0; }
+.heim { display: inline-flex; padding: 4px 12px; border: 1px solid var(--linie); border-radius: 6px; text-decoration: none; font-size: 0.85rem; }
+.marke h1 { font-size: 1.4rem; letter-spacing: -0.03em; }
+.version { color: var(--akzent); font-size: 0.85rem; margin-left: 4px; }
+.leitsatz { margin: 2px 0 0; color: var(--leise); }
+.schritte { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0; border-bottom: 1px solid var(--linie); }
+.schritt { padding: 16px; border-right: 1px solid var(--linie); min-width: 0; }
+.leise { color: var(--leise); font-size: 0.85rem; margin: 8px 0 0; }
+.knopf { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--linie); border-radius: 6px; padding: 6px 12px; background: none; cursor: pointer; min-height: 34px; }
+.knopf:hover { border-color: var(--tinte); }
+.knopf.voll { border-color: var(--tinte); }
+.knopf:disabled { opacity: .4; cursor: default; }
+.knopf[aria-pressed="true"] { border-color: var(--akzent); color: var(--akzent); }
+.knopf:focus-visible { outline: 2px solid var(--akzent); outline-offset: 2px; }
+.familien { display: grid; gap: 6px; margin-bottom: 10px; }
+.familien .knopf { justify-content: flex-start; text-align: left; display: grid; gap: 2px; }
+.familien small { color: var(--leise); font-size: 0.78rem; }
+.feld { display: inline-flex; gap: 6px; align-items: center; margin: 4px 12px 0 0; color: var(--leise); font-size: 0.85rem; }
+.feld select, .feld input { background: var(--flaeche); border: 1px solid var(--linie); border-radius: 6px; padding: 3px 6px; color: var(--tinte); }
+.feld input { width: 7ch; }
+.buehne { background: var(--buehne); padding: 16px; display: grid; gap: 10px; justify-items: center; }
+#vorschau { max-width: 100%; max-height: 62vh; background: #000; border: 1px solid var(--linie); }
+.leiste { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; width: 100%; max-width: 1200px; }
+.uhr { font-variant-numeric: tabular-nums; min-width: 7ch; }
+.abschnitt { color: var(--akzent); min-width: 12ch; }
+.signale { color: var(--leise); font-size: 0.8rem; font-variant-numeric: tabular-nums; flex: 1; min-width: 0; }
+#exportieren { margin-left: auto; }
+#zeitleiste { width: 100%; max-width: 1200px; height: 90px; border: 1px solid var(--linie); cursor: pointer; }
+.zuordnung { padding: 16px; border-top: 1px solid var(--linie); overflow-x: auto; }
+.zuordnung table { border-collapse: collapse; font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+.zuordnung td, .zuordnung th { padding: 4px 10px; border-bottom: 1px solid var(--linie); text-align: left; white-space: nowrap; }
+.zuordnung th { color: var(--leise); font-weight: 400; }
+.meldung { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--tinte); color: var(--grund); padding: 8px 16px; border-radius: 8px; font-size: 0.9rem; z-index: 9; max-width: calc(100vw - 32px); }
+.fuss { padding: 16px; color: var(--leise); font-size: 0.8rem; }

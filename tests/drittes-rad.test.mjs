@@ -55,6 +55,16 @@ test("Versionsmarke: jeder Import eines Radmoduls trägt dieselbe, aktuelle Mark
   assert.ok(!lies("alpha/drittes-rad/daten.js").includes("?v="), "daten.js importiert nichts");
 });
 
+test("Beta-Fassung (beta/drittes-rad/): lädt die Radmodule aus alpha/drittes-rad/ mit derselben, aktuellen Marke", async () => {
+  const b = await import(new URL("tools/build-drittes-rad.ts", root).href);
+  const marke = b.marke(Object.fromEntries(b.MODULE.map((n) => [n, lies(`alpha/drittes-rad/${n}`)])));
+  for (const f of b.BETA) {
+    const importe = [...lies(f).matchAll(/["'](\.\.\/\.\.\/alpha\/drittes-rad\/[^"'?]+)(\?v=[0-9a-f]{8})?["']/g)];
+    assert.equal(importe.length, 2, `${f}: engine.js und kacheln.js`);
+    for (const [, datei, m] of importe) assert.equal(m, `?v=${marke}`, `${f}: Import von ${datei} ohne aktuelle Marke (node --experimental-strip-types tools/build-drittes-rad.ts)`);
+  }
+});
+
 test("Versionsmarke: folgt dem Inhalt der Module (nicht den Marken selbst), Seite und weiter.js gehen nicht ein", async () => {
   const b = await import(new URL("tools/build-drittes-rad.ts", root).href);
   const d = Object.fromEntries(b.MODULE.map((n) => [n, lies(`alpha/drittes-rad/${n}`)]));

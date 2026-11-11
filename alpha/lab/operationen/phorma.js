@@ -9,6 +9,7 @@
 import { tonAnalysieren } from "../../../alpha/phorma-iii/ton.js?v=23";
 import { zeitachse, TITEL } from "../../../alpha/phorma-iii/ablauf.js?v=23";
 import { analysieren } from "../../../alpha/phorma-iii/analyse.js?v=23";
+import { modulLaden } from "../kern/laden.js";
 
 export const PHORMA_ARTEN = Object.freeze(["gewebe", "irrfahrt", "lichtwuerfel", "traube"]);
 const BESCHREIBUNG = {
@@ -64,7 +65,7 @@ function fotoUndAnalyse(bild, seite) {
 async function buehneBauen(art, { bild, ton }, p, kontext = {}) {
   if (!imBrowser()) throw new Error("PHORMA braucht einen Browser mit WebGL 2");
   if (!webgl2Da()) throw new Error("PHORMA braucht WebGL 2; dieser Browser hat es nicht");
-  buehneModul ??= await import("../../../alpha/phorma-iii/buehne.js?v=23");
+  buehneModul ??= await modulLaden(new URL("../../../alpha/phorma-iii/buehne.js?v=23", import.meta.url).href, { titel: `PHORMA ${TITEL[art]}`, melden: kontext.melden });
   const { foto, A, B, H } = fotoUndAnalyse(bild, Math.round(p.seite));
   const T = tonAnalyse(ton, p.beginn, p.dauer), zeit = szenenZeit(art, p.dauer);
   const grob = p.guete === "grob", test = B * H <= 320 * 320;

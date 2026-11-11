@@ -1,0 +1,3 @@
+film-doc.js aus OpenFilm 0.2.6 (https://github.com/openfilm/openfilm, packages/openfilm/src/film-doc.mjs, Commit ea8cf6dcbb367065ce16d75e9784dbe2ab3e013c), im Inhalt unverändert;
+umbenannt in .js, damit jeder Webserver es als JavaScript ausliefert (.mjs kennt nicht jeder).
+MIT-Lizenz, siehe LICENSE. Der Leser und Schreiber des Filmformats film.html, genutzt vom Video-Editor alpha/lab/video/.
