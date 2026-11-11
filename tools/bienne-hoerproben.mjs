@@ -1,6 +1,6 @@
-// Hörproben für ornament.bienne, Phase 1 (Harmonik 0.1.0): je Modus ein harmonischer Verlauf, gespielt von vorhandenen Klängen
+// Hörproben für ornament.bienne, Phase 1 (Harmonik 0.1.0) und Phase 2 (Metrum, Taktarten): je Modus ein harmonischer Verlauf, gespielt von vorhandenen Klängen
 // (Velvet Rhodes Haze als Klavier-Voicings, Shadow Chord als Fläche, Bass «Rund»), Stimmführung glatt (0) und gebrochen (100).
-//   node tools/bienne-hoerproben.mjs harmonik <ziel-ordner> [seed]
+//   node tools/bienne-hoerproben.mjs harmonik|metrum <ziel-ordner> [seed]
 // Alles synthetisch. Je Probe 12 Takte bei 90 BPM (32 s), −16 LUFS, dazu eine Textdatei mit Klängen und Voicings.
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -70,4 +70,41 @@ if (modus === "harmonik") {
       aussagen: v.aussagen.map((a) => `T${a.t + 1}: ${a.ops.join(", ")} (erkennbar ${a.erkennbar})`) });
   }
   writeFileSync(join(ziel, "harmonik.json"), JSON.stringify(liste, null, 1));
-} else console.log("node tools/bienne-hoerproben.mjs harmonik <ziel-ordner> [seed]");
+} else if (modus === "metrum") {
+  // Phase 2, Schritt a: dieselbe Musik (D dorisch, gleicher Startwert) in verschiedenen Taktarten. Kick auf geraden, Snare auf ungeraden
+  // Gruppenanfängen, Hi-Hat in Achteln mit Betonung aus der Gliederung, Bass auf jedem Gruppenanfang, Rhodes je Takt. 8 Takte bei 90 BPM.
+  const ME = await imp("composer/kern/metrum.js");
+  mkdirSync(ziel, { recursive: true });
+  const T8 = 8, liste = [];
+  for (const taktart of ["4/4", "5/4", "7/8", "6/8", "12/8", "11/8"]) {
+    const a = ME.taktartLesen(taktart), n = ME.schritte(a), anf = ME.gruppenAnfaenge(a), bet = ME.betonungen(a), achtel = 2;
+    const zeile = (f) => Array.from({ length: n }, (_, i) => f(i) ?? ".").join(" ");
+    const kick = zeile((i) => { const k = anf.indexOf(i); return k >= 0 && k % 2 === 0 ? (k ? "x" : "x!") : null; });
+    const snare = zeile((i) => { const k = anf.indexOf(i); return k >= 0 && k % 2 === 1 ? "x!" : null; });
+    const hat = zeile((i) => (i % achtel ? null : bet[i] >= 0.75 ? "x" : "x_"));
+    const zentrum = 2, sm = seed * 10 + 3;
+    const v = H.verlaufErzeugen({ zentrum, modus: "dorisch", seed: sm, abschnitte: [{ takte: 4, kurve: "steigt", hoehe: 0.5 }, { takte: 4, kurve: "plateau", hoehe: 0.55 }], bruch: 30, wandel: 40, wiederkehr: 60, statementTakte: 4 });
+    const rhodes = H.voicingsFuer(v.ereignisse, "klavier", { bruch: 30, seed: sm, zentrum, modus: "dorisch" });
+    const bassV = H.voicingsFuer(v.ereignisse, "bass", { bruch: 30, seed, zentrum, modus: "dorisch" });
+    const bassNoten = [];
+    for (let b = 0; b < T8; b++) anf.forEach((s, k) => {
+      const t = b + s / n, ende = b + (anf[k + 1] ?? n) / n, vo = bassV.find((x) => t >= x.t - 1e-6 && t < x.t + x.d - 1e-6);
+      if (vo?.midi.length) bassNoten.push({ t, d: Math.max(0.05, ende - t - 0.02), midi: Math.min(...vo.midi), staerke: k ? 0.7 : 0.85 });
+    });
+    const p = PR.neuesProjekt({ rate: RATE }); p.kammerton = 440;
+    const spur = (q, opt) => { q = { anzahl: T8 + 1, bpm: BPM, taktart, kammerton: 440, seed, ...q }; const sp = PR.erzeugteSpurDazu(p, q, opt); return { id: sp.id, kanaele: spurRechnen(q, RATE).kanaele }; };
+    const drum = (stimme, takt, opt) => spur({ erzeuger: "drums@0.1.0", stimme, werte: werteVon("drums@0.1.0", stimme), takte: [takt], anzahl: T8, swing: 0, menschlich: 3, versatz: 0 }, opt);
+    const spuren = [
+      drum("kick", kick, { name: "Kick", typ: "drums", pegel: -3 }),
+      drum("snare", snare, { name: "Snare", typ: "drums", pegel: -6, raum: { anteil: 14, nachhall: 1.2 } }),
+      drum("hat", hat, { name: "Hi-Hat", typ: "drums", pegel: -14, pan: 0.15 }),
+      spur({ erzeuger: "bass@0.1.0", stimme: "rund", werte: werteVon("bass@0.1.0", "rund", "weich"), noten: bassNoten }, { name: "Bass", typ: "bass", pegel: -6 }),
+      spur({ erzeuger: "synth@0.2.0", stimme: "velvet", werte: { patch: "velvetRhodes" }, noten: noten(rhodes, { neuJeTakt: true, staerke: 0.6, auftakt: true }) }, { name: "Rhodes", typ: "synth", pegel: -9, raum: { anteil: 22, nachhall: 2.2 } }),
+    ];
+    const name = `metrum-${a.zaehler}-${a.nenner}`, sek = Math.round(T8 * ME.taktSek(BPM, a) * 10) / 10;
+    console.log(`${taktart} (${a.gruppen.join("+")}), ${n} Sechzehntel je Takt, ${sek} s\n  Kick  ${kick}\n  Snare ${snare}\n  Hat   ${hat}`);
+    speichern(join(ziel, `${name}.wav`), await mischen(p, spuren));
+    liste.push({ datei: `${name}.mp3`, taktart, gliederung: a.gruppen.join("+"), sechzehntel: n, sekunden: sek, kick, snare, hat, klaenge: v.ereignisse.map((e) => `T${Math.floor(e.t) + 1} ${e.name}`) });
+  }
+  writeFileSync(join(ziel, "metrum.json"), JSON.stringify(liste, null, 1));
+} else console.log("node tools/bienne-hoerproben.mjs harmonik|metrum <ziel-ordner> [seed]");

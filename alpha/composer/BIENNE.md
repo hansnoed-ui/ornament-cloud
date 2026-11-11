@@ -11,8 +11,8 @@ synthetisch. Christians eigene Aufnahmen können später über die Klangsammlung
 
 | Phase | Inhalt | Stand |
 |---|---|---|
-| 1 | **Harmonik 0.1.0** (`kern/harmonik.js`): Vokabular, Modi, Stimmführung, harmonischer Rhythmus, Spannung, Generator, Voicings für Fläche, Klavier, Gitarre und Bass; dazu `lydisch`/`mixolydisch` in `LEITERN` und Noten als Ereignisse in `erzeugen.js` | **dieser PR** |
-| 2 | **Metrum** (`kern/metrum.js`): zentrale Taktlänge `taktSek(tempo, taktart)` statt `240 / bpm`, Taktarten 3/4–12/8, Gruppierungen, echte Tuplets (rationale Zeiten), Polymetrik mit geplanten Treffpunkten, Humanisierung als Profil je Rolle (mit Korrelation) | offen |
+| 1 | **Harmonik 0.1.0** (`kern/harmonik.js`): Vokabular, Modi, Stimmführung, harmonischer Rhythmus, Spannung, Generator, Voicings für Fläche, Klavier, Gitarre und Bass; dazu `lydisch`/`mixolydisch` in `LEITERN` und Noten als Ereignisse in `erzeugen.js` | fertig |
+| 2 | **Metrum** (`kern/metrum.js`): zentrale Taktlänge `taktSek(tempo, taktart)` statt `240 / bpm`, Taktarten 3/4–12/8, Gruppierungen, echte Tuplets (rationale Zeiten), Polymetrik mit geplanten Treffpunkten, Humanisierung als Profil je Rolle (mit Korrelation) | **Schritt a in Arbeit** (Taktlänge, Taktarten, Gliederung); b Tuplets, c Polymetrik, d Humanisierung offen |
 | 3 | **Instrumente** als Proben: Gitarre (sechs Saiten auf der Karplus-Strong-Saite), E-Bass und Muted Bass (Bass 0.2.0), Drums 0.2.0 (Ghost-Stufen, Cross-Stick, Besen), Klavier (akustisch, präpariert), Streicherfläche, dunkler Mono-Lead | offen |
 | 4 | **Interlocking** (Verteiler, Eigenständigkeit und Zusammengehörigkeit), **Echo 0.2.0** und Echos als Ereignisse im Plan | offen |
 | 5 | **`kern/bienne.js`**: Profil, Ausprägung *Schichtung*, ganzer Track, drei Startwerte, Oberfläche | offen |
@@ -150,3 +150,24 @@ Dazu kommen zwei Tests in `tests/composer.test.mjs`.
 - `harmonik.json` nennt die Grundidee, die Klänge mit Takt, die Rhodes-Töne und die Abwandlungen jeder Aussage
 
 Die Gitarre gibt es erst in Phase 3, die Griffe sind aber schon berechnet.
+
+## Metrum 0.1.0 (Phase 2, Schritt a)
+
+`kern/metrum.js` hält die Taktlänge an einer Stelle. Tempo heisst wie bisher Viertel pro Minute; eine Taktart sagt, wie viele Viertel ein
+Takt hat und wie er gegliedert ist.
+
+- `taktSek(bpm, taktart)`: Länge eines Takts in Sekunden. Ohne Taktart 4/4, genau `240 / bpm` (für 40–200 BPM geprüft, auch nach dem
+  Runden auf Samples). Alte Projekte und die Lucerne-Tracks klingen darum gleich.
+- `taktartLesen("7/8")` oder `"7/8:3+2+2"`: Zähler, Nenner, Gliederung. Übliche Gliederungen in `GLIEDERUNG` (5/4 3+2, 7/8 2+2+3,
+  11/8 3+3+3+2, 12/8 3+3+3+3 …).
+- `schritte`, `gruppenAnfaenge`, `betonungen`: Raster und Betonung je Schritt (Takteins 1, Gruppenbeginn 0,75, Zählzeit 0,5).
+- Erzeuger (`erzeugen.js`) und Sampler lesen `quelle.taktart`. Musterzeilen haben so viele Schritte, wie der Takt hat (7/8: 14
+  Sechzehntel); die Zeile wird wie bisher gleichmässig auf den Takt verteilt.
+- Lucerne, Arrangement und die Oberfläche rechnen weiter in 4/4, nun über `taktSek(bpm)`. Die Analyse der Klangsammlung bleibt bei
+  `240 / bpm` (Quellen werden als 4/4 gemessen).
+
+## Hörproben Phase 2
+
+`node tools/bienne-hoerproben.mjs metrum <ziel>`: dieselbe Musik (D dorisch, gleicher Startwert, Rhodes und Bass «Rund») in 4/4, 5/4,
+7/8, 6/8, 12/8 und 11/8, je 8 Takte bei 90 BPM, −16 LUFS. Kick auf geraden, Snare auf ungeraden Gruppenanfängen, Hi-Hat in Achteln mit
+Betonung aus der Gliederung, Bass auf jedem Gruppenanfang. `metrum.json` nennt die Muster.

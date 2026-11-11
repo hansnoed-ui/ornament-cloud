@@ -5,6 +5,7 @@
 
 import * as K from "./kern/klangsammlung.js";
 import * as S from "./kern/sampler.js";
+import { taktSek } from "./kern/metrum.js";
 import * as LU from "./kern/lucerne.js";
 import { wavSpuren } from "../lab/kern/klangwerk.js";
 
@@ -153,7 +154,7 @@ async function anwenden(plan, name) {
   for (const sp of sampler.filter((x) => !res(x))) laufend.push(samplerRechnen(sp));
   await Promise.all(laufend);
   for (const sp of sampler.filter(res)) await samplerRechnen(sp);
-  const L0 = plan.gesamt * (240 / plan.bpm);
+  const L0 = plan.gesamt * taktSek(plan.bpm);
   z.schleife = { a: 0, b: L0 }; z.schleifeAn = !!plan.studie; z.projekt.schleife = plan.studie ? { a: 0, b: L0 } : null; A.schleifeSenden();
   z.pos = 0; A.post({ art: "stelle", pos: 0 });
   z.gewaehlt = z.projekt.spuren[0]?.id ?? null; z.glied = -1; A.senden(); A.allesAufbauen();
@@ -364,7 +365,7 @@ function ausschnittZeile(a) {
 }
 
 function planAnsicht(plan) {
-  const T = 240 / plan.bpm, cut = (id) => L.sammlung.ausschnitte.find((a) => a.id === id), qn = (id) => L.sammlung.quellen.find((q) => q.id === id)?.name ?? id;
+  const T = taktSek(plan.bpm), cut = (id) => L.sammlung.ausschnitte.find((a) => a.id === id), qn = (id) => L.sammlung.quellen.find((q) => q.id === id)?.name ?? id;
   const zeilen = Object.entries(plan.material).flatMap(([rolle, ids]) => ids.map((id) => { const a = cut(id); return el("li", { textContent: `${K.ROLLEN[rolle]?.name ?? rolle}: ${qn(a?.quelle)} ${a?.von}–${a?.bis} s · ${a?.name ?? ""}` }); }));
   return el("details", { className: "luc-teil" }, el("summary", { textContent: `Plan: ${plan.abschnitte.map((a) => `${a.name} T${a.von + 1}–${a.bis}`).join(" · ")}` }),
     el("p", { className: "leise-text", textContent: `Startwerte ${JSON.stringify(plan.seeds)} · Makros ${Object.entries(plan.makros).map(([k, v]) => `${LU.MAKROS[k].name} ${v}`).join(", ")} · Tonart ${A.NOTEN[plan.grundton]}-Moll (${plan.tonartGrund}) · Kammerton ${plan.kammerton} Hz` }),

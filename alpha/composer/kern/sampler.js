@@ -13,6 +13,7 @@
 
 import { umtasten, dehnen, korn } from "../../lab/kern/klangwerk.js";
 import { zufall, SVF } from "../erzeuger/grund.js";
+import { taktSek } from "./metrum.js";
 
 export const SAMPLER = "sampler@0.1.0";
 export const MODI = Object.freeze({
@@ -167,7 +168,7 @@ export const bandDauer = (d, halbtoene) => d / 2 ** (halbtoene / 12);
  * Gibt { kanaele, schlaege, fehlt: [Quell-IDs] }.
  */
 export function samplerSpurRechnen(q, rate, material) {
-  const takt = 240 / q.bpm, n = Math.round((q.anzahl ?? 8) * takt * rate), L = new Float32Array(n), R = new Float32Array(n);
+  const takt = taktSek(q.bpm, q.taktart), n = Math.round((q.anzahl ?? 8) * takt * rate), L = new Float32Array(n), R = new Float32Array(n);
   const cache = new Map(), fehlt = new Set();
   const basis = (key) => {
     if (cache.has(key)) return cache.get(key);
