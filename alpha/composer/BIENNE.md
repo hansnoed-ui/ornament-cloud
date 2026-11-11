@@ -12,7 +12,7 @@ synthetisch. Christians eigene Aufnahmen können später über die Klangsammlung
 | Phase | Inhalt | Stand |
 |---|---|---|
 | 1 | **Harmonik 0.1.0** (`kern/harmonik.js`): Vokabular, Modi, Stimmführung, harmonischer Rhythmus, Spannung, Generator, Voicings für Fläche, Klavier, Gitarre und Bass; dazu `lydisch`/`mixolydisch` in `LEITERN` und Noten als Ereignisse in `erzeugen.js` | fertig |
-| 2 | **Metrum** (`kern/metrum.js`): zentrale Taktlänge `taktSek(tempo, taktart)` statt `240 / bpm`, Taktarten 3/4–12/8, Gruppierungen, echte Tuplets (rationale Zeiten), Polymetrik mit geplanten Treffpunkten, Humanisierung als Profil je Rolle (mit Korrelation) | **Schritt a in Arbeit** (Taktlänge, Taktarten, Gliederung); b Tuplets, c Polymetrik, d Humanisierung offen |
+| 2 | **Metrum** (`kern/metrum.js`): zentrale Taktlänge `taktSek(tempo, taktart)` statt `240 / bpm`, Taktarten 3/4–12/8, Gruppierungen, echte Tuplets (rationale Zeiten), Polymetrik mit geplanten Treffpunkten, Humanisierung als Profil je Rolle (mit Korrelation) | a Taktlänge und Taktarten fertig; **b Tuplets in Arbeit**; c Polymetrik, d Humanisierung offen |
 | 3 | **Instrumente** als Proben: Gitarre (sechs Saiten auf der Karplus-Strong-Saite), E-Bass und Muted Bass (Bass 0.2.0), Drums 0.2.0 (Ghost-Stufen, Cross-Stick, Besen), Klavier (akustisch, präpariert), Streicherfläche, dunkler Mono-Lead | offen |
 | 4 | **Interlocking** (Verteiler, Eigenständigkeit und Zusammengehörigkeit), **Echo 0.2.0** und Echos als Ereignisse im Plan | offen |
 | 5 | **`kern/bienne.js`**: Profil, Ausprägung *Schichtung*, ganzer Track, drei Startwerte, Oberfläche | offen |
@@ -173,3 +173,13 @@ Takt hat und wie er gegliedert ist.
 Betonung aus der Gliederung, Bass auf jedem Gruppenanfang. `metrum.json` nennt die Muster.
 
 Urteil Christian (11.11.): gut 4/4, 7/8, 12/8, 11/8; geht 5/4, 6/8.
+
+## Tuplets (Phase 2, Schritt b)
+
+Musterzeilen kennen Gruppen in eckigen Klammern: `[x x x]` teilt einen Schritt in drei, `[x x x]:4` legt drei Schläge gleichmässig über
+vier Schritte (Achteltriole im Sechzehntelraster), `[x x x x x]:4` eine Quintole. Die Zeiten sind genau (Bruchteile des Takts, nicht auf
+das Raster gerundet). Zeilen ohne Klammern werden wie vorher gelesen (alle 103 Zeilen der Stile verglichen). Noten (`noten: [{ t, d }]`)
+konnten schon immer beliebige Bruchteile; der Bass spielt so Halbe-Triolen.
+
+`node tools/bienne-hoerproben.mjs tuplets <ziel>`: in den vier guten Taktarten je 8 Takte, 1–4 ohne, 5–8 mit Tuplet –
+4/4 Achteltriolen und Bass in Halbe-Triolen, 7/8 vier gegen drei, 12/8 Duolen (zwei gegen drei), 11/8 Quintole als Wirbel.

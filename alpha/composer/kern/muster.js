@@ -110,17 +110,31 @@ export const STILE = Object.freeze([
 
 export const stilVon = (key) => STILE.find((s) => s.key === key);
 
-/** ein Takt → [{ stelle (0–1 im Takt), art, staerke }] */
+/**
+ * ein Takt → [{ stelle (0–1 im Takt), schritt, n, art, staerke }]
+ * Seit Metrum 0.1.0: eine Gruppe in eckigen Klammern ist ein Tuplet – «[x x x]» teilt einen Schritt in drei, «[x x x]:4» legt drei Schläge
+ * gleichmässig über vier Schritte (Achteltriole im Sechzehntelraster). Zeilen ohne Klammern werden genau wie vorher gelesen.
+ */
 export function taktLesen(zeile, ersteArt = "x") {
-  const t = String(zeile).trim().split(/\s+/).filter(Boolean), n = t.length || 1, out = [];
-  t.forEach((tok, i) => {
-    if (tok === "." || tok === "-") return;
-    let st = 0.8, kern = tok;
-    if (kern.endsWith("!")) { kern = kern.slice(0, -1); st = 1; } else if (kern.endsWith("_")) { kern = kern.slice(0, -1); st = 0.45; }
-    let art = kern;
-    if (kern === "x" || kern === "o" || kern === "g") { art = ersteArt; if (st === 0.8) st = kern === "x" ? 0.8 : kern === "o" ? 0.6 : 0.32; }
-    out.push({ stelle: i / n, schritt: i, n, art, staerke: st });
+  const roh = String(zeile).trim().match(/\[[^\]]*\](?::\d+(?:\.\d+)?)?|\S+/g) ?? [];
+  const teile = roh.map((tok) => {
+    const m = /^\[([^\]]*)\](?::(\d+(?:\.\d+)?))?$/.exec(tok);
+    return m ? { innen: m[1].trim().split(/\s+/).filter(Boolean), laenge: m[2] ? +m[2] : 1 } : { innen: [tok], laenge: 1, einfach: true };
   });
+  const n = teile.reduce((s, t) => s + t.laenge, 0) || 1, out = [];
+  let pos = 0;
+  for (const t of teile) {
+    t.innen.forEach((tok, k) => {
+      if (tok === "." || tok === "-") return;
+      let st = 0.8, kern = tok;
+      if (kern.endsWith("!")) { kern = kern.slice(0, -1); st = 1; } else if (kern.endsWith("_")) { kern = kern.slice(0, -1); st = 0.45; }
+      let art = kern;
+      if (kern === "x" || kern === "o" || kern === "g") { art = ersteArt; if (st === 0.8) st = kern === "x" ? 0.8 : kern === "o" ? 0.6 : 0.32; }
+      const schritt = t.einfach ? pos : pos + (k * t.laenge) / t.innen.length;
+      out.push({ stelle: schritt / n, schritt, n, art, staerke: st, ...(t.einfach ? {} : { tuplet: t.innen.length }) });
+    });
+    pos += t.laenge;
+  }
   return out;
 }
 
