@@ -1,10 +1,10 @@
 // Animationen – der Motor: ein WebGL-2-Kontext rechnet bis zu drei Ebenen übereinander (je Effekt, Quelle, Mischmodus, Deckkraft)
 // und gibt das Bild auf eine eigene Leinwand aus, die Reel, Werke und Mischpult abzeichnen. Alles hängt nur von der Zeit t in der
 // Schlaufe ab (phi = 2π·t/DAUER, ganzzahlige Frequenzen): Bild N ist wieder Bild 0, und das MP4 entsteht Bild für Bild.
-import { EFFEKTE, wertVon } from "./effekte.js?v=35";
-import { t } from "./sprache.js?v=35";
-import { physikLaden, kachelBahn, lageZur } from "./schwerkraft.js?v=35";
-import { VIDEO_AN, videoZeit } from "./video.js?v=35";
+import { EFFEKTE, wertVon } from "./effekte.js?v=36";
+import { t } from "./sprache.js?v=36";
+import { physikLaden, kachelBahn, lageZur } from "./schwerkraft.js?v=36";
+import { VIDEO_AN, videoZeit } from "./video.js?v=36";
 
 export const DAUER = 12, FPS = 30, LAENGEN = [12, 30, 60];
 /** Länge der Schlaufe eines Stapels in Sekunden (Vorgabe 12) */
@@ -21,7 +21,7 @@ precision highp float; precision highp int;
 uniform sampler2D uBild, uUnten;
 uniform vec2 uRes, uFit;
 uniform float uPhi, uT, uSeed, uQuelle, uLod, uCols, uRows, uZeigen, uLauf, uPsi, uL, uSparsam;
-uniform float uP[6];
+uniform float uP[8];   // sieben Regler je Effekt (werke.php nimmt bis sieben), seit 7. November 2026 alle im Shader
 #define PI 3.14159265
 #define TAU 6.28318531
 #define P0 uP[0]
@@ -30,6 +30,7 @@ uniform float uP[6];
 #define P3 uP[3]
 #define P4 uP[4]
 #define P5 uP[5]
+#define P6 uP[6]
 float A(){ return uRes.x / uRes.y; }
 vec2 P(vec2 uv){ return (uv - .5) * vec2(A(), 1.); }
 vec2 UV(vec2 p){ return p / vec2(A(), 1.) + .5; }
@@ -473,7 +474,7 @@ export function motorErstellen({ sparsam = SPARSAM, verloren = () => {}, zurueck
         textur(pr, "uBild", 0, bild.tex); textur(pr, "uUnten", 1, acc[i].tex);
         fp(pr, "uRes", b, h); fp(pr, "uFit", fit[0], fit[1]); fp(pr, "uLod", lod);
         fp(pr, "uPhi", tz * Math.PI * 2); fp(pr, "uT", tz); fp(pr, "uPsi", tt * Math.PI * 2); fp(pr, "uL", D / DAUER); fp(pr, "uLauf", stapel.durchlauf ? 1 : 0); fp(pr, "uSeed", e.seed ?? 0); fp(pr, "uQuelle", e.quelle === "unten" ? 1 : 0); fp(pr, "uZeigen", stapel.ohneBild ? 0 : 1); fp(pr, "uSparsam", motor.sparsam ? 1 : 0);
-        gl.uniform1fv(pr.ort("uP[0]"), Float32Array.from({ length: 6 }, (_, k) => w[k] ?? 0));
+        gl.uniform1fv(pr.ort("uP[0]"), Float32Array.from({ length: 8 }, (_, k) => w[k] ?? 0));
       };
       gl.useProgram(pr.p); setzen(pr);
       if (def.punkte) {

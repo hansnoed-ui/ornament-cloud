@@ -8,7 +8,7 @@ import { readFileSync, existsSync, readdirSync } from "node:fs";
 
 const root = new URL("../", import.meta.url);
 const lies = (p) => readFileSync(new URL(p, root), "utf8");
-const { EFFEKTE, EFFEKT_IDS, wertVon } = await import(new URL("animations/effekte.js", root).href);
+const { EFFEKTE, EFFEKT_IDS, wertVon, stufe } = await import(new URL("animations/effekte.js", root).href);
 const { MODI, DAUER, FPS, LAENGEN, dauerVon } = await import(new URL("animations/motor.js", root).href);
 const { zufall, EIGEN } = await import(new URL("animations/rezepte.js", root).href);
 
@@ -153,7 +153,7 @@ test("Werk sichern: leere Ebenen («— keine —») gehen nicht mit, werke.php 
 });
 
 test("Montage: Form als Wahl mit vier Stufen (5. November 2026), Vierecke bleibt der Standard, «neu mischen» trifft nur Stufen", async () => {
-  const { stufe } = await import(new URL("animations/effekte.js", root).href);
+  // stufe kommt oben aus effekte.js
   const form = EFFEKTE.montage.regler.find((r) => r.stufen);
   assert.deepEqual(form.stufen, ["Vierecke", "Dreiecke", "Vielecke", "Kreise"]);
   assert.equal(EFFEKTE.montage.regler.indexOf(form), 5, "Form liegt in P5, ältere Werke mit fünf Werten bleiben Vierecke");
@@ -175,6 +175,19 @@ test("Kubismus bei Druckraster und Höhenlinien: eigener Regler, ältere Mischun
     assert.equal(wertVon(def, [.5, .5, .5, .5, 0, .8], k), .8);
   }
   for (const id of ["pinsel", "aquarell", "koerper"]) assert.ok(!EFFEKTE[id], `${id} entfernt`);
+});
+
+test("Höhenlinien als Achat (7. November 2026, Stilreferenz forside_art): Wahl «Stil», Karte bleibt die Vorgabe, der Shader liest den siebten Regler", () => {
+  const def = EFFEKTE.hoehenlinien, k = def.regler.findIndex((r) => r.name === "Stil");
+  assert.equal(k, 6);
+  assert.deepEqual(def.regler[k].stufen, ["Karte", "Achat"]);
+  assert.equal(stufe(def.regler[k], wertVon(def, [.5, .5, .5, .5, .5, .5], k)), 0, "ältere Werke (sechs Werte) bleiben Karte");
+  assert.equal(stufe(def.regler[k], wertVon(def, [], k)), 0, "frisch gewählt: Karte");
+  assert.match(def.glsl, /if \(P6 > \.5\) return achat\(uv, F\);/);
+  const motor = lies("animations/motor.js");
+  assert.match(motor, /uniform float uP\[8\];/);
+  assert.match(motor, /#define P6 uP\[6\]/);
+  assert.match(motor, /Float32Array\.from\(\{ length: 8 \}/);
 });
 
 test("Handy (5. November 2026: «Diese Seite braucht WebGL 2 … gestern gings noch»): kein Kontext wird erklärt, verlorener Kontext baut neu auf, ein kaputter Effekt hält die Seite nicht an, schwere Punkt-Effekte rechnen sparsam", () => {
