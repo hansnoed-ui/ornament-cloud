@@ -57,3 +57,31 @@ export function gruppenAnfaenge(t, raster = 16) {
   for (const g of a.gruppen) { out.push(Math.round(z * proZz)); z += g; }
   return out;
 }
+
+// ---------- Polymetrik (Schritt c) ----------
+const ggT = (a, b) => (b ? ggT(b, a % b) : a);
+
+/** nach wie vielen Takten eine Schicht von «laenge» Schritten wieder mit der Takteins zusammenfällt (12 Schritte in 4/4 → 3 Takte) */
+export const treffpunkt = (laenge, t, raster = 16) => { const n = schritte(t, raster); return laenge / ggT(laenge, n); };
+
+/**
+ * Eine Schicht mit eigenem Zyklus über den Takten: «muster» ist ein Zyklus aus Tokens (wie eine Musterzeile, ohne Klammern), der ohne
+ * Rücksicht auf die Taktgrenzen weiterläuft. «neustart» (Takte) setzt den Zyklus an geplanten Stellen auf die Takteins zurück, damit
+ * sich die Schichten dort sicher treffen – ohne Angabe treffen sie sich erst nach treffpunkt() Takten.
+ * Gibt je Takt eine Musterzeile zurück (für Drums) und die Ereignisse mit Zeit in Takten (für Noten).
+ */
+export function zyklus(muster, t, takte, { raster = 16, neustart = null } = {}) {
+  const tok = Array.isArray(muster) ? muster : String(muster).trim().split(/\s+/), L = tok.length, n = schritte(t, raster);
+  if (n == null) throw new Error(`${taktartLesen(t).name} geht im Raster ${raster} nicht auf`);
+  const zeilen = [], ereignisse = [];
+  for (let b = 0; b < takte; b++) {
+    const zeile = [];
+    for (let s = 0; s < n; s++) {
+      const g = (neustart ? b % neustart : b) * n + s, i = g % L, x = tok[i];
+      zeile.push(x);
+      if (x !== "." && x !== "-") ereignisse.push({ t: b + s / n, takt: b, schritt: s, index: i, runde: Math.floor(g / L), token: x });
+    }
+    zeilen.push(zeile.join(" "));
+  }
+  return { zeilen, ereignisse, laenge: L, treffenNach: neustart ?? treffpunkt(L, t, raster) };
+}

@@ -157,4 +157,54 @@ if (modus === "harmonik") {
     liste.push({ datei: `${name}.mp3`, taktart, gliederung: a.gruppen.join("+"), sekunden: sek, idee: idee.text, hatOhne: hatGerade.join(" "), hatMit: hatTuplet });
   }
   writeFileSync(join(ziel, "tuplets.json"), JSON.stringify(liste, null, 1));
-} else console.log("node tools/bienne-hoerproben.mjs harmonik|metrum|tuplets <ziel-ordner> [seed]");
+} else if (modus === "poly") {
+  // Phase 2, Schritt c: Polymetrik. Eine Schicht läuft in eigenem Zyklus über die Takte und trifft die Takteins an geplanten Stellen.
+  const ME = await imp("composer/kern/metrum.js");
+  mkdirSync(ziel, { recursive: true });
+  const liste = [];
+  const IDEEN = [
+    { taktart: "4/4", takte: 12, schicht: "rhodes", muster: "a . . . b . . . c . . .", text: "Rhodes-Motiv aus drei Vierteln gegen den 4/4-Groove (3 gegen 4); trifft die Eins alle 3 Takte (T4, T7, T10)" },
+    { taktart: "7/8", takte: 8, schicht: "rim", muster: "x! . x_ . x_ . x . x_ .", neustart: 4, text: "Rimshot in Fünfachteln gegen 7/8 (2+2+3); frei liefe er 5 Takte, hier geplant nach 4 Takten wieder auf die Eins (T5)" },
+    { taktart: "11/8", takte: 9, schicht: "bass", muster: "a . . . . . b . . . c . a . . .", text: "Bass-Riff in 4/4 (16 Sechzehntel) gegen 11/8 (22); beide treffen sich nach 8 Takten wieder (T9)" },
+  ];
+  for (const id of IDEEN) {
+    const { taktart, takte: TK } = id, a = ME.taktartLesen(taktart), n = ME.schritte(a), anf = ME.gruppenAnfaenge(a), bet = ME.betonungen(a);
+    const reihe = (f) => Array.from({ length: n }, (_, i) => f(i) ?? ".").join(" ");
+    const kick = reihe((i) => { const k = anf.indexOf(i); return k >= 0 && k % 2 === 0 ? (k ? "x" : "x!") : null; });
+    const snare = reihe((i) => { const k = anf.indexOf(i); return k >= 0 && k % 2 === 1 ? "x!" : null; });
+    const hat = reihe((i) => (i % 2 ? null : bet[i] >= 0.75 ? "x" : "x_"));
+    const z = ME.zyklus(id.muster, a, TK, { neustart: id.neustart });
+    const zentrum = 2, sm = seed * 10 + 3, h = TK / 2;
+    const v = H.verlaufErzeugen({ zentrum, modus: "dorisch", seed: sm, abschnitte: [{ takte: Math.floor(h), kurve: "steigt", hoehe: 0.5 }, { takte: TK - Math.floor(h), kurve: "plateau", hoehe: 0.55 }], bruch: 30, wandel: 40, wiederkehr: 60, statementTakte: 4 });
+    const rhodes = H.voicingsFuer(v.ereignisse, "klavier", { bruch: 30, seed: sm, zentrum, modus: "dorisch" });
+    const bassV = H.voicingsFuer(v.ereignisse, "bass", { bruch: 30, seed, zentrum, modus: "dorisch" });
+    const bei = (vs, t) => vs.find((x) => t >= x.t - 1e-6 && t < x.t + x.d - 1e-6)?.midi ?? [];
+    const p = PR.neuesProjekt({ rate: RATE }); p.kammerton = 440;
+    const spur = (q, opt) => { q = { anzahl: TK + 1, bpm: BPM, taktart, kammerton: 440, seed, ...q }; const sp = PR.erzeugteSpurDazu(p, q, opt); return { id: sp.id, kanaele: spurRechnen(q, RATE).kanaele }; };
+    const drum = (stimme, takte, opt) => spur({ erzeuger: "drums@0.1.0", stimme, werte: werteVon("drums@0.1.0", stimme), takte, anzahl: TK, swing: 0, menschlich: 3, versatz: 0 }, opt);
+    // Bass: im Riff-Beispiel die Schicht selbst, sonst auf jedem Gruppenanfang
+    let bassNoten = [];
+    if (id.schicht === "bass") {
+      const schritt = 1 / n, ton = { a: 0, b: 7, c: 10 };
+      z.ereignisse.forEach((e, k) => { const m = Math.min(...bei(bassV, e.t)); const naechste = z.ereignisse[k + 1]?.t ?? TK; if (Number.isFinite(m)) bassNoten.push({ t: e.t, d: Math.max(0.03, Math.min(naechste - e.t, 4 * schritt) - 0.01), midi: m + ton[e.token], staerke: e.index === 0 ? 0.9 : 0.72 }); });
+    } else for (let b = 0; b < TK; b++) anf.forEach((s, j) => { const t = b + s / n, ende = b + (anf[j + 1] ?? n) / n, m = Math.min(...bei(bassV, t)); if (Number.isFinite(m)) bassNoten.push({ t, d: Math.max(0.05, ende - t - 0.02), midi: m, staerke: j ? 0.7 : 0.85 }); });
+    const spuren = [
+      drum("kick", [kick], { name: "Kick", typ: "drums", pegel: -3 }),
+      drum("snare", [snare], { name: "Snare", typ: "drums", pegel: -6, raum: { anteil: 14, nachhall: 1.2 } }),
+      drum("hat", [hat], { name: "Hi-Hat", typ: "drums", pegel: -15, pan: 0.15 }),
+      spur({ erzeuger: "bass@0.1.0", stimme: "rund", werte: werteVon("bass@0.1.0", "rund", "weich"), noten: bassNoten }, { name: "Bass", typ: "bass", pegel: -6 }),
+      spur({ erzeuger: "synth@0.2.0", stimme: "velvet", werte: { patch: "velvetRhodes" }, noten: noten(rhodes, { neuJeTakt: true, staerke: 0.5, auftakt: true }) }, { name: "Rhodes", typ: "synth", pegel: id.schicht === "rhodes" ? -15 : -9, raum: { anteil: 22, nachhall: 2.2 } }),
+    ];
+    if (id.schicht === "rim") spuren.push(drum("rim", z.zeilen, { name: "Rim (5/8)", typ: "drums", pegel: -9, pan: -0.25, raum: { anteil: 18, nachhall: 1.4 } }));
+    if (id.schicht === "rhodes") {
+      const motiv = z.ereignisse.map((e) => { const vo = [...bei(rhodes, e.t)].sort((x, y) => y - x); const m = vo[{ a: 0, b: 1, c: 2 }[e.token]] ?? vo[0]; return m ? { t: e.t, d: 0.22, midi: m + 12, staerke: e.index === 0 ? 0.85 : 0.65 } : null; }).filter(Boolean);
+      spuren.push(spur({ erzeuger: "synth@0.2.0", stimme: "velvet", werte: { patch: "velvetRhodes" }, noten: motiv }, { name: "Motiv (3/4)", typ: "synth", pegel: -7, pan: 0.2, raum: { anteil: 28, nachhall: 2.6 } }));
+    }
+    const name = `poly-${a.zaehler}-${a.nenner}-${id.schicht}`, sek = Math.round(TK * ME.taktSek(BPM, a) * 10) / 10;
+    const treffen = z.ereignisse.filter((e) => e.index === 0 && e.schritt === 0).map((e) => e.takt + 1);
+    console.log(`${taktart}: ${id.text}\n  Schicht-Zyklus ${z.laenge} Schritte, Takt ${n}; Zyklusbeginn auf der Eins in Takt ${treffen.join(", ")}`);
+    speichern(join(ziel, `${name}.wav`), await mischen(p, spuren));
+    liste.push({ datei: `${name}.mp3`, taktart, takte: TK, sekunden: sek, idee: id.text, zyklus: z.laenge, treffenAufEins: treffen, zeilen: z.zeilen });
+  }
+  writeFileSync(join(ziel, "poly.json"), JSON.stringify(liste, null, 1));
+} else console.log("node tools/bienne-hoerproben.mjs harmonik|metrum|tuplets|poly <ziel-ordner> [seed]");
