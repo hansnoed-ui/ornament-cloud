@@ -1032,3 +1032,16 @@ test("Gitarre: vier Stimmen, Ton stimmt, klingt ab, Schwelle ohne Anschlag", asy
     else assert.ok(rms(0.05, 0.15) > rms(1.2, 1.4), `${k} klingt ab`);
   }
 });
+
+test("Bass 0.2.0: alte Stimmen dieselben Objekte, Muted kurz, verzerrt mit sauberem Fundament", async () => {
+  const { stimmeVon: sv } = await c("erzeuger/register.js");
+  for (const k of ["sub", "rund", "analog", "reese", "kontrabass", "ebass"]) assert.equal(sv("bass@0.2.0", k), sv("bass@0.1.0", k));
+  const std = (st) => Object.fromEntries(st.parameter.map((p) => [p.key, p.std]));
+  const rms = (s, a, b) => Math.sqrt(s.slice(a * 48000, b * 48000).reduce((x, y) => x + y * y, 0) / ((b - a) * 48000));
+  const m = sv("bass@0.2.0", "gedaempft"), [mL] = m.rechne(std(m), 48000, { frequenz: 55, dauer: 1.5, staerke: 0.8, seed: 2 });
+  const e = sv("bass@0.1.0", "ebass"), [eL] = e.rechne(std(e), 48000, { frequenz: 55, dauer: 1.5, staerke: 0.8, seed: 2 });
+  assert.ok(mL.every(Number.isFinite));
+  assert.ok(rms(mL, 0.6, 0.9) / rms(mL, 0.02, 0.12) < rms(eL, 0.6, 0.9) / rms(eL, 0.02, 0.12), "Muted klingt schneller ab als der E-Bass");
+  const z = sv("bass@0.2.0", "verzerrt"), [zL] = z.rechne(std(z), 48000, { frequenz: 55, dauer: 1, staerke: 0.8, seed: 2 });
+  assert.ok(zL.every(Number.isFinite) && rms(zL, 0.1, 0.5) > 0.05);
+});
