@@ -10,10 +10,12 @@
 // Punktkugel, Box mit Lichtweg, Raster 7 × 7 der 49 Strophen, darin der Suchauftrag.
 import React from "react";
 import { AbsoluteFill, Easing, Sequence, continueRender, delayRender, interpolate, useCurrentFrame } from "remotion";
-import { SANS, SERIF, schriften } from "../vorlage/stil";
+import { schriften } from "../vorlage/stil";
+import { SchriftKontext, GROTESK, KLASSISCH, interLaden } from "./schrift";
 import { LabSignet } from "../wissen/LabSignet";
 import daten from "./data/reise.json";
 import { ZettelIntro, INTRO_DAUER } from "./ZettelIntro";
+import { GewebeLeinwand } from "./Gewebe";
 
 type Punkt = [number, number, number];
 const klemm = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
@@ -160,8 +162,35 @@ function projiziere(p: Punkt, k: Kamera, L: Lay) {
   return { x: L.cx + x1 * m, y: L.cy + y2 * m, m, tiefe };
 }
 
+// ---------- organisch (Test vom 29. Oktober 2026, Wunsch: «wie die verbindungen noch etwas organischer wirken könnten … eine art digitales kunstwerk») ----------
+type XY = { x: number; y: number };
+/** Kontrollpunkt einer Verbindung: seitlich der Mitte, schwingt langsam (jede Verbindung mit eigener Phase) */
+const biege = (a: XY, b: XY, n: number, f: number, stark = 0.16) => {
+  const dx = b.x - a.x, dy = b.y - a.y, l = Math.hypot(dx, dy) || 1, o = l * stark * Math.sin(n * 1.7 + f / 70) * (0.6 + 0.4 * Math.sin(n * 0.37));
+  return { x: (a.x + b.x) / 2 - (dy / l) * o, y: (a.y + b.y) / 2 + (dx / l) * o };
+};
+const aufKurve = (a: XY, c: XY, b: XY, u: number): XY => ({ x: (1 - u) ** 2 * a.x + 2 * (1 - u) * u * c.x + u * u * b.x, y: (1 - u) ** 2 * a.y + 2 * (1 - u) * u * c.y + u * u * b.y });
+/** ein weicher Zug durch Punkte (Catmull-Rom als kubische Bézier) */
+const weicherZug = (p: XY[]) => {
+  if (p.length < 2) return "";
+  let d = `M${p[0].x.toFixed(1)},${p[0].y.toFixed(1)}`;
+  for (let i = 0; i < p.length - 1; i++) {
+    const a = p[Math.max(0, i - 1)], b = p[i], c = p[i + 1], e = p[Math.min(p.length - 1, i + 2)];
+    d += `C${(b.x + (c.x - a.x) / 6).toFixed(1)},${(b.y + (c.y - a.y) / 6).toFixed(1)} ${(c.x - (e.x - b.x) / 6).toFixed(1)},${(c.y - (e.y - b.y) / 6).toFixed(1)} ${c.x.toFixed(1)},${c.y.toFixed(1)}`;
+  }
+  return d;
+};
+
+// ---------- neuronal (Wunsch vom 29. Oktober 2026: «und noch etwas neuronales darstellen») ----------
+// Das Netz feuert wie Nervengewebe: Impulse laufen die Verbindungen entlang (spontan, jede dritte Verbindung in ihrem eigenen Takt), und wenn die Spur
+// an einer Station ankommt, breitet sich von dort eine Welle über zwei Schritte aus; wo ein Impuls ankommt, blitzt der Punkt (die «Synapse») kurz auf.
+const KANTEN_VON: number[][] = K.map(() => []);
+daten.kanten.forEach(([a, b], n) => { KANTEN_VON[a].push(n); KANTEN_VON[b].push(n); });
+const IMPULS = "#d6ecff";
+
 // ---------- Bild des Netzes ----------
-const Netz: React.FC<{ f: number; L: Lay; plan: Plan }> = ({ f, L, plan }) => {
+const Netz: React.FC<{ f: number; L: Lay; plan: Plan; organisch?: boolean; gewebe?: boolean }> = ({ f, L, plan, organisch = false, gewebe = false }) => {
+  const Sx = React.useContext(SchriftKontext);
   const { T, SPUR } = plan, AUFTRITT = AUFTRITTE[plan.auftrag];
   const sicht = (i: number, f: number) => interpolate(f, [AUFTRITT[i], AUFTRITT[i] + 12], [0, 1], klemm);
   /** ORNA-Kanten ziehen sich nach den Ringen */
@@ -184,6 +213,8 @@ const Netz: React.FC<{ f: number; L: Lay; plan: Plan }> = ({ f, L, plan }) => {
   const brueckenLicht = interpolate(f, [T.aufbau + 205, T.aufbau + 235, T.aufbau + 290, T.aufbau + 318], [0, 1, 1, 0], klemm);
 
   const nebel = (t: number) => interpolate(t, [k.abstand * 0.35, k.abstand * 1.9], [1, 0.25], klemm);
+  const funken: React.ReactNode[] = [];
+  const kantenZustand = gewebe ? new Float32Array(daten.kanten.length * 4) : null;
   const linien = daten.kanten.map(([a, b, art], n) => {
     const da = sicht(a, f), db = sicht(b, f);
     if (da <= 0 || db <= 0) return null;
@@ -193,9 +224,62 @@ const Netz: React.FC<{ f: number; L: Lay; plan: Plan }> = ({ f, L, plan }) => {
     const grund = art === 3 ? 0.11 : 0.3;
     const o = an ? 0.25 + 0.6 * angekommen : grund * dimm * nebel((P[a].tiefe + P[b].tiefe) / 2) + 0.08 * ende;
     const farbe = an ? (art === 3 ? F.orna : art === 0 ? "#6fb894" : "#c9c9c9") : F.kante;
+    if (kantenZustand) {
+      // Gewebe: Wachstum, hell (an der Station), Grund (ruhende Deckkraft je Faser), Ende (Impulse heller)
+      const g = (art === 3 ? 0.05 : 0.1) * (0.4 + 0.6 * dimm) + 0.035 * ende;   // an der Station gedämpft, aber das Gewebe bleibt sichtbar
+      kantenZustand.set([e, an ? 0.15 + 0.35 * angekommen : 0, an ? 0.06 : g, ende], n * 4);
+      return null;
+    }
+    const breite = (an ? 2.6 : 1.3) * Math.min(1.6, Math.max(0.7, (P[a].m + P[b].m) / 2));
+    if (organisch) {
+      // gebogen und leise schwingend; wächst über die Länge der Kurve; an der Station wandern Lichtpunkte entlang
+      const c = biege(P[a], P[b], n, f, art === 3 ? 0.1 : 0.18);
+      if (an && angekommen > 0.2) for (let q = 0; q < 2; q++) {
+        const u = ((f + n * 13 + q * 37) % 75) / 75, p = aufKurve(P[a], c, P[b], u);
+        funken.push(<circle key={`f${n}-${q}`} cx={p.x} cy={p.y} r={2.4 + 1.6 * Math.sin(u * Math.PI)} fill={farbe} opacity={angekommen * Math.sin(u * Math.PI)} />);
+      }
+      return <path key={n} d={`M${P[a].x.toFixed(1)},${P[a].y.toFixed(1)}Q${c.x.toFixed(1)},${c.y.toFixed(1)} ${P[b].x.toFixed(1)},${P[b].y.toFixed(1)}`} fill="none" pathLength={1}
+        strokeDasharray={e < 1 ? `${e} 1` : undefined} stroke={farbe} strokeWidth={breite * (an ? 1 : 0.85)} strokeLinecap="round" opacity={o} />;
+    }
     const x2 = P[a].x + (P[b].x - P[a].x) * e, y2 = P[a].y + (P[b].y - P[a].y) * e;
-    return <line key={n} x1={P[a].x} y1={P[a].y} x2={x2} y2={y2} stroke={farbe} strokeWidth={(an ? 2.6 : 1.3) * Math.min(1.6, Math.max(0.7, (P[a].m + P[b].m) / 2))} opacity={o} />;
+    return <line key={n} x1={P[a].x} y1={P[a].y} x2={x2} y2={y2} stroke={farbe} strokeWidth={breite} opacity={o} />;
   });
+
+  // neuronal: spontane Impulse und die Welle von der Station aus (nur in der organischen Fassung)
+  const impulse: React.ReactNode[] = [];
+  if (organisch) {
+    const punkt = (n: number, von: number, u: number) => {
+      const [a, b] = daten.kanten[n], c = biege(P[a], P[b], n, f, daten.kanten[n][2] === 3 ? 0.1 : 0.18);
+      return von === a ? aufKurve(P[a], c, P[b], u) : aufKurve(P[b], c, P[a], u);
+    };
+    const zeichne = (key: string, p: XY, u: number, o: number, r: number) => (gewebe && key.startsWith("i")) || impulse.push(
+      <g key={key} opacity={o * Math.sin(Math.min(1, u) * Math.PI) ** 0.6}>
+        <circle cx={p.x} cy={p.y} r={r * 3.6} fill={IMPULS} opacity={0.3} />
+        <circle cx={p.x} cy={p.y} r={r} fill="#ffffff" />
+      </g>);
+    // spontan: jede dritte sichtbare Verbindung feuert alle 10–27 s einmal, 1,3 s lang
+    daten.kanten.forEach(([a, b], n) => {
+      if (n % 3 || sicht(a, f) <= 0 || sicht(b, f) <= 0 || f < kanteAb(a, b, daten.kanten[n][2]) + 22) return;
+      const per = 300 + ((n * 97) % 520), u = ((f + n * 53) % per) / 40;
+      if (u > 1) return;
+      zeichne(`i${n}`, punkt(n, n % 2 ? a : b, u), u, 0.7 * dimm + 0.3 * ende, 2.5);
+    });
+    // die Welle: an der Station über die eigenen Verbindungen (0,9 s), dann einen Schritt weiter (höchstens 48 Verbindungen)
+    if (s) {
+      const t = f - (T.start[j] + FLUG - 6);
+      if (t >= 0 && t < 110) {
+        const erste = new Set<number>(), weiter: [number, number][] = [];
+        for (const z of s.ziel) for (const n of KANTEN_VON[z]) { erste.add(n); const [a, b] = daten.kanten[n], o = a === z ? b : a; for (const m of KANTEN_VON[o]) if (!erste.has(m) && weiter.length < 48) weiter.push([m, o]); }
+        for (const n of erste) {
+          const [a, b] = daten.kanten[n], von = s.ziel.includes(a) ? a : b, nach = von === a ? b : a, u = t / 26;
+          if (u <= 1) zeichne(`w${n}`, punkt(n, von, u), u, 1, 3.4);
+          const blitz = interpolate(t, [24, 30, 60], [0, 1, 0], klemm);
+          if (blitz > 0 && P[nach].tiefe > 60) impulse.push(<circle key={`b${n}`} cx={P[nach].x} cy={P[nach].y} r={6 + 26 * (1 - blitz)} fill="none" stroke={IMPULS} strokeWidth={2.6} opacity={blitz * 0.9} />);
+        }
+        for (const [n, von] of weiter) { const u = (t - 28) / 30; if (u > 0 && u <= 1) zeichne(`v${n}`, punkt(n, von, u), u, 0.8, 2.6); }
+      }
+    }
+  }
 
   // die Spur: alle bisherigen Wege in Rot, der laufende bis zum Läufer
   const spurPfade: string[] = [];
@@ -207,12 +291,12 @@ const Netz: React.FC<{ f: number; L: Lay; plan: Plan }> = ({ f, L, plan }) => {
     if (u <= 0) continue;
     const { q, bis: punkte } = aufWeg(wegPunkte(plan, n, f), u);
     const pp = punkte.map((p) => projiziere(p, k, L));
-    spurPfade.push(pp.map((p, m) => `${m ? "L" : "M"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(""));
+    spurPfade.push(organisch ? weicherZug(pp) : pp.map((p, m) => `${m ? "L" : "M"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(""));
     if (n === j && u < 1) { const p = projiziere(q, k, L); laeufer = { x: p.x, y: p.y }; }
   }
 
   const ordnung = P.map((p, i) => [p.tiefe, i] as const).sort((a, b) => b[0] - a[0]);
-  const punkte: React.ReactNode[] = [], namen: React.ReactNode[] = [];
+  const punkte: React.ReactNode[] = [], namen: React.ReactNode[] = [], obenauf: React.ReactNode[] = [];   // obenauf: die gewählten Namen über allen anderen
   for (const [, i] of ordnung) {
     const p = P[i], kn = K[i], o = sicht(i, f);
     if (o <= 0 || p.tiefe <= 60) continue;
@@ -223,7 +307,9 @@ const Netz: React.FC<{ f: number; L: Lay; plan: Plan }> = ({ f, L, plan }) => {
     const bruecke = kn.zsz && kn.orna;
     const farbe = h || ende ? farbeVon(kn) : daempfe(farbeVon(kn), bruecke && brueckenLicht ? 0 : 0.45);
     const op = (h ? 0.55 + 0.45 * Math.max(h, 1 - angekommen) : dimm * nebel(p.tiefe) + (1 - dimm) * 0.15) * o;
-    punkte.push(
+    if (gewebe) {
+      if (h && istZiel) punkte.push(<circle key={i} cx={p.x} cy={p.y} r={r * 1.6} fill={farbe} opacity={0.1 + 0.2 * angekommen} filter="url(#weich)" />);
+    } else punkte.push(
       <g key={i} opacity={Math.min(1, op + 0.2 * ende)}>
         {h ? <circle cx={p.x} cy={p.y} r={r * 2.6} fill={farbe} opacity={0.16 * angekommen} /> : null}
         {bruecke ? <circle cx={p.x} cy={p.y} r={r + 3.5 + brueckenLicht * 6} fill="none" stroke={F.orna} strokeWidth={2 + brueckenLicht * 2} opacity={0.55 + brueckenLicht * 0.45} /> : null}
@@ -232,28 +318,39 @@ const Netz: React.FC<{ f: number; L: Lay; plan: Plan }> = ({ f, L, plan }) => {
     );
     // Beschriftung unter dem Punkt (Obsidian): aktive gross und deutlich, die übrigen erst, wenn die Kamera nahe kommt
     let lo = 0, gr = 0;
-    if (h) { lo = angekommen * (istZiel ? 1 : 0.95); gr = istZiel ? L.klein * 1.15 : kn.art === "werk" || kn.art === "name" ? L.klein : L.klein * 0.92; }
+    // gewählt (Ziel der Station) gross und ganz hell, die Nachbarn etwas zurück (Rückmeldung: «die gewählten namen gehen … unter … der gewählte name könnte auch etwas grösser sein»)
+    if (h) { lo = angekommen * (istZiel ? 1 : gewebe ? (s?.art === "orna" ? 0.5 : 0.78) : 0.95); gr = istZiel ? L.klein * (gewebe ? 1.55 : 1.15) : kn.art === "werk" || kn.art === "name" ? L.klein : L.klein * 0.92; }
     if (!h || lo < 0.3) {
       const schwelle = kn.art === "zyklus" ? 0.45 : kn.art === "strophe" ? 0.9 : 2.1;
-      const nah = interpolate(p.m, [schwelle, schwelle * 1.5], [0, 1], klemm) * (kn.art === "zyklus" || kn.art === "strophe" ? 0.7 : 0.32) * dimm * o;
+      const nah = interpolate(p.m, [schwelle, schwelle * 1.5], [0, 1], klemm) * (kn.art === "zyklus" || kn.art === "strophe" ? 0.7 : 0.32) * (gewebe ? dimm * dimm : dimm) * o;   // im Gewebe treten die übrigen an der Station stärker zurück
       if (nah > lo) { lo = nah; gr = Math.min(L.klein * 0.95, Math.max(17, 13 * p.m)); }
     }
     if (ende && kn.art !== "werk") { lo = Math.max(lo, ende * (kn.art === "zyklus" ? 0.95 : kn.art === "strophe" ? 0.6 : 0)); gr = Math.max(gr, kn.art === "zyklus" ? L.klein : 17); }
     if (lo > 0.02 && gr > 0) {
-      namen.push(
-        <text key={i} x={p.x} y={p.y + r + gr * 1.05} textAnchor="middle" fontFamily={kn.art === "strophe" || kn.art === "zyklus" ? SERIF : SANS} fontSize={gr}
-          fontStyle={kn.art === "werk" ? "italic" : "normal"} fontWeight={kn.art === "name" && h ? 600 : 400}
+      (istZiel ? obenauf : namen).push(
+        <text key={i} x={p.x} y={p.y + r + gr * 1.05} textAnchor="middle" fontFamily={kn.art === "strophe" || kn.art === "zyklus" ? Sx.serif : Sx.sans} fontSize={gr}
+          fontStyle={kn.art === "werk" ? Sx.kursiv : "normal"} fontWeight={istZiel && gewebe ? 600 : kn.art === "name" && h ? (gewebe ? 500 : 600) : gewebe ? 500 : 400} letterSpacing={gewebe ? "-0.01em" : undefined}
           fill={h ? (kn.art === "strophe" ? F.tinte : farbeVon(kn)) : "#cfcfcf"} opacity={lo} stroke={F.grund} strokeWidth={gr * 0.28} paintOrder="stroke" strokeLinejoin="round">
           {kn.titel}
         </text>,
       );
     }
   }
+  const leinwand = kantenZustand ? (
+    <GewebeLeinwand z={{ f, w: L.w, h: L.h, cx: L.cx, cy: L.cy, kamera: { ziel: k.ziel, abstand: k.abstand, gier: k.gier, neigung: k.neigung, brenn: L.brenn },
+      orte: new Float32Array(K.flatMap((_, i) => [...ort(i, f), 0])), kanten: kantenZustand }} />
+  ) : null;
   return (
+    <>
+    {leinwand}
     <svg width={L.w} height={L.h} style={{ position: "absolute", inset: 0 }}>
+      <defs><filter id="weich" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="7" /></filter></defs>
       <g>{linien}</g>
-      {spurPfade.map((d, n) => <path key={`s${n}`} d={d} fill="none" stroke={F.spur} strokeWidth={9} opacity={0.18} strokeLinecap="round" strokeLinejoin="round" />)}
-      {spurPfade.map((d, n) => <path key={`t${n}`} d={d} fill="none" stroke={F.spur} strokeWidth={3.2} opacity={n === j && f < T.ganz ? 1 : 0.75} strokeLinecap="round" strokeLinejoin="round" />)}
+      {funken}
+      {impulse}
+      {organisch ? <g filter="url(#weich)">{spurPfade.map((d, n) => <path key={`g${n}`} d={d} fill="none" stroke={F.spur} strokeWidth={16} opacity={0.55} strokeLinecap="round" strokeLinejoin="round" />)}</g> : null}
+      {spurPfade.map((d, n) => <path key={`s${n}`} d={d} fill="none" stroke={F.spur} strokeWidth={9} opacity={organisch ? 0.28 : 0.18} strokeLinecap="round" strokeLinejoin="round" />)}
+      {spurPfade.map((d, n) => <path key={`t${n}`} d={d} fill="none" stroke={organisch ? "#ff8a73" : F.spur} strokeWidth={organisch ? 2.4 : 3.2} opacity={n === j && f < T.ganz ? 1 : 0.75} strokeLinecap="round" strokeLinejoin="round" />)}
       {punkte}
       {laeufer ? (
         <g>
@@ -262,7 +359,9 @@ const Netz: React.FC<{ f: number; L: Lay; plan: Plan }> = ({ f, L, plan }) => {
         </g>
       ) : null}
       {namen}
+      {obenauf}
     </svg>
+    </>
   );
 };
 
@@ -286,8 +385,10 @@ const Schleier: React.FC<{ L: Lay }> = ({ L }) =>
     <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, top: L.feld.top - 170, background: `linear-gradient(180deg, ${F.grund}00 0%, ${F.grund}e6 26%, ${F.grund} 50%)` }} />
   );
 
-const Aufbau: React.FC<{ f: number; L: Lay; plan: Plan }> = ({ f, L, plan }) => {
+const Aufbau: React.FC<{ f: number; L: Lay; plan: Plan; ohneListen?: boolean }> = ({ f, L, plan, ohneListen = false }) => {
+  const Sx = React.useContext(SchriftKontext);
   const z = daten.zaehle, T = plan.T;
+  if (ohneListen) return null;
   const zeilen: [number, string, string, string][] = [
     [T.aufbau + 20, zahl(z.zyklen), "Zyklen", "#6fb894"], [T.aufbau + 40, zahl(z.strophen), "Strophen · Begriffe", F.strophe],
     [T.aufbau + 80, zahl(z.werke), "Werke · Quellen", F.werk], [T.aufbau + 120, zahl(z.namen), "Namen", F.name],
@@ -296,23 +397,23 @@ const Aufbau: React.FC<{ f: number; L: Lay; plan: Plan }> = ({ f, L, plan }) => 
   const orna = interpolate(f, [T.aufbau + 180, T.aufbau + 200], [0, 1], klemm), beide = interpolate(f, [T.aufbau + 215, T.aufbau + 235], [0, 1], klemm);
   return (
     <Feld L={L} o={o}>
-      <div style={{ fontFamily: SANS, fontSize: L.kopf, fontWeight: 600, color: F.leise, marginBottom: 10 }}>Zettelkasten «Zu seiner Zeit»</div>
+      <div style={{ fontFamily: Sx.sans, fontSize: L.kopf, fontWeight: 600, color: F.leise, marginBottom: 10 }}>Zettelkasten «Zu seiner Zeit»</div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", columnGap: 30, rowGap: 4 }}>
         {zeilen.map(([ab, n, was, farbe]) => (
-          <div key={was} style={{ opacity: interpolate(f, [ab, ab + 14], [0, 1], klemm), fontFamily: SANS, color: F.tinte, whiteSpace: "nowrap" }}>
+          <div key={was} style={{ opacity: interpolate(f, [ab, ab + 14], [0, 1], klemm), fontFamily: Sx.sans, color: F.tinte, whiteSpace: "nowrap" }}>
             <span style={{ fontSize: L.zahl, fontWeight: 500, letterSpacing: "-0.03em", color: farbe, fontVariantNumeric: "tabular-nums" }}>{n}</span>
             <span style={{ fontSize: L.klein, color: F.leise, marginLeft: 12 }}>{was}</span>
           </div>
         ))}
       </div>
-      <div style={{ opacity: orna, marginTop: 22, fontFamily: SANS, color: F.tinte, whiteSpace: "nowrap" }}>
+      <div style={{ opacity: orna, marginTop: 22, fontFamily: Sx.sans, color: F.tinte, whiteSpace: "nowrap" }}>
         <div style={{ fontSize: L.kopf, fontWeight: 600, color: F.leise, marginBottom: 4 }}>ORNA · zwei Ringe</div>
         <span style={{ fontSize: L.zahl, fontWeight: 500, letterSpacing: "-0.03em", color: F.orna }}>{zahl(z.orna)}</span>
         <span style={{ fontSize: L.klein, color: F.leise, marginLeft: 12, marginRight: 30 }}>Namen</span>
         <span style={{ fontSize: L.zahl, fontWeight: 500, letterSpacing: "-0.03em", color: F.orna }}>{zahl(z.konstellationen)}</span>
         <span style={{ fontSize: L.klein, color: F.leise, marginLeft: 12 }}>Konstellationen</span>
       </div>
-      <div style={{ opacity: beide, marginTop: 16, fontFamily: SANS, fontSize: L.klein * 1.1, color: F.tinte }}>
+      <div style={{ opacity: beide, marginTop: 16, fontFamily: Sx.sans, fontSize: L.klein * 1.1, color: F.tinte }}>
         <span style={{ display: "inline-block", width: L.klein * 0.8, height: L.klein * 0.8, borderRadius: "50%", border: `3px solid ${F.orna}`, marginRight: 12, verticalAlign: "-0.1em" }} />
         {zahl(z.beide)} Namen stehen in beiden
       </div>
@@ -321,6 +422,7 @@ const Aufbau: React.FC<{ f: number; L: Lay; plan: Plan }> = ({ f, L, plan }) => 
 };
 
 const Station: React.FC<{ f: number; L: Lay; plan: Plan }> = ({ f, L, plan }) => {
+  const Sx = React.useContext(SchriftKontext);
   const { T, SPUR } = plan, j = stationBei(plan, f);
   if (j < 0 || f >= T.ganz) return null;
   const s = SPUR[j], a = T.start[j], ankunft = a + FLUG - 6, o = blendeIn(f, ankunft, a + s.dauer, 16);
@@ -332,32 +434,32 @@ const Station: React.FC<{ f: number; L: Lay; plan: Plan }> = ({ f, L, plan }) =>
       {/* im Flug: über welchen Namen oder welches Werk die Spur weitergeht */}
       {flug > 0 ? (
         <Feld L={L} o={flug}>
-          <div style={{ fontFamily: SANS, fontSize: L.kopf, color: F.leise }}>{vorher?.titel}</div>
-          <div style={{ fontFamily: SANS, fontSize: L.text * 0.9, fontWeight: 600, color: F.spur, marginTop: 8 }}>→ {s.ueber}</div>
+          <div style={{ fontFamily: Sx.sans, fontSize: L.kopf, color: F.leise }}>{vorher?.titel}</div>
+          <div style={{ fontFamily: Sx.sans, fontSize: L.text * 0.9, fontWeight: 600, color: F.spur, marginTop: 8 }}>→ {s.ueber}</div>
         </Feld>
       ) : null}
       <Feld L={L} o={o}>
-        <div style={{ fontFamily: SANS, fontSize: L.kopf, fontWeight: 600, color: s.art === "orna" ? F.orna : "#6fb894" }}>{s.kopf}</div>
-        <div style={{ fontFamily: SERIF, fontSize: L.titel, lineHeight: 1.04, color: F.tinte, marginTop: 10, letterSpacing: "-0.01em" }}>{s.titel}</div>
+        <div style={{ fontFamily: Sx.sans, fontSize: L.kopf, fontWeight: 600, color: s.art === "orna" ? F.orna : "#6fb894" }}>{s.kopf}</div>
+        <div style={{ fontFamily: Sx.serif, fontSize: L.titel, lineHeight: 1.04, color: F.tinte, marginTop: 10, letterSpacing: Sx.spur }}>{s.titel}</div>
         {s.praxis ? (
-          <div style={{ fontFamily: SANS, fontSize: L.klein * 1.08, lineHeight: 1.34, color: "#cfcfcf", marginTop: 16, opacity: dazu(0) }}>
+          <div style={{ fontFamily: Sx.sans, fontSize: L.klein * 1.08, lineHeight: 1.34, color: "#cfcfcf", marginTop: 16, opacity: dazu(0) }}>
             <span style={{ color: F.orna, fontWeight: 600 }}>Praxis · </span>{s.praxis}
           </div>
         ) : null}
-        <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: L.text, lineHeight: 1.28, color: "#e4e4e4", marginTop: 18 }}>{s.text}</div>
+        <div style={{ fontFamily: Sx.serif, fontStyle: Sx.kursiv, fontSize: L.text, lineHeight: 1.28, color: "#e4e4e4", marginTop: 18 }}>{s.text}</div>
         {s.verweise.length ? (
-          <div style={{ marginTop: 22, fontFamily: SANS, fontSize: L.klein, lineHeight: 1.32 }}>
+          <div style={{ marginTop: 22, fontFamily: Sx.sans, fontSize: L.klein, lineHeight: 1.32 }}>
             {s.verweise.map((v, n) => (
               <div key={v.w} style={{ opacity: dazu(n), whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                 <span style={{ color: F.name, fontWeight: 600 }}>{v.name}</span>
                 <span style={{ color: F.leise }}> · </span>
-                <span style={{ color: F.werk, fontStyle: "italic" }}>{v.werk}</span>
+                <span style={{ color: F.werk, fontStyle: Sx.kursiv }}>{v.werk}</span>
               </div>
             ))}
           </div>
         ) : null}
         {"bruecke" in s && s.bruecke ? (
-          <div style={{ marginTop: 22, fontFamily: SANS, fontSize: L.klein, lineHeight: 1.35, opacity: dazu(0) }}>
+          <div style={{ marginTop: 22, fontFamily: Sx.sans, fontSize: L.klein, lineHeight: 1.35, opacity: dazu(0) }}>
             <span style={{ color: F.name, fontWeight: 600 }}>{s.bruecke.name}</span>
             <span style={{ color: F.leise }}> auch im Zettelkasten: </span>
             <span style={{ color: F.tinte }}>{s.bruecke.strophen.map((x) => `${x.nummer} ${x.titel}`).join(" · ")}</span>
@@ -368,16 +470,18 @@ const Station: React.FC<{ f: number; L: Lay; plan: Plan }> = ({ f, L, plan }) =>
   );
 };
 
-const Ganz: React.FC<{ f: number; L: Lay; plan: Plan }> = ({ f, L, plan }) => {
+const Ganz: React.FC<{ f: number; L: Lay; plan: Plan; ohneListen?: boolean }> = ({ f, L, plan, ohneListen = false }) => {
+  const Sx = React.useContext(SchriftKontext);
+  if (ohneListen) return null;
   const { T, SPUR } = plan, z = daten.zaehle, o = blendeIn(f, T.ganz + 80, T.outro + 6, 20);
   const a = plan.auftrag === "reise" ? null : daten.auftraege[plan.auftrag];
   return (
     <Feld L={L} o={o}>
-      <div style={{ fontFamily: SANS, fontSize: L.kopf, fontWeight: 600, color: F.spur }}>{a ? `${a.titel} · ` : "Die Spur · "}{SPUR.length} Stationen</div>
-      <div style={{ fontFamily: SERIF, fontSize: L.text * 1.05, lineHeight: 1.3, color: F.tinte, marginTop: 14 }}>
+      <div style={{ fontFamily: Sx.sans, fontSize: L.kopf, fontWeight: 600, color: F.spur }}>{a ? `${a.titel} · ` : "Die Spur · "}{SPUR.length} Stationen</div>
+      <div style={{ fontFamily: Sx.serif, fontSize: L.text * 1.05, lineHeight: 1.3, color: F.tinte, marginTop: 14 }}>
         {SPUR.map((s) => (s.art === "orna" ? s.titel : s.titel)).join(" → ")}
       </div>
-      <div style={{ fontFamily: SANS, fontSize: L.klein, color: F.leise, marginTop: 22, lineHeight: 1.4 }}>
+      <div style={{ fontFamily: Sx.sans, fontSize: L.klein, color: F.leise, marginTop: 22, lineHeight: 1.4 }}>
         {a ? `${a.frauen} von ${a.namen} Adressen weiblich · ` : ""}{zahl(z.strophen)} Strophen · {zahl(z.werke)} Werke · {zahl(z.namen)} Namen · ORNA {zahl(z.konstellationen)} Konstellationen
       </div>
     </Feld>
@@ -393,25 +497,27 @@ const Signet: React.FC<{ L: Lay; children: React.ReactNode }> = ({ L, children }
   return <div style={{ position: "absolute", width: 1080, height: 1350, left: (L.w - 1080 * m) / 2, top: (L.h - 1350 * m) / 2, transform: `scale(${m})`, transformOrigin: "0 0" }}>{children}</div>;
 };
 
-export const ReiseVideo: React.FC<{ format?: Format; auftrag?: Auftrag }> = ({ format = "vier", auftrag = "reise" }) => {
+/** organisch: gebogene, schwingende Verbindungen, weiche Spur mit Leuchten, Lichtpunkte an der Station; dazu ohne Aufzählungen in Intro, Aufbau und Schluss */
+export const ReiseVideo: React.FC<{ format?: Format; auftrag?: Auftrag; organisch?: boolean; gewebe?: boolean }> = ({ format = "vier", auftrag = "reise", organisch = false, gewebe = false }) => {
   const f = useCurrentFrame(), L = LAYOUT[format], plan = PLAENE[auftrag], T = plan.T;
   const [handle] = React.useState(() => delayRender("Schriften"));
-  React.useEffect(() => { schriften.then(() => continueRender(handle)); }, [handle]);
+  React.useEffect(() => { Promise.all([schriften, gewebe ? interLaden() : null]).then(() => continueRender(handle)); }, [handle, gewebe]);
   return (
+    <SchriftKontext.Provider value={gewebe ? GROTESK : KLASSISCH}>
     <AbsoluteFill style={{ backgroundColor: "#000", overflow: "hidden" }}>
       {f >= T.aufbau - 12 && f < T.outro + 14 ? (
         <AbsoluteFill style={{ backgroundColor: F.grund, opacity: interpolate(f, [T.aufbau - 12, T.aufbau + 8, T.outro - 10, T.outro + 14], [0, 1, 1, 0], klemm) }}>
-          <Netz f={f} L={L} plan={plan} />
+          <Netz f={f} L={L} plan={plan} organisch={organisch} gewebe={gewebe} />
           <Schleier L={L} />
-          <Aufbau f={f} L={L} plan={plan} />
+          <Aufbau f={f} L={L} plan={plan} ohneListen={organisch} />
           <Station f={f} L={L} plan={plan} />
-          <Ganz f={f} L={L} plan={plan} />
+          <Ganz f={f} L={L} plan={plan} ohneListen={organisch} />
         </AbsoluteFill>
       ) : null}
       {auftrag === "reise" && f < T.aufbau + 4 ? <Signet L={L}><LabSignet dauer={T.aufbau + 4} kopf={{ titel: "Reise", unter: "durch den Zettelkasten und ORNA" }} /></Signet> : null}
       {auftrag !== "reise" && f < T.aufbau + 24 ? (
         <AbsoluteFill style={{ opacity: interpolate(f, [T.aufbau - 4, T.aufbau + 24], [1, 0], klemm) }}>
-          <ZettelIntro f={f} L={L} auftrag={daten.auftraege[auftrag]} route={plan.SPUR.filter((x) => x.art === "strophe").map((x) => Number(x.kopf.match(/\d+/)?.[0]))} />
+          <ZettelIntro f={f} L={L} ohneListen={organisch} auftrag={daten.auftraege[auftrag]} route={plan.SPUR.filter((x) => x.art === "strophe").map((x) => Number(x.kopf.match(/\d+/)?.[0]))} />
         </AbsoluteFill>
       ) : null}
       {f >= T.outro ? (
@@ -420,5 +526,6 @@ export const ReiseVideo: React.FC<{ format?: Format; auftrag?: Auftrag }> = ({ f
         </AbsoluteFill>
       ) : null}
     </AbsoluteFill>
+    </SchriftKontext.Provider>
   );
 };
