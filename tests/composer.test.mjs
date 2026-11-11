@@ -954,3 +954,17 @@ test("Metrum: Tuplets in Musterzeilen – «[x x x]:4» legt drei Schläge über
   assert.equal(q[0].n, 22);
   assert.ok(Math.abs(q[4].stelle - (18 + 16 / 5) / 22) < 1e-12);
 });
+
+test("Metrum: Polymetrik – Zyklus über Taktgrenzen, Treffpunkt und geplanter Neustart", async () => {
+  assert.equal(ME.treffpunkt(12, "4/4"), 3);
+  assert.equal(ME.treffpunkt(10, "7/8"), 5);
+  assert.equal(ME.treffpunkt(16, "11/8"), 8);
+  const z = ME.zyklus("x . . x . . x . . x . .", "4/4", 4);
+  assert.equal(z.zeilen.length, 4);
+  assert.equal(z.zeilen[1].split(" ")[0], ".");
+  assert.equal(z.zeilen[3], z.zeilen[0]);
+  assert.equal(z.treffenNach, 3);
+  const r = ME.zyklus("x . . . . . . . . .", "7/8", 8, { neustart: 4 });
+  assert.equal(r.zeilen[4], r.zeilen[0]);
+  assert.deepEqual(r.ereignisse.filter((e) => e.schritt === 0 && e.index === 0).map((e) => e.takt), [0, 4]);
+});

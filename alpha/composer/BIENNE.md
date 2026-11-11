@@ -12,7 +12,7 @@ synthetisch. Christians eigene Aufnahmen können später über die Klangsammlung
 | Phase | Inhalt | Stand |
 |---|---|---|
 | 1 | **Harmonik 0.1.0** (`kern/harmonik.js`): Vokabular, Modi, Stimmführung, harmonischer Rhythmus, Spannung, Generator, Voicings für Fläche, Klavier, Gitarre und Bass; dazu `lydisch`/`mixolydisch` in `LEITERN` und Noten als Ereignisse in `erzeugen.js` | fertig |
-| 2 | **Metrum** (`kern/metrum.js`): zentrale Taktlänge `taktSek(tempo, taktart)` statt `240 / bpm`, Taktarten 3/4–12/8, Gruppierungen, echte Tuplets (rationale Zeiten), Polymetrik mit geplanten Treffpunkten, Humanisierung als Profil je Rolle (mit Korrelation) | a Taktlänge und Taktarten fertig; **b Tuplets in Arbeit**; c Polymetrik, d Humanisierung offen |
+| 2 | **Metrum** (`kern/metrum.js`): zentrale Taktlänge `taktSek(tempo, taktart)` statt `240 / bpm`, Taktarten 3/4–12/8, Gruppierungen, echte Tuplets (rationale Zeiten), Polymetrik mit geplanten Treffpunkten, Humanisierung als Profil je Rolle (mit Korrelation) | a Taktarten und b Tuplets fertig; **c Polymetrik in Arbeit**; d Humanisierung offen |
 | 3 | **Instrumente** als Proben: Gitarre (sechs Saiten auf der Karplus-Strong-Saite), E-Bass und Muted Bass (Bass 0.2.0), Drums 0.2.0 (Ghost-Stufen, Cross-Stick, Besen), Klavier (akustisch, präpariert), Streicherfläche, dunkler Mono-Lead | offen |
 | 4 | **Interlocking** (Verteiler, Eigenständigkeit und Zusammengehörigkeit), **Echo 0.2.0** und Echos als Ereignisse im Plan | offen |
 | 5 | **`kern/bienne.js`**: Profil, Ausprägung *Schichtung*, ganzer Track, drei Startwerte, Oberfläche | offen |
@@ -183,3 +183,15 @@ konnten schon immer beliebige Bruchteile; der Bass spielt so Halbe-Triolen.
 
 `node tools/bienne-hoerproben.mjs tuplets <ziel>`: in den vier guten Taktarten je 8 Takte, 1–4 ohne, 5–8 mit Tuplet –
 4/4 Achteltriolen und Bass in Halbe-Triolen, 7/8 vier gegen drei, 12/8 Duolen (zwei gegen drei), 11/8 Quintole als Wirbel.
+
+## Polymetrik (Phase 2, Schritt c)
+
+`zyklus(muster, taktart, takte, { neustart })` lässt eine Schicht mit eigenem Zyklus über die Takte laufen und gibt je Takt eine
+Musterzeile (für Drums) und die Ereignisse mit Zeit in Takten (für Noten). `treffpunkt(laenge, taktart)` sagt, nach wie vielen Takten
+Schicht und Takteins frei wieder zusammenfallen; `neustart` setzt den Zyklus an geplanten Stellen zurück (Treffpunkt auf einer
+Abschnittsgrenze).
+
+`node tools/bienne-hoerproben.mjs poly <ziel>`: 4/4 mit Rhodes-Motiv über drei Viertel (trifft alle 3 Takte), 7/8 mit Rimshot in
+Fünfachteln (geplanter Neustart nach 4 Takten), 11/8 mit Bass-Riff in 4/4 (trifft nach 8 Takten).
+
+Urteil Tuplets (11.11.): gut 4/4, 7/8, 11/8; geht 12/8.
