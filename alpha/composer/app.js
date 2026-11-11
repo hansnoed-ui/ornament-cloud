@@ -11,6 +11,7 @@ import { zipBlob } from "./kern/zip.js";
 import { STILE, stilVon, halbeZeit } from "./kern/muster.js";
 import { ARTEN as UNTER, SCHNELL, anwenden, werteVon } from "./kern/unterbrechungen.js";
 import { spurRechnen, schlagRechnen, flaechenSpurRechnen } from "./kern/erzeugen.js";
+import { taktSek } from "./kern/metrum.js";
 import { MAKROS } from "./erzeuger/natur-0.3.0.js";
 import * as SYNTH010 from "./erzeuger/synth-0.1.0.js";
 import * as SYNTH020 from "./erzeuger/synth-0.2.0.js";
@@ -453,7 +454,7 @@ function spurNeuRechnen(sp) {
  * die Hüllkurve des Basses (100 Werte je Sekunde), dazu eine eigene Aufnahme oder Messdaten.
  */
 function bezugFuer(sp) {
-  const q = sp.quelle, takt = (60 / q.bpm) * 4, bass = z.projekt.spuren.find(istBass);
+  const q = sp.quelle, takt = taktSek(q.bpm, q.taktart), bass = z.projekt.spuren.find(istBass);
   const b = {};
   if (bass) {
     q.grundton = bass.quelle.grundton; q.leiter = bass.quelle.leiter;
@@ -690,7 +691,7 @@ async function trackErzeugen() {
     for (const sp of z.projekt.spuren.filter((x) => istDrums(x) && b.wechsel.includes(x.quelle.stimme))) { sp.ereignisse.push(...wechsel.get(sp.quelle.stimme)); spurSenden(sp); }
   }
   z.projekt.abschnitte = abschnitte;
-  const L = takte * (240 / bpm);
+  const L = takte * taktSek(bpm);
   z.schleife = { a: 0, b: L }; z.schleifeAn = false; z.projekt.schleife = null; schleifeSenden();
   z.pos = 0; post({ art: "stelle", pos: 0 });
   z.gewaehlt = z.projekt.spuren[0]?.id ?? null; z.glied = -2; senden(); allesAufbauen();

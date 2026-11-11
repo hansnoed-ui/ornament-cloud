@@ -6,6 +6,7 @@
 // erzeugte Projekte behalten ihre Ereignisse.
 
 import { zufall } from "../erzeuger/grund.js";
+import { taktSek } from "./metrum.js";
 
 /** Funktion einer Spur im Arrangement, aus Erzeuger und Stimme (bzw. Rolle bei Synths) */
 export function funktionVon(q) {
@@ -47,7 +48,7 @@ const FOLGEN = [
 
 /** Länge in Takten (ein Vielfaches von 4) und die Abschnitte für eine Dauer in Sekunden; der Ablauf aus dem Startwert */
 export function abschnitte(sekunden, bpm, { seed = 1 } = {}) {
-  const takt = 240 / bpm, takte = Math.max(16, Math.round(sekunden / takt / 4) * 4), rnd = zufall(seed * 7 + 3);
+  const takt = taktSek(bpm), takte = Math.max(16, Math.round(sekunden / takt / 4) * 4), rnd = zufall(seed * 7 + 3);
   const intro = takte >= 48 ? 8 : 4, aufbau = 4, outro = 4;
   let mitte = takte - intro - aufbau - outro;
   const folge = [...FOLGEN[Math.floor(rnd() * FOLGEN.length)]];

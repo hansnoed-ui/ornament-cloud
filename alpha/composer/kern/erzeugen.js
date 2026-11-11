@@ -7,6 +7,7 @@ import { zufall, hash } from "../erzeuger/grund.js";
 import { taktLesen } from "./muster.js";
 import { notenLesen, grundFrequenz } from "./linien.js";
 import { bearbeiten } from "./sampler.js";
+import { taktSek } from "./metrum.js";
 
 /**
  * q: { erzeuger, stimme, werte, takte: [Zeilen], fill?, anzahl (Takte), bpm, swing (0–0,5), menschlich (ms), versatz (ms), seed,
@@ -18,7 +19,7 @@ export function spurRechnen(q, rate) {
   if (q.flaeche) return flaechenSpurRechnen(q, rate);
   if (q.grundton !== undefined || q.leiter) return notenSpurRechnen(q, rate);
   const st = stimmeVon(q.erzeuger, q.stimme), werte = { ...Object.fromEntries(st.parameter.map((p) => [p.key, p.std])), ...q.werte };
-  const takt = (60 / q.bpm) * 4, anzahl = Math.max(1, q.anzahl ?? 8), n = Math.round(anzahl * takt * rate);
+  const takt = taktSek(q.bpm, q.taktart), anzahl = Math.max(1, q.anzahl ?? 8), n = Math.round(anzahl * takt * rate);
   const L = new Float32Array(n), R = new Float32Array(n), rnd = zufall(q.seed ?? 1), cache = new Map();
   const erste = st.artikulationen[0].key, gueltig = new Set(st.artikulationen.map((a) => a.key));
   let schlaege = 0;
@@ -87,12 +88,12 @@ export function notenSpurRechnen(q, rate) {
   // dem Anfang) und über die ganze Länge legen. Für lange Tracks ein Vielfaches schneller und Abtastwert für Abtastwert eine Wiederholung.
   const zyklus = Math.max(1, q.takte?.length ?? 1), gesamt = Math.max(1, q.anzahl ?? 8);
   if (gesamt > zyklus) {
-    const eins = notenSpurRechnen({ ...q, anzahl: zyklus }, rate), n = Math.round(gesamt * (240 / q.bpm) * rate);
+    const eins = notenSpurRechnen({ ...q, anzahl: zyklus }, rate), n = Math.round(gesamt * taktSek(q.bpm, q.taktart) * rate);
     const k = eins.kanaele.map((s) => { const out = new Float32Array(n); for (let o = 0; o < n; o += s.length) out.set(s.subarray(0, Math.min(s.length, n - o)), o); return out; });
     return { kanaele: k, schlaege: eins.schlaege * Math.ceil(gesamt / zyklus) };
   }
   const st = stimmeVon(q.erzeuger, q.stimme), werte = { ...Object.fromEntries(st.parameter.map((p) => [p.key, p.std])), ...q.werte };
-  const takt = (60 / q.bpm) * 4, anzahl = Math.max(1, q.anzahl ?? 8), n = Math.round(anzahl * takt * rate), L = new Float32Array(n), R = new Float32Array(n);
+  const takt = taktSek(q.bpm, q.taktart), anzahl = Math.max(1, q.anzahl ?? 8), n = Math.round(anzahl * takt * rate), L = new Float32Array(n), R = new Float32Array(n);
   const noten = notenLesen(q.takte, { bpm: q.bpm, anzahl, leiter: q.leiter ?? "moll", swing: q.swing ?? 0, menschlich: q.menschlich ?? 0, versatz: q.versatz ?? 0, seed: q.seed ?? 1 });
   const f0 = grundFrequenz(q.grundton ?? 2, q.kammerton) * 2 ** (st.oktaveVon ? st.oktaveVon(werte) : werte.oktave ?? 0);
   const poly = st.poly ? st.poly(werte) : false;
@@ -130,7 +131,7 @@ export function notenSpurRechnen(q, rate) {
  */
 export function flaechenSpurRechnen(q, rate, bezug = q.bezug ?? {}) {
   const st = stimmeVon(q.erzeuger, q.stimme), werte = { ...Object.fromEntries(st.parameter.map((p) => [p.key, p.std])), ...q.werte };
-  const dauer = q.dauer ?? Math.max(1, q.anzahl ?? 8) * (60 / q.bpm) * 4;
+  const dauer = q.dauer ?? Math.max(1, q.anzahl ?? 8) * taktSek(q.bpm, q.taktart);
   const kanaele = st.rechne(werte, rate, { dauer, bpm: q.bpm, seed: q.seed ?? 1, grundton: q.grundton ?? 2, leiter: q.leiter ?? "moll", kammerton: q.kammerton, ...bezug });
   return { kanaele, schlaege: 0 };
 }
@@ -143,7 +144,7 @@ export function flaechenSpurRechnen(q, rate, bezug = q.bezug ?? {}) {
  */
 export function notenEreignisseRechnen(q, rate) {
   const st = stimmeVon(q.erzeuger, q.stimme), werte = { ...Object.fromEntries(st.parameter.map((p) => [p.key, p.std])), ...q.werte };
-  const takt = 240 / q.bpm, n = Math.round(Math.max(1, q.anzahl ?? 8) * takt * rate), L = new Float32Array(n), R = new Float32Array(n);
+  const takt = taktSek(q.bpm, q.taktart), n = Math.round(Math.max(1, q.anzahl ?? 8) * takt * rate), L = new Float32Array(n), R = new Float32Array(n);
   const kammer = q.kammerton ?? 440;
   q.noten.forEach((no, k) => {
     const frequenz = kammer * 2 ** ((no.midi - 69) / 12), beginn = no.t * takt + (no.versatz ?? 0) / 1000;

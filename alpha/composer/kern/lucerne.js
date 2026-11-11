@@ -12,6 +12,7 @@ import { zufall, hash } from "../erzeuger/grund.js";
 import { stimmeVon } from "../erzeuger/register.js";
 import { LEITERN, NOTEN } from "./linien.js";
 import { SAMPLER } from "./sampler.js";
+import { taktSek } from "./metrum.js";
 
 export const PROFIL = Object.freeze({ id: "ornament.lucerne", schema: "0.1.0", name: "ornament.lucerne", gruppe: "ornament" });
 
@@ -145,7 +146,7 @@ export function planen(eingabe) {
   const GR = { ...GROOVE, ...(eingabe.groove ?? {}) }, TI = { ...TIMING, ...(eingabe.timing ?? {}) };
   const ton = halte("tonart") ? { grundton: alt.grundton, leiter: alt.leiter, grund: "gesperrt" } : tonartAusMaterial({ ausschnitte: sammlung.ausschnitte.filter((a) => material.harmonic_layer.includes(a.id)) });
   const abschnitte = halte("abschnitte_folge") ? alt.abschnitte : abschnitteFuer({ seed, variieren, studie, geruest: eingabe.geruest ?? alt?.geruest ?? null });
-  const takte = abschnitte.at(-1).bis, gesamt = takte + AUSKLANG, T = 240 / bpm;
+  const takte = abschnitte.at(-1).bis, gesamt = takte + AUSKLANG, T = taktSek(bpm);
   const cut = (id) => sammlung.ausschnitte.find((a) => a.id === id);
   const quelleName = (id) => sammlung.quellen.find((q) => q.id === id)?.name ?? id;
   const plan = { profil: PROFIL.id, schema: PROFIL.schema, auspraegung, bpm, groove: eingabe.groove ?? null, timing: eingabe.timing ?? null, geruest: eingabe.geruest ?? alt?.geruest ?? null, ersetze: eingabe.ersetze ?? null, auswahl: eingabe.auswahl ?? null, grundton: ton.grundton, leiter: ton.leiter, kammerton: 440, seed, seeds, makros, sperren: sp, studie, abschnitte, takte, gesamt, material, spuren: [], resampling: [], marker: [], hinweise, tonartGrund: ton.grund };
@@ -510,7 +511,7 @@ export function resamplingMaterial(plan, gerechnet, rate) {
 
 /** Choke: die offene Hi-Hat endet, wo die geschlossene spielt (Zeiten in s aus den Rasterstellen, Swing und Versatz der geschlossenen) */
 export function chokeZeiten(hatQuelle) {
-  const T = 240 / hatQuelle.bpm, out = [];
+  const T = taktSek(hatQuelle.bpm), out = [];
   hatQuelle.takte.forEach((z, b) => {
     const t = z.trim().split(/\s+/), n = t.length;
     t.forEach((x, i) => { if (x !== "." && x !== "-") { const s16 = (i * 16) / n, ganz = Math.abs(s16 - Math.round(s16)) < 1e-6; out.push(b * T + (s16 / 16) * T + (ganz && Math.round(s16) % 2 ? (hatQuelle.swing ?? 0) * T / 16 : 0) + (hatQuelle.versatz ?? 0) / 1000); } });
@@ -519,4 +520,4 @@ export function chokeZeiten(hatQuelle) {
 }
 
 /** alle Zeitmarken mit Sekunden (für Export und AV Studio) */
-export const markerMitZeit = (plan) => plan.marker.map((m) => ({ ...m, takt1: Math.floor(m.takt) + 1, zeit: Math.round(m.takt * (240 / plan.bpm) * 1000) / 1000 }));
+export const markerMitZeit = (plan) => plan.marker.map((m) => ({ ...m, takt1: Math.floor(m.takt) + 1, zeit: Math.round(m.takt * taktSek(plan.bpm) * 1000) / 1000 }));

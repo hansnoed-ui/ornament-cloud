@@ -911,3 +911,29 @@ test("Harmonik: modusWaehlen wählt nach Gewicht, Ionisch (Gewicht 0) nie von si
   assert.equal(HA.modusWaehlen(zufall(1), { ionisch: 1, lydisch: 0, mixolydisch: 0, dorisch: 0, aeolisch: 0, phrygisch: 0 }), "ionisch");
   assert.ok(HA.verlaufErzeugen({ zentrum: 0, modus: "ionisch", seed: 2, abschnitte: [{ takte: 8 }] }).ereignisse.length > 0);
 });
+
+// ---------- Metrum 0.1.0 (ornament.bienne, Phase 2) ----------
+const ME = await c("kern/metrum.js");
+const { spurRechnen: spurRechnenM } = await c("kern/erzeugen.js");
+
+test("Metrum: Taktlänge zentral, 4/4 genau wie vorher, ungerade Takte mit Gliederung", () => {
+  for (let b = 40; b <= 200; b += 0.5) assert.equal(ME.taktSek(b), 240 / b);
+  assert.equal(ME.taktSek(120, "7/8"), 1.75);
+  assert.equal(ME.taktSek(90, "6/8"), 2);
+  assert.deepEqual(ME.taktartLesen("7/8").gruppen, [2, 2, 3]);
+  assert.deepEqual(ME.taktartLesen("7/8:3+2+2").gruppen, [3, 2, 2]);
+  assert.throws(() => ME.taktartLesen("7/8:3+3"));
+  assert.throws(() => ME.taktartLesen("7/6"));
+  assert.equal(ME.schritte("7/8"), 14);
+  assert.equal(ME.schritte("12/8"), 24);
+  assert.equal(ME.schritte("5/16", 8), null);
+  assert.deepEqual(ME.gruppenAnfaenge("7/8"), [0, 4, 8]);
+  const b = ME.betonungen("7/8");
+  assert.equal(b.length, 14);
+  assert.deepEqual([b[0], b[4], b[8]], [1, 0.75, 0.75]);
+  assert.ok(b[2] < b[4]);
+  // ein Drum-Takt in 7/8 ist 7/8 so lang wie in 4/4, Schläge sitzen auf den Sechzehnteln des kürzeren Takts
+  const q = { erzeuger: "drums@0.1.0", stimme: "kick", werte: {}, takte: ["x . . . x . . . x . . . . ."], anzahl: 2, bpm: 120, seed: 3 };
+  assert.equal(spurRechnenM({ ...q, taktart: "7/8" }, 48000).kanaele[0].length, Math.round(2 * 1.75 * 48000));
+  assert.equal(spurRechnenM(q, 48000).kanaele[0].length, Math.round(2 * 2 * 48000));
+});
