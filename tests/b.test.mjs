@@ -184,8 +184,13 @@ test("b/apps: die Bilder der sieben Apps sind gezeichnete Tafeln (tools/b-app-bi
       assert.ok(!/<script|<image|href=/.test(s), `${datei}: nur Zeichnung`);
     }
     assert.ok(a.bildAlt.startsWith(`${a.name}, gezeichnet:`), `${a.slug}: Alt-Text beschreibt die Zeichnung`);
-    const bild = `<picture><source srcset="/${a.bildDunkel}" media="(prefers-color-scheme: dark)"><img src="/${a.bild}" alt="${a.bildAlt}" width="1200" height="1200"`;
-    assert.ok(lies("b/apps/index.html").includes(bild + ' loading="lazy"></picture>'), `${a.slug}: Kachel auf b/apps/`);
+    const bild = `<picture><source srcset="/${a.bildDunkel}"><img src="/${a.bild}" alt="${a.bildAlt}" width="1200" height="1200"`;
+    // die Kachel lebt (30. Oktober 2026): Bild-Apps mit einem Ausschnitt aus dem Beispielfilm, die übrigen mit ihrer Tafel in Bewegung
+    const uebersicht = lies("b/apps/index.html");
+    if (["the-fictory", "phorma-i", "phorma-ii", "phorma-iii"].includes(a.slug)) {
+      assert.match(uebersicht, new RegExp(`<video class="kachel-film" muted loop playsinline preload="none" poster="/b/bilder/apps/filme/${a.slug}\\.jpg\\?v=\\w+" width="480" height="480" aria-label="[^"]+"><source src="/b/bilder/apps/filme/${a.slug}\\.mp4\\?v=\\w+" type="video/mp4"></video>`), `${a.slug}: Filmkachel auf b/apps/`);
+      assert.ok(statSync(new URL(`b/bilder/apps/filme/${a.slug}.mp4`, root)).size < 1.2 * 1024 * 1024, `${a.slug}: Filmausschnitt unter 1,2 MB`);
+    } else assert.ok(uebersicht.includes(`<span class="bild quadrat kachel-lebt" data-tafel="${a.slug}">${bild} loading="lazy"></picture></span>`), `${a.slug}: lebende Kachel auf b/apps/`);
     const seite = lies(`b/apps/${a.slug}/index.html`);
     assert.ok(seite.includes(`<figure class="stueck-bild quadrat">${bild}></picture></figure>`), `${a.slug}: Tafel auf der App-Seite`);
     assert.ok(seite.includes(`<meta property="og:image" content="https://ornament.cloud/b/kacheln/apps-${a.slug}.png">`), `${a.slug}: Teilen mit der Vorschaukarte 1200 × 630`);
@@ -211,7 +216,7 @@ test("b/apps: die Tafeln leben unter «Was dabei herauskommt» (src/b/tafeln.mjs
     assert.match(seite, /<script type="module" src="\/b\/tafeln-leben\.js\?v=\d+"><\/script>/);
     assert.ok(seite.indexOf('id="beispiele-titel"') < seite.indexOf('class="tafel-lebt"'), `${a.slug}: die Tafel steht im Abschnitt «Was dabei herauskommt»`);
   }
-  assert.ok(!lies("b/apps/index.html").includes("tafeln-leben"), "die Übersicht bleibt ohne das Modul");
+  assert.match(lies("b/apps/index.html"), /<script type="module" src="\/b\/tafeln-leben\.js\?v=\d+"><\/script>/, "die Übersicht lässt ihre Kacheln leben");
 });
 
 test("b/raster: wie die Apps – gezeichnete Tafel (lebend), die vier Felder daneben, Prompt kopieren auf der Seite, drei Schritte; die Übersicht mit Kacheln", async () => {
@@ -314,7 +319,9 @@ test("b/en/: jede Seite auch auf Englisch (ohne die Werkstatt), lang=en, hreflan
     assert.ok(html.includes(`<link rel="alternate" hreflang="de" href="https://ornament.cloud/b/${p}">`) && html.includes(`<link rel="alternate" hreflang="en" href="https://ornament.cloud/b/en/${p}">`), `${p}: hreflang`);
     assert.ok(html.includes(`<nav class="sprache" aria-label="Language"><a href="/b/${p}" lang="de" hreflang="de" title="Deutsch">d</a><a href="/b/en/${p}" lang="en" hreflang="en" title="English" aria-current="true">e</a></nav>`), `${p}: Schalter`);
     for (const d of deutsch) assert.ok(!html.includes(d), `${p}: «${d}» ist nicht übersetzt`);
-    assert.ok(/<nav class="hauptnav"[^>]*><a href="\/b\/en\/zettel\/"[^>]*>Notes<\/a>/.test(html), `${p}: die Navigation auf Englisch unter /b/en/`);
+    assert.ok(/<nav class="hauptnav"[^>]*><a href="\/animations\/" target="_blank" rel="noopener">Animations<\/a><a href="\/multiverse\/" target="_blank" rel="noopener">Multiverse<\/a><a href="\/b\/en\/zettel\/"[^>]*>Notes<\/a>[\s\S]*?<details class="beta"><summary[^>]*>Beta<\/summary><span class="beta-liste"><a class="intern" href="\/b\/en\/raster\/"[^>]*>Grids<\/a><a href="\/beta\/lab\/" target="_blank" rel="noopener">Lab<\/a><a href="\/beta\/drittes-rad\/" target="_blank" rel="noopener">Das 3\. Rad<\/a><\/span><\/details><a href="\/gamma\/" target="_blank" rel="noopener">Gamma<\/a><\/nav>/.test(html), `${p}: die Navigation auf Englisch unter /b/en/ (seit 28. Oktober 2026 zuletzt «Beta» zum Aufklappen mit Lab und Das 3. Rad, seit 31. Oktober 2026 daneben «Gamma», neues Fenster, seit 5. November 2026 zuvorderst «Animations», neues Fenster)`);
+    assert.ok(!/<nav class="hauptnav"[^>]*>(?:(?!<details)[\s\S])*?>Grids<\/a>/.test(html), `${p}: «Grids» seit 8. November 2026 nur unter «Beta»`);
+    assert.ok(/<details class="beta ueber"><summary[^>]*>About<\/summary><span class="beta-liste"><a href="\/b\/en\/ueber\/"[^>]*>About<\/a><a href="\/b\/en\/angebot\/"[^>]*>Services<\/a><a href="\/b\/en\/werke\/"[^>]*>Works<\/a><a href="\/b\/en\/zuletzt\/"[^>]*>Latest<\/a><\/span><\/details>/.test(html), `${p}: seit 5. November 2026 Angebot, Werke und Zuletzt unter «Über» (aufklappbar)`);
   }
   // die deutschen Seiten zeigen den Schalter mit d aktiv und verweisen auf /b/en/
   for (const p of seiten.filter((x) => x !== "werkstatt/")) {

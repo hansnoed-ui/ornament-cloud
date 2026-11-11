@@ -1,0 +1,506 @@
+/* ornament.cloud/delta/ – Inhalte von /b/ in einer technischen Rasteroptik:
+   Papier, feine Linien, Grossbuchstaben, Etiketten in Monospace, nummerierte Felder.
+   Alles lokal (Schriften aus /vendor/), keine Dienste von aussen. Erzeugt die Seite: tools/delta/build.py */
+
+@font-face { font-family: "Inter Display"; font-weight: 500; font-display: swap; src: url(../vendor/fonts/inter-display-500-latin.woff2) format("woff2"); }
+@font-face { font-family: "Inter Display"; font-weight: 600; font-display: swap; src: url(../vendor/fonts/inter-display-600-latin.woff2) format("woff2"); }
+@font-face { font-family: "JetBrains Mono"; font-weight: 500; font-display: swap; src: url(../vendor/schriften/jetbrains-mono-latin-500-normal.woff2) format("woff2"); unicode-range: U+0000-00FF, U+2000-206F; }
+@font-face { font-family: "JetBrains Mono"; font-weight: 500; font-display: swap; src: url(../vendor/schriften/jetbrains-mono-latin-ext-500-normal.woff2) format("woff2"); unicode-range: U+0100-02AF, U+1E00-1EFF; }
+
+:root {
+  color-scheme: light;
+  --papier: #f5f5ef;
+  --flaeche: #ececE5;
+  --tinte: #282828;
+  --tinte-2: #4a4a47;          /* Fliesstext, Kontrast 8:1 auf Papier */
+  --tinte-3: #6b6b67;          /* Etiketten, 5:1 */
+  --blass: #a9a9a4;            /* Zahlen in Klammern, Zierde */
+  --linie: #b3b3af;
+  --akzent: #14b8b0;           /* Türkis (Wunsch 3. November 2026): Flächen, Marken, Linien */
+  --akzent-text: #007a80;      /* Türkis als Schrift auf Papier, 4,7:1 */
+  --akzent-knopf: #007a80;     /* Knopf mit weisser Schrift, 5,1:1 */
+  --auf-akzent: #ffffff;
+  --auf-akzent-flaeche: #08201f; /* Schrift auf der hellen Türkisfläche */
+  --balken: #282828;
+  --auf-balken: #f5f5ef;
+  --bild-mischen: multiply;    /* weisse Zeichnungen gehen im Papier auf */
+  --sans: "Instrument Sans", "Inter Display", system-ui, sans-serif;
+  --display: "Inter Display", "Instrument Sans", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --serif: "Newsreader", Georgia, serif;
+  --rand: 8px;                 /* Abstand des Rahmens zum Fenster */
+  --innen: clamp(16px, 2.2vw, 32px);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --papier: #121211;
+    --flaeche: #1b1b19;
+    --tinte: #ededE6;
+    --tinte-2: #c4c4bd;
+    --tinte-3: #9a9a94;
+    --blass: #5f5f5b;
+    --linie: #3c3c39;
+    --akzent: #2ed3c6;
+    --akzent-text: #3fe0d0;
+    --akzent-knopf: #2ed3c6;
+    --auf-akzent: #08201f;
+    --auf-akzent-flaeche: #08201f;
+    --balken: #ededE6;
+    --auf-balken: #121211;
+    --bild-mischen: screen;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scrollbar-gutter: stable; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0; background: var(--papier); color: var(--tinte);
+  font: 500 15px/1.45 var(--sans); letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+}
+img { display: block; max-width: 100%; height: auto; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--akzent); outline-offset: 2px; }
+.sprung { position: absolute; left: -9999px; top: 8px; z-index: 50; background: var(--balken); color: var(--auf-balken); padding: 8px 12px; }
+.sprung:focus { left: 16px; }
+
+/* Rahmen: die ganze Seite steht in einem feinen Kasten */
+.rahmen { margin: 0 var(--rand); border-left: 1px solid var(--linie); border-right: 1px solid var(--linie); }
+.feld-zeile { border-bottom: 1px solid var(--linie); position: relative; }
+
+/* Etiketten in Monospace */
+.etikett, .nr, .koord, .kopf-nav a, .knopf, .meta dt, .meta dd, .liste-boot, .kurzzeile {
+  font-family: var(--mono); font-weight: 500; font-size: 11.5px; line-height: 1.4;
+  text-transform: uppercase; letter-spacing: 0.02em;
+}
+.etikett { color: var(--tinte-3); margin: 0; }
+.nr { color: var(--blass); }
+.akzent-punkt::before { content: ""; display: inline-block; width: 7px; height: 7px; background: var(--akzent); margin-right: 6px; vertical-align: 0.05em; }
+
+/* Kreuze an den Ecken (Zierde) */
+.kreuze { position: relative; }
+.kreuze::before, .kreuze::after {
+  content: "+"; position: absolute; bottom: -9px; font: 400 14px/1 var(--mono); color: var(--tinte-3); background: var(--papier); padding: 0 1px;
+}
+.kreuze::before { left: -5px; }
+.kreuze::after { right: -5px; }
+
+/* Überschriften */
+.gross, h1, h2, h3 { font-family: var(--display); font-weight: 600; text-transform: uppercase; letter-spacing: -0.02em; margin: 0; }
+h1 { font-size: clamp(30px, 3.4vw, 52px); line-height: 0.98; }
+h2 { font-size: clamp(28px, 2.9vw, 44px); line-height: 1; }
+h3 { font-size: clamp(19px, 1.7vw, 26px); line-height: 1; }
+p { margin: 0; }
+.text { color: var(--tinte-2); font-weight: 400; font-size: 15px; line-height: 1.45; max-width: 46ch; }
+
+/* Knöpfe: Kasten mit Pfeilfeld */
+.knopf {
+  display: inline-flex; align-items: stretch; border: 1px solid var(--tinte); text-decoration: none; color: var(--tinte);
+  background: transparent; cursor: pointer; padding: 0; min-height: 40px;
+}
+.knopf > span { display: flex; align-items: center; padding: 0 14px; }
+.knopf > span + span { border-left: 1px solid currentColor; padding: 0 12px; }
+.knopf:hover { background: var(--tinte); color: var(--papier); }
+.knopf.voll { background: var(--akzent-knopf); border-color: var(--akzent-knopf); color: var(--auf-akzent); }
+.knopf.voll > span + span { border-left-color: color-mix(in srgb, var(--auf-akzent) 45%, transparent); }
+.knopf.voll:hover { background: var(--tinte); border-color: var(--tinte); color: var(--papier); }
+.knopfreihe { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.zeichen { width: 1.25em; height: 1.25em; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; overflow: visible; flex: none; }
+.zeichen [fill="currentColor"] { fill: currentColor; stroke: none; }
+
+/* ───────── Kopf ───────── */
+.kopf { position: sticky; top: 0; z-index: 20; background: var(--papier); border-bottom: 1px solid var(--linie); }
+.kopf-innen { display: grid; grid-template-columns: auto 1fr auto; align-items: stretch; min-height: 52px; }
+.marke { display: flex; align-items: center; gap: 10px; padding: 0 var(--innen); text-decoration: none; border-right: 1px solid var(--linie); font: 600 15px/1 var(--display); text-transform: uppercase; letter-spacing: 0; }
+.marke svg { width: 30px; height: 22px; }
+.marke .schlaufe { fill: none; stroke: currentColor; stroke-width: 1.6; }
+.marke .punkt { fill: var(--akzent); }
+.marke .lauf { display: none; }
+.kopf-nav { display: flex; align-items: center; gap: clamp(14px, 1.8vw, 28px); padding: 0 var(--innen); }
+.kopf-nav a { text-decoration: none; color: var(--tinte-2); }
+.kopf-nav a:hover { color: var(--tinte); text-decoration: underline; text-underline-offset: 3px; }
+.kopf-ende { display: flex; }
+.kopf-ende a { display: flex; align-items: center; padding: 0 var(--innen); text-decoration: none; border-left: 1px solid var(--linie); font: 500 11.5px/1 var(--mono); text-transform: uppercase; }
+.kopf-ende a.kontakt { background: var(--akzent-knopf); color: var(--auf-akzent); border-left-color: var(--akzent-knopf); }
+.kopf-ende a.kontakt:hover { background: var(--tinte); color: var(--papier); }
+.menue { display: none; }
+
+/* ───────── Einstieg ───────── */
+.einstieg { display: grid; grid-template-rows: 1fr auto; min-height: min(calc(100svh - 53px), 900px); position: relative; overflow: hidden; }
+.einstieg-bild { position: relative; display: grid; place-items: center; min-height: 360px; }
+.einstieg-bild::before, .einstieg-bild::after { content: ""; position: absolute; background: var(--linie); }
+.einstieg-bild::before { left: 50%; top: 0; bottom: 0; width: 1px; }
+.einstieg-bild::after { top: 50%; left: 0; right: 0; height: 1px; }
+.einstieg-bild img { position: relative; z-index: 1; width: min(46vh, 520px, 70vw); mix-blend-mode: var(--bild-mischen); }
+.einstieg-bild .koord { position: absolute; z-index: 2; color: var(--tinte-3); }
+.koord.o-l { left: var(--innen); top: 16px; }
+.koord.o-r { right: var(--innen); top: 16px; text-align: right; }
+.koord.mitte { left: calc(50% + 10px); top: calc(50% + 8px); color: var(--akzent-text); }
+.koord.u-l { left: var(--innen); bottom: 12px; }
+.einstieg-fuss { display: grid; grid-template-columns: 1.15fr 1fr 0.85fr; gap: var(--innen); padding: 20px var(--innen) 22px; align-items: end; }
+.einstieg-fuss h1 small { display: none; }
+.meta { display: grid; grid-template-columns: auto 10px 1fr; gap: 4px 6px; margin: 0; align-self: end; }
+.meta dt { color: var(--tinte); }
+.meta dt::after { content: ""; }
+.meta .doppel { color: var(--tinte-3); }
+.meta dd { margin: 0; color: var(--tinte-2); }
+.liste-boot { list-style: none; margin: 0; padding: 0; color: var(--tinte-2); align-self: end; }
+.liste-boot a { text-decoration: none; display: block; padding: 1px 0; }
+.liste-boot a:hover { color: var(--akzent-text); }
+.liste-boot .nr { color: var(--tinte-3); margin-right: 8px; }
+
+/* ───────── Split: Bild | Satz ───────── */
+.split { display: grid; grid-template-columns: 1fr 1fr; }
+.split > * + * { border-left: 1px solid var(--linie); }
+.split-bild { position: relative; display: grid; place-items: center; padding: 40px var(--innen); background: var(--papier); min-height: 420px; }
+.split-bild img { mix-blend-mode: var(--bild-mischen); width: min(100%, 480px); }
+.split-text { display: flex; flex-direction: column; }
+.split-text .oben { padding: clamp(28px, 4vw, 64px) clamp(20px, 6vw, 88px); flex: 1; display: flex; flex-direction: column; gap: 22px; justify-content: center; }
+.satz-gross { font: 600 clamp(22px, 2.3vw, 34px)/1 var(--display); text-transform: uppercase; letter-spacing: -0.02em; color: var(--blass); }
+.satz-gross b { color: var(--tinte); font-weight: 600; }
+.leiste { display: grid; grid-template-columns: 1fr auto; border-top: 1px solid var(--linie); }
+.leiste > * { padding: 12px var(--innen); }
+.leiste .etikett { display: flex; align-items: center; color: var(--tinte); }
+.zahlen { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--linie); }
+.zahlen div { padding: 16px var(--innen); }
+.zahlen div + div { border-left: 1px solid var(--linie); }
+.zahlen b { display: block; font: 600 clamp(26px, 2.6vw, 38px)/1 var(--display); letter-spacing: -0.02em; }
+.zahlen span { font: 500 11.5px/1.3 var(--mono); text-transform: uppercase; color: var(--tinte-3); }
+.kurzzeile { border-top: 1px solid var(--linie); padding: 10px var(--innen); color: var(--tinte-3); }
+
+/* ───────── Abschnittskopf ───────── */
+.abschnitt-kopf { display: grid; grid-template-columns: 1fr minmax(0, 360px); gap: 16px 40px; padding: clamp(18px, 2vw, 28px) var(--innen) clamp(28px, 3.4vw, 52px); align-items: end; }
+.abschnitt-kopf .etikett { grid-column: 1 / -1; }
+.abschnitt-kopf .rechts { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
+.abschnitt-kopf .weiter { font: 500 11.5px/1.4 var(--mono); text-transform: uppercase; text-underline-offset: 3px; }
+.abschnitt-kopf .weiter:hover { color: var(--akzent-text); }
+
+/* ───────── Vier Felder 01–04 ───────── */
+.vier { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--linie); }
+.vier > * + * { border-left: 1px solid var(--linie); }
+.karte { display: flex; flex-direction: column; text-decoration: none; padding: 14px var(--innen) 22px; min-height: 420px; position: relative; }
+.karte .karte-kopf { display: flex; justify-content: space-between; }
+.karte .karte-bild { flex: 1; display: grid; place-items: center; padding: 28px 0; color: var(--tinte-3); }
+.karte .karte-bild .zeichen { width: 96px; height: 96px; stroke-width: 1; }
+.karte h3 { margin-bottom: 12px; max-width: 12ch; }
+.karte .text { font-size: 14px; }
+.karte .mehr { margin-top: 14px; font: 500 11.5px/1 var(--mono); text-transform: uppercase; color: var(--tinte); display: inline-flex; gap: 8px; }
+.karte:hover { background: var(--flaeche); }
+.karte:hover .karte-bild { color: var(--akzent-text); }
+.karte:hover .etikett { color: var(--tinte); }
+
+/* ───────── Zettelkasten ───────── */
+.zettel-buehne { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); border-top: 1px solid var(--linie); }
+.zettel-buehne > * + * { border-left: 1px solid var(--linie); }
+.zettel-satz { padding: clamp(20px, 3vw, 44px) var(--innen); display: flex; flex-direction: column; gap: 18px; justify-content: space-between; }
+.zettel-satz .titelzeile { display: flex; gap: 10px; align-items: baseline; }
+.zettel-satz .titelzeile .n { color: var(--akzent-text); }
+.zettel-satz .titelzeile .t { font: 600 18px/1.1 var(--display); text-transform: uppercase; }
+.leitsatz { font: italic 400 clamp(26px, 2.6vw, 40px)/1.12 var(--serif); letter-spacing: -0.01em; color: var(--tinte); max-width: 22ch; }
+.zettel-satz [hidden] { display: none; }
+.feld { display: grid; grid-template-columns: 74px repeat(7, 1fr); }
+.feld .zyklus { font: 500 10.5px/1.2 var(--mono); text-transform: uppercase; color: var(--tinte-3); padding: 8px 8px; border-bottom: 1px solid var(--linie); display: flex; align-items: flex-end; writing-mode: horizontal-tb; }
+.feld a { display: flex; flex-direction: column; justify-content: space-between; gap: 6px; min-height: 84px; padding: 7px 8px; border-left: 1px solid var(--linie); border-bottom: 1px solid var(--linie); text-decoration: none; font-size: 12.5px; line-height: 1.15; hyphens: manual; overflow-wrap: anywhere; }
+.feld a .n { font: 500 10.5px/1 var(--mono); color: var(--blass); }
+.feld a:hover, .feld a:focus-visible { background: var(--balken); color: var(--auf-balken); }
+.feld a:hover .n { color: inherit; }
+.feld a.an { background: var(--akzent); color: var(--auf-akzent-flaeche); }
+.feld a.an .n { color: var(--auf-akzent-flaeche); }
+.feld > :nth-last-child(-n+8) { border-bottom: 0; }
+
+/* ───────── Was bringst du mit? (Liste mit Plus) ───────── */
+.mit { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--linie); }
+.mit > * + * { border-left: 1px solid var(--linie); }
+.mit-bild { background: var(--balken); display: grid; place-items: center; overflow: hidden; min-height: 420px; position: relative; }
+.mit-bild img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(1) contrast(1.15); mix-blend-mode: normal; opacity: 0.9; }
+.mit-bild::after { content: ""; position: absolute; inset: 0; background: var(--akzent); mix-blend-mode: multiply; opacity: 0.85; }
+.mit-bild .koord { position: absolute; z-index: 2; bottom: 10px; left: 12px; color: #fff; }
+.mit-text { display: flex; flex-direction: column; }
+.mit-text .oben { padding: clamp(20px, 3vw, 44px) clamp(20px, 4vw, 64px); flex: 1; }
+.mit-text details { border-top: 1px solid var(--linie); }
+.mit-text summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 14px clamp(20px, 4vw, 64px); font: 600 clamp(17px, 1.5vw, 22px)/1 var(--display); text-transform: uppercase; letter-spacing: -0.01em; }
+.mit-text summary::-webkit-details-marker { display: none; }
+.mit-text summary::after { content: "+"; font: 300 22px/1 var(--mono); color: var(--tinte-3); transition: transform 0.2s; }
+.mit-text details[open] summary::after { transform: rotate(45deg); color: var(--akzent-text); }
+.mit-text summary:hover { background: var(--flaeche); }
+.mit-text .weg { padding: 0 clamp(20px, 4vw, 64px) 18px; }
+.mit-text .weg p { color: var(--tinte-3); font: 500 11.5px/1.4 var(--mono); text-transform: uppercase; margin-bottom: 8px; }
+.mit-text .weg ol { margin: 0; padding: 0; list-style: none; counter-reset: w; }
+.mit-text .weg li { counter-increment: w; display: grid; grid-template-columns: 36px 1fr; padding: 6px 0; border-top: 1px dashed var(--linie); }
+.mit-text .weg li::before { content: "[0" counter(w) "]"; font: 500 11px/1.6 var(--mono); color: var(--blass); }
+.mit-text .weg a { text-decoration: none; }
+.mit-text .weg a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* ───────── Prüfraster: wechselnde Reihen ───────── */
+.reihe { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 1fr); border-top: 1px solid var(--linie); text-decoration: none; }
+.reihe > * + * { border-left: 1px solid var(--linie); }
+.reihe .r-titel { padding: 14px var(--innen) 22px; display: flex; flex-direction: column; justify-content: space-between; gap: 24px; }
+.reihe .r-bild { display: grid; place-items: center; padding: 20px; min-height: 300px; background-image: linear-gradient(var(--linie) 1px, transparent 1px), linear-gradient(90deg, var(--linie) 1px, transparent 1px); background-size: 32px 32px; background-position: -1px -1px; }
+.reihe .r-bild img { width: min(260px, 80%); mix-blend-mode: var(--bild-mischen); background: transparent; }
+@supports (background: color-mix(in srgb, red, blue)) {
+  .reihe .r-bild { background-image: linear-gradient(color-mix(in srgb, var(--linie) 45%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--linie) 45%, transparent) 1px, transparent 1px); }
+}
+.reihe .r-text { padding: 14px var(--innen) 22px; display: flex; flex-direction: column; justify-content: space-between; gap: 18px; }
+.reihe .status { display: inline-flex; align-items: center; }
+.reihe .status.fertig::before { content: ""; width: 7px; height: 7px; background: var(--tinte); margin-right: 6px; }
+.reihe .status.arbeit::before { content: ""; width: 7px; height: 7px; background: var(--akzent); margin-right: 6px; }
+.reihe .pfeil { font: 500 11.5px/1 var(--mono); text-transform: uppercase; display: flex; justify-content: space-between; border-top: 1px solid var(--linie); padding-top: 12px; }
+.reihe:nth-of-type(even) .r-titel { order: 3; border-left: 1px solid var(--linie); }
+.reihe:nth-of-type(even) .r-bild { order: 2; }
+.reihe:nth-of-type(even) .r-text { order: 1; border-left: 0; }
+.reihe:hover .r-titel h3 { color: var(--akzent-text); }
+.reihe:hover .pfeil { color: var(--akzent-text); }
+
+/* ───────── Spielen: Raster der Apps ───────── */
+.apps { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--linie); }
+.app { display: flex; flex-direction: column; text-decoration: none; border-right: 1px solid var(--linie); border-bottom: 1px solid var(--linie); }
+.apps > :nth-child(4n) { border-right: 0; }
+.app .app-kopf { display: flex; justify-content: space-between; padding: 12px var(--innen); }
+.app .app-bild { aspect-ratio: 1; margin: 0 var(--innen); background: #000; overflow: hidden; border: 1px solid var(--linie); }
+.app .app-bild img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s cubic-bezier(.2,.7,.2,1); }
+.app .app-bild.zeichnung { background: var(--papier); }
+.app .app-bild.zeichnung img { mix-blend-mode: var(--bild-mischen); }
+.app:hover .app-bild img { transform: scale(1.04); }
+.app h3 { padding: 16px var(--innen) 8px; display: flex; gap: 8px; align-items: center; }
+.app h3 .zeichen { width: 18px; height: 18px; color: var(--akzent-text); }
+.app .text { padding: 0 var(--innen) 22px; font-size: 14px; }
+.app.leer { background-image: repeating-linear-gradient(135deg, transparent 0 9px, color-mix(in srgb, var(--linie) 50%, transparent) 9px 10px); }
+@media (prefers-reduced-motion: reduce) { .app .app-bild img { transition: none; } }
+
+/* ───────── Werke und Zuletzt: zwei Spalten mit Balken ───────── */
+.zwei { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--linie); }
+.zwei > * + * { border-left: 1px solid var(--linie); }
+.spalte-balken { padding: 20px var(--innen) 32px; display: flex; flex-direction: column; gap: 22px; }
+.balken { display: flex; justify-content: space-between; align-items: center; gap: 16px; background: var(--balken); color: var(--auf-balken); padding: 12px 14px; }
+.balken h3 { font-size: clamp(18px, 1.6vw, 24px); }
+.balken p { font-size: 13.5px; opacity: 0.85; flex: 1; text-align: center; }
+.balken .punkt { width: 7px; height: 7px; background: var(--akzent); flex: none; }
+.werke-bild { border: 1px solid var(--linie); aspect-ratio: 4 / 3; display: grid; place-items: center; position: relative; background-image: linear-gradient(color-mix(in srgb, var(--linie) 45%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--linie) 45%, transparent) 1px, transparent 1px); background-size: 32px 32px; }
+.werke-bild svg { width: 46%; height: auto; color: var(--tinte); }
+.werke-bild .koord { position: absolute; color: var(--tinte-3); }
+.werke-bild .koord.o-l { left: 10px; top: 8px; }
+.werke-bild .koord.u-r { right: 10px; bottom: 8px; }
+.werke-bild .marke-feld { position: absolute; left: 58%; top: 26%; background: var(--akzent); color: var(--auf-akzent-flaeche); padding: 8px 10px; font: 600 13px/1.05 var(--display); text-transform: uppercase; }
+.werke-bild .marke-feld small { display: block; font: 500 10px/1.3 var(--mono); margin-bottom: 4px; }
+.beitrag { border-top: 1px solid var(--linie); padding-top: 16px; display: flex; flex-direction: column; gap: 10px; }
+.beitrag .wer { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font: 500 11.5px/1.3 var(--mono); text-transform: uppercase; color: var(--tinte-3); }
+.beitrag .wer img { width: 26px; height: 26px; border-radius: 50%; filter: grayscale(1); }
+.beitrag .wer b { color: var(--tinte); font-weight: 500; }
+.beitrag .zitat { font: italic 400 clamp(19px, 1.6vw, 23px)/1.25 var(--serif); white-space: pre-line; }
+.beitrag .beleg { font: 500 11.5px/1.3 var(--mono); text-transform: uppercase; }
+.beitrag .beleg:hover { color: var(--akzent-text); }
+
+/* ───────── Aufruf ───────── */
+.aufruf { text-align: center; padding: clamp(56px, 8vw, 120px) var(--innen) clamp(40px, 5vw, 72px); position: relative; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.aufruf h2 { max-width: 16ch; }
+.aufruf .text { max-width: 52ch; }
+.aufruf .koord { position: absolute; color: var(--tinte-3); }
+.aufruf .koord.o-l { left: var(--innen); top: 14px; }
+.aufruf .koord.u-l { left: var(--innen); bottom: 14px; }
+.aufruf .koord.u-r { right: var(--innen); bottom: 14px; }
+.aufruf .knopfreihe { justify-content: center; margin-top: 8px; }
+
+/* ───────── Fuss ───────── */
+.fuss-raster { display: grid; grid-template-columns: 1.3fr 1fr 1fr 1fr 0.9fr; }
+.fuss-raster > * { padding: 14px var(--innen) 20px; }
+.fuss-raster > * + * { border-left: 1px solid var(--linie); }
+.fuss-raster .gross { font-size: clamp(20px, 1.8vw, 26px); line-height: 1; }
+.fuss-raster ul { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; font-size: 14px; }
+.fuss-raster a { text-decoration: none; }
+.fuss-raster a:hover { color: var(--akzent-text); text-decoration: underline; }
+.fuss-raster .signet-feld { display: grid; place-items: center; }
+.fuss-raster .signet-feld svg { width: 100%; max-width: 160px; height: auto; }
+.fuss-raster .signet-feld .schlaufe { fill: none; stroke: var(--akzent); stroke-width: 1.4; }
+.fuss-raster .signet-feld .punkt { fill: var(--tinte); }
+.fuss-raster .signet-feld .lauf { display: none; }
+.wortmarke { padding: 10px var(--innen) 0; }
+.wortmarke svg { width: 100%; height: auto; display: block; }
+.wortmarke text { font: 600 100px var(--display); fill: none; stroke: var(--tinte); stroke-width: 1px; vector-effect: non-scaling-stroke; letter-spacing: -2px; }
+.fusszeile { display: flex; justify-content: space-between; flex-wrap: wrap; border-top: 1px solid var(--linie); }
+.fusszeile > * { padding: 12px var(--innen); }
+.fusszeile .rechts { display: flex; }
+.fusszeile .rechts a { border-left: 1px solid var(--linie); padding: 12px var(--innen); font-size: 13.5px; text-decoration: none; }
+.fusszeile .rechts a:hover { background: var(--flaeche); }
+
+/* ───────── Tablet ───────── */
+@media (max-width: 1080px) {
+  .kopf-nav { display: none; }
+  .menue { display: block; position: relative; }
+  .menue summary { list-style: none; cursor: pointer; height: 100%; display: flex; align-items: center; padding: 0 var(--innen); border-left: 1px solid var(--linie); font: 500 11.5px/1 var(--mono); text-transform: uppercase; }
+  .menue summary::-webkit-details-marker { display: none; }
+  .menue nav { position: absolute; right: -1px; top: 100%; background: var(--papier); border: 1px solid var(--linie); min-width: 240px; display: grid; }
+  .menue nav a { padding: 12px var(--innen); border-top: 1px solid var(--linie); text-decoration: none; font: 500 12px/1 var(--mono); text-transform: uppercase; }
+  .menue nav a:first-child { border-top: 0; }
+  .menue nav a:hover { background: var(--flaeche); }
+  .kopf-innen { grid-template-columns: 1fr auto; }
+  .einstieg-fuss { grid-template-columns: 1fr 1fr; }
+  .einstieg-fuss h1 { grid-column: 1 / -1; }
+  .vier { grid-template-columns: 1fr 1fr; }
+  .vier > :nth-child(3) { border-left: 0; }
+  .vier > :nth-child(n+3) { border-top: 1px solid var(--linie); }
+  .karte { min-height: 360px; }
+  .zettel-buehne { grid-template-columns: 1fr; }
+  .zettel-buehne > * + * { border-left: 0; border-top: 1px solid var(--linie); }
+  .apps { grid-template-columns: repeat(2, 1fr); }
+  .apps > .app { border-right: 1px solid var(--linie); }
+  .apps > :nth-child(2n) { border-right: 0; }
+  .reihe { grid-template-columns: 1fr 1fr; }
+  .reihe .r-titel, .reihe:nth-of-type(even) .r-titel { order: 1; border-left: 0; grid-column: 1 / -1; border-bottom: 1px solid var(--linie); }
+  .reihe .r-bild, .reihe:nth-of-type(even) .r-bild { order: 2; min-height: 240px; border-left: 0; }
+  .reihe .r-text, .reihe:nth-of-type(even) .r-text { order: 3; border-left: 1px solid var(--linie); }
+  .reihe:nth-of-type(even) .r-bild { order: 3; border-left: 1px solid var(--linie); }
+  .reihe:nth-of-type(even) .r-text { order: 2; border-left: 0; }
+  .fuss-raster { grid-template-columns: 1fr 1fr 1fr; }
+  .fuss-raster > :first-child { grid-column: 1 / -1; border-bottom: 1px solid var(--linie); }
+  .fuss-raster > :nth-child(2) { border-left: 0; }
+  .fuss-raster > :last-child { display: none; }
+}
+
+/* ───────── Telefon ───────── */
+@media (max-width: 720px) {
+  :root { --rand: 6px; --innen: 16px; }
+  body { font-size: 15px; }
+  .marke span { font-size: 14px; }
+  .kopf-ende a.kontakt { display: none; }
+  .einstieg { min-height: 0; }
+  .einstieg-bild { min-height: 300px; padding: 40px 0; }
+  .einstieg-bild img { width: 64vw; }
+  .koord.o-r { display: none; }
+  .einstieg-fuss { grid-template-columns: 1fr; gap: 18px; }
+  .split, .mit, .zwei { grid-template-columns: 1fr; }
+  .split > * + *, .mit > * + *, .zwei > * + * { border-left: 0; border-top: 1px solid var(--linie); }
+  .split-bild { min-height: 0; padding: 28px var(--innen); }
+  .split-bild img { width: 70%; }
+  .zahlen { grid-template-columns: 1fr 1fr; }
+  .zahlen div:nth-child(3) { border-left: 0; }
+  .zahlen div:nth-child(n+3) { border-top: 1px solid var(--linie); }
+  .abschnitt-kopf { grid-template-columns: 1fr; }
+  .vier { grid-template-columns: 1fr; }
+  .vier > * + * { border-left: 0; border-top: 1px solid var(--linie); }
+  .karte { min-height: 0; }
+  .karte .karte-bild { padding: 18px 0; justify-items: start; }
+  .karte .karte-bild .zeichen { width: 64px; height: 64px; }
+  .feld { grid-template-columns: repeat(7, 1fr); }
+  .feld .zyklus { display: none; }
+  .feld a { min-height: 58px; padding: 5px 4px; font-size: 9.5px; }
+  .feld a:nth-of-type(7n+1) { border-left: 0; }
+  .feld a .t .art { display: none; }
+  .feld > :nth-last-child(-n+8) { border-bottom: 1px solid var(--linie); }
+  .feld > :nth-last-child(-n+7) { border-bottom: 0; }
+  .mit-bild { min-height: 260px; }
+  .reihe, .reihe:nth-of-type(even) { grid-template-columns: 1fr; }
+  .reihe .r-titel, .reihe .r-bild, .reihe .r-text, .reihe:nth-of-type(even) .r-titel, .reihe:nth-of-type(even) .r-bild, .reihe:nth-of-type(even) .r-text { order: 0; border-left: 0; grid-column: auto; }
+  .reihe .r-titel { border-bottom: 0; padding-bottom: 8px; }
+  .reihe .r-bild { min-height: 200px; border-top: 1px solid var(--linie); border-bottom: 1px solid var(--linie); }
+  .apps { grid-template-columns: 1fr 1fr; }
+  .app .app-kopf { padding: 10px 12px; }
+  .app .app-bild { margin: 0 12px; }
+  .app h3 { padding: 12px 12px 6px; font-size: 16px; }
+  .app .text { padding: 0 12px 16px; font-size: 13px; }
+  .balken p { display: none; }
+  .fuss-raster { grid-template-columns: 1fr 1fr; }
+  .fuss-raster > :nth-child(4) { grid-column: 1 / -1; border-left: 0; border-top: 1px solid var(--linie); }
+  .fusszeile .rechts { width: 100%; border-top: 1px solid var(--linie); }
+  .fusszeile .rechts a { flex: 1; }
+  .fusszeile .rechts a:first-child { border-left: 0; }
+}
+
+/* ───────── Signet im Einstieg (inline, damit es sich zeichnen kann) ───────── */
+.signet-gross { position: relative; z-index: 1; width: min(46vh, 520px, 70vw); height: auto; overflow: visible; }
+.signet-gross .s-flaeche { fill: color-mix(in srgb, var(--akzent) 14%, transparent); }
+.signet-gross .s-linie { fill: none; stroke: var(--tinte); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1 1; }
+.signet-gross .s-punkt { fill: var(--akzent); display: none; }
+.signet-gross .s-punkt-ruhe { fill: var(--akzent); }
+.kreuz-x, .kreuz-y { display: none; }
+
+/* ───────── Bewegung (nur mit Skript und ohne «weniger Bewegung») ───────── */
+.bewegt .signet-gross .s-linie { stroke-dashoffset: 1; }
+.bewegt .signet-gross .s-flaeche, .bewegt .signet-gross .s-punkt-ruhe { opacity: 0; }
+.bewegt .einstieg.bereit .s-linie { stroke-dashoffset: 0; transition: stroke-dashoffset 1.6s cubic-bezier(.65,0,.35,1); }
+.bewegt .einstieg.bereit .s-flaeche { opacity: 1; transition: opacity .8s 1.2s; }
+.bewegt .einstieg.bereit .s-punkt-ruhe { opacity: 1; transition: opacity .3s 1.5s; }
+.bewegt .einstieg.laeuft .s-punkt-ruhe { display: none; }
+.bewegt .einstieg.laeuft .s-punkt { display: inline; }
+
+/* Ladezähler über dem Einstieg */
+.lade { display: none; }
+.bewegt .einstieg.laedt .lade, .bewegt .einstieg.geladen .lade { display: grid; position: absolute; inset: 0; z-index: 5; background: var(--papier); place-items: end start; padding: 0 var(--innen) 16px; }
+.lade-zahl { font: 600 clamp(64px, 12vw, 180px)/0.85 var(--display); letter-spacing: -0.04em; color: var(--tinte); }
+.bewegt .einstieg.geladen .lade { animation: lade-weg .7s cubic-bezier(.7,0,.2,1) forwards; }
+@keyframes lade-weg { to { clip-path: inset(0 0 100% 0); } }
+.bewegt .einstieg .einstieg-bild::before { transform: scaleY(0); transform-origin: top; }
+.bewegt .einstieg .einstieg-bild::after { transform: scaleX(0); transform-origin: left; }
+.bewegt .einstieg.bereit .einstieg-bild::before, .bewegt .einstieg.bereit .einstieg-bild::after { transform: none; transition: transform 1.1s cubic-bezier(.65,0,.35,1); }
+.bewegt .einstieg .koord, .bewegt .einstieg .meta > *, .bewegt .einstieg .liste-boot li { opacity: 0; }
+.bewegt .einstieg.bereit .koord { opacity: 1; transition: opacity .4s .9s; }
+.bewegt .einstieg.bereit .meta > * { opacity: 1; transition: opacity .2s calc(.5s + var(--z, 0) * 40ms); }
+.bewegt .einstieg.bereit .liste-boot li { opacity: 1; transition: opacity .15s; }
+.bewegt .einstieg.bereit .liste-boot li:nth-child(1) { transition-delay: .7s } .bewegt .einstieg.bereit .liste-boot li:nth-child(2) { transition-delay: .82s }
+.bewegt .einstieg.bereit .liste-boot li:nth-child(3) { transition-delay: .94s } .bewegt .einstieg.bereit .liste-boot li:nth-child(4) { transition-delay: 1.06s }
+.bewegt .einstieg.bereit .liste-boot li:nth-child(5) { transition-delay: 1.18s } .bewegt .einstieg.bereit .liste-boot li:nth-child(6) { transition-delay: 1.3s }
+.bewegt .einstieg.bereit .liste-boot li:nth-child(7) { transition-delay: 1.42s }
+.bewegt .einstieg.bereit .liste-boot li:last-child a::after { content: "_"; margin-left: 4px; color: var(--akzent); animation: blinken 1s steps(1) infinite 1.6s; }
+@keyframes blinken { 50% { opacity: 0; } }
+
+/* Fadenkreuz folgt der Maus */
+.zielt .kreuz-x, .zielt .kreuz-y { display: block; position: absolute; z-index: 2; background: var(--akzent); pointer-events: none; opacity: .55; }
+.zielt .kreuz-x { left: 0; right: 0; top: 0; height: 1px; }
+.zielt .kreuz-y { top: 0; bottom: 0; left: 0; width: 1px; }
+.zielt .koord.mitte { color: var(--akzent-text); left: 0; top: 0; white-space: nowrap; pointer-events: none; }
+.einstieg-bild.zielt { cursor: crosshair; }
+
+/* Wörter steigen aus einer Maske */
+.wortweise .w { display: inline-block; overflow: hidden; vertical-align: top; padding: 0.12em 0 0.06em; margin: -0.12em 0 -0.06em; }
+.wortweise .w > span { display: inline-block; transform: translateY(105%); }
+.wortweise.sicht .w > span { transform: none; transition: transform .8s cubic-bezier(.2,.75,.2,1) calc(var(--i, 0) * 45ms); }
+.einstieg h1.wortweise .w > span { transition-delay: calc(.35s + var(--i, 0) * 60ms); }
+.satz-gross.wortweise .w { color: var(--blass); transition: color .35s; }
+.satz-gross.wortweise .w.dunkel, .satz-gross.wortweise b .w { color: var(--tinte); }
+
+/* Blöcke: von unten einblenden, in Gruppen gestaffelt */
+.bewegt .auf { opacity: 0; transform: translateY(18px); }
+.bewegt .auf.sicht { opacity: 1; transform: none; transition: opacity .7s cubic-bezier(.2,.7,.2,1) calc(var(--i, 0) * 90ms), transform .7s cubic-bezier(.2,.7,.2,1) calc(var(--i, 0) * 90ms); }
+.bewegt .karte.auf, .bewegt .app.auf, .bewegt .zahlen > div.auf, .bewegt .fuss-raster > .auf { transform: none; }
+
+/* Zeichen ziehen sich nach */
+.bewegt .karte-bild .zeichen *, .bewegt .app h3 .zeichen * { stroke-dasharray: 1; stroke-dashoffset: 1; }
+.bewegt .karte-bild.sicht .zeichen *, .bewegt .app.sicht h3 .zeichen * { stroke-dashoffset: 0; transition: stroke-dashoffset 1.2s cubic-bezier(.65,0,.35,1) calc(.2s + var(--i, 0) * 90ms); }
+.karte:hover .karte-bild .zeichen * , .app:hover h3 .zeichen * { animation: nachziehen .8s cubic-bezier(.65,0,.35,1); }
+@keyframes nachziehen { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+.karte-bild .zeichen *, .app h3 .zeichen * { vector-effect: none; }
+.karte .karte-bild .zeichen { stroke-width: 0.32; }
+.app h3 .zeichen { stroke-width: 1.3; }
+
+/* Bilder öffnen sich wie ein Vorhang */
+.bewegt .r-bild img, .bewegt .split-bild img, .bewegt .app-bild, .bewegt .mit-bild img { clip-path: inset(0 0 100% 0); }
+.bewegt .r-bild.sicht img, .bewegt .split-bild.sicht img, .bewegt .app.sicht .app-bild, .bewegt .mit-bild.sicht img { clip-path: inset(0 0 0 0); transition: clip-path 1.1s cubic-bezier(.65,0,.35,1) .1s; }
+.bewegt .r-bild { background-size: 32px 0, 0 32px; }
+.bewegt .r-bild.sicht { background-size: 32px 32px; transition: background-size .9s cubic-bezier(.65,0,.35,1); }
+
+/* Feld der 49 Zettel: Zelle für Zelle */
+.bewegt .feld a, .bewegt .feld .zyklus { opacity: 0; }
+.bewegt .feld.sicht a, .bewegt .feld.sicht .zyklus { opacity: 1; transition: opacity .35s calc(var(--i, 0) * 35ms), background-color .2s, color .2s; }
+.leitsatz.neu { animation: leitsatz .5s cubic-bezier(.2,.7,.2,1); }
+@keyframes leitsatz { from { opacity: 0; transform: translateY(8px); } }
+
+/* Wortmarke im Fuss zeichnet sich */
+.bewegt .wortmarke text { stroke-dasharray: 600; stroke-dashoffset: 600; }
+.bewegt .wortmarke.sicht text { stroke-dashoffset: 0; transition: stroke-dashoffset 2.6s cubic-bezier(.65,0,.35,1); }
+
+/* Kopf: Schatten beim Scrollen, Hover-Linie in der Navigation */
+.kopf { transition: box-shadow .3s; }
+.kopf.gerollt { box-shadow: 0 1px 0 var(--linie), 0 8px 24px -18px rgba(0,0,0,.35); }
+.kopf-nav a { position: relative; text-decoration: none !important; }
+.kopf-nav a::after { content: ""; position: absolute; left: 0; right: 0; bottom: -4px; height: 1px; background: var(--akzent); transform: scaleX(0); transform-origin: right; transition: transform .35s cubic-bezier(.65,0,.35,1); }
+.kopf-nav a:hover::after { transform: scaleX(1); transform-origin: left; }
+.knopf > span + span { transition: transform .3s; }
+.knopf:hover > span + span { transform: translateX(3px); }
+.mit-text details .weg { animation: aufklappen .45s cubic-bezier(.2,.7,.2,1); }
+@keyframes aufklappen { from { opacity: 0; transform: translateY(-6px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

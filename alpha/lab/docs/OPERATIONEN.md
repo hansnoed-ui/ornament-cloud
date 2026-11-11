@@ -12,20 +12,29 @@ Erzeugt aus dem Register mit `node alpha/lab/werkzeuge/operationsverzeichnis.mjs
 | `lab.bildsignal` 0.1.0 | Bildsignal | Kopplungsoperation | neu, nach TouchDesigner TOP to CHOP; Max/Jitter (Matrix zu Zahlen) | Bild → Steuersignal | eine |
 | `lab.tonsignal` 0.1.0 | Tonsignal | Kopplungsoperation | Adapter: PHORMA III (Tonanalyse) | Audiosignal → Steuersignal, Ereignisfolge | eine |
 | `lab.klang` 0.1.0 | Klangerzeuger | Zeitliche Operation | neu, nach ANS-Synthesizer (Murzin), UPIC (Xenakis): Bild als Partitur; Oszillator und Hüllkurve der Modularsynthese | Bild (opt.) + Steuersignal (opt.) + Konstellation (opt.) → Audiosignal, Ereignisfolge | über Modulation |
-| `lab.beat` 0.2.0 | Beat aus Bild | Zeitliche Operation | neu, nach Drum-Machine (Roland TR-808: Bassdrum mit fallender Tonhöhe, Becken aus sechs Rechtecken), euklidische Rhythmen (Toussaint), Bild als Partitur wie beim Klangerzeuger | Bild + Bild (opt.) + Bild (opt.) + Bild (opt.) + Bild (opt.) + Bild (opt.) → Audiosignal, Ereignisfolge | über Modulation |
+| `lab.beat` 0.4.0 | Beat aus Bild | Zeitliche Operation | neu, nach Drum-Machine (Roland TR-808: Bassdrum mit fallender Tonhöhe, Becken aus sechs Rechtecken), euklidische Rhythmen (Toussaint), Bild als Partitur wie beim Klangerzeuger; seit 0.1.45 gezupfte Saite nach Karplus und Strong (Oud), FM-E-Piano (Rhodes, DX7), Maqsum, Bayati mit Viertelton, Neurofunk-Bass, Glitch | Bild + Bild (opt.) + Bild (opt.) + Bild (opt.) + Bild (opt.) + Bild (opt.) → Audiosignal, Ereignisfolge | über Modulation |
 | `lab.tempo` 0.1.0 | Tempo und Tonhöhe | Zeitliche Operation | neu, nach Tonband und Sampler (Re-Pitch), REX-Schnitte in Reason und Modus «Beats» in Ableton Live, WSOLA | Audiosignal → Audiosignal | über Modulation |
 | `lab.zerlegen` 0.1.0 | Dekonstruktion | Zeitliche Operation | neu, nach Slicing (REX-Dateien in Reason, Simpler/Slice in Ableton Live), Stottern und Umkehren des Breakbeat-Schnitts | Audiosignal + Ereignisfolge (opt.) + Konstellation (opt.) → Audiosignal, Ereignisfolge | über Modulation |
 | `lab.rhythmus` 0.1.0 | Neu-Rhythmisierung | Zeitliche Operation | neu, nach Step-Sequencer und Slices (Reason Dr. Octo Rex, Bitwig, VCV), euklidische Rhythmen (Toussaint), Pattern in SuperCollider | Audiosignal + Ereignisfolge (opt.) + Steuersignal (opt.) + Konstellation (opt.) → Audiosignal, Ereignisfolge | über Modulation |
 | `lab.koerner` 0.1.0 | Körner (Granular) | Zeitliche Operation | neu, nach Granularsynthese: Warp1 und GrainBuf in SuperCollider (Lesekopf, Fenster, Überlappung); Granulatoren in Max/MSP und VCV | Audiosignal + Steuersignal (opt.) → Audiosignal | über Modulation |
+| `lab.filter` 0.1.0 | Filter in Bewegung | Zeitliche Operation | neu, nach Zustandsvariables Filter der analogen Synthesizer (Oberheim SEM; V. Zavalishin, «The Art of VA Filter Design»), Auto-Wah, Filterfahrten im Drum and Bass und in der elektronischen Musik | Audiosignal + Steuersignal (opt.) → Audiosignal | über Modulation |
+| `lab.effekt` 0.1.0 | Effekte | Zeitliche Operation | neu, nach Studioeffekte: Bitcrusher, Bandsättigung, Röhre, Wavefolder (Buchla, Serge), Chorus und Flanger (verzögerte Kopie mit LFO), Bandecho wie im Dub (Roland Space Echo), Nachhall nach Schroeder | Audiosignal → Audiosignal | über Modulation |
+| `lab.mastering` 0.1.0 | Fertig mischen (Mastering) | Zeitliche Operation | neu, nach Mastering: Bus-Kompressor (SSL), Bass in der Mitte (Elliptic EQ), Lautheit nach ITU-R BS.1770 und EBU R 128, Limiter mit Vorlauf | Audiosignal → Audiosignal | über Modulation |
 | `lab.differenz` 0.1.0 | Differenz | Beobachtungsoperation | neu, nach Difference-Komposition (Fusion Merge, After Effects, Resolume) | Bild + Bild → Bild | eine |
 | `lab.profil` 0.1.0 | Kompositorisches Profil | Beobachtungsoperation | neu, nach Kategorien von ShotDeck, FilmGrab und Flim (Bildausschnitt, Licht, Farbe, Symmetrie) als Messgrössen; Strukturtensor (Bildanalyse) | Bild → Befund | eine |
 | `lab.komposition` 0.1.0 | Komposition verändern | Räumliche Operation | neu, nach Attenuverter (VCV Rack) auf gemessene Bildkomponenten übertragen; Kategorien von ShotDeck, FilmGrab und Flim | Bild + Befund (opt.) → Bild | über Modulation |
 | `lab.glitch` 0.1.0 | Glitch | Räumliche Operation | neu, nach Databending und Datamoshing (Rosa Menkman, The Glitch Moment(um)); RGB-Split in Resolume (Shift RGB) und After Effects (Channel Offset) | Bild → Bild | über Modulation |
 | `lab.pixelsortierung` 0.1.0 | Pixelsortierung | Räumliche Operation | neu, nach Kim Asendorf, ASDFPixelSort (Processing, 2010): Abschnitte zwischen Schwellen sortieren | Bild → Bild | über Modulation |
-| `lab.verzerrung` 0.1.0 | Optische Verzerrung | Räumliche Operation | neu, nach Verzerrungsfilter der Bildbearbeitung (Strudel, Wölben, Wellen, Versetzen in Photoshop und GIMP); TouchDesigner Displace TOP; Kaleidoskop | Bild + Bild (opt.) → Bild | über Modulation |
-| `lab.licht` 0.1.0 | Licht: Glühen und Streifen | Räumliche Operation | neu, nach Bloom der Echtzeitgrafik (TouchDesigner Bloom TOP, Post-Processing in Unity und Unreal); Glow in Fusion und After Effects; anamorphotische Lichtfahnen | Bild → Bild | über Modulation |
+| `lab.verzerrung` 0.1.0 | Optische Verzerrung (ausgemustert seit 27. Oktober 2026) | Räumliche Operation | neu, nach Verzerrungsfilter der Bildbearbeitung (Strudel, Wölben, Wellen, Versetzen in Photoshop und GIMP); TouchDesigner Displace TOP; Kaleidoskop | Bild + Bild (opt.) → Bild | über Modulation |
+| `lab.licht` 0.1.0 | Licht: Glühen und Streifen (ausgemustert seit 27. Oktober 2026) | Räumliche Operation | neu, nach Bloom der Echtzeitgrafik (TouchDesigner Bloom TOP, Post-Processing in Unity und Unreal); Glow in Fusion und After Effects; anamorphotische Lichtfahnen | Bild → Bild | über Modulation |
 | `lab.raster` 0.1.0 | Raster und Linien | Räumliche Operation | neu, nach amplitudenmodulierte Rasterung des Drucks; Kupferstich und Schraffur; Bild abtasten und Formen zeichnen in Processing/p5.js; gestapelte Profillinien (Unknown Pleasures) | Bild → Bild | über Modulation |
 | `lab.neusetzen` 0.1.0 | Zerlegen und neu setzen | Räumliche Operation | neu, nach Cut-up (Brion Gysin, William S. Burroughs); Collage und Montage; Kachel-Filter der Bildbearbeitung (GIMP Puzzle, Mosaik) | Bild → Bild | über Modulation |
+| `lab.puls` 0.1.0 | Pulslinien (ausgemustert seit 27. Oktober 2026) | Räumliche Operation | neu, nach Prinzip der Plotter-Umwandler Pulse, Spiral Pulse, Sandy und Spiral in Makelangelo (Marginally Clever Robots, GPL-2.0), eigenständig umgesetzt, kein Code übernommen | Bild → Bild | über Modulation |
+| `lab.schraffur` 0.1.0 | Schraffur in Lagen | Räumliche Operation | neu, nach Prinzip der Plotter-Umwandler Crosshatch und Multipass in Makelangelo (Marginally Clever Robots, GPL-2.0), eigenständig umgesetzt, kein Code übernommen; Kreuzschraffur des Kupferstichs | Bild → Bild | über Modulation |
+| `lab.fluss` 0.1.0 | Fliessfeld | Räumliche Operation | neu, nach Prinzip des Plotter-Umwandlers Flow Field in Makelangelo (Marginally Clever Robots, GPL-2.0), eigenständig umgesetzt, kein Code übernommen; Line Integral Convolution (Cabral und Leedom 1993) | Bild → Bild | über Modulation |
+| `lab.punktieren` 0.1.0 | Punktieren | Räumliche Operation | neu, nach Prinzip der Plotter-Umwandler Voronoi Stippling und Voronoi in Makelangelo (Marginally Clever Robots, GPL-2.0), eigenständig umgesetzt, kein Code übernommen; Secord 2002; Punktiermanier | Bild → Bild | über Modulation |
+| `lab.teilung` 0.1.0 | Teilung | Räumliche Operation | neu, nach Prinzip der Plotter-Umwandler QuadTree, Truchet from Image und Boxxy in Makelangelo (Marginally Clever Robots, GPL-2.0), eigenständig umgesetzt, kein Code übernommen; Truchet-Kacheln (Sébastien Truchet 1704, Bögen nach Cyril Stanley Smith 1987) | Bild → Bild | über Modulation |
+| `lab.format` 0.1.0 | Format: Ausschnitt im Seitenverhältnis | Räumliche Operation | neu, nach die Seitenverhältnisse der Kanäle (9:16 Reels und Stories, 4:5 und 1:1 Instagram, 16:9 Video); Ausschnitt wie object-fit: cover | Bild → Bild | über Modulation |
 | `zettel.strophe` 0.1.0 | Zettel aus dem Zettelkasten | Selektionsoperation | Adapter: Zettelkasten (Zu seiner Zeit, 49 Strophen in sieben Zyklen) | – → Befund | eine |
 | `lab.karte` 0.2.0 | Textkarte | Räumliche Operation | neu, nach Titel- und Zwischentitelkarten des Films; Gestaltung des Neubaus der Website (Instrument Sans, Newsreader, Papier und Tinte, die Blaupause; die Zettelkarten aus tools/b-kacheln.mjs) | Bild (opt.) + Befund (opt.) + Konstellation (opt.) → Bild | eine |
 | `phorma.gewebe` 0.1.0 | PHORMA: Gewebe | Zeitliche Operation | Adapter: PHORMA III | Bild + Audiosignal (opt.) → Bild | erzeugt selbst mehrere |
@@ -192,7 +201,7 @@ Erzeugt Klang ohne Tondatei: liest ein Bild wie eine Partitur, macht ein Steuers
 
 Macht aus einem Bild oder den Standbildern eines Videos einen kurzen Beat mit Schlagzeug, Bass und Melodie. Farbe, Helligkeit, Feinheit, Komposition und Bewegung wählen Tempo, Groove, Klänge und Tonart, nach Regeln oder durch jev.
 
-- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/beat.js, alpha/lab/kern/beat.js; Prinzip nach Drum-Machine (Roland TR-808: Bassdrum mit fallender Tonhöhe, Becken aus sechs Rechtecken), euklidische Rhythmen (Toussaint), Bild als Partitur wie beim Klangerzeuger
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/beat.js, alpha/lab/kern/beat.js, alpha/lab/kern/mischpult.js; Prinzip nach Drum-Machine (Roland TR-808: Bassdrum mit fallender Tonhöhe, Becken aus sechs Rechtecken), euklidische Rhythmen (Toussaint), Bild als Partitur wie beim Klangerzeuger; seit 0.1.45 gezupfte Saite nach Karplus und Strong (Oud), FM-E-Piano (Rhodes, DX7), Maqsum, Bayati mit Viertelton, Neurofunk-Bass, Glitch
 - **Voraussetzungen:** keine (reines JavaScript); zum Anhören ein Browser mit <audio>
 - **Ressourcen:** Messen auf höchstens 128 Pixeln je Seite, dann je Schlag einige tausend Schritte (15 s: unter einer Sekunde); Speicher: der Beat in Stereo, 44,1 kHz, höchstens 60 s
 - **Reproduzierbar:** ja
@@ -200,17 +209,18 @@ Macht aus einem Bild oder den Standbildern eines Videos einen kurzen Beat mit Sc
 | Parameter | Bereich |
 |---|---|
 | Dauer (s) (`dauer`) | 4 … 60, Standard 15 |
-| Tempo (`tempo`) | **nach Regeln aus dem Bild** / langsam, etwa 75 Schläge je Minute / mittel, etwa 100 Schläge je Minute / schnell, etwa 125 Schläge je Minute / rasend, etwa 160 Schläge je Minute |
-| Groove (`groove`) | **nach Regeln aus dem Bild** / gerade / Halftime / Breakbeat / euklidisch / schleppend / Drum and Bass |
-| Schlagzeug (`kit`) | **nach Regeln aus dem Bild** / trocken / elektronisch / metallisch / weich |
-| Tonart (`tonart`) | **nach Regeln aus dem Bild** / Dur / Moll / dorisch / phrygisch / pentatonisch |
-| Bass (`bass`) | **nach Regeln aus dem Bild** / kein Bass / liegend / pulsierend / laufend / Reese |
-| Melodie (`melodie`) | **nach Regeln aus dem Bild** / keine Melodie / aus dem Bild gelesen / Arpeggio / Glocken |
+| Tempo (`tempo`) | **nach Regeln aus dem Bild** / langsam, etwa 75 Schläge je Minute / mittel, etwa 90 Schläge je Minute / schnell, etwa 125 Schläge je Minute / rasend, etwa 160 Schläge je Minute |
+| Groove (`groove`) | 9 Optionen, Standard «nach Regeln aus dem Bild» |
+| Schlagzeug (`kit`) | **nach Regeln aus dem Bild** / trocken / elektronisch / metallisch / weich / Jazz / Handtrommeln / Glitch |
+| Tonart (`tonart`) | 9 Optionen, Standard «nach Regeln aus dem Bild» |
+| Bass (`bass`) | **nach Regeln aus dem Bild** / kein Bass / liegend / pulsierend / laufend / Reese / Kontrabass / Neuro |
+| Melodie (`melodie`) | **nach Regeln aus dem Bild** / keine Melodie / aus dem Bild gelesen / Arpeggio / Glocken / Oud / Rhodes |
 | Verlauf (`verlauf`) | **nach Regeln aus dem Bild** / gleich / steigend / abschwellend / in Wellen / fein und wild im Wechsel |
-| Fläche (`flaeche`) | **nach Regeln aus dem Bild** / keine Fläche / sphärisch / schimmernd |
+| Fläche (`flaeche`) | **nach Regeln aus dem Bild** / keine Fläche / sphärisch / schimmernd / Bordun |
 | Grundton (`grundton`) | 13 Optionen, Standard «aus dem Farbton» |
 | Stimmung (Kammerton A) (`kammerton`) | **432 Hz** / 440 Hz |
 | Nachhall (`nachhall`) | 0 … 0.8, Standard 0.25 |
+| Mischung (`mischung`) | **fertig gemischt (−14 LUFS, Kompressor, Limiter)** / roh (Spitze auf −1 dBFS, wie bis 0.1.44) |
 
 ## Tempo und Tonhöhe (`lab.tempo`)
 
@@ -308,6 +318,65 @@ Löst einen Klang in kurze Körner auf und setzt sie neu zusammen: der Lesekopf 
 | Stereobreite (`breite`) | 0 … 1, Standard 0.6 |
 | Form des Korns (`fenster`) | **weich (Hann)** / flach mit kurzen Flanken / perkussiv (schnell an, abklingend) |
 | Pegel (`pegel`) | wie die Quelle (nur gegen Übersteuerung) / **auf −1 dBFS bringen** |
+
+## Filter in Bewegung (`lab.filter`)
+
+Formt die Klangfarbe mit einem Filter wie im Synthesizer: Tiefpass, Hochpass, Bandpass oder Kerbe, mit Resonanz. Die Grenzfrequenz steht, schwingt frei oder im Takt, folgt dem Anschlag (Auto-Wah), einem Steuersignal oder öffnet sich über die Dauer.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/mischpult.js, alpha/lab/kern/mischpult.js; Prinzip nach Zustandsvariables Filter der analogen Synthesizer (Oberheim SEM; V. Zavalishin, «The Art of VA Filter Design»), Auto-Wah, Filterfahrten im Drum and Bass und in der elektronischen Musik
+- **Voraussetzungen:** keine (reines JavaScript)
+- **Ressourcen:** je Abtastwert und Kanal ein Filterschritt, alle 16 Abtastwerte eine neue Grenzfrequenz; Speicher: der Klang zweimal
+- **Reproduzierbar:** ja
+
+| Parameter | Bereich |
+|---|---|
+| Filter (`art`) | **Tiefpass (dunkler)** / Hochpass (dünner) / Bandpass (wie durch ein Telefon) / Kerbe (ein Loch im Klang) |
+| Grenzfrequenz (Hz) (`frequenz`) | 40 … 16000, Standard 800 |
+| Resonanz (`resonanz`) | 0 … 1, Standard 0.4 |
+| Bewegung (`bewegung`) | steht / schwingt (LFO, Geschwindigkeit unten) / **schwingt im Takt (Takte je Schwingung)** / folgt dem Anschlag (Auto-Wah) / folgt dem Steuersignal (Eingang) / öffnet sich über die Dauer |
+| Tiefe der Bewegung (Oktaven nach oben) (`tiefe`) | 0 … 7, Standard 3 |
+| Geschwindigkeit (Hz, beim LFO) (`lfo`) | 0.02 … 20, Standard 0.5 |
+| Takte je Schwingung (im Takt; 0,25 = je Schlag) (`takte`) | 0.25 … 16, Standard 2 |
+| Tempo der Quelle (BPM, 0 = schätzen) (`bpm`) | 0 … 300, Standard 0 |
+| Anteil (0 trocken, 1 nur Effekt) (`anteil`) | 0 … 1, Standard 1 |
+| Pegel (`pegel`) | **wie die Quelle (nur gegen Übersteuerung)** / auf −1 dBFS bringen |
+
+## Effekte (`lab.effekt`)
+
+Färbt einen Klang mit einem Studioeffekt: zerkleinert wie im Glitch, gesättigt wie auf Band oder durch eine Röhre, verzerrt oder gefaltet, verdoppelt im Chorus, im Flanger, mit einem Echo im Tempo oder in einem Raum.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/mischpult.js, alpha/lab/kern/mischpult.js; Prinzip nach Studioeffekte: Bitcrusher, Bandsättigung, Röhre, Wavefolder (Buchla, Serge), Chorus und Flanger (verzögerte Kopie mit LFO), Bandecho wie im Dub (Roland Space Echo), Nachhall nach Schroeder
+- **Voraussetzungen:** keine (reines JavaScript)
+- **Ressourcen:** je Abtastwert und Kanal wenige Rechenschritte; Echo mit geschätztem Tempo: eine Messung der Einsätze; Speicher: der Klang zwei- bis dreimal, Stereo
+- **Reproduzierbar:** ja
+
+| Parameter | Bereich |
+|---|---|
+| Effekt (`effekt`) | 9 Optionen, Standard «Sättigung: Band, warm» |
+| Stärke (0–1: Antrieb, Zerkleinerung, Tiefe, Rückkopplung, Grösse) (`staerke`) | 0 … 1, Standard 0.5 |
+| Echo: Abstand (`teilung`) | **punktierte Achtel (Dub)** / Achtel / Viertel / Sechzehntel / Achteltriolen |
+| Echo: Tempo der Quelle (BPM, 0 = schätzen) (`bpm`) | 0 … 300, Standard 0 |
+| Chorus, Flanger: Geschwindigkeit (Hz) (`geschwindigkeit`) | 0.05 … 8, Standard 0.6 |
+| Anteil (0 trocken, 1 nur Effekt) (`anteil`) | 0 … 1, Standard 0.5 |
+| Pegel (`pegel`) | **wie die Quelle (nur gegen Übersteuerung)** / auf −1 dBFS bringen |
+
+## Fertig mischen (Mastering) (`lab.mastering`)
+
+Mischt einen Klang fertig: Wärme und Glanz, der Bass in der Mitte, ein sanfter Kompressor, der zusammenhält, und die Lautheit auf ein Ziel wie bei Streaming (−14 LUFS), mit einem Limiter, damit keine Spitze übersteuert.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/mischpult.js, alpha/lab/kern/mischpult.js; Prinzip nach Mastering: Bus-Kompressor (SSL), Bass in der Mitte (Elliptic EQ), Lautheit nach ITU-R BS.1770 und EBU R 128, Limiter mit Vorlauf
+- **Voraussetzungen:** keine (reines JavaScript)
+- **Ressourcen:** Filter, Kompressor und Limiter je Abtastwert, die Lautheit drei- bis fünfmal gemessen (60 s Stereo: etwa eine Sekunde); Speicher: der Klang vier- bis fünfmal
+- **Reproduzierbar:** ja
+
+| Parameter | Bereich |
+|---|---|
+| Lautheit (`ziel`) | **−14 LUFS (Streaming, Instagram, YouTube)** / −10 LUFS (laut, Club) / −18 LUFS (ruhig, viel Dynamik) / −23 LUFS (Rundfunk, EBU R 128) |
+| Kompression (0 keine, 1 dicht) (`kompression`) | 0 … 1, Standard 0.5 |
+| Wärme (dB unter 120 Hz) (`waerme`) | -6 … 6, Standard 1 |
+| Glanz (dB über 8 kHz) (`glanz`) | -6 … 6, Standard 1.5 |
+| Stereobreite (1 wie die Quelle; der Bass bleibt in der Mitte) (`breite`) | 0 … 2, Standard 1.1 |
+| Höchste Spitze (dBFS) (`decke`) | -6 … -0.1, Standard -1 |
 
 ## Differenz (`lab.differenz`)
 
@@ -411,6 +480,8 @@ Sortiert in jeder Zeile oder Spalte die Abschnitte, deren Helligkeit (oder Farbt
 
 ## Optische Verzerrung (`lab.verzerrung`)
 
+**Ausgemustert seit 27. Oktober 2026:** steht nicht mehr zur Wahl (Operationen, jev, Experimentell, Vorschlag für 30 s) und bleibt im Register, damit gespeicherte Projekte aufgehen.
+
 Verzieht das Bild als Wirbel, Linse, Welle, Kaleidoskop oder versetzt es nach der Helligkeit eines Bildes: des eigenen oder eines zweiten, das dann das erste steuert.
 
 - **Herkunft:** neu im Lab; Datei alpha/lab/operationen/verzerrung.js; Prinzip nach Verzerrungsfilter der Bildbearbeitung (Strudel, Wölben, Wellen, Versetzen in Photoshop und GIMP); TouchDesigner Displace TOP; Kaleidoskop
@@ -435,6 +506,8 @@ Verzieht das Bild als Wirbel, Linse, Welle, Kaleidoskop oder versetzt es nach de
 | Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1200 – begrenzt Rechenzeit und Speicher; am Telefon lieber klein |
 
 ## Licht: Glühen und Streifen (`lab.licht`)
+
+**Ausgemustert seit 27. Oktober 2026:** steht nicht mehr zur Wahl (Operationen, jev, Experimentell, Vorschlag für 30 s) und bleibt im Register, damit gespeicherte Projekte aufgehen.
 
 Zieht heraus, was heller ist als eine Schwelle, lässt es glühen oder zu Lichtfahnen ausstreichen und legt es über das Bild, auch farblich verschoben. «nur Licht» zeigt den Auszug allein.
 
@@ -506,6 +579,163 @@ Teilt das Bild in Kacheln oder Streifen und setzt einen Anteil davon neu: zufäl
 | im Verlauf neu würfeln (Flackern) (`flackern`) | ein/aus, Standard aus |
 | Bilder im Verlauf (`bilder`) | 2 … 120, Standard 36 – Länge der Bildfolge für die Animation und die Modulation über die Zeit |
 | Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1200 – begrenzt Rechenzeit und Speicher; am Telefon lieber klein |
+
+## Pulslinien (`lab.puls`)
+
+**Ausgemustert seit 27. Oktober 2026:** steht nicht mehr zur Wahl (Operationen, jev, Experimentell, Vorschlag für 30 s) und bleibt im Register, damit gespeicherte Projekte aufgehen.
+
+Eine Linie läuft über das Bild, parallel, als Spirale oder in Kreisen, und schwingt, wo es dunkel ist: je dunkler, desto höher und dichter. Wie ein Plotter, der das Bild mit einem einzigen Puls zeichnet.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/puls.js; Prinzip nach Prinzip der Plotter-Umwandler Pulse, Spiral Pulse, Sandy und Spiral in Makelangelo (Marginally Clever Robots, GPL-2.0), eigenständig umgesetzt, kein Code übernommen
+- **Voraussetzungen:** keine (läuft auch in Node)
+- **Ressourcen:** ein Durchgang je Pixel, die Phase einmal je Linie abgetastet (1200 px: unter 1 s); Speicher: ein Ton- und drei Farbfelder, je Linie eine Tabelle
+- **Reproduzierbar:** ja
+- **Eigener Verlauf** (Bildfolge für Animation): ja
+
+| Parameter | Bereich |
+|---|---|
+| Träger (`traeger`) | **parallele Linien** / Spirale aus der Mitte / Kreise um einen Punkt |
+| Schwingung (`welle`) | **Sinus (weich)** / Zickzack / Rechteck (Puls) / Schwelle: absetzen statt schwingen |
+| Linienabstand (`abstand`) | 0.004 … 0.06, Standard 0.014 – Anteil der längsten Seite |
+| Hub (`hub`) | 0 … 1, Standard 0.9 – Höhe der Schwingung im tiefen Dunkel, Anteil des halben Abstands |
+| Dichte der Schwingung (`dichte`) | 0.2 … 8, Standard 2.5 – Schwingungen je Linienabstand im tiefen Dunkel |
+| Grundschwingung im Hellen (`ruhe`) | 0 … 1, Standard 0.15 – Anteil der Dichte, der auch im Hellen bleibt |
+| Strichstärke (`strich`) | 0.05 … 0.6, Standard 0.16 – Anteil des Linienabstands |
+| Winkel der Linien (°) (`winkel`) | -90 … 90, Standard 0 |
+| Mitte waagrecht (Spirale, Kreise) (`mitteX`) | 0 … 1, Standard 0.5 |
+| Mitte senkrecht (Spirale, Kreise) (`mitteY`) | 0 … 1, Standard 0.5 |
+| Phase (°) (`phase`) | 0 … 360, Standard 0 – verschiebt die Schwingung entlang der Linie |
+| Lauf im Film (je Sekunde) (`lauf`) | 0 … 4, Standard 0.6 – Schwingungen je Sekunde, die im Film entlang der Linien wandern |
+| Gewicht der Tonwerte (`gewicht`) | 0.3 … 3, Standard 1 – unter 1 kräftiger, über 1 nur das tiefe Dunkel |
+| Farben (`farbe`) | **Tinte auf Papier** / Bildfarben auf Papier / Bildfarben auf Nacht |
+| Licht statt Dunkel zeichnen (`umkehren`) | ein/aus, Standard aus |
+| Anteil (Dry/Wet) (`anteil`) | 0 … 1, Standard 1 – 0: Eingang, 1: voller Filter, dazwischen gemischt |
+| Bilder im Verlauf (`bilder`) | 2 … 120, Standard 36 – Länge der Bildfolge für die Animation und die Modulation über die Zeit |
+| Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1200 – begrenzt Rechenzeit und Speicher; am Telefon lieber klein |
+
+## Schraffur in Lagen (`lab.schraffur`)
+
+Das Dunkel wird in Stufen geteilt, jede Stufe bekommt eine Lage paralleler Linien in eigenem Winkel: im Halbschatten eine, im tiefen Dunkel alle übereinander, leicht von Hand gezittert.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/schraffur.js; Prinzip nach Prinzip der Plotter-Umwandler Crosshatch und Multipass in Makelangelo (Marginally Clever Robots, GPL-2.0), eigenständig umgesetzt, kein Code übernommen; Kreuzschraffur des Kupferstichs
+- **Voraussetzungen:** keine (läuft auch in Node)
+- **Ressourcen:** ein Durchgang je Pixel, höchstens vier Lagen (1200 px: unter 1 s); Speicher: ein Ton- und drei Farbfelder
+- **Reproduzierbar:** ja
+- **Eigener Verlauf** (Bildfolge für Animation): ja
+
+| Parameter | Bereich |
+|---|---|
+| Lagen (`lagen`) | 1 … 4, Standard 4 |
+| Winkel der Lagen (`folge`) | **gekreuzt wie im Stich (0°, 90°, 45°, 135°)** / Fächer (gleichmässig verteilt) |
+| Grundwinkel (°) (`winkel`) | -90 … 90, Standard 45 |
+| Linienabstand (`abstand`) | 0.003 … 0.05, Standard 0.009 – Anteil der längsten Seite |
+| Strichstärke (`strich`) | 0.05 … 0.8, Standard 0.24 – Anteil des Linienabstands |
+| Schwelle verschieben (`schwelle`) | -0.5 … 0.5, Standard 0 – unter 0 kommen die Lagen früher (dunkler), über 0 später |
+| Übergang der Stufen (`weich`) | 0 … 0.3, Standard 0.05 |
+| Zittern der Hand (`zittern`) | 0 … 1, Standard 0.2 |
+| Linien schwellen mit dem Dunkel an (`anschwellen`) | ein/aus, Standard ein |
+| Lauf im Film (je Sekunde) (`lauf`) | 0 … 4, Standard 0.25 – Linienabstände je Sekunde, um die die Lagen im Film quer wandern |
+| Gewicht der Tonwerte (`gewicht`) | 0.3 … 3, Standard 1 – unter 1 kräftiger, über 1 nur das tiefe Dunkel |
+| Farben (`farbe`) | **Tinte auf Papier** / Bildfarben auf Papier / Bildfarben auf Nacht |
+| Licht statt Dunkel zeichnen (`umkehren`) | ein/aus, Standard aus |
+| Anteil (Dry/Wet) (`anteil`) | 0 … 1, Standard 1 – 0: Eingang, 1: voller Filter, dazwischen gemischt |
+| Bilder im Verlauf (`bilder`) | 2 … 120, Standard 36 – Länge der Bildfolge für die Animation und die Modulation über die Zeit |
+| Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1200 – begrenzt Rechenzeit und Speicher; am Telefon lieber klein |
+
+## Fliessfeld (`lab.fluss`)
+
+Feine Striche folgen einem Feld: entlang der Kanten des Bildes, quer dazu, aus Rauschen oder als Wirbel. Wo das Bild dunkel ist, verdichten sie sich zu Tinte. Im Film fliessen sie.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/fluss.js; Prinzip nach Prinzip des Plotter-Umwandlers Flow Field in Makelangelo (Marginally Clever Robots, GPL-2.0), eigenständig umgesetzt, kein Code übernommen; Line Integral Convolution (Cabral und Leedom 1993)
+- **Voraussetzungen:** keine (läuft auch in Node)
+- **Ressourcen:** zwanzig Schritte entlang des Feldes je Pixel (900 px: etwa 1 s); Speicher: Ton-, Farb-, Feld- und Kornfelder
+- **Reproduzierbar:** ja
+- **Eigener Verlauf** (Bildfolge für Animation): ja
+
+| Parameter | Bereich |
+|---|---|
+| Feld (`feld`) | **entlang der Kanten des Bildes** / quer zu den Kanten / Rauschen / Wirbel um die Mitte |
+| Strichlänge (`laenge`) | 0.005 … 0.12, Standard 0.035 – Anteil der längsten Seite, je Richtung |
+| Körnung (`koernung`) | 0.001 … 0.02, Standard 0.0035 – Feinheit der Striche, Anteil der längsten Seite |
+| Kontrast der Striche (`kontrast`) | 1 … 8, Standard 3.5 |
+| Grösse des Rauschens (`skala`) | 0.05 … 1, Standard 0.25 – Anteil der längsten Seite |
+| Drehung des Feldes (°) (`drehung`) | -180 … 180, Standard 0 |
+| Lauf im Film (je Sekunde) (`lauf`) | 0 … 4, Standard 0.5 – Wellen je Sekunde, die im Film entlang der Striche laufen |
+| Wandel des Rauschens im Film (`wandel`) | 0 … 1, Standard 0.12 – wie schnell sich das Rauschen verschiebt (je Sekunde) |
+| Gewicht der Tonwerte (`gewicht`) | 0.3 … 3, Standard 1 – unter 1 kräftiger, über 1 nur das tiefe Dunkel |
+| Farben (`farbe`) | **Tinte auf Papier** / Bildfarben auf Papier / Bildfarben auf Nacht |
+| Licht statt Dunkel zeichnen (`umkehren`) | ein/aus, Standard aus |
+| Anteil (Dry/Wet) (`anteil`) | 0 … 1, Standard 1 – 0: Eingang, 1: voller Filter, dazwischen gemischt |
+| Bilder im Verlauf (`bilder`) | 2 … 120, Standard 36 – Länge der Bildfolge für die Animation und die Modulation über die Zeit |
+| Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 900 – begrenzt Rechenzeit und Speicher; am Telefon lieber klein |
+
+## Punktieren (`lab.punktieren`)
+
+Das Dunkel wird zur Dichte gewürfelter Punkte. Aus denselben Punkten entstehen wahlweise Voronoi-Zellen als Linien oder als Mosaik in den Farben des Bildes, dessen Scheiben im Dunkeln klein werden.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/punktieren.js; Prinzip nach Prinzip der Plotter-Umwandler Voronoi Stippling und Voronoi in Makelangelo (Marginally Clever Robots, GPL-2.0), eigenständig umgesetzt, kein Code übernommen; Secord 2002; Punktiermanier
+- **Voraussetzungen:** keine (läuft auch in Node)
+- **Ressourcen:** neun Nachbarzellen je Pixel (1200 px: unter 1 s); Speicher: ein Ton- und drei Farbfelder, ein Punkt je Zelle
+- **Reproduzierbar:** ja
+- **Eigener Verlauf** (Bildfolge für Animation): ja
+
+| Parameter | Bereich |
+|---|---|
+| Form (`art`) | **Punkte (Stippling)** / Voronoi-Zellen (Linien) / Mosaik (Zellen in Bildfarben) |
+| Zellweite (`abstand`) | 0.004 … 0.05, Standard 0.009 – Anteil der längsten Seite; höchstens ein Punkt je Zelle |
+| Punktgrösse (`punkt`) | 0.1 … 0.7, Standard 0.36 – Radius, Anteil der Zellweite |
+| Punkte wachsen mit dem Dunkel (`wachsen`) | 0 … 1, Standard 0.4 |
+| Linienstärke der Zellen (`linie`) | 0.02 … 0.4, Standard 0.09 – Anteil der Zellweite |
+| Zufall der Lage (`zittern`) | 0 … 1, Standard 1 – 0: Gitter, 1: frei in der Zelle |
+| Lauf im Film (je Sekunde) (`lauf`) | 0 … 4, Standard 0.5 – wie stark die Punkte im Film um ihre Plätze schimmern |
+| Gewicht der Tonwerte (`gewicht`) | 0.3 … 3, Standard 1 – unter 1 kräftiger, über 1 nur das tiefe Dunkel |
+| Farben (`farbe`) | **Tinte auf Papier** / Bildfarben auf Papier / Bildfarben auf Nacht |
+| Licht statt Dunkel zeichnen (`umkehren`) | ein/aus, Standard aus |
+| Anteil (Dry/Wet) (`anteil`) | 0 … 1, Standard 1 – 0: Eingang, 1: voller Filter, dazwischen gemischt |
+| im Verlauf neu würfeln (Flackern) (`flackern`) | ein/aus, Standard aus |
+| Bilder im Verlauf (`bilder`) | 2 … 120, Standard 36 – Länge der Bildfolge für die Animation und die Modulation über die Zeit |
+| Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1200 – begrenzt Rechenzeit und Speicher; am Telefon lieber klein |
+
+## Teilung (`lab.teilung`)
+
+Das Bild wird wie ein Quadtree geviertelt, wo es dunkel oder bewegt ist, und bleibt im Hellen grob. Die Felder werden zu Rahmen, zu einem Mosaik aus ihren Farben, zu Truchet-Bögen oder zu wachsenden Quadraten.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/teilung.js; Prinzip nach Prinzip der Plotter-Umwandler QuadTree, Truchet from Image und Boxxy in Makelangelo (Marginally Clever Robots, GPL-2.0), eigenständig umgesetzt, kein Code übernommen; Truchet-Kacheln (Sébastien Truchet 1704, Bögen nach Cyril Stanley Smith 1987)
+- **Voraussetzungen:** keine (läuft auch in Node)
+- **Ressourcen:** Summentabellen, dann je Pixel höchstens neun Zugriffe (1200 px: unter 0,5 s); Speicher: bis zu vier Summentabellen in doppelter Genauigkeit
+- **Reproduzierbar:** ja
+- **Eigener Verlauf** (Bildfolge für Animation): ja
+
+| Parameter | Bereich |
+|---|---|
+| Füllung (`fuellung`) | **Mosaik (mittlere Farbe je Feld)** / Rahmen / Truchet-Bögen / Quadrate, die mit dem Dunkel wachsen |
+| Teilen nach (`kriterium`) | **Dunkel** / Kontrast (wie verschieden die Viertel sind) |
+| Tiefe (`tiefe`) | 2 … 9, Standard 6 – so oft wird höchstens geviertelt |
+| Schwelle (`schwelle`) | 0 … 1, Standard 0.4 – geteilt wird, was darüber liegt |
+| Anstieg je Tiefe (`anstieg`) | -0.1 … 0.2, Standard 0.06 – so viel strenger wird die Schwelle mit jeder Tiefe |
+| Strichstärke (`strich`) | 0.0005 … 0.006, Standard 0.0016 – Anteil der längsten Seite |
+| Bögen je Truchet-Kachel (`linien`) | 1 … 5, Standard 2 |
+| Lauf im Film (je Sekunde) (`lauf`) | 0 … 4, Standard 0.3 – wie oft sich die Truchet-Kacheln im Film drehen |
+| Gewicht der Tonwerte (`gewicht`) | 0.3 … 3, Standard 1 – unter 1 kräftiger, über 1 nur das tiefe Dunkel |
+| Farben (`farbe`) | **Tinte auf Papier** / Bildfarben auf Papier / Bildfarben auf Nacht |
+| Licht statt Dunkel zeichnen (`umkehren`) | ein/aus, Standard aus |
+| Anteil (Dry/Wet) (`anteil`) | 0 … 1, Standard 1 – 0: Eingang, 1: voller Filter, dazwischen gemischt |
+| Bilder im Verlauf (`bilder`) | 2 … 120, Standard 36 – Länge der Bildfolge für die Animation und die Modulation über die Zeit |
+| Rechengrösse (längste Seite, px) (`seite`) | 256 … 2048, Standard 1200 – begrenzt Rechenzeit und Speicher; am Telefon lieber klein |
+
+## Format: Ausschnitt im Seitenverhältnis (`lab.format`)
+
+Passt das Bild in ein Seitenverhältnis ein: ein Ausschnitt ohne Rand und ohne Skalierung, mittig oder zur Seite geschoben, mit geraden Massen. Als erster Schritt einer Zusammenstellung gibt es dem ganzen Film sein Format; Karten und Signatur entstehen darin.
+
+- **Herkunft:** neu im Lab; Datei alpha/lab/operationen/format.js; Prinzip nach die Seitenverhältnisse der Kanäle (9:16 Reels und Stories, 4:5 und 1:1 Instagram, 16:9 Video); Ausschnitt wie object-fit: cover
+- **Voraussetzungen:** keine (läuft auch in Node)
+- **Ressourcen:** sofort (Kopie des Ausschnitts); Speicher: ein Bild
+- **Reproduzierbar:** ja
+
+| Parameter | Bereich |
+|---|---|
+| Format (`format`) | **9:16 hoch (Reels, Stories)** / 4:5 hoch (Instagram) / 1:1 quadratisch / 16:9 quer (Video) |
+| Lage des Ausschnitts (0 = links oder oben, 1 = rechts oder unten) (`lage`) | 0 … 1, Standard 0.5 |
 
 ## Zettel aus dem Zettelkasten (`zettel.strophe`)
 
@@ -607,14 +837,14 @@ PHORMA III, Traube: glänzende rote Perlen in einer Kugel aus Fäden, Schnitte i
 
 PHORMA II: Physarum (ein Schleimpilz findet die Formen), Tiefe (das Foto wird Relief), Wellenwanne, Tuch (das Foto fällt als Seide), Rasterdruck, Montage (verschachtelte Rechtecke) – einzeln oder als Kette. Eine ORNA-Konstellation kann den Ablauf wählen, ein Zettel gibt den Titel.
 
-- **Herkunft:** Adapter, PHORMA II; Datei alpha/phorma-ii/buehne.js, film.js, ablauf.js, analyse.js und die Effekte (v=38, unverändert)
+- **Herkunft:** Adapter, PHORMA II; Datei alpha/phorma-ii/buehne.js, film.js, ablauf.js, analyse.js und die Effekte (v=40, unverändert)
 - **Voraussetzungen:** Browser mit WebGL 2 (three.js aus vendor/, Importmap in index.html)
 - **Ressourcen:** Aufbau einige Sekunden (Programme, beim Tuch die Stoffsimulation), dann rechnet die Grafikkarte jedes Bild; Speicher: Bühne in Rechengrösse (HalfFloat-Ziele)
 - **Reproduzierbar:** ja
 
 | Parameter | Bereich |
 |---|---|
-| Ablauf (`ablauf`) | 11 Optionen, Standard «aus der Konstellation (sonst alle drei)» |
+| Ablauf (`ablauf`) | 12 Optionen, Standard «aus der Konstellation (sonst alle sechs)» |
 | Dauer der Kette (s, 0 = eigenes Tempo) (`dauer`) | 0 … 120, Standard 0 – PHORMA II rechnet seine Effekte in eigener Zeit; eine Dauer streckt oder rafft sie |
 | Standbilder (Varianten) (`bilder`) | 1 … 12, Standard 6 – gleichmässig über die Kette |
 | Güte (`guete`) | **fein** / grob (wie am Telefon) |

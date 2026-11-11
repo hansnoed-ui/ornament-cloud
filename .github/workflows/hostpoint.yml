@@ -5,6 +5,7 @@
 #   Variables:  HOSTPOINT_HOST  (konto.ssh.cloud.hostpoint.ch)   HOSTPOINT_USER  (Benutzername des Webhostings)   HOSTPOINT_PFAD  (www/ornament.cloud)
 #   Secret:     HOSTPOINT_SSH_KEY  (privater Schlüssel; der öffentliche liegt bei Hostpoint unter Advanced → SSH-Zugang)
 #   Secret:     TYPESAFE_API_KEY   (optional: jev live im ORNAMENT LAB; landet ausserhalb der Website, alpha/lab/docs/JEV-STATUS.md)
+#   Secrets:    STIMME_PASSWORT, STIMME_GITHUB_TOKEN, Variable STIMME_REPO  (optional: die Stimme in alpha/voice/, docs/stimme.md)
 name: Hostpoint
 
 on:
@@ -61,12 +62,23 @@ jobs:
           TYPESAFE_API_KEY: ${{ secrets.TYPESAFE_API_KEY }}
         run: tools/hostpoint/jev-schluessel.sh
 
+      # Die Stimme in alpha/voice/: Passwort (nur als Hash) und Schlüssel für das private Repository ausserhalb der Website ablegen.
+      # Anleitung: docs/stimme.md
+      - name: Zugang für die Stimme
+        if: ${{ !inputs.probe }}
+        env:
+          STIMME_PASSWORT: ${{ secrets.STIMME_PASSWORT }}
+          STIMME_GITHUB_TOKEN: ${{ secrets.STIMME_GITHUB_TOKEN }}
+          STIMME_REPO: ${{ vars.STIMME_REPO }}
+        run: tools/hostpoint/stimme-zugang.sh
+
       - name: Nachsehen
         if: ${{ !inputs.probe }}
         run: |
           # Erst aussagekräftig, wenn die Domain auf Hostpoint zeigt; vorher antwortet noch GitHub Pages.
           for p in / /b/ /sitemap.xml /alpha/orma/ /nicht-da; do printf '%-16s %s\n' "$p" "$(curl -sS -o /dev/null -w '%{http_code} %{content_type} (%{time_total}s)' "https://ornament.cloud$p" || echo 'keine Antwort')"; done
           printf '%-16s %s\n' "jev im Lab" "$(curl -sS https://ornament.cloud/alpha/lab/jev/wahl.php | head -c 160 || echo 'keine Antwort')"
+          printf '%-16s %s\n' "Stimme" "$(curl -sS https://ornament.cloud/alpha/voice/stimme.php | head -c 160 || echo 'keine Antwort')"
           curl -sSI https://ornament.cloud/ | grep -iE '^(server|cache-control|content-encoding|strict-transport|x-content-type):' || true
           # nach dem Umstellen (docs/hostpoint-umzug.md, Schritt 4.3): www leitet um, komprimiert wird, das Manifest hat seinen Typ, das Zertifikat
           printf '%-16s %s\n' "www" "$(curl -sS -o /dev/null -w '%{http_code} → %{redirect_url}' http://www.ornament.cloud/ || echo 'keine Antwort')"

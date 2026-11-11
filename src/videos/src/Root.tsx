@@ -7,6 +7,9 @@ import { DreiervergleichVideo, T as TDreiervergleich } from "./dreiervergleich/V
 import { MenschVideo, T as TMensch, zeitplan as zeitplanMensch } from "./mensch/Video";
 import { StartAnimation, TStart, WachstumVideo, T as TWachstum } from "./wachstum/Video";
 import { UntitledVideo, T as TUntitled } from "./untitled/Video";
+import { WissenVideo, T as TWissen } from "./wissen/Video";
+import { FahrtVideo, T as TFahrt } from "./fahrt/Video";
+import { ReiseVideo, MASSE as MReise, T as TReise, zeitplan as zeitplanReise } from "./reise/Video";
 // neue Videos: Import
 
 export const RemotionRoot: React.FC = () => (
@@ -27,6 +30,26 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="StartAnimation" component={StartAnimation} durationInFrames={TStart.ende} fps={FPS} width={BREITE} height={1080} />
     <Composition id="StartAnimationDunkel" component={StartAnimation} durationInFrames={TStart.ende} fps={FPS} width={BREITE} height={1080} defaultProps={{ dunkel: true }} />
     <Composition id="UntitledVideo" component={UntitledVideo} durationInFrames={TUntitled.ende} fps={FPS} width={BREITE} height={HOEHE} />
+    {/* «Wissen»: der Obsidian-Tresor als Netz, 4:5, im Look des Labs (27. Oktober 2026) */}
+    <Composition id="WissenVideo" component={WissenVideo} durationInFrames={TWissen.ende} fps={FPS} width={BREITE} height={1350} />
+    {/* «Fahrt»: 360°-Kamerafahrt um ein 3D-Modell aus einem Bild, 4:5, Lab-Intro und -Outro (27. Oktober 2026) */}
+    <Composition id="FahrtVideo" component={FahrtVideo} durationInFrames={TFahrt.ende} fps={FPS} width={BREITE} height={1350} defaultProps={{ ordner: "fahrt-trellis" }} />
+    {/* «Reise»: Kamerafahrt durch den Zettelkasten und ORNA im Stil der Graphansicht von Obsidian, 9:16, 4:5, 16:9 (28. Oktober 2026) */}
+    <Composition id="ReiseHoch" component={ReiseVideo} durationInFrames={TReise.ende} fps={FPS} width={MReise.hoch.w} height={MReise.hoch.h} defaultProps={{ format: "hoch" as const }} />
+    <Composition id="ReiseVideo" component={ReiseVideo} durationInFrames={TReise.ende} fps={FPS} width={MReise.vier.w} height={MReise.vier.h} defaultProps={{ format: "vier" as const }} />
+    <Composition id="ReiseQuer" component={ReiseVideo} durationInFrames={TReise.ende} fps={FPS} width={MReise.quer.w} height={MReise.quer.h} defaultProps={{ format: "quer" as const }} />
+    {/* Suchauftrag 1 «Vom Profil zum Feed zur Plattform» (29. Oktober 2026): 4:5 und 16:9, mit dem Zettelkasten-Intro */}
+    <Composition id="ProfilVideo" component={ReiseVideo} durationInFrames={zeitplanReise("profil").ende} fps={FPS} width={MReise.vier.w} height={MReise.vier.h} defaultProps={{ format: "vier" as const, auftrag: "profil" as const }} />
+    <Composition id="ProfilQuer" component={ReiseVideo} durationInFrames={zeitplanReise("profil").ende} fps={FPS} width={MReise.quer.w} height={MReise.quer.h} defaultProps={{ format: "quer" as const, auftrag: "profil" as const }} />
+    {/* Suchauftrag 2 «Vom Körper zum blinden Fleck zum Material zur Kunst» (29. Oktober 2026): 4:5 und 16:9 */}
+    <Composition id="KoerperVideo" component={ReiseVideo} durationInFrames={zeitplanReise("koerper").ende} fps={FPS} width={MReise.vier.w} height={MReise.vier.h} defaultProps={{ format: "vier" as const, auftrag: "koerper" as const }} />
+    <Composition id="KoerperQuer" component={ReiseVideo} durationInFrames={zeitplanReise("koerper").ende} fps={FPS} width={MReise.quer.w} height={MReise.quer.h} defaultProps={{ format: "quer" as const, auftrag: "koerper" as const }} />
+    {/* Test «organisch» (29. Oktober 2026): gebogene Verbindungen, weiche Spur, ohne Aufzählungen */}
+    <Composition id="KoerperOrganisch" component={ReiseVideo} durationInFrames={zeitplanReise("koerper").ende} fps={FPS} width={MReise.vier.w} height={MReise.vier.h} defaultProps={{ format: "vier" as const, auftrag: "koerper" as const, organisch: true }} />
+    <Composition id="KoerperOrganischQuer" component={ReiseVideo} durationInFrames={zeitplanReise("koerper").ende} fps={FPS} width={MReise.quer.w} height={MReise.quer.h} defaultProps={{ format: "quer" as const, auftrag: "koerper" as const, organisch: true }} />
+    {/* Test «Gewebe» (29. Oktober 2026): die Verbindungen als Bänder aus Seidenfasern (WebGL 2, Gewebe.tsx); rendern mit --gl=angle */}
+    <Composition id="KoerperGewebe" component={ReiseVideo} durationInFrames={zeitplanReise("koerper").ende} fps={FPS} width={MReise.vier.w} height={MReise.vier.h} defaultProps={{ format: "vier" as const, auftrag: "koerper" as const, organisch: true, gewebe: true }} />
+    <Composition id="KoerperGewebeQuer" component={ReiseVideo} durationInFrames={zeitplanReise("koerper").ende} fps={FPS} width={MReise.quer.w} height={MReise.quer.h} defaultProps={{ format: "quer" as const, auftrag: "koerper" as const, organisch: true, gewebe: true }} />
     {/* neue Videos: Composition */}
   </>
 );

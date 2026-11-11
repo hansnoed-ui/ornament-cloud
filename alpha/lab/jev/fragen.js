@@ -16,10 +16,13 @@ export const KATALOG = Object.freeze({
   "lab.komposition": "Komposition verändern: verstärkt, hebt auf oder kehrt um, was das Profil misst, etwa Symmetrie, Lichtgefälle oder Sättigung (räumliche Operation)",
   "lab.glitch": "Glitch: Blöcke zeigen Inhalt von anderer Stelle, Zeilen verrutschen, Farbkanäle trennen sich (räumliche Operation)",
   "lab.pixelsortierung": "Pixelsortierung: Abschnitte zwischen zwei Helligkeitsschwellen werden sortiert, das Bild zerfliesst in Streifen (räumliche Operation)",
-  "lab.verzerrung": "Optische Verzerrung: Wirbel, Linse, Welle, Kaleidoskop oder Versetzen nach Helligkeit (räumliche Operation)",
-  "lab.licht": "Licht: helle Stellen glühen oder streichen zu Lichtfahnen aus (räumliche Operation)",
   "lab.raster": "Raster und Linien: das Bild wird zu Punkten, Linien, Schraffur, Wellenlinien oder Mosaik (räumliche Operation)",
   "lab.neusetzen": "Zerlegen und neu setzen: Kacheln oder Streifen werden zufällig, nach Helligkeit oder umgekehrt neu geordnet (räumliche Operation)",
+  "lab.schraffur": "Schraffur in Lagen: das Dunkel wird zu Lagen paralleler Linien in eigenen Winkeln, wie im Kupferstich (räumliche Operation)",
+  "lab.fluss": "Fliessfeld: feine Striche folgen den Kanten des Bildes, einem Rauschen oder einem Wirbel und verdichten sich im Dunkeln (räumliche Operation)",
+  "lab.punktieren": "Punktieren: das Dunkel wird zur Dichte gewürfelter Punkte, wahlweise Voronoi-Zellen oder ein Mosaik in Bildfarben (räumliche Operation)",
+  "lab.teilung": "Teilung: das Bild wird geviertelt, wo es dunkel oder bewegt ist, zu Rahmen, Mosaik, Truchet-Bögen oder Quadraten (räumliche Operation)",
+  "lab.format": "Format: das Bild wird als Ausschnitt in ein Seitenverhältnis eingepasst, 9:16, 4:5, 1:1 oder 16:9, ohne Rand und ohne Verzerrung (räumliche Operation)",
   "phorma.gewebe": "PHORMA Gewebe: die Umrisse des Bildes werden zu Flächen aus feinen Linien, die ein Ton bewegt (zeitliche Operation, eigene Bühne)",
   "phorma.irrfahrt": "PHORMA Irrfahrt: ein Faden irrt durch einen Würfel aus Licht und quillt mit der Musik zu Rauch auf (zeitliche Operation, eigene Bühne)",
   "phorma.lichtwuerfel": "PHORMA Lichtwürfel: ein Faden irrt in einem festen Würfel aus Licht (zeitliche Operation, eigene Bühne)",
@@ -70,19 +73,22 @@ export const BILD_EFFEKTE = Object.freeze({
   "bild.wiederholung": "Wiederholung: das Bild vervielfacht sich im Raster, die Kopien werden grösser und kleiner",
   "bild.farbe": "Farbe: die Farben drehen sich durch den Farbkreis und werden kräftiger",
   "bild.glitch": "Glitch: Blöcke verrutschen, Zeilen springen, Farbkanäle trennen sich",
-  "bild.verzerrung": "Verzerrung: das Bild wird verwirbelt, gewellt oder wie durch eine Linse gesehen",
-  "bild.licht": "Licht: helle Stellen glühen auf und strahlen aus",
   "bild.raster": "Raster: das Bild wird zu Punkten und Linien wie im Druck",
-  // die Szenen von PHORMA III (seit Lab 0.1.21): eigene Welten aus dem Bild, die Grafikkarte rechnet jedes Bild aus der Zeit und dem Ton
+  // die Linienbilder (seit Lab 0.1.36, nach den Plotter-Umwandlern von Makelangelo): lebendig, sie bewegen sich von selbst
+  "bild.schraffur": "Schraffur: Lagen feiner Linien in verschiedenen Winkeln, im Dunkeln liegen alle übereinander, wie im Kupferstich",
+  "bild.fluss": "Fliessfeld: feine Striche folgen den Kanten des Bildes und fliessen, im Dunkeln verdichten sie sich zu Tinte",
+  "bild.punktieren": "Punktieren: das Bild wird aus gewürfelten Punkten gezeichnet, im Dunkeln dicht, die Punkte schimmern",
+  "bild.glasfenster": "Glasfenster: Voronoi-Zellen in den Farben des Bildes, im Dunkeln klein, mit dunklen Fugen",
+  "bild.teilung": "Teilung: das Bild wird zu Quadraten geviertelt, fein wo es dicht ist, grob im Hellen, jedes in seiner Farbe",
+  "bild.truchet": "Truchet: Felder mit Viertelbögen, deren Richtung der Ton wählt, sie drehen sich einzeln",
+  // PHORMA III (seit Lab 0.1.21): das Gewebe wächst aus den Umrissen des Bildes, die Grafikkarte rechnet jedes Bild aus der Zeit und dem Ton. Irrfahrt,
+  // Lichtwürfel und Traube sind seit 0.1.35 nicht mehr in der Zusammenstellung (Christian, 25. Oktober 2026: «brauchts wohl nicht, weil sie nicht mit
+  // dem Bild arbeiten»); ihre Operationen bleiben im Register und im KATALOG der nächsten Operation
   "bild.gewebe": "Gewebe: die Umrisse des Bildes werden zu Flächen aus feinen Linien, die der Ton bewegt, bei kräftigen Einsätzen neue Bilder (PHORMA)",
-  "bild.irrfahrt": "Irrfahrt: ein Faden irrt durch einen Würfel aus Licht, quillt mit der Musik zu Rauch auf, bei Schlägen springt alles (PHORMA)",
-  "bild.lichtwuerfel": "Lichtwürfel: ein Faden irrt in einem festen Würfel aus Licht, ruhiger als die Irrfahrt (PHORMA)",
-  "bild.traube": "Traube: glänzende rote Perlen in einer Kugel aus Fäden, Schnitte im Takt, der Bass lässt sie glühen (PHORMA)",
   // PHORMA II (seit Lab 0.1.22, eine Operation mit Abläufen): die Grafikkarte rechnet jedes Bild aus der Zeit
   "bild.physarum": "Physarum: ein Schleimpilz wächst aus den markanten Stellen und findet die Formen des Bildes als Netz (PHORMA II)",
   "bild.tiefe": "Tiefe: ein Lichtscan tastet das Bild ab, es bekommt Relief und wird Raum (PHORMA II)",
   "bild.welle": "Wellenwanne: das Bild liegt unter Wasser, Dünung und Ringe brechen es, helle Linien glänzen (PHORMA II)",
-  "bild.tuch": "Tuch: das Bild fällt als Seidentuch und legt sich glatt (PHORMA II)",
   "bild.druck": "Rasterdruck: das Bild wird zum Vierfarbendruck aus Punkten, die Platten rasten ein und bleiben versetzt (PHORMA II)",
   "bild.montage": "Montage: das Bild zerfällt in verschachtelte Rechtecke mit eigenen Ausschnitten, harte Schnitte im Takt (PHORMA II)",
   // PHORMA I (seit Lab 0.1.22, eine Operation mit Abläufen)
@@ -139,32 +145,44 @@ export const BEAT_MERKMALE = Object.freeze({
 });
 export const BEAT_FRAGEN = Object.freeze({
   tempo: { text: "Welches Tempo passt?", katalog: Object.freeze({
-    langsam: "langsam, etwa 75 Schläge je Minute", mittel: "mittel, etwa 100 Schläge je Minute", schnell: "schnell, etwa 125 Schläge je Minute", rasend: "rasend, etwa 160 Schläge je Minute" }) },
+    langsam: "langsam, etwa 75 Schläge je Minute", mittel: "mittel, etwa 90 Schläge je Minute", schnell: "schnell, etwa 125 Schläge je Minute", rasend: "rasend, etwa 160 Schläge je Minute" }) },
   groove: { text: "Welcher Groove passt?", katalog: Object.freeze({
     gerade: "gerade: Bassdrum auf jedem Viertel, Snare auf zwei und vier",
     halftime: "Halftime: Bassdrum am Anfang, Snare nur auf drei, schwer und breit",
     breakbeat: "Breakbeat: synkopierte Bassdrum, Snare auf zwei und vier mit leisen Zwischenschlägen",
     euklidisch: "euklidisch: Schläge möglichst gleichmässig verteilt, ungerade Muster wie fünf aus sechzehn",
     schleppend: "schleppend: Groove mit Swing, die Zwischenschläge kommen spät",
-    dnb: "Drum and Bass: 170 bis 176 Schläge je Minute, Bassdrum auf eins und kurz vor drei, Snare auf zwei und vier, dazwischen gebrochene Schläge" }) },
+    dnb: "Drum and Bass: 170 bis 176 Schläge je Minute, Bassdrum auf eins und kurz vor drei, Snare auf zwei und vier, dazwischen gebrochene Schläge",
+    maqsum: "Maqsum: der Grundrhythmus der arabischen Musik, Dum Tek – Tek Dum – Tek",
+    gefrikel: "Elektro-Gefrikel: wie IDM und Glitch, Becken auf jedem Sechzehntel, Schläge, die zwei- bis viermal stottern" }) },
   kit: { text: "Welche Klänge soll das Schlagzeug haben?", katalog: Object.freeze({
     trocken: "trocken: kurze, akustisch wirkende Trommeln", elektronisch: "elektronisch: lange, tiefe Bassdrum und Klatschen wie bei einer Drum-Machine",
-    metallisch: "metallisch: klirrende Becken und glockenartige Töne", weich: "weich: gedämpfte, runde Schläge ohne Härte" }) },
+    metallisch: "metallisch: klirrende Becken und glockenartige Töne", weich: "weich: gedämpfte, runde Schläge ohne Härte",
+    jazz: "Jazz: Besen auf der Snare, Ride-Becken, runde Bassdrum, Bläser als Melodie", hand: "Handtrommeln: wie Tabla und Zarb, die tiefe Trommel gleitet, die hohe klingt als Ton",
+    glitch: "Glitch: klickende Bassdrum, knisternde Snare, winzige Becken, zerkleinert wie kaputte Elektronik" }) },
   tonart: { text: "Welche Tonart soll der Beat haben?", katalog: Object.freeze({
     dur: "Dur: hell und offen", moll: "Moll: dunkel und ernst", dorisch: "dorisch: Moll mit einem hellen Ton, schwebend",
-    phrygisch: "phrygisch: dunkel und fremd, mit kleiner Sekunde", pentatonik: "pentatonisch: fünf Töne ohne Halbtöne, nichts reibt" }) },
+    phrygisch: "phrygisch: dunkel und fremd, mit kleiner Sekunde", pentatonik: "pentatonisch: fünf Töne ohne Halbtöne, nichts reibt",
+    hijaz: "Hijaz: kleine Sekunde und grosse Terz, wie im Orient und bei Anouar Brahem",
+    bayati: "Bayati: der Maqam mit dem Viertelton auf der zweiten Stufe, weich und klagend",
+    nahawand: "Nahawand: wie harmonisch Moll, mit dem Leitton unter dem Grundton" }) },
   bass: { text: "Was soll der Bass tun?", katalog: Object.freeze({
     keiner: "kein Bass", liegend: "liegend: lange Töne, je Takt einer", pulsierend: "pulsierend: Achtel auf dem Grundton, mit Oktavsprüngen", laufend: "laufend: der Bass geht in Schritten durch die Tonleiter",
-    reese: "Reese: tiefer, schwebender Bass aus zwei gegeneinander verstimmten Sägezähnen, wie im Drum and Bass" }) },
+    reese: "Reese: tiefer, schwebender Bass aus zwei gegeneinander verstimmten Sägezähnen, wie im Drum and Bass",
+    kontrabass: "Kontrabass: gezupft, in Vierteln zum nächsten Akkord, darunter ein tiefer Sinus",
+    neuro: "Neuro: der schwebende Bass durch ein Filter, das im Rhythmus knurrt, wie im Neurofunk" }) },
   melodie: { text: "Welche Melodie soll über dem Beat liegen?", katalog: Object.freeze({
     keine: "keine Melodie", bild: "aus dem Bild gelesen: die hellste Stelle jeder Spalte gibt den Ton, von links nach rechts",
-    arpeggio: "Arpeggio: die Töne des Akkords auf und ab", glocken: "Glocken: wenige Töne auf den hellsten Punkten des Bildes" }) },
+    arpeggio: "Arpeggio: die Töne des Akkords auf und ab", glocken: "Glocken: wenige Töne auf den hellsten Punkten des Bildes",
+    oud: "Oud: gezupfte Saite, die Melodie geht schrittweise durch den Maqam und gleitet zwischen den Tönen",
+    rhodes: "Rhodes: Akkorde mit Septime auf dem E-Piano, wie im Jazz begleitet" }) },
   verlauf: { text: "Wie soll sich der Beat über die Zeit entwickeln?", katalog: Object.freeze({
     gleich: "gleich: alles spielt von Anfang an", steigend: "steigend: die Stimmen setzen nacheinander ein, es wird dichter",
     abschwellend: "abschwellend: voll am Anfang, dann lichtet es sich", wellen: "in Wellen: dichter, wo sich das Video stark bewegt, sonst lichter",
     wechselnd: "fein und wild im Wechsel: lichte, zarte Takte wechseln mit dichten, gebrochenen" }) },
   flaeche: { text: "Soll eine Klangfläche den Beat tragen?", katalog: Object.freeze({
-    keine: "keine Fläche", sphaere: "sphärisch: lange, schwebende Akkorde mit viel Raum", schimmer: "schimmernd: sphärisch und dazu hohe, glitzernde Töne" }) },
+    keine: "keine Fläche", sphaere: "sphärisch: lange, schwebende Akkorde mit viel Raum", schimmer: "schimmernd: sphärisch und dazu hohe, glitzernde Töne",
+    bordun: "Bordun: Grundton, Quinte und Oktave liegen durchgehend, wie die Tanpura" }) },
 });
 export const FRAGE_BEAT = "In einem künstlerischen Labor entsteht aus einem Bild oder einem Video ein kurzer Beat als Soundtrack. Gemessen wurden nur die genannten Merkmale. Der Beat soll aus diesem Bild hervorgehen, statt ihm von aussen übergestülpt zu werden.";
 

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ORNAMENT AV STUDIO 0.1</title>
+  <!-- Online unter /alpha/av/ nur per Direktlink, wie Lab und Composer: nicht verlinkt, nicht in der Suche (9. November 2026). -->
+  <meta name="robots" content="noindex">
+  <meta name="description" content="ORNAMENT AV STUDIO: Musik aus dem Composer steuert die Effekte von ornament.cloud/animations auf eigenem Bild- und Videomaterial; Export als MP4 mit Ton.">
+  <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
+  <link rel="stylesheet" href="av.css">
+</head>
+<body>
+  <header class="kopf">
+    <p class="heimzeile"><a class="heim" href="../../">← ornament.cloud</a></p>
+    <div class="marke">
+      <h1>ORNAMENT AV STUDIO <span class="version">0.1 · Probe</span></h1>
+      <p class="leitsatz">Material · Musik · Partitur · Film</p>
+    </div>
+  </header>
+
+  <section class="schritte">
+    <div class="schritt">
+      <h2>1 · Musik</h2>
+      <label class="knopf voll"><input type="file" id="musik" accept=".zip,application/zip" hidden>Composer-Export laden (ZIP)</label>
+      <p class="leise" id="musikInfo">Im Composer «Exportieren»: Summe, Stems und Projekt. Die Stems liefern die Steuersignale je Funktion, das Projekt Abschnitte und Bildbrüche.</p>
+    </div>
+    <div class="schritt">
+      <h2>2 · Material</h2>
+      <label class="knopf voll"><input type="file" id="material" accept="video/*,image/*" multiple hidden>Videos oder Bilder laden (mehrere)</label>
+      <p class="leise" id="materialInfo">Mehrere wählen: jede Szene zeigt eines davon. MP4 (H.264) am sichersten; ein Video läuft als Schleife von höchstens 20 s. Weitere lassen sich später dazuladen.</p>
+    </div>
+    <div class="schritt">
+      <h2>3 · Partitur</h2>
+      <div class="familien" id="familien"></div>
+      <label class="feld">Format <select id="format"><option value="1920x1080">16:9 · 1920 × 1080</option><option value="1080x1350">4:5 · 1080 × 1350</option><option value="1080x1920">9:16 · 1080 × 1920</option><option value="960x540">16:9 · 960 × 540 (schnelle Probe)</option></select></label>
+      <label class="feld">Startwert <input type="number" id="seed" value="1" min="1" max="9999"></label>
+    </div>
+  </section>
+
+  <section class="buehne">
+    <canvas id="vorschau" width="960" height="540" aria-label="Vorschau"></canvas>
+    <div class="leiste">
+      <button class="knopf voll" id="spielen" disabled>▶ Abspielen</button>
+      <span class="uhr" id="uhr">0:00,0</span>
+      <span class="abschnitt" id="abschnitt"></span>
+      <span class="signale" id="signale"></span>
+      <button class="knopf" id="exportieren" disabled>MP4 exportieren</button>
+    </div>
+    <canvas id="zeitleiste" height="90" aria-label="Signale über die Zeit"></canvas>
+  </section>
+
+  <section class="zuordnung" id="zuordnung" hidden>
+    <h2>Partitur: Szenen je Abschnitt</h2>
+    <p class="leise">Jeder Abschnitt des Arrangements spielt eine Szene aus seinem Vorrat; lange Abschnitte wechseln alle acht Takte. Zwischen den Szenen wird 0,8 s überblendet. Ein anderer Startwert wählt andere Szenen.</p>
+    <table id="zuordnungTabelle"></table>
+  </section>
+
+  <div class="meldung" id="meldung" role="status" hidden></div>
+  <footer class="fuss"><p>ORNAMENT AV STUDIO 0.1 · Effekte aus <a href="../../animations/">/animations</a> über einen Adapter · Steuerung 0.1.0 · Partitur 0.2.0 · Leertaste spielt</p></footer>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

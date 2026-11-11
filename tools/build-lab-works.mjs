@@ -22,7 +22,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = fileURLToPath(new URL("../", import.meta.url));
 const PFAD = "/b/lab/works/";
 const BASIS = "https://ornament.cloud";
-const V = 14;   // Versionsmarke für works.css und works.js (?v=), bei Änderungen hochzählen
+const V = 15;   // Versionsmarke für works.css und works.js (?v=), bei Änderungen hochzählen
 
 const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const absaetze = (t) => String(t ?? "").split(/\n\s*\n/).map((a) => a.trim()).filter(Boolean).map((a) => `<p>${esc(a)}</p>`).join("");
@@ -82,8 +82,7 @@ function seite({ titel, beschreibung, pfad, indexieren, inhalt, bild, klasse, ko
   <meta name="description" content="${esc(beschreibung)}">
   ${indexieren ? `<link rel="canonical" href="${BASIS}${pfad}">` : `<meta name="robots" content="noindex">`}
   <meta name="author" content="Christian Strickler">
-  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#000000">
   <link rel="icon" href="${ICON}">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="ornament.cloud">

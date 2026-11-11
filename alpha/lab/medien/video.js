@@ -5,6 +5,7 @@
 import { Muxer, ArrayBufferTarget } from "../../../vendor/mp4-muxer-5.2.2/mp4-muxer.js";
 import { mitDauer } from "../../../alpha/the-fictory/dauer.js?v=23";
 import { dateiLesen } from "./dateilesen.js";
+import { modulLaden } from "../kern/laden.js";
 
 export const FPS = 30;
 const KANDIDATEN = [["avc1.640028", "avc"], ["avc1.42001f", "avc"], ["vp09.00.10.08", "vp9"]];
@@ -85,7 +86,7 @@ export async function videoAus(bilder, { fps = FPS, melden = () => {}, halten = 
  * Form. AAC kodieren die Browser nur bei 44,1 und 48 kHz: ein Klang mit 88,2 oder 96 kHz wird dafür auf 48 kHz umgetastet (die WAV behält ihre Rate).
  */
 async function tonspur({ pcm, spuren = null, rate, beginn = 0, dauer }) {
-  const { tonKodieren } = await import("../../../alpha/phorma-iii/tonspur.js?v=23");
+  const { tonKodieren } = await modulLaden(new URL("../../../alpha/phorma-iii/tonspur.js?v=23", import.meta.url).href, { titel: "Die Tonspur (PHORMA III)" });
   const { rateWandeln } = await import("../kern/klangwerk.js");
   const ab = Math.max(0, Math.round(beginn * rate)), ziel = rate === 44100 || rate === 48000 ? rate : 48000;
   const kanaele = (spuren?.length ? spuren : [pcm]).slice(0, 2).map((s) => rateWandeln(s.subarray(Math.min(s.length, ab), Math.min(s.length, ab + Math.ceil(dauer * rate) + rate)), rate, ziel));

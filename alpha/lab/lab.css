@@ -21,6 +21,10 @@ h1, h2, h3 { font-weight: 500; letter-spacing: -0.015em; margin: 0; }
 
 /* Kopf */
 .kopf { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px; padding: 16px 24px; border-bottom: 1px solid var(--border); }
+/* der Weg zurück zu ornament.cloud: eigene Zeile über dem Kopf, Pille im Akzent */
+.heim { display: inline-flex; align-items: center; min-height: 30px; padding: 4px 14px; border: 1px solid var(--accent); border-radius: 999px; color: var(--accent); font-weight: 500; text-decoration: none; white-space: nowrap; }
+.heim:hover { background: var(--accent); color: #fff; }
+.heimzeile { flex-basis: 100%; margin: -4px 0 0; }
 .marke h1 { font-size: 1.5rem; letter-spacing: -0.03em; }
 .marke .version { color: var(--accent); font-size: 0.9rem; margin-left: 4px; }
 .leitsatz { margin: 2px 0 0; font-family: var(--serif); color: var(--muted); }

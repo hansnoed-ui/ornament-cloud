@@ -61,6 +61,9 @@ export function verzerrung(bild, p, steuerbild = null) {
 
 export const verzerrungOperation = bildfilter({
   id: "lab.verzerrung",
+  // ausgemustert (27. Oktober 2026, Wunsch: «Verzerrung und Tuch kann auch weg»): nicht mehr wählbar, bleibt im Register für gespeicherte
+  // Projekte (kern/register.js)
+  ausgemustert: "27. Oktober 2026",
   name: "Optische Verzerrung",
   version: "0.1.0",
   klasse: "raeumlich",

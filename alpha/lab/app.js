@@ -9,7 +9,7 @@ import { gpuEffekte, LEBENDIG } from "./medien/gpu.js";
 import * as P from "./kern/projekt.js";
 import { fuehreAus, tonAngaben, bildfolge, regelVorschlaege, experiment, ketteAnwenden, neuerStartwert } from "./kern/ausfuehrung.js";
 import * as ST from "./kern/stationen.js";
-import { packe, entpacke, ENDUNG } from "./kern/archiv.js";
+import { packeBlob, entpacke, ENDUNG, HOECHSTENS } from "./kern/archiv.js";
 import { QUELLEN, POLARITAETEN } from "./kern/modulation.js";
 import { KLASSEN, standardParameter } from "./kern/register.js";
 import { STROPHEN_WAHL } from "./operationen/zettel.js";
@@ -82,7 +82,9 @@ const gpuDa = () => Boolean(gpu());
 function herunterladen(blob, name) {
   const a = el("a", { href: URL.createObjectURL(blob), download: name });
   document.body.append(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  // die Adresse bleibt zwei Minuten (bis Lab 0.1.37 nur 5 s): Chrome auf Android kann vor dem Herunterladen nachfragen, und eine
+  // grosse Datei liest es erst danach
+  setTimeout(() => URL.revokeObjectURL(a.href), 120000);
 }
 let letzterStatus = ["", null, false];
 function status(text = letzterStatus[0], anteil = null, fehler = false) {
@@ -241,15 +243,23 @@ function zusammenstellungAnsicht(v) {
       bestandStelle(pl, "orna", "ORNA", "konstellation", "per Zufall ziehen (wie in ORNA)", KONSTELLATIONEN)),
     el("div", { class: "stellen signatur" },
       el("label", { class: "regler schalter stelle" }, el("input", { type: "checkbox", id: "zusammenstellung-signatur", checked: pl.signatur !== false, onchange: (ev) => { pl.signatur = ev.target.checked; zeigeVorschlag30(); } }),
-        "Signatur: Intro, Outro und Signet ornament.lab")),
+        "Signatur: Intro, Outro und Signet ornament.lab"),
+      el("label", { class: "regler schalter stelle" }, el("input", { type: "checkbox", id: "zusammenstellung-mastering", checked: pl.mastering !== false, onchange: (ev) => { pl.mastering = ev.target.checked; } }),
+        "Tonspur fertig mischen (−14 LUFS, Kompressor, Limiter)")),
     el("small", { class: "hinweis", text: pl.signatur !== false
       ? `Beide Bestände wahlweise, jev sieht sie nicht. Mit Signatur ${pl.zettel ? "eröffnet ein Intro den Film: ein Lichtwürfel entfaltet sich zum Raster des Zettelkastens, der Zettel wird gezogen und zeigt Leitsatz und Verweise, ein Scratch führt in die Animation" : "beginnt der Film gleich mit der Animation (mit einem Zettel käme das Intro davor)"}; ${pl.orna ? "danach faltet sich die letzte Sequenz zur Kugel, die zum Rad von ORNA wird und die Konstellation zeigt" : "ohne ORNA-Konstellation gibt es kein Outro"}; am Schluss wird aus der Kugel das Signet ornament.lab, mit Gefrickel im Ton. Die ${zahl(haupt)} Sekunden der Animation bleiben, der Film dauert ${zahl(Math.round(signaturZeiten({ intro: Boolean(pl.zettel), outro: Boolean(pl.orna), haupt }).gesamt * 10) / 10)} s. Der Zettel steht auch als Titel in den Szenen von PHORMA I und II; wählt jev den Zerfall (The Fictory), folgt er der Regel der Konstellation.`
       : "Beide wahlweise, jev sieht sie nicht: Der Zettel eröffnet den Film als Karte mit seinem Leitsatz und steht als Titel in den Szenen von PHORMA I und II. Die ORNA-Konstellation schliesst ihn als Karte mit ihrer Operationsregel; wählt jev den Zerfall (The Fictory), folgt er dieser Regel." }),
     el("div", { class: "stellen film" },
       el("label", { class: "regler schalter stelle" }, el("input", { type: "checkbox", id: "zusammenstellung-lebendig", checked: pl.lebendig !== false && gpuDa(), disabled: !gpuDa(), onchange: (ev) => { pl.lebendig = ev.target.checked; } }),
         gpuDa() ? "lebendige Effekte" : "lebendige Effekte (dieser Browser hat kein WebGL 2: Standbilder mit Kamera)"),
-      regler({ id: "zusammenstellung-bewegung", name: "Bewegung (Kamera über jedem Bild, 0 = ruhig)", art: "zahl", min: 0, max: 1, schritt: 0.05 }, pl.bewegung ?? ZS.BEWEGUNG, (v) => { pl.bewegung = v; })),
-    el("small", { class: "hinweis", text: `Alle Effekte der Zusammenstellung sind lebendig: ${LEBENDIG.map(opName).join(", ")} rechnet die Grafikkarte in jedem der 900 Bilder neu, die Lautstärke moduliert Bild für Bild; die Szenen von PHORMA III (Gewebe, Irrfahrt, Lichtwürfel, Traube) laufen auf ihrer eigenen Bühne im Takt des Klangs weiter, die von PHORMA I und II und der Zerfall (The Fictory) ab dem Auftritt ihrer Stationen. Dieselben Schalter stehen danach unter «Nacheinander».` }),
+      regler({ id: "zusammenstellung-bewegung", name: "Bewegung (Kamera über jedem Bild, 0 = ruhig)", art: "zahl", min: 0, max: 1, schritt: 0.05 }, pl.bewegung ?? ZS.BEWEGUNG, (v) => { pl.bewegung = v; }),
+      // das Format (0.1.37): das Material wird zuerst eingepasst, Abschnitte, Karten, Signatur und Film entstehen darin
+      el("label", { class: "regler stelle" }, el("span", { text: "Format" }),
+        el("select", { id: "zusammenstellung-format", onchange: (ev) => { pl.format = ev.target.value; zeigeVorschlag30(); } },
+          el("option", { value: "material", selected: !pl.format || pl.format === "material", text: "wie das Material" }),
+          ...Object.entries(ZS.FORMATE).map(([k, f]) => el("option", { value: k, selected: pl.format === k, text: f.name }))))),
+    pl.format && pl.format !== "material" ? el("small", { class: "hinweis", id: "zusammenstellung-format-hinweis", text: `Format ${ZS.FORMATE[pl.format]?.name ?? pl.format}: das Material wird mittig in das Seitenverhältnis eingepasst (Ausschnitt, kein Rand, keine Verzerrung), Abschnitte, Karten und Signatur entstehen darin; längste Seite des Films ${S.film.seite} px.` }) : null,
+    el("small", { class: "hinweis", text: `Alle Effekte der Zusammenstellung sind lebendig: ${LEBENDIG.filter((id) => !R.hole(id).ausgemustert).map(opName).join(", ")} rechnet die Grafikkarte in jedem der 900 Bilder neu, die Lautstärke moduliert Bild für Bild; das Gewebe von PHORMA III läuft auf seiner eigenen Bühne im Takt des Klangs weiter, die von PHORMA I und II und der Zerfall (The Fictory) ab dem Auftritt ihrer Stationen. Dieselben Schalter stehen danach unter «Nacheinander».` }),
     video ? el("small", { class: "hinweis", text: `Aus dem Video: jeder Abschnitt nimmt das Standbild seiner Zeit (${v.messung.videoBilder.length} Standbilder), so folgt der Film dem Video. Der Aufbau gilt darum nicht.` }) : null,
     el("small", { class: "hinweis", id: "zusammenstellung-plan", text: `${video ? "Abschnitte nach dem Video" : kurzname(AUFBAU[pl.aufbau])}, ${FILM_UEBERGAENGE[pl.uebergang]}. Klang: ${pl.klang.map((k) => kurzname(KLANG_EFFEKTE[k])).join(" → ")}. Bild: ${aktiv.length ? aktiv.map((a) => `${kurzname(BILD_EFFEKTE[a.b])} ${zahl(a.dauer)} s`).join(" → ") : "kein Abschnitt an"}${aus ? ` (${aus} von ${pl.bild.length} aus)` : ""}; ${zahl(haupt)} s Animation, ${aktiv.map((a) => ZS.variantenFuer(a.dauer)).reduce((x, y) => x + y, 0)} Varianten (zwei je Sekunde). ${pl.uebergang === "film.schnitt" ? "Im Takt der Anschläge bekommt ein längerer Abschnitt mehr Stationen; ohne Takt hält jede Station so lange, dass der Abschnitt seine Dauer hat." : "Ohne Takt hält jede Station so lange, dass der Abschnitt seine Dauer hat; im Takt der Anschläge bekommt ein längerer Abschnitt mehr Stationen."}` }),
     el("div", { class: "aktionen" },
@@ -277,7 +287,7 @@ function bestandStelle(pl, feld, name, wahlName, ziehenText, optionen) {
 }
 function neueZusammenstellung(antworten, jev, alt = null) {
   // neu gezogen wird, was jev oder der Zufall wählt; Bestände und Filmeinstellungen bleiben, wie der Mensch sie geschaltet hat
-  return { antworten, jev, plan: { ...ZS.zusammenstellen(antworten, neuerStartwert()), zettel: alt?.zettel ?? null, orna: alt?.orna ?? null, lebendig: alt?.lebendig ?? true, bewegung: alt?.bewegung ?? ZS.BEWEGUNG, signatur: alt?.signatur ?? true, abschnitte: alt?.abschnitte ?? ZS.standardAbschnitte() }, geaendert: new Set() };
+  return { antworten, jev, plan: { ...ZS.zusammenstellen(antworten, neuerStartwert()), zettel: alt?.zettel ?? null, orna: alt?.orna ?? null, lebendig: alt?.lebendig ?? true, bewegung: alt?.bewegung ?? ZS.BEWEGUNG, signatur: alt?.signatur ?? true, format: alt?.format ?? "material", abschnitte: alt?.abschnitte ?? ZS.standardAbschnitte() }, geaendert: new Set() };
 }
 async function zusammenstellungRechnen() {
   const v = S.vorschlag, z = v.zusammen;
@@ -1088,7 +1098,7 @@ function stationenAnsicht(e) {
       tonId && !f.takt ? el("div", { class: "aktionen" }, el("button", { class: "knopf klein leise", type: "button", onclick: () => halteAnKlang(liste, tonId), text: "Halten an den Klang anpassen" }),
         el("small", { text: "Ohne Takt läuft der Ton ab dem Anfang und endet mit dem Film." })) : null,
       el("label", { class: "regler schalter" }, el("input", { type: "checkbox", id: "lebendig", checked: f.lebendig, disabled: !gpuDa(), onchange: (ev) => { f.lebendig = ev.target.checked; rechnen(); } }),
-        `lebendige Effekte: ${LEBENDIG.map(opName).join(", ")} rechnet die Grafikkarte in jedem Bild neu${gpuDa() ? "" : " (dieser Browser hat kein WebGL 2)"}`),
+        `lebendige Effekte: ${LEBENDIG.filter((id) => !R.hole(id).ausgemustert).map(opName).join(", ")} rechnet die Grafikkarte in jedem Bild neu${gpuDa() ? "" : " (dieser Browser hat kein WebGL 2)"}`),
       zahlRegler("bewegung", "Bewegung (Kamera über jedem Bild, 0 = ruhig)", 0, 1, 0.05, f.bewegung, (v) => { const war = f.bewegung > 0; f.bewegung = v; if (war !== v > 0) zeigeBuehne(); }),
       f.bewegung > 0 && signale.length ? wahlRegler("bewegungSignal", "Zoom atmet mit", [{ wert: "", name: "nichts (nur Schweben)" }, ...signale.map((x) => ({ wert: x.id, name: x.titel }))], f.bewegungSignal, (v) => { f.bewegungSignal = v; }, true) : null,
       zahlRegler("seite", "Filmgrösse, längste Seite (px)", 320, 2048, 16, f.seite, (v) => { f.seite = v; })),
@@ -1181,12 +1191,23 @@ async function ketteStarten(c) {
 }
 
 // ---------- Projekt speichern und öffnen ----------
-function speichern() {
+async function speichern() {
+  if (S.laeuft) return status("Speichern geht, sobald die laufende Rechnung fertig ist (oder abgebrochen).", null, true);
   S.projekt.titel = $("titel").value.trim() || "Ohne Titel";
-  const bytes = packe(S.projekt, S.medien.dateien);
-  herunterladen(new Blob([bytes], { type: "application/zip" }), `${slug(S.projekt.titel)}${ENDUNG}`);
-  S.ungespeichert = false;
-  status(`Gespeichert: ${slug(S.projekt.titel)}${ENDUNG} (${(bytes.length / 1e6).toFixed(1)} MB, ${S.medien.dateien.size} Mediendateien).`);
+  const name = `${slug(S.projekt.titel)}${ENDUNG}`, knopf = $("speichern");
+  knopf.disabled = true;
+  try {
+    status("Projekt wird gepackt …", 0);
+    const blob = await packeBlob(S.projekt, S.medien.dateien, { melden: (a) => status("Projekt wird gepackt …", a) });
+    herunterladen(blob, name);
+    S.ungespeichert = false;
+    const gross = blob.size > HOECHSTENS ? ` Achtung: grösser als ${HOECHSTENS / 1024 / 1024} MB, das Lab öffnet es so nicht wieder.` : "";
+    status(`Gespeichert: ${name} (${(blob.size / 1e6).toFixed(1)} MB, ${S.medien.dateien.size} Mediendateien).${gross}`, null, Boolean(gross));
+  } catch (f) {
+    // bis Lab 0.1.37 blieb ein Fehler hier still: der Knopf tat einfach nichts
+    console.error("Projekt speichern:", f);
+    status(`Das Projekt liess sich nicht speichern: ${f?.message || f?.name || f}`, null, true);
+  } finally { knopf.disabled = false; }
 }
 async function oeffnen(datei) {
   status(`${datei.name} wird geöffnet …`);
@@ -1232,5 +1253,5 @@ $("titel").addEventListener("change", (ev) => { S.projekt.titel = ev.target.valu
 addEventListener("beforeunload", (ev) => { if (S.ungespeichert) { ev.preventDefault(); ev.returnValue = ""; } });
 
 alles();
-status(`ORNAMENT LAB ${P.LAB_VERSION}: ${R.alle().length} Operationen im Register.`);
-jevPruefen().then((z) => { if (!S.laeuft && letzterStatus[0]?.startsWith("ORNAMENT LAB")) status(`ORNAMENT LAB ${P.LAB_VERSION}: ${R.alle().length} Operationen im Register. jev live: ${z.bereit ? "bereit" : "nicht eingerichtet"}.`); zeigeVorschlaege(); });
+status(`ORNAMENT LAB ${P.LAB_VERSION}: ${R.alle().filter((o) => !o.ausgemustert).length} Operationen im Register (${R.alle().filter((o) => o.ausgemustert).length} ausgemustert).`);
+jevPruefen().then((z) => { if (!S.laeuft && letzterStatus[0]?.startsWith("ORNAMENT LAB")) status(`ORNAMENT LAB ${P.LAB_VERSION}: ${R.alle().filter((o) => !o.ausgemustert).length} Operationen im Register (${R.alle().filter((o) => o.ausgemustert).length} ausgemustert). jev live: ${z.bereit ? "bereit" : "nicht eingerichtet"}.`); zeigeVorschlaege(); });

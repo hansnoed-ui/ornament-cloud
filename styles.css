@@ -5,6 +5,7 @@
   --muted: #6b665e;
   --border: #e4e0d8;
   --accent: #c2410c;
+  --lab: #c2185b;   /* das Kästchen «Lab» im Menü (27. Oktober 2026, Wunsch: «in einer anderen farbe, vielleicht rosa … weil er aus der seite wegführt»); hell 5,9 : 1 auf Weiss */
   --hauptlink: #353b40;   /* die Hauptlinks oben links und die feine Linie darunter: im hellen Modus Anthrazit (Wunsch vom 2. Oktober 2026, 19:00 UTC) */
 
   --thumb-a: #e8d5c4;
@@ -24,26 +25,28 @@
   --bg-veil: rgba(248, 248, 246, 0.85); /* Schleier hinter dem Kopfbereich */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #171614;
-    --surface: #211f1c;
-    --text: #ece8e1;
-    --muted: #a39d93;
-    --border: #34312c;
-    --accent: #f08a5d;
-    --hauptlink: #ffd84d;   /* im dunklen Modus ein helles Sonnengelb */
+/* Dunkel ist der Standard (Wunsch vom 27. Oktober 2026: «ich möchte die website defaultmässig im dark mode»), unabhängig von der Einstellung des Geräts;
+   data-theme="light" auf <html> holt die hellen Werte oben zurück. */
+:root:not([data-theme="light"]) {
+  --bg: #171614;
+  --surface: #211f1c;
+  --text: #ece8e1;
+  --muted: #a39d93;
+  --border: #34312c;
+  --accent: #f08a5d;
+  --lab: #ffa3d1;   /* dunkel ein helles Rosa */
+  --hauptlink: #ffd84d;   /* im dunklen Modus ein helles Sonnengelb */
 
-    --thumb-a: #4a3a2e;
-    --thumb-b: #2e3f4a;
-    --thumb-c: #36422c;
-    --thumb-d: #45344a;
+  --thumb-a: #4a3a2e;
+  --thumb-b: #2e3f4a;
+  --thumb-c: #36422c;
+  --thumb-d: #45344a;
 
-    --bg-line-faint: #2d2c2a;
-    --bg-line-mid: #4b4a47;
-    --bg-line-strong: #c9c6c0;
-    --bg-veil: rgba(23, 22, 20, 0.85);
-  }
+  --bg-line-faint: #2d2c2a;
+  --bg-line-mid: #4b4a47;
+  --bg-line-strong: #c9c6c0;
+  --bg-veil: rgba(23, 22, 20, 0.85);
+  color-scheme: dark;
 }
 
 *,
@@ -399,9 +402,9 @@ h1 {
    und hat einen kräftigeren Rand; auf den Seiten darunter (z. B. ORNA unter «Apps») ebenfalls. */
 .menu {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));   /* seit 19. Oktober 2026 fünf Kästchen (dazu «Social») */
+  grid-template-columns: repeat(7, minmax(0, 1fr));   /* seit 19. Oktober 2026 fünf Kästchen (dazu «Social»), seit 27. Oktober 2026 sechs (dazu «Lab»), seit 31. Oktober 2026 sieben (dazu «Gamma») */
   gap: 8px;
-  width: 462px;
+  width: 646px;
   margin-top: 4px;
 }
 
@@ -449,6 +452,21 @@ h1 {
   outline-offset: 3px;
 }
 
+/* «Beta» (seit 28. Oktober 2026, vorher «Lab»): aufklappbar mit «Lab» und «Das 3. Rad»; beide führen aus der Seite weg (neues Fenster) und stehen deshalb in Rosa */
+.menu-auf { position: relative; display: grid; min-width: 0; }
+.menu-auf > summary { list-style: none; cursor: pointer; color: var(--lab); border-color: var(--lab); }
+.menu-auf > summary::-webkit-details-marker { display: none; }
+.menu-auf > summary:hover svg { color: var(--lab); }
+.menu-auf > summary:hover, .menu-auf[open] > summary { box-shadow: inset 0 0 0 1px var(--lab); }
+.menu-liste { position: absolute; top: calc(100% + 6px); right: 0; z-index: 40; display: grid; gap: 2px; min-width: 170px; padding: 6px; background: var(--text); border: 1px solid var(--text); border-radius: 12px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18); }   /* umgekehrt: hebt sich vom Grund ab */
+.menu-liste a { display: block; padding: 9px 12px; border-radius: 8px; color: var(--surface); font-family: inherit; font-size: 0.95rem; font-weight: 500; text-decoration: none; white-space: nowrap; }
+.menu-liste a::after { content: " ↗"; opacity: 0.7; }
+.menu-liste a:hover, .menu-liste a:focus-visible { background: color-mix(in srgb, var(--surface) 16%, transparent); outline: none; }
+/* «Gamma» (seit 31. Oktober 2026) führt wie «Beta» aus der Seite weg (neues Fenster) und steht deshalb auch in Rosa */
+.menu-item[target="_blank"] { color: var(--lab); border-color: var(--lab); }
+.menu-item[target="_blank"]:hover svg { color: var(--lab); }
+.menu-item[target="_blank"]:hover { box-shadow: inset 0 0 0 1px var(--lab); }
+
 /* Linien der gezeichneten Vorschauen: Breite in Bildschirmpixeln, unabhängig von der Grösse */
 .post-anim path,
 .post-anim circle {
@@ -463,23 +481,29 @@ h1 {
 @media (max-width: 760px) {
   .topbar { display: flex; flex-direction: column; align-items: stretch; margin-bottom: 24px; }
   .topbar > .divider { margin: 10px 0 18px; }
-  .menu { width: 100%; max-width: 520px; margin-top: 0; }
+  .menu { width: 100%; max-width: 620px; margin-top: 0; }
   .brand { margin-top: 0; }
   .seitenweg { margin-top: 0; }
 }
 
 /* seit 19. Oktober 2026 fünf Kästchen: schon ab 440 px Breite enger gesetzt, damit jeder Name ganz ins Kästchen passt (vorher ab 360 px) */
+/* seit 27. Oktober 2026 sechs Kästchen: knapp über 760 px steht das Menü noch neben den Hauptlinks, dort etwas schmaler, damit nichts überlappt */
+/* seit 31. Oktober 2026 sieben Kästchen: bis 940 px (vorher 840 px) schmaler gesetzt, 480 statt 492 px, Schrift 0,7 statt 0,8 rem */
+@media (min-width: 761px) and (max-width: 940px) {
+  .menu { width: 480px; gap: 5px; }
+  .menu-item { font-size: 0.7rem; }
+}
 @media (max-width: 440px) {
-  .menu { gap: 6px; }
-  .menu-item { padding: 8px 1px 6px; font-size: 0.8rem; letter-spacing: 0; }
+  .menu { gap: 4px; }   /* seit 31. Oktober 2026 (sieben Kästchen) 4 statt 6 px */
+  .menu-item { padding: 8px 1px 6px; font-size: 0.62rem; letter-spacing: 0; }   /* seit 27. Oktober 2026 sechs Kästchen: 0,72 statt 0,8 rem, seit 31. Oktober 2026 sieben: 0,62 */
   .menu-item svg { width: 24px; height: 24px; }
 }
 @media (max-width: 370px) {
-  .menu { gap: 4px; }
-  .menu-item { font-size: 0.75rem; }
+  .menu { gap: 3px; }   /* seit 27. Oktober 2026 (sechs Kästchen) 3 statt 4 px */
+  .menu-item { font-size: 0.53rem; }   /* seit 31. Oktober 2026 sieben Kästchen: 0,53 statt 0,66 rem */
 }
 @media (max-width: 335px) {
-  .menu-item { font-size: 0.7rem; }
+  .menu-item { font-size: 0.5rem; }   /* seit 27. Oktober 2026 sechs Kästchen: «Prompts» passt auf 320 px sonst nicht (0,58), seit 31. Oktober 2026 sieben: 0,5 */
 }
 
 /* News-Einträge */
