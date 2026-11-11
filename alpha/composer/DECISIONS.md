@@ -7,7 +7,7 @@ Hier steht, was Christian entschieden hat und wie er Klänge beurteilt hat, dami
 **Drums aus Grooves (Groove 0.1.0)**
 - Christian: «bringt drum n bass eigentlich immer den gleichen beat?» Ja, die Drums von DnB (und die Teile von Ornament) waren feste Zeilen. Vorschlag Groove-Generator, Christian: «ja».
 - Umgesetzt: `kern/grooves.js` mit fünf Familien (Two-Step, Halftime, Steppers, Jungle-Break, Rollend), Phrase über vier Takte, je Abschnitt eine Abwandlung und ein eigener Wirbel; Schalter «Drums aus Grooves» (an), Regler Familie, Dichte, Komplexität in der Drum-Spur. Einzelheiten in `GROOVES.md`. Gleiche Linie wie bei lucerne: Grooves sollen sich je Track unterscheiden.
-- Urteil steht aus (Hörproben 11.11.).
+- Urteil (11.11.): «ja, sehr gut». **gut** DnB Rollend, Two-Step, Jungle-Break, Steppers und Ornament Rollend; **geht** Ornament Halftime; DnB Halftime ohne Urteil. Der alte feste Beat war auch «gut»: die Familien behalten ihre Gewichte.
 
 **ornament.bienne, Phase 2 (Metrum) in kleinen Schritten**
 - Christian: «also jetzt bienne», nach dem Wunsch, langsam weiterzufahren. Phase 2 ist darum geteilt: a Taktlänge und Taktarten, b Tuplets, c Polymetrik, d Humanisierung, je mit Hörproben und Urteil.
