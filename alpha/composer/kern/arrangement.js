@@ -165,16 +165,16 @@ export function teileAus(defs, abschn) {
 }
 
 // Natur seit Natur 0.3.0 (10. November 2026): Ornament mit Delfinen und Kosmos, Drum and Bass mit Nachtwald und Magnetosphäre (Pulsar raus, Urteil 10.11.).
+// Seit 11. November 2026 je Stil höchstens zwei Naturschichten (Urteil: «die 4–5 Naturgeräusch-Spuren als Default sind zu viel»; sie belasteten
+// auch langsame Rechner beim Abspielen). Ornament ohne Gezeiten, Walchor, Vogel; Drum and Bass ohne Gezeiten, Insekten. Von Hand dazu bleibt möglich.
 // Synths: [Familie, Preset, Rolle, { pegel (dB zum Standard), regler }]. Seit Synth 0.2.0 (melodien.md) kommen bei Ornament und Drum and
 // Bass zur Schwebe zwei leise Schichten dazu: helle Spitzen (Spieldose, gedämpft) und unregelmässige Off-Beats in den Lücken der Drums.
 export const BESETZUNG = Object.freeze({
   // bassTeile: je Abschnitt eine eigene Art der Linie (seit Composer 0.3); Wind der Gezeiten zurückgenommen (Urteil: «etwas dominant»)
   ornament: { linie: "zyklus", wechsel: ["tabla", "darbuka", "zarb", "riq"], synths: [["shadow", "deepRoomDrone", "schwebe"], ["ice", "musicBoxFrost", "spitzen", { pegel: -7, regler: { spitzen: 30, klassik: 60 } }], ["velvet", "velvetRhodes", "offbeat", { pegel: 0, regler: { offbeat: 30, ruhe: 50 } }]],
     bassTeile: { aufbau: "lang", haupt: "zyklus", gas: "kick", stocken: "riff", atmen: "lang", wiederfinden: "riff", outro: "lang" },
-    natur: [["gezeiten", { verwandlung: 30, wellen: 70, wind: 8 }, { pegel: 4 }], ["walchor", { verwandlung: 40 }, { pegel: 3 }], ["vogel", { dichte: 30 }, { pegel: 3 }],
-      ["delfine", { variante: "Delfine singen" }, { pegel: 1 }], ["kosmos", { variante: "Tiefer Raum" }, { pegel: -2 }]] },
-  dnb: { mix: [["orient", "darbuka"]], linie: "lang", synths: [["shadow", "deepRoomDrone", "schwebe"], ["ice", "musicBoxFrost", "spitzen", { pegel: -6, regler: { spitzen: 45, klassik: 60 } }], ["velvet", "velvetRhodes", "offbeat", { pegel: 0, regler: { offbeat: 30 } }]], natur: [["gezeiten", { verwandlung: 40, tonalitaet: 40 }], ["insekten", { verwandlung: 60, tonalitaet: 0 }],
-    ["nachtwald", { variante: "Teich bei Nacht" }], ["kosmos", { variante: "Magnetosphäre" }, { pegel: -3 }]] },
+    natur: [["delfine", { variante: "Delfine singen" }, { pegel: 1 }], ["kosmos", { variante: "Tiefer Raum" }, { pegel: -2 }]] },
+  dnb: { mix: [["orient", "darbuka"]], linie: "lang", synths: [["shadow", "deepRoomDrone", "schwebe"], ["ice", "musicBoxFrost", "spitzen", { pegel: -6, regler: { spitzen: 45, klassik: 60 } }], ["velvet", "velvetRhodes", "offbeat", { pegel: 0, regler: { offbeat: 30 } }]], natur: [["nachtwald", { variante: "Teich bei Nacht" }], ["kosmos", { variante: "Magnetosphäre" }, { pegel: -3 }]] },
   hiphop: { mix: [["orient", "darbuka"]], linie: "kick", synths: [["tape", "amberMemory", "schwebe"]], natur: [["regen", {}], ["walchor", { verwandlung: 50 }]] },
   pop: { mix: [["persisch", "zarb"]], linie: "zyklus", synths: [["darkpop", "darkBrass", "schwebe"]], natur: [["vogel", { dichte: 25 }]] },
   minimal: { mix: [["ecm", "udu"]], linie: "zyklus", synths: [["shadow", "deepRoomDrone", "schwebe"]], natur: [["regen", { verwandlung: 30 }], ["feuer", { variante: "Glut" }]] },

@@ -472,6 +472,7 @@ test("Natur 0.3.0: Delfine, Nachtwald, Kosmos klingen und sind reproduzierbar; d
     gleich(flaechenSpurRechnen({ ...q, erzeuger: "natur@0.3.0" }, R, {}).kanaele[0], flaechenSpurRechnen({ ...q, erzeuger: "natur@0.2.0" }, R, {}).kanaele[0], `${k} 0.3.0 = 0.2.0`);
   }
   assert.ok(A.BESETZUNG.ornament.natur.some(([s]) => s === "kosmos") && A.BESETZUNG.dnb.natur.some(([s]) => s === "nachtwald"));
+  for (const [k, b] of Object.entries(A.BESETZUNG)) assert.ok((b.natur ?? []).length <= 2, `${k}: höchstens zwei Naturschichten im Default`);
   assert.equal(A.funktionVon({ flaeche: true, stimme: "delfine" }), "naturklang");
   assert.equal(A.funktionVon({ flaeche: true, stimme: "kosmos" }), "natur");
 });
