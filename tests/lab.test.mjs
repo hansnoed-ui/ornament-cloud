@@ -665,7 +665,7 @@ test("Beat aus Bild rechnen: Stereo in genau der Dauer, Tempo in der Stufe, repr
   // seit 0.1.45 fertig gemischt: −14 LUFS, keine Spitze über −1 dBFS
   assert.ok(spitze > 0.2 && spitze <= 0.892, `höchstens −1 dBFS: ${spitze}`);
   assert.ok(Math.abs(knoten.protokoll.lautheit + 14) < 0.5, `−14 LUFS: ${knoten.protokoll.lautheit}`);
-  const pl = knoten.protokoll.plan, [lo, hi] = pl.groove === "dnb" ? [170, 176] : (await lab("kern/beat.js")).TEMPI[pl.tempo];
+  const pl = knoten.protokoll.plan, [lo, hi] = ["dnb", "jungle"].includes(pl.groove) ? [170, 176] : (await lab("kern/beat.js")).TEMPI[pl.tempo];
   assert.ok(knoten.protokoll.bpm >= lo - 10 && knoten.protokoll.bpm <= hi + 10, `Tempo ${knoten.protokoll.bpm} in ${pl.tempo}`);
   assert.equal(folge.daten.art, "rhythmus"); assert.equal(folge.daten.raster, 16);
   assert.ok(folge.daten.ereignisse.length > 4 && folge.daten.ereignisse.every((x, i, a) => x.t >= 0 && x.t < 6 && (i === 0 || x.t >= a[i - 1].t)));
@@ -2282,4 +2282,26 @@ test("Pulslinien, Licht und Verzerrung sind ausgemustert, das Tuch kein Effekt m
   const b = { width: 40, height: 30, data: new Uint8ClampedArray(40 * 30 * 4).fill(120) };
   const x = await r.hole("lab.licht").ausfuehren({ bild: b }, { ...standardParameter(r.hole("lab.licht")), seite: 40 }, { seed: 1 });
   assert.equal(x.ausgaben[0].typ, "IMAGE");
+});
+
+test("Beat 0.5.0 (Lab 0.1.48): Jungle, dunkles Schlagzeug, Sub-Bass, Jazzlinie und Akkorde als weitere Wahl; der Standard nach der Playlist bleibt", async () => {
+  const B = await lab("kern/beat.js"), { BEAT_FRAGEN } = await lab("jev/fragen.js");
+  assert.equal(B.BEAT_VERSION, "0.5.0");
+  for (const [frage, wert] of [["groove", "jungle"], ["kit", "jungle"], ["bass", "sub"], ["melodie", "linie"], ["melodie", "akkorde"]]) assert.ok(Object.hasOwn(BEAT_FRAGEN[frage].katalog, wert), `${frage}: ${wert}`);
+  const php = readFileSync(new URL("alpha/lab/jev/wahl.php", root), "utf8");
+  for (const w of ["'jungle'", "'sub'", "'linie'", "'akkorde'"]) assert.ok(php.includes(w), `wahl.php kennt ${w}`);
+  // ohne starke Regel bleibt der Standard (Drum and Bass, Jazz-Schlagzeug, Kontrabass)
+  const ohne = B.regelPlan({ helligkeit: "mittel", kontrast: "mittel", farbigkeit: "gedaempft", farbton: "neutral", detail: "mittel", schwerpunkt: "mitte", symmetrie: "asymmetrisch", bewegung: "still" }).plan;
+  assert.deepEqual([ohne.groove, ohne.kit, ohne.bass], ["dnb", "jazz", "kontrabass"]);
+  const m1 = B.beatMessen([bild()]);
+  const js = B.beatRechnen({ messung: m1, plan: { tempo: "mittel", groove: "jungle", kit: "jungle", tonart: "dorisch", bass: "sub", melodie: "linie", verlauf: "wechselnd", flaeche: "sphaere" }, dauer: 6, grundton: 9, seed: 4 });
+  assert.ok(js.angaben.bpm >= 168 && js.angaben.bpm <= 178, `Jungle: ${js.angaben.bpm}`);
+  assert.ok(js.spuren[0].every(Number.isFinite) && js.spuren[1].every(Number.isFinite));
+  assert.ok(js.partitur.some((y) => y.stimme === "akkord") && js.partitur.some((y) => y.stimme === "melodie"), "Akkorde und Linie");
+  // der Sub-Bass trägt viel Energie unter 120 Hz
+  const tiefpass = (x, hz) => { const c = 1 - Math.exp((-2 * Math.PI * hz) / js.rate), y = new Float32Array(x.length); let a = 0; for (let i = 0; i < x.length; i++) { a += c * (x[i] - a); y[i] = a; } return y; };
+  const leistung = (x) => x.reduce((s, v) => s + v * v, 0), gesamt = leistung(js.spuren[0]);
+  assert.ok(leistung(tiefpass(tiefpass(js.spuren[0], 120), 120)) / gesamt > 0.15, "tief");
+  const ak = B.beatRechnen({ messung: m1, plan: { tempo: "mittel", groove: "gerade", kit: "weich", tonart: "dur", bass: "keiner", melodie: "akkorde", verlauf: "gleich", flaeche: "keine" }, dauer: 4, grundton: 0, seed: 2 });
+  assert.ok(ak.partitur.some((y) => y.stimme === "akkord") && !ak.partitur.some((y) => y.stimme === "melodie"), "Akkorde ohne Melodie");
 });
