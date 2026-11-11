@@ -13,7 +13,7 @@ synthetisch. Christians eigene Aufnahmen können später über die Klangsammlung
 |---|---|---|
 | 1 | **Harmonik 0.1.0** (`kern/harmonik.js`): Vokabular, Modi, Stimmführung, harmonischer Rhythmus, Spannung, Generator, Voicings für Fläche, Klavier, Gitarre und Bass; dazu `lydisch`/`mixolydisch` in `LEITERN` und Noten als Ereignisse in `erzeugen.js` | fertig |
 | 2 | **Metrum** (`kern/metrum.js`): zentrale Taktlänge `taktSek(tempo, taktart)` statt `240 / bpm`, Taktarten 3/4–12/8, Gruppierungen, echte Tuplets (rationale Zeiten), Polymetrik mit geplanten Treffpunkten, Humanisierung als Profil je Rolle (mit Korrelation) | fertig (a Taktarten, b Tuplets, c Polymetrik, d Humanisierung) |
-| 3 | **Instrumente** als Proben: Gitarre (sechs Saiten auf der Karplus-Strong-Saite), E-Bass und Muted Bass (Bass 0.2.0), Drums 0.2.0 (Ghost-Stufen, Cross-Stick, Besen), Klavier (akustisch, präpariert), Streicherfläche, dunkler Mono-Lead | a Gitarre, b Bass fertig; Drums, Klavier, Streicher, Lead offen |
+| 3 | **Instrumente** als Proben: Gitarre (sechs Saiten auf der Karplus-Strong-Saite), E-Bass und Muted Bass (Bass 0.2.0), Drums 0.2.0 (Ghost-Stufen, Cross-Stick, Besen), Klavier (akustisch, präpariert), Streicherfläche, dunkler Mono-Lead | a Gitarre, b Bass fertig; **c Drums 0.2.0 in Arbeit**; Klavier, Streicher, Lead offen |
 | 4 | **Interlocking** (Verteiler, Eigenständigkeit und Zusammengehörigkeit), **Echo 0.2.0** und Echos als Ereignisse im Plan | offen |
 | 5 | **`kern/bienne.js`**: Profil, Ausprägung *Schichtung*, ganzer Track, drei Startwerte, Oberfläche | offen |
 
@@ -232,3 +232,13 @@ Verzerrung mit Mittenbetonung; Varianten Post-Rock, Fuzz, angeraut). Beide bauen
 Startwert; dazu Drums und leise die Schwellen-Gitarre.
 
 Urteil (11.11.): gut Muted Schaumstoff, Muted Filz tief, Fretless; geht verzerrt angeraut; weg verzerrt Post-Rock, E-Bass Plektrum.
+
+## Drums 0.2.0 (Phase 3, Schritt c)
+
+`erzeuger/drums-0.2.0.js`: alle Stimmen aus 0.1.0 als dieselben Objekte, neu **fell** (akustische Snare; leise Schläge verschieben den
+Klang zum Teppich, nicht nur den Pegel; Varianten Jazz, trocken, hoch, tief offen), **kreuz** (Cross-Stick: Holzklick und hohler Kessel)
+und **besen** (Schlag und «wisch», ein an- und abschwellender Wischer). Musterzeilen kennen die Ghost-Stufen `g1` (0,14), `g2` (0,24),
+`g3` (0,38) neben `g` (0,32).
+
+`node tools/bienne-hoerproben.mjs drums <ziel>`: sechs Grooves (Besen mit Swing 4/4, Ghost-Stufen 7/8, Cross-Stick-Ballade 5/4, Snare
+trocken 12/8, Besen hell 6/8, Cross-Stick und Snare im Wechsel 11/8), je mit einem Bass mit Urteil «gut».

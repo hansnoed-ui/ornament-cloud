@@ -385,4 +385,48 @@ if (modus === "harmonik") {
     liste.push({ datei: `${name}.mp3`, ...pr, sekunden: Math.round(TK * ME.taktSek(pr.bpm, a)) });
   }
   writeFileSync(join(ziel, "bass.json"), JSON.stringify(liste, null, 1));
-} else console.log("node tools/bienne-hoerproben.mjs harmonik|metrum|tuplets|poly|mensch|gitarre|bass <ziel-ordner> [seed]");
+} else if (modus === "drums") {
+  // Phase 3, Schritt c: Drums 0.2.0. Sechs Grooves mit den neuen Stimmen (akustische Snare mit Ghost-Stufen, Cross-Stick, Besen), jede
+  // Probe mit eigener Taktart, eigenem Tempo, Modus und Startwert. Dazu je ein Bass, den Christian gut fand, und leise Rhodes-Akkorde.
+  const ME = await imp("composer/kern/metrum.js");
+  mkdirSync(ziel, { recursive: true });
+  const liste = [];
+  // Zeilen: «.» Pause; x/x!/x_ Schlag; g1 g2 g3 Ghost-Stufen; «rand» Rimshot; «wisch» Wischer (Besen)
+  const PROBEN = [
+    { key: "besen-jazz", taktart: "4/4", bpm: 132, swing: 0.28, modus: "dorisch", zentrum: 5, bass: ["ebass", "Fretless"], text: "Besen «Jazz» mit Swing: Wischer auf 1 und 3, Schläge auf 2 und 4, Ride darüber (4/4, F dorisch)",
+      spuren: [["besen", "Jazz", ["wisch . . . x . . . wisch . . . x! . . g", "wisch . . . x . . g wisch . . . x! . . ."], -4], ["ride", null, ["x . . x_ x . . x_ x . . x_ x . . x_"], -16], ["kick", null, ["g . . . . . . . g . . . . . . ."], -12]] },
+    { key: "fell-ghost", taktart: "7/8", bpm: 100, swing: 0, modus: "aeolisch", zentrum: 11, bass: ["gedaempft", "Filz tief"], text: "akustische Snare «hoch» mit Ghost-Stufen g1 g2 g3 zwischen den Backbeats (7/8, H äolisch)",
+      spuren: [["fell", "hoch", [". g1 . g2 x! . g1 g3 . g1 . . g2 g1", ". g1 g2 . x! . g1 . g3 g1 . g2 x_ g1"], -3], ["kick", null, ["x! . . . . . . . x . . . . ."], -6], ["hat", null, ["x . x_ . x . x_ . x . x_ . x_ ."], -16]] },
+    { key: "kreuz-ballade", taktart: "5/4", bpm: 72, swing: 0, modus: "lydisch", zentrum: 2, bass: ["ebass", "Fretless"], text: "Cross-Stick «Holz» als ruhige Ballade, Shaker in Achteln (5/4, D lydisch)",
+      spuren: [["kreuz", "Holz", [". . . . . . x . . . . . . . . . x . . ."], -5], ["kick", null, ["x . . . . . . . . . . . x_ . . . . . . ."], -8], ["shaker", null, ["x_ . x . x_ . x . x_ . x . x_ . x . x_ . x ."], -18]] },
+    { key: "fell-trocken", taktart: "12/8", bpm: 66, swing: 0, modus: "phrygisch", zentrum: 9, bass: ["gedaempft", "Schaumstoff"], text: "akustische Snare «trocken» (abgeklebt): schwerer 12/8 mit Rimshot auf der Vier und Ghosts davor (12/8, A phrygisch)",
+      spuren: [["fell", "trocken", [". . . . . . x! . . . . g2 . . . . g1 . rand . . . g3 .", ". . . . . . x! . . g1 . g2 . . . . g1 . rand . g2 . g3 g1"], -3], ["kick", null, ["x! . . . . . . . . . . . x . . . x_ . . . . . . ."], -6], ["ride", null, ["x . . . x_ . x . . . x_ . x . . . x_ . x . . . x_ ."], -18]] },
+    { key: "besen-hell", taktart: "6/8", bpm: 84, swing: 0, modus: "mixolydisch", zentrum: 7, bass: ["gedaempft", "Schaumstoff"], text: "Besen «hell»: lange Wischer über jede Dreiergruppe, leichte Schläge auf der Zwei (6/8, G mixolydisch)",
+      spuren: [["besen", "hell", ["wisch . . . . . wisch . . . . .", "wisch . . . . . wisch . . . x_ ."], -5], ["besen", "dunkel", [". . . . . . x . . . . .", ". . . . . . x! . . . . g"], -8], ["kick", null, ["x_ . . . . . . . . . . ."], -12]] },
+    { key: "fell-kreuz-11", taktart: "11/8", bpm: 96, swing: 0, modus: "dorisch", zentrum: 4, bass: ["gedaempft", "Filz tief"], text: "akustische Snare «tief offen» und Cross-Stick im Wechsel: Takt 1–4 Cross-Stick, 5–8 Snare mit Ghosts (11/8, E dorisch)",
+      spuren: [["kreuz", "tief", [". . . . . . x . . . . . . . . . . . x . . .", ". . . . . . x . . . . . . . . . . . x . . .", ". . . . . . x . . . . . . . . . . . x . . .", ". . . . . . x . . . . . . . . . . . x . x_ .", ". . . . . . . . . . . . . . . . . . . . . .", ". . . . . . . . . . . . . . . . . . . . . .", ". . . . . . . . . . . . . . . . . . . . . .", ". . . . . . . . . . . . . . . . . . . . . ."], -5],
+        ["fell", "tief offen", [". . . . . . . . . . . . . . . . . . . . . .", ". . . . . . . . . . . . . . . . . . . . . .", ". . . . . . . . . . . . . . . . . . . . . .", ". . . . . . . . . . . . . . . . . . . . . .", ". g1 . . g2 . x! . g1 . g2 . . g1 . g3 . . x! . g2 g1", ". g1 . g2 . . x! . . g1 g2 . . g1 g2 . . . x! g1 g3 .", ". g1 . . g2 . x! . g1 . g2 . . g1 . g3 . . x! . g2 g1", ". g2 . g1 . g3 x! . g1 g2 . g1 g3 . g2 g1 x_ g2 x! g3 x x!"], -3],
+        ["kick", null, ["x! . . . . . . . . . . . x . . . . . . . . ."], -6], ["hat", null, ["x . x_ . x_ . x . x_ . x_ . x . x_ . x_ . x . x_ ."], -17]] },
+  ];
+  for (const [k, pr] of PROBEN.entries()) {
+    const TK = 8, a = ME.taktartLesen(pr.taktart), n = ME.schritte(a), anf = ME.gruppenAnfaenge(a), sd = seed * 2000 + k * 13 + 3;
+    for (const [, , zeilen] of pr.spuren) for (const z of zeilen) if (z.trim().split(/\s+/).length !== n) throw new Error(`${pr.key}: Zeile mit ${z.trim().split(/\s+/).length} statt ${n} Schritten`);
+    const v = H.verlaufErzeugen({ zentrum: pr.zentrum, modus: pr.modus, seed: sd, abschnitte: [{ takte: 4, kurve: "steigt", hoehe: 0.5 }, { takte: 4, kurve: "plateau", hoehe: 0.6 }], bruch: 35, wandel: 45, wiederkehr: 55, statementTakte: 4 });
+    const rhodes = H.voicingsFuer(v.ereignisse, "klavier", { bruch: 35, seed: sd, zentrum: pr.zentrum, modus: pr.modus });
+    const bassV = H.voicingsFuer(v.ereignisse, "bass", { bruch: 35, seed: sd, zentrum: pr.zentrum, modus: pr.modus });
+    const bn = [];
+    for (let b = 0; b < TK; b++) anf.forEach((s, j) => { const t = b + s / n, mm = bassV.find((x) => t >= x.t - 1e-6 && t < x.t + x.d - 1e-6)?.midi ?? []; if (mm.length) bn.push({ t, d: ((anf[j + 1] ?? n) - s) / n * 0.85, midi: Math.min(...mm) + (j === 2 ? 7 : 0), staerke: j ? 0.7 : 0.9 }); });
+    const p = PR.neuesProjekt({ rate: RATE }); p.kammerton = 440;
+    const spur = (q, opt) => { q = { anzahl: TK + 1, bpm: pr.bpm, taktart: pr.taktart, kammerton: 440, seed: sd, ...q }; const sp = PR.erzeugteSpurDazu(p, q, opt); return { id: sp.id, kanaele: spurRechnen(q, RATE).kanaele }; };
+    const rolle = (st) => (st === "kick" ? "kick" : st === "hat" || st === "ride" ? "hat" : st === "shaker" ? "perkussion" : "snare");
+    const spuren = pr.spuren.map(([st, variante, takte, pegel], j) => spur({ erzeuger: "drums@0.2.0", stimme: st, werte: werteVon("drums@0.2.0", st, variante ?? undefined), takte, anzahl: TK, swing: pr.swing, versatz: 0, mensch: { rolle: rolle(st), seed: sd + j, gemeinsamSeed: sd } },
+      { name: `${st}${variante ? ` · ${variante}` : ""}`, typ: "drums", pegel, pan: st === "ride" ? 0.25 : st === "shaker" ? -0.3 : st === "kreuz" ? -0.08 : 0, raum: st === "kick" ? null : { anteil: 18, nachhall: 1.5 } }));
+    spuren.push(spur({ erzeuger: "bass@0.2.0", stimme: pr.bass[0], werte: werteVon("bass@0.2.0", pr.bass[0], pr.bass[1]), noten: bn, mensch: { rolle: "bass", seed: sd + 20, gemeinsamSeed: sd } }, { name: `Bass · ${pr.bass[1]}`, typ: "bass", pegel: -7 }));
+    spuren.push(spur({ erzeuger: "synth@0.2.0", stimme: "velvet", werte: { patch: "velvetRhodes" }, noten: noten(rhodes, { neuJeTakt: true, staerke: 0.5, auftakt: true }), mensch: { rolle: "tasten", seed: sd + 21, gemeinsamSeed: sd } }, { name: "Rhodes", typ: "synth", pegel: -15, raum: { anteil: 24, nachhall: 2.2 } }));
+    const name = `drums-${pr.key}`;
+    console.log(pr.text);
+    speichern(join(ziel, `${name}.wav`), await mischen(p, spuren));
+    liste.push({ datei: `${name}.mp3`, key: pr.key, taktart: pr.taktart, bpm: pr.bpm, modus: pr.modus, text: pr.text, sekunden: Math.round(TK * ME.taktSek(pr.bpm, a)), spuren: pr.spuren.map(([st, va, z]) => ({ stimme: st, variante: va, zeilen: z })) });
+  }
+  writeFileSync(join(ziel, "drums.json"), JSON.stringify(liste, null, 1));
+} else console.log("node tools/bienne-hoerproben.mjs harmonik|metrum|tuplets|poly|mensch|gitarre|bass|drums <ziel-ordner> [seed]");

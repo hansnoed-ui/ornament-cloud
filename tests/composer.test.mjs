@@ -1080,3 +1080,18 @@ test("Bass 0.2.0: alte Stimmen dieselben Objekte, Muted kurz, verzerrt mit saube
   const z = sv("bass@0.2.0", "verzerrt"), [zL] = z.rechne(std(z), 48000, { frequenz: 55, dauer: 1, staerke: 0.8, seed: 2 });
   assert.ok(zL.every(Number.isFinite) && rms(zL, 0.1, 0.5) > 0.05);
 });
+
+test("Drums 0.2.0: alte Stimmen gleich, Ghost-Stufen in Zeilen, Ghost klingt anders, Besen wischt", async () => {
+  const { stimmeVon: sv } = await c("erzeuger/register.js"), { taktLesen } = await c("kern/muster.js");
+  for (const k of ["kick", "snare", "clap", "hat", "offen", "rim", "tom", "shaker", "ride"]) assert.equal(sv("drums@0.2.0", k), sv("drums@0.1.0", k));
+  assert.deepEqual(taktLesen("g1 g2 g3 g").map((s) => s.staerke), [0.14, 0.24, 0.38, 0.32]);
+  const std = (st) => Object.fromEntries(st.parameter.map((p) => [p.key, p.std]));
+  // Anteil der Höhen über 3 kHz: beim Ghost grösser als beim vollen Schlag (Teppich statt Fell)
+  const fell = sv("drums@0.2.0", "fell"), hoehen = ([L]) => { let a = 0, d = 0; for (let i = 1; i < L.length; i++) { a += (L[i] - L[i - 1]) ** 2; d += L[i] ** 2; } return a / d; };
+  assert.ok(hoehen(fell.rechne(std(fell), 48000, { staerke: 0.14, seed: 1 })) > hoehen(fell.rechne(std(fell), 48000, { staerke: 1, seed: 1 })));
+  const b = sv("drums@0.2.0", "besen"), [W] = b.rechne(std(b), 48000, { art: "wisch", staerke: 0.8, seed: 1 });
+  const rms = (s, a, z) => Math.sqrt(s.slice(Math.round(a * 48000), Math.round(z * 48000)).reduce((x, y) => x + y * y, 0) / ((z - a) * 48000));
+  assert.ok(rms(W, 0.2, 0.32) > 2 * rms(W, 0, 0.03), "Wischer schwillt an");
+  const kz = sv("drums@0.2.0", "kreuz"), [K] = kz.rechne(std(kz), 48000, { staerke: 0.8, seed: 1 });
+  assert.ok(K.every(Number.isFinite) && K.length < 48000 * 0.5);
+});
