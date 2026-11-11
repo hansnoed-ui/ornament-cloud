@@ -8,6 +8,7 @@ Hier steht, was Christian entschieden hat und wie er Klänge beurteilt hat, dami
 - Christian: «also jetzt bienne», nach dem Wunsch, langsam weiterzufahren. Phase 2 ist darum geteilt: a Taktlänge und Taktarten, b Tuplets, c Polymetrik, d Humanisierung, je mit Hörproben und Urteil.
 - Schritt a ändert nichts am Klang von 4/4 (`taktSek` = `240 / bpm`, geprüft).
 - Urteil zu den Hörproben (11.11.): **gut** 4/4, 7/8 (2+2+3), 12/8 (3+3+3+3), 11/8 (3+3+3+2); **geht** 5/4 (3+2), 6/8 (3+3); keine weg. «da ist gutes Zeug dabei zum Mitnehmen». Für `kern/bienne.js` (Phase 5): die vier guten Taktarten bevorzugt, 5/4 und 6/8 seltener.
+- Urteil Polymetrik (11.11.): **gut** 11/8 Bass-Riff in 4/4 («sehr cooles Bassriff»), 7/8 Rimshot in Fünfachteln («nice»); **geht** 4/4 Rhodes-Motiv 3 gegen 4 («nice. Melodie-Sound sehr schlecht, und die Melodie zu langweilig») – die Polymetrik trägt, das hohe Rhodes-Motiv (eine Oktave hoch, drei Akkordtöne absteigend) nicht. Für Melodien später eigener Klang (Phase 3: Mono-Lead) und mehr Bewegung.
 - Urteil Tuplets (11.11.): **gut** 4/4 (Achteltriolen, Bass in Halbe-Triolen), 7/8 (4 gegen 3), 11/8 (Quintole als Wirbel); **geht** 12/8 (Duolen, 2 gegen 3).
 - Nachgereichte Urteile Phase 1 (Hörseite speicherte vorher nicht): gut Äolisch, Dorisch, Mixolydisch, Phrygisch (je glatt und Bruch); geht Ionisch, Lydisch.
 
