@@ -207,4 +207,47 @@ if (modus === "harmonik") {
     liste.push({ datei: `${name}.mp3`, taktart, takte: TK, sekunden: sek, idee: id.text, zyklus: z.laenge, treffenAufEins: treffen, zeilen: z.zeilen });
   }
   writeFileSync(join(ziel, "poly.json"), JSON.stringify(liste, null, 1));
-} else console.log("node tools/bienne-hoerproben.mjs harmonik|metrum|tuplets|poly <ziel-ordner> [seed]");
+} else if (modus === "mensch") {
+  // Phase 2, Schritt d: Humanisierung je Rolle. Das Bass-Riff aus «poly» (11/8, Christian: «sehr cooles Bassriff») dreimal: starr,
+  // mit dem alten Zufall (jeder Schlag ±8 ms gewürfelt) und mit den Profilen (Bass hinter dem Schlag, Hi-Hat davor, Ensemble atmet).
+  const ME = await imp("composer/kern/metrum.js");
+  mkdirSync(ziel, { recursive: true });
+  const liste = [], taktart = "11/8", TK = 9, a = ME.taktartLesen(taktart), n = ME.schritte(a), anf = ME.gruppenAnfaenge(a), bet = ME.betonungen(a);
+  const reihe = (f) => Array.from({ length: n }, (_, i) => f(i) ?? ".").join(" ");
+  const kick = reihe((i) => { const k = anf.indexOf(i); return k >= 0 && k % 2 === 0 ? (k ? "x" : "x!") : null; });
+  const snare = reihe((i) => { const k = anf.indexOf(i); return k >= 0 && k % 2 === 1 ? "x!" : null; });
+  const ghost = reihe((i) => (i % 2 === 1 && i > 2 && !anf.includes(i + 1) && i % 4 === 3 ? "g" : null));
+  const hat = reihe((i) => (i % 2 ? null : bet[i] >= 0.75 ? "x" : "x_"));
+  const z = ME.zyklus("a . . . . . b . . . c . a . . .", a, TK);
+  const zentrum = 2, sm = seed * 10 + 3;
+  const v = H.verlaufErzeugen({ zentrum, modus: "dorisch", seed: sm, abschnitte: [{ takte: 4, kurve: "steigt", hoehe: 0.5 }, { takte: TK - 4, kurve: "plateau", hoehe: 0.55 }], bruch: 30, wandel: 40, wiederkehr: 60, statementTakte: 4 });
+  const rhodes = H.voicingsFuer(v.ereignisse, "klavier", { bruch: 30, seed: sm, zentrum, modus: "dorisch" });
+  const bassV = H.voicingsFuer(v.ereignisse, "bass", { bruch: 30, seed, zentrum, modus: "dorisch" });
+  const bei = (vs, t) => vs.find((x) => t >= x.t - 1e-6 && t < x.t + x.d - 1e-6)?.midi ?? [];
+  const ton = { a: 0, b: 7, c: 10 }, bassNoten = [];
+  z.ereignisse.forEach((e, k) => { const m = Math.min(...bei(bassV, e.t)), naechste = z.ereignisse[k + 1]?.t ?? TK; if (Number.isFinite(m)) bassNoten.push({ t: e.t, d: Math.max(0.03, Math.min(naechste - e.t, 4 / n) - 0.01), midi: m + ton[e.token], staerke: e.index === 0 ? 0.9 : 0.72 }); });
+  const FASSUNGEN = [
+    ["starr", "starr: jeder Schlag genau auf dem Raster", () => ({ menschlich: 0 })],
+    ["zufall", "alter Zufall: jeder Schlag einzeln ±8 ms gewürfelt", () => ({ menschlich: 8 })],
+    ["profil", "Profile je Rolle: Bass 11 ms hinter dem Schlag, Snare 7 ms, Hi-Hat 4 ms davor; die Abweichungen verlaufen langsam und das Ensemble atmet zusammen", (rolle, k) => ({ menschlich: 0, mensch: { rolle, seed: seed * 100 + k, gemeinsamSeed: seed, menge: 100 } })],
+  ];
+  for (const [key, text, art] of FASSUNGEN) {
+    const p = PR.neuesProjekt({ rate: RATE }); p.kammerton = 440;
+    const spur = (q, opt) => { q = { anzahl: TK + 1, bpm: BPM, taktart, kammerton: 440, seed, ...q }; const sp = PR.erzeugteSpurDazu(p, q, opt); return { id: sp.id, kanaele: spurRechnen(q, RATE).kanaele }; };
+    const drum = (stimme, zeile, rolle, k, opt) => spur({ erzeuger: "drums@0.1.0", stimme, werte: werteVon("drums@0.1.0", stimme), takte: [zeile], anzahl: TK, swing: 0, versatz: 0, ...art(rolle, k) }, opt);
+    const ohneMenschlich = (o) => { const { menschlich, ...r } = o; return r; };
+    const spuren = [
+      drum("kick", kick, "kick", 1, { name: "Kick", typ: "drums", pegel: -3 }),
+      drum("snare", snare, "snare", 2, { name: "Snare", typ: "drums", pegel: -6, raum: { anteil: 14, nachhall: 1.2 } }),
+      drum("snare", ghost, "ghost", 3, { name: "Ghost", typ: "drums", pegel: -16 }),
+      drum("hat", hat, "hat", 4, { name: "Hi-Hat", typ: "drums", pegel: -14, pan: 0.15 }),
+      spur({ erzeuger: "bass@0.1.0", stimme: "rund", werte: werteVon("bass@0.1.0", "rund", "weich"), noten: key === "zufall" ? bassNoten.map((x, i) => ({ ...x, versatz: ((Math.sin(i * 12.9898) * 43758.5453) % 1) * 8 })) : bassNoten, ...ohneMenschlich(art("bass", 5)) }, { name: "Bass", typ: "bass", pegel: -6 }),
+      spur({ erzeuger: "synth@0.2.0", stimme: "velvet", werte: { patch: "velvetRhodes" }, noten: noten(rhodes, { neuJeTakt: true, staerke: 0.5, auftakt: true }), ...ohneMenschlich(art("tasten", 6)) }, { name: "Rhodes", typ: "synth", pegel: -10, raum: { anteil: 22, nachhall: 2.2 } }),
+    ];
+    const name = `mensch-11-8-${key}`;
+    console.log(`${key}: ${text}`);
+    speichern(join(ziel, `${name}.wav`), await mischen(p, spuren));
+    liste.push({ datei: `${name}.mp3`, taktart, takte: TK, fassung: key, text });
+  }
+  writeFileSync(join(ziel, "mensch.json"), JSON.stringify({ profile: ME.MENSCH_PROFILE, fassungen: liste }, null, 1));
+} else console.log("node tools/bienne-hoerproben.mjs harmonik|metrum|tuplets|poly|mensch <ziel-ordner> [seed]");

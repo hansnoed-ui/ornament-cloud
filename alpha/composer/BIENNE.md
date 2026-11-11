@@ -12,7 +12,7 @@ synthetisch. Christians eigene Aufnahmen können später über die Klangsammlung
 | Phase | Inhalt | Stand |
 |---|---|---|
 | 1 | **Harmonik 0.1.0** (`kern/harmonik.js`): Vokabular, Modi, Stimmführung, harmonischer Rhythmus, Spannung, Generator, Voicings für Fläche, Klavier, Gitarre und Bass; dazu `lydisch`/`mixolydisch` in `LEITERN` und Noten als Ereignisse in `erzeugen.js` | fertig |
-| 2 | **Metrum** (`kern/metrum.js`): zentrale Taktlänge `taktSek(tempo, taktart)` statt `240 / bpm`, Taktarten 3/4–12/8, Gruppierungen, echte Tuplets (rationale Zeiten), Polymetrik mit geplanten Treffpunkten, Humanisierung als Profil je Rolle (mit Korrelation) | a Taktarten und b Tuplets fertig; **c Polymetrik in Arbeit**; d Humanisierung offen |
+| 2 | **Metrum** (`kern/metrum.js`): zentrale Taktlänge `taktSek(tempo, taktart)` statt `240 / bpm`, Taktarten 3/4–12/8, Gruppierungen, echte Tuplets (rationale Zeiten), Polymetrik mit geplanten Treffpunkten, Humanisierung als Profil je Rolle (mit Korrelation) | a Taktarten, b Tuplets, c Polymetrik fertig; **d Humanisierung in Arbeit** |
 | 3 | **Instrumente** als Proben: Gitarre (sechs Saiten auf der Karplus-Strong-Saite), E-Bass und Muted Bass (Bass 0.2.0), Drums 0.2.0 (Ghost-Stufen, Cross-Stick, Besen), Klavier (akustisch, präpariert), Streicherfläche, dunkler Mono-Lead | offen |
 | 4 | **Interlocking** (Verteiler, Eigenständigkeit und Zusammengehörigkeit), **Echo 0.2.0** und Echos als Ereignisse im Plan | offen |
 | 5 | **`kern/bienne.js`**: Profil, Ausprägung *Schichtung*, ganzer Track, drei Startwerte, Oberfläche | offen |
@@ -195,3 +195,16 @@ Abschnittsgrenze).
 Fünfachteln (geplanter Neustart nach 4 Takten), 11/8 mit Bass-Riff in 4/4 (trifft nach 8 Takten).
 
 Urteil Tuplets (11.11.): gut 4/4, 7/8, 11/8; geht 12/8.
+
+Urteil Polymetrik (11.11.): gut 11/8 Bass-Riff («sehr cooles Bassriff») und 7/8 Rimshot; geht 4/4 Rhodes-Motiv (Klang und Melodie schwach).
+
+## Humanisierung je Rolle (Phase 2, Schritt d)
+
+`MENSCH_PROFILE` in `kern/metrum.js`: je Rolle eine feste Lage (Bass 11 ms hinter dem Schlag, Snare 7 ms, Hi-Hat 4 ms davor …), eine
+Streuung, ein Anteil, den alle Rollen teilen (das Ensemble atmet zusammen), und eine Schwankung der Stärke. Die Abweichungen sind
+langsame, feste Verläufe über die Zeit (aus dem Startwert), keine Würfe je Schlag. `mensch(m, t)` gibt Versatz und Stärkefaktor.
+
+Erzeuger lesen `quelle.mensch = { rolle, seed, gemeinsamSeed, menge }` für Drums und Noten. Ohne Angabe bleibt alles bit-gleich; das
+alte `menschlich` (Zufall je Schlag) bleibt daneben bestehen.
+
+`node tools/bienne-hoerproben.mjs mensch <ziel>`: das Bass-Riff in 11/8 dreimal – starr, alter Zufall (±8 ms), Profile.

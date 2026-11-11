@@ -968,3 +968,24 @@ test("Metrum: Polymetrik – Zyklus über Taktgrenzen, Treffpunkt und geplanter 
   assert.equal(r.zeilen[4], r.zeilen[0]);
   assert.deepEqual(r.ereignisse.filter((e) => e.schritt === 0 && e.index === 0).map((e) => e.takt), [0, 4]);
 });
+
+test("Metrum: Humanisierung je Rolle – Lage, langsamer Verlauf, gemeinsames Atmen, ohne Angabe unverändert", async () => {
+  const m = (rolle, seed = 5) => ({ rolle, seed, gemeinsamSeed: 1 });
+  const mittel = (rolle) => { let s = 0; for (let i = 0; i < 400; i++) s += ME.mensch(m(rolle), i * 0.37).ms; return s / 400; };
+  assert.ok(mittel("bass") > 7 && mittel("hat") < -1, "Bass hinter, Hi-Hat vor dem Schlag");
+  // langsam: zwei Schläge 20 ms auseinander liegen fast gleich
+  for (let t = 0; t < 10; t += 0.5) assert.ok(Math.abs(ME.mensch(m("hat"), t).ms - ME.mensch(m("hat"), t + 0.02).ms) < 1.2);
+  // gemeinsames Atmen: Kick und Bass bewegen sich mit
+  const a = [], b = [];
+  for (let i = 0; i < 300; i++) { a.push(ME.mensch(m("kick", 2), i * 0.3).ms); b.push(ME.mensch(m("bass", 9), i * 0.3).ms); }
+  const mw = (x) => x.reduce((s, y) => s + y, 0) / x.length, ma = mw(a), mb = mw(b);
+  const kor = a.reduce((s, x, i) => s + (x - ma) * (b[i] - mb), 0) / Math.sqrt(a.reduce((s, x) => s + (x - ma) ** 2, 0) * b.reduce((s, y) => s + (y - mb) ** 2, 0));
+  assert.ok(kor > 0.4, `Korrelation ${kor}`);
+  assert.deepEqual(ME.mensch(null, 1), { ms: 0, faktor: 1 });
+  assert.equal(ME.mensch({ ...m("bass"), menge: 0 }, 3).ms, 0);
+  // Drum-Spur ohne «mensch» bleibt bit-gleich, mit «mensch» verschoben
+  const q = { erzeuger: "drums@0.1.0", stimme: "kick", werte: {}, takte: ["x . . . x . . . x . . . x . . ."], anzahl: 2, bpm: 100, seed: 3 };
+  const roh = spurRechnenM(q, 48000).kanaele[0], mit = spurRechnenM({ ...q, mensch: m("bass") }, 48000).kanaele[0];
+  assert.equal(roh.length, mit.length);
+  assert.ok(roh.some((x, i) => x !== mit[i]));
+});
