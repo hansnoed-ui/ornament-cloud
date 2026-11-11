@@ -2,6 +2,12 @@
 
 Hier steht, was Christian entschieden hat und wie er Klänge beurteilt hat, damit spätere Sitzungen es kennen. Neueste oben.
 
+## 11. November 2026
+
+**ornament.bienne, Hörproben Phase 1 (Harmonik)**
+- Christian: «diese sounds sind nice», die Klänge (Rhodes, Fläche, Bass) und die Verläufe stimmen. **Ionisch gefällt nicht** («die ersten gefallen noch nicht so», die beiden Ionisch-Proben).
+- Folge: `MODI[m].gewicht`, Ionisch 0, die anderen fünf gleich (20). `modusWaehlen(rnd, gewichte)` wählt danach; Ionisch nur noch, wenn ausdrücklich verlangt. Lydisch, Mixolydisch, Dorisch, Äolisch, Phrygisch bleiben, bis weitere Urteile kommen.
+
 ## 10. November 2026
 
 **Perkussion aus Zyklen (Auftrag `prompts/perkussion.md`, Phase A)**
@@ -11,6 +17,14 @@ Hier steht, was Christian entschieden hat und wie er Klänge beurteilt hat, dami
 - Lizenzen der vorgeschlagenen Sample-Quellen geprüft: Mridangam-Dataset CC BY-NC (nur Messvorlage), Berklee BISA CC BY 4.0, M III D O und Black Octopus ohne Weitergabe, Freesound-API nur nicht-kommerziell gratis. Samples kommen später und nur lokal.
 - Handy: Die Reiter einer Spur (Klang, Unterbrechungen, … Raum) machten die Seite bei Perkussion mit Raum breiter als 412 px; sie brechen jetzt um.
 - Ehrlich: nichts davon ist gehört. Urteil steht aus.
+
+**ornament.bienne (Auftrag `bienne.md`), Phase 1: Harmonik 0.1.0**
+- Neuer Stil in fünf Phasen (Plan in `BIENNE.md`), jede als eigener PR. Phase 1 ist die Harmonik-Engine `kern/harmonik.js`, ohne Abhängigkeit von bienne, damit Ornament, DnB und Lucerne sie später nutzen können.
+- `LEITERN` hat jetzt auch Lydisch und Mixolydisch. Ionisch bleibt `dur`. Bestehende Leitern sind unverändert.
+- `erzeugen.js` kann Noten als Ereignisse mit festen MIDI-Tönen rechnen (`q.noten`), für Klänge, die nicht als Stufen einer Leiter zu schreiben sind. Bestehende Rezepte klingen gleich.
+- Rückwärtskompatibilität alter Projekte ist nicht mehr nötig (Christian, 10.11.); was sich dadurch ändert, wird hier vermerkt.
+- Referenzen nur als Verfahren: keine Bandnamen in Presets, Abschnitten oder Dateinamen, keine nachgebauten Folgen. Der Generator kennt nur Regeln.
+
 
 **ornament.lucerne: Urteil zum ganzen Track**
 - Christian: «Sehr geile Arbeit», erster Teil «noch nicht top», zweiter «genial», «etwas viel gebraucht», Beat «etwas schleppender und knarzender», die Melodie «könnte auch mal unterbrochen werden».

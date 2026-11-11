@@ -14,6 +14,7 @@ import { bearbeiten } from "./sampler.js";
  * Gibt { kanaele: [L, R], schlaege } zurück.
  */
 export function spurRechnen(q, rate) {
+  if (Array.isArray(q.noten)) return notenEreignisseRechnen(q, rate);
   if (q.flaeche) return flaechenSpurRechnen(q, rate);
   if (q.grundton !== undefined || q.leiter) return notenSpurRechnen(q, rate);
   const st = stimmeVon(q.erzeuger, q.stimme), werte = { ...Object.fromEntries(st.parameter.map((p) => [p.key, p.std])), ...q.werte };
@@ -132,4 +133,24 @@ export function flaechenSpurRechnen(q, rate, bezug = q.bezug ?? {}) {
   const dauer = q.dauer ?? Math.max(1, q.anzahl ?? 8) * (60 / q.bpm) * 4;
   const kanaele = st.rechne(werte, rate, { dauer, bpm: q.bpm, seed: q.seed ?? 1, grundton: q.grundton ?? 2, leiter: q.leiter ?? "moll", kammerton: q.kammerton, ...bezug });
   return { kanaele, schlaege: 0 };
+}
+
+// ---------- Noten als Ereignisse (seit Harmonik 0.1.0) ----------
+/**
+ * q: { erzeuger, stimme, werte, noten: [{ t (Takte ab 0), d (Takte), midi, staerke }], anzahl, bpm, kammerton, seed }. Für Klänge, die
+ * nicht als Stufen einer Leiter zu schreiben sind (geliehene Akkorde, Medianten, Voicings mit festen Lagen). Jede Note klingt ihren Ausklang
+ * zu Ende (mehrstimmig); die Spur ist so lang wie anzahl Takte, was darüber hinausragt, wird abgeschnitten (kein Umlauf an den Anfang).
+ */
+export function notenEreignisseRechnen(q, rate) {
+  const st = stimmeVon(q.erzeuger, q.stimme), werte = { ...Object.fromEntries(st.parameter.map((p) => [p.key, p.std])), ...q.werte };
+  const takt = 240 / q.bpm, n = Math.round(Math.max(1, q.anzahl ?? 8) * takt * rate), L = new Float32Array(n), R = new Float32Array(n);
+  const kammer = q.kammerton ?? 440;
+  q.noten.forEach((no, k) => {
+    const frequenz = kammer * 2 ** ((no.midi - 69) / 12), beginn = no.t * takt + (no.versatz ?? 0) / 1000;
+    const [hl, hr] = st.rechne(werte, rate, { frequenz, dauer: Math.max(0.02, no.d * takt), staerke: no.staerke ?? 0.8, seed: hash(q.seed ?? 1, k), beginn, bpm: q.bpm });
+    const i0 = Math.round(beginn * rate);
+    for (let i = 0; i < hl.length; i++) { const j = i0 + i; if (j < 0) continue; if (j >= n) break; L[j] += hl[i]; R[j] += hr[i]; }
+  });
+  const kanaele = st.nach ? st.nach([L, R], rate, werte, q.seed ?? 1) : [L, R];
+  return { kanaele, schlaege: q.noten.length };
 }

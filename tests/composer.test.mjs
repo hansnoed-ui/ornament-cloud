@@ -867,3 +867,47 @@ test("Zyklus-Spur: rechnet über die Spur wie ein handgeschriebenes Muster", asy
   let m = 0; for (const s of kanaele) for (const x of s) { assert.ok(Number.isFinite(x)); m = Math.max(m, Math.abs(x)); }
   assert.ok(m > 0.1);
 });
+
+// ---------- Harmonik 0.1.0 (ornament.bienne) ----------
+const HA = await c("kern/harmonik.js");
+const { LEITERN: LEITERN_L } = await c("kern/linien.js");
+
+test("Harmonik: Namen, Modi mit charakteristischem Ton, Vorrat mit geliehenen Klängen und Medianten", () => {
+  assert.equal(HA.akkordName({ wurzel: 0, intervalle: [0, 4, 7, 11], bass: 4 }), "Cmaj7/E");
+  assert.equal(HA.akkordName({ wurzel: 2, intervalle: [0, 3, 7, 10, 14], bass: 2 }), "Dm9");
+  assert.equal(HA.akkordName(HA.stufenAkkord(2, "dorisch", 4, { toene: 4 })), "G7");
+  const v = HA.vorrat(2, "dorisch");
+  assert.ok(v.some((a) => a.herkunft === "geliehen") && v.some((a) => a.herkunft === "mediante") && v.some((a) => a.herkunft === "parallel"));
+  for (const [m, x] of Object.entries(HA.MODI)) assert.equal(x.stufen.length, 7, m);
+  const LI = LEITERN_L;
+  assert.ok(LI.lydisch && LI.mixolydisch);
+  assert.equal(HA.deuten([0, 4, 7, 9], 9).wurzel, 9, "C E G A über A gedeutet als Am7");
+});
+
+test("Harmonik: Verlauf reproduzierbar, Stimmführung glatt unter vier Halbtönen, Gitarrengriffe greifbar, charakteristischer Ton in der Zelle", () => {
+  for (const modus of Object.keys(HA.MODI)) {
+    const a = HA.verlaufErzeugen({ zentrum: 2, modus, seed: 3, abschnitte: [{ takte: 16, kurve: "steigt", hoehe: 0.6 }] });
+    assert.deepEqual(HA.verlaufErzeugen({ zentrum: 2, modus, seed: 3, abschnitte: [{ takte: 16, kurve: "steigt", hoehe: 0.6 }] }), a, `${modus} reproduzierbar`);
+    assert.ok(a.zelle.akkorde.some((k) => HA.tonklassen(k).includes((2 + HA.MODI[modus].charakter) % 12)), `${modus}: charakteristischer Ton`);
+    const ende = a.ereignisse.at(-1); assert.ok(Math.abs(ende.t + ende.d - 16) < 1e-6, `${modus}: füllt 16 Takte`);
+    const fl = HA.voicingsFuer(a.ereignisse, "flaeche", { bruch: 0, seed: 3, zentrum: 2, modus });
+    assert.ok(HA.mittlereBewegung(fl) < 4, `${modus}: ${HA.mittlereBewegung(fl)}`);
+    for (const x of fl) { assert.ok(x.midi.every((m, i) => i === 0 || m > x.midi[i - 1])); assert.ok(x.midi[0] >= 48 && x.midi.at(-1) <= 79); }
+    for (const g of HA.voicingsFuer(a.ereignisse, "gitarre", { seed: 3, zentrum: 2, modus })) if (g.griff) { const b = g.griff.map((x) => x.bund).filter((x) => x > 0); assert.ok(!b.length || Math.max(...b) - Math.min(...b) < 4); assert.ok(g.griff.length <= 6); }
+  }
+  // Bruch bewegt mehr als glatt
+  const v = HA.verlaufErzeugen({ zentrum: 0, modus: "ionisch", seed: 5, abschnitte: [{ takte: 16 }, { takte: 16 }] });
+  assert.ok(HA.mittlereBewegung(HA.voicingsFuer(v.ereignisse, "flaeche", { bruch: 100, seed: 5 })) > HA.mittlereBewegung(HA.voicingsFuer(v.ereignisse, "flaeche", { bruch: 0, seed: 5 })));
+});
+
+test("Harmonik: modusWaehlen wählt nach Gewicht, Ionisch (Gewicht 0) nie von sich aus", async () => {
+  const { zufall } = await c("erzeuger/grund.js");
+  const rnd = zufall(7), zaehl = {};
+  for (let i = 0; i < 600; i++) { const m = HA.modusWaehlen(rnd); zaehl[m] = (zaehl[m] || 0) + 1; }
+  assert.equal(zaehl.ionisch, undefined, "Ionisch kommt nicht");
+  for (const m of ["lydisch", "mixolydisch", "dorisch", "aeolisch", "phrygisch"]) assert.ok(zaehl[m] > 60, `${m}: ${zaehl[m]}`);
+  assert.equal(HA.MODI.ionisch.gewicht, 0);
+  // ausdrücklich verlangt bleibt Ionisch spielbar
+  assert.equal(HA.modusWaehlen(zufall(1), { ionisch: 1, lydisch: 0, mixolydisch: 0, dorisch: 0, aeolisch: 0, phrygisch: 0 }), "ionisch");
+  assert.ok(HA.verlaufErzeugen({ zentrum: 0, modus: "ionisch", seed: 2, abschnitte: [{ takte: 8 }] }).ereignisse.length > 0);
+});

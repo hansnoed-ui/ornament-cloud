@@ -122,6 +122,60 @@ function seiteHtml({ lang, breite, hoehe, kicker, titel, satz, feld, fuss, serif
 </body></html>`;
 }
 
+/** KONSTELLATION (8. November 2026, Wunsch: «eine tolle Vorschaukarte für /alpha/konstellation»): eine echte Konstellation aus dem Bestand der Seite,
+    nicht ausgedacht. Name «Konstellation», Ort Kaiserstuhl (47.567000, 8.419000), Zeitpunkt 08.11.2026, 21:30:00 UTC, Online aus: Wetter aus dem Archiv,
+    Exoplanet, Bild (Hiroshige, Met Open Access, CC0) und Textstelle (Vischer, ELTeC) sind das, was die Seite dazu zieht. Gestaltung wie die Seite:
+    Forschungsprotokoll, Mono, Schwarz/Weiss/Grau, ein blauer Akzent, nummerierte Felder 01–04. */
+function konstellationHtml() {
+  const B = "#0b57d0", sterne = [[64, 26, "01"], [196, 22, "02"], [262, 92, "03"], [118, 128, "04"]], mitte = [150, 66];
+  let fig = `<svg viewBox="0 0 300 150" width="300" height="150" xmlns="http://www.w3.org/2000/svg">`;
+  for (const [x, y] of sterne) fig += `<line x1="${mitte[0]}" y1="${mitte[1]}" x2="${x}" y2="${y}" stroke="${B}" stroke-width="1" opacity=".55"/>`;
+  fig += `<polyline points="${[...sterne, sterne[0]].map(([x, y]) => `${x},${y}`).join(" ")}" fill="none" stroke="#9aa3ad" stroke-width=".8" stroke-dasharray="2 4"/>`;
+  fig += `<circle cx="${mitte[0]}" cy="${mitte[1]}" r="5" fill="${B}"/><circle cx="${mitte[0]}" cy="${mitte[1]}" r="11" fill="none" stroke="${B}" stroke-width=".8" opacity=".5"/>`;
+  for (const [x, y, n] of sterne) fig += `<circle cx="${x}" cy="${y}" r="3.2" fill="#fff" stroke="#111418" stroke-width="1.2"/><text x="${x + 8}" y="${y - 6}" font-family="JetBrains Mono, monospace" font-size="11" fill="#5b6470">${n}</text>`;
+  fig += `</svg>`;
+  return `<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><link rel="stylesheet" href="/vendor/fonts/fonts.css"><style>
+  html, body { margin: 0; } body { width: 1200px; height: 630px; background: #fff; color: #111418; font-family: "Instrument Sans", system-ui, sans-serif; position: relative; overflow: hidden; }
+  .mono { font-family: "JetBrains Mono", "DejaVu Sans Mono", monospace; }
+  .links { position: absolute; left: 64px; top: 56px; bottom: 52px; width: 430px; display: flex; flex-direction: column; }
+  .kicker { font-size: 17px; color: #5b6470; letter-spacing: .02em; }
+  .titel { font-size: 38px; font-weight: 600; letter-spacing: .26em; margin-top: 18px; line-height: 1; }
+  .satz { font-family: "Newsreader", Georgia, serif; font-style: italic; font-size: 34px; line-height: 1.18; margin-top: 22px; max-width: 13em; }
+  .fig { margin-top: 26px; }
+  .fuss { margin-top: auto; }
+  .proto { font-size: 13px; color: #5b6470; line-height: 1.55; border-top: 1px solid #d7dbe0; padding-top: 10px; }
+  .adresse { display: flex; align-items: center; gap: 12px; font-size: 22px; font-weight: 500; margin-top: 14px; }
+  .netz { position: absolute; left: 534px; right: 64px; top: 56px; bottom: 52px; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; border-top: 1.5px solid #111418; }
+  .zelle { padding: 16px 20px 18px 0; border-bottom: 1px solid #d7dbe0; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+  .zelle:nth-child(2n) { padding-left: 22px; padding-right: 0; border-left: 1px solid #d7dbe0; }
+  .zelle:nth-child(n+3) { border-bottom: 0; }
+  .h { font-size: 13px; font-weight: 600; letter-spacing: .16em; color: #5b6470; text-transform: uppercase; }
+  .h b { color: ${B}; font-weight: 600; margin-right: .5em; }
+  .gross { font-size: 52px; font-weight: 500; letter-spacing: -.02em; line-height: 1; margin-top: 18px; }
+  .objekt { font-size: 34px; font-weight: 500; letter-spacing: -.01em; line-height: 1.05; margin-top: 20px; }
+  .werte { font-size: 14px; color: #5b6470; line-height: 1.6; margin-top: auto; }
+  .bild { margin-top: 12px; flex: 1; min-height: 0; background: url(/alpha/konstellation/catalog/images/files/met-55659.39458f1e65d7.jpg) 46% 62% / 118% auto no-repeat; }
+  .zitat { font-family: "Newsreader", Georgia, serif; font-style: italic; font-size: 23px; line-height: 1.28; margin-top: 14px; }
+</style></head><body>
+  <div class="links">
+    <div class="kicker mono">ornament.cloud · Alpha</div>
+    <div class="titel mono">KONSTELLATION</div>
+    <div class="satz">Ein Name, ein Ort,<br>ein Augenblick.</div>
+    <div class="fig">${fig}</div>
+    <div class="fuss">
+      <div class="proto mono">Name «Konstellation» · 47.567000, 8.419000<br>08.11.2026, 21:30:00 UTC</div>
+      <div class="adresse"><span>${signet}</span><span>ornament.cloud/alpha/konstellation</span></div>
+    </div>
+  </div>
+  <div class="netz mono">
+    <div class="zelle"><div class="h"><b>01</b>Wetter</div><div class="gross" style="font-family:'Instrument Sans',sans-serif">1.8 °C</div><div class="werte">Bewölkung 88 %<br>Wind 29.5 km/h aus 50°<br>1'033.1 hPa · Archivfund</div></div>
+    <div class="zelle"><div class="h"><b>02</b>Exoplanet</div><div class="objekt" style="font-family:'Instrument Sans',sans-serif">Kepler-1652 b</div><div class="werte">1.6 Erdradien · 268 K<br>Umlauf 38.097 Tage<br>252 pc · entdeckt 2017</div></div>
+    <div class="zelle"><div class="h"><b>03</b>Bild</div><div class="bild" role="img" aria-label="Hiroshige, Mishima"></div><div class="werte" style="margin-top:8px">Hiroshige · Mishima · Met, CC0</div></div>
+    <div class="zelle"><div class="h"><b>04</b>Textstelle</div><div class="zitat">„Hunten, Gegensatz von drunten, das ist gut, gutes Wort, kannte es noch nicht, versteh’ es aber“</div><div class="werte">Vischer · Auch Einer · Stelle 79</div></div>
+  </div>
+</body></html>`;
+}
+
 /** Was auf die Karte kommt, je Seite und Sprache */
 function karte(pfad, sprache) {
   const w = W[sprache], { SEITE, APPS, RASTER, ANGEBOTE } = INHALT[sprache], zettelS = ladeZettel(sprache), kasten = ladeZettelkasten(sprache);
@@ -161,6 +215,7 @@ const ALT = [
   { datei: "assets/kacheln/lab.png", kicker: "ORNAMENT LAB · Alpha", titel: "ornament.lab", satz: "Erzeugen · Beobachten · Weiterführen", serif: true, fuss: "ornament.cloud/alpha/lab", feld: feldSvg({ hier: 25, nah: [3, 13, 23, 36, 40, 46] }) },   // seit 25. Oktober 2026 (Wunsch: «Vorschaukarte für social media vom lab»)
   { datei: "assets/kacheln/gamma.png", kicker: "ornament.cloud · Gamma", titel: "Sechs Bereiche, ein Netz.", titelGroesse: 66, titelBreite: 22, satz: "Websites, Apps, Kunst, Specials, Zettel und Social von Christian Strickler.", fuss: "ornament.cloud/gamma", feld: feldSvg({ hier: 25, nah: [1, 7, 19, 31, 43, 49] }) },   // seit 31. Oktober 2026 (SEO-Check: Gamma hatte keine Vorschaukarte)
   { datei: "multiverse/og-multiverse.png", kicker: "ornament.cloud", titel: "Multiverse", satz: "Vier Anwendungen zugleich, nebeneinander und bedienbar.", fuss: "ornament.cloud/multiverse", feld: multiverseSvg() },   // seit 8. November 2026 (Wunsch: «Teilenkachel … Titel ‹ornament.cloud · Multiverse›»)
+  { datei: "alpha/konstellation/og-konstellation.png", html: konstellationHtml() },   // seit 8. November 2026, eine echte Konstellation aus dem Bestand der Seite
   { datei: "social-media/kacheln/autorinnen.png", kicker: "Social Media · Register", titel: "Autor:innen", satz: "Die Autor:innen im Zettelkasten «Social Media»." },
 ];
 
@@ -213,7 +268,7 @@ if (NUR_ALT || !SPRACHEN.length) {
   process.stdout.write("\nalt: ");
   await page.setViewportSize({ width: 1200, height: 630 });
   for (const k of ALT.filter((a) => a.datei.includes(filter))) {
-    await page.setContent(seiteHtml({ lang: "de", breite: 1200, hoehe: 630, feld: feldSvg(), ...k }), { waitUntil: "load" });
+    await page.setContent(k.html || seiteHtml({ lang: "de", breite: 1200, hoehe: 630, feld: feldSvg(), ...k }), { waitUntil: "load" });
     await page.evaluate(() => document.fonts.ready);
     const datei = new URL(k.datei, ROOT); mkdirSync(new URL("./", datei), { recursive: true });
     writeFileSync(datei, await page.screenshot({ type: "png" }));
