@@ -186,6 +186,19 @@ Takt 73 liegen die Aussagen eine Oktave höher, und Takt 69 endet auf Cis statt 
 - Rückgängig ergibt dieselben Ereignisse.
 - Ein neues Projekt kann aus einer Teilmenge entstehen.
 
+## Remix eines fertigen Tracks (seit 11. November 2026)
+
+Ein Remix rechnet denselben Track mit demselben Gerüst, denselben Makros, demselben Material und demselben Startwert. So bleibt das Arrangement gleich, und nur der Klang ändert sich über `LUC_SPUREN`. Dazu kennt jede Spur neben `raum`, `echo`, `pegel`, `ohneWaerme`, `schritteDazu` und `stumm` jetzt auch:
+
+- `werte`: Parameter des Erzeugers für Kick, Snare, Ghost und Bass, etwa `{"halten":45,"sub":30}` für eine sattere Kick.
+- `nach`: ersetzt die Nachbearbeitung der Spur, `[]` heisst keine. Damit entfallen zum Beispiel Bitreduktion und Staub.
+- `nachMenge`: setzt die Menge einzelner Schritte der Nachbearbeitung, etwa `{"instabil":18}`.
+- `breite` (0–1): Ereignisse einer Sampler-Spur abwechselnd links und rechts.
+- `legato`: ein Faktor auf Dauer und Ausklang der Ereignisse.
+- `cent`: ein Faktor auf die Verstimmung je Ereignis, `0` heisst rein.
+
+Erstes Beispiel ist «directer reprise» als «Meditation» (WKW 2 Engel, Startwert 13).
+
 ## Prüfung (technisch, nicht gehört)
 
 - **Motivnoten:** 129 von 144 erkannten Noten treffen die Tonklasse, Median der Abweichung 5 Cent (pyin auf dem Motiv-Stem).
