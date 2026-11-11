@@ -27,6 +27,8 @@ import { wavSpuren, abtastrateLesen, mono, tempoSchaetzen, einsaetzeFinden, wavS
 import * as BE from "./kern/bereiche.js";
 import * as FA from "./kern/fassungen.js";
 import { lucerneEinbauen, klangPanel, istSampler, samplerRechnen } from "./lucerne-ui.js";
+import { VORLAGEN, STIL_ZYKLEN, zyklusTakte, matraAuto } from "./kern/zyklen.js";
+const PERK_NEU = "perkussion@0.2.0";
 
 const $ = (id) => document.getElementById(id);
 const atmen = () => new Promise((ok) => setTimeout(ok, 0));
@@ -365,6 +367,8 @@ function stileAufbauen() {
   $("bassLinie").append(...LINIEN.map((l) => el("option", { value: l.key, textContent: l.name, title: l.hilfe })));
   $("tonart").append(...NOTEN.map((n, i) => el("option", { value: i, textContent: n, selected: i === 2 })));
   $("flaecheStimme").append(...Object.values(ERZEUGER["natur@0.3.0"].stimmen).map((b) => el("option", { value: b.key, textContent: b.name })));
+  $("perkStimme").append(...Object.values(ERZEUGER[PERK_NEU].stimmen).map((b) => el("option", { value: b.key, textContent: b.name })));
+  $("perkZyklus").append(...vorlagenOptionen());
   $("leiter").append(...Object.entries(LEITERN).map(([k, l]) => el("option", { value: k, textContent: l.name })));
   sel.onchange = () => {
     if (sel.value === "lucerne") { $("erzBpm").value = 88; $("lucerne")?.scrollIntoView({ behavior: "smooth", block: "nearest" }); return; }
@@ -622,6 +626,8 @@ async function erzeugen({ anzahlVorgabe = null, still = false } = {}) {
     const st = stimmeVon(s.erzeuger, s.stimme), v = st.varianten.find((x) => x.name === s.variante) ?? st.varianten[0];
     const quelle = { art: "erzeugt", erzeuger: s.erzeuger, stimme: s.stimme, variante: v.name, werte: { ...v.werte }, takte: [...s.takte], fill: s.fill ?? null,
       anzahl, bpm, swing: stil.swing, menschlich: s.menschlich ?? stil.menschlich, versatz: s.versatz ?? 0, seed: seed * 100 + i, stil: stil.key };
+    const zy = $("zyklen").checked ? STIL_ZYKLEN[stil.key]?.[s.stimme] : null;
+    if (zy) zyklusSetzen(quelle, zy);
     const sp = PR.erzeugteSpurDazu(z.projekt, quelle, { name: st.name, typ: st.rolle === "perkussion" ? "perkussion" : "drums", pegel: s.pegel ?? st.pegel, pan: st.pan, raum: stil.raum ?? null });
     spurNeuRechnen(sp); erste ??= sp;
     await atmen();
@@ -658,6 +664,8 @@ async function trackErzeugen() {
   $("mitBass").checked = mitBass;
   // je Abschnitt eigene Grooves und Basslinien (seit Composer 0.3)
   for (const sp of z.projekt.spuren.filter(istDrums)) { const def = stil.spuren.find((x) => x.stimme === sp.quelle.stimme)?.teile; if (def) { sp.quelle.teile = teileAus(def, abschnitte); spurNeuRechnen(sp); } }
+  // Perkussion aus Zyklen: jeder Abschnitt beginnt auf dem Sam, vor jedem Wechsel ein Tihai, Dichte je Abschnitt (Rhythmus 0.1.0)
+  for (const sp of z.projekt.spuren.filter((x) => istDrums(x) && x.quelle.zyklus)) { zyklusNeu(sp.quelle, abschnitte); spurNeuRechnen(sp); }
   const bassSp = z.projekt.spuren.find(istBass);
   if (bassSp && b.bassTeile) {
     const q = bassSp.quelle, defs = Object.fromEntries(Object.entries(b.bassTeile).map(([typ, art], k) => [typ, linieErzeugen({ art, leiter: q.leiter, kicks: kickVorlage(), anzahl: 8, seed: seed * 31 + k })]));
@@ -665,7 +673,7 @@ async function trackErzeugen() {
   }
   for (const sp of z.projekt.spuren.filter((x) => istDrums(x) && (b.ohne ?? []).includes(x.quelle.stimme))) { post({ art: "weg", id: sp.id }); z.daten.delete(sp.id); }
   z.projekt.spuren = z.projekt.spuren.filter((x) => !(istDrums(x) && (b.ohne ?? []).includes(x.quelle.stimme)));
-  for (const [s2, stimme] of b.mix ?? []) stilSpurDazu(s2, stimme, { anzahl: takte, bpm, seed, swing: stil.swing });
+  for (const [s2, stimme] of b.mix ?? []) stilSpurDazu(s2, stimme, { anzahl: takte, bpm, seed, swing: stil.swing, abschnitte });
   const laufend = [];
   for (const syn of b.synths) laufend.push(synthDazu(syn));
   for (const n of b.natur ?? []) laufend.push(flaecheDazu(n));
@@ -710,16 +718,72 @@ function schnellEinpegeln(ziel) {
 }
 
 /** eine Spur aus einem anderen Stil dazu (Stilmix): z. B. die Tabla aus «Indien» unter Drum and Bass */
-function stilSpurDazu(stilKey, stimme, { anzahl, bpm, seed, swing }) {
+function stilSpurDazu(stilKey, stimme, { anzahl, bpm, seed, swing, abschnitte = null }) {
   const s0 = stilVon(stilKey), s = s0?.spuren.find((x) => x.stimme === stimme);
   if (!s) return null;
   const st = stimmeVon(s.erzeuger, s.stimme), v = st.varianten.find((x) => x.name === s.variante) ?? st.varianten[0];
   const quelle = { art: "erzeugt", erzeuger: s.erzeuger, stimme: s.stimme, variante: v.name, werte: { ...v.werte }, takte: [...s.takte], fill: s.fill ?? null,
     anzahl, bpm, swing, menschlich: s.menschlich ?? s0.menschlich, versatz: s.versatz ?? 0, seed: seed * 100 + 40, stil: stilKey, mix: true };
-  if (bpm >= 130 && bpm > s0.bpm * 1.25) quelle.takte = halbeZeit(quelle.takte);   // im schnellen Stil im halben Tempo, wie im eigenen Stil
+  const zy = $("zyklen").checked ? STIL_ZYKLEN[stilKey]?.[stimme] : null;
+  if (zy) { zyklusSetzen(quelle, { ...zy, dichte: (zy.dichte ?? 50) - 10 }); zyklusNeu(quelle, abschnitte); }   // als Würze etwas dünner; das Tempo regelt die Matra
+  else if (bpm >= 130 && bpm > s0.bpm * 1.25) quelle.takte = halbeZeit(quelle.takte);   // im schnellen Stil im halben Tempo, wie im eigenen Stil
   const sp = PR.erzeugteSpurDazu(z.projekt, quelle, { name: `${st.name} (aus ${s0.name.split(/ \(|,/)[0]})`, typ: st.rolle === "perkussion" ? "perkussion" : "drums", pegel: (s.pegel ?? st.pegel) - 5, pan: -(st.pan || 0.2), raum: s0.raum ?? { anteil: 18, nachhall: 1.6 } });
   spurNeuRechnen(sp);
   return sp;
+}
+
+// ---------- Perkussion aus Zyklen (Rhythmus 0.1.0, Perkussion 0.2.0) ----------
+const TRADITIONEN = [["Tala (Hindustani)", "Hindustani"], ["Iqa (arabisch, türkisch)", "Iqa"], ["Persisch", "persisch"], ["Frei", "frei"]];
+function vorlagenOptionen(gewaehlt = null) {
+  return TRADITIONEN.map(([titel, such]) => el("optgroup", { label: titel }, ...Object.entries(VORLAGEN).filter(([, v]) => v.tradition.includes(such) && (such !== "Iqa" || !v.tradition.includes("persisch")))
+    .map(([k, v]) => el("option", { value: k, textContent: `${v.name} · ${zyklusLaenge(k)}`, selected: k === gewaehlt }))));
+}
+const zyklusLaenge = (k) => { const v = VORLAGEN[k], n = v.theka.split(/[\s|]+/).filter(Boolean).length; return v.tradition.includes("Tala") ? `${n} Matras` : `${n}${v.einheit === 0.5 ? "/16" : "/8"}`; };
+/** die Abschnitte des Tracks, wenn sie zur Spur passen */
+const abschnitteFuer = (q) => (z.projekt.abschnitte?.length && z.projekt.abschnitte.at(-1).bis === q.anzahl ? z.projekt.abschnitte : null);
+/** eine Spur auf den Zyklus-Generator umstellen (Perkussion 0.2.0 hat dieselben Stimmen wie 0.1.0, bitgleich, dazu ihre Klassen) */
+function zyklusSetzen(q, vorgabe, abschnitte = null) {
+  q.erzeuger = PERK_NEU;
+  q.zyklus = { vorlage: vorgabe.vorlage, dichte: vorgabe.dichte ?? 50, komplex: vorgabe.komplex ?? 30, variation: vorgabe.variation ?? 40, poly: vorgabe.poly ?? 0, matra: vorgabe.matra ?? 0, seed: q.seed };
+  zyklusNeu(q, abschnitte);
+}
+function zyklusNeu(q, abschnitte = abschnitteFuer(q)) {
+  const r = zyklusTakte({ ...q.zyklus, stimme: stimmeVon(q.erzeuger, q.stimme), anzahl: q.anzahl, bpm: q.bpm, abschnitte });
+  q.takte = r.takte; q.fill = null; q.teile = null; q.zyklus.vonHand = false;
+  return r.info;
+}
+function zyklusInfo(q) {
+  const i = zyklusTakte({ ...q.zyklus, stimme: stimmeVon(q.erzeuger, q.stimme), anzahl: 1, bpm: q.bpm }).info;
+  return `${i.vorlage} (${i.tradition}): ${i.matras} Schläge (${i.vibhag.join(" + ")}), ein Schlag = ${zahl(i.matraSechzehntel, i.matraSechzehntel % 1 ? 1 : 0)} Sechzehntel, ein Zyklus = ${zahl(i.zyklusTakte, i.zyklusTakte % 1 ? 2 : 0)} Takte. Jeder Abschnitt beginnt auf dem Sam, vor jedem Wechsel ein Tihai. Quelle: ${i.quelle}.${q.zyklus.vonHand ? " Das Muster ist von Hand geändert; ein Regler hier erzeugt es neu." : ""}`;
+}
+function zyklusSteuerung(sp, box) {
+  const q = sp.quelle, zy = q.zyklus, k = el("div", { className: "gruppe" }, el("h3", {}, el("span", { textContent: "Zyklus" })));
+  const info = el("p", { className: "hinweis", textContent: zyklusInfo(q) });
+  const neu = () => { zyklusNeu(q); spurBald(sp); const ta = box.querySelector("textarea.muster"); if (ta) ta.value = q.takte.join("\n"); info.textContent = zyklusInfo(q); };
+  const sel = el("select", {}, ...vorlagenOptionen(zy.vorlage)); sel.onchange = () => { zy.vorlage = sel.value; neu(); };
+  const mSel = el("select", {}, ...[[0, `automatisch (${matraAuto(q.bpm) === 4 ? "Viertel" : "Achtel"})`], [1, "Sechzehntel"], [2, "Achtel"], [4, "Viertel"]].map(([w, n]) => el("option", { value: w, textContent: n, selected: (zy.matra ?? 0) === w })));
+  mSel.onchange = () => { zy.matra = Number(mSel.value); neu(); };
+  k.append(el("label", { className: "param" }, el("span", { textContent: "Vorlage" }), el("output"), sel), el("label", { className: "param", title: "Länge eines Schlags der Vorlage" }, el("span", { textContent: "Schlag" }), el("output"), mSel));
+  for (const [key, name, hilfe] of [["dichte", "Dichte", "50 = die Vorlage wie notiert; weniger bis nur der Sam, mehr mit leisen Füllschlägen"], ["komplex", "Komplexität", "geteilte Schläge, Synkopen, Läufe, längere Tihai-Figuren"], ["variation", "Variation", "wie stark sich die vier Zyklen einer Phrase unterscheiden"], ["poly", "Polyrhythmus", "tiefe Schläge in anderer Länge (3, 5 oder 7 Schläge), sie treffen sich auf dem Sam"]])
+    k.append(paramRegler({ key, name, min: 0, max: 100, std: 50, einheit: "", hilfe, schritt: 1 }, zy[key] ?? 50, (v) => { zy[key] = Math.round(v); neu(); }));
+  const w = el("button", { className: "mini", textContent: "neu würfeln", title: "anderer Startwert für den Zyklus: gleiche Vorlage, andere Abweichungen" });
+  w.onclick = () => { zy.seed = 1 + Math.floor(Math.random() * 99998); neu(); };
+  k.append(el("div", { className: "klang-zeile" }, w), info);
+  return el("div", { className: "gruppen" }, k);
+}
+/** eine Perkussionsspur aus einem Zyklus dazu; in einem ganzen Track mit dessen Abschnitten und Arrangement */
+async function perkussionDazu() {
+  await kontext(48000);
+  const st = stimmeVon(PERK_NEU, $("perkStimme").value), v = st.varianten[0], stil = stilVon($("stil").value);
+  const drums = z.projekt.spuren.find(istDrums), anzahl = z.projekt.abschnitte?.at(-1)?.bis ?? drums?.quelle.anzahl ?? Number($("takte").value), bpm = z.projekt.tempo.bpm || Number($("erzBpm").value);
+  const quelle = { art: "erzeugt", erzeuger: PERK_NEU, stimme: st.key, variante: v.name, werte: { ...v.werte }, takte: [], fill: null, anzahl, bpm, swing: stil?.swing ?? 0, menschlich: Math.min(5, stil?.menschlich ?? 4), versatz: 0, seed: 1 + Math.floor(Math.random() * 99998) };
+  zyklusSetzen(quelle, { vorlage: $("perkZyklus").value, dichte: 45, komplex: 30, variation: 40, poly: 0 }, abschnitteFuer(quelle));
+  const sp = PR.erzeugteSpurDazu(z.projekt, quelle, { name: st.name, typ: "perkussion", pegel: st.pegel, pan: st.pan, raum: stil?.raum ?? { anteil: 20, nachhall: 1.6, daempfung: 6000, vorverz: 15, groesse: 0.9, tiefschnitt: 180 } });
+  if (abschnitteFuer(quelle)) sp.ereignisse = ereignisseFuer(funktionVon(quelle), z.projekt.abschnitte, { seed: Math.max(1, Math.round(Number($("seed").value) || 1)), takte: anzahl });
+  spurNeuRechnen(sp);
+  if (!z.schleife) { const L = (anzahl * 240) / bpm; z.schleife = { a: 0, b: L }; z.schleifeAn = true; schleifeSenden(); }
+  z.gewaehlt = sp.id; z.glied = -1; senden(); allesAufbauen();
+  melde(`${st.name}: ${VORLAGEN[quelle.zyklus.vorlage].name}, ${anzahl} Takte${abschnitteFuer(quelle) ? ", mit den Abschnitten des Tracks" : ""}`, 4000);
 }
 
 function stimmVariante(sp, i) {
@@ -758,6 +822,7 @@ function klangAufbauen(box, sp, wahl) {
   else if (q.leiter) box.append(bassSteuerung(sp));
   else box.append(el("div", { className: "klang-zeile" }, el("span", { className: "leise-text", textContent: "anhören (A):" }),
     ...st.artikulationen.map((a) => { const b = el("button", { className: "mini", textContent: a.name, title: "ein Schlag, ohne Kanalzug und Raum" }); b.onclick = () => schlagHoeren(sp, a.key); return b; })));
+  if (q.zyklus) box.append(zyklusSteuerung(sp, box));
   // Varianten der Stimme
   box.append(el("div", { className: "varianten" }, ...st.varianten.map((v, i) => {
     const b = el("button", { className: "variante-k", title: `Taste ${i + 1}` }, el("b", { textContent: `${i + 1} · ${v.name}` }), el("small", { textContent: v.beschreibung }));
@@ -794,7 +859,7 @@ function klangAufbauen(box, sp, wahl) {
     const zeilen = ta.value.split("\n").map((x) => x.trim()).filter(Boolean), fill = zeilen.find((x) => x.startsWith("fill:"));
     const takte = zeilen.filter((x) => !x.startsWith("fill:"));
     if (!takte.length) return;
-    q.takte = takte; q.fill = fill ? fill.slice(5).trim() : null; if (istSynth(sp)) q.sequenzAuto = false; spurBald(sp);
+    q.takte = takte; q.fill = fill ? fill.slice(5).trim() : null; if (istSynth(sp)) q.sequenzAuto = false; if (q.zyklus) q.zyklus.vonHand = true; spurBald(sp);
   };
   box.append(el("div", { className: "gruppe", style: "margin-top:16px" }, el("h3", {}, el("span", { textContent: "Muster (eine Zeile je Takt, «fill:» für den Wirbel)" })), ta,
     el("p", { className: "hinweis", textContent: q.leiter
@@ -1613,6 +1678,7 @@ $("synthFilterVerfahren").append(el("option", { value: "", textContent: "alle Ve
 $("synthFilterCharakter").append(el("option", { value: "", textContent: "alle Charaktere" }), ...CHARAKTERE.map((c) => el("option", { value: c.key, textContent: c.name, title: c.hilfe })));
 $("synthFilterRolle").onchange = synthListe; $("synthFilterVerfahren").onchange = synthListe; $("synthFilterCharakter").onchange = synthListe; synthListe();
 $("flaecheDazu").onclick = () => flaecheDazu().catch((e) => melde(`Fläche: ${e.message}`, 8000));
+$("perkDazu").onclick = () => perkussionDazu().catch((e) => melde(`Perkussion: ${e.message}`, 8000));
 $("bassDazu").onclick = async () => {
   try {
     await kontext(48000);

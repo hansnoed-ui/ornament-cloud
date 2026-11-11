@@ -208,3 +208,6 @@ export default {
   beschreibung: "Organische Instrumente aus Fell-, Holz- und Metallmoden: Tabla, Darbuka, Rahmentrommel, Riq, Zarb, Udu.",
   stimmen: Object.fromEntries([tabla, darbuka, rahmen, riq, zarb, udu].map((s) => [s.key, s])),
 };
+
+// Bausteine für Perkussion 0.2.0 (seit 10. November 2026; am Klang von 0.1.0 ändert das nichts)
+export { schlag, schellen, schnarre, MEMBRAN, GEMEINSAM, P, V };

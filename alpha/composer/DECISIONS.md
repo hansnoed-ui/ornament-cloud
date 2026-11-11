@@ -10,6 +10,14 @@ Hier steht, was Christian entschieden hat und wie er Klänge beurteilt hat, dami
 
 ## 10. November 2026
 
+**Perkussion aus Zyklen (Auftrag `prompts/perkussion.md`, Phase A)**
+- Christian schickte einen langen Masterprompt «Global Percussion Engine», gemeint für den Composer allgemein, nicht für ornament.lucerne. Gestrafft zu `prompts/perkussion.md` in drei Phasen; «Phase A los».
+- Umgesetzt: Rhythmus 0.1.0 (`kern/zyklen.js`) mit 15 Vorlagen (Tala, Iqa, persisch, frei) und einem Generator (Dichte, Komplexität, Variation, Polyrhythmus, Tihai vor jedem Abschnittswechsel, Sam am Beginn jedes Abschnitts); Perkussion 0.2.0 mit Mridangam, Kanjira, Ghatam, Dholak, Daf, Davul/Dohol, Naqareh, Manjira, Sagat. Einzelheiten in `PERKUSSION.md`.
+- Die Stile nehmen ihre Perkussion jetzt aus Zyklen (Schalter «Perkussion aus Zyklen», an); die alten festen Muster bleiben über den Schalter. Rückwärtskompatibilität nicht nötig, 0.1.0 bleibt trotzdem bitgleich.
+- Lizenzen der vorgeschlagenen Sample-Quellen geprüft: Mridangam-Dataset CC BY-NC (nur Messvorlage), Berklee BISA CC BY 4.0, M III D O und Black Octopus ohne Weitergabe, Freesound-API nur nicht-kommerziell gratis. Samples kommen später und nur lokal.
+- Handy: Die Reiter einer Spur (Klang, Unterbrechungen, … Raum) machten die Seite bei Perkussion mit Raum breiter als 412 px; sie brechen jetzt um.
+- Ehrlich: nichts davon ist gehört. Urteil steht aus.
+
 **ornament.bienne (Auftrag `bienne.md`), Phase 1: Harmonik 0.1.0**
 - Neuer Stil in fünf Phasen (Plan in `BIENNE.md`), jede als eigener PR. Phase 1 ist die Harmonik-Engine `kern/harmonik.js`, ohne Abhängigkeit von bienne, damit Ornament, DnB und Lucerne sie später nutzen können.
 - `LEITERN` hat jetzt auch Lydisch und Mixolydisch. Ionisch bleibt `dur`. Bestehende Leitern sind unverändert.

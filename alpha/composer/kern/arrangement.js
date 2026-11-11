@@ -18,8 +18,8 @@ export function funktionVon(q) {
   const s = q.stimme;
   if (s === "kick") return "kick";
   if (["snare", "clap", "tom"].includes(s)) return "backbeat";
-  if (["hat", "offen", "shaker", "ride", "riq", "rim"].includes(s)) return "oben";   // Rim seit 0.3 bei den Höhen: spielt auch beim Atmen
-  return "perkussion";   // Tabla, Darbuka, Rahmentrommel, Zarb, Udu
+  if (["hat", "offen", "shaker", "ride", "riq", "rim", "manjira", "sagat"].includes(s)) return "oben";   // Rim seit 0.3 bei den Höhen; Zimbeln (Perkussion 0.2.0) halten die Zeit wie die Hats
+  return "perkussion";   // Tabla, Darbuka, Rahmentrommel, Zarb, Udu, Mridangam, Kanjira, Ghatam, Dholak, Daf, Davul, Naqareh
 }
 
 // wer in welchem Abschnitt spielt (1 = spielt, 0 = still)

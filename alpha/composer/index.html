@@ -8,7 +8,7 @@
   <meta name="robots" content="noindex">
   <meta name="description" content="ORNAMENT COMPOSER: Spuren mischen mit eigenen, versionierten Plugins, vorher und nachher hören, gegen eine Referenz messen.">
   <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
-  <link rel="stylesheet" href="composer.css?v=6">
+  <link rel="stylesheet" href="composer.css?v=7">
 </head>
 <body>
   <header class="kopf">
@@ -73,6 +73,7 @@
     <label class="feld">Startwert <input type="number" id="seed" min="1" max="99999" step="1" value="1"></label>
     <button class="knopf klein leise" id="wuerfeln" title="neuer Startwert: andere kleine Abweichungen, gleiche Muster">neu würfeln</button>
     <label class="feld klein"><input type="checkbox" id="ersetzen" checked> erzeugte Spuren ersetzen</label>
+    <label class="feld klein" title="Perkussion der Stile aus Tala- und Iqa-Zyklen (Rhythmus 0.1.0) statt aus den festen Mustern"><input type="checkbox" id="zyklen" checked> Perkussion aus Zyklen</label>
     <button class="knopf voll" id="erzeugen">Spuren erzeugen</button>
     <div class="bass-zeile">
       <label class="feld klein"><input type="checkbox" id="mitBass" checked> Bass</label>
@@ -98,6 +99,13 @@
       <select id="synthRolle" aria-label="Rolle der Sequenz"></select>
       <button class="knopf klein" id="synthDazu" title="eine Synthspur dazu; Tonart und Akkorde vom Bass, Rhythmus und Akzente von den Drums">Synth dazu</button>
       <label class="feld klein" title="Kammerton des Projekts">A = <input type="number" id="kammerton" min="400" max="466" step="1" value="432"> Hz</label>
+    </div>
+    <div class="bass-zeile">
+      <span class="feld">Perkussion</span>
+      <select id="perkStimme" aria-label="Instrument"></select>
+      <select id="perkZyklus" aria-label="Zyklus: Tala, Iqa oder frei"></select>
+      <button class="knopf klein" id="perkDazu" title="eine Perkussionsspur aus einem Zyklus dazu; in einem ganzen Track mit dessen Abschnitten, Tihai vor jedem Wechsel">Perkussion dazu</button>
+      <span class="leise-text">Tabla, Mridangam, Kanjira, Ghatam, Dholak, Darbuka, Daf, Zarb, Davul, Naqareh, Manjira, Sagat und mehr, eigene Synthese. Dichte, Komplexität, Variation und Polyrhythmus in der Spur.</span>
     </div>
     <div class="bass-zeile">
       <span class="feld">Fläche, Natur</span>
@@ -151,6 +159,6 @@
   <input type="file" id="ersatzDatei" accept="audio/*,.wav,.flac,.mp3,.ogg,.m4a,.aif,.aiff" hidden>
   <div class="meldung" id="meldung" role="status" hidden></div>
   <footer class="fuss"><p>ORNAMENT COMPOSER 0.1 · Drums, Perkussion, Bass, Synth 0.2.0 · Natur 0.3.0 · Unterbrechungen 0.2.0 · Arrangement 0.2.0 · Bereiche, Fassungen 0.1.0 · Klangsammlung, Sampler, ornament.lucerne 0.1.0 · Kanalzug, Raum, Bassfett, Echo, Glanz, Grenze 0.1.0 · Tasten: Leertaste spielen, V vorher, R Referenz, L Schleife, 1–7 Varianten, A Schlag anhören, ↑ ↓ Spur wählen · Bereich ziehen (auf der Summe oder einer Spur), dann M stumm, − leiser, + lauter, E Effekt, Esc aufheben</p></footer>
-  <script type="module" src="app.js?v=9"></script>
+  <script type="module" src="app.js?v=10"></script>
 </body>
 </html>
