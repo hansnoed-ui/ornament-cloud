@@ -10,8 +10,9 @@ import synth020 from "./synth-0.2.0.js";
 import perkussion020 from "./perkussion-0.2.0.js";
 import gitarre010 from "./gitarre-0.1.0.js";
 import bass020 from "./bass-0.2.0.js";
+import drums020 from "./drums-0.2.0.js";
 
-export const ERZEUGER = Object.freeze(Object.fromEntries([drums010, perkussion010, perkussion020, bass010, natur010, natur020, natur030, synth010, synth020, gitarre010, bass020].map((e) => [`${e.id}@${e.version}`, e])));
+export const ERZEUGER = Object.freeze(Object.fromEntries([drums010, perkussion010, perkussion020, bass010, natur010, natur020, natur030, synth010, synth020, gitarre010, bass020, drums020].map((e) => [`${e.id}@${e.version}`, e])));
 
 /** die Stimme einer erzeugten Spur: «drums@0.1.0», «kick» → Stimme */
 export function stimmeVon(erzeuger, stimme) {

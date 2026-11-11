@@ -130,6 +130,8 @@ export function taktLesen(zeile, ersteArt = "x") {
       if (kern.endsWith("!")) { kern = kern.slice(0, -1); st = 1; } else if (kern.endsWith("_")) { kern = kern.slice(0, -1); st = 0.45; }
       let art = kern;
       if (kern === "x" || kern === "o" || kern === "g") { art = ersteArt; if (st === 0.8) st = kern === "x" ? 0.8 : kern === "o" ? 0.6 : 0.32; }
+      // Ghost-Stufen (seit Drums 0.2.0): g1 kaum hörbar, g2 leise, g3 deutlich – eine Stimme wie «fell» klingt bei jeder Stufe anders
+      else if (kern === "g1" || kern === "g2" || kern === "g3") { art = ersteArt; st = { g1: 0.14, g2: 0.24, g3: 0.38 }[kern]; }
       const schritt = t.einfach ? pos : pos + (k * t.laenge) / t.innen.length;
       out.push({ stelle: schritt / n, schritt, n, art, staerke: st, ...(t.einfach ? {} : { tuplet: t.innen.length }) });
     });
