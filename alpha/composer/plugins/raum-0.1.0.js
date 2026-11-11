@@ -13,7 +13,13 @@ class Verz {
   constructor(n) { this.b = new Float32Array(n); this.i = 0; }
   schreibe(x) { this.b[this.i] = x; this.i = (this.i + 1) % this.b.length; }
   /** d Abtastwerte zurück (gebrochen, linear interpoliert); d ≥ 1 */
-  lies(d) { const n = this.b.length, p = this.i - d, a = Math.floor(p), f = p - a, i0 = ((a % n) + n) % n, i1 = (i0 + 1) % n; return this.b[i0] * (1 - f) + this.b[i1] * f; }
+  // dieselbe Rechnung wie bis 11.11.2026, nur meist ohne Modulo (Modulo kostete den Hall rund ein Drittel seiner Zeit): bitgleich, schneller
+  lies(d) {
+    const n = this.b.length, p = this.i - d, a = Math.floor(p), f = p - a;
+    let i0 = a; if (i0 < 0) { i0 += n; if (i0 < 0) i0 = ((a % n) + n) % n; }
+    const i1 = i0 + 1 === n ? 0 : i0 + 1;
+    return this.b[i0] * (1 - f) + this.b[i1] * f;
+  }
 }
 
 export default {
@@ -39,7 +45,7 @@ export default {
     const vor = new Verz(Math.ceil(0.22 * rate)), lp = new Float64Array(8), ein = [new Biquad(1), new Biquad(1)];
     const lfo = LINIEN.map((_, k) => ({ ph: (k * TAU) / 8, w: (TAU * (0.11 + 0.037 * k)) / rate }));
     let w = null, g = new Float64Array(8), lpA = 0, len = new Float64Array(8), dry = 1, wet = 0, vorN = 1;
-    const x = new Float64Array(8);
+    const x = new Float64Array(8), fruehD = new Float64Array(8);
     return {
       setze(werte) {
         w = werte;
@@ -48,6 +54,7 @@ export default {
         ein[0].setze(biquadKoeff("hochpass", w.tiefschnitt, rate)); ein[1].setze(biquadKoeff("tiefpass", w.hochschnitt, rate));
         const a = (w.anteil / 100) * (Math.PI / 2); dry = Math.cos(a); wet = Math.sin(a);
         vorN = Math.max(1, Math.round((w.vorverz / 1000) * rate));
+        for (let j = 0; j < 8; j++) fruehD[j] = (FRUEH[j][0] * w.groesse * rate) / 1000;
       },
       prozess(k, n) {
         if (!w || w.anteil === 0) return { reduktion: 0 };
@@ -60,7 +67,7 @@ export default {
           const v = vor.lies(vorN);
           // frühe Reflexionen aus der vorverzögerten Mitte
           let eL = 0, eR = 0;
-          if (fr > 0) for (const [ms, p, pan] of FRUEH) { const s = vor.lies(vorN + (ms * w.groesse * rate) / 1000) * p; eL += s * (1 - pan) * 0.5; eR += s * (1 + pan) * 0.5; }
+          if (fr > 0) for (let j = 0; j < 8; j++) { const s = vor.lies(vorN + fruehD[j]) * FRUEH[j][1], pan = FRUEH[j][2]; eL += s * (1 - pan) * 0.5; eR += s * (1 + pan) * 0.5; }
           // verdichten
           let d = v;
           for (let a = 0; a < 4; a++) { const ap = allp[a], gk = ALLPASS[a][1], z = ap.lies(ap.b.length - 1); const y = -gk * d + z; ap.schreibe(d + gk * y); d = y; }

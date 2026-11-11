@@ -1,6 +1,7 @@
 // Der Motor im AudioWorklet: Vorschau in Echtzeit mit genau dem Code, der auch exportiert (kern/motor.js).
 // Nachrichten vom Hauptfaden: spur {id, kanaele} · weg {id} · referenz {kanaele|null} · zustand {…} · start {pos} · stop · stelle {pos}
-// · schleife {a, b} | null. start/stop blenden 15 ms ein bzw. aus (mit sofort: true ohne Blende). Zurück: anzeige (etwa 30-mal je Sekunde), ende.
+// · schleife {a, b} | null. start/stop blenden 15 ms ein bzw. aus (mit sofort: true ohne Blende). Zurück: anzeige (etwa 30-mal je Sekunde), ende,
+// last {wert: Anteil der Echtzeit, einmal je Sekunde Ton}.
 
 import { Motor, BLOCK } from "../kern/motor.js";
 import { PLUGINS } from "../plugins/register.js";
@@ -11,6 +12,9 @@ class MotorWorklet extends AudioWorkletProcessor {
     this.m = new Motor(sampleRate, PLUGINS);
     this.aus = [new Float32Array(BLOCK), new Float32Array(BLOCK)];
     this.zaehler = 0;
+    // Last: Rechenzeit des Motors je Sekunde Ton (Date.now, grob, über eine Sekunde gemittelt). Über 100 % kommt der Rechner nicht nach,
+    // dann bricht der Ton weg; die Oberfläche warnt (seit 11.11.2026, Composer spielte auf einem langsamen PC nach dem Track keinen Ton mehr).
+    this.lastMs = 0; this.lastN = 0;
     // Ein- und Ausblenden beim Start und Halt (15 ms), damit nichts knackt; der Motor selbst bleibt unberührt (bitgleich zum Export)
     this.g = 0; this.ziel = 0; this.schritt = 1 / Math.max(1, Math.round(0.015 * sampleRate));
     this.port.onmessage = ({ data: d }) => {
@@ -30,7 +34,10 @@ class MotorWorklet extends AudioWorkletProcessor {
     const out = ausgaenge[0], n = out[0].length;
     if (!this.m.laeuft) { for (const k of out) k.fill(0); }
     else {
+      const t0 = Date.now();
       this.m.block(this.aus, n);
+      this.lastMs += Date.now() - t0; this.lastN += n;
+      if (this.lastN >= sampleRate) { this.port.postMessage({ art: "last", wert: this.lastMs / ((1000 * this.lastN) / sampleRate) }); this.lastMs = 0; this.lastN = 0; }
       const [L, R] = this.aus;
       if (this.g !== 1 || this.ziel !== 1) {
         const auf = this.ziel > this.g, s = this.schritt;

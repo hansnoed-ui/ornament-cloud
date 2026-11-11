@@ -66,5 +66,8 @@ Sitzung wissen muss, damit dieselben Fehler nicht zweimal passieren.
 - Keine deckenden festen Elemente über WebGL-Leinwand oder Bühne legen
   (Edge unter Windows schnitt sonst unten einen Streifen in Kopfhöhe ab; Kopf
   darum `rgba(0,0,0,.99)` statt `#000`).
+- Composer-Motor (`alpha/composer/kern/motor.js`) rechnet jede Spur samt Kette live im AudioWorklet. Mehr Arbeit je Abtastwert
+  auf jeder Spur (Messer, Hall) überlastet langsame Rechner: der Ton bricht weg (11.11.2026, 18 Spuren, acht Hallräume).
+  Last im Browser messen (Worklet meldet `last`), veröffentlichte Plugins nur bitgleich beschleunigen (Fingerabdruck-Test).
 - Shaderfarben in Three.js-Szenen sind linear, der OutputPass macht sRGB:
   gewünschte sRGB-Farben vorher umrechnen.

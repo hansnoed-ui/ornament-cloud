@@ -175,6 +175,41 @@ test("Stile: jede Spur hat Schläge, die Länge ist ein ganzes Vielfaches des Ta
   gleich(spurRechnen(q, RATE).kanaele[0], a, "gleicher Startwert, gleiche Spur");
 });
 
+test("Raum: schnellere Rechnung (11.11.2026) bleibt bitgleich zur veröffentlichten Fassung", async () => {
+  const { createHash } = await import("node:crypto");
+  const def = PLUGINS["raum@0.1.0"], spuren = [];
+  // Fingerabdrücke aus der Fassung vor der Beschleunigung; der zweite Fall liest über das Ende des Vorverzögerungspuffers hinaus
+  for (const werte of [{ anteil: 100, nachhall: 1.5 }, { anteil: 60, vorverz: 150, groesse: 2.5, bewegung: 100, frueh: 100 }, { anteil: 40, groesse: 0.3, nachhall: 12, daempfung: 1500 }]) {
+    const w = Object.fromEntries(def.parameter.map((p) => [p.key, p.std])); Object.assign(w, werte);
+    const n = RATE, k = [new Float32Array(n), new Float32Array(n)]; let a = 7;
+    for (let i = 0; i < n; i++) { a = (Math.imul(a, 1664525) + 1013904223) >>> 0; k[0][i] = i < RATE / 4 ? (a / 4294967296) * 2 - 1 : 0; k[1][i] = k[0][i] * 0.5; }
+    const x = def.erzeuge(RATE); x.setze(w);
+    for (let o = 0; o < n; o += BLOCK) x.prozess([k[0].subarray(o), k[1].subarray(o)], Math.min(BLOCK, n - o));
+    spuren.push(createHash("sha256").update(Buffer.from(k[0].buffer)).update(Buffer.from(k[1].buffer)).digest("hex").slice(0, 16));
+  }
+  assert.deepEqual(spuren, ["25a26f93e4c301cc", "85c6e32b04ab733c", "3de3ca5838763d52"]);
+});
+
+test("Motor: stumme Spur rechnet nicht mit, die Summe bleibt bitgleich; Lautheitsfolger nur auf der beobachteten Spur", () => {
+  const a = klang(1, 1), b = klang(1, 2), aus1 = [new Float32Array(BLOCK), new Float32Array(BLOCK)], aus2 = [new Float32Array(BLOCK), new Float32Array(BLOCK)];
+  const raum = [{ plugin: "raum@0.1.0", parameter: { anteil: 50 } }];
+  const m1 = new Motor(RATE, PLUGINS); m1.spurLaden("a", a); m1.setze({ spuren: [{ id: "a", kette: raum }] });
+  const m2 = new Motor(RATE, PLUGINS); m2.spurLaden("a", a); m2.spurLaden("b", b); m2.setze({ spuren: [{ id: "a", kette: raum }, { id: "b", stumm: true, kette: raum }] });
+  let ruht = 0;
+  const inst = m2.spuren.get("b").kette.glieder[0].inst, vorher = inst.prozess;
+  inst.prozess = function (k, n) { ruht++; return vorher.call(this, k, n); };
+  m2.spuren.get("b").gAus = 0;   // schon ausgeblendet
+  for (let i = 0; i < 100; i++) { m1.block(aus1, BLOCK); m2.block(aus2, BLOCK); gleich(aus2[0], aus1[0], `Block ${i} links`); gleich(aus2[1], aus1[1], `Block ${i} rechts`); }
+  assert.equal(ruht, 0, "die stumme Kette ruht");
+  m2.setze({ spuren: [{ id: "a", kette: raum }, { id: "b", kette: raum }] }); m2.block(aus2, BLOCK);
+  assert.equal(ruht, 1, "wieder hörbar: die Kette rechnet");
+  m2.setze({ spuren: [{ id: "a", kette: raum }, { id: "b", stumm: true, kette: raum }] });
+  m2.setze({ beobachtet: "a" });
+  for (let i = 0; i < 400; i++) m2.block(aus2, BLOCK);
+  assert.ok(m2.spuren.get("a").folgerNass.m > 0, "beobachtete Spur wird gemessen");
+  assert.ok(m2.spuren.get("b").folgerNass.erst, "stumme Spur wird nicht gemessen");
+});
+
 test("Raum: endlich, klingt aus, Anteil 0 lässt das Signal unverändert", () => {
   const def = PLUGINS["raum@0.1.0"], n = RATE * 4, imp = [new Float32Array(n), new Float32Array(n)]; imp[0][0] = imp[1][0] = 1;
   const inst = def.erzeuge(RATE); inst.setze(bereinigeWerte(def, { anteil: 100, nachhall: 1.5 }));
