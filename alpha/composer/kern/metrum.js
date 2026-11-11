@@ -85,3 +85,42 @@ export function zyklus(muster, t, takte, { raster = 16, neustart = null } = {}) 
   }
   return { zeilen, ereignisse, laenge: L, treffenNach: neustart ?? treffpunkt(L, t, raster) };
 }
+
+// ---------- Humanisierung je Rolle (Schritt d) ----------
+/**
+ * Profile in Millisekunden (positiv = später): «lage» ist die feste Neigung (Bass hinter dem Schlag, Hi-Hat davor), «streuung» die
+ * Bewegung, «gemeinsam» wie viel davon alle Rollen teilen (das Ensemble atmet zusammen), «staerke» die Schwankung der Anschlagstärke.
+ * Die Abweichungen sind keine Würfe je Schlag, sondern langsame Verläufe: zwei Schläge kurz hintereinander liegen ähnlich.
+ */
+export const MENSCH_PROFILE = Object.freeze({
+  kick: { lage: 0, streuung: 4, gemeinsam: 0.7, staerke: 0.05 },
+  snare: { lage: 7, streuung: 5, gemeinsam: 0.6, staerke: 0.08 },
+  ghost: { lage: 9, streuung: 7, gemeinsam: 0.5, staerke: 0.15 },
+  hat: { lage: -4, streuung: 6, gemeinsam: 0.4, staerke: 0.14 },
+  perkussion: { lage: -2, streuung: 7, gemeinsam: 0.4, staerke: 0.12 },
+  bass: { lage: 11, streuung: 6, gemeinsam: 0.7, staerke: 0.07 },
+  tasten: { lage: 5, streuung: 8, gemeinsam: 0.5, staerke: 0.1 },
+  flaeche: { lage: 15, streuung: 10, gemeinsam: 0.3, staerke: 0.05 },
+  melodie: { lage: 6, streuung: 9, gemeinsam: 0.4, staerke: 0.12 },
+});
+
+const knoten = (seed, k) => { let h = (Math.imul(seed | 0, 0x9e3779b1) ^ Math.imul(k | 0, 0x85ebca6b)) >>> 0; h = Math.imul(h ^ (h >>> 15), 0x2c1b3c6d) >>> 0; h = (h ^ (h >>> 12)) >>> 0; return (h / 4294967296) * 2 - 1; };
+/** glatter Verlauf −1…1 über die Zeit (Sekunden), fest durch den Startwert */
+function verlauf(seed, t, periode) {
+  const x = t / periode, k = Math.floor(x), f = x - k, w = (1 - Math.cos(f * Math.PI)) / 2;
+  return knoten(seed, k) * (1 - w) + knoten(seed, k + 1) * w;
+}
+
+/**
+ * Versatz (ms) und Faktor für die Stärke eines Ereignisses zur Zeit t (s).
+ * m: { rolle, seed, menge (0–100, Standard 100), gemeinsamSeed (gleich für alle Spuren eines Stücks) }
+ */
+export function mensch(m, t) {
+  const p = MENSCH_PROFILE[m?.rolle]; if (!p) return { ms: 0, faktor: 1 };
+  const menge = (m.menge ?? 100) / 100, g = m.gemeinsamSeed ?? 1, eigen = (m.seed ?? 1) * 31 + 7;
+  const zusammen = 0.7 * verlauf(g, t, 2.6) + 0.3 * verlauf(g + 1, t, 0.9);
+  const allein = 0.7 * verlauf(eigen, t, 1.7) + 0.3 * verlauf(eigen + 1, t, 0.45);
+  const ms = menge * (p.lage + p.streuung * (p.gemeinsam * zusammen + (1 - p.gemeinsam) * allein));
+  const faktor = 1 + menge * p.staerke * verlauf(eigen + 2, t, 0.6);
+  return { ms, faktor };
+}

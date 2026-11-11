@@ -7,7 +7,7 @@ import { zufall, hash } from "../erzeuger/grund.js";
 import { taktLesen } from "./muster.js";
 import { notenLesen, grundFrequenz } from "./linien.js";
 import { bearbeiten } from "./sampler.js";
-import { taktSek } from "./metrum.js";
+import { taktSek, mensch } from "./metrum.js";
 
 /**
  * q: { erzeuger, stimme, werte, takte: [Zeilen], fill?, anzahl (Takte), bpm, swing (0–0,5), menschlich (ms), versatz (ms), seed,
@@ -32,8 +32,10 @@ export function spurRechnen(q, rate) {
     for (const s of taktLesen(zeile, erste)) {
       if (!gueltig.has(s.art)) continue;
       const schritt = takt / s.n, swing = s.schritt % 2 === 1 ? (q.swing ?? 0) * schritt : 0;
-      const zeit = b * takt + s.stelle * takt + swing + ((q.versatz ?? 0) + (rnd() * 2 - 1) * (q.menschlich ?? 0)) / 1000;
-      const staerke = Math.max(0.05, Math.min(1.1, s.staerke * (1 + (rnd() * 2 - 1) * 0.07)));
+      // «mensch» (seit Metrum 0.1.0): Profil je Rolle statt nur Zufall; ohne Angabe wie vorher
+      const roh = b * takt + s.stelle * takt + swing, hu = q.mensch ? mensch(q.mensch, roh) : null;
+      const zeit = roh + ((q.versatz ?? 0) + (rnd() * 2 - 1) * (q.menschlich ?? 0) + (hu?.ms ?? 0)) / 1000;
+      const staerke = Math.max(0.05, Math.min(1.1, s.staerke * (1 + (rnd() * 2 - 1) * 0.07) * (hu?.faktor ?? 1)));
       const stufe = Math.max(1, Math.round(staerke * 8)) / 8, abw = Math.floor(rnd() * 4);
       const k = `${s.art}|${stufe}|${abw}`;
       if (!cache.has(k)) cache.set(k, st.rechne(werte, rate, { art: s.art, staerke: stufe, seed: hash(q.seed ?? 1, s.art, abw) }));
@@ -147,8 +149,9 @@ export function notenEreignisseRechnen(q, rate) {
   const takt = taktSek(q.bpm, q.taktart), n = Math.round(Math.max(1, q.anzahl ?? 8) * takt * rate), L = new Float32Array(n), R = new Float32Array(n);
   const kammer = q.kammerton ?? 440;
   q.noten.forEach((no, k) => {
-    const frequenz = kammer * 2 ** ((no.midi - 69) / 12), beginn = no.t * takt + (no.versatz ?? 0) / 1000;
-    const [hl, hr] = st.rechne(werte, rate, { frequenz, dauer: Math.max(0.02, no.d * takt), staerke: no.staerke ?? 0.8, seed: hash(q.seed ?? 1, k), beginn, bpm: q.bpm });
+    const roh = no.t * takt, hu = q.mensch ? mensch(q.mensch, roh) : null;
+    const frequenz = kammer * 2 ** ((no.midi - 69) / 12), beginn = roh + ((no.versatz ?? 0) + (hu?.ms ?? 0)) / 1000;
+    const [hl, hr] = st.rechne(werte, rate, { frequenz, dauer: Math.max(0.02, no.d * takt), staerke: (no.staerke ?? 0.8) * (hu?.faktor ?? 1), seed: hash(q.seed ?? 1, k), beginn, bpm: q.bpm });
     const i0 = Math.round(beginn * rate);
     for (let i = 0; i < hl.length; i++) { const j = i0 + i; if (j < 0) continue; if (j >= n) break; L[j] += hl[i]; R[j] += hr[i]; }
   });
