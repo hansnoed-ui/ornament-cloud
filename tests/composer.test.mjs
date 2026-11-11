@@ -464,6 +464,31 @@ test("Composer 0.3: Teile je Abschnitt (Drums und Bass), Wirbel an jedem Abschni
   assert.deepEqual(t.map((x) => [x.von, !!x.takte, x.fill]), [[0, false, "x x"], [4, true, "x x"]]);
 });
 
+test("Groove 0.1.0: Familien je Startwert, Backbeat bleibt, Abschnitte abgewandelt, reproduzierbar", async () => {
+  const G = await c("kern/grooves.js");
+  const { taktLesen } = await c("kern/muster.js");
+  const fam = new Set(), kicks = new Set();
+  for (let seed = 1; seed <= 40; seed++) { const g = G.grooveErzeugen({ stil: "dnb", seed }); fam.add(g.familie); kicks.add(g.spuren.kick.takte.join("|")); }
+  assert.equal(fam.size, Object.keys(G.FAMILIEN).length, "jede Familie kommt vor");
+  assert.ok(kicks.size >= 25, `verschiedene Kick-Phrasen: ${kicks.size}`);
+  for (const [key, f] of Object.entries(G.FAMILIEN)) for (const stil of ["dnb", "ornament"]) {
+    const ab = A.abschnitte(120, 174, { seed: 3 }).abschnitte, g = G.grooveErzeugen({ stil, seed: 9, familie: key, abschn: ab });
+    assert.equal(g.familie, key);
+    for (const z of g.spuren.snare.takte) for (const s of f.snare) assert.equal(z.split(" ")[s], "x!", `${key}: Backbeat auf ${s}`);
+    for (const [stimme, s] of Object.entries(g.spuren)) {
+      assert.equal(s.teile.length, ab.length, `${stimme}: ein Teil je Abschnitt`);
+      for (const z of [...s.takte, ...s.teile.flatMap((t) => [...(t.takte ?? []), ...(t.fill ? [t.fill] : [])])]) for (const x of taktLesen(z)) assert.ok(x.stelle >= 0 && x.stelle < 1, `${stimme}: ${z}`);
+    }
+    const ohne = G.grooveErzeugen({ stil, seed: 9, familie: key });
+    assert.deepEqual(ohne.spuren.kick.takte, g.spuren.kick.takte, "Grundzeilen unabhängig von den Abschnitten");
+    assert.deepEqual(G.grooveErzeugen({ stil, seed: 9, familie: key, abschn: ab }), g, "reproduzierbar");
+    const gas = g.spuren.kick.teile.find((t, i) => ab[i].typ === "gas"), atmen = g.spuren.kick.teile.find((t, i) => ab[i].typ === "atmen");
+    const n = (zz) => zz.reduce((s, z) => s + taktLesen(z).length / zz.length, 0);
+    if (gas) assert.notDeepEqual(gas.takte, g.spuren.kick.takte, `${key}: Gas geben weicht ab (dichter oder Break)`);
+    if (atmen) assert.ok(n(atmen.takte) < n(g.spuren.kick.takte), `${key}: Atmen dünner`);
+  }
+});
+
 // ---------- Bereiche und Fassungen 0.1.0 ----------
 const BE = await c("kern/bereiche.js");
 const FA = await c("kern/fassungen.js");
