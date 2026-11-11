@@ -5,14 +5,14 @@ elektronischer Avantgarde, Minimal Music, Jazz und Kammermusik. Die Referenzen s
 Es werden keine Songs, Riffs, Melodien, Akkordfolgen oder Klänge nachgebaut, und Bandnamen kommen in keinem Namen vor. Alle Klänge sind
 synthetisch. Christians eigene Aufnahmen können später über die Klangsammlung dazukommen, nur lokal.
 
-**Nichts gilt als gelungen, bevor Christian es gehört hat.** Alle Prüfungen hier sind technisch.
+**Nichts gilt als gelungen, bevor Christian es gehört hat.** **Urteile sind Gewichte, keine Filter:** Bienne soll verschiedenste Tracks erzeugen, nicht die Favoriten wiederholen (Christian, 11.11.). Alle Prüfungen hier sind technisch.
 
 ## Plan (Phasen, je ein PR, Merge nur mit OK)
 
 | Phase | Inhalt | Stand |
 |---|---|---|
 | 1 | **Harmonik 0.1.0** (`kern/harmonik.js`): Vokabular, Modi, Stimmführung, harmonischer Rhythmus, Spannung, Generator, Voicings für Fläche, Klavier, Gitarre und Bass; dazu `lydisch`/`mixolydisch` in `LEITERN` und Noten als Ereignisse in `erzeugen.js` | fertig |
-| 2 | **Metrum** (`kern/metrum.js`): zentrale Taktlänge `taktSek(tempo, taktart)` statt `240 / bpm`, Taktarten 3/4–12/8, Gruppierungen, echte Tuplets (rationale Zeiten), Polymetrik mit geplanten Treffpunkten, Humanisierung als Profil je Rolle (mit Korrelation) | a Taktarten, b Tuplets, c Polymetrik fertig; **d Humanisierung in Arbeit** |
+| 2 | **Metrum** (`kern/metrum.js`): zentrale Taktlänge `taktSek(tempo, taktart)` statt `240 / bpm`, Taktarten 3/4–12/8, Gruppierungen, echte Tuplets (rationale Zeiten), Polymetrik mit geplanten Treffpunkten, Humanisierung als Profil je Rolle (mit Korrelation) | fertig (a Taktarten, b Tuplets, c Polymetrik, d Humanisierung) |
 | 3 | **Instrumente** als Proben: Gitarre (sechs Saiten auf der Karplus-Strong-Saite), E-Bass und Muted Bass (Bass 0.2.0), Drums 0.2.0 (Ghost-Stufen, Cross-Stick, Besen), Klavier (akustisch, präpariert), Streicherfläche, dunkler Mono-Lead | offen |
 | 4 | **Interlocking** (Verteiler, Eigenständigkeit und Zusammengehörigkeit), **Echo 0.2.0** und Echos als Ereignisse im Plan | offen |
 | 5 | **`kern/bienne.js`**: Profil, Ausprägung *Schichtung*, ganzer Track, drei Startwerte, Oberfläche | offen |
