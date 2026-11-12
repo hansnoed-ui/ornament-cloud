@@ -77,9 +77,14 @@ function herkunftVon(ordner, name) {
   return existsSync(f) ? JSON.parse(readFileSync(f, "utf8")) : null;
 }
 
-function materialLaden(ordner, s) {
+/**
+ * Quellen laden. Ohne «nur» alle (wie bisher); als Map mit «nur» (Menge von Quell-IDs) werden nur diese geladen – spart Arbeitsspeicher,
+ * seit die Sammlung viele lange Quellen hat (12.11.2026). Beim Track wird erst geplant, dann nur das Verwendete geladen.
+ */
+function materialLaden(ordner, s, nur = null) {
   const m = new Map();
   for (const q of s.quellen) {
+    if (nur && !nur.has(q.id)) continue;
     const pfad = join(ordner, q.name);
     if (!existsSync(pfad)) { console.log(`! fehlt: ${q.name} (${q.id})`); continue; }
     const bytes = readFileSync(pfad);
@@ -225,7 +230,7 @@ if (modus === "sammlung") {
   }
   writeFileSync(join(ziel, "studie.json"), JSON.stringify(ergebnis, null, 1));
 } else if (modus === "track") {
-  const s = sammlungAktualisieren(ordner), m = materialLaden(ordner, s); mkdirSync(ziel, { recursive: true });
+  const s = sammlungAktualisieren(ordner); mkdirSync(ziel, { recursive: true });
   const auswahl = process.env.LUC_QUELLEN ? s.quellen.filter((q) => q.name.startsWith(process.env.LUC_QUELLEN)).map((q) => q.id) : null;
   // LUC_MATERIAL='{"rolle": ["Name oder Teil davon", …], …}' legt das Material je Rolle ausdrücklich fest
   const ersetze = process.env.LUC_MATERIAL ? Object.fromEntries(Object.entries(JSON.parse(process.env.LUC_MATERIAL)).map(([r, namen]) => [r, namen.map((n) => { const c = s.ausschnitte.find((x) => x.name === n) ?? s.ausschnitte.find((x) => (x.name ?? "").includes(n)); if (!c) throw new Error(`kein Ausschnitt «${n}»`); return c.id; })])) : null;
@@ -234,6 +239,7 @@ if (modus === "sammlung") {
   const schnipsel = process.env.LUC_SCHNIPSEL ? JSON.parse(process.env.LUC_SCHNIPSEL).map(({ name, ...x }) => ({ ...x, id: ausschnittVon(name) })) : undefined;
   const plan = LU.planen({ sammlung: s, seed, auswahl, ersetze, bpm: process.env.LUC_BPM ? Number(process.env.LUC_BPM) : undefined, variieren: !!process.env.LUC_VARIIEREN, makros: process.env.LUC_MAKROS ? JSON.parse(process.env.LUC_MAKROS) : undefined, geruest: process.env.LUC_GERUEST ? JSON.parse(process.env.LUC_GERUEST) : undefined, groove: process.env.LUC_GROOVE ? JSON.parse(process.env.LUC_GROOVE) : undefined, timing: process.env.LUC_TIMING ? JSON.parse(process.env.LUC_TIMING) : undefined, harmonie: process.env.LUC_HARMONIE ? JSON.parse(process.env.LUC_HARMONIE) : undefined, zelle: process.env.LUC_ZELLE ? JSON.parse(process.env.LUC_ZELLE) : undefined, drumSchichten: process.env.LUC_DRUMSCHICHTEN ? JSON.parse(process.env.LUC_DRUMSCHICHTEN) : undefined, drumVarianten: process.env.LUC_DRUMVARIANTEN ? JSON.parse(process.env.LUC_DRUMVARIANTEN) : undefined, einstieg: process.env.LUC_EINSTIEG ? JSON.parse(process.env.LUC_EINSTIEG) : undefined, fragmentBeat: process.env.LUC_FRAGMENTBEAT ? JSON.parse(process.env.LUC_FRAGMENTBEAT) : undefined, bassWerte: process.env.LUC_BASSWERTE ? JSON.parse(process.env.LUC_BASSWERTE) : undefined, fragmentLoop: process.env.LUC_FRAGMENTLOOP ? JSON.parse(process.env.LUC_FRAGMENTLOOP) : undefined, drumKlaenge: process.env.LUC_DRUMS ? Object.fromEntries(Object.entries(JSON.parse(process.env.LUC_DRUMS)).map(([k, namen]) => [k, namen.map((n) => { const c = s.ausschnitte.find((x) => x.name === n) ?? s.ausschnitte.find((x) => (x.name ?? "").includes(n)); if (!c) throw new Error(`kein Ausschnitt «${n}»`); return c.id; })])) : undefined , schnipsel, schnipselPegel: process.env.LUC_SCHNIPSELPEGEL ? Number(process.env.LUC_SCHNIPSELPEGEL) : undefined, bassStimme: process.env.LUC_BASSSTIMME ? JSON.parse(process.env.LUC_BASSSTIMME) : undefined });
   spurenAnpassen(plan);
+  const m = materialLaden(ordner, s, new Set(plan.spuren.flatMap((x) => Object.values(x.quelle.klaenge ?? {}).map((kl) => kl.quelle))));
   console.log(`Tonart ${plan.grundton} ${plan.leiter} (${plan.tonartGrund}), ${plan.bpm} BPM, ${plan.takte} Takte + ${LU.AUSKLANG} Ausklang, ${plan.spuren.length} Spuren`);
   for (const h of plan.hinweise) console.log(`  Hinweis: ${h}`);
   console.log(herkunftTabelle(plan, s));

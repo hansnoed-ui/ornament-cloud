@@ -484,7 +484,7 @@ export function planen(eingabe) {
       }
     }
     // fragmentLoop: { takte }: die Phrase läuft unzerschnitten als Loop durch (ausser in Verwandlung und Nachbild, dort bleiben die Schnitte)
-    if (eingabe.fragmentLoop) for (const ab of abschnitte) { if (["verwandlung", "nachbild"].includes(ab.typ)) continue; const lang = eingabe.fragmentLoop.takte ?? 2; for (let p = 0; p + lang <= ab.bis - ab.von; p += lang) ev.push({ t: ab.von + p, d: lang, klang: "f", ab: 0, staerke: 0.8, aus: 0.03 }); }
+    if (eingabe.fragmentLoop) for (const ab of abschnitte) { if (ab.opt?.loop === false || (ab.opt?.loop !== true && ["verwandlung", "nachbild"].includes(ab.typ))) continue; /* Abschnitts-Option «loop» */ const lang = eingabe.fragmentLoop.takte ?? 2; for (let p = 0; p + lang <= ab.bis - ab.von; p += lang) ev.push({ t: ab.von + p, d: lang, klang: "f", ab: 0, staerke: 0.8, aus: 0.03 }); }
     sampler("fragment", `Fragmente · ${quelleName(a.quelle)}`, "fragment", "perkussion", { f: klangVon(a.id, warm([{ art: "band", halbtoene: trans }, { art: "hochpass", f: 90 }, { art: "normal", db: -18 }])) }, ev, { pegel: -9, pan: -0.15, swing: TI.fragment[0], raum: hall(14, 1.4) });
     if (trans) hinweise.push(`Fragmente: ${trans > 0 ? "+" : ""}${trans} Halbtöne im Band-Modus (Tonart der Quelle → Tonart des Tracks); die Schnittlänge ändert sich mit`);
   }
