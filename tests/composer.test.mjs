@@ -1080,3 +1080,28 @@ test("Bass 0.2.0: alte Stimmen dieselben Objekte, Muted kurz, verzerrt mit saube
   const z = sv("bass@0.2.0", "verzerrt"), [zL] = z.rechne(std(z), 48000, { frequenz: 55, dauer: 1, staerke: 0.8, seed: 2 });
   assert.ok(zL.every(Number.isFinite) && rms(zL, 0.1, 0.5) > 0.05);
 });
+
+test("Lucerne: Architektur je Abschnitt (Beat, Fills, Bass, Harmonie, Motiv, Atmosphäre), Schnipsel, Bass-Stimme – ohne Angabe unverändert", () => {
+  const { s } = testsammlung();
+  const geruest = [["auftauchen", 4, { beat: "nurHats", bass: "lang", atmo: { staerke: 0.5, ein: 2 } }], ["gedanke", 8, { beat: "halbzeit", fills: 0, bass: "kick" }], ["vertiefung", 8, { beat: "boombap", fills: 4, fillArten: ["stille"], harmonie: false, motiv: false }], ["wiederkehr", 8, { aufbau: true, bass: "aus" }], ["nachbild", 4]];
+  const id = s.ausschnitte[0].id;
+  const p = LU.planen({ sammlung: s, seed: 2, geruest, schnipsel: [{ takt: 5, id, staerke: 0.9 }], bassStimme: { erzeuger: "bass@0.2.0", stimme: "gedaempft", variante: "Schaumstoff" } });
+  const k = p.drumZeilen.kick, sn = p.drumZeilen.snare, h = p.drumZeilen.hat;
+  assert.equal(k[0].replace(/[^.]/g, "").length, 16, "Auftauchen ohne Kick");
+  assert.ok(h[0].split(" ").filter((x) => x !== ".").length >= 8, "nur Hats");
+  assert.equal(sn[4].split(" ")[8] !== ".", true, "Halbzeit: Snare auf 9");
+  assert.ok(p.bassZeilen[0].startsWith("1 - - -"), "langer Ton");
+  assert.ok(p.bassZeilen.slice(20, 28).every((z) => /^[. ]+$/.test(z)), "Bass aus in der Wiederkehr");
+  assert.ok(!p.motivNoten.some((n) => n.t >= 12 && n.t < 20), "kein Motiv in der Vertiefung");
+  assert.ok(!p.marker.some((m) => m.art === "harmonie" && m.takt >= 12 && m.takt < 20), "keine Harmonie in der Vertiefung");
+  const kv = k.slice(12, 20).map((z) => z.split(" ").slice(12).every((x) => x === "."));
+  assert.ok(kv[3] && kv[7], "Fill «stille» alle vier Takte");
+  assert.ok(p.spuren.some((x) => x.key === "schnipsel"));
+  const bass = p.spuren.find((x) => x.key === "bass");
+  assert.equal(bass.quelle.erzeuger, "bass@0.2.0"); assert.equal(bass.quelle.stimme, "gedaempft");
+  const um = p.spuren.find((x) => x.key === "umgebung");
+  assert.ok(!um || um.quelle.ereignisse.some((e) => e.schritte?.some((x) => x.art === "koerner" && x.laenge === 650)), "Atmosphäre im Auftauchen");
+  // ohne Optionen: gleiche Zeilen wie mit leerem Optionsobjekt? Nein – ohne Optionen exakt der alte Plan
+  const g0 = geruest.map(([t, l]) => [t, l]);
+  assert.equal(JSON.stringify(LU.planen({ sammlung: s, seed: 2, geruest: g0 })), JSON.stringify(LU.planen({ sammlung: s, seed: 2, geruest: g0, schnipsel: [] })));
+});

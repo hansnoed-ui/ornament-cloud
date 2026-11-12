@@ -45,6 +45,23 @@ export const GROOVE = Object.freeze({
   B: { kick: [1, 8, 11], snare: [5, 13], hat: [1, 3, 5, 7, 9, 11], offen: [15], ghost: [16] },
   V: { kick: [1, 4, 11], snare: [13], hat: [1, 3, 5, 9, 11, 13], offen: [], ghost: [7, 15] },   // Verwandlung: halbe Zeit, Kick auf 4
 });
+/**
+ * Beat-Vorlagen für Abschnitte mit eigener Architektur (Gerüst-Option «beat»): je zwei Takte [A, B]. Seit dem 12.11.2026 (Strikk 2):
+ * jeder Track soll anders gebaut sein. Ohne Option bleibt jeder Abschnitt bei seinem bisherigen Groove.
+ */
+export const BEAT_VORLAGEN = Object.freeze({
+  standard: ["A", "B"],
+  halbzeit: [{ kick: [1, 4, 11], snare: [9], hat: [1, 3, 5, 7, 9, 11, 13, 15], offen: [], ghost: [16] }, { kick: [1, 11, 12], snare: [9], hat: [1, 3, 5, 7, 9, 11, 13], offen: [15], ghost: [6] }],
+  boombap: [{ kick: [1, 8, 11], snare: [5, 13], hat: [1, 3, 5, 7, 9, 11, 13, 15], offen: [], ghost: [] }, { kick: [1, 3, 10, 11], snare: [5, 13], hat: [1, 3, 5, 7, 9, 11, 13, 15], offen: [], ghost: [16] }],
+  gerade: [{ kick: [1, 5, 9, 13], snare: [5, 13], hat: [3, 7, 11, 15], offen: [], ghost: [] }, { kick: [1, 5, 9, 13], snare: [5, 13], hat: [3, 7, 11, 15], offen: [16], ghost: [12] }],
+  verschleppt: [{ kick: [1, 6, 11], snare: [5, 14], hat: [1, 4, 7, 9, 12, 15], offen: [], ghost: [8, 16] }, { kick: [1, 4, 11, 14], snare: [5, 13], hat: [1, 4, 7, 9, 12], offen: [15], ghost: [10] }],
+  gebrochen: [{ kick: [1, 11], snare: [5, 15], hat: [1, 3, 5, 7, 9, 11, 13, 15], offen: [], ghost: [8, 12] }, { kick: [3, 9, 12], snare: [5, 13], hat: [1, 3, 5, 9, 11, 13], offen: [7], ghost: [16] }],
+  nurKick: [{ kick: [1, 9], snare: [], hat: [], offen: [], ghost: [] }, { kick: [1, 9, 11], snare: [], hat: [], offen: [], ghost: [] }],
+  nurHats: [{ kick: [], snare: [], hat: [1, 3, 5, 7, 9, 11, 13, 15], offen: [], ghost: [] }, { kick: [], snare: [], hat: [1, 3, 5, 7, 9, 11, 13, 15], offen: [15], ghost: [] }],
+  kickHats: [{ kick: [1, 7, 9], snare: [], hat: [1, 3, 5, 7, 9, 11, 13, 15], offen: [], ghost: [] }, { kick: [1, 8, 11], snare: [], hat: [1, 3, 5, 7, 9, 11], offen: [15], ghost: [] }],
+  keiner: [{ kick: [], snare: [], hat: [], offen: [], ghost: [] }, { kick: [], snare: [], hat: [], offen: [], ghost: [] }],
+});
+
 /** Swing je Rolle (Anteil eines Sechzehntels: 0,10 = 55:45, 0,16 = 58:42) und Mikroverschiebung (ms, fest + zufällig mit Startwert) */
 // Schleppend (Urteil 10.11.): Snare und Ghosts deutlich hinter dem Schlag, Hi-Hats mit mehr Swing und etwas später, die Kick bleibt vorn
 export const TIMING = Object.freeze({ kick: [0, 0, 2], snare: [0, 20, 3], hat: [0.2, 9, 4], offen: [0.2, 9, 3], ghost: [0.18, 16, 4], motiv: [0.1, 0, 4], gegen: [0.1, 6, 4], fragment: [0.12, 6, 0] });
@@ -81,7 +98,7 @@ export function abschnitteFuer({ seed = 1, variieren = false, studie = false, ge
   let von = 0;
   // eigenes Gerüst (für längere, anders gebaute Tracks): [[typ, takte], …]; ein Typ darf mehrfach vorkommen (Name mit II, III …)
   const zaehler = {};
-  return (geruest ?? GERUEST).map(([typ, l]) => { const lang = variieren && l === 16 ? [8, 16, 16][Math.floor(rnd() * 3)] : l; zaehler[typ] = (zaehler[typ] ?? 0) + 1; const a = { typ, name: NAMEN[typ] + (zaehler[typ] > 1 ? ` ${["", "II", "III", "IV"][zaehler[typ] - 1] ?? zaehler[typ]}` : ""), von, bis: von + lang }; von += lang; return a; });
+  return (geruest ?? GERUEST).map(([typ, l, opt]) => { const lang = variieren && l === 16 ? [8, 16, 16][Math.floor(rnd() * 3)] : l; zaehler[typ] = (zaehler[typ] ?? 0) + 1; const a = { typ, name: NAMEN[typ] + (zaehler[typ] > 1 ? ` ${["", "II", "III", "IV"][zaehler[typ] - 1] ?? zaehler[typ]}` : ""), von, bis: von + lang }; if (opt) a.opt = opt; von += lang; return a; });
 }
 
 // ---------- Material ----------
@@ -179,18 +196,26 @@ export function planen(eingabe) {
     for (let b = 0; b < gesamt; b++) {
       const a = typVon(b), p = b - a.von, L = a.bis - a.von, letzter = p === L - 1, nach = abschnitte.find((x) => x.von === a.bis)?.typ;
       let g = null;
-      if (["gedanke", "vertiefung", "wiederkehr"].includes(a.typ)) g = grooveTakt(p % 2 ? GR.B : GR.A);
+      const o = a.opt ?? {};
+      if (o.beat) { const v = BEAT_VORLAGEN[o.beat] ?? (GR[o.beat] ? [o.beat, o.beat] : null) ?? (Array.isArray(o.beat) ? o.beat : null); if (!v) throw new Error(`Beat «${o.beat}» unbekannt`); const x = v[p % 2]; g = grooveTakt(typeof x === "string" ? GR[x] : x); }
+      else if (["gedanke", "vertiefung", "wiederkehr"].includes(a.typ)) g = grooveTakt(p % 2 ? GR.B : GR.A);
       else if (a.typ === "verwandlung") g = grooveTakt(GR.V);
       else if (a.typ === "auftauchen" && letzter && !studie && (eingabe.einstieg?.auftakt ?? true)) g = { kick: [], snare: [], hat: [9, 11, 13, 15], offen: [], ghost: [] };   // vorgezogener Eintritt
       else if (a.typ === "freistellung" && p < 4) g = { kick: [], snare: [], hat: [1, 5, 9, 13], offen: [], ghost: [], leise: true };
       else if (a.typ === "nachbild" && p < 4) g = { kick: [1], snare: [], hat: [1, 5, 9, 13], offen: [], ghost: [], leise: true };
       const v = { hat32: false };
       if (g && a.typ === "wiederkehr" && p % 4 === 2) g.kick = [...new Set([...g.kick, 4])].sort((x, y) => x - y);   // Erinnerung an die Verwandlung
-      if (g && ["gedanke", "vertiefung", "wiederkehr", "verwandlung"].includes(a.typ)) {
-        if (letzter && nach === "freistellung") { g.kick = g.kick.filter((s) => s <= 8); g.snare = g.snare.filter((s) => s <= 8); g.hat = g.hat.filter((s) => s <= 8); g.ghost = []; g.offen = []; }   // Bruch: die Drums brechen nach der halben Note ab
-        else if (p % 8 === 7 || letzter) {
-          const art = ["snare", "pause", "hat32"][Math.floor(rnd() * 3)];
-          if (art === "snare") { g.ghost = [...g.ghost.filter((s) => s < 13), 14, 15]; g.snare = [...g.snare, 16]; }
+      // «aufbau»: in den letzten vier Takten des Abschnitts dichter werdende Hats und eine Snare-Rolle in der letzten Hälfte
+      if (g && o.aufbau && p >= L - 4) { g.hat = [...new Set([...g.hat, ...(p >= L - 2 ? [2, 4, 6, 8, 10, 12, 14, 16] : [])])].sort((x, y) => x - y); if (letzter) { g.snare = [...new Set([...g.snare, 9, 11, 13, 14, 15, 16])]; g.ghost = []; } }
+      const fillAlle = o.fills ?? 8;
+      if (g && (o.beat || ["gedanke", "vertiefung", "wiederkehr", "verwandlung"].includes(a.typ))) {
+        if (letzter && nach === "freistellung" && o.bruch !== "keiner") { g.kick = g.kick.filter((s) => s <= 8); g.snare = g.snare.filter((s) => s <= 8); g.hat = g.hat.filter((s) => s <= 8); g.ghost = []; g.offen = []; }   // Bruch: die Drums brechen nach der halben Note ab
+        else if (fillAlle && !(o.aufbau && letzter) && (p % fillAlle === fillAlle - 1 || letzter)) {
+          const arten = o.fillArten ?? ["snare", "pause", "hat32"], art = arten[Math.floor(rnd() * arten.length)];
+          if (art === "kick") g.kick = [...new Set([...g.kick, 14, 16])];
+          else if (art === "stille") { g.kick = g.kick.filter((s) => s < 13); g.snare = g.snare.filter((s) => s < 13); g.hat = g.hat.filter((s) => s < 13); g.ghost = []; g.offen = []; }
+          else if (art === "offen") g.offen = [...new Set([...g.offen, 15])];
+          else if (art === "snare") { g.ghost = [...g.ghost.filter((s) => s < 13), 14, 15]; g.snare = [...g.snare, 16]; }
           else if (art === "pause") { g.kick = g.kick.filter((s) => s < 9); g.offen = []; }
           else v.hat32 = true;
           plan.marker.push({ art: "fill", takt: b, text: art });
@@ -247,7 +272,12 @@ export function planen(eingabe) {
     for (let b = 0; b < gesamt; b++) {
       const a = typVon(b), p = b - a.von, r = harmonie[b], n = harmonie[b + 1] ?? r, t = Array(16).fill(".");
       const quinte = ((r - 1 + 4) % 7) + 1, naehe = ((n - 1 + (rnd() < 0.5 ? 1 : 6)) % 7) + 1;
-      if ((["gedanke", "vertiefung", "wiederkehr"].includes(a.typ) && !(a.typ === "gedanke" && p < (eingabe.einstieg?.bassAb ?? 4) && !studie)) || (a.typ === "auftauchen" && p >= (eingabe.einstieg?.bassImAuftauchen ?? 999))) {   // einstieg: { auftakt, bassAb (Takte im Ersten Gedanken), bassImAuftauchen (ab Takt) }
+      // Abschnitts-Option «bass»: "aus" | "lang" (ganze Töne) | "kick" (kurz mit jeder Kick) | "standard" | Zahl (Standard ab diesem Takt)
+      const ob = a.opt?.bass, kickT = (drumZeilen.kick[b] ?? "").split(" ");
+      if (ob === "aus") { /* still */ }
+      else if (ob === "lang") { t[0] = `${r}`; for (let i = 1; i < 16; i++) t[i] = "-"; if (n !== r && p % 2) { t[12] = `${naehe}_`; t[13] = "-"; } }
+      else if (ob === "kick") { kickT.forEach((x, i) => { if (x === "." || i >= 16) return; t[i] = i === 0 ? `${r}` : (i % 4 === 2 && rnd() < 0.35 ? `${quinte}_` : `${r}`); if (i + 1 < 16 && kickT[i + 1] === ".") t[i + 1] = "-"; }); }
+      else if (ob != null ? (ob === "standard" || (typeof ob === "number" && p >= ob)) : ((["gedanke", "vertiefung", "wiederkehr"].includes(a.typ) && !(a.typ === "gedanke" && p < (eingabe.einstieg?.bassAb ?? 4) && !studie)) || (a.typ === "auftauchen" && p >= (eingabe.einstieg?.bassImAuftauchen ?? 999)))) {   // einstieg: { auftakt, bassAb (Takte im Ersten Gedanken), bassImAuftauchen (ab Takt) }
         const A = p % 2 === 0;
         if (A) { t[0] = `${r}`; for (let i = 1; i < 6; i++) t[i] = "-"; t[8] = `${r}`; t[9] = "-"; t[10] = "-"; if (a.typ === "wiederkehr" && p % 8 === 6) t[14] = `${r}'_`; }
         else { t[0] = `${r}`; for (let i = 1; i < 7; i++) t[i] = "-"; t[7] = `${quinte}_`; t[10] = `${r}`; t[11] = "-"; if (n !== r) t[13] = `${naehe}_`; }
@@ -260,8 +290,10 @@ export function planen(eingabe) {
   }
   plan.bassZeilen = bassZeilen;
   {
-    const st = stimmeVon("bass@0.1.0", "rund"), v = st.varianten.find((x) => x.name === "Kruder & Dorfmeister") ?? st.varianten[0];
-    plan.spuren.push({ key: "bass", name: "Bass · Rund", typ: "bass", rolle: "bass", pegel: st.pegel ?? -7, pan: 0, quelle: { art: "erzeugt", erzeuger: "bass@0.1.0", stimme: "rund", variante: v.name, werte: { ...v.werte, ...(eingabe.bassWerte ?? {}) }, takte: bassZeilen, anzahl: gesamt, bpm, grundton: ton.grundton, leiter: ton.leiter, kammerton: plan.kammerton, swing: 0, menschlich: 0, versatz: 0, seed: hash(seeds.bass, "b") % 99991 + 1, lucerne: "bass" } });
+    // bassStimme (seit 12.11.2026): { erzeuger, stimme, variante } – ohne Angabe der runde Bass wie bisher
+    const bs = eingabe.bassStimme ?? {}, erzB = bs.erzeuger ?? "bass@0.1.0", stB = bs.stimme ?? "rund";
+    const st = stimmeVon(erzB, stB), v = st.varianten.find((x) => x.name === (bs.variante ?? "Kruder & Dorfmeister")) ?? st.varianten[0];
+    plan.spuren.push({ key: "bass", name: bs.stimme ? `Bass · ${st.name}` : "Bass · Rund", typ: "bass", rolle: "bass", pegel: (st.pegel ?? -7) + (bs.pegel ?? 0), pan: 0, quelle: { art: "erzeugt", erzeuger: erzB, stimme: stB, variante: v.name, werte: { ...v.werte, ...(eingabe.bassWerte ?? {}) }, takte: bassZeilen, anzahl: gesamt, bpm, grundton: ton.grundton, leiter: ton.leiter, kammerton: plan.kammerton, swing: 0, menschlich: 0, versatz: 0, seed: hash(seeds.bass, "b") % 99991 + 1, lucerne: "bass" } });
   }
 
   // ---------- Sampler-Spuren ----------
@@ -360,6 +392,7 @@ export function planen(eingabe) {
     const wk = abschnitte.find((a) => a.typ === "wiederkehr");
     if (wk) { const erste = motivNoten.find((x) => Math.abs(x.t - wk.von) < 1e-6); if (erste) { erste.t -= 2 / 16; erste.d += 2 / 16; erste.vorgezogen = true; } }
   }
+  if (abschnitte.some((a) => a.opt?.motiv === false)) motivNoten = motivNoten.filter((no) => typVon(Math.floor(no.t)).opt?.motiv !== false);   // Abschnitts-Option «motiv: false»
   plan.motivNoten = motivNoten;
   if (motivTon.length) {
     const ev = [];
@@ -385,7 +418,8 @@ export function planen(eingabe) {
     let b = 0;
     while (kand.length && b < takte) {
       const a = typVon(b);
-      if (a.typ === "auftauchen" || (a.typ === "gedanke" && b - a.von < 2 && !studie)) { b++; continue; }
+      const oh = a.opt?.harmonie;
+      if (oh === false || (oh !== true && (a.typ === "auftauchen" || (a.typ === "gedanke" && b - a.von < 2 && !studie)))) { b++; continue; }
       let e = b + 1; while (e < takte && harmonie[e] === harmonie[b] && typVon(e) === a) e++;
       const ak = akkordVon(harmonie[b]), w = akkordKlang(kand, ak.grundton, ak.art), key = w.a.id;
       klaenge[key] ??= klangVon(key, warm([{ art: "normal", db: -20 }]));
@@ -475,14 +509,29 @@ export function planen(eingabe) {
     sampler("stimme", `Stimme · ${quelleName(a.quelle)}`, "voice_optional", "stimme", { s: klangVon(a.id, warm([{ art: "band", halbtoene: trans }, { art: "hochpass", f: 220 }, { art: "tiefpass", f: 3800 }, { art: "normal", db: -20 }])) }, ev, { pegel: -11, pan: 0.12, raum: hall(34, 3), echo: { anteil: Math.round(25 * raumM), zeit: Math.round((0.75 * 60000) / bpm) } });
   }
 
+  // Schnipsel (seit 12.11.2026): klar erkennbare Ausschnitte an festen Stellen, unverfremdet und ohne Leiern.
+  // eingabe.schnipsel: [{ takt (ab 0, auch Bruchteile), id, staerke, schritte, pan }]
+  if (eingabe.schnipsel?.length) {
+    const ids = [...new Set(eingabe.schnipsel.map((x) => x.id))], klaenge = Object.fromEntries(ids.map((id, i) => [`s${i}`, klangVon(id, [{ art: "hochpass", f: 60 }, { art: "normal", db: -18 }], { aus: 0.4 })]));
+    const ev = eingabe.schnipsel.map((x) => ({ t: x.takt, klang: `s${ids.indexOf(x.id)}`, staerke: x.staerke ?? 0.8, ...(x.schritte ? { schritte: x.schritte } : {}), ...(x.d ? { d: x.d } : {}) }));
+    for (const x of eingabe.schnipsel) plan.marker.push({ art: "schnipsel", takt: x.takt, text: cut(x.id)?.name ?? x.id });
+    sampler("schnipsel", "Schnipsel", "accent", "perkussion", klaenge, ev, { pegel: eingabe.schnipselPegel ?? -5, raum: hall(16, 1.6) });
+  }
+
   // Umgebung (frei, nach Zeit geführt): ein ferner, verlangsamter Teppich aus der Harmoniequelle; im Nachbild die Quelle unbearbeitet
   if (!studie) {
     const amb = material.ambience[0] ?? material.harmonic_layer[0], ev = [];
     if (amb) {
       const sek = (takt) => takt * T;
-      for (const ab of abschnitte.filter((x) => ["auftauchen", "freistellung", "nachbild"].includes(x.typ))) {
+      for (const ab of abschnitte.filter((x) => ["auftauchen", "freistellung", "nachbild"].includes(x.typ) && x.opt?.atmo == null)) {
         const dauer = (ab.bis - ab.von + (ab.typ === "auftauchen" ? 2 : ab.typ === "nachbild" ? AUSKLANG : 1)) * T;
         ev.push({ t: sek(ab.von), d: dauer, klang: "u", staerke: ab.typ === "auftauchen" ? 1 : 0.6, aus: 2.5, schritte: [{ art: "koerner", dauer: dauer + 3, dichte: 24, laenge: 120, streuung: 0.12, seed: ab.von + 7, breite: 0.8 }, { art: "tiefpass", f: 2400 }, { art: "hochpass", f: 140 }, { art: "huelle", ein: ab.typ === "auftauchen" ? 6 : 2.5, aus: 2.5 }] });
+      }
+      // Abschnitts-Option «atmo»: Stärke (0–1) oder { staerke, ein, aus } (s) – ruhig gedehnte Geräuschfläche ohne Tonhöhen-Streuung,
+      // die mit dem Abschnitt auf- und abbaut; 0 = keine. Ersetzt im Abschnitt die bisherige Umgebung.
+      for (const ab of abschnitte.filter((x) => x.opt?.atmo)) {
+        const o = typeof ab.opt.atmo === "number" ? { staerke: ab.opt.atmo } : ab.opt.atmo, dauer = (ab.bis - ab.von + 1) * T;
+        ev.push({ t: sek(ab.von), d: dauer, klang: "u", staerke: o.staerke ?? 0.6, aus: o.aus ?? 3, schritte: [{ art: "koerner", dauer: dauer + 3, dichte: 9, laenge: 650, streuung: 0.04, seed: ab.von + 11, breite: 0.85 }, { art: "hochpass", f: o.hochpass ?? 70 }, { art: "tiefpass", f: o.tiefpass ?? 9000 }, { art: "huelle", ein: o.ein ?? Math.min(8, dauer / 3), aus: o.aus ?? Math.min(8, dauer / 3) }] });
       }
       const nb = abschnitte.find((x) => x.typ === "nachbild"), quelle = cut(amb);
       if (nb && quelle) { ev.push({ t: sek(nb.von + 3), klang: "o", staerke: 0.75 }); plan.marker.push({ art: "material", takt: nb.von + 3, text: `Originalausschnitt ${quelleName(quelle.quelle)} ${quelle.von}–${quelle.bis} s` }); }
