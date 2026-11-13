@@ -503,9 +503,9 @@ ${RASTER_OEFFENTLICH ? `<!-- Prüfraster (seit 21. Oktober 2026 statt «Denken»
     veroeffentliche({ pfad: "", titel: "ornament.cloud", beschreibung: SEITE.beschreibung, body, jsonld: [personLd()], module: ["tafeln-leben.js"], bildAlt: T.start.bildAlt });
   }
 
-  /* ---------- Sehen (seit 13. November 2026, Christian: «dass das sehen nicht dabei ist»): das Gegenstück zu «Hören» – Film, Fotografie, die Filme der Bild-Apps, die Räder ---------- */
+  /* ---------- Sehen (seit 13. November 2026, Christian: «dass das sehen nicht dabei ist»): das Gegenstück zu «Hören». Seit dem Nachmittag desselben Tages («weg 1») nur noch
+     fertige Bilder: der Film, Fotografie, Prints, Ansichten der Ausstellung. Alles zum Selbermachen steht unter «Apps», auch Das Dritte Rad. ---------- */
   {
-    const bildApps = APPS.filter((a) => KACHEL_FILME.has(a.slug));
     const body = `
 <section class="stueck-kopf"><div class="spalte">
   <h1 class="titel">${esc(T.sehen.titel)}<small>${esc(T.sehen.small)}</small></h1>
@@ -514,16 +514,16 @@ ${RASTER_OEFFENTLICH ? `<!-- Prüfraster (seit 21. Oktober 2026 statt «Denken»
   ${schauFilm("h2")}
 </div></section>
 <section class="abschnitt" aria-labelledby="sehen-foto-titel"><div class="spalte">
-  <div class="abschnitt-kopf"><h2 id="sehen-foto-titel">${zeichen("fotografie")}${esc(T.sehen.fotografie)}</h2><p>${esc(T.sehen.fotografieText)}</p><a class="weiter" href="${B}werke/#fotografie">${esc(T.sehen.alleFotos)}</a></div>
-  ${fotoGalerie(FOTOS.filter((f) => f.start), { quadrat: true })}
+  <div class="abschnitt-kopf"><h2 id="sehen-foto-titel">${zeichen("fotografie")}${esc(T.sehen.fotografie)}</h2><p>${esc(T.sehen.fotografieText)}</p><a class="weiter" href="${B}angebot/fotografie/">${esc(T.werke.fotoAuftrag)}</a></div>
+  ${fotoGalerie(FOTOS)}
 </div></section>
-<section class="abschnitt" aria-labelledby="sehen-filme-titel"><div class="spalte">
-  <div class="abschnitt-kopf"><h2 id="sehen-filme-titel">${zeichen("spielen")}${esc(T.sehen.filme)}</h2><p>${esc(T.sehen.filmeText)}</p><a class="weiter" href="${B}apps/">${esc(T.start.alleApps)}</a></div>
-  <div class="reihe zeilen">${bildApps.map(appKachel).join("")}</div>
+<section class="abschnitt" aria-labelledby="sehen-prints-titel"><div class="spalte">
+  <div class="abschnitt-kopf"><h2 id="sehen-prints-titel">${zeichen("werke")}${esc(T.sehen.prints)}</h2><p>${esc(T.sehen.printsText)}</p><a class="weiter" href="${B}werke/">${esc(T.start.alleWerke)}</a></div>
+  ${fotoGalerie(PRINTS, { ohneZeile: true })}
 </div></section>
-<section class="abschnitt" aria-labelledby="sehen-raeder-titel"><div class="spalte">
-  <div class="abschnitt-kopf"><h2 id="sehen-raeder-titel">${zeichen("rad")}${esc(T.sehen.raeder)}</h2><p>${esc(T.sehen.raederText)}</p></div>
-  <div class="schau">${ZEIGEN.map(schauStueck).join("")}</div>
+<section class="abschnitt" aria-labelledby="sehen-ausstellung-titel"><div class="spalte">
+  <div class="abschnitt-kopf"><h2 id="sehen-ausstellung-titel">${esc(T.sehen.ausstellung)}</h2><p>${esc(T.sehen.ausstellungText)}</p><a class="weiter" href="${B}angebot/kuration/">${esc(T.sehen.ausstellungWeiter)}</a></div>
+  ${fotoGalerie(AUSSTELLUNG.slice(0, 6))}
 </div></section>
 <section class="spalte">${teilen({ pfad: "sehen/", titel: T.sehen.teilenTitel, text: T.sehen.teilenText })}</section>
 ${faeden([fZettel(zettel[25]), fZettel(zettel[29]), fAngebot(angebotVon("fotografie"))])}`;
@@ -644,6 +644,10 @@ ${gruppen.map((g) => `<section class="abschnitt" aria-labelledby="g-${g.replace(
   <div class="abschnitt-kopf"><h2 id="g-${g.replace(/\W+/g, "-")}">${esc(g)}</h2></div>
   <div class="reihe zeilen">${APPS.filter((a) => a.gattung === g).map(appKachel).join("")}</div>
 </div></section>`).join("\n")}
+<section class="abschnitt" aria-labelledby="rad-titel"><div class="spalte">
+  <div class="abschnitt-kopf"><h2 id="rad-titel">${zeichen("rad")}${esc(T.apps.rad)}</h2><p>${esc(T.apps.radText)}</p></div>
+  <div class="schau">${ZEIGEN.filter((z) => !APPS.some((a) => a.slug === z.slug)).map(schauStueck).join("")}</div>
+</div></section>
 <section class="abschnitt" aria-labelledby="resultate-titel"><div class="spalte">
   <div class="abschnitt-kopf"><h2 id="resultate-titel">${esc(T.apps.ergebnis)}</h2><p>${esc(T.apps.ergebnisText)}</p></div>
   <!-- die vier Filme stehen hier nicht mehr (30. Oktober 2026: die Kacheln oben zeigen sie schon, «dann kann das gespart werden»);

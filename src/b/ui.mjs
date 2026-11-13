@@ -48,11 +48,11 @@ export const UI = {
     person: { jobTitle: "Webdesigner, Kurator, Künstler, Sozialarbeiter", knowsAbout: ["Systemtheorie", "Webdesign", "Kunstvermittlung", "Kuration", "Maltherapie", "Soziale Arbeit"] },
     beitragLink: "Beleg, Schlagworte und Kommentar im Zettelkasten", beitraegeDeutsch: "",
     sehen: {
-      titel: "Sehen", small: "Was sich zeigen lässt: ein Film vom Mischpult, Fotografien, die Filme der Bild-Apps und zwei Räder zum Drehen.",
-      seitenTitel: "Sehen – Filme, Fotografien, Bilder in Bewegung", beschreibung: "Bilder von Christian Strickler: ein Film aus Animations, Fotografien von Bühne, Raum und Landschaft, Filme aus PHORMA und The Fictory, Das Dritte Rad und OMNA COLOR.", bildAlt: "Sehen: Filme und Fotografien",
+      titel: "Sehen", small: "Fertige Bilder: ein Film, Fotografien, Prints und Ansichten aus einer Ausstellung. Zum Selbermachen geht es zu den Apps.",
+      seitenTitel: "Sehen – Filme, Fotografien, Bilder in Bewegung", beschreibung: "Bilder von Christian Strickler: ein Film aus Animations, Fotografien von Bühne, Raum und Landschaft, Prints und Ansichten der Ausstellung «Supervisionen».", bildAlt: "Sehen: Filme und Fotografien",
       fotografie: "Fotografie", fotografieText: "Bühne, Räume, Landschaften.", alleFotos: "Alle Fotografien",
-      filme: "Bilder in Bewegung", filmeText: "Was die Bild-Apps aus einem Foto oder einem Ton machen. Jede Kachel führt zur App und ihrem ganzen Film.",
-      raeder: "Zum Drehen", raederText: "Zwei Räder, die etwas ziehen: einen Zettel, eine Begegnung, eine Übung.",
+      prints: "Prints", printsText: "Acht Motive. Format, Papier und Preis auf Anfrage.",
+      ausstellung: "Ausstellung", ausstellungText: "Ansichten aus «Supervisionen», Oberer Turm Kaiserstuhl, 2026. Die Werke stammen von den ausstellenden Künstler:innen.", ausstellungWeiter: "Kuratorische Projekte",
       teilenTitel: "Sehen – ornament.cloud", teilenText: "Filme, Fotografien, Bilder in Bewegung.",
     },
     hoeren: {
@@ -81,6 +81,7 @@ export const UI = {
     },
     apps: {
       titel: "Apps", small: "Sieben Anwendungen, die im Browser laufen, sich auf den Startbildschirm legen lassen und ohne Netz weiterarbeiten. Alles rechnet auf deinem Gerät; Bilder und Antworten verlassen es nicht.",
+      rad: "Zum Drehen", radText: "Ein Rad, das etwas zieht: einen Zettel, eine Begegnung, eine Übung.",
       ergebnis: "Was dabei herauskommt", ergebnisText: "Eine Konstellation und eine Übung. Die Filme der Bild-Apps stehen auf ihren Seiten.",
       seitenTitel: "Apps – sieben Anwendungen im Browser",
       beschreibung: "ORNA, ORMA, OMNA COLOR, PHORMA I bis III und The Fictory: Denkspiele, Farbräder und Bildmaschinen, die im Browser laufen und ohne Netz weiterarbeiten.", bildAlt: "Die sieben Apps von ornament.cloud",
@@ -165,11 +166,11 @@ export const UI = {
     person: { jobTitle: "Web designer, curator, artist, social worker", knowsAbout: ["Systems theory", "Web design", "Art education", "Curation", "Art therapy", "Social work"] },
     beitragLink: "Source, keywords and comment in the Zettelkasten", beitraegeDeutsch: "The posts are in German.",
     sehen: {
-      titel: "Look", small: "What can be shown: a film from the mixing desk, photographs, the films of the image apps and two wheels to spin.",
-      seitenTitel: "Look – films, photographs, images in motion", beschreibung: "Images by Christian Strickler: a film from Animations, photographs of stage, space and landscape, films from PHORMA and The Fictory, Das Dritte Rad and OMNA COLOR.", bildAlt: "Look: films and photographs",
+      titel: "Look", small: "Finished images: a film, photographs, prints and views of an exhibition. To make your own, go to the apps.",
+      seitenTitel: "Look – films, photographs, images in motion", beschreibung: "Images by Christian Strickler: a film from Animations, photographs of stage, space and landscape, prints and views of the exhibition «Supervisionen».", bildAlt: "Look: films and photographs",
       fotografie: "Photography", fotografieText: "Stage, spaces, landscapes.", alleFotos: "All photographs",
-      filme: "Images in motion", filmeText: "What the image apps make of a photo or a sound. Each tile leads to the app and its whole film.",
-      raeder: "To spin", raederText: "Two wheels that draw something: a note, an encounter, an exercise.",
+      prints: "Prints", printsText: "Eight motifs. Format, paper and price on request.",
+      ausstellung: "Exhibition", ausstellungText: "Views of «Supervisionen», Oberer Turm Kaiserstuhl, 2026. The works are by the exhibiting artists.", ausstellungWeiter: "Curatorial projects",
       teilenTitel: "Look – ornament.cloud", teilenText: "Films, photographs, images in motion.",
     },
     hoeren: {
@@ -198,6 +199,7 @@ export const UI = {
     },
     apps: {
       titel: "Apps", small: "Seven applications that run in the browser, can be placed on the home screen and keep working without a network. Everything computes on your device; images and answers never leave it.",
+      rad: "To spin", radText: "A wheel that draws something: a note, an encounter, an exercise.",
       ergebnis: "What comes out of it", ergebnisText: "A constellation and an exercise. The films of the image apps are on their pages.",
       seitenTitel: "Apps – seven applications in the browser",
       beschreibung: "ORNA, ORMA, OMNA COLOR, PHORMA I to III and The Fictory: thinking games, colour wheels and image machines that run in the browser and keep working without a network.", bildAlt: "The seven apps of ornament.cloud",

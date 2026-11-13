@@ -486,13 +486,16 @@ test("Fotografie: Galerie auf «Werke», Reihe auf der Startseite, fünfte Leist
 
 // ---------- Sehen im Menü, Prüfraster nicht öffentlich (13. November 2026, Christian: «dass das sehen nicht dabei ist»; «Nimm die Prüfraster mal von der
 // Website. Ich möchte weiterhin zugriff haben, aber sie nicht öffentlich einsehbar haben») ----------
-test("Sehen: eigene Seite, zuvorderst im Menü («Hören» am Schluss), mit Film, Fotografien, den vier Kachelfilmen und den zwei Rädern", () => {
+test("Sehen: eigene Seite, zuvorderst im Menü («Hören» am Schluss), mit Film, Fotografien, Prints und Ausstellung; nichts zum Selbermachen (seit «weg 1»: das steht unter «Apps»)", () => {
   for (const [datei, B, name] of [["b/sehen/index.html", "/b/", "Sehen"], ["b/en/sehen/index.html", "/b/en/", "Look"]]) {
     const html = lies(datei), nav = html.match(/<nav class="hauptnav"[\s\S]*?<\/nav>/)[0];
     assert.ok(nav.startsWith(`<nav class="hauptnav"`) && nav.indexOf(`href="${B}sehen/" aria-current="page">${name}</a>`) > 0 && nav.indexOf(`${B}sehen/`) < nav.indexOf(`${B}zettel/`) && nav.endsWith(`href="${B}hoeren/">${B === "/b/" ? "Hören" : "Listen"}</a></nav>`), `${datei}: Sehen steht zuvorderst und ist aktiv, Hören am Schluss`);
-    assert.ok(html.includes('<a class="schau-film" href="/animations/"') && html.includes('class="fotos fotos-reihe"'), `${datei}: Film und Fotografien`);
-    assert.equal((html.match(/<video class="kachel-film"/g) || []).length, 5, `${datei}: der Film und vier Kachelfilme`);
-    assert.equal((html.match(/<a class="schau-stueck"/g) || []).length, 2, `${datei}: zwei Räder`);
+    assert.ok(html.includes('<a class="schau-film" href="/animations/"'), `${datei}: der Film`);
+    for (const id of ["sehen-foto-titel", "sehen-prints-titel", "sehen-ausstellung-titel"]) assert.ok(html.includes(`id="${id}"`), `${datei}: ${id}`);
+    assert.equal((html.match(/<figure class="foto"/g) || []).length, 7 + 8 + 6, `${datei}: sieben Fotografien, acht Prints, sechs Ansichten`);
+    assert.equal((html.match(/<video class="kachel-film"/g) || []).length, 1, `${datei}: nur der eine Film`);
+    assert.ok(!html.includes('class="schau-stueck"') && !html.includes(`href="${B}apps/phorma`), `${datei}: keine Räder, keine App-Kacheln`);
+    assert.ok(lies(datei.replace("sehen/", "apps/")).includes('class="schau-stueck" href="/beta/drittes-rad/"'), "Das Dritte Rad steht bei den Apps");
   }
   assert.ok(lies("sitemap.xml").includes("<loc>https://ornament.cloud/b/sehen/</loc>"));
 });
