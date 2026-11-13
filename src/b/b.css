@@ -699,3 +699,17 @@ body[data-bereich="sehen"] .schau-film { margin-bottom: 0; }
 .ueber-bild { margin: 28px 0 0; max-width: 640px; }
 .ueber-bild img { display: block; width: 100%; height: auto; }
 .ref-link { white-space: nowrap; color: var(--faden); margin-left: 0.3em; }
+
+/* Bildansicht (b.js): ein Foto gross auf derselben Seite; Tipp daneben, × oder Esc schliesst, Pfeile und Wischen blättern */
+.bildansicht { border: 0; padding: 0; margin: 0; width: 100vw; height: 100vh; height: 100dvh; max-width: none; max-height: none; background: rgba(0, 0, 0, 0.94); color: #fff; }
+.bildansicht[open] { display: grid; place-items: center; }
+.bildansicht::backdrop { background: rgba(0, 0, 0, 0.6); }
+.bildansicht img { max-width: calc(100vw - 24px); max-height: calc(100dvh - 24px); width: auto; height: auto; object-fit: contain; display: block; }
+.bildansicht button { position: absolute; background: none; border: 0; color: #fff; font: inherit; font-size: 2rem; line-height: 1; width: 52px; height: 52px; cursor: pointer; opacity: 0.75; }
+.bildansicht button:hover, .bildansicht button:focus-visible { opacity: 1; }
+.bildansicht .zu { top: 8px; right: 8px; }
+.bildansicht .vor { top: 50%; transform: translateY(-50%); font-size: 2.6rem; }
+.bildansicht .vor[data-s="-1"] { left: 4px; }
+.bildansicht .vor[data-s="1"] { right: 4px; }
+.bildansicht.einzeln .vor { display: none; }
+.fotos .foto a { cursor: zoom-in; }

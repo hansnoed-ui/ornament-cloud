@@ -200,3 +200,29 @@ document.querySelectorAll("form.brief").forEach(briefing);
 for (const d of document.querySelectorAll("details.beta")) d.addEventListener("toggle", () => { if (!d.open) return; const r = d.getBoundingClientRect(); d.classList.toggle("nach-rechts", r.left + r.width / 2 < innerWidth / 2); });
 document.addEventListener("click", (e) => { for (const d of document.querySelectorAll("details.beta[open]")) if (!d.contains(e.target)) d.open = false; });
 document.addEventListener("keydown", (e) => { if (e.key !== "Escape") return; const d = document.querySelector("details.beta[open]"); if (d) { d.open = false; d.querySelector("summary").focus(); } });
+
+/* ---------- Bildansicht: ein Foto gross auf derselben Seite (13. November 2026, Christian: «geht jedesmal eine eigene seite auf, das ist unelegant») ---------- */
+{
+  let ansicht, bild, reihe = [], stelle = 0;
+  const zeige = (i) => { stelle = (i + reihe.length) % reihe.length; const a = reihe[stelle]; bild.src = a.href; bild.alt = a.querySelector("img")?.alt || ""; ansicht.classList.toggle("einzeln", reihe.length < 2); };
+  function baue() {
+    ansicht = document.createElement("dialog"); ansicht.className = "bildansicht";
+    ansicht.innerHTML = `<button type="button" class="zu" aria-label="${EN ? "Close" : "Schliessen"}">×</button><button type="button" class="vor" data-s="-1" aria-label="${EN ? "Previous image" : "Vorheriges Bild"}">‹</button><img alt=""><button type="button" class="vor" data-s="1" aria-label="${EN ? "Next image" : "Nächstes Bild"}">›</button>`;
+    bild = ansicht.querySelector("img");
+    ansicht.addEventListener("click", (e) => { const s = e.target.closest("[data-s]"); if (s) zeige(stelle + +s.dataset.s); else ansicht.close(); });
+    ansicht.addEventListener("keydown", (e) => { if (e.key === "ArrowLeft") zeige(stelle - 1); if (e.key === "ArrowRight") zeige(stelle + 1); });
+    let x0 = null;
+    ansicht.addEventListener("touchstart", (e) => { x0 = e.touches[0].clientX; }, { passive: true });
+    ansicht.addEventListener("touchend", (e) => { if (x0 === null) return; const d = e.changedTouches[0].clientX - x0; x0 = null; if (Math.abs(d) > 50) { zeige(stelle + (d < 0 ? 1 : -1)); e.preventDefault(); } });
+    ansicht.addEventListener("close", () => { bild.removeAttribute("src"); });
+    document.body.append(ansicht);
+  }
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest?.(".fotos figure.foto > a");
+    if (!a || e.metaKey || e.ctrlKey || e.shiftKey || typeof HTMLDialogElement === "undefined") return;
+    e.preventDefault();
+    if (!ansicht) baue();
+    reihe = [...a.closest(".fotos").querySelectorAll("figure.foto > a")];
+    zeige(reihe.indexOf(a)); ansicht.showModal();
+  });
+}

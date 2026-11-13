@@ -39,7 +39,7 @@ const HAUPT = ["sehen/", "zettel/", "apps/", "angebot/"];
 // Fäden, Dialog und Sitemap. Wer die Adresse kennt, erreicht sie; ein Passwortschutz wäre ein eigener Schritt auf dem Webspace.
 // Wieder öffentlich: RASTER_OEFFENTLICH = true.
 const RASTER_OEFFENTLICH = false;
-const V = 52;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 53;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 const INHALT = { de: DE, en: EN };
@@ -363,7 +363,8 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
 </article>`;
   }
 
-  /** Fotografien (seit 13. November 2026, src/b/fotos.mjs): eine Galerie in Spalten, jedes Bild im eigenen Seitenverhältnis; ein Tipp öffnet die grosse Fassung.
+  /** Fotografien (seit 13. November 2026, src/b/fotos.mjs): eine Galerie in Spalten, jedes Bild im eigenen Seitenverhältnis; ein Tipp öffnet die grosse Fassung in einer Ansicht auf derselben Seite (b.js: «Bildansicht»; ohne Skript in einem neuen Fenster).
+   *  Bildzeilen gibt es seit 13. November 2026 nur noch für die Angabe «Für die Kaiserbühne» (Christian: «die bildunterschriften bei den fotos sind nichtssagend bitte weg»).
    *  «quadrat» schneidet für die Reihe auf der Startseite auf ein Quadrat zu und führt auf die Galerie statt aufs Bild. */
   function fotoGalerie(liste, { quadrat = false, ohneZeile = false } = {}) {
     return `<div class="fotos${quadrat ? " fotos-reihe" : ""}">${liste.map((f) => {
@@ -371,7 +372,7 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
       const bild = `<img src="${attr(mitMarke(`b/bilder/fotografie/${f.slug}-800.jpg`))}"${quadrat ? "" : ` srcset="${attr(mitMarke(`b/bilder/fotografie/${f.slug}-800.jpg`))} 800w, ${attr(mitMarke(`b/bilder/fotografie/${f.slug}-1600.jpg`))} 1600w" sizes="(max-width: 760px) 100vw, 360px"`} alt="${attr(f.alt[sprache])}" width="${Math.round(b * k)}" height="${Math.round(h * k)}" loading="lazy">`;
       return quadrat
         ? `<a class="foto" href="${B}werke/#foto-${f.slug}" title="${attr(t)}">${bild}</a>`
-        : `<figure class="foto" id="foto-${f.slug}"><a href="${attr(mitMarke(`b/bilder/fotografie/${f.slug}-1600.jpg`))}" target="_blank" rel="noopener" title="${attr(T.werke.fotoGross(t))}">${bild}</a>${ohneZeile ? "" : `<figcaption>${esc(t)}${f.fuer ? `, ${esc(f.fuer[sprache])}` : ""}</figcaption>`}</figure>`;
+        : `<figure class="foto" id="foto-${f.slug}"><a href="${attr(mitMarke(`b/bilder/fotografie/${f.slug}-1600.jpg`))}" target="_blank" rel="noopener" title="${attr(T.werke.fotoGross(t))}">${bild}</a>${!ohneZeile && f.fuer ? `<figcaption>${esc(f.fuer[sprache].replace(/^./, (c) => c.toUpperCase()))}</figcaption>` : ""}</figure>`;
     }).join("")}</div>`;
   }
 
