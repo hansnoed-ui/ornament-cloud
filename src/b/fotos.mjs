@@ -24,8 +24,6 @@ export const FOTOS = [
 // und «turm-kreise» sind Besucherinnen zu erkennen; Christian hat die Bilder ausdrücklich geschickt. Die Werke an den Wänden stammen von den ausstellenden Künstler:innen; die
 // Beschreibungen nennen niemanden. Steht auf der Leistung «Kuratorische Projekte» und (die ersten sechs) auf «Sehen», nicht in der Galerie auf «Werke».
 export const AUSSTELLUNG = [
-  { slug: "turm-ansicht", gruppe: "supervisionen", titel: { de: "Der Turm", en: "The tower" },
-    alt: { de: "Durch Blätter gesehen: der Obere Turm von Kaiserstuhl aus Stein mit roter Uhr über den Dächern der Altstadt, dahinter Wald und Felder", en: "Seen through leaves: the stone Oberer Turm of Kaiserstuhl with its red clock above the roofs of the old town, forest and fields behind" } },
   { slug: "turm-leer", gruppe: "supervisionen", titel: { de: "Der Raum", en: "The room" },
     alt: { de: "Schwarzweiss: ein hoher Turmraum mit rohen Wänden und Balkendecke, in der Mitte ein Holzpfosten, rechts ein einzelner Stuhl, an der Wand lehnt ein Gemälde neben einem kleinen Fenster", en: "Black and white: a tall tower room with rough walls and a beamed ceiling, a wooden post in the centre, a single chair on the right, a painting leaning against the wall beside a small window" } },
   { slug: "turm-ecke", gruppe: "supervisionen", titel: { de: "In der Ecke", en: "In the corner" },
