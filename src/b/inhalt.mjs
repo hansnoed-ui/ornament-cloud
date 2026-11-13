@@ -34,6 +34,12 @@ export const DIALOG = {
 
 /** Zum Zeigen, zuoberst im Abschnitt «Sehen und Hören» der Startseite (13. November 2026, Christian: «Das Dritte Rad und OMNA COLOR scheinen mir
  *  gelungene Bereiche zum zeigen. Grundsätzlich würd ich nicht mit der Musik beginnen, visuelles scheint mir zugänglicher»). Bilder: tools/b-schaubilder.mjs. */
+// Zuoberst seit 13. November 2026 ein Film aus «Animations» (von Christian am selben Tag geschickt: «ornament-animation-mischung-durchlauf-4x5», 12 s als
+// Schlaufe, 1080 × 1350); hier 720 × 900 ohne Ton (b/bilder/schau/animations.mp4 und .jpg, mit ffmpeg aus dem Original, crf 28). Die Seite «Animations»
+// selbst bleibt ohne Beispielbilder (Wunsch vom 4. November 2026); der Film steht nur hier.
+export const ZEIGEN_FILM = { slug: "animations", name: "Animations", kurz: "Ein Bild, 24 Effekte, bis zu drei Ebenen. Am Mischpult entsteht daraus eine Animation wie diese: eine Mischung, zwölf Sekunden als Schlaufe.",
+  ziel: "/animations/", weiter: "Zum Mischpult", film: "b/bilder/schau/animations.mp4", bild: "b/bilder/schau/animations.jpg", mass: [720, 900],
+  bildAlt: "Animations: eine helle, faserige Gestalt aus feinen Linien mit farbigen Rändern, die sich auf schwarzem Grund langsam windet" };
 export const ZEIGEN = [
   { slug: "drittes-rad", name: "Das Dritte Rad", kurz: "Zeit, Form und Farbe drehen gegeneinander. Jede Drehung zieht einen Zettel, eine Begegnung aus ORNA und eine Übung aus OMNA COLOR.",
     ziel: "/beta/drittes-rad/", neuesFenster: true, bild: "b/bilder/schau/drittes-rad.jpg", bildAlt: "Das Dritte Rad: drei Ringe auf gelbem Grund, aussen Zeichen, in der Mitte ein Farbrad", weiter: "Drehen" },

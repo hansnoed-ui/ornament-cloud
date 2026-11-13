@@ -400,6 +400,11 @@ test("Schaubilder: auf der Startseite Das Dritte Rad und OMNA COLOR vor der Musi
     const stuecke = [...abschnitt.matchAll(/<a class="schau-stueck" href="([^"]+)"/g)].map((m) => m[1]);
     assert.deepEqual(stuecke, ["/beta/drittes-rad/", `${B}apps/omna-color/`], `${datei}: zwei Stücke zum Zeigen`);
     assert.ok(abschnitt.indexOf('class="schau"') < abschnitt.indexOf('class="platte"'), `${datei}: das Visuelle steht vor der Musik`);
+    // zuoberst der Film aus Animations (von Christian, 13. November 2026): stumm, als Schlaufe, erst geladen, wenn er ins Bild kommt
+    const film = abschnitt.match(/<a class="schau-film" href="\/animations\/" target="_blank" rel="noopener">[\s\S]*?<\/a>/)?.[0];
+    assert.ok(film && abschnitt.indexOf('class="schau-film"') < abschnitt.indexOf('class="schau"'), `${datei}: der Film steht zuoberst`);
+    assert.match(film, /<video class="kachel-film" muted loop playsinline preload="none" poster="\/b\/bilder\/schau\/animations\.jpg\?v=[0-9a-f]{10}" width="720" height="900" aria-label="[^"]{30,}"><source src="\/b\/bilder\/schau\/animations\.mp4\?v=[0-9a-f]{10}" type="video\/mp4">/, `${datei}: Film mit Standbild, Massen und Beschreibung`);
+    assert.ok(!/autoplay|controls/.test(film), `${datei}: kein Autoplay-Attribut (tafeln-leben.js spielt nur im Bild und nie bei reduzierter Bewegung)`);
     assert.match(abschnitt, /<img src="\/b\/bilder\/schau\/drittes-rad\.jpg\?v=[0-9a-f]{10}" alt="[^"]{20,}" width="1280" height="800"/, `${datei}: Bild mit Marke, Beschreibung und Massen`);
   }
   for (const datei of ["b/angebot/webdesign/index.html", "b/en/angebot/webdesign/index.html"]) {
@@ -408,5 +413,7 @@ test("Schaubilder: auf der Startseite Das Dritte Rad und OMNA COLOR vor der Musi
     assert.deepEqual([...schau.matchAll(/<a class="schau-stueck" href="([^"]+)" target="_blank" rel="noopener"/g)].map((m) => m[1]), ["https://principesse.ch/", "/gamma/"], `${datei}: Principesse und Gamma, in neuem Fenster`);
     assert.ok(schau.includes("Katharina Strickler"), `${datei}: für wen die Seite gebaut ist`);
   }
+  assert.ok(statSync(new URL("b/bilder/schau/animations.mp4", root)).size < 2_500_000, "der Film bleibt unter 2,5 MB");
+  assert.ok(!/animations\.mp4|Beispiel/.test(lies("animations/index.html")), "die Seite Animations selbst bleibt ohne Beispiele");
   for (const s of ["kuration", "vermittlung", "produkte"]) assert.ok(!lies(`b/angebot/${s}/index.html`).includes("schau-abschnitt"), `${s}: kein leerer Abschnitt`);
 });

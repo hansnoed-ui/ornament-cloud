@@ -28,6 +28,9 @@ export const DIALOG = {
   ],
 };
 
+export const ZEIGEN_FILM = { slug: "animations", name: "Animations", kurz: "One image, 24 effects, up to three layers. At the mixing desk they become an animation like this one: a mix, twelve seconds as a loop.",
+  ziel: "/animations/", weiter: "To the mixing desk", film: "b/bilder/schau/animations.mp4", bild: "b/bilder/schau/animations.jpg", mass: [720, 900],
+  bildAlt: "Animations: a bright, fibrous figure of fine lines with coloured edges, slowly winding on a black ground" };
 export const ZEIGEN = [
   { slug: "drittes-rad", name: "Das Dritte Rad", kurz: "Time, form and colour turn against each other. Each spin draws a note, an encounter from ORNA and an exercise from OMNA COLOR. In German.",
     ziel: "/beta/drittes-rad/", neuesFenster: true, bild: "b/bilder/schau/drittes-rad.jpg", bildAlt: "Das Dritte Rad: three rings on a yellow ground, signs on the outside, a colour wheel in the middle", weiter: "Spin" },

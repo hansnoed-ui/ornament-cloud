@@ -640,3 +640,15 @@ html { scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) { .schau-stueck img { transition: none; } .schau-stueck:hover img { transform: none; } }
 .abschnitt-kopf.musik-kopf + .platte { margin-top: 24px; }
 .schau-abschnitt .schau { margin-top: 6px; }
+
+/* Der Film zuoberst in «Sehen und Hören» (13. November 2026): links der Film im Hochformat 4:5, rechts Name, Satz und Weg; am Telefon untereinander.
+   Er läuft stumm, solange er im Bild ist (tafeln-leben.js, .kachel-film); bei reduzierter Bewegung bleibt das Standbild. */
+.schau-film { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 24px 48px; align-items: center; margin-bottom: clamp(32px, 5vw, 56px); text-decoration: none; color: inherit; }
+.schau-film .bild { display: block; background: #000; }
+.schau-film video { display: block; width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; }
+.schau-film-text { display: grid; gap: 14px; align-content: center; }
+.schau-film h3 { font-weight: 500; font-size: clamp(2.2rem, 6vw, 4.2rem); letter-spacing: -0.035em; line-height: 0.98; }
+.schau-film p { color: var(--grau); max-width: 40ch; font-size: 1.1rem; }
+.schau-film .weiter { color: var(--faden); }
+.schau-film:hover h3 { color: var(--faden); }
+@media (max-width: 760px) { .schau-film { grid-template-columns: minmax(0, 1fr); } }

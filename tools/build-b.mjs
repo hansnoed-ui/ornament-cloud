@@ -29,7 +29,7 @@ const UNTER_UEBER = ["ueber/", "werke/", "zuletzt/"];
 // im Menü, sondern auf der Seite «Atelier» (b/atelier/, aus src/register.json); «Beta» gibt es im Menü nicht mehr, «Raster» und «Angebot» stehen
 // wieder für sich. Das ersetzt die Wünsche vom 5. und 8. November 2026 (Animations zuvorderst, Multiverse im Hauptmenü, Raster unter Beta).
 const HAUPT = ["hoeren/", "zettel/", "apps/", "raster/", "angebot/"];
-const V = 46;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 47;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 const INHALT = { de: DE, en: EN };
@@ -109,7 +109,7 @@ const kachelSeiten = { de: [], en: [] };    // je Sprache: die Vorschaukarten li
 /* ========== Eine Sprache ========== */
 function bau(sprache) {
   const T = UI[sprache], I = INHALT[sprache];
-  const { SEITE, DIALOG, APPS, RASTER, ANGEBOTE, PRODUKTE, UEBER, ZEIGEN } = I;
+  const { SEITE, DIALOG, APPS, RASTER, ANGEBOTE, PRODUKTE, UEBER, ZEIGEN, ZEIGEN_FILM } = I;
   const B = T.praefix;                                   // "/b/" oder "/b/en/"
   const AUS = new URL(B.slice(1), ROOT);
   const kasten = ladeZettelkasten(sprache);
@@ -393,6 +393,10 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
   <div class="spalte">
     <div class="abschnitt-kopf"><h2 id="hoeren-titel">${zeichen("sehen")}${esc(T.start.hoeren)}</h2><p>${esc(T.start.hoerenText)}</p></div>
     <!-- Visuelles zuerst (13. November 2026, Christian: «Grundsätzlich würd ich nicht mit der Musik beginnen, visuelles scheint mir zugänglicher»): zwei Stücke zum Zeigen, dann die Musik -->
+    <a class="schau-film" href="${attr(ZEIGEN_FILM.ziel)}" target="_blank" rel="noopener">
+      <span class="bild"><video class="kachel-film" muted loop playsinline preload="none" poster="${attr(mitMarke(ZEIGEN_FILM.bild))}" width="${ZEIGEN_FILM.mass[0]}" height="${ZEIGEN_FILM.mass[1]}" aria-label="${attr(ZEIGEN_FILM.bildAlt)}"><source src="${attr(mitMarke(ZEIGEN_FILM.film))}" type="video/mp4"></video></span>
+      <span class="schau-film-text"><h3>${esc(ZEIGEN_FILM.name)}</h3><p>${esc(ZEIGEN_FILM.kurz)}</p><span class="weiter">${esc(ZEIGEN_FILM.weiter)} ↗</span></span>
+    </a>
     <div class="schau">${ZEIGEN.map(schauStueck).join("")}</div>
     ${musik.length ? `<div class="abschnitt-kopf werke-kopf musik-kopf"><h3 id="musik-titel">${zeichen("hoeren")}${esc(T.start.musik)}</h3><p>${esc(T.start.musikText)}</p><a class="weiter" href="${B}hoeren/">${esc(T.start.alleMusik)}</a></div>` : ""}
     ${musik.slice(0, 1).map((v) => platte(v, { neu: true })).join("")}
