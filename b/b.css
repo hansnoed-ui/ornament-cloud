@@ -690,8 +690,6 @@ html { scroll-behavior: smooth; }
   .angebote.tueren .angebot .weiter { margin-top: 2px; }
 }
 /* Seiten ohne eigene Farbe (Hören, Atelier): Titel und Inhalt rücken zusammen, statt dass ein leeres schwarzes Band dazwischen steht */
-body:is([data-bereich="hoeren"], [data-bereich="atelier"]) main > :first-child { padding-bottom: 0; }
-body:is([data-bereich="hoeren"], [data-bereich="atelier"]) main > :first-child + .abschnitt { padding-top: clamp(28px, 4vw, 48px); }
 
 /* ---------- Fotografie (13. November 2026): Galerie in Spalten auf «Werke» und auf der Leistung, eine Reihe von Quadraten auf der Startseite.
    Die fünf Leistungen stehen auf breiten Bildschirmen in fünf Spalten. ---------- */
@@ -711,8 +709,6 @@ body[data-bereich="werke"] #fotografie .abschnitt-kopf { margin-bottom: 24px; }
 @media (min-width: 1000px) { .angebote:not(.tueren) { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0 20px; } .angebote:not(.tueren) .angebot h3, .angebote:not(.tueren) .angebot h2 { font-size: 1.2rem; } }
 
 /* «Sehen» (13. November 2026): wie Hören und Atelier ohne leeres Band unter dem Titel; der Film schliesst ohne Abstand nach unten an die nächste Überschrift an */
-body[data-bereich="sehen"] main > :first-child { padding-bottom: 0; }
-body[data-bereich="sehen"] main > :first-child + .abschnitt { padding-top: clamp(28px, 4vw, 48px); }
 body[data-bereich="sehen"] .schau-film { margin-bottom: 0; }
 .schau-film h2 { font-weight: 500; font-size: clamp(2.2rem, 6vw, 4.2rem); letter-spacing: -0.035em; line-height: 0.98; }
 .schau-film:hover h2 { color: var(--faden); }

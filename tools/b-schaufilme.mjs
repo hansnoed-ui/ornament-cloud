@@ -20,9 +20,11 @@ const types = { ".html": "text/html", ".css": "text/css", ".js": "text/javascrip
 const diene = (wurzel) => new Promise((ok) => { const s = createServer((req, res) => { let p = decodeURIComponent(new URL(req.url, "http://x").pathname); if (p.endsWith("/")) p += "index.html"; let body; try { body = readFileSync(join(wurzel, p)); } catch { res.writeHead(404).end(); return; } res.writeHead(200, { "content-type": types[extname(p)] || "application/octet-stream" }).end(body); }).listen(0, () => ok(s)); });
 
 // von/bis: Anteil der Seitenhöhe, über den gerollt wird; bilder bei rate Bildern je Sekunde; stand: welches Bild (Anteil) das Standbild wird
+// Ruhiger seit 13. November 2026 (Christian: «die animationen sind zu hektisch, vor allem principesse»): Principesse rollt nur noch durch Himmel, Wasser
+// und Nacht und braucht dafür 22 statt 10 Sekunden für die ganze Seite; Gamma 16 statt 8. Die Standbilder (1280 × 800) bleiben, wie sie sind (stand fehlt).
 export const SCHAUFILME = [
-  { name: "principesse", fremd: "PRINCIPESSE", pfad: "", fenster: [960, 600], faktor: 1, warten: 9000, von: 0, bis: 1, bilder: 150, rate: 15, takt: 120, stand: 0.84 },
-  { name: "gamma", pfad: "gamma/", fenster: [640, 400], faktor: 1, warten: 6000, von: 0.5, bis: 1, bilder: 96, rate: 12, takt: 150, stand: 0.45 },
+  { name: "principesse", fremd: "PRINCIPESSE", pfad: "", fenster: [640, 400], faktor: 1, warten: 9000, von: 0.2, bis: 0.8, bilder: 264, rate: 12, takt: 120 },
+  { name: "gamma", pfad: "gamma/", fenster: [640, 400], faktor: 1, warten: 6000, von: 0.5, bis: 1, bilder: 192, rate: 12, takt: 150 },
 ];
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -44,10 +46,10 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       await seite.screenshot({ path: join(ordner, `${String(i).padStart(4, "0")}.jpg`), type: "jpeg", quality: 92 });
     }
     await seite.close(); server.close();
-    execFileSync("ffmpeg", ["-loglevel", "error", "-y", "-framerate", String(f.rate), "-i", join(ordner, "%04d.jpg"), "-vf", "scale=960:600:flags=lanczos", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "27", "-preset", "slow", "-movflags", "+faststart", "-an", join(AUS, `${f.name}.mp4`)]);
-    execFileSync("ffmpeg", ["-loglevel", "error", "-y", "-i", join(ordner, `${String(Math.round((f.bilder - 1) * f.stand)).padStart(4, "0")}.jpg`), "-vf", "scale=1280:800:flags=lanczos", "-q:v", "3", join(AUS, `${f.name}.jpg`)]);
+    execFileSync("ffmpeg", ["-loglevel", "error", "-y", "-framerate", String(f.rate), "-i", join(ordner, "%04d.jpg"), "-vf", "scale=960:600:flags=lanczos", "-r", "24", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "27", "-preset", "slow", "-movflags", "+faststart", "-an", join(AUS, `${f.name}.mp4`)]);
+    if (f.stand !== undefined) execFileSync("ffmpeg", ["-loglevel", "error", "-y", "-i", join(ordner, `${String(Math.round((f.bilder - 1) * f.stand)).padStart(4, "0")}.jpg`), "-vf", "scale=1280:800:flags=lanczos", "-q:v", "3", join(AUS, `${f.name}.jpg`)]);
     rmSync(ordner, { recursive: true });
-    console.log(`b/bilder/schau/${f.name}.mp4 und .jpg`);
+    console.log(`b/bilder/schau/${f.name}.mp4`);
   }
   await browser.close();
 }
