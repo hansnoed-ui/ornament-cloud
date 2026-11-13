@@ -25,7 +25,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     mass[f.slug] = [b, h];
     for (const g of GROESSEN) {
       const skala = b >= h ? `scale=${Math.min(g, b)}:-2:flags=lanczos` : `scale=-2:${Math.min(g, h)}:flags=lanczos`;
-      execFileSync("ffmpeg", ["-loglevel", "error", "-y", "-i", quelle, "-vf", skala, "-q:v", g === 1600 ? "3" : "4", pfad(`b/bilder/fotografie/${f.slug}-${g}.jpg`)]);
+      execFileSync("ffmpeg", ["-loglevel", "error", "-y", "-i", quelle, "-vf", skala, "-q:v", g === 1600 ? (f.klein ? "5" : "3") : "4", pfad(`b/bilder/fotografie/${f.slug}-${g}.jpg`)]);
     }
     console.log(`${f.slug}: ${b} × ${h}`);
   }
