@@ -207,10 +207,10 @@ export const ANGEBOTE = [
     ] },
   // Fünfte Leistung seit 13. November 2026 (Christian: «Nimm noch etwas zum Thema Fotographie: Angebote/Werke»). Der Text ist von Claude nach den
   // geschickten Bildern geschrieben (Bühne, Raum, Landschaft) und knapp gehalten: was genau angeboten wird, zu welchem Preis und für wen, bestätigt Christian.
-  { slug: "fotografie", name: "Fotografie", kurz: "Bühne, Ausstellung, Raum und Landschaft im Bild.",
-    text: "Fotografie von Bühne und Ausstellung, von Räumen, Orten und Landschaften: eine Probe, ein Abend, eine Hängung, ein Haus von innen, ein See. In Farbe oder Schwarzweiss, für Website, Presse und Druck. Die Bühnenbilder hier sind für die Kaiserbühne entstanden.",
-    fuer: "Für Theater, Kunsträume, Künstler:innen, Häuser und für alle, die einen Abend oder einen Ort festhalten wollen.",
-    ablauf: ["Ein Gespräch über das, was fotografiert werden soll, wo und wofür.", "Die Aufnahme vor Ort: bei der Probe, am Abend, im Raum.", "Eine Auswahl bearbeiteter Bilder, in den Grössen, die du brauchst."],
+  { slug: "fotografie", name: "Fotografie", kurz: "Foto-Aufträge aller Art, vom Porträt bis zur Landschaft.",
+    text: "Foto-Aufträge aller Art: Menschen, Anlässe, Räume, Orte, Produkte, Werke, Bühne und Landschaft. In Farbe oder Schwarzweiss, für Website, Presse und Druck. Die Bühnenbilder hier sind für die Kaiserbühne entstanden.",
+    fuer: "Für Firmen, Häuser, Vereine, Theater, Künstler:innen und Private: für alle, die gute Bilder brauchen.",
+    ablauf: ["Ein Gespräch über das, was fotografiert werden soll, wo und wofür.", "Die Aufnahme, dort, wo es stattfindet: bei dir, am Anlass, drinnen oder draussen.", "Eine Auswahl bearbeiteter Bilder, in den Grössen, die du brauchst."],
     fotos: "buehne", ohneJev: true,   // noch nicht in der jev-Tabelle (tools/build-b-jev.mjs)
     dialog: [
       { frage: "Was?", wahlen: ["eine Probe oder Aufführung", "eine Ausstellung", "ein Raum oder ein Haus", "etwas anderes"] },
