@@ -24,12 +24,12 @@ export const UI = {
     start: {
       // Einstieg «Künstler zuerst» mit drei Türen (13. November 2026, Entscheid von Christian): Hören und Sehen, Spielen und Denken, Beauftragen
       tueren: [
-        { id: "hoeren-sehen", name: "Hören und Sehen", kurz: "Musik, Werke und Filme.", weiter: "Zum Neusten", ziel: "#hoeren-sehen", zeichen: "hoeren" },
+        { id: "hoeren-sehen", name: "Sehen und Hören", kurz: "Räder, Farben, Bilder in Bewegung. Und Musik.", weiter: "Zum Zeigen", ziel: "#hoeren-sehen", zeichen: "sehen" },
         { id: "spielen-denken", name: "Spielen und Denken", kurz: "Ein Zettelkasten, sieben Apps, vier Prüfraster.", weiter: "Zum Zettelkasten", ziel: "#spielen-denken", zeichen: "spielen" },
         { id: "beauftragen", name: "Beauftragen", kurz: "Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte.", weiter: "Zu den Leistungen", ziel: "#beauftragen", zeichen: "arbeiten" },
       ],
       tuerenAria: "Die drei Türen",
-      hoeren: "Hören und Sehen", hoerenText: "Was fertig ist und sich zeigen lässt: Musik, Werke, Filme. Das Neuste zuoberst.", alleMusik: "Alle Musik",
+      hoeren: "Sehen und Hören", hoerenText: "Was fertig ist und sich zeigen lässt. Zuerst das, was man sieht und dreht, dann die Musik.", alleMusik: "Alle Musik", musik: "Musik", musikText: "the i: die erste Veröffentlichung.",
       neu: "Neu", anhoeren: "Anhören", tracks: (n) => `${n} Tracks`, minuten: (m) => `${m} Minuten`,
       beauftragen: "Beauftragen", beauftragenText: "Vier Leistungen, made in Switzerland. Jede beginnt mit einem Gespräch und einem Briefing.", alleAngebote: "Alle Leistungen",
       auch: "Auch zum Spielen:", atelier: "Atelier",
@@ -90,7 +90,7 @@ export const UI = {
     angebot: {
       titel: "Angebot", small: "Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte, made in Switzerland. Jede beginnt mit einem Gespräch. Wähle auf der Seite der Leistung, was du brauchst: Daraus entsteht ein Briefing, das du per Mail schickst.",
       briefing: "Briefing", seitenTitel: "Angebot – Webdesign, Vermittlung, Kuration, Produkte", beschreibung: "Webdesign, Vermittlung und Beratung, kuratorische Projekte und Produkte: vier Leistungen von Christian Strickler, zwischen Zürich, Basel und Aarau, von der Website bis zur Ausstellung.", bildAlt: "Die vier Angebote",
-      leistung: "Leistung", beginnen: "Briefing beginnen", anfrage: "Anfrage: ", schreiben: "Direkt schreiben", soGeht: "So geht es", referenzen: "Referenzen",
+      leistung: "Leistung", beginnen: "Briefing beginnen", anfrage: "Anfrage: ", schreiben: "Direkt schreiben", soGeht: "So geht es", referenzen: "Referenzen", schau: "Zum Anschauen", ansehen: "Ansehen",
       dein: "Dein Briefing", deinText: "Drei Fragen, je eine Wahl. Was dabei herauskommt, schickst du als Mail; alles Weitere besprechen wir.", leer: "Wähle oben, dann steht hier dein Briefing.",
       mail: "Per Mail schicken", kopieren: "Kopieren", ohne: "Die Mail öffnet sich in deinem Mailprogramm; nichts wird hier gespeichert oder gesendet.",
       kopfTitel: (name) => `${name} – Christian Strickler, Zürich, Basel, Aarau – ornament.cloud`,
@@ -132,12 +132,12 @@ export const UI = {
     buehne: { vollbild: "Full screen", tabTitel: "Open in its own tab", tab: "Own tab", zurueckTitel: "Back to the app's page", zurueck: "Back", feld: "the field" },
     start: {
       tueren: [
-        { id: "hoeren-sehen", name: "Listen and look", kurz: "Music, works and films.", weiter: "To the latest", ziel: "#hoeren-sehen", zeichen: "hoeren" },
+        { id: "hoeren-sehen", name: "Look and listen", kurz: "Wheels, colours, images in motion. And music.", weiter: "To the showpieces", ziel: "#hoeren-sehen", zeichen: "sehen" },
         { id: "spielen-denken", name: "Play and think", kurz: "A Zettelkasten, seven apps, four test grids.", weiter: "To the Zettelkasten", ziel: "#spielen-denken", zeichen: "spielen" },
         { id: "beauftragen", name: "Commission", kurz: "Web design, education and consulting, curatorial projects, products.", weiter: "To the services", ziel: "#beauftragen", zeichen: "arbeiten" },
       ],
       tuerenAria: "The three doors",
-      hoeren: "Listen and look", hoerenText: "What is finished and can be shown: music, works, films. The latest first.", alleMusik: "All music",
+      hoeren: "Look and listen", hoerenText: "What is finished and can be shown. First what you can see and spin, then the music.", alleMusik: "All music", musik: "Music", musikText: "the i: the first release.",
       neu: "New", anhoeren: "Listen", tracks: (n) => `${n} tracks`, minuten: (m) => `${m} minutes`,
       beauftragen: "Commission", beauftragenText: "Four services, made in Switzerland. Each begins with a conversation and a briefing.", alleAngebote: "All services",
       auch: "Also to play with:", atelier: "Studio",
@@ -198,7 +198,7 @@ export const UI = {
     angebot: {
       titel: "Services", small: "Web design, education and consulting, curatorial projects, products, made in Switzerland. Each begins with a conversation. On the page of a service, choose what you need: this becomes a briefing you send by email.",
       briefing: "Briefing", seitenTitel: "Services – web design, education, curation, products", beschreibung: "Web design, education and consulting, curatorial projects and products: four services by Christian Strickler, between Zurich, Basel and Aarau, from the website to the exhibition.", bildAlt: "The four services",
-      leistung: "Service", beginnen: "Start the briefing", anfrage: "Enquiry: ", schreiben: "Write directly", soGeht: "How it works", referenzen: "References",
+      leistung: "Service", beginnen: "Start the briefing", anfrage: "Enquiry: ", schreiben: "Write directly", soGeht: "How it works", referenzen: "References", schau: "Have a look", ansehen: "Visit",
       dein: "Your briefing", deinText: "Three questions, one choice each. Send what comes out as an email; we discuss everything else.", leer: "Choose above, and your briefing appears here.",
       mail: "Send by email", kopieren: "Copy", ohne: "The email opens in your mail program; nothing is stored or sent here.",
       kopfTitel: (name) => `${name} – Christian Strickler, Zurich, Basel, Aarau – ornament.cloud`,

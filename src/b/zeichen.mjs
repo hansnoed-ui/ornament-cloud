@@ -36,6 +36,7 @@ export const ZEICHEN = {
   denken: svg(`<path d="M20.6 12a8.6 8.6 0 1 1-2.2-5.7" ${P}/><path d="M12 7a5 5 0 1 0 5 5" ${P}/><circle cx="12" cy="12" r="1.3" fill="currentColor" ${P}/>`),
   spielen: svg(`<circle cx="12" cy="12" r="9" ${P}/><path d="M12 3l0 9 6.4 6.4" ${P}/><circle cx="12" cy="12" r="1.3" fill="currentColor" ${P}/>`),
   // Hören: fünf Striche wie eine Hüllkurve; Atelier: ein Tisch mit Winkel (seit 13. November 2026, die drei Türen des Einstiegs)
+  sehen: svg(`<path d="M2.5 12c2.6-4.4 5.8-6.6 9.5-6.6s6.9 2.2 9.5 6.6c-2.6 4.4-5.8 6.6-9.5 6.6S5.1 16.4 2.5 12z" ${P}/><circle cx="12" cy="12" r="3" ${P}/>`),
   hoeren: svg(`<path d="M4 10v4" ${P}/><path d="M8 6v12" ${P}/><path d="M12 3v18" ${P}/><path d="M16 8v8" ${P}/><path d="M20 10.5v3" ${P}/>`),
   atelier: svg(`<path d="M3 9h18" ${P}/><path d="M5 9v11" ${P}/><path d="M19 9v11" ${P}/><path d="M9 9V4h6" ${P}/>`),
   arbeiten: svg(`<path d="M4 20l3.5-1 11-11-2.5-2.5-11 11z" ${P}/><path d="M13.5 8l2.5 2.5" ${P}/><path d="M4 20l1-3.5" ${P}/>`),

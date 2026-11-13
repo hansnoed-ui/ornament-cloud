@@ -72,7 +72,9 @@ test("b/en/: Vorschaukarten auf Englisch unter b/en/kacheln/, 1200 × 630; die D
 
 test("b/: nichts von aussen – keine Skripte, Stile, Bilder oder Schriften von fremden Adressen", () => {
   for (const p of seiten) {
-    const html = lies(`b/${p}index.html`).replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g, "");
+    // Ausnahme seit 13. November 2026: ein Schaubild darf als Link auf eine fremde Seite führen (Referenz principesse.ch, in neuem Fenster). Das ist ein
+    // Weg hinaus, den der Besucher wählt; geladen wird von dort weiterhin nichts (das Bild liegt unter b/bilder/schau/).
+    const html = lies(`b/${p}index.html`).replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g, "").replace(/<a class="schau-stueck" href="https:\/\/[^"]+" target="_blank" rel="noopener">/g, '<a class="schau-stueck">');
     for (const m of html.matchAll(/(?:src|href)="(https?:\/\/[^"]+)"/g)) assert.ok(/^https:\/\/ornament\.cloud\//.test(m[1]), `${p}: ${m[1]}`);
     assert.doesNotMatch(html, /fonts\.googleapis|cdn\.|unpkg|jsdelivr/, `${p}: keine CDNs`);
   }
@@ -346,8 +348,8 @@ test("b/en/: jede Seite auch auf Englisch (ohne die Werkstatt), lang=en, hreflan
 
 
 // ---------- Schaufenster (13. November 2026, Entscheid von Christian: «Künstler zuerst»; Pakete «Schaufenster» und «Veröffentlichung») ----------
-test("Startseite: drei Türen, dann «Hören und Sehen» mit dem Neusten, Zettelkasten, Spielen, Prüfraster, «Beauftragen» mit den vier Leistungen", () => {
-  for (const [datei, tueren] of [["b/index.html", ["Hören und Sehen", "Spielen und Denken", "Beauftragen"]], ["b/en/index.html", ["Listen and look", "Play and think", "Commission"]]]) {
+test("Startseite: drei Türen, dann «Sehen und Hören» (zuerst zwei Schaubilder, dann die Musik), Zettelkasten, Spielen, Prüfraster, «Beauftragen» mit den vier Leistungen", () => {
+  for (const [datei, tueren] of [["b/index.html", ["Sehen und Hören", "Spielen und Denken", "Beauftragen"]], ["b/en/index.html", ["Look and listen", "Play and think", "Commission"]]]) {
     const html = lies(datei);
     const nav = html.match(/<nav class="angebote tueren"[\s\S]*?<\/nav>/)?.[0];
     assert.ok(nav, `${datei}: die Türen`);
@@ -383,4 +385,35 @@ test("Atelier: die Einträge mit \"atelier\": true aus src/register.json, jeder 
   assert.deepEqual([...liste.matchAll(/<a href="\/([^"]*)" target="_blank" rel="noopener"/g)].map((m) => m[1]), soll.map((e) => e.adresse));
   for (const e of soll) assert.ok(["verlinkt", "oeffentlich"].includes(e.status) && e.kurz && e.kurzEn, `${e.id}: im Atelier nur Verlinktes, mit Text in beiden Sprachen`);
   for (const e of register.arbeiten.filter((x) => x.status === "direktlink")) for (const datei of ["b/atelier/index.html", "b/en/atelier/index.html", "b/index.html"]) assert.ok(!lies(datei).includes(`href="/${e.adresse}"`), `${datei}: ${e.id} bleibt unverlinkt`);
+});
+
+// ---------- Visuelles zuerst (13. November 2026, Christian: «Erst principessa als website referenz und gamma», «Das Dritte Rad und OMNA COLOR scheinen mir
+// gelungene Bereiche zum zeigen. Grundsätzlich würd ich nicht mit der Musik beginnen, visuelles scheint mir zugänglicher») ----------
+test("Schaubilder: auf der Startseite Das Dritte Rad und OMNA COLOR vor der Musik; auf «Webdesign» Principesse und Gamma zum Anschauen; Bilder 1280 × 800 mit Versionsmarke", async () => {
+  const { SCHAUBILDER } = await import("../tools/b-schaubilder.mjs");
+  for (const b of SCHAUBILDER) {
+    const buf = readFileSync(new URL(`b/bilder/schau/${b.name}.jpg`, root));
+    assert.ok(buf[0] === 0xff && buf[1] === 0xd8 && buf.length < 250_000, `${b.name}.jpg: JPEG unter 250 KB`);
+  }
+  for (const [datei, B] of [["b/index.html", "/b/"], ["b/en/index.html", "/b/en/"]]) {
+    const html = lies(datei), abschnitt = html.slice(html.indexOf('id="hoeren-sehen"'), html.indexOf('id="spielen-denken"'));
+    const stuecke = [...abschnitt.matchAll(/<a class="schau-stueck" href="([^"]+)"/g)].map((m) => m[1]);
+    assert.deepEqual(stuecke, ["/beta/drittes-rad/", `${B}apps/omna-color/`], `${datei}: zwei Stücke zum Zeigen`);
+    assert.ok(abschnitt.indexOf('class="schau"') < abschnitt.indexOf('class="platte"'), `${datei}: das Visuelle steht vor der Musik`);
+    // zuoberst der Film aus Animations (von Christian, 13. November 2026): stumm, als Schlaufe, erst geladen, wenn er ins Bild kommt
+    const film = abschnitt.match(/<a class="schau-film" href="\/animations\/" target="_blank" rel="noopener">[\s\S]*?<\/a>/)?.[0];
+    assert.ok(film && abschnitt.indexOf('class="schau-film"') < abschnitt.indexOf('class="schau"'), `${datei}: der Film steht zuoberst`);
+    assert.match(film, /<video class="kachel-film" muted loop playsinline preload="none" poster="\/b\/bilder\/schau\/animations\.jpg\?v=[0-9a-f]{10}" width="720" height="900" aria-label="[^"]{30,}"><source src="\/b\/bilder\/schau\/animations\.mp4\?v=[0-9a-f]{10}" type="video\/mp4">/, `${datei}: Film mit Standbild, Massen und Beschreibung`);
+    assert.ok(!/autoplay|controls/.test(film), `${datei}: kein Autoplay-Attribut (tafeln-leben.js spielt nur im Bild und nie bei reduzierter Bewegung)`);
+    assert.match(abschnitt, /<img src="\/b\/bilder\/schau\/drittes-rad\.jpg\?v=[0-9a-f]{10}" alt="[^"]{20,}" width="1280" height="800"/, `${datei}: Bild mit Marke, Beschreibung und Massen`);
+  }
+  for (const datei of ["b/angebot/webdesign/index.html", "b/en/angebot/webdesign/index.html"]) {
+    const html = lies(datei), schau = html.match(/<section class="referenzen schau-abschnitt"[\s\S]*?<\/section>/)?.[0];
+    assert.ok(schau, `${datei}: Abschnitt zum Anschauen`);
+    assert.deepEqual([...schau.matchAll(/<a class="schau-stueck" href="([^"]+)" target="_blank" rel="noopener"/g)].map((m) => m[1]), ["https://principesse.ch/", "/gamma/"], `${datei}: Principesse und Gamma, in neuem Fenster`);
+    assert.ok(schau.includes("Katharina Strickler"), `${datei}: für wen die Seite gebaut ist`);
+  }
+  assert.ok(statSync(new URL("b/bilder/schau/animations.mp4", root)).size < 2_500_000, "der Film bleibt unter 2,5 MB");
+  assert.ok(!/animations\.mp4|Beispiel/.test(lies("animations/index.html")), "die Seite Animations selbst bleibt ohne Beispiele");
+  for (const s of ["kuration", "vermittlung", "produkte"]) assert.ok(!lies(`b/angebot/${s}/index.html`).includes("schau-abschnitt"), `${s}: kein leerer Abschnitt`);
 });

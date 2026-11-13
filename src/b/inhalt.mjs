@@ -32,6 +32,21 @@ export const DIALOG = {
   ],
 };
 
+/** Zum Zeigen, zuoberst im Abschnitt «Sehen und Hören» der Startseite (13. November 2026, Christian: «Das Dritte Rad und OMNA COLOR scheinen mir
+ *  gelungene Bereiche zum zeigen. Grundsätzlich würd ich nicht mit der Musik beginnen, visuelles scheint mir zugänglicher»). Bilder: tools/b-schaubilder.mjs. */
+// Zuoberst seit 13. November 2026 ein Film aus «Animations» (von Christian am selben Tag geschickt: «ornament-animation-mischung-durchlauf-4x5», 12 s als
+// Schlaufe, 1080 × 1350); hier 720 × 900 ohne Ton (b/bilder/schau/animations.mp4 und .jpg, mit ffmpeg aus dem Original, crf 28). Die Seite «Animations»
+// selbst bleibt ohne Beispielbilder (Wunsch vom 4. November 2026); der Film steht nur hier.
+export const ZEIGEN_FILM = { slug: "animations", name: "Animations", kurz: "Ein Bild, 24 Effekte, bis zu drei Ebenen. Am Mischpult entsteht daraus eine Animation wie diese: eine Mischung, zwölf Sekunden als Schlaufe.",
+  ziel: "/animations/", weiter: "Zum Mischpult", film: "b/bilder/schau/animations.mp4", bild: "b/bilder/schau/animations.jpg", mass: [720, 900],
+  bildAlt: "Animations: eine helle, faserige Gestalt aus feinen Linien mit farbigen Rändern, die sich auf schwarzem Grund langsam windet" };
+export const ZEIGEN = [
+  { slug: "drittes-rad", name: "Das Dritte Rad", kurz: "Zeit, Form und Farbe drehen gegeneinander. Jede Drehung zieht einen Zettel, eine Begegnung aus ORNA und eine Übung aus OMNA COLOR.",
+    ziel: "/beta/drittes-rad/", neuesFenster: true, bild: "b/bilder/schau/drittes-rad.jpg", bildAlt: "Das Dritte Rad: drei Ringe auf gelbem Grund, aussen Zeichen, in der Mitte ein Farbrad", weiter: "Drehen" },
+  { slug: "omna-color", name: "OMNA COLOR", kurz: "Zwei Farbräder drehen gegeneinander. Was sie zeigen, wird eine Gestaltungsübung: 180 gibt es.",
+    ziel: "apps/omna-color/", bild: "b/bilder/schau/omna-color.jpg", bildAlt: "OMNA COLOR: zwei ineinanderliegende Farbräder mit sieben Feldern auf schwarzem Grund", weiter: "Zur App" },
+];
+
 /** Die sieben Apps. Sie bleiben, wie sie sind; hier steht nur ihre Darstellung. */
 // Bilder der Apps (seit 20. Oktober 2026, Wunsch: «alle stilvoll re-designt, nicht dieses farbige Durcheinander … alles stilisiert, zur Seite passend»):
 // sieben gezeichnete Tafeln aus tools/b-app-bilder.mjs (SVG, hell und dunkel), je App ein Motiv aus ihrer Mechanik; vorher die Standbilder und Symbole der Apps.
@@ -50,6 +65,9 @@ export const APPS = [
     fuer: "Für alle, die aus einem Bild ein Reel machen wollen, ohne Schnittprogramm.",
     url: "alpha/bildfragmentieren/", app: "alpha/bildfragmentieren/?installieren", bild: "b/bilder/apps/phorma-i.svg", bildDunkel: "b/bilder/apps/phorma-i-dunkel.svg", bildAlt: "PHORMA I, gezeichnet: ein Kristall aus Scherben, Dreiecke über einer Scheibe, eine Scherbe in Blau",
     beispiele: [
+      // Seit 13. November 2026 zuerst der Film, den Christian an dem Tag geschickt hat («phorma-i-2026-11-13-1143», 19 s ohne Ton, 1080 × 1350);
+      // hier 720 × 900 (ffmpeg: scale=720:900:flags=lanczos, libx264 crf 30). Der bisherige Film (Verwandlung, Saturn) bleibt als zweiter.
+      { art: "video", datei: "assets/beispiele/phorma-i-fragmente.mp4", bild: "assets/beispiele/phorma-i-fragmente.jpg", mass: [720, 900], text: "Der Ablauf «Fragmente» in vier Schritten: Linien zeichnen das Bild nach, Formen aus Dreiecken füllen es, die Farben kommen dazu, und am Ende setzen Scherben das Bild zusammen. Gerechnet aus der App, ohne Ton." },
       { art: "video", datei: "assets/beispiele/phorma-i.mp4", bild: "assets/beispiele/phorma-i.jpg", mass: [540, 676], text: "Der Ablauf «Verwandlung» mit einem Foto des Saturn: Funken strömen, verdichten sich zu einem Glaskörper, er zerspringt in Scherben, daraus wird ein Gebirge aus Höhenlinien im Streiflicht – und am Ende das Foto. Gerechnet aus der App, ohne Ton." },
     ],
     bewegung: "So arbeitet PHORMA I, in drei Abläufen: «Fragmente» montiert das Foto aus Linien, Formen und Farben; «Verwandlung» führt über Funken, Glaskörper, Scherben, Echo und Gebirge zum Foto; der «Relief-Flug» fliegt über die Formen, bis das Bild flach daliegt. Die Tafel zeigt die Scherben.",
@@ -59,6 +77,9 @@ export const APPS = [
     fuer: "Für Künstler:innen, Galerien und Museen, die ein Werk in Bewegung zeigen wollen.",
     url: "alpha/phorma-ii/", app: "alpha/phorma-ii/?installieren", bild: "b/bilder/apps/phorma-ii.svg", bildDunkel: "b/bilder/apps/phorma-ii-dunkel.svg", bildAlt: "PHORMA II, gezeichnet: ein Netz aus Adern, das aus fünf Keimen wächst und sich auf eine Form legt, dort in Blau",
     beispiele: [
+      // Seit 13. November 2026 zuerst der Film, den Christian an dem Tag geschickt hat («phorma-ii-2026-11-13-1141», 24,3 s ohne Ton, 1080 × 1350);
+      // hier 720 × 900 (ffmpeg: scale=720:900:flags=lanczos, libx264 crf 30; der Rasterdruck macht die Datei gross, 5,5 MB). Der bisherige Film bleibt als zweiter.
+      { art: "video", datei: "assets/beispiele/phorma-ii-kette.mp4", bild: "assets/beispiele/phorma-ii-kette.jpg", mass: [720, 900], text: "Eine Kette in sechs Schritten: Keime wachsen zu einem Netz (Physarum), das Netz legt eine Form frei, sie wird zum Rasterdruck, dessen Platten verrutschen, und zerfällt am Ende in Rechtecke (Montage). Gerechnet aus der App, ohne Ton." },
       { art: "video", datei: "assets/beispiele/phorma-ii.mp4", bild: "assets/beispiele/phorma-ii.jpg", mass: [540, 676], text: "Eine Kette mit einem schillernden, gespiegelten Bild: ein Schleimpilz legt sein Netz auf die Formen (Physarum), das Bild weht als Seidentuch (Tuch) und zerfällt im Takt in Rechtecke (Montage) – bis zum Signet. Gerechnet aus der App, ohne Ton." },
     ],
     bewegung: "So arbeitet PHORMA II, in sechs Effekten, einzeln oder als Kette: ein Schleimpilz findet seine Formen (Physarum), eine Lichtebene tastet die Tiefe ab (Tiefe), das Bild liegt unter ruhigem Wasser (Wellenwanne), das Foto weht als Seidentuch (Tuch), es wird zum Vierfarbendruck, dessen Platten verrutschen (Rasterdruck) oder es zerfällt im Takt in Rechtecke (Montage). Die Tafel zeigt eine einzige Linie, die eine Fläche füllt.",
@@ -68,6 +89,10 @@ export const APPS = [
     fuer: "Für Musiker:innen, Sprecher:innen und alle, die zu einem Ton ein Bild brauchen.",
     url: "alpha/phorma-iii/", app: "alpha/phorma-iii/?installieren", bild: "b/bilder/apps/phorma-iii.svg", bildDunkel: "b/bilder/apps/phorma-iii-dunkel.svg", bildAlt: "PHORMA III, gezeichnet: drei Bänder aus feinen Linien wie zerknitterte Seide, eines in Blau",
     beispiele: [
+      // Seit 13. November 2026 zuerst der Film, den Christian an dem Tag geschickt hat («phorma-iii-2026-11-09-2235», Würfel und Irrfahrt, 12,7 s mit Ton,
+      // 1080 × 1350); hier 720 × 900 (ffmpeg aus dem Original: scale=720:900:flags=lanczos, libx264 crf 27, AAC 128 kbit/s). Das Gewebe bleibt als zweiter Film.
+      // Die Kachel auf /b/apps/ zeigt weiter die Traube (Wunsch vom 30. Oktober 2026).
+      { art: "video", datei: "assets/beispiele/phorma-iii-wuerfel.mp4", bild: "assets/beispiele/phorma-iii-wuerfel.jpg", mass: [720, 900], text: "Würfel und Irrfahrt zum Ton: Ein Würfel zeichnet seine Kanten, in ihm irrt ein leuchtender Faden. Mit den Einsätzen werden es drei Würfel, einmal kehrt das Bild ins Helle um. Gerechnet aus der App, mit Ton." },
       { art: "video", datei: "assets/beispiele/phorma-iii.mp4", bild: "assets/beispiele/phorma-iii.jpg", mass: [540, 676], text: "Das Gewebe zu einem Stück Musik: Flächen aus feinen Linien auf hellem Papier, bei jedem kräftigen Einsatz ein neues Bild, am Ende das Signet. Gerechnet aus der App, mit Ton." },
     ],
     bewegung: "So arbeitet PHORMA III, in fünf Effekten zum Ton: Flächen aus feinen Linien (Gewebe), ein Faden im Würfel aus Licht, wild oder ruhig (Irrfahrt, Lichtwürfel), Perlen in einer Kugel aus Fäden (Traube) oder das Video selbst, gescratcht und verfrickelt (Video). Jeder Schlag bewegt das Bild. Die Tafel zeigt das Gewebe.",
@@ -134,6 +159,16 @@ export const ANGEBOTE = [
     text: "Eine Website, die in unter einer Sekunde da ist und nichts von Dritten lädt: keine Cookies, keine Werbung, keine Tracker, Schriften und Skripte auf dem eigenen Server. Dazu Apps, die im Browser laufen, sich auf den Startbildschirm legen lassen und ohne Netz weiterarbeiten. Gestaltet und gebaut aus einer Hand, vom ersten Gespräch bis zur Veröffentlichung, mit allem, was Suchmaschinen und Teilen brauchen. Diese Seite hier ist das Beispiel, die sieben Apps sind es auch.",
     fuer: "Für Künstler:innen, Praxen, Vereine, Galerien, Museen, Schulen und kleine Unternehmen, die eine Adresse brauchen, die bleibt, oder ein Werkzeug, das nicht in einem App-Store wohnt.",
     ablauf: ["Ein Gespräch über das, was die Seite oder die App tun soll, und für wen.", "Ein Entwurf im Browser, zum Anfassen, nicht als Bild; bei Apps ein lauffähiger Prototyp innert Tagen.", "Bau, Texte, Bilder, Veröffentlichung auf der eigenen Adresse; danach bleibt alles in deiner Hand."],
+    // Zum Anschauen (13. November 2026, Christian: «Erst principessa als website referenz und gamma»). Am 20. Oktober 2026 war der Abschnitt
+    // herausgenommen worden, bis Referenzen von Christian kommen; das sind sie. Bilder: tools/b-schaubilder.mjs.
+    schau: [
+      { name: "Principesse", von: "für Katharina Strickler", jahr: "2026", url: "https://principesse.ch/", adresse: "principesse.ch", bild: "b/bilder/schau/principesse.jpg",
+        bildAlt: "Principesse: eine gezeichnete Prinzessin mit Krone und ein Hund mit Krone auf einer Wiese, im Rahmen eines kleinen Films",
+        text: "Ein One-Pager, der mit einem kleinen Film beginnt: Die Principessa löst sich aus ihrem gezeichneten Bild, springt heraus und fliegt beim Scrollen durch die Seite. Am Ende eine Bestellkarte mit Auswahl und Vorschau." },
+      { name: "ornament.cloud, Fassung Gamma", von: "eigene Seite", jahr: "2026", url: "/gamma/", adresse: "ornament.cloud/gamma", bild: "b/bilder/schau/gamma.jpg",
+        bildAlt: "Gamma: das Signet von ornament.cloud als leuchtende Schlaufe auf schwarzem Grund",
+        text: "Dieselben Inhalte in einer zweiten Gestaltung: dunkel, mit dem Signet in Bewegung und Filmen als Kacheln. Sie zeigt, wie weit sich eine Seite verändern lässt, ohne dass sich ihre Inhalte ändern." },
+    ],
     dialog: [
       { frage: "Was soll entstehen?", wahlen: ["eine Website", "eine App", "beides", "weiss ich noch nicht"] },
       { frage: "Was gibt es schon?", wahlen: ["nichts", "eine alte Seite", "Texte und Bilder", "ein Logo und Farben"] },
