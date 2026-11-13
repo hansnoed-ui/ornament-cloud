@@ -30,7 +30,7 @@ const MENUSEITEN = {   // OMNA COLOR (alpha/omna-color/, rad/) seit 20. Oktober 
   // ORNA (portfolio/nebeneinander-nacheinander/, feld/, app/) seit 20. Oktober 2026 wie OMNA COLOR mit dem Kopf der App statt des Menüs
   "art/index.html": ["art/", "page"],                       // «Art» (19. Oktober 2026): Übersicht; Werkseiten und «Danke» darunter
   "zu-seiner-zeit/index.html": ["zu-seiner-zeit/", "page"],
-  "social-media/index.html": ["social-media/", "page"],      // Social Media (19. Oktober 2026): die Zeitleiste; alle Seiten darunter (Zettel, Register, Redaktion) unter «Social»
+  // "social-media/index.html": seit 14. November 2026 im Rahmen des Neubaus (b/rahmen.js), ohne dieses Menü; geprüft in tests/social-media.test.mjs
 };
 // seit 18. Oktober 2026 steht das Menü auf allen Seiten mit Kopf (Wunsch: «das Menü müsste überall auf der Seite sichtbar sein, auch wenn man in den
 // Beiträgen, Anwendungen etc. ist»): auch im Zettelkasten (jede Seite darin unter «Zettel»), auf den Alpha-Seiten und in OMNA COLOR – nur das Dritte Rad

@@ -1,7 +1,7 @@
 // Social Media – Redaktion: was ein Commit enthält (rein, ohne Netz; läuft im Browser und in den Tests).
 // Aus den Daten, wie sie im Repository stehen, und einer Änderung (Zettel speichern oder löschen) werden: die neuen Daten, alle Seiten des Bereichs,
 // die Sitemap und die Liste der Dateien, die wegfallen (Seiten gelöschter Zettel, Medien, auf die kein Zettel mehr verweist).
-import { alleSeiten, sitemapEinsetzen, pruefen, datenText, BEREICH } from "../darstellung.js";
+import { alleSeiten, sitemapEinsetzen, pruefen, datenText, BEREICH } from "../darstellung.js?v=3";
 
 export const DATEN = `${BEREICH}daten/eintraege.json`;
 
