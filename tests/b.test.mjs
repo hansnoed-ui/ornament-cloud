@@ -102,17 +102,15 @@ test("b/zettel: alle 49, Titel, Leitsatz und Text wörtlich wie src/data/zu-sein
   for (const z of zettel) assert.ok(uebersicht.includes(`<span class="kurz">${esc(z.bottom_line)}</span>`), `Übersicht: Leitsatz ${z.number}`);
 });
 
-test("b/: die Startseite trägt das Feld mit allen 49 Zetteln, den Dialog und die Daten für den Leitsatz", () => {
+test("b/: die Startseite trägt den Dialog; das Feld der 49 Zettel steht seit 13. November 2026 abends nicht mehr dort, sondern im Atelier unter «Denken»", () => {
   const html = lies("b/index.html");
-  const zellen = [...html.matchAll(/<a href="\/b\/zettel\/([^"]+)\/" data-n="(\d+)"/g)];
-  assert.equal(zellen.length, 49);
-  assert.deepEqual(zellen.map((m) => +m[2]), Array.from({ length: 49 }, (_, i) => i + 1), "in der Reihenfolge 1 bis 49");
-  const daten = JSON.parse(html.match(/<script type="application\/json" id="zettel-daten">([\s\S]*?)<\/script>/)[1]);
-  assert.equal(daten.length, 49);
-  assert.equal(daten[0].leitsatz, ladeZettel()[0].bottom_line);
   for (const id of ["bild", "frage", "auftrag", "begriff", "gruppe"]) { assert.match(html, new RegExp(`<input type="radio" name="mit" id="mit-${id}">`)); assert.match(html, new RegExp(`class="weg weg-${id}"`)); }
-  const faeden = JSON.parse(html.match(/data-faeden="([^"]+)"/)[1].replace(/&quot;/g, '"'));
-  assert.ok(faeden.length >= 10 && faeden.every(([a, b]) => a >= 1 && a <= 49 && b >= 1 && b <= 49 && a !== b), "Fäden zwischen Zellen");
+  assert.ok(!html.includes('id="zettel-daten"') && !html.includes('data-n="1"'), "kein Feld auf der Startseite");
+  const denken = html.slice(html.indexOf('id="denken"'), html.indexOf('id="dialog-titel"'));
+  assert.ok(denken.includes('href="/b/zettel/"') && denken.includes('href="/alpha/kunst/"') && denken.includes('href="/b/atelier/#denken"'), "Denken: Zettelkasten, Hypertext, Atelier");
+  const atelier = lies("b/atelier/index.html");
+  assert.ok(atelier.indexOf('id="denken"') > 0 && atelier.indexOf('id="denken"') < atelier.indexOf('class="liste-linien am-ende"'), "im Atelier zuoberst «Denken»");
+  for (const B of ["b/", "b/en/"]) assert.ok(!lies(`${B}index.html`).match(/<nav class="hauptnav"[\s\S]*?<\/nav>/)[0].includes("zettel/"), `${B}: «Zettel» nicht mehr im Menü`);
 });
 
 test("b/: Apps, Raster und Angebote verlinken ihre Ziele, und die Ziele gibt es", () => {
@@ -308,7 +306,7 @@ test("Zettel: das kleine Feld führt zurück zum grossen; am Telefon steht die A
   assert.match(seite, /<a class="feldchen" href="\/b\/zettel\/#feld" aria-label="Zum Zettelkasten – Zettel 24 von 49 im Feld"/, "das kleine Feld ist ein Link ins grosse");
   assert.ok(feld.includes('<section class="buehne buehne-zettel" id="feld"'), "das grosse Feld hat den Anker");
   assert.ok(lies("b/ueber/index.html").includes('<a class="feldchen" href="/b/zettel/" aria-label="Zum Zettelkasten"'), "im Fuss ebenso");
-  for (const html of [feld, lies("b/index.html")]) { assert.ok(html.includes('<span class="mit-zeiger">Fahre über das Feld'), "mit Zeiger"); assert.ok(html.includes('<span class="ohne-zeiger">Tippe eine Zelle an:') && html.includes("Noch einmal tippen öffnet den Zettel."), "ohne Zeiger"); }
+  for (const html of [feld]) { assert.ok(html.includes('<span class="mit-zeiger">Fahre über das Feld'), "mit Zeiger"); assert.ok(html.includes('<span class="ohne-zeiger">Tippe eine Zelle an:') && html.includes("Noch einmal tippen öffnet den Zettel."), "ohne Zeiger"); }
   const css = lies("b/b.css");
   assert.ok(css.includes("@media (hover: none) { .mit-zeiger { display: none; } .ohne-zeiger { display: inline; } }"), "b.css schaltet die Anleitung um");
 });
@@ -328,7 +326,7 @@ test("b/en/: jede Seite auch auf Englisch (ohne die Werkstatt), lang=en, hreflan
     // Seit 13. November 2026 («Künstler zuerst», Paket «Schaufenster»): Hören, Zettel, Apps, Raster, Angebot, Über (mit Werke und Zuletzt), Atelier.
     // Animations, Multiverse, Lab, Das 3. Rad und Gamma stehen auf der Seite «Atelier» statt im Menü; «Beta» gibt es im Menü nicht mehr.
     // Seit dem Nachmittag des 13. November 2026: Sehen vor Hören; ohne «Grids» (die Prüfraster sind nicht mehr öffentlich)
-    assert.ok(/<nav class="hauptnav"[^>]*><a href="\/b\/en\/sehen\/"[^>]*>Look<\/a><a href="\/b\/en\/zettel\/"[^>]*>Notes<\/a><a href="\/b\/en\/apps\/"[^>]*>Apps<\/a><a href="\/b\/en\/angebot\/"[^>]*>Services<\/a><details class="beta ueber"><summary[^>]*>About<\/summary><span class="beta-liste"><a href="\/b\/en\/ueber\/"[^>]*>About<\/a><a href="\/b\/en\/zuletzt\/"[^>]*>Latest<\/a><\/span><\/details><a href="\/b\/en\/werke\/"[^>]*>Works<\/a><a class="atelier-link" href="\/b\/en\/atelier\/"[^>]*>Studio<\/a><a href="\/b\/en\/hoeren\/"[^>]*>Listen<\/a><\/nav>/.test(html), `${p}: die Navigation auf Englisch unter /b/en/ (Hören am Schluss)`);
+    assert.ok(/<nav class="hauptnav"[^>]*><a href="\/b\/en\/sehen\/"[^>]*>Look<\/a><a href="\/b\/en\/apps\/"[^>]*>Apps<\/a><a href="\/b\/en\/angebot\/"[^>]*>Services<\/a><details class="beta ueber"><summary[^>]*>About<\/summary><span class="beta-liste"><a href="\/b\/en\/ueber\/"[^>]*>About<\/a><a href="\/b\/en\/zuletzt\/"[^>]*>Latest<\/a><\/span><\/details><a href="\/b\/en\/werke\/"[^>]*>Works<\/a><a class="atelier-link" href="\/b\/en\/atelier\/"[^>]*>Studio<\/a><a href="\/b\/en\/hoeren\/"[^>]*>Listen<\/a><\/nav>/.test(html), `${p}: die Navigation auf Englisch unter /b/en/ (Hören am Schluss)`);
     assert.ok(!/<nav class="hauptnav"[\s\S]*?(animations|multiverse|gamma|beta\/)[\s\S]*?<\/nav>/.test(html.match(/<nav class="hauptnav"[\s\S]*?<\/nav>/)[0]), `${p}: nichts aus dem Atelier im Hauptmenü`);
   }
   // die deutschen Seiten zeigen den Schalter mit d aktiv und verweisen auf /b/en/
@@ -386,7 +384,7 @@ test("Hören: jede öffentliche Veröffentlichung (listen/<slug>/ep.json mit \"o
 test("Atelier: die Einträge mit \"atelier\": true aus src/register.json, jeder in neuem Fenster; nichts, was nur per Direktlink erreichbar sein soll", () => {
   const register = JSON.parse(lies("src/register.json"));
   const html = lies("b/atelier/index.html"), liste = html.match(/<ul class="liste-linien am-ende">[\s\S]*?<\/ul>/)[0];
-  const soll = register.arbeiten.filter((e) => e.atelier);
+  const soll = register.arbeiten.filter((e) => e.atelier && !["zettelkasten", "kunst-hypertext"].includes(e.id));   // die zwei stehen oben unter «Denken»
   assert.deepEqual([...liste.matchAll(/<a href="\/([^"]*)" target="_blank" rel="noopener"/g)].map((m) => m[1]), soll.map((e) => e.adresse));
   for (const e of soll) assert.ok(["verlinkt", "oeffentlich"].includes(e.status) && e.kurz && e.kurzEn, `${e.id}: im Atelier nur Verlinktes, mit Text in beiden Sprachen`);
   for (const e of register.arbeiten.filter((x) => x.status === "direktlink")) for (const datei of ["b/atelier/index.html", "b/en/atelier/index.html", "b/index.html"]) assert.ok(!lies(datei).includes(`href="/${e.adresse}"`), `${datei}: ${e.id} bleibt unverlinkt`);
@@ -489,7 +487,7 @@ test("Fotografie: Galerie auf «Werke», Reihe auf der Startseite, fünfte Leist
 test("Sehen: eigene Seite, zuvorderst im Menü («Hören» am Schluss), mit Film, Fotografien, Prints und Ausstellung; nichts zum Selbermachen (seit «weg 1»: das steht unter «Apps»)", () => {
   for (const [datei, B, name] of [["b/sehen/index.html", "/b/", "Sehen"], ["b/en/sehen/index.html", "/b/en/", "Look"]]) {
     const html = lies(datei), nav = html.match(/<nav class="hauptnav"[\s\S]*?<\/nav>/)[0];
-    assert.ok(nav.startsWith(`<nav class="hauptnav"`) && nav.indexOf(`href="${B}sehen/" aria-current="page">${name}</a>`) > 0 && nav.indexOf(`${B}sehen/`) < nav.indexOf(`${B}zettel/`) && nav.endsWith(`href="${B}hoeren/">${B === "/b/" ? "Hören" : "Listen"}</a></nav>`), `${datei}: Sehen steht zuvorderst und ist aktiv, Hören am Schluss`);
+    assert.ok(nav.startsWith(`<nav class="hauptnav"`) && nav.indexOf(`href="${B}sehen/" aria-current="page">${name}</a>`) > 0 && nav.indexOf(`${B}sehen/`) < nav.indexOf(`${B}apps/`) && nav.endsWith(`href="${B}hoeren/">${B === "/b/" ? "Hören" : "Listen"}</a></nav>`), `${datei}: Sehen steht zuvorderst und ist aktiv, Hören am Schluss`);
     assert.ok(html.includes('<a class="schau-film" href="/animations/"'), `${datei}: der Film`);
     for (const id of ["sehen-foto-titel", "sehen-prints-titel", "sehen-ausstellung-titel"]) assert.ok(html.includes(`id="${id}"`), `${datei}: ${id}`);
     assert.equal((html.match(/<figure class="foto"/g) || []).length, 7 + 8 + 6, `${datei}: sieben Fotografien, acht Prints, sechs Ansichten`);

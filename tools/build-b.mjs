@@ -31,7 +31,8 @@ const UNTER_UEBER = ["ueber/", "zuletzt/"];
 // Hören, Zettel, Apps, Raster, Angebot, Über (mit Werke und Zuletzt), Atelier. Animations, Multiverse, Lab, Das 3. Rad und Gamma stehen nicht mehr
 // im Menü, sondern auf der Seite «Atelier» (b/atelier/, aus src/register.json); «Beta» gibt es im Menü nicht mehr, «Raster» und «Angebot» stehen
 // wieder für sich. Das ersetzt die Wünsche vom 5. und 8. November 2026 (Animations zuvorderst, Multiverse im Hauptmenü, Raster unter Beta).
-const HAUPT = ["sehen/", "zettel/", "apps/", "angebot/"];
+// «Zettel» steht seit dem Abend des 13. November 2026 nicht mehr im Menü: der Zettelkasten wohnt im Atelier unter «Denken» (Christian: «so bauen»).
+const HAUPT = ["sehen/", "apps/", "angebot/"];
 // «Hören» steht am Schluss des Menüs, nach «Atelier» (Christian am selben Nachmittag: «Nimm das hören an den schluss»)
 // Menü seit dem Nachmittag des 13. November 2026 (Christian: «Im menu steht immer noch hören als erstes», und genauer: «Das meinte ich nicht wegen
 // "hören", sondern, dass das sehen nicht dabei ist»): Sehen, Hören, Zettel, Apps, Angebot, Über (mit Werke und Zuletzt), Atelier. «Sehen» ist eine
@@ -41,7 +42,7 @@ const HAUPT = ["sehen/", "zettel/", "apps/", "angebot/"];
 // Fäden, Dialog und Sitemap. Wer die Adresse kennt, erreicht sie; ein Passwortschutz wäre ein eigener Schritt auf dem Webspace.
 // Wieder öffentlich: RASTER_OEFFENTLICH = true.
 const RASTER_OEFFENTLICH = false;
-const V = 61;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 62;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 const INHALT = { de: DE, en: EN };
@@ -122,7 +123,7 @@ const kachelSeiten = { de: [], en: [] };    // je Sprache: die Vorschaukarten li
 /* ========== Eine Sprache ========== */
 function bau(sprache) {
   const T = UI[sprache], I = INHALT[sprache];
-  const { SEITE, DIALOG, APPS, RASTER, ANGEBOTE, PRODUKTE, UEBER, ZEIGEN, ZEIGEN_FILM } = I;
+  const { SEITE, DIALOG, APPS, RASTER, ANGEBOTE, PRODUKTE, UEBER, ZEIGEN, ZEIGEN_FILM, DENKEN } = I;
   const B = T.praefix;                                   // "/b/" oder "/b/en/"
   const AUS = new URL(B.slice(1), ROOT);
   const kasten = ladeZettelkasten(sprache);
@@ -441,27 +442,19 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
   </div>
 </section>
 
-<section class="buehne kapitel kapitel-papier" id="spielen-denken" data-aktuell="${erster.number}" aria-labelledby="feld-titel">
-  <div class="spalte">
-    <div class="abschnitt-kopf"><h2 id="feld-titel">${zeichen("zettel")}${esc(T.start.kasten)}</h2><p>${esc(T.start.kastenText)}</p><a class="weiter" href="${B}zettel/">${esc(T.start.alleZettel)}</a></div>
-  </div>
-  <div class="spalte sieben buehne-feld">
-    <div class="buehne-satz s-3">
-      <p class="klein kicker">${esc(T.start.kicker)}${feldHinweis(esc(T.start.kickerSatz))}</p>
-      <p class="vorschau-titel"><span class="n">${esc(T.zettelN(erster.number))}</span><span class="t">${esc(erster.title)}</span></p>
-      <p class="leitsatz">${esc(erster.bottom_line)}</p>
-      <p class="woher knopfreihe"><a class="knopf voll lesen" href="${B}zettel/${erster.slug}/">${zeichen("lesen")}<span>${esc(T.zettelLesen)}</span></a><button class="knopf still nochmal" type="button">${zeichen("zufall")}${esc(T.nochEiner)}</button></p>
-    </div>
-    <div class="s-4">${feld()}</div>
-  </div>
-  <script type="application/json" id="zettel-daten">${JSON.stringify(daten).replace(/</g, "\\u003c")}</script>
-</section>
-
-<section class="abschnitt kapitel kapitel-senf" aria-labelledby="spielen-titel">
+<section class="abschnitt kapitel kapitel-senf" id="spielen-denken" aria-labelledby="spielen-titel">
   <div class="spalte">
     <div class="abschnitt-kopf"><h2 id="spielen-titel">${zeichen("spielen")}${esc(T.start.spielen)}</h2><p>${esc(T.start.spielenText)}</p><a class="weiter" href="${B}apps/">${esc(T.start.alleApps)}</a></div>
     <div class="reihe zeilen">${APPS.map(appKachel).join("")}</div>
-    <p class="auch klein">${esc(T.start.auch)} ${register.arbeiten.filter((e) => e.atelier && e.tuer === "spielen-denken" && ![ZEIGEN_FILM.slug, ...ZEIGEN.map((z) => z.slug)].includes(e.id)).map((e) => `<a href="/${attr(e.adresse)}" target="_blank" rel="noopener">${esc(e.name)}</a>`).join(" · ")} · <a href="${B}atelier/">${esc(T.start.atelier)}</a></p>
+    <p class="auch klein">${esc(T.start.auch)} ${register.arbeiten.filter((e) => e.atelier && e.tuer === "spielen-denken" && ![ZEIGEN_FILM.slug, ...ZEIGEN.map((z) => z.slug), ...DENKEN.map((d) => d.slug)].includes(e.id)).map((e) => `<a href="/${attr(e.adresse)}" target="_blank" rel="noopener">${esc(e.name)}</a>`).join(" · ")} · <a href="${B}atelier/">${esc(T.start.atelier)}</a></p>
+  </div>
+</section>
+
+<!-- Denken (13. November 2026 abends): statt des Felds der 49 Zettel ein kurzer Abschnitt; Zettelkasten und Hypertext stehen im Atelier -->
+<section class="abschnitt kapitel kapitel-papier" id="denken" aria-labelledby="denken-titel">
+  <div class="spalte">
+    <div class="abschnitt-kopf"><h2 id="denken-titel">${zeichen("zettel")}${esc(T.start.denken)}</h2><p>${esc(T.start.denkenText)}</p><a class="weiter" href="${B}atelier/#denken">${esc(T.start.imAtelier)}</a></div>
+    <div class="schau">${DENKEN.map(schauStueck).join("")}</div>
   </div>
 </section>
 
@@ -557,12 +550,17 @@ ${faeden([fApp(appVon("phorma-iii")), fZettel(zettel[32]), fZettel(zettel[28])])
 
   /* ---------- Atelier (seit 13. November 2026): was bis dahin im Hauptmenü stand und kein Schaufenster ist – aus src/register.json, Einträge mit "atelier": true ---------- */
   {
-    const eintraege = register.arbeiten.filter((e) => e.atelier);
+    const eintraege = register.arbeiten.filter((e) => e.atelier && !DENKEN.some((d) => d.slug === e.id));
     const body = `
 <section class="stueck-kopf"><div class="spalte">
   <h1 class="titel">${esc(T.atelier.titel)}<small>${esc(T.atelier.small)}</small></h1>
 </div></section>
-<section class="abschnitt"><div class="spalte">
+<section class="abschnitt" id="denken" aria-labelledby="denken-titel"><div class="spalte">
+  <div class="abschnitt-kopf"><h2 id="denken-titel">${zeichen("zettel")}${esc(T.atelier.denken)}</h2><p>${esc(T.atelier.denkenText)}</p></div>
+  <div class="schau">${DENKEN.map(schauStueck).join("")}</div>
+</div></section>
+<section class="abschnitt" aria-labelledby="werkstatt-titel"><div class="spalte">
+  <div class="abschnitt-kopf"><h2 id="werkstatt-titel">${zeichen("tab")}${esc(T.atelier.werkstatt)}</h2></div>
   <ul class="liste-linien am-ende">${eintraege.map((e) => `<li><a href="/${attr(e.adresse)}" target="_blank" rel="noopener" title="${attr(T.atelier.oeffnen)}"><span class="n">${zeichen("tab")}</span><span class="name">${esc(e.name)}</span><span class="kurz">${esc(T.atelier.kurz(e))}</span></a></li>`).join("")}</ul>
 </div></section>`;
     veroeffentliche({ pfad: "atelier/", aktiv: "atelier/", titel: T.atelier.seitenTitel, beschreibung: T.atelier.beschreibung, body, bildAlt: T.atelier.bildAlt });
