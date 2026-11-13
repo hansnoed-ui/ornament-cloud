@@ -37,6 +37,12 @@ Sitzung wissen muss, damit dieselben Fehler nicht zweimal passieren.
   App-Abschriften) kommen aus `tools/build-*.{mjs,ts}`; dort ändern, dann neu bauen.
 - Das Menü kommt aus `kopfleiste.js` / `tools/kopfleiste.mjs`, nicht von Hand in
   die Seiten schreiben.
+- **Register:** `src/register.json` führt jede Arbeit mit Tür und Status. Wer eine Seite
+  öffnet, sperrt, verlinkt oder neu anlegt, trägt es dort nach (`tests/register.test.mjs`).
+- **Musik:** `"oeffentlich"` in `listen/<slug>/ep.json` steuert `/b/hoeren/`, Startseite und
+  Sitemap; die Hörseite selbst (kanonisch oder `noindex`) von Hand passend setzen.
+- Vorschaukarten gezielt rechnen (`tools/b-kacheln.mjs de hoeren`), nie alle: ein Lauf ohne
+  Namen ändert rund 250 PNG ohne sichtbaren Unterschied (13.11.2026).
 
 ## Versionsmarken
 

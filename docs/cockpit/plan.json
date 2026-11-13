@@ -1,0 +1,18 @@
+{
+  "_hinweis": "Plan der nächsten Wochen fürs Cockpit (tools/cockpit.mjs). Ein Vorschlag vom 13. November 2026, von Christian zu ändern: je Woche ein Stück, daraus ein Beitrag. «braucht» nennt, was von Christian nötig ist; leer heisst: nichts.",
+  "stand": "2026-11-13",
+  "entscheide": [
+    "Zweig «claude/schaufenster-veroeffentlichung» ansehen und mit «live» freigeben: neuer Einstieg, Menü, Hören, directer öffentlich.",
+    "the i: eigener Name neben ornament oder die Musiklinie von ornament? Davon hängt ab, wie die Beiträge unterschrieben sind.",
+    "Welcher Kanal führt: Instagram (Film mit Ton) oder Facebook (dort liegt dein Archiv)? Der zweite bekommt die Kopie.",
+    "Composer: bienne Phase 3 bis 5 erst nach der Veröffentlichung von directer, oder im Verhältnis eine Sitzung Werkzeug auf zwei Sitzungen Veröffentlichung."
+  ],
+  "wochen": [
+    { "ab": "2026-11-16", "stueck": "the i – directer (Track 1)", "beitrag": "Film 9:16 und 1:1 aus dem Social-Paket, Link auf die Hörseite", "braucht": "Freigabe «live»; danach auf GitHub unter Actions den Lauf «Social-Paket» starten und das Paket herunterladen." },
+    { "ab": "2026-11-23", "stueck": "the i – making movies (Track 2)", "beitrag": "Film aus demselben Paket", "braucht": "" },
+    { "ab": "2026-11-30", "stueck": "the i – directer reprise (Track 3)", "beitrag": "Film aus demselben Paket", "braucht": "" },
+    { "ab": "2026-12-07", "stueck": "Die zwei Werke aus dem Lab", "beitrag": "Standbild oder Film des Werks, Link auf Works", "braucht": "Zwei Werke stehen schon in Works («Lab und PHORMA III», «Ohne Titel»). Entscheiden, ob Works öffentlich verlinkt wird; für mehr Stoff vier weitere Ergebnisse wählen." },
+    { "ab": "2026-12-14", "stueck": "Ein Zettel mit seiner Karte", "beitrag": "Die Karte zum Herunterladen liegt bei jedem Zettel bereit", "braucht": "Einen der 49 Zettel wählen." },
+    { "ab": "2026-12-21", "stueck": "Eine Referenz: Principesse oder Kaiserstuhl", "beitrag": "Bild, Aufgabe, Ergebnis; Link auf die Leistung", "braucht": "Einverständnis der Auftraggeber:innen, zwei bis drei Bilder, ein Ab-Preis." }
+  ]
+}

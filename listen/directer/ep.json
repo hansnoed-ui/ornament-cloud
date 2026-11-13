@@ -1,6 +1,10 @@
 {
   "anzeigename": "the i",
   "titel": "directer",
+  "art": "Maxi",
+  "artEn": "Maxi single",
+  "datum": "2026-11-10",
+  "oeffentlich": true,
   "cover": "cover.jpg",
   "coverKlein": "cover-512.jpg",
   "audio": "audio/the-i-directer-2.wav",
@@ -24,5 +28,9 @@
       "samples": 14946576,
       "datei": "audio/the-i-03-directer-reprise-2.wav"
     }
-  ]
+  ],
+  "social": {
+    "sekunden": 24,
+    "ausschnitte": {}
+  }
 }

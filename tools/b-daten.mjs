@@ -1,5 +1,5 @@
 // Neubau /b/: die Quellen lesen, die die Seite braucht. Nichts davon wird verändert; die Texte kommen wörtlich weiter.
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync } from "node:fs";
 
 const ROOT = new URL("../", import.meta.url);
 const lies = (p) => readFileSync(new URL(p, ROOT), "utf8");
@@ -70,3 +70,18 @@ export function ladeOmna() {
 
 export function ladeWerke() { return JSON.parse(lies("src/art/werke.json")); }
 export function ladeBeitraege() { return JSON.parse(lies("social-media/daten/eintraege.json")); }
+
+/** Das Register aller Arbeiten (src/register.json, seit 13. November 2026): Tür, Status, Adresse */
+export function ladeRegister() { return JSON.parse(lies("src/register.json")); }
+
+/** Die Musik-Veröffentlichungen: je Ordner unter listen/ eine ep.json. Mit `"oeffentlich": true` erscheint sie auf /b/hoeren/, auf der Startseite
+ *  und in der Sitemap; ohne bleibt sie wie bisher nur per Direktlink erreichbar. Neueste zuerst (nach `datum`). */
+export function ladeVeroeffentlichungen() {
+  const dir = new URL("listen/", ROOT);
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir, { withFileTypes: true }).filter((d) => d.isDirectory() && existsSync(new URL(`${d.name}/ep.json`, dir))).map((d) => {
+    const ep = JSON.parse(lies(`listen/${d.name}/ep.json`));
+    const sek = ep.tracks.reduce((s, t) => s + (t.samples || 0), 0) / (ep.abtastrate || 44100);
+    return { ...ep, slug: d.name, pfad: `listen/${d.name}/`, sekunden: sek, minuten: Math.round(sek / 60) };
+  }).filter((v) => v.oeffentlich === true).sort((a, b) => String(b.datum || "").localeCompare(String(a.datum || "")));
+}
