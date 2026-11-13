@@ -18,6 +18,8 @@ src/
     Formen.ts         die beiden Grenzen: atmende Wolke aus Kreisen, Buchstaben des Namens (Maske, Abstandsfeld, Keime)
     Video.tsx         Zeitplan T und Szenen
   untitled/           «Untitled»: Cézanne zerfällt, Karussell, Strudel, Jet-Ski; Film aus Seedance (24. Oktober 2026)
+  zettel-33/          «Zettel 33 – Das Publikum», gesprochen von Christian: das erste Video mit Ton (13. November 2026).
+                      Die Tonspur liegt im privaten Repository ornament-studio (ablage/…), daten.mjs kopiert sie nach public/
   orna/               Erklärvideo zu ORNA (5. Oktober 2026)
     Video.tsx         Zeitplan T und Szenen
     Rad.tsx           das Doppelrad, nachgezeichnet nach portfolio/nebeneinander-nacheinander/js/wheel.js
