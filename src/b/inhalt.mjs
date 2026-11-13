@@ -13,7 +13,7 @@ export const SEITE = {
   // (Hören und Sehen, Spielen und Denken, Beauftragen); die vier Leistungen stehen als eigener Abschnitt «Beauftragen» weiter unten.
   // Vom 20. Oktober bis 13. November 2026: titel «Gestalten, vermitteln, kuratieren.», die vier Leistungen zuoberst.
   titel: "Theorie, die man anfassen kann.",
-  lead: "Musik, Bilder, Apps und ein Zettelkasten von Christian Strickler. Und fünf Leistungen für alle, die so etwas für sich brauchen.",
+  lead: "Webdesign, Vermittlung, Kuration, Fotografie und Produkte von Christian Strickler. Dazu ein Zettelkasten, Apps, Bilder und Musik.",
   claimAlt: "Theorie, die man anfassen kann.",
   beschreibung: "Theorie, die man anfassen kann: Fotografie, Musik, sieben Apps und 49 Zettel von Christian Strickler. Dazu Webdesign, Vermittlung, Kuration, Fotografie und Produkte.",
   person: { name: "Christian Strickler", ort: "zwischen Zürich, Basel und Aarau", strasse: "Rheingasse 8b", plz: "CH-5466 Kaiserstuhl", mail: "hansnoed@gmail.com" },
