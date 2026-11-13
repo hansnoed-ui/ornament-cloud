@@ -186,10 +186,10 @@ export const ANGEBOTE = [
       { frage: "Who exhibits?", wahlen: ["one person", "a group", "a collection", "open"] },
       { frage: "When?", wahlen: ["in three months", "in a year", "next year", "open"] },
     ] },
-  { slug: "fotografie", name: "Photography", kurz: "Stage, exhibition, space and landscape in pictures.",
-    text: "Photography of stage and exhibition, of spaces, places and landscapes: a rehearsal, an evening, a hanging, a house from the inside, a lake. In colour or black and white, for website, press and print. The stage photographs shown here were made for the Kaiserbühne theatre.",
-    fuer: "For theatres, art spaces, artists, institutions and anyone who wants to keep an evening or a place.",
-    ablauf: ["A conversation about what is to be photographed, where and what for.", "The shoot on site: at the rehearsal, on the evening, in the space.", "A selection of edited images, in the sizes you need."],
+  { slug: "fotografie", name: "Photography", kurz: "Photo commissions of every kind, from portrait to landscape.",
+    text: "Photo commissions of every kind: people, events, spaces, places, products, artworks, stage and landscape. In colour or black and white, for website, press and print. The stage photographs shown here were made for the Kaiserbühne theatre.",
+    fuer: "For companies, institutions, associations, theatres, artists and private clients: for anyone who needs good pictures.",
+    ablauf: ["A conversation about what is to be photographed, where and what for.", "The shoot, wherever it takes place: at yours, at the event, indoors or outdoors.", "A selection of edited images, in the sizes you need."],
     fotos: "buehne", ohneJev: true,   // noch nicht in der jev-Tabelle (tools/build-b-jev.mjs)
     dialog: [
       { frage: "What?", wahlen: ["a rehearsal or performance", "an exhibition", "a space or a house", "something else"] },
