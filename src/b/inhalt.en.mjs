@@ -31,6 +31,11 @@ export const DIALOG = {
 export const ZEIGEN_FILM = { slug: "animations", name: "Animations", kurz: "One image, 24 effects, up to three layers. At the mixing desk they become an animation like this one: a mix, twelve seconds as a loop.",
   ziel: "/animations/", weiter: "To the mixing desk", film: "b/bilder/schau/animations.mp4", bild: "b/bilder/schau/animations.jpg", mass: [720, 900],
   bildAlt: "Animations: a bright, fibrous figure of fine lines with coloured edges, slowly winding on a black ground" };
+// «Denken» (13 November 2026): Zettelkasten and hypertext at the top of the studio.
+export const DENKEN = [
+  { slug: "zettelkasten", name: "Zettelkasten", kurz: "49 notes in seven cycles: operation, art, society, artificial communication. Each with a lead sentence, a text and four references; threads show who names the same people.", ziel: "zettel/", bild: "b/bilder/schau/zettelkasten.jpg", bildAlt: "The Zettelkasten: title and introduction, below it the field of the 49 notes with their names", weiter: "To the Zettelkasten" },
+  { slug: "kunst-hypertext", name: "Hypertext", kurz: "2743 Facebook posts from 2013 to 2026 on art, communication, perception, psyche and society. Linked by keywords; up to four posts can be montaged into a new one, together with a note and an ORNA encounter. In German.", ziel: "/alpha/kunst/", neuesFenster: true, bild: "b/bilder/schau/kunst.jpg", bildAlt: "The hypertext: posts with topics and years on the left, the title and most frequent keywords in the centre, the local graph on the right", weiter: "To the hypertext" },
+];
 export const ZEIGEN = [
   { slug: "drittes-rad", name: "Das Dritte Rad", kurz: "Time, form and colour turn against each other. Each spin draws a note, an encounter from ORNA and an exercise from OMNA COLOR. In German.",
     ziel: "/beta/drittes-rad/", neuesFenster: true, bild: "b/bilder/schau/drittes-rad.jpg", bildAlt: "Das Dritte Rad: three rings on a yellow ground, signs on the outside, a colour wheel in the middle", weiter: "Spin" },

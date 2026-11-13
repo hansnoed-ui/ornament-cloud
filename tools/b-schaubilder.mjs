@@ -30,6 +30,9 @@ export const SCHAUBILDER = [
   { name: "omna-color", pfad: "alpha/omna-color/?sprache=de&b=1", warten: 4000, fenster: [800, 500], faktor: 1.6, rollen: 110 },
   // Multiverse als Website-Referenz (13. November 2026, Christian: «und auch noch: Multiverse»)
   { name: "multiverse", pfad: "multiverse/", warten: 6000 },
+  // «Denken» im Atelier (13. November 2026, Christian: Zettelkasten «ins Atelier … in Zusammenhang mit dem Facebook-Hypertext», dann «so bauen»)
+  { name: "zettelkasten", pfad: "b/zettel/", warten: 3000 },
+  { name: "kunst", pfad: "alpha/kunst/", warten: 5000 },
   { name: "principesse", fremd: "PRINCIPESSE", pfad: "", warten: 9000, rollen: 900 },
 ];
 

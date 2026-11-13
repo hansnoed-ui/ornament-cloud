@@ -40,6 +40,12 @@ export const DIALOG = {
 export const ZEIGEN_FILM = { slug: "animations", name: "Animations", kurz: "Ein Bild, 24 Effekte, bis zu drei Ebenen. Am Mischpult entsteht daraus eine Animation wie diese: eine Mischung, zwölf Sekunden als Schlaufe.",
   ziel: "/animations/", weiter: "Zum Mischpult", film: "b/bilder/schau/animations.mp4", bild: "b/bilder/schau/animations.jpg", mass: [720, 900],
   bildAlt: "Animations: eine helle, faserige Gestalt aus feinen Linien mit farbigen Rändern, die sich auf schwarzem Grund langsam windet" };
+// «Denken» (13. November 2026, Christian: den Zettelkasten «ins Atelier … eventuell sogar in Zusammenhang mit dem Facebook-Hypertext»; Vorschlag von
+// Claude: ein Block «Denken» zuoberst im Atelier mit beiden, Zettel aus dem Hauptmenü, auf der Startseite ein kurzer Abschnitt statt des Felds; «so bauen»).
+export const DENKEN = [
+  { slug: "zettelkasten", name: "Zettelkasten", kurz: "49 Zettel in sieben Zyklen: Operation, Kunst, Gesellschaft, künstliche Kommunikation. Jeder mit Leitsatz, Text und vier Verweisen; Fäden zeigen, wer dieselben Personen nennt.", ziel: "zettel/", bild: "b/bilder/schau/zettelkasten.jpg", bildAlt: "Der Zettelkasten: Titel und Einleitung, darunter das Feld der 49 Zettel mit ihren Namen", weiter: "Zum Zettelkasten" },
+  { slug: "kunst-hypertext", name: "Hypertext", kurz: "2743 Beiträge aus Facebook, 2013 bis 2026, zu Kunst, Kommunikation, Wahrnehmung, Psyche und Gesellschaft. Verknüpft über Schlagwörter; bis zu vier Beiträge lassen sich zu einem neuen montieren, dazu ein Zettel und eine ORNA-Begegnung.", ziel: "/alpha/kunst/", neuesFenster: true, bild: "b/bilder/schau/kunst.jpg", bildAlt: "Der Hypertext: links Beiträge mit Themen und Jahren, in der Mitte der Titel und die häufigsten Schlagwörter, rechts der lokale Graph", weiter: "Zum Hypertext" },
+];
 export const ZEIGEN = [
   { slug: "drittes-rad", name: "Das Dritte Rad", kurz: "Zeit, Form und Farbe drehen gegeneinander. Jede Drehung zieht einen Zettel, eine Begegnung aus ORNA und eine Übung aus OMNA COLOR.",
     ziel: "/beta/drittes-rad/", neuesFenster: true, bild: "b/bilder/schau/drittes-rad.jpg", bildAlt: "Das Dritte Rad: drei Ringe auf gelbem Grund, aussen Zeichen, in der Mitte ein Farbrad", weiter: "Drehen" },

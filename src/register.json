@@ -88,7 +88,19 @@
    "art": "Theorie",
    "status": "oeffentlich",
    "adresse": "b/zettel/",
-   "kurz": "49 Zettel in sieben Zyklen."
+   "kurz": "49 Zettel in sieben Zyklen.",
+   "atelier": true
+  },
+  {
+   "id": "kunst-hypertext",
+   "name": "Hypertext",
+   "tuer": "spielen-denken",
+   "art": "Theorie",
+   "status": "verlinkt",
+   "adresse": "alpha/kunst/",
+   "kurz": "2743 Facebook-Beiträge zu Kunst, Kommunikation, Wahrnehmung, Psyche und Gesellschaft, verknüpft über Schlagwörter.",
+   "kurzEn": "2743 Facebook posts on art, communication, perception, psyche and society, linked by keywords.",
+   "atelier": true
   },
   {
    "id": "the-fictory",

@@ -37,7 +37,7 @@ export const UI = {
       auch: "Auch zum Spielen:", atelier: "Atelier",
       leistung: "Leistung und Briefing",
       satz: "Diese Seite ist das Beispiel: ein Zettelkasten zum Lesen, sieben Apps zum Spielen, vier Prüfraster zum Hinsehen.",
-      kasten: "Der Zettelkasten", kastenText: "49 Zettel zu Operation, Kunst, Gesellschaft und künstlicher Kommunikation, in sieben Zyklen.", alleZettel: "Alle Zettel",
+      kasten: "Der Zettelkasten", kastenText: "49 Zettel zu Operation, Kunst, Gesellschaft und künstlicher Kommunikation, in sieben Zyklen.", alleZettel: "Alle Zettel", denken: "Denken", denkenText: "Der Zettelkasten und ein Hypertext aus 2743 Beiträgen. Beides steht im Atelier, weil es weiterwächst.", imAtelier: "Im Atelier",
       kicker: "Ein Zettel aus dem Zettelkasten, jedes Mal ein anderer. ", kickerSatz: "die Fäden verbinden Zettel, die dieselben Personen nennen.",
       raster: "Prüfraster", rasterText: "Vier Instrumente zum genaueren Hinsehen. Mit Grundlagenpapier und Anwendungsprompt lassen sich Theorien, Texte und Körperereignisse befragen.", alleRaster: "Alle Prüfraster",
       spielen: "Spielen", spielenText: "Sieben Apps, die im Browser laufen und auf dem Gerät rechnen. Ohne Anmeldung, ohne Netz, ohne dass ein Bild das Gerät verlässt.", alleApps: "Alle Apps",
@@ -66,6 +66,7 @@ export const UI = {
     atelier: {
       titel: "Atelier", small: "Wo gearbeitet wird: Werkzeuge im Bau, Proben und andere Fassungen dieser Website. Nicht alles ist fertig, manches verändert sich von Tag zu Tag.",
       seitenTitel: "Atelier – Werkzeuge, Proben, andere Fassungen", beschreibung: "Das Atelier von ornament.cloud: Werkzeuge im Bau, Proben und andere Fassungen der Website.", bildAlt: "Atelier",
+      denken: "Denken", denkenText: "Ein Zettelkasten und das Material, aus dem er wächst. Beides ist ein Anfang.", werkstatt: "Werkzeuge und Proben",
       oeffnen: "öffnet in neuem Fenster", kurz: (e) => e.kurz,
     },
     kasten: {
@@ -155,7 +156,7 @@ export const UI = {
       auch: "Also to play with:", atelier: "Studio",
       leistung: "Service and briefing",
       satz: "This site is the example: a Zettelkasten to read, seven apps to play with, four test grids for looking closer.",
-      kasten: "The Zettelkasten", kastenText: "49 notes on operation, art, society and artificial communication, in seven cycles.", alleZettel: "All notes",
+      kasten: "The Zettelkasten", kastenText: "49 notes on operation, art, society and artificial communication, in seven cycles.", alleZettel: "All notes", denken: "Thinking", denkenText: "The Zettelkasten and a hypertext of 2743 posts. Both are in the studio because they keep growing.", imAtelier: "In the studio",
       kicker: "A note from the Zettelkasten, a different one each time. ", kickerSatz: "the threads connect notes that name the same people.",
       raster: "Test grids", rasterText: "Four instruments for looking closer. With a background paper and an application prompt, they question theories, texts and bodily events.", alleRaster: "All test grids",
       spielen: "Playing", spielenText: "Seven apps that run in the browser and compute on the device. No sign-up, no network, no image ever leaves the device.", alleApps: "All apps",
@@ -184,6 +185,7 @@ export const UI = {
     atelier: {
       titel: "Studio", small: "Where the work happens: tools under construction, trials and other versions of this website. Not everything is finished, some of it changes from day to day.",
       seitenTitel: "Studio – tools, trials, other versions", beschreibung: "The studio of ornament.cloud: tools under construction, trials and other versions of the website.", bildAlt: "Studio",
+      denken: "Thinking", denkenText: "A Zettelkasten and the material it grows from. Both are a beginning.", werkstatt: "Tools and trials",
       oeffnen: "opens in a new window", kurz: (e) => e.kurzEn || e.kurz,
     },
     kasten: {
