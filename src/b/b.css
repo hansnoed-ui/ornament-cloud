@@ -526,9 +526,14 @@ body[data-bereich="werke"] .abschnitt-kopf + .knopfreihe { margin-top: 20px; }
 @media (min-width: 761px) { body[data-bereich="werke"] .abschnitt-kopf + .knopfreihe { margin-left: calc((100% - 32px) * 5 / 12 + 32px); } }
 @media (max-width: 760px) { body[data-bereich="werke"] .abschnitt-kopf { grid-template-columns: minmax(0, 1fr); } }
 .beitrag { display: grid; gap: 10px; padding: 18px 0; border-bottom: 1px solid var(--linie); max-width: 62ch; }
-.beitrag .wer { display: flex; gap: 10px; align-items: center; font-size: 0.92rem; color: var(--grau); }
-.beitrag .wer img { width: 28px; height: 28px; border-radius: 50%; }
-.beitrag .text { font-family: var(--serif); font-size: 1.2rem; line-height: 1.45; }
+/* Kopf eines Beitrags wie auf der Plattform: Bild links, Name darüber, Plattform und Datum darunter (14. November 2026, Rückmeldung:
+   auf dem Handy brachen Name und Datum nebeneinander je zweizeilig um, «das layout ist noch verschoben») */
+.beitrag .wer { display: grid; grid-template-columns: 28px minmax(0, 1fr); column-gap: 10px; align-items: center; font-size: 0.92rem; line-height: 1.3; color: var(--grau); }
+.beitrag .wer img { width: 28px; height: 28px; border-radius: 50%; grid-row: 1 / span 2; }
+.beitrag .wer span:first-of-type { color: var(--tinte); }
+.beitrag .wer > span { grid-column: -2; }
+.beitrag .wer:not(:has(img)) { grid-template-columns: minmax(0, 1fr); }
+.beitrag .text { font-family: var(--serif); font-size: 1.2rem; line-height: 1.45; white-space: pre-line; }
 .adresse { font-style: normal; line-height: 1.6; }
 .ueber-text { display: grid; gap: 16px; max-width: 62ch; font-size: 1.08rem; }
 .liste-kasten { margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--linie); max-width: 62ch; display: grid; gap: 10px; }
