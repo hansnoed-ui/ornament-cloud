@@ -26,5 +26,53 @@
  "see-und-berge": [
   1800,
   2400
+ ],
+ "turm-raum": [
+  1800,
+  2400
+ ],
+ "turm-besuch": [
+  1926,
+  2400
+ ],
+ "turm-treppe": [
+  2362,
+  2400
+ ],
+ "turm-stuehle-2": [
+  1920,
+  2400
+ ],
+ "turm-figuren": [
+  1440,
+  2400
+ ],
+ "turm-gelaender": [
+  2400,
+  2390
+ ],
+ "turm-gespraech": [
+  2400,
+  1600
+ ],
+ "turm-strahler": [
+  1906,
+  2400
+ ],
+ "turm-stuehle-1": [
+  2380,
+  2400
+ ],
+ "turm-balken": [
+  2400,
+  2398
+ ],
+ "turm-schienen": [
+  1800,
+  2400
+ ],
+ "turm-ecke": [
+  1904,
+  2400
  ]
 }

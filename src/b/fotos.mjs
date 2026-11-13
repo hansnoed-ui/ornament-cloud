@@ -18,3 +18,34 @@ export const FOTOS = [
   { slug: "see-und-berge", gruppe: "landschaft", titel: { de: "See und Berge", en: "Lake and mountains" },
     alt: { de: "Ein See vor einem bewaldeten Hügel mit Häusern am Ufer, dahinter blaue Berge unter Wolken", en: "A lake in front of a wooded hill with houses on the shore, blue mountains under clouds behind" } },
 ];
+
+// Ansichten der Ausstellung «Supervisionen» (Oberer Turm Kaiserstuhl, 2026), von Christian am 13. November 2026 geschickt («bitte alle angemessen filtern
+// und präsentieren»). Zwölf von zwanzig: Bilder mit erkennbaren Gesichtern, die Ansicht aus einem anderen Raum und der Aufbau im Erdgeschoss fehlen,
+// «turm-figuren» ist auf die Figuren zugeschnitten (ohne die Person daneben). Die Werke an den Wänden stammen von den ausstellenden Künstler:innen; die
+// Beschreibungen nennen niemanden. Steht nur auf der Leistung «Kuratorische Projekte», nicht in der Galerie auf «Werke».
+export const AUSSTELLUNG = [
+  { slug: "turm-raum", gruppe: "supervisionen", titel: { de: "Der Raum", en: "The room" },
+    alt: { de: "Ein Raum mit rohen Kalkwänden, Holzboden und schweren Deckenbalken; an zwei Wänden hängen sieben Gemälde, links zwei abstrakte in Blau und Gelbgrün, rechts ein liegender Körper vor einem Mond über Wolken", en: "A room with rough lime walls, a wooden floor and heavy ceiling beams; seven paintings hang on two walls, two abstract ones in blue and yellow-green on the left, a reclining body before a moon above clouds on the right" } },
+  { slug: "turm-besuch", gruppe: "supervisionen", titel: { de: "Zu zweit", en: "In pairs" },
+    alt: { de: "Zwei Besucherinnen stehen mit dem Rücken zur Kamera vor einem grünen, aus Farbfeldern gebauten Gemälde; links ein tiefes Fenster in der Turmmauer", en: "Two visitors stand with their backs to the camera in front of a green painting built from fields of colour; a deep window in the tower wall on the left" } },
+  { slug: "turm-treppe", gruppe: "supervisionen", titel: { de: "Neben der Treppe", en: "Beside the stairs" },
+    alt: { de: "Links dunkles Holz einer Treppe, rechts an der rohen Wand ein gerahmtes Bild: eine liegende Figur aus Stein im Gras", en: "Dark wood of a staircase on the left, on the rough wall to the right a framed picture: a reclining stone figure in grass" } },
+  { slug: "turm-stuehle-2", gruppe: "supervisionen", titel: { de: "Zwei Stühle", en: "Two chairs" },
+    alt: { de: "Zwei schwarze Stühle stehen vor zwei Bildern mit weichen Farbverläufen in Gelb, Rosa und Grau an einer rohen Wand", en: "Two black chairs stand before two pictures with soft gradients in yellow, pink and grey on a rough wall" } },
+  { slug: "turm-figuren", gruppe: "supervisionen", titel: { de: "Schwebend", en: "Suspended" },
+    alt: { de: "Kleine weisse Figuren, halb Tier, halb Pflanze, hängen an feinen Drähten und Messingstäben vor dunklem Holz", en: "Small white figures, half animal, half plant, hang from fine wires and brass rods in front of dark wood" } },
+  { slug: "turm-gelaender", gruppe: "supervisionen", titel: { de: "Über dem Geländer", en: "Above the railing" },
+    alt: { de: "Über einem dunklen Holzgeländer hängen zwei Bilder: links geometrische Flächen in Orange und Blau mit gelber Sonne, rechts eine Stadt aus Kuppeln unter einer goldenen Scheibe", en: "Above a dark wooden railing hang two pictures: geometric planes in orange and blue with a yellow sun on the left, a city of domes under a golden disc on the right" } },
+  { slug: "turm-gespraech", gruppe: "supervisionen", titel: { de: "Am Bild", en: "At the picture" },
+    alt: { de: "Zwischen hängenden dunklen Formen aus Metall hindurch gesehen: zwei Menschen von hinten vor einem hellen Gemälde, einer zeigt auf eine Stelle; daneben ein Bild in Türkis und Grau", en: "Seen through hanging dark metal shapes: two people from behind in front of a pale painting, one pointing at a spot; beside it a picture in turquoise and grey" } },
+  { slug: "turm-strahler", gruppe: "supervisionen", titel: { de: "Vier Blätter", en: "Four sheets" },
+    alt: { de: "Vier gerahmte Drucke mit Stillleben aus Krügen und Schalen an einer rötlichen Wand, im Vordergrund ein Strahler an einer schwarzen Schiene", en: "Four framed prints with still lifes of jugs and bowls on a reddish wall, a spotlight on a black rail in the foreground" } },
+  { slug: "turm-stuehle-1", gruppe: "supervisionen", titel: { de: "Schwarz, Weiss, Rot", en: "Black, white, red" },
+    alt: { de: "Ein grosses Gemälde in Schwarz, Weiss und Rot hängt an der rohen Wand, zwei kleinere Bilder lehnen am Boden, vorn zwei schwarze Stühle und der Schatten eines Geländers", en: "A large painting in black, white and red hangs on the rough wall, two smaller pictures lean on the floor, two black chairs and the shadow of a railing in front" } },
+  { slug: "turm-balken", gruppe: "supervisionen", titel: { de: "Zwischen den Balken", en: "Between the beams" },
+    alt: { de: "Blick schräg zwischen dunklen Holzbalken hindurch auf ein tiefblaues Bild mit gelben Spuren und ein gelbgrünes daneben", en: "A slanted view between dark wooden beams onto a deep blue picture with yellow traces and a yellow-green one beside it" } },
+  { slug: "turm-schienen", gruppe: "supervisionen", titel: { de: "Drei Köpfe", en: "Three heads" },
+    alt: { de: "Zwischen schwarzen Lichtschienen hindurch gesehen: drei kleine Bilder an der Wand, ein Frauenkopf in Pink und Gelb, ein schwarzes Tier mit Krone vor türkisfarbenen Streifen, ein Kopf einer Statue", en: "Seen between black lighting rails: three small pictures on the wall, a woman's head in pink and yellow, a black animal with a crown before turquoise stripes, the head of a statue" } },
+  { slug: "turm-ecke", gruppe: "supervisionen", titel: { de: "In der Ecke", en: "In the corner" },
+    alt: { de: "Eine Ecke des Turmraums: links ein grosses Bild mit gelbem und blauem Licht, rechts eine weisse Linienzeichnung auf schwarzem Grund", en: "A corner of the tower room: a large picture with yellow and blue light on the left, a white line drawing on a black ground on the right" } },
+];

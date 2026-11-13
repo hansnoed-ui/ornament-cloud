@@ -9,7 +9,7 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, writeFileSync, existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
-import { FOTOS } from "../src/b/fotos.mjs";
+import { FOTOS, AUSSTELLUNG } from "../src/b/fotos.mjs";
 
 const ROOT = new URL("../", import.meta.url), pfad = (p) => fileURLToPath(new URL(p, ROOT));
 export const GROESSEN = [1600, 800];
@@ -18,7 +18,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   mkdirSync(pfad("b/bilder/fotografie/"), { recursive: true });
   const nur = process.argv.slice(2), massDatei = pfad("src/b/fotos.json");
   const mass = existsSync(massDatei) ? JSON.parse(readFileSync(massDatei, "utf8")) : {};
-  for (const f of FOTOS) {
+  for (const f of [...FOTOS, ...AUSSTELLUNG]) {
     if (nur.length && !nur.includes(f.slug)) continue;
     const quelle = pfad(`src/b/fotos/${f.slug}.jpg`);
     const [b, h] = execFileSync("ffprobe", ["-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height", "-of", "csv=p=0", quelle]).toString().trim().split(",").map(Number);

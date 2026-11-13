@@ -178,6 +178,7 @@ export const ANGEBOTE = [
     fuer: "For municipalities, art spaces, galleries, foundations, companies with rooms and artists who do not want to carry an exhibition alone.",
     ablauf: ["A walk through the space, with the theme in mind.", "Concept, selection and programme on paper, budget and dates included.", "Installation, opening, accompanying programme, dismantling."],
     referenzen: [["2026", "«Supervisionen», Oberer Turm, Kaiserstuhl: six months, nine artists; for Pro Kaiserstuhl, municipality of Zurzach. Exhibition and website.", "https://www.oberer-turm.ch/", "oberer-turm.ch"], ["2024", "Exhibition of clients' works, Behmen, Aarau: one year; for the BKS Aargau and the FARO Foundation"]],
+    fotos: "supervisionen", fotosTitel: "Views of «Supervisionen», Oberer Turm Kaiserstuhl, 2026. The works are by the exhibiting artists.",   // Ansichten der Ausstellung (src/b/fotos.mjs, AUSSTELLUNG), seit 13. November 2026
     dialog: [
       { frage: "Which space?", wahlen: ["a house with a history", "a white cube", "a public place", "an office or a business"] },
       { frage: "Who exhibits?", wahlen: ["one person", "a group", "a collection", "open"] },

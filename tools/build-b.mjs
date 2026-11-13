@@ -15,7 +15,7 @@ import { UI } from "../src/b/ui.mjs";
 import { ladeZettel, ladeZettelkasten, ladeOrma, ladeWerke, ladeBeitraege, ladeOmna, ladeKonstellationen, ladePersonen, ladeRegister, ladeVeroeffentlichungen } from "./b-daten.mjs";
 import { pruefsumme } from "./build-b-jev.mjs";
 import { zeichen } from "../src/b/zeichen.mjs";
-import { FOTOS } from "../src/b/fotos.mjs";
+import { FOTOS, AUSSTELLUNG } from "../src/b/fotos.mjs";
 import { createHash } from "node:crypto";
 
 const ROOT = new URL("../", import.meta.url);
@@ -762,7 +762,7 @@ ${faeden([...zs.map((z) => fZettel(z)), r.slug === "nebeneinander-nacheinander" 
   <h2 id="ablauf-titel">${esc(T.angebot.soGeht)}</h2>
   <ol>${a.ablauf.map((s) => `<li><span>${esc(s)}</span></li>`).join("")}</ol>
 </div></section>
-${a.fotos ? `<section class="referenzen schau-abschnitt" aria-labelledby="schau-titel"><div class="spalte"><h2 id="schau-titel">${esc(T.angebot.schau)}</h2>${fotoGalerie(FOTOS.filter((f) => f.gruppe === a.fotos))}<p class="klein" style="margin-top:14px"><a href="${B}werke/#fotografie">${esc(T.start.wasKommt)}</a></p></div></section>` : ""}
+${a.fotos ? `<section class="referenzen schau-abschnitt" aria-labelledby="schau-titel"><div class="spalte"><h2 id="schau-titel">${esc(T.angebot.schau)}</h2>${a.fotosTitel ? `<p class="klein" style="margin:0 0 18px">${esc(a.fotosTitel)}</p>` : ""}${fotoGalerie([...FOTOS, ...AUSSTELLUNG].filter((f) => f.gruppe === a.fotos))}${a.fotos === "supervisionen" ? "" : `<p class="klein" style="margin-top:14px"><a href="${B}werke/#fotografie">${esc(T.start.wasKommt)}</a></p>`}</div></section>` : ""}
 ${a.schau ? `<section class="referenzen schau-abschnitt" aria-labelledby="schau-titel"><div class="spalte"><h2 id="schau-titel">${esc(T.angebot.schau)}</h2><div class="schau">${a.schau.map(schauStueck).join("")}</div></div></section>` : ""}
 ${a.referenzen ? `<section class="referenzen" aria-labelledby="ref-titel"><div class="spalte"><h2 id="ref-titel">${esc(T.angebot.referenzen)}</h2><ol class="jahre">${a.referenzen.map(([j, t, url, adresse]) => `<li><span class="jahr">${esc(j)}</span><span>${esc(t)}${url ? ` <a class="ref-link" href="${attr(url)}" target="_blank" rel="noopener">${esc(adresse)} ↗</a>` : ""}</span></li>`).join("")}</ol></div></section>` : ""}
 <section class="briefing" id="briefing" aria-labelledby="briefing-titel"><div class="spalte">
