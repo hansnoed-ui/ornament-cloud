@@ -160,6 +160,59 @@
       "status": "unbekannt",
       "geprueft": null,
       "geaendert": "2026-11-13T22:58:20Z"
+    },
+    {
+      "nr": 4,
+      "id": "4-autopoietisches-system-und-was-es-nicht-sieht",
+      "plattform": "x",
+      "kontext": null,
+      "titel": "Autopoietisches System und was es nicht sieht",
+      "autor": {
+        "name": "Verzettler",
+        "handle": "theoriebarbaren",
+        "profil": "https://x.com/theoriebarbaren",
+        "verifiziert": false,
+        "avatar": "medien/4/avatar.webp"
+      },
+      "quelle": "https://x.com/theoriebarbaren/status/2121167221766369694?a=NpaQLVlBcbNMK9TBUFM&s=19",
+      "veroeffentlicht": "2026-11-13",
+      "veroeffentlichtQuelle": "hand",
+      "erfasst": "2026-11-13T23:24:00Z",
+      "sprache": "de",
+      "uebersetzung": null,
+      "text": "\"Das autopoietische System realisiert sich, und das ist alles, und indem es dies tut, sieht es, was es sieht und sieht nicht, was es nicht sieht, und sieht nicht einmal, daß es etwas nicht sieht.\"",
+      "medien": [],
+      "zitiert": null,
+      "kennzahlen": {
+        "antworten": null,
+        "reposts": null,
+        "likes": null,
+        "lesezeichen": null,
+        "ansichten": null
+      },
+      "beleg": {
+        "datei": "medien/4/beleg.webp",
+        "breite": 1400,
+        "hoehe": 924,
+        "sha256": "bec6b0dc0f28bb2980702023f382a2e43d5f139cf3411c37e0b5450c97a99181",
+        "geschwaerzt": false
+      },
+      "karte": {
+        "datei": "medien/4/karte.jpg",
+        "breite": 1200,
+        "hoehe": 630
+      },
+      "kommentar": "",
+      "schlagworte": [
+        "Autopoiesis",
+        "Beobachtung",
+        "System",
+        "Wahrnehmung"
+      ],
+      "verweise": [],
+      "status": "unbekannt",
+      "geprueft": null,
+      "geaendert": "2026-11-13T23:29:51Z"
     }
   ]
 }
