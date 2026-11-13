@@ -652,3 +652,21 @@ html { scroll-behavior: smooth; }
 .schau-film .weiter { color: var(--faden); }
 .schau-film:hover h3 { color: var(--faden); }
 @media (max-width: 760px) { .schau-film { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---------- Ordnung (13. November 2026, Christian: «passe alles an, was dir an einem übersichtlicheren und schöner designten Webauftritt stimmig erscheint») ---------- */
+/* Die gezeichneten Kacheln (ORNA, ORMA, OMNA COLOR) standen im senfgelben Kapitel schwarz auf schwarz: Tinte und Fläche sind dort beide Schwarz.
+   Die Kachel bekommt darum ihre eigenen Farben, weisse Linien auf Schwarz wie auf der Seite «Apps». */
+.kapitel-senf .stueck .bild.kachel-lebt { --papier: #000000; --tinte: #ffffff; --grau: #9a9a9a; --linie: #2e2e2e; --faden: #8fb0ff; --faden-hell: rgba(143, 176, 255, 0.22); }
+/* Der Einstieg am Telefon: das Signet kleiner und links, weniger Luft; die drei Türen als Zeilen (Zeichen links, Name und Satz rechts) statt als hohe Blöcke */
+@media (max-width: 760px) {
+  .einstieg-kopf { gap: 4px; margin-bottom: 28px; }
+  .einstieg-kopf .signet-tafel { width: 76px; max-width: 76px; justify-self: start; margin: -14px 0 -6px -8px; }
+  .einstieg .titel { margin-bottom: 0; }
+  .angebote.tueren .angebot { grid-template-columns: 44px minmax(0, 1fr); column-gap: 14px; row-gap: 2px; align-items: start; padding: 16px 0 18px; }
+  .angebote.tueren .angebot .zeichen-gross { grid-row: 1 / span 3; font-size: 34px; margin: 2px 0 0; }
+  .angebote.tueren .angebot h2 { font-size: 1.25rem; }
+  .angebote.tueren .angebot .weiter { margin-top: 2px; }
+}
+/* Seiten ohne eigene Farbe (Hören, Atelier): Titel und Inhalt rücken zusammen, statt dass ein leeres schwarzes Band dazwischen steht */
+body:is([data-bereich="hoeren"], [data-bereich="atelier"]) main > :first-child { padding-bottom: 0; }
+body:is([data-bereich="hoeren"], [data-bereich="atelier"]) main > :first-child + .abschnitt { padding-top: clamp(28px, 4vw, 48px); }

@@ -417,3 +417,26 @@ test("Schaubilder: auf der Startseite Das Dritte Rad und OMNA COLOR vor der Musi
   assert.ok(!/animations\.mp4|Beispiel/.test(lies("animations/index.html")), "die Seite Animations selbst bleibt ohne Beispiele");
   for (const s of ["kuration", "vermittlung", "produkte"]) assert.ok(!lies(`b/angebot/${s}/index.html`).includes("schau-abschnitt"), `${s}: kein leerer Abschnitt`);
 });
+
+// ---------- Kacheln und Ordnung (13. November 2026, Christian: «Passe auch die Kacheln an, passe alles an, was dir an einem übersichtlicheren und
+// schöner designten Webauftritt stimmig erscheint») ----------
+test("Ordnung der Startseite: der Dialog steht vor «Beauftragen»; «Auch zum Spielen» nennt nichts, was oben schon gezeigt wird; die gezeichneten Kacheln sind im gelben Kapitel sichtbar", () => {
+  for (const datei of ["b/index.html", "b/en/index.html"]) {
+    const html = lies(datei);
+    const folge = ['id="spielen-denken"', 'id="spielen-titel"', 'id="raster-titel"', 'id="dialog-titel"', 'id="beauftragen"'].map((t) => html.indexOf(t));
+    assert.ok(folge.every((x, i) => x > 0 && (i === 0 || x > folge[i - 1])), `${datei}: Zettelkasten, Spielen, Prüfraster, Dialog, Beauftragen`);
+    const auch = html.match(/<p class="auch klein">[\s\S]*?<\/p>/)[0];
+    assert.ok(!/animations|drittes-rad/.test(auch) && auch.includes("/multiverse/") && auch.includes("atelier/"), `${datei}: nur Multiverse und Atelier`);
+  }
+  const css = lies("b/b.css");
+  assert.match(css, /\.kapitel-senf \.stueck \.bild\.kachel-lebt \{[^}]*--papier: #000000;[^}]*--tinte: #ffffff;/, "eigene Farben für die Kachel auf Senf (sonst Schwarz auf Schwarz)");
+});
+
+test("Kachelfilme der Bild-Apps: quadratisch 480, stumm, unter 1 MB, mit Standbild", () => {
+  for (const n of ["the-fictory", "phorma-i", "phorma-ii", "phorma-iii"]) {
+    const film = readFileSync(new URL(`b/bilder/apps/filme/${n}.mp4`, root)), bild = readFileSync(new URL(`b/bilder/apps/filme/${n}.jpg`, root));
+    assert.ok(film.length < 1_000_000, `${n}.mp4 unter 1 MB (${film.length})`);
+    assert.ok(film.includes(Buffer.from("avc1")) && !film.includes(Buffer.from("mp4a")), `${n}.mp4: H.264 ohne Tonspur`);
+    assert.ok(bild[0] === 0xff && bild[1] === 0xd8, `${n}.jpg`);
+  }
+});
