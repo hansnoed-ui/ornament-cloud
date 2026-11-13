@@ -106,7 +106,7 @@ export const UI = {
     werke: {
       titel: "Werke", small: "Fotografien. Dazu Originale und Prints in kleinen Auflagen, Arbeiten im Raum und Editionen, die in Vorbereitung sind.",
       fotografie: "Fotografie", fotografieText: "Bühne, Räume, Landschaften. Ein Tipp auf ein Bild öffnet es gross.", fotoGross: (t) => `${t} gross ansehen`, fotoAuftrag: "Fotografie als Leistung",
-      prints: "Prints und Originale", ankuendigung: null, auflage: (n) => `Auflage ${n}`, bestellen: "Bestellen",
+      prints: "Prints und Originale", printsText: "Acht Motive als Print. Format, Papier und Preis auf Anfrage.", printsAnfrage: "Anfragen", ankuendigung: null, auflage: (n) => `Auflage ${n}`, bestellen: "Bestellen",
       raum: "Im Raum", raumText: "In Vorbereitung: Arbeiten in 3D für Bildschirm und Projektion, die im Browser laufen.",
       editionen: "Editionen", editionenText: "In Vorbereitung: der Zettelkasten als Buch, als Kartenset und als Poster, dazu sieben Notizbücher. Wer es wissen will, wenn es so weit ist, lässt sich in die Liste eintragen.",
       teilenTitel: "Werke – Christian Strickler", teilenText: "Originale, Prints und Arbeiten im Raum.", seitenTitel: "Werke – Fotografie, Originale und Prints", beschreibung: "Fotografien von Christian Strickler: Bühne, Räume, Landschaften. Dazu Originale und Prints in kleinen Auflagen, Arbeiten im Raum und Editionen in Vorbereitung.", bildAlt: "Werke von Christian Strickler",
@@ -223,7 +223,7 @@ export const UI = {
     werke: {
       titel: "Works", small: "Photographs. Plus originals and prints in small editions, works in space and editions, which are in preparation.",
       fotografie: "Photography", fotografieText: "Stage, spaces, landscapes. Tap an image to open it large.", fotoGross: (t) => `View ${t} large`, fotoAuftrag: "Photography as a service",
-      prints: "Prints and originals", ankuendigung: "Originals and prints for sale are being prepared here over the coming days.", auflage: (n) => `edition of ${n}`, bestellen: "Order",
+      prints: "Prints and originals", printsText: "Eight motifs as prints. Format, paper and price on request.", printsAnfrage: "Enquire", ankuendigung: "Originals and prints for sale are being prepared here over the coming days.", auflage: (n) => `edition of ${n}`, bestellen: "Order",
       raum: "In space", raumText: "In preparation: works in 3D for screen and projection, running in the browser.",
       editionen: "Editions", editionenText: "In preparation: the Zettelkasten as a book, as a card set and as a poster, plus seven notebooks. If you want to know when it is ready, join the list.",
       teilenTitel: "Works – Christian Strickler", teilenText: "Originals, prints and works in space.", seitenTitel: "Works – photography, originals and prints", beschreibung: "Photographs by Christian Strickler: stage, spaces, landscapes. Plus originals and prints in small editions, works in space and editions in preparation.", bildAlt: "Works by Christian Strickler",

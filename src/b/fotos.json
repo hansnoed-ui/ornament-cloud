@@ -74,5 +74,37 @@
  "turm-ecke": [
   1904,
   2400
+ ],
+ "print-kueste": [
+  768,
+  1024
+ ],
+ "print-linien": [
+  836,
+  1045
+ ],
+ "print-kopf-blau": [
+  1128,
+  1128
+ ],
+ "print-fragmente": [
+  1374,
+  1465
+ ],
+ "print-gruen": [
+  836,
+  1045
+ ],
+ "print-kopf-pink": [
+  2400,
+  2400
+ ],
+ "print-schwarzweiss": [
+  1024,
+  1000
+ ],
+ "print-raster": [
+  1640,
+  2048
  ]
 }

@@ -49,3 +49,24 @@ export const AUSSTELLUNG = [
   { slug: "turm-ecke", gruppe: "supervisionen", titel: { de: "In der Ecke", en: "In the corner" },
     alt: { de: "Eine Ecke des Turmraums: links ein grosses Bild mit gelbem und blauem Licht, rechts eine weisse Linienzeichnung auf schwarzem Grund", en: "A corner of the tower room: a large picture with yellow and blue light on the left, a white line drawing on a black ground on the right" } },
 ];
+
+// Prints (13. November 2026: Christian schickt acht Motive mit dem einen Wort «Prints»). Stehen auf «Werke» unter «Prints und Originale», ohne Bildzeile:
+// Titel, Technik, Format, Auflage und Preis hat Christian noch nicht genannt; die «titel» hier sind Arbeitsnamen von Claude für Tooltip und Anker.
+export const PRINTS = [
+  { slug: "print-kueste", gruppe: "print", titel: { de: "Küste", en: "Coast" },
+    alt: { de: "Geometrische Flächen in Orange, Blau und Braun: eine Küste mit Häusern, eine orange Sonne, in der blauen Mitte kleine Segel und ein Gesicht", en: "Geometric planes in orange, blue and brown: a coast with houses, an orange sun, small sails and a face in the blue centre" } },
+  { slug: "print-linien", gruppe: "print", titel: { de: "Linien", en: "Lines" },
+    alt: { de: "Weisse Linien auf Schwarz: ein dichtes Geflecht aus Schraffuren, Spiralen und Bändern, aus dem ein Gesicht im Profil tritt", en: "White lines on black: a dense weave of hatching, spirals and ribbons from which a face in profile emerges" } },
+  { slug: "print-kopf-blau", gruppe: "print", titel: { de: "Kopf in Blau", en: "Head in blue" },
+    alt: { de: "Ein gemalter Kopf mit blauem Gesicht, roten Lippen und zwei verschiedenen Augen vor hellblauem Grund, darüber zwei gelbe Scheiben an einem schwarzen Stab", en: "A painted head with a blue face, red lips and two different eyes on a pale blue ground, two yellow discs on a black rod above" } },
+  { slug: "print-fragmente", gruppe: "print", titel: { de: "Fragmente", en: "Fragments" },
+    alt: { de: "Vier farbige Formen auf Schwarz, aus Feldern in Pink, Rot, Orange und Blau gefügt, mit feiner Schraffur", en: "Four coloured shapes on black, joined from fields of pink, red, orange and blue, with fine hatching" } },
+  { slug: "print-gruen", gruppe: "print", titel: { de: "Grün", en: "Green" },
+    alt: { de: "Eine abstrakte Fläche: oben Grün in Flecken, zur Mitte hin hell, unten Blaugrün, wie ein Garten im Wasser gespiegelt", en: "An abstract surface: patches of green above, pale towards the middle, blue-green below, like a garden mirrored in water" } },
+  { slug: "print-kopf-pink", gruppe: "print", titel: { de: "Kopf in Pink", en: "Head in pink" },
+    alt: { de: "Ein grob gerasterter Frauenkopf in Schwarz und Weiss vor zwei grossen Kreisen aus feinen Ringen in Pink und Gelb", en: "A coarsely rasterised woman's head in black and white before two large circles of fine rings in pink and yellow" } },
+  { slug: "print-schwarzweiss", gruppe: "print", titel: { de: "Schwarz und Weiss", en: "Black and white" },
+    alt: { de: "Eine schwarze Form auf Weiss, von weissen Linien geteilt: Augen, ein Fisch, Zähne, Spiralen und Fächer greifen ineinander", en: "A black shape on white divided by white lines: eyes, a fish, teeth, spirals and fans interlock" } },
+  { slug: "print-raster", gruppe: "print", titel: { de: "Raster", en: "Grid" },
+    alt: { de: "Weiche Farbfelder in Rot, Gelb, Blau und Weiss hinter einem feinen Raster, wie durch geriffeltes Glas gesehen", en: "Soft fields of red, yellow, blue and white behind a fine grid, as if seen through ribbed glass" } },
+];
