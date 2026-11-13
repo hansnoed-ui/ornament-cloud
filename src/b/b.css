@@ -623,3 +623,20 @@ html { scroll-behavior: smooth; }
 .abschnitt-kopf.werke-kopf + .reihe { margin-top: 24px; }
 .auch { margin-top: 28px; color: var(--grau); }
 .auch a { color: var(--tinte); }
+
+/* ---------- Schaubilder (13. November 2026): zwei Stücke zum Zeigen zuoberst in «Sehen und Hören» und die Referenzen auf «Webdesign».
+   Ein Bild 16:10, darunter Name, ein Satz und der Weg; zwei Spalten, am Telefon eine. ---------- */
+.schau { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 32px; }
+.schau-stueck { display: grid; gap: 10px; align-content: start; text-decoration: none; color: inherit; min-width: 0; }
+.schau-stueck .bild { display: block; overflow: hidden; border: 1px solid var(--linie); }
+.schau-stueck img { width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; transition: transform 0.6s cubic-bezier(0.2, 0.6, 0.2, 1); }
+.schau-stueck:hover img { transform: scale(1.025); }
+.schau-stueck h3 { margin-top: 6px; font-weight: 500; font-size: clamp(1.35rem, 2.6vw, 1.9rem); letter-spacing: -0.025em; line-height: 1.1; }
+.schau-stueck h3 small { display: block; margin-top: 4px; color: var(--grau); font-size: 0.92rem; font-weight: 400; letter-spacing: 0; }
+.schau-stueck p { color: var(--grau); max-width: 52ch; }
+.schau-stueck .weiter { font-size: 0.95rem; color: var(--faden); }
+.schau-stueck:hover h3 { color: var(--faden); }
+@media (max-width: 760px) { .schau { grid-template-columns: minmax(0, 1fr); } }
+@media (prefers-reduced-motion: reduce) { .schau-stueck img { transition: none; } .schau-stueck:hover img { transform: none; } }
+.abschnitt-kopf.musik-kopf + .platte { margin-top: 24px; }
+.schau-abschnitt .schau { margin-top: 6px; }

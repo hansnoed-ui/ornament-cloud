@@ -32,6 +32,15 @@ export const DIALOG = {
   ],
 };
 
+/** Zum Zeigen, zuoberst im Abschnitt «Sehen und Hören» der Startseite (13. November 2026, Christian: «Das Dritte Rad und OMNA COLOR scheinen mir
+ *  gelungene Bereiche zum zeigen. Grundsätzlich würd ich nicht mit der Musik beginnen, visuelles scheint mir zugänglicher»). Bilder: tools/b-schaubilder.mjs. */
+export const ZEIGEN = [
+  { slug: "drittes-rad", name: "Das Dritte Rad", kurz: "Zeit, Form und Farbe drehen gegeneinander. Jede Drehung zieht einen Zettel, eine Begegnung aus ORNA und eine Übung aus OMNA COLOR.",
+    ziel: "/beta/drittes-rad/", neuesFenster: true, bild: "b/bilder/schau/drittes-rad.jpg", bildAlt: "Das Dritte Rad: drei Ringe auf gelbem Grund, aussen Zeichen, in der Mitte ein Farbrad", weiter: "Drehen" },
+  { slug: "omna-color", name: "OMNA COLOR", kurz: "Zwei Farbräder drehen gegeneinander. Was sie zeigen, wird eine Gestaltungsübung: 180 gibt es.",
+    ziel: "apps/omna-color/", bild: "b/bilder/schau/omna-color.jpg", bildAlt: "OMNA COLOR: zwei ineinanderliegende Farbräder mit sieben Feldern auf schwarzem Grund", weiter: "Zur App" },
+];
+
 /** Die sieben Apps. Sie bleiben, wie sie sind; hier steht nur ihre Darstellung. */
 // Bilder der Apps (seit 20. Oktober 2026, Wunsch: «alle stilvoll re-designt, nicht dieses farbige Durcheinander … alles stilisiert, zur Seite passend»):
 // sieben gezeichnete Tafeln aus tools/b-app-bilder.mjs (SVG, hell und dunkel), je App ein Motiv aus ihrer Mechanik; vorher die Standbilder und Symbole der Apps.
@@ -134,6 +143,16 @@ export const ANGEBOTE = [
     text: "Eine Website, die in unter einer Sekunde da ist und nichts von Dritten lädt: keine Cookies, keine Werbung, keine Tracker, Schriften und Skripte auf dem eigenen Server. Dazu Apps, die im Browser laufen, sich auf den Startbildschirm legen lassen und ohne Netz weiterarbeiten. Gestaltet und gebaut aus einer Hand, vom ersten Gespräch bis zur Veröffentlichung, mit allem, was Suchmaschinen und Teilen brauchen. Diese Seite hier ist das Beispiel, die sieben Apps sind es auch.",
     fuer: "Für Künstler:innen, Praxen, Vereine, Galerien, Museen, Schulen und kleine Unternehmen, die eine Adresse brauchen, die bleibt, oder ein Werkzeug, das nicht in einem App-Store wohnt.",
     ablauf: ["Ein Gespräch über das, was die Seite oder die App tun soll, und für wen.", "Ein Entwurf im Browser, zum Anfassen, nicht als Bild; bei Apps ein lauffähiger Prototyp innert Tagen.", "Bau, Texte, Bilder, Veröffentlichung auf der eigenen Adresse; danach bleibt alles in deiner Hand."],
+    // Zum Anschauen (13. November 2026, Christian: «Erst principessa als website referenz und gamma»). Am 20. Oktober 2026 war der Abschnitt
+    // herausgenommen worden, bis Referenzen von Christian kommen; das sind sie. Bilder: tools/b-schaubilder.mjs.
+    schau: [
+      { name: "Principesse", von: "für Katharina Strickler", jahr: "2026", url: "https://principesse.ch/", adresse: "principesse.ch", bild: "b/bilder/schau/principesse.jpg",
+        bildAlt: "Principesse: eine gezeichnete Prinzessin mit Krone und ein Hund mit Krone auf einer Wiese, im Rahmen eines kleinen Films",
+        text: "Ein One-Pager, der mit einem kleinen Film beginnt: Die Principessa löst sich aus ihrem gezeichneten Bild, springt heraus und fliegt beim Scrollen durch die Seite. Am Ende eine Bestellkarte mit Auswahl und Vorschau." },
+      { name: "ornament.cloud, Fassung Gamma", von: "eigene Seite", jahr: "2026", url: "/gamma/", adresse: "ornament.cloud/gamma", bild: "b/bilder/schau/gamma.jpg",
+        bildAlt: "Gamma: das Signet von ornament.cloud als leuchtende Schlaufe auf schwarzem Grund",
+        text: "Dieselben Inhalte in einer zweiten Gestaltung: dunkel, mit dem Signet in Bewegung und Filmen als Kacheln. Sie zeigt, wie weit sich eine Seite verändern lässt, ohne dass sich ihre Inhalte ändern." },
+    ],
     dialog: [
       { frage: "Was soll entstehen?", wahlen: ["eine Website", "eine App", "beides", "weiss ich noch nicht"] },
       { frage: "Was gibt es schon?", wahlen: ["nichts", "eine alte Seite", "Texte und Bilder", "ein Logo und Farben"] },

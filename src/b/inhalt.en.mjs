@@ -28,6 +28,13 @@ export const DIALOG = {
   ],
 };
 
+export const ZEIGEN = [
+  { slug: "drittes-rad", name: "Das Dritte Rad", kurz: "Time, form and colour turn against each other. Each spin draws a note, an encounter from ORNA and an exercise from OMNA COLOR. In German.",
+    ziel: "/beta/drittes-rad/", neuesFenster: true, bild: "b/bilder/schau/drittes-rad.jpg", bildAlt: "Das Dritte Rad: three rings on a yellow ground, signs on the outside, a colour wheel in the middle", weiter: "Spin" },
+  { slug: "omna-color", name: "OMNA COLOR", kurz: "Two colour wheels turn against each other. What they show becomes a design exercise: there are 180.",
+    ziel: "apps/omna-color/", bild: "b/bilder/schau/omna-color.jpg", bildAlt: "OMNA COLOR: two nested colour wheels with seven fields on a black ground", weiter: "To the app" },
+];
+
 export const APPS = [
   { slug: "the-fictory", name: "The Fictory", gattung: "Image and video", kurz: "An image falls apart, rearranges itself and comes back together.",
     text: "Put an image on the workbench: it falls apart into its pieces, rearranges itself, leaves traces and in the end reassembles. An animation, six stills and a video. If you like, give it a rule from ORNA; it determines the intervention.",
@@ -134,6 +141,14 @@ export const ANGEBOTE = [
     text: "A website that is there in under a second and loads nothing from third parties: no cookies, no advertising, no trackers, fonts and scripts on your own server. Plus apps that run in the browser, can be placed on the home screen and keep working without a network. Designed and built from one hand, from the first conversation to publication, with everything search engines and sharing need. This site is the example, and so are the seven apps.",
     fuer: "For artists, practices, associations, galleries, museums, schools and small businesses that need an address that lasts, or a tool that does not live in an app store.",
     ablauf: ["A conversation about what the site or the app should do, and for whom.", "A draft in the browser, to touch rather than a picture; for apps a working prototype within days.", "Build, texts, images, publication at your own address; afterwards everything stays in your hands."],
+    schau: [
+      { name: "Principesse", von: "for Katharina Strickler", jahr: "2026", url: "https://principesse.ch/", adresse: "principesse.ch", bild: "b/bilder/schau/principesse.jpg",
+        bildAlt: "Principesse: a drawn princess with a crown and a dog with a crown on a meadow, framed as a small film",
+        text: "A one-pager that opens with a small film: the principessa leaves her drawn picture, jumps out and flies through the page as you scroll. At the end an order card with choices and a preview. In German." },
+      { name: "ornament.cloud, Gamma version", von: "own site", jahr: "2026", url: "/gamma/", adresse: "ornament.cloud/gamma", bild: "b/bilder/schau/gamma.jpg",
+        bildAlt: "Gamma: the ornament.cloud signet as a glowing loop on a black ground",
+        text: "The same content in a second design: dark, with the signet in motion and films as tiles. It shows how far a site can change while its content stays the same. In German." },
+    ],
     dialog: [
       { frage: "What should come into being?", wahlen: ["a website", "an app", "both", "I don't know yet"] },
       { frage: "What is already there?", wahlen: ["nothing", "an old site", "texts and images", "a logo and colours"] },

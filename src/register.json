@@ -106,7 +106,8 @@
    "art": "App",
    "status": "oeffentlich",
    "adresse": "b/apps/phorma-ii/",
-   "kurz": ""
+   "kurz": "",
+   "wartet": "PHORMA I bis III: schönere Beispielfilme, aus eigenem Material gerechnet."
   },
   {
    "id": "phorma-iii",
@@ -189,7 +190,8 @@
    "adresse": "animations/",
    "kurz": "Ein Bild, 24 Effekte, bis zu drei Ebenen: das Mischpult für eigene Animationen.",
    "kurzEn": "One image, 24 effects, up to three layers: the mixing desk for your own animations.",
-   "atelier": true
+   "atelier": true,
+   "wartet": "Schönere Beispiele: eigene Bilder oder Filme auswählen, mit denen die Seite sich zeigt."
   },
   {
    "id": "multiverse",
@@ -257,7 +259,7 @@
    "status": "oeffentlich",
    "adresse": "b/angebot/webdesign/",
    "kurz": "",
-   "wartet": "Referenzen und Ab-Preise fehlen."
+   "wartet": "Ab-Preise fehlen; dritte Referenz ausserhalb der eigenen Arbeit wäre gut."
   },
   {
    "id": "angebot-vermittlung",
@@ -303,8 +305,7 @@
    "art": "Auftragsarbeit",
    "status": "extern",
    "adresse": "https://principesse.ch/",
-   "kurz": "One-Pager mit 3D-Figur und Bestellkarte.",
-   "wartet": "Als Referenz für Webdesign zeigen? Einverständnis klären."
+   "kurz": "One-Pager für Katharina Strickler mit Film, 3D-Figur und Bestellkarte; Referenz auf «Webdesign» seit 13.11.2026."
   },
   {
    "id": "lab",
@@ -360,7 +361,7 @@
    "art": "Fassung der Website",
    "status": "verlinkt",
    "adresse": "gamma/",
-   "kurz": "Eine andere Fassung dieser Website.",
+   "kurz": "Eine andere Fassung dieser Website; Referenz auf «Webdesign».",
    "kurzEn": "Another version of this website.",
    "atelier": true
   },

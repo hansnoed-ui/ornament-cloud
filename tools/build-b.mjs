@@ -29,7 +29,7 @@ const UNTER_UEBER = ["ueber/", "werke/", "zuletzt/"];
 // im Menü, sondern auf der Seite «Atelier» (b/atelier/, aus src/register.json); «Beta» gibt es im Menü nicht mehr, «Raster» und «Angebot» stehen
 // wieder für sich. Das ersetzt die Wünsche vom 5. und 8. November 2026 (Animations zuvorderst, Multiverse im Hauptmenü, Raster unter Beta).
 const HAUPT = ["hoeren/", "zettel/", "apps/", "raster/", "angebot/"];
-const V = 45;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 46;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 const INHALT = { de: DE, en: EN };
@@ -109,7 +109,7 @@ const kachelSeiten = { de: [], en: [] };    // je Sprache: die Vorschaukarten li
 /* ========== Eine Sprache ========== */
 function bau(sprache) {
   const T = UI[sprache], I = INHALT[sprache];
-  const { SEITE, DIALOG, APPS, RASTER, ANGEBOTE, PRODUKTE, UEBER } = I;
+  const { SEITE, DIALOG, APPS, RASTER, ANGEBOTE, PRODUKTE, UEBER, ZEIGEN } = I;
   const B = T.praefix;                                   // "/b/" oder "/b/en/"
   const AUS = new URL(B.slice(1), ROOT);
   const kasten = ladeZettelkasten(sprache);
@@ -352,6 +352,13 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
 </article>`;
   }
 
+  /** Ein Schaubild mit Name, Satz und Weg: auf der Startseite (ZEIGEN) und als Referenz auf einer Leistung (schau). Bild 1280 × 800 aus tools/b-schaubilder.mjs */
+  function schauStueck(s) {
+    const aussen = /^https?:/.test(s.ziel || s.url || ""), ziel = s.url || (s.ziel.startsWith("/") ? s.ziel : `${B}${s.ziel}`);
+    const neu = aussen || s.neuesFenster || s.url;
+    return `<a class="schau-stueck" href="${attr(ziel)}"${neu ? ' target="_blank" rel="noopener"' : ""}><span class="bild"><img src="${attr(mitMarke(s.bild))}" alt="${attr(s.bildAlt)}" width="1280" height="800" loading="lazy"></span><h3>${esc(s.name)}${s.von ? `<small>${esc(s.von)}, ${esc(s.jahr)}</small>` : ""}</h3><p>${esc(s.kurz || s.text)}</p><span class="weiter">${esc(s.adresse || s.weiter)}${neu ? " ↗" : ""}</span></a>`;
+  }
+
   /** Eine Musik-Veröffentlichung als Platte: Cover, Name, Titel, Art, Tracks mit Dauer, «Anhören» führt auf die Hörseite listen/<slug>/ (seit 13. November 2026) */
   function platte(v, { neu = false, ebene = "h3" } = {}) {
     const ziel = `/${v.pfad}`;
@@ -381,10 +388,13 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
   </div>
 </section>
 
-<!-- Hören und Sehen (seit 13. November 2026): das Neuste zuoberst – die Musik aus listen/<slug>/ep.json mit "oeffentlich": true, dann die Werke -->
+<!-- Sehen und Hören (seit 13. November 2026): zuerst zwei Stücke zum Zeigen (ZEIGEN in inhalt.mjs), dann die Musik aus listen/<slug>/ep.json mit "oeffentlich": true, dann die Werke -->
 <section class="abschnitt kapitel tinte" id="hoeren-sehen" aria-labelledby="hoeren-titel">
   <div class="spalte">
-    <div class="abschnitt-kopf"><h2 id="hoeren-titel">${zeichen("hoeren")}${esc(T.start.hoeren)}</h2><p>${esc(T.start.hoerenText)}</p>${musik.length ? `<a class="weiter" href="${B}hoeren/">${esc(T.start.alleMusik)}</a>` : ""}</div>
+    <div class="abschnitt-kopf"><h2 id="hoeren-titel">${zeichen("sehen")}${esc(T.start.hoeren)}</h2><p>${esc(T.start.hoerenText)}</p></div>
+    <!-- Visuelles zuerst (13. November 2026, Christian: «Grundsätzlich würd ich nicht mit der Musik beginnen, visuelles scheint mir zugänglicher»): zwei Stücke zum Zeigen, dann die Musik -->
+    <div class="schau">${ZEIGEN.map(schauStueck).join("")}</div>
+    ${musik.length ? `<div class="abschnitt-kopf werke-kopf musik-kopf"><h3 id="musik-titel">${zeichen("hoeren")}${esc(T.start.musik)}</h3><p>${esc(T.start.musikText)}</p><a class="weiter" href="${B}hoeren/">${esc(T.start.alleMusik)}</a></div>` : ""}
     ${musik.slice(0, 1).map((v) => platte(v, { neu: true })).join("")}
     <div class="abschnitt-kopf werke-kopf"><h3 id="werke-titel">${zeichen("werke")}${esc(T.start.werke)}</h3><p>${esc(echteWerke.length ? T.start.werkeText : T.start.werkeBald)}</p><a class="weiter" href="${B}werke/">${esc(echteWerke.length ? T.start.alleWerke : T.start.wasKommt)}</a></div>
     ${echteWerke.length ? `<div class="reihe zeilen">${echteWerke.map((w) => `<a class="stueck" href="${B}werke/#${w.slug}"><span class="bild"><img src="/art/bilder/${w.slug}-1-800.webp" alt="${attr(w.bilder[0].alt)}" loading="lazy" width="800" height="1067"></span><h3>${esc(w.titel)}</h3><p>${esc(w.technik)}, ${w.masse.b} × ${w.masse.h} cm</p></a>`).join("")}</div>` : ""}
@@ -693,6 +703,7 @@ ${faeden([...zs.map((z) => fZettel(z)), r.slug === "nebeneinander-nacheinander" 
   <h2 id="ablauf-titel">${esc(T.angebot.soGeht)}</h2>
   <ol>${a.ablauf.map((s) => `<li><span>${esc(s)}</span></li>`).join("")}</ol>
 </div></section>
+${a.schau ? `<section class="referenzen schau-abschnitt" aria-labelledby="schau-titel"><div class="spalte"><h2 id="schau-titel">${esc(T.angebot.schau)}</h2><div class="schau">${a.schau.map(schauStueck).join("")}</div></div></section>` : ""}
 ${a.referenzen ? `<section class="referenzen" aria-labelledby="ref-titel"><div class="spalte"><h2 id="ref-titel">${esc(T.angebot.referenzen)}</h2><ol class="jahre">${a.referenzen.map(([j, t]) => `<li><span class="jahr">${esc(j)}</span><span>${esc(t)}</span></li>`).join("")}</ol></div></section>` : ""}
 <section class="briefing" id="briefing" aria-labelledby="briefing-titel"><div class="spalte">
   <h2 id="briefing-titel">${esc(T.angebot.dein)}</h2>
