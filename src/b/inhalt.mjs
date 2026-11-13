@@ -197,6 +197,8 @@ export const ANGEBOTE = [
     ablauf: ["Ein Rundgang durch den Raum, mit dem Thema im Kopf.", "Konzept, Auswahl und Ablauf als Papier, Budget und Termine dazu.", "Aufbau, Eröffnung, Begleitprogramm, Abbau."],
     // Website von «Supervisionen» seit 13. November 2026 genannt (Christian: «inklusive website www.oberer-turm.ch»)
     referenzen: [["2026", "«Supervisionen», Oberer Turm, Kaiserstuhl: sechs Monate, neun Künstler:innen; für Pro Kaiserstuhl, Gemeinde Zurzach. Ausstellung und Website.", "https://www.oberer-turm.ch/", "oberer-turm.ch"], ["2024", "Ausstellung mit Werken von Klient:innen, Behmen, Aarau: ein Jahr; für das BKS Aargau und die Stiftung FARO"]],
+    // Bildschirmfoto vom Handy, von Christian am 13. November 2026 geschickt («Supervisionen website smartphone»)
+    schau: [{ name: "Supervisionen", von: "Website der Ausstellung", jahr: "2026", url: "https://www.oberer-turm.ch/", adresse: "oberer-turm.ch", bild: "b/bilder/schau/supervisionen.jpg", bildAlt: "Die Website der Ausstellung «Supervisionen» auf dem Handy: gelbes Kopfband, der Titel «Der Obere Turm als Ausstellungsraum» und ein Foto des Turms über den Dächern von Kaiserstuhl", text: "Die Website zur Ausstellung: Programm, Vernissagen und der Turm als Ausstellungsraum. Auch sie stammt von Christian Strickler." }],
     fotos: "supervisionen", fotosTitel: "Ansichten aus «Supervisionen», Oberer Turm Kaiserstuhl, 2026. Die Werke stammen von den ausstellenden Künstler:innen.",   // Ansichten der Ausstellung (src/b/fotos.mjs, AUSSTELLUNG), seit 13. November 2026
     dialog: [
       { frage: "Welcher Raum?", wahlen: ["ein Haus mit Geschichte", "ein White Cube", "ein öffentlicher Ort", "ein Büro oder Betrieb"] },
