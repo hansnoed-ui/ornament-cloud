@@ -6,7 +6,6 @@
   <url><loc>https://ornament.cloud/termine/</loc><lastmod>2026-09-26</lastmod></url>
   <url><loc>https://ornament.cloud/portfolio/</loc><lastmod>2026-09-26</lastmod></url>
   <url><loc>https://ornament.cloud/apps/</loc><lastmod>2026-10-02</lastmod></url>
-  <url><loc>https://ornament.cloud/masterprompts/</loc><lastmod>2026-10-02</lastmod></url>
   <url><loc>https://ornament.cloud/impressum/</loc><lastmod>2026-10-19</lastmod></url>
   <url><loc>https://ornament.cloud/web/</loc><lastmod>2026-10-07</lastmod></url>
   <url><loc>https://ornament.cloud/web/orna-erklaervideo/</loc><lastmod>2026-10-09</lastmod></url>
@@ -583,6 +582,7 @@
   <!-- ART:END -->
   <!-- B:START (erzeugt aus tools/build-b.mjs, der Neubau unter /b/ und /b/en/) -->
   <url><loc>https://ornament.cloud/b/</loc><lastmod>2026-11-13</lastmod></url>
+  <url><loc>https://ornament.cloud/b/sehen/</loc><lastmod>2026-11-13</lastmod></url>
   <url><loc>https://ornament.cloud/b/hoeren/</loc><lastmod>2026-11-13</lastmod></url>
   <url><loc>https://ornament.cloud/b/atelier/</loc><lastmod>2026-11-13</lastmod></url>
   <url><loc>https://ornament.cloud/b/zettel/</loc><lastmod>2026-11-13</lastmod></url>
@@ -643,20 +643,17 @@
   <url><loc>https://ornament.cloud/b/apps/omna-color/</loc><lastmod>2026-11-13</lastmod></url>
   <url><loc>https://ornament.cloud/b/apps/orna/</loc><lastmod>2026-11-13</lastmod></url>
   <url><loc>https://ornament.cloud/b/apps/orma/</loc><lastmod>2026-11-13</lastmod></url>
-  <url><loc>https://ornament.cloud/b/raster/</loc><lastmod>2026-11-13</lastmod></url>
-  <url><loc>https://ornament.cloud/b/raster/nebeneinander-nacheinander/</loc><lastmod>2026-11-13</lastmod></url>
-  <url><loc>https://ornament.cloud/b/raster/verteilapparat/</loc><lastmod>2026-11-13</lastmod></url>
-  <url><loc>https://ornament.cloud/b/raster/gesellschaftskonzepte/</loc><lastmod>2026-11-13</lastmod></url>
-  <url><loc>https://ornament.cloud/b/raster/journalistische-texte/</loc><lastmod>2026-11-13</lastmod></url>
   <url><loc>https://ornament.cloud/b/angebot/</loc><lastmod>2026-11-13</lastmod></url>
   <url><loc>https://ornament.cloud/b/angebot/webdesign/</loc><lastmod>2026-11-13</lastmod></url>
   <url><loc>https://ornament.cloud/b/angebot/vermittlung/</loc><lastmod>2026-11-13</lastmod></url>
   <url><loc>https://ornament.cloud/b/angebot/kuration/</loc><lastmod>2026-11-13</lastmod></url>
+  <url><loc>https://ornament.cloud/b/angebot/fotografie/</loc><lastmod>2026-11-13</lastmod></url>
   <url><loc>https://ornament.cloud/b/angebot/produkte/</loc><lastmod>2026-11-13</lastmod></url>
   <url><loc>https://ornament.cloud/b/werke/</loc><lastmod>2026-11-13</lastmod></url>
   <url><loc>https://ornament.cloud/b/zuletzt/</loc><lastmod>2026-11-13</lastmod></url>
   <url><loc>https://ornament.cloud/b/ueber/</loc><lastmod>2026-11-13</lastmod></url>
   <url><loc>https://ornament.cloud/b/en/</loc><lastmod>2026-11-13</lastmod></url>
+  <url><loc>https://ornament.cloud/b/en/sehen/</loc><lastmod>2026-11-13</lastmod></url>
   <url><loc>https://ornament.cloud/b/en/hoeren/</loc><lastmod>2026-11-13</lastmod></url>
   <url><loc>https://ornament.cloud/b/en/atelier/</loc><lastmod>2026-11-13</lastmod></url>
   <url><loc>https://ornament.cloud/b/en/zettel/</loc><lastmod>2026-11-13</lastmod></url>
@@ -717,15 +714,11 @@
   <url><loc>https://ornament.cloud/b/en/apps/omna-color/</loc><lastmod>2026-11-13</lastmod></url>
   <url><loc>https://ornament.cloud/b/en/apps/orna/</loc><lastmod>2026-11-13</lastmod></url>
   <url><loc>https://ornament.cloud/b/en/apps/orma/</loc><lastmod>2026-11-13</lastmod></url>
-  <url><loc>https://ornament.cloud/b/en/raster/</loc><lastmod>2026-11-13</lastmod></url>
-  <url><loc>https://ornament.cloud/b/en/raster/nebeneinander-nacheinander/</loc><lastmod>2026-11-13</lastmod></url>
-  <url><loc>https://ornament.cloud/b/en/raster/verteilapparat/</loc><lastmod>2026-11-13</lastmod></url>
-  <url><loc>https://ornament.cloud/b/en/raster/gesellschaftskonzepte/</loc><lastmod>2026-11-13</lastmod></url>
-  <url><loc>https://ornament.cloud/b/en/raster/journalistische-texte/</loc><lastmod>2026-11-13</lastmod></url>
   <url><loc>https://ornament.cloud/b/en/angebot/</loc><lastmod>2026-11-13</lastmod></url>
   <url><loc>https://ornament.cloud/b/en/angebot/webdesign/</loc><lastmod>2026-11-13</lastmod></url>
   <url><loc>https://ornament.cloud/b/en/angebot/vermittlung/</loc><lastmod>2026-11-13</lastmod></url>
   <url><loc>https://ornament.cloud/b/en/angebot/kuration/</loc><lastmod>2026-11-13</lastmod></url>
+  <url><loc>https://ornament.cloud/b/en/angebot/fotografie/</loc><lastmod>2026-11-13</lastmod></url>
   <url><loc>https://ornament.cloud/b/en/angebot/produkte/</loc><lastmod>2026-11-13</lastmod></url>
   <url><loc>https://ornament.cloud/b/en/werke/</loc><lastmod>2026-11-13</lastmod></url>
   <url><loc>https://ornament.cloud/b/en/zuletzt/</loc><lastmod>2026-11-13</lastmod></url>

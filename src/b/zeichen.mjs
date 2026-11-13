@@ -24,6 +24,7 @@ export const ZEICHEN = {
   webdesign: svg(`<path d="M3 5h18v14H3z" ${P}/><path d="M3 9h18" ${P}/><circle cx="6" cy="7" r="0.7" fill="currentColor" ${P}/><path d="M7 13h5" ${P}/><path d="M7 16h8" ${P}/>`),
   vermittlung: svg(`<circle cx="8" cy="9" r="3" ${P}/><circle cx="16" cy="9" r="3" ${P}/><path d="M3 20c0-3 2-5 5-5s5 2 5 5" ${P}/><path d="M13 15c3 0 5 2 5 5h3" ${P}/>`),
   kuration: svg(`<path d="M3 20h18" ${P}/><path d="M4 5h5v7H4z" ${P}/><path d="M11 8h5v5h-5z" ${P}/><path d="M18 4h3v9h-3z" ${P}/>`),
+  fotografie: svg(`<path d="M3 7h4l1.5-2.5h7L17 7h4v12H3z" ${P}/><circle cx="12" cy="13" r="3.6" ${P}/>`),
   produkte: svg(`<path d="M4 4h16v16H4z" ${P}/><path d="M7 7h10v10H7z" ${P}/><path d="M7 15c2-3 4-3 6-1s3 1 4-1" ${P}/><circle cx="10.5" cy="10" r="1.2" ${P}/>`),
   // ---- Gattungen der Fäden ----
   zettel: svg(`<path d="M5 3h11l3 3v15H5z" ${P}/><path d="M16 3v3h3" ${P}/><path d="M8 10h8" ${P}/><path d="M8 13.5h8" ${P}/><path d="M8 17h5" ${P}/>`),

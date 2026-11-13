@@ -10,9 +10,9 @@ export const SEITE = {
   adresse: "https://ornament.cloud/b/en/",
   claim: "Observation is an occasion for change in reality.",
   titel: "Theory you can touch.",
-  lead: "Music, images, apps and a Zettelkasten by Christian Strickler. And four services for anyone who needs something like this for themselves.",
+  lead: "Music, images, apps and a Zettelkasten by Christian Strickler. And five services for anyone who needs something like this for themselves.",
   claimAlt: "Theory you can touch.",
-  beschreibung: "Theory you can touch: music, works, seven apps, 49 notes and four test grids by Christian Strickler. Plus web design, education, curating and products.",
+  beschreibung: "Theory you can touch: photography, music, seven apps and 49 notes by Christian Strickler. Plus web design, education, curating, photography and products.",
   person: { name: "Christian Strickler", ort: "between Zurich, Basel and Aarau", strasse: "Rheingasse 8b", plz: "CH-5466 Kaiserstuhl", mail: "hansnoed@gmail.com" },
   sprache: "en",
 };
@@ -149,6 +149,9 @@ export const ANGEBOTE = [
     fuer: "For artists, practices, associations, galleries, museums, schools and small businesses that need an address that lasts, or a tool that does not live in an app store.",
     ablauf: ["A conversation about what the site or the app should do, and for whom.", "A draft in the browser, to touch rather than a picture; for apps a working prototype within days.", "Build, texts, images, publication at your own address; afterwards everything stays in your hands."],
     schau: [
+      { name: "Kaiserbühne", von: "website and stage photography", jahr: "2026", url: "https://kaiserbuehne.ch/", adresse: "kaiserbuehne.ch", bild: "b/bilder/fotografie/buehne-3-1600.jpg", mass: [1600, 1067],
+        bildAlt: "Stage photograph for the Kaiserbühne, black and white: a man crouches inside a large wheel of metal rings, two more people beside him",
+        text: "The website of the Kaiserbühne theatre. The stage photographs for the house are by Christian Strickler as well; the image shows one of them. In German." },
       { name: "Principesse", von: "for Katharina Strickler", jahr: "2026", url: "https://principesse.ch/", adresse: "principesse.ch", bild: "b/bilder/schau/principesse.jpg",
         bildAlt: "Principesse: a drawn princess with a crown and a dog with a crown on a meadow, framed as a small film",
         text: "A one-pager that opens with a small film: the principessa leaves her drawn picture, jumps out and flies through the page as you scroll. At the end an order card with choices and a preview. In German." },
@@ -174,11 +177,21 @@ export const ANGEBOTE = [
     text: "From concept to closing: selecting works, reading rooms, writing texts, negotiating with artists and hosts, building the hanging, thinking the education along. Most recently «Supervisionen», six months in the Oberer Turm in Kaiserstuhl with nine artists, for Pro Kaiserstuhl and the municipality of Zurzach (2026), before that a year of clients' works at the Behmen in Aarau, for the BKS Aargau and the FARO Foundation (2024).",
     fuer: "For municipalities, art spaces, galleries, foundations, companies with rooms and artists who do not want to carry an exhibition alone.",
     ablauf: ["A walk through the space, with the theme in mind.", "Concept, selection and programme on paper, budget and dates included.", "Installation, opening, accompanying programme, dismantling."],
-    referenzen: [["2026", "«Supervisionen», Oberer Turm, Kaiserstuhl: six months, nine artists; for Pro Kaiserstuhl, municipality of Zurzach"], ["2024", "Exhibition of clients' works, Behmen, Aarau: one year; for the BKS Aargau and the FARO Foundation"]],
+    referenzen: [["2026", "«Supervisionen», Oberer Turm, Kaiserstuhl: six months, nine artists; for Pro Kaiserstuhl, municipality of Zurzach. Exhibition and website.", "https://www.oberer-turm.ch/", "oberer-turm.ch"], ["2024", "Exhibition of clients' works, Behmen, Aarau: one year; for the BKS Aargau and the FARO Foundation"]],
     dialog: [
       { frage: "Which space?", wahlen: ["a house with a history", "a white cube", "a public place", "an office or a business"] },
       { frage: "Who exhibits?", wahlen: ["one person", "a group", "a collection", "open"] },
       { frage: "When?", wahlen: ["in three months", "in a year", "next year", "open"] },
+    ] },
+  { slug: "fotografie", name: "Photography", kurz: "Stage, exhibition, space and landscape in pictures.",
+    text: "Photography of stage and exhibition, of spaces, places and landscapes: a rehearsal, an evening, a hanging, a house from the inside, a lake. In colour or black and white, for website, press and print. The stage photographs shown here were made for the Kaiserbühne theatre.",
+    fuer: "For theatres, art spaces, artists, institutions and anyone who wants to keep an evening or a place.",
+    ablauf: ["A conversation about what is to be photographed, where and what for.", "The shoot on site: at the rehearsal, on the evening, in the space.", "A selection of edited images, in the sizes you need."],
+    fotos: "buehne", ohneJev: true,   // noch nicht in der jev-Tabelle (tools/build-b-jev.mjs)
+    dialog: [
+      { frage: "What?", wahlen: ["a rehearsal or performance", "an exhibition", "a space or a house", "something else"] },
+      { frage: "What for?", wahlen: ["website", "press", "print", "archive"] },
+      { frage: "How much?", wahlen: ["one session", "one day", "a series", "open"] },
     ] },
   { slug: "produkte", name: "Products", kurz: "Works, prints, editions and commissions, classic and digital.",
     text: "Works on paper and canvas, prints in small editions, installations with image, motion and sound, works for rooms and screens. Plus editions from the Zettelkasten: the book, the card set, the poster and the notebooks, printed on demand. Orders by email, payment by QR invoice or TWINT; shipping within Switzerland included. Commissions for institutions, companies and private clients after a conversation.",
@@ -194,7 +207,7 @@ export const ANGEBOTE = [
 export const UEBER = {
   text: [
     "Christian Strickler lives and works between Zurich, Basel and Aarau. He turns theory into things you can touch: a Zettelkasten, a wheel that brings artists and theorists together, colour wheels with exercises, machines that make images from photos and sounds, and test grids for questioning theories, texts and bodily events.",
-    "Four services: web design, education and consulting, curatorial projects and products. He designs and builds websites and apps, leads seminars and projects with schools and teams, advises institutions that want to make art a part of their work, curates exhibitions and sells works, prints and editions.",
+    "Five services: web design, education and consulting, curatorial projects, photography and products. He designs and builds websites and apps, leads seminars and projects with schools and teams, advises institutions that want to make art a part of their work, curates exhibitions, photographs stages, spaces and places and sells works, prints and editions.",
     "Everything on this site runs without outside services: no cookies, no advertising, no trackers. Visits are counted without cookies. The apps compute on your device; your images never leave it.",
   ],
   hintergrund: {
@@ -205,7 +218,7 @@ export const UEBER = {
       "Curatorial work most recently: a year of clients' works at the Behmen in Aarau, for the BKS Aargau and the FARO Foundation (2024), and «Supervisionen» in the Oberer Turm in Kaiserstuhl, six months, nine artists, for Pro Kaiserstuhl and the municipality of Zurzach (2026).",
     ],
   },
-  liste: { titel: "When something is finished, I write", text: "No rhythm and no announcements. A short email when a grid, an app or a text is ready to work with.", mailto: "mailto:hansnoed@gmail.com?subject=List&body=Please%20add%20me%20to%20the%20list." },
+  liste: { titel: "When something is finished, I write", text: "No rhythm and no announcements. A short email when an app, a work or a text is ready to work with.", mailto: "mailto:hansnoed@gmail.com?subject=List&body=Please%20add%20me%20to%20the%20list." },
 };
 
 export const SEO = {

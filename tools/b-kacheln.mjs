@@ -77,12 +77,12 @@ const signet = `<svg viewBox="0 0 34 24" width="48" height="34"><path d="${limac
 const W = {
   de: {
     zettel: (s) => `Zettelkasten · ${s.cycle.roman} ${s.cycle.name} · Zettel ${s.number} von 49`, app: "App", raster: "Prüfraster", angebot: "Leistung", fuss: "ornament.cloud/b",
-    start: "Theorie, die man anfassen kann. Musik, Werke, sieben Apps, 49 Zettel, vier Prüfraster.",   // seit 13. November 2026 («Künstler zuerst»)
+    start: "Theorie, die man anfassen kann. Fotografie, Musik, sieben Apps, 49 Zettel.",   // seit 13. November 2026 («Künstler zuerst»)
     apps: ["Sieben Apps im Browser", "Apps", "ORNA, ORMA, OMNA COLOR, PHORMA I bis III, The Fictory."],
     rasterSeite: ["Vier Instrumente", "Prüfraster", "Grundlagenpapiere und Anwendungsprompts zum genaueren Hinsehen."],
     angebotSeite: [", zwischen Zürich, Basel und Aarau", "Angebot", "Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte."],
-    werke: ["Werke", "Originale, Prints in kleinen Auflagen und Arbeiten im Raum."],
-    hoeren: ["the i", "Hören", "Musik zum Hören im Browser."], atelier: ["ornament.cloud", "Atelier", "Werkzeuge im Bau, Proben und andere Fassungen."],
+    werke: ["Werke", "Fotografie, Originale und Prints in kleinen Auflagen."],
+    sehen: ["ornament.cloud", "Sehen", "Filme, Fotografien, Bilder in Bewegung."], hoeren: ["the i", "Hören", "Musik zum Hören im Browser."], atelier: ["ornament.cloud", "Atelier", "Werkzeuge im Bau, Proben und andere Fassungen."],
     zuletzt: ["Aus Social Media", "Zuletzt", "Beiträge, gesichert mit Beleg und Schlagworten."],
     ueber: ["Zwischen Zürich, Basel und Aarau", "Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte."],
     werkstatt: ["Werkstatt", "Print on Demand", "Produkte aus dem Bestand."],
@@ -90,12 +90,12 @@ const W = {
   },
   en: {
     zettel: (s) => `Zettelkasten · ${s.cycle.roman} ${s.cycle.name} · Note ${s.number} of 49`, app: "App", raster: "Test grid", angebot: "Service", fuss: "ornament.cloud/b/en",
-    start: "Theory you can touch. Music, works, seven apps, 49 notes, four test grids.",
+    start: "Theory you can touch. Photography, music, seven apps, 49 notes.",
     apps: ["Seven apps in the browser", "Apps", "ORNA, ORMA, OMNA COLOR, PHORMA I to III, The Fictory."],
     rasterSeite: ["Four instruments", "Test grids", "Background papers and application prompts for looking closer."],
     angebotSeite: [", between Zurich, Basel and Aarau", "Services", "Web design, education and consulting, curatorial projects, products."],
-    werke: ["Works", "Originals, prints in small editions and works in space."],
-    hoeren: ["the i", "Listen", "Music to listen to in the browser."], atelier: ["ornament.cloud", "Studio", "Tools under construction, trials and other versions."],
+    werke: ["Works", "Photography, originals and prints in small editions."],
+    sehen: ["ornament.cloud", "Look", "Films, photographs, images in motion."], hoeren: ["the i", "Listen", "Music to listen to in the browser."], atelier: ["ornament.cloud", "Studio", "Tools under construction, trials and other versions."],
     zuletzt: ["From social media", "Latest", "Posts, kept with source and keywords."],
     ueber: ["Between Zurich, Basel and Aarau", "Web design, education and consulting, curatorial projects, products."],
   },
@@ -192,6 +192,7 @@ function karte(pfad, sprache) {
     "raster/": { kicker: w.rasterSeite[0], titel: w.rasterSeite[1], satz: w.rasterSeite[2], feld: feldSvg() },
     "angebot/": { kicker: SEITE.person.name + w.angebotSeite[0], titel: w.angebotSeite[1], satz: w.angebotSeite[2], feld: feldSvg() },
     "werke/": { kicker: SEITE.person.name, titel: w.werke[0], satz: w.werke[1], feld: feldSvg() },
+    "sehen/": { kicker: w.sehen[0], titel: w.sehen[1], satz: w.sehen[2], feld: feldSvg() },     // seit 13. November 2026
     "hoeren/": { kicker: w.hoeren[0], titel: w.hoeren[1], satz: w.hoeren[2], feld: feldSvg() },     // seit 13. November 2026
     "atelier/": { kicker: w.atelier[0], titel: w.atelier[1], satz: w.atelier[2], feld: feldSvg() },
     "zuletzt/": { kicker: w.zuletzt[0], titel: w.zuletzt[1], satz: w.zuletzt[2], feld: feldSvg() },

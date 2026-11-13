@@ -15,6 +15,7 @@ import { UI } from "../src/b/ui.mjs";
 import { ladeZettel, ladeZettelkasten, ladeOrma, ladeWerke, ladeBeitraege, ladeOmna, ladeKonstellationen, ladePersonen, ladeRegister, ladeVeroeffentlichungen } from "./b-daten.mjs";
 import { pruefsumme } from "./build-b-jev.mjs";
 import { zeichen } from "../src/b/zeichen.mjs";
+import { FOTOS } from "../src/b/fotos.mjs";
 import { createHash } from "node:crypto";
 
 const ROOT = new URL("../", import.meta.url);
@@ -28,8 +29,17 @@ const UNTER_UEBER = ["ueber/", "werke/", "zuletzt/"];
 // Hören, Zettel, Apps, Raster, Angebot, Über (mit Werke und Zuletzt), Atelier. Animations, Multiverse, Lab, Das 3. Rad und Gamma stehen nicht mehr
 // im Menü, sondern auf der Seite «Atelier» (b/atelier/, aus src/register.json); «Beta» gibt es im Menü nicht mehr, «Raster» und «Angebot» stehen
 // wieder für sich. Das ersetzt die Wünsche vom 5. und 8. November 2026 (Animations zuvorderst, Multiverse im Hauptmenü, Raster unter Beta).
-const HAUPT = ["hoeren/", "zettel/", "apps/", "raster/", "angebot/"];
-const V = 48;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const HAUPT = ["sehen/", "zettel/", "apps/", "angebot/"];
+// «Hören» steht am Schluss des Menüs, nach «Atelier» (Christian am selben Nachmittag: «Nimm das hören an den schluss»)
+// Menü seit dem Nachmittag des 13. November 2026 (Christian: «Im menu steht immer noch hören als erstes», und genauer: «Das meinte ich nicht wegen
+// "hören", sondern, dass das sehen nicht dabei ist»): Sehen, Hören, Zettel, Apps, Angebot, Über (mit Werke und Zuletzt), Atelier. «Sehen» ist eine
+// eigene Seite (b/sehen/; die Reihenfolge sonst wie vorher, «Es ist nicht falsch sortiert»), das Gegenstück zu «Hören»: der Film aus Animations, Fotografien, die Filme der Bild-Apps, die zwei Räder.
+// Die Prüfraster sind seit demselben Tag nicht mehr öffentlich (Christian: «Nimm die Prüfraster mal von der Website. Ich möchte weiterhin zugriff haben,
+// aber sie nicht öffentlich einsehbar haben»): ihre Seiten unter b/raster/ werden weiter erzeugt, aber mit noindex, ohne Eintrag in Menü, Startseite,
+// Fäden, Dialog und Sitemap. Wer die Adresse kennt, erreicht sie; ein Passwortschutz wäre ein eigener Schritt auf dem Webspace.
+// Wieder öffentlich: RASTER_OEFFENTLICH = true.
+const RASTER_OEFFENTLICH = false;
+const V = 52;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 const INHALT = { de: DE, en: EN };
@@ -52,6 +62,7 @@ const mitMarke = (pfad) => { if (!MARKEN.has(pfad)) MARKEN.set(pfad, createHash(
 const beitraege = ladeBeitraege();
 const register = ladeRegister();
 const musik = ladeVeroeffentlichungen();   // nur die mit "oeffentlich": true, neueste zuerst
+const fotoMass = JSON.parse(readFileSync(new URL("src/b/fotos.json", ROOT), "utf8"));   // Masse der Vorlagen (tools/b-fotos.mjs)
 const zeitText = (sek) => `${Math.floor(sek / 60)}:${String(Math.round(sek % 60)).padStart(2, "0")}`;
 const omnaUebungen = ladeOmna();
 const konstellationen = ladeKonstellationen();
@@ -173,7 +184,7 @@ function bau(sprache) {
 
   const fZettel = (z, klein) => ({ artId: "zettel", href: `${B}zettel/${z.slug}/`, was: `${z.number} · ${z.title}`, klein: klein ?? z.bottom_line });
   const fApp = (a) => a && { artId: "app", href: `${B}apps/${a.slug}/`, was: a.name, klein: a.kurz };
-  const fRaster = (r) => r && { artId: "raster", href: `${B}raster/${r.slug}/`, was: r.name, klein: r.kurz };
+  const fRaster = (r) => RASTER_OEFFENTLICH && r && { artId: "raster", href: `${B}raster/${r.slug}/`, was: r.name, klein: r.kurz };
   const fAngebot = (a) => a && { artId: "angebot", href: `${B}angebot/${a.slug}/`, was: a.name, klein: a.kurz };
   const fOrma = (k) => k && { artId: "konstellation", href: `/portfolio/nebeneinander-nacheinander/?pair=${k.id}`, was: `${k.kuenstler} × ${k.theoretiker}${T.konstellationDeutsch}`, klein: k.frage, deutsch: true };
 
@@ -267,7 +278,7 @@ function bau(sprache) {
   <header class="kopf">
     <div class="spalte">
       <div class="marke"><a class="signet" href="${B}"${pfad === "" ? ' aria-current="page"' : ""}>${SIGNET}<span>ornament.cloud</span></a>${sprachwahl(pfad, nurDe)}</div>
-      <nav class="hauptnav" aria-label="${attr(T.hauptnav)}">${HAUPT.map((p) => `<a href="${B}${p}"${aktiv === p ? ' aria-current="page"' : ""}>${T.nav[p]}</a>`).join("")}<details class="beta ueber"><summary${UNTER_UEBER.includes(aktiv) ? ' class="aktiv"' : ""}>${T.nav["ueber/"]}</summary><span class="beta-liste">${UNTER_UEBER.map((p) => `<a href="${B}${p}"${aktiv === p ? ' aria-current="page"' : ""}>${T.nav[p]}</a>`).join("")}</span></details><a class="atelier-link" href="${B}atelier/"${aktiv === "atelier/" ? ' aria-current="page"' : ""}>${T.nav["atelier/"]}</a></nav>
+      <nav class="hauptnav" aria-label="${attr(T.hauptnav)}">${HAUPT.map((p) => `<a href="${B}${p}"${aktiv === p ? ' aria-current="page"' : ""}>${T.nav[p]}</a>`).join("")}<details class="beta ueber"><summary${UNTER_UEBER.includes(aktiv) ? ' class="aktiv"' : ""}>${T.nav["ueber/"]}</summary><span class="beta-liste">${UNTER_UEBER.map((p) => `<a href="${B}${p}"${aktiv === p ? ' aria-current="page"' : ""}>${T.nav[p]}</a>`).join("")}</span></details><a class="atelier-link" href="${B}atelier/"${aktiv === "atelier/" ? ' aria-current="page"' : ""}>${T.nav["atelier/"]}</a><a href="${B}hoeren/"${aktiv === "hoeren/" ? ' aria-current="page"' : ""}>${T.nav["hoeren/"]}</a></nav>
     </div>
   </header>
   <main id="inhalt">
@@ -352,11 +363,29 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
 </article>`;
   }
 
+  /** Fotografien (seit 13. November 2026, src/b/fotos.mjs): eine Galerie in Spalten, jedes Bild im eigenen Seitenverhältnis; ein Tipp öffnet die grosse Fassung.
+   *  «quadrat» schneidet für die Reihe auf der Startseite auf ein Quadrat zu und führt auf die Galerie statt aufs Bild. */
+  function fotoGalerie(liste, { quadrat = false } = {}) {
+    return `<div class="fotos${quadrat ? " fotos-reihe" : ""}">${liste.map((f) => {
+      const [b, h] = fotoMass[f.slug], t = f.titel[sprache], k = 800 / Math.max(b, h);
+      const bild = `<img src="${attr(mitMarke(`b/bilder/fotografie/${f.slug}-800.jpg`))}"${quadrat ? "" : ` srcset="${attr(mitMarke(`b/bilder/fotografie/${f.slug}-800.jpg`))} 800w, ${attr(mitMarke(`b/bilder/fotografie/${f.slug}-1600.jpg`))} 1600w" sizes="(max-width: 760px) 100vw, 360px"`} alt="${attr(f.alt[sprache])}" width="${Math.round(b * k)}" height="${Math.round(h * k)}" loading="lazy">`;
+      return quadrat
+        ? `<a class="foto" href="${B}werke/#foto-${f.slug}" title="${attr(t)}">${bild}</a>`
+        : `<figure class="foto" id="foto-${f.slug}"><a href="${attr(mitMarke(`b/bilder/fotografie/${f.slug}-1600.jpg`))}" target="_blank" rel="noopener" title="${attr(T.werke.fotoGross(t))}">${bild}</a><figcaption>${esc(t)}${f.fuer ? `, ${esc(f.fuer[sprache])}` : ""}</figcaption></figure>`;
+    }).join("")}</div>`;
+  }
+
+  /** Der Film aus Animations (ZEIGEN_FILM): links der Film, rechts Name, Satz und Weg; auf der Startseite und auf «Sehen» */
+  const schauFilm = (ebene = "h3") => `<a class="schau-film" href="${attr(ZEIGEN_FILM.ziel)}" target="_blank" rel="noopener">
+      <span class="bild"><video class="kachel-film" muted loop playsinline preload="none" poster="${attr(mitMarke(ZEIGEN_FILM.bild))}" width="${ZEIGEN_FILM.mass[0]}" height="${ZEIGEN_FILM.mass[1]}" aria-label="${attr(ZEIGEN_FILM.bildAlt)}"><source src="${attr(mitMarke(ZEIGEN_FILM.film))}" type="video/mp4"></video></span>
+      <span class="schau-film-text"><${ebene}>${esc(ZEIGEN_FILM.name)}</${ebene}><p>${esc(ZEIGEN_FILM.kurz)}</p><span class="weiter">${esc(ZEIGEN_FILM.weiter)} ↗</span></span>
+    </a>`;
+
   /** Ein Schaubild mit Name, Satz und Weg: auf der Startseite (ZEIGEN) und als Referenz auf einer Leistung (schau). Bild 1280 × 800 aus tools/b-schaubilder.mjs */
   function schauStueck(s) {
     const aussen = /^https?:/.test(s.ziel || s.url || ""), ziel = s.url || (s.ziel.startsWith("/") ? s.ziel : `${B}${s.ziel}`);
     const neu = aussen || s.neuesFenster || s.url;
-    return `<a class="schau-stueck" href="${attr(ziel)}"${neu ? ' target="_blank" rel="noopener"' : ""}><span class="bild"><img src="${attr(mitMarke(s.bild))}" alt="${attr(s.bildAlt)}" width="1280" height="800" loading="lazy"></span><h3>${esc(s.name)}${s.von ? `<small>${esc(s.von)}, ${esc(s.jahr)}</small>` : ""}</h3><p>${esc(s.kurz || s.text)}</p><span class="weiter">${esc(s.adresse || s.weiter)}${neu ? " ↗" : ""}</span></a>`;
+    return `<a class="schau-stueck" href="${attr(ziel)}"${neu ? ' target="_blank" rel="noopener"' : ""}><span class="bild"><img src="${attr(mitMarke(s.bild))}" alt="${attr(s.bildAlt)}" width="${s.mass?.[0] || 1280}" height="${s.mass?.[1] || 800}" loading="lazy"></span><h3>${esc(s.name)}${s.von ? `<small>${esc(s.von)}, ${esc(s.jahr)}</small>` : ""}</h3><p>${esc(s.kurz || s.text)}</p><span class="weiter">${esc(s.adresse || s.weiter)}${neu ? " ↗" : ""}</span></a>`;
   }
 
   /** Eine Musik-Veröffentlichung als Platte: Cover, Name, Titel, Art, Tracks mit Dauer, «Anhören» führt auf die Hörseite listen/<slug>/ (seit 13. November 2026) */
@@ -393,14 +422,12 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
   <div class="spalte">
     <div class="abschnitt-kopf"><h2 id="hoeren-titel">${zeichen("sehen")}${esc(T.start.hoeren)}</h2><p>${esc(T.start.hoerenText)}</p></div>
     <!-- Visuelles zuerst (13. November 2026, Christian: «Grundsätzlich würd ich nicht mit der Musik beginnen, visuelles scheint mir zugänglicher»): zwei Stücke zum Zeigen, dann die Musik -->
-    <a class="schau-film" href="${attr(ZEIGEN_FILM.ziel)}" target="_blank" rel="noopener">
-      <span class="bild"><video class="kachel-film" muted loop playsinline preload="none" poster="${attr(mitMarke(ZEIGEN_FILM.bild))}" width="${ZEIGEN_FILM.mass[0]}" height="${ZEIGEN_FILM.mass[1]}" aria-label="${attr(ZEIGEN_FILM.bildAlt)}"><source src="${attr(mitMarke(ZEIGEN_FILM.film))}" type="video/mp4"></video></span>
-      <span class="schau-film-text"><h3>${esc(ZEIGEN_FILM.name)}</h3><p>${esc(ZEIGEN_FILM.kurz)}</p><span class="weiter">${esc(ZEIGEN_FILM.weiter)} ↗</span></span>
-    </a>
+    ${schauFilm()}
     <div class="schau">${ZEIGEN.map(schauStueck).join("")}</div>
     ${musik.length ? `<div class="abschnitt-kopf werke-kopf musik-kopf"><h3 id="musik-titel">${zeichen("hoeren")}${esc(T.start.musik)}</h3><p>${esc(T.start.musikText)}</p><a class="weiter" href="${B}hoeren/">${esc(T.start.alleMusik)}</a></div>` : ""}
     ${musik.slice(0, 1).map((v) => platte(v, { neu: true })).join("")}
     <div class="abschnitt-kopf werke-kopf"><h3 id="werke-titel">${zeichen("werke")}${esc(T.start.werke)}</h3><p>${esc(echteWerke.length ? T.start.werkeText : T.start.werkeBald)}</p><a class="weiter" href="${B}werke/">${esc(echteWerke.length ? T.start.alleWerke : T.start.wasKommt)}</a></div>
+    ${fotoGalerie(FOTOS.filter((f) => f.start), { quadrat: true })}
     ${echteWerke.length ? `<div class="reihe zeilen">${echteWerke.map((w) => `<a class="stueck" href="${B}werke/#${w.slug}"><span class="bild"><img src="/art/bilder/${w.slug}-1-800.webp" alt="${attr(w.bilder[0].alt)}" loading="lazy" width="800" height="1067"></span><h3>${esc(w.titel)}</h3><p>${esc(w.technik)}, ${w.masse.b} × ${w.masse.h} cm</p></a>`).join("")}</div>` : ""}
   </div>
 </section>
@@ -429,13 +456,13 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
   </div>
 </section>
 
-<!-- Prüfraster (seit 21. Oktober 2026 statt «Denken»: die sieben Zyklen standen doppelt, der Zettelkasten hat oben seinen Abschnitt; die Raster hatten keinen Titel) -->
+${RASTER_OEFFENTLICH ? `<!-- Prüfraster (seit 21. Oktober 2026 statt «Denken»: die sieben Zyklen standen doppelt, der Zettelkasten hat oben seinen Abschnitt; die Raster hatten keinen Titel) -->
 <section class="abschnitt kapitel tinte" aria-labelledby="raster-titel">
   <div class="spalte">
     <div class="abschnitt-kopf"><h2 id="raster-titel">${zeichen("raster")}${esc(T.start.raster)}</h2><p>${esc(T.start.rasterText)}</p><a class="weiter" href="${B}raster/">${esc(T.start.alleRaster)}</a></div>
     <ul class="liste-linien">${RASTER.map((r) => `<li><a href="${B}raster/${r.slug}/"><span class="n">${zeichen(r.slug)}</span><span class="name">${esc(r.name)}</span><span class="pfeil">${esc(r.stand)}</span><span class="kurz">${esc(r.kurz)}</span></a></li>`).join("")}</ul>
   </div>
-</section>
+</section>` : ""}
 
 <!-- Der Dialog steht seit 13. November 2026 hier, vor den Leistungen (vorher zwischen Zettelkasten und Spielen): er ist ein Wegweiser für alle, die nach dem Schauen noch nicht wissen, wohin -->
 <section class="dialog kapitel kapitel-rot" aria-labelledby="dialog-titel">
@@ -444,7 +471,7 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
     <div class="chips" role="radiogroup" aria-label="${attr(DIALOG.frage)}">
       ${DIALOG.wahlen.map((w) => `<input type="radio" name="mit" id="mit-${w.id}"><label class="chip" for="mit-${w.id}">${esc(w.wort)}</label>`).join("\n      ")}
     </div>
-    ${DIALOG.wahlen.map((w) => `<div class="weg weg-${w.id}"><p>${esc(w.satz)}</p><ol>${w.weg.map(([h, t]) => `<li><a href="/${attr(h)}">${esc(t)}</a></li>`).join("")}</ol></div>`).join("\n    ")}
+    ${DIALOG.wahlen.map((w) => `<div class="weg weg-${w.id}"><p>${esc(w.satz)}</p><ol>${w.weg.filter(([h]) => RASTER_OEFFENTLICH || !/(^|\/)raster\//.test(h)).map(([h, t]) => `<li><a href="/${attr(h)}">${esc(t)}</a></li>`).join("")}</ol></div>`).join("\n    ")}
   </div>
 </section>
 
@@ -473,6 +500,33 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
   </div>
 </section>`;
     veroeffentliche({ pfad: "", titel: "ornament.cloud", beschreibung: SEITE.beschreibung, body, jsonld: [personLd()], module: ["tafeln-leben.js"], bildAlt: T.start.bildAlt });
+  }
+
+  /* ---------- Sehen (seit 13. November 2026, Christian: «dass das sehen nicht dabei ist»): das Gegenstück zu «Hören» – Film, Fotografie, die Filme der Bild-Apps, die Räder ---------- */
+  {
+    const bildApps = APPS.filter((a) => KACHEL_FILME.has(a.slug));
+    const body = `
+<section class="stueck-kopf"><div class="spalte">
+  <h1 class="titel">${esc(T.sehen.titel)}<small>${esc(T.sehen.small)}</small></h1>
+</div></section>
+<section class="abschnitt"><div class="spalte">
+  ${schauFilm("h2")}
+</div></section>
+<section class="abschnitt" aria-labelledby="sehen-foto-titel"><div class="spalte">
+  <div class="abschnitt-kopf"><h2 id="sehen-foto-titel">${zeichen("fotografie")}${esc(T.sehen.fotografie)}</h2><p>${esc(T.sehen.fotografieText)}</p><a class="weiter" href="${B}werke/#fotografie">${esc(T.sehen.alleFotos)}</a></div>
+  ${fotoGalerie(FOTOS.filter((f) => f.start), { quadrat: true })}
+</div></section>
+<section class="abschnitt" aria-labelledby="sehen-filme-titel"><div class="spalte">
+  <div class="abschnitt-kopf"><h2 id="sehen-filme-titel">${zeichen("spielen")}${esc(T.sehen.filme)}</h2><p>${esc(T.sehen.filmeText)}</p><a class="weiter" href="${B}apps/">${esc(T.start.alleApps)}</a></div>
+  <div class="reihe zeilen">${bildApps.map(appKachel).join("")}</div>
+</div></section>
+<section class="abschnitt" aria-labelledby="sehen-raeder-titel"><div class="spalte">
+  <div class="abschnitt-kopf"><h2 id="sehen-raeder-titel">${zeichen("rad")}${esc(T.sehen.raeder)}</h2><p>${esc(T.sehen.raederText)}</p></div>
+  <div class="schau">${ZEIGEN.map(schauStueck).join("")}</div>
+</div></section>
+<section class="spalte">${teilen({ pfad: "sehen/", titel: T.sehen.teilenTitel, text: T.sehen.teilenText })}</section>
+${faeden([fZettel(zettel[25]), fZettel(zettel[29]), fAngebot(angebotVon("fotografie"))])}`;
+    veroeffentliche({ pfad: "sehen/", aktiv: "sehen/", titel: T.sehen.seitenTitel, beschreibung: T.sehen.beschreibung, body, bildAlt: T.sehen.bildAlt, module: ["tafeln-leben.js"] });
   }
 
   /* ---------- Hören (seit 13. November 2026): die Musik, je Veröffentlichung eine Platte; die Hörseite selbst liegt unter listen/<slug>/ ---------- */
@@ -643,7 +697,7 @@ ${faeden([...zs.map((z) => fZettel(z)), fApp(schwester), fAngebot(angebotVon(a.g
 <section class="abschnitt"><div class="spalte">
   <div class="reihe zeilen">${RASTER.map((r) => `<a class="stueck" href="${B}raster/${r.slug}/"><span class="bild quadrat">${appBild(r, ' loading="lazy"')}</span><h3>${zeichen(r.slug)}${esc(r.name)}</h3><p>${esc(r.kurz)} ${esc(r.fassung)}, ${esc(r.stand)}.</p></a>`).join("")}</div>
 </div></section>`;
-    veroeffentliche({ pfad: "raster/", aktiv: "raster/", titel: T.raster.seitenTitel, beschreibung: T.raster.beschreibung, body, bildAlt: T.raster.bildAlt });
+    veroeffentliche({ pfad: "raster/", aktiv: "raster/", noindex: !RASTER_OEFFENTLICH, titel: T.raster.seitenTitel, beschreibung: T.raster.beschreibung, body, bildAlt: T.raster.bildAlt });
   }
   for (const r of RASTER) {
     const zs = zettelZu("raster", r.slug, 3);
@@ -676,7 +730,7 @@ ${faeden([...zs.map((z) => fZettel(z)), fApp(schwester), fAngebot(angebotVon(a.g
 </div></section>
 <section class="spalte">${teilen({ pfad: `raster/${r.slug}/`, titel: r.name, text: r.kurz })}</section>
 ${faeden([...zs.map((z) => fZettel(z)), r.slug === "nebeneinander-nacheinander" ? fApp(appVon("orna")) : fApp(appVon("orma")), fAngebot(angebotVon("vermittlung")), fRaster(RASTER.find((x) => x.slug !== r.slug && x.stand === r.stand) || RASTER.find((x) => x.slug !== r.slug))])}`;
-    veroeffentliche({ pfad: `raster/${r.slug}/`, aktiv: "raster/", titel: T.raster.einzelTitel(r.name), beschreibung: beschreibung(r.text), body, typ: "article", module: ["tafeln-leben.js"],
+    veroeffentliche({ pfad: `raster/${r.slug}/`, aktiv: "raster/", noindex: !RASTER_OEFFENTLICH, titel: T.raster.einzelTitel(r.name), beschreibung: beschreibung(r.text), body, typ: "article", module: ["tafeln-leben.js"],
       jsonld: [{ "@context": "https://schema.org", "@type": "CreativeWork", name: r.name, description: r.kurz, url: `${BASIS}${B}raster/${r.slug}/`, author: { "@type": "Person", name: SEITE.person.name }, inLanguage: T.inLanguage }] });
   }
 
@@ -708,8 +762,9 @@ ${faeden([...zs.map((z) => fZettel(z)), r.slug === "nebeneinander-nacheinander" 
   <h2 id="ablauf-titel">${esc(T.angebot.soGeht)}</h2>
   <ol>${a.ablauf.map((s) => `<li><span>${esc(s)}</span></li>`).join("")}</ol>
 </div></section>
+${a.fotos ? `<section class="referenzen schau-abschnitt" aria-labelledby="schau-titel"><div class="spalte"><h2 id="schau-titel">${esc(T.angebot.schau)}</h2>${fotoGalerie(FOTOS.filter((f) => f.gruppe === a.fotos))}<p class="klein" style="margin-top:14px"><a href="${B}werke/#fotografie">${esc(T.start.wasKommt)}</a></p></div></section>` : ""}
 ${a.schau ? `<section class="referenzen schau-abschnitt" aria-labelledby="schau-titel"><div class="spalte"><h2 id="schau-titel">${esc(T.angebot.schau)}</h2><div class="schau">${a.schau.map(schauStueck).join("")}</div></div></section>` : ""}
-${a.referenzen ? `<section class="referenzen" aria-labelledby="ref-titel"><div class="spalte"><h2 id="ref-titel">${esc(T.angebot.referenzen)}</h2><ol class="jahre">${a.referenzen.map(([j, t]) => `<li><span class="jahr">${esc(j)}</span><span>${esc(t)}</span></li>`).join("")}</ol></div></section>` : ""}
+${a.referenzen ? `<section class="referenzen" aria-labelledby="ref-titel"><div class="spalte"><h2 id="ref-titel">${esc(T.angebot.referenzen)}</h2><ol class="jahre">${a.referenzen.map(([j, t, url, adresse]) => `<li><span class="jahr">${esc(j)}</span><span>${esc(t)}${url ? ` <a class="ref-link" href="${attr(url)}" target="_blank" rel="noopener">${esc(adresse)} ↗</a>` : ""}</span></li>`).join("")}</ol></div></section>` : ""}
 <section class="briefing" id="briefing" aria-labelledby="briefing-titel"><div class="spalte">
   <h2 id="briefing-titel">${esc(T.angebot.dein)}</h2>
   <p>${esc(T.angebot.deinText)}</p>
@@ -734,6 +789,10 @@ ${faeden([...zs.map((z) => fZettel(z)), fApp(appVon(appTop)), fAngebot(ANGEBOTE[
     const body = `
 <section class="stueck-kopf"><div class="spalte">
   <h1 class="titel">${esc(T.werke.titel)}<small>${esc(T.werke.small)}</small></h1>
+</div></section>
+<section class="abschnitt" id="fotografie" aria-labelledby="fotografie-titel"><div class="spalte">
+  <div class="abschnitt-kopf"><h2 id="fotografie-titel">${esc(T.werke.fotografie)}</h2><p>${esc(T.werke.fotografieText)}</p><a class="weiter" href="${B}angebot/fotografie/">${esc(T.werke.fotoAuftrag)}</a></div>
+  ${fotoGalerie(FOTOS)}
 </div></section>
 <section class="abschnitt" aria-labelledby="prints-titel"><div class="spalte">
   <div class="abschnitt-kopf"><h2 id="prints-titel">${esc(T.werke.prints)}</h2><p>${esc(ankuendigung)}</p></div>
@@ -771,6 +830,8 @@ ${faeden([fZettel(zettel[40]), fZettel(zettel[36]), fApp(appVon("orna"))])}`;
 <section class="stueck-kopf"><div class="spalte sieben">
   <div class="s-4">
     <h1 class="titel">${esc(SEITE.person.name)}<small>${esc(T.ueber.small)}</small></h1>
+    <!-- Porträt seit 13. November 2026 (von Christian geschickt: «ja das bin ich, also in "über"») -->
+    <figure class="ueber-bild"><img src="${attr(mitMarke("b/bilder/ueber/christian-strickler.jpg"))}" alt="${attr(T.ueber.bildAltPortraet)}" width="1080" height="720"></figure>
     <div class="ueber-text" style="margin-top:32px">${UEBER.text.map((t) => `<p>${esc(t)}</p>`).join("")}</div>
     <div class="hintergrund" id="hintergrund">
       <h2>${esc(UEBER.hintergrund.titel)}</h2>

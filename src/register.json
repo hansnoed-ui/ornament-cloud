@@ -8,6 +8,15 @@
  ],
  "arbeiten": [
   {
+   "id": "sehen",
+   "name": "Sehen",
+   "tuer": "hoeren-sehen",
+   "art": "Übersicht",
+   "status": "oeffentlich",
+   "adresse": "b/sehen/",
+   "kurz": "Film aus Animations, Fotografien, Filme der Bild-Apps, die zwei Räder."
+  },
+  {
    "id": "directer",
    "name": "the i – directer",
    "tuer": "hoeren-sehen",
@@ -33,8 +42,8 @@
    "art": "Werke und Editionen",
    "status": "oeffentlich",
    "adresse": "b/werke/",
-   "kurz": "Ankündigung für Prints, Originale, Arbeiten im Raum und Editionen.",
-   "wartet": "Erstes echtes Werk mit Preis in src/art/werke.json; Zahlungslink."
+   "kurz": "Sieben Fotografien; Ankündigung für Prints, Originale, Arbeiten im Raum und Editionen.",
+   "wartet": "Erstes Werk mit Preis und Zahlungslink."
   },
   {
    "id": "art",
@@ -149,7 +158,7 @@
    "name": "Nebeneinander und Nacheinander",
    "tuer": "spielen-denken",
    "art": "Prüfraster",
-   "status": "oeffentlich",
+   "status": "direktlink",
    "adresse": "b/raster/nebeneinander-nacheinander/",
    "kurz": ""
   },
@@ -158,7 +167,7 @@
    "name": "Der Verteilapparat des Körpers",
    "tuer": "spielen-denken",
    "art": "Prüfraster",
-   "status": "oeffentlich",
+   "status": "direktlink",
    "adresse": "b/raster/verteilapparat/",
    "kurz": ""
   },
@@ -167,7 +176,7 @@
    "name": "Prüfraster für Gesellschaftskonzepte",
    "tuer": "spielen-denken",
    "art": "Prüfraster",
-   "status": "oeffentlich",
+   "status": "direktlink",
    "adresse": "b/raster/gesellschaftskonzepte/",
    "kurz": ""
   },
@@ -176,7 +185,7 @@
    "name": "Prüfraster journalistischer Texte",
    "tuer": "spielen-denken",
    "art": "Prüfraster",
-   "status": "oeffentlich",
+   "status": "direktlink",
    "adresse": "b/raster/journalistische-texte/",
    "kurz": ""
   },
@@ -258,7 +267,7 @@
    "status": "oeffentlich",
    "adresse": "b/angebot/webdesign/",
    "kurz": "",
-   "wartet": "Ab-Preise fehlen; dritte Referenz ausserhalb der eigenen Arbeit wäre gut."
+   "wartet": "Ab-Preise; ein Bildschirmfoto von kaiserbuehne.ch (die Seite war aus der Cloud-Sitzung nicht erreichbar)."
   },
   {
    "id": "angebot-vermittlung",
@@ -277,7 +286,17 @@
    "status": "oeffentlich",
    "adresse": "b/angebot/kuration/",
    "kurz": "",
-   "wartet": "Referenzen und Ab-Preise fehlen."
+   "wartet": "Ab-Preise; ein Bild der Ausstellung «Supervisionen» oder der Website oberer-turm.ch."
+  },
+  {
+   "id": "angebot-fotografie",
+   "name": "Fotografie",
+   "tuer": "beauftragen",
+   "art": "Leistung",
+   "status": "oeffentlich",
+   "adresse": "b/angebot/fotografie/",
+   "kurz": "",
+   "wartet": "Ab-Preis; Stück und Jahr der Bühnenbilder."
   },
   {
    "id": "angebot-produkte",

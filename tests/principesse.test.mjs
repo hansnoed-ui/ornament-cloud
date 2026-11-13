@@ -190,7 +190,9 @@ test("Seite: steht für sich (noindex, keine Navigation, von keiner Seite verlin
   const ueberspringen = new Set(["node_modules", "dist", "vendor", ".git", "principesse"]);
   const walk = (d, vor = "") => readdirSync(d, { withFileTypes: true }).flatMap((e) =>
     ueberspringen.has(e.name) ? [] : e.isDirectory() ? walk(new URL(e.name + "/", d), vor + e.name + "/") : e.name.endsWith(".html") ? [vor + e.name] : []);
-  for (const p of walk(root)) assert.ok(!/principesse/i.test(lies(p)), `${p} verweist auf Principesse`);
+  // Ausnahme seit 13. November 2026 (Christian: «Erst principessa als website referenz»): die Leistung «Webdesign» im Neubau nennt principesse.ch als Referenz
+  const referenz = new Set(["b/angebot/webdesign/index.html", "b/en/angebot/webdesign/index.html", "docs/cockpit/cockpit.html"]);   // das Cockpit liegt nicht auf dem Webspace
+  for (const p of walk(root)) if (!referenz.has(p)) assert.ok(!/principesse/i.test(lies(p)), `${p} verweist auf Principesse`);
   assert.ok(!/(src|href)="https?:\/\/(?!ornament-cloud\.goatcounter)/.test(html));
   const marke = html.match(/<script type="module" src="app\.js\?v=(\d+)"><\/script>/)?.[1];
   assert.ok(marke);

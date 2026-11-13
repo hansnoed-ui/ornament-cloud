@@ -13,9 +13,9 @@ export const SEITE = {
   // (Hören und Sehen, Spielen und Denken, Beauftragen); die vier Leistungen stehen als eigener Abschnitt «Beauftragen» weiter unten.
   // Vom 20. Oktober bis 13. November 2026: titel «Gestalten, vermitteln, kuratieren.», die vier Leistungen zuoberst.
   titel: "Theorie, die man anfassen kann.",
-  lead: "Musik, Bilder, Apps und ein Zettelkasten von Christian Strickler. Und vier Leistungen für alle, die so etwas für sich brauchen.",
+  lead: "Musik, Bilder, Apps und ein Zettelkasten von Christian Strickler. Und fünf Leistungen für alle, die so etwas für sich brauchen.",
   claimAlt: "Theorie, die man anfassen kann.",
-  beschreibung: "Theorie, die man anfassen kann: Musik, Werke, sieben Apps, 49 Zettel und vier Prüfraster von Christian Strickler. Dazu Webdesign, Vermittlung, Kuration und Produkte.",
+  beschreibung: "Theorie, die man anfassen kann: Fotografie, Musik, sieben Apps und 49 Zettel von Christian Strickler. Dazu Webdesign, Vermittlung, Kuration, Fotografie und Produkte.",
   person: { name: "Christian Strickler", ort: "zwischen Zürich, Basel und Aarau", strasse: "Rheingasse 8b", plz: "CH-5466 Kaiserstuhl", mail: "hansnoed@gmail.com" },
   sprache: "de-CH",
 };
@@ -164,7 +164,12 @@ export const ANGEBOTE = [
     ablauf: ["Ein Gespräch über das, was die Seite oder die App tun soll, und für wen.", "Ein Entwurf im Browser, zum Anfassen, nicht als Bild; bei Apps ein lauffähiger Prototyp innert Tagen.", "Bau, Texte, Bilder, Veröffentlichung auf der eigenen Adresse; danach bleibt alles in deiner Hand."],
     // Zum Anschauen (13. November 2026, Christian: «Erst principessa als website referenz und gamma»). Am 20. Oktober 2026 war der Abschnitt
     // herausgenommen worden, bis Referenzen von Christian kommen; das sind sie. Bilder: tools/b-schaubilder.mjs.
+    // Kaiserbühne seit 13. November 2026 (Christian: «nimm zu den referenzen website auch noch kaiserbuehne.ch auf, die habe ich auch gemacht»). Die Seite war aus
+    // der Cloud-Sitzung nicht erreichbar, darum kein Bildschirmfoto: das Bild ist eine von Christians Bühnenfotografien für das Haus (src/b/fotos.mjs).
     schau: [
+      { name: "Kaiserbühne", von: "Website und Bühnenfotografie", jahr: "2026", url: "https://kaiserbuehne.ch/", adresse: "kaiserbuehne.ch", bild: "b/bilder/fotografie/buehne-3-1600.jpg", mass: [1600, 1067],
+        bildAlt: "Bühnenfotografie für die Kaiserbühne, schwarzweiss: ein Mann kauert in einem grossen Rad aus Metallringen, daneben zwei weitere Personen",
+        text: "Die Website der Kaiserbühne. Auch die Bühnenfotografien für das Haus stammen von Christian Strickler; das Bild zeigt eine davon." },
       { name: "Principesse", von: "für Katharina Strickler", jahr: "2026", url: "https://principesse.ch/", adresse: "principesse.ch", bild: "b/bilder/schau/principesse.jpg",
         bildAlt: "Principesse: eine gezeichnete Prinzessin mit Krone und ein Hund mit Krone auf einer Wiese, im Rahmen eines kleinen Films",
         text: "Ein One-Pager, der mit einem kleinen Film beginnt: Die Principessa löst sich aus ihrem gezeichneten Bild, springt heraus und fliegt beim Scrollen durch die Seite. Am Ende eine Bestellkarte mit Auswahl und Vorschau." },
@@ -190,11 +195,24 @@ export const ANGEBOTE = [
     text: "Vom Konzept bis zur Finissage: Werke auswählen, Räume lesen, Texte schreiben, mit Künstler:innen und Hausherren verhandeln, die Hängung bauen, die Vermittlung mitdenken. Zuletzt «Supervisionen», sechs Monate im Oberen Turm Kaiserstuhl mit neun Künstler:innen, für Pro Kaiserstuhl und die Gemeinde Zurzach (2026), davor ein Jahr lang Werke von Klient:innen im Behmen in Aarau, für das BKS Aargau und die Stiftung FARO (2024).",
     fuer: "Für Gemeinden, Kunsträume, Galerien, Stiftungen, Firmen mit Räumen und Künstler:innen, die eine Ausstellung nicht allein stemmen wollen.",
     ablauf: ["Ein Rundgang durch den Raum, mit dem Thema im Kopf.", "Konzept, Auswahl und Ablauf als Papier, Budget und Termine dazu.", "Aufbau, Eröffnung, Begleitprogramm, Abbau."],
-    referenzen: [["2026", "«Supervisionen», Oberer Turm, Kaiserstuhl: sechs Monate, neun Künstler:innen; für Pro Kaiserstuhl, Gemeinde Zurzach"], ["2024", "Ausstellung mit Werken von Klient:innen, Behmen, Aarau: ein Jahr; für das BKS Aargau und die Stiftung FARO"]],
+    // Website von «Supervisionen» seit 13. November 2026 genannt (Christian: «inklusive website www.oberer-turm.ch»)
+    referenzen: [["2026", "«Supervisionen», Oberer Turm, Kaiserstuhl: sechs Monate, neun Künstler:innen; für Pro Kaiserstuhl, Gemeinde Zurzach. Ausstellung und Website.", "https://www.oberer-turm.ch/", "oberer-turm.ch"], ["2024", "Ausstellung mit Werken von Klient:innen, Behmen, Aarau: ein Jahr; für das BKS Aargau und die Stiftung FARO"]],
     dialog: [
       { frage: "Welcher Raum?", wahlen: ["ein Haus mit Geschichte", "ein White Cube", "ein öffentlicher Ort", "ein Büro oder Betrieb"] },
       { frage: "Wer stellt aus?", wahlen: ["eine Person", "eine Gruppe", "eine Sammlung", "offen"] },
       { frage: "Wann?", wahlen: ["in drei Monaten", "in einem Jahr", "nächstes Jahr", "offen"] },
+    ] },
+  // Fünfte Leistung seit 13. November 2026 (Christian: «Nimm noch etwas zum Thema Fotographie: Angebote/Werke»). Der Text ist von Claude nach den
+  // geschickten Bildern geschrieben (Bühne, Raum, Landschaft) und knapp gehalten: was genau angeboten wird, zu welchem Preis und für wen, bestätigt Christian.
+  { slug: "fotografie", name: "Fotografie", kurz: "Bühne, Ausstellung, Raum und Landschaft im Bild.",
+    text: "Fotografie von Bühne und Ausstellung, von Räumen, Orten und Landschaften: eine Probe, ein Abend, eine Hängung, ein Haus von innen, ein See. In Farbe oder Schwarzweiss, für Website, Presse und Druck. Die Bühnenbilder hier sind für die Kaiserbühne entstanden.",
+    fuer: "Für Theater, Kunsträume, Künstler:innen, Häuser und für alle, die einen Abend oder einen Ort festhalten wollen.",
+    ablauf: ["Ein Gespräch über das, was fotografiert werden soll, wo und wofür.", "Die Aufnahme vor Ort: bei der Probe, am Abend, im Raum.", "Eine Auswahl bearbeiteter Bilder, in den Grössen, die du brauchst."],
+    fotos: "buehne", ohneJev: true,   // noch nicht in der jev-Tabelle (tools/build-b-jev.mjs)
+    dialog: [
+      { frage: "Was?", wahlen: ["eine Probe oder Aufführung", "eine Ausstellung", "ein Raum oder ein Haus", "etwas anderes"] },
+      { frage: "Wofür?", wahlen: ["Website", "Presse", "Druck", "Archiv"] },
+      { frage: "Wie viel?", wahlen: ["ein Termin", "ein Tag", "eine Reihe", "offen"] },
     ] },
   { slug: "produkte", name: "Produkte", kurz: "Werke, Prints, Editionen und Auftragsarbeiten, klassisch und digital.",
     text: "Werke auf Papier und Leinwand, Prints in kleinen Auflagen, Installationen mit Bild, Bewegung und Ton, Arbeiten für Räume und Bildschirme. Dazu Editionen aus dem Zettelkasten: das Buch, das Kartenset, das Poster und die Notizbücher, gedruckt auf Bestellung. Bestellt wird per Mail, bezahlt per QR-Rechnung oder TWINT; Versand in der Schweiz inbegriffen. Auftragsarbeiten für Häuser, Firmen und Private nach Gespräch.",
@@ -235,7 +253,7 @@ export const PRODUKTE = [
 export const UEBER = {
   text: [
     "Christian Strickler lebt und arbeitet zwischen Zürich, Basel und Aarau. Er macht Theorie zu Dingen, die man anfassen kann: einen Zettelkasten, ein Rad, das Künstler:innen und Theoretiker:innen zusammenbringt, Farbräder mit Übungen, Maschinen, die aus Fotos und Tönen Bilder machen, und Prüfraster, mit denen sich Theorien, Texte und Körperereignisse befragen lassen.",
-    "Vier Leistungen: Webdesign, Vermittlung und Beratung, kuratorische Projekte und Produkte. Er gestaltet und baut Websites und Apps, leitet Seminare und Projekte mit Schulen und Teams, berät Institutionen, die Kunst zu einem Teil ihrer Arbeit machen wollen, kuratiert Ausstellungen und verkauft Werke, Prints und Editionen.",
+    "Fünf Leistungen: Webdesign, Vermittlung und Beratung, kuratorische Projekte, Fotografie und Produkte. Er gestaltet und baut Websites und Apps, leitet Seminare und Projekte mit Schulen und Teams, berät Institutionen, die Kunst zu einem Teil ihrer Arbeit machen wollen, kuratiert Ausstellungen, fotografiert Bühnen, Räume und Orte und verkauft Werke, Prints und Editionen.",
     "Alles auf dieser Seite läuft ohne Dienste von aussen: keine Cookies, keine Werbung, keine Tracker. Besuche werden ohne Cookies gezählt. Die Apps rechnen auf deinem Gerät; deine Bilder verlassen es nicht.",
   ],
   hintergrund: {
@@ -246,7 +264,7 @@ export const UEBER = {
       "Kuratorisch zuletzt: ein Jahr lang Werke von Klient:innen im Behmen in Aarau, für das BKS Aargau und die Stiftung FARO (2024), und «Supervisionen» im Oberen Turm Kaiserstuhl, sechs Monate, neun Künstler:innen, für Pro Kaiserstuhl und die Gemeinde Zurzach (2026).",
     ],
   },
-  liste: { titel: "Wenn etwas fertig ist, schreibe ich", text: "Kein Rhythmus und keine Ankündigungen. Eine kurze Mail, wenn ein Raster, eine App oder ein Text so weit ist, dass man damit arbeiten kann.", mailto: "mailto:hansnoed@gmail.com?subject=Liste&body=Bitte%20nimm%20mich%20in%20die%20Liste%20auf." },
+  liste: { titel: "Wenn etwas fertig ist, schreibe ich", text: "Kein Rhythmus und keine Ankündigungen. Eine kurze Mail, wenn eine App, ein Werk oder ein Text so weit ist, dass man damit arbeiten kann.", mailto: "mailto:hansnoed@gmail.com?subject=Liste&body=Bitte%20nimm%20mich%20in%20die%20Liste%20auf." },
 };
 
 /** Stichworte für Suchmaschinen je Seite (Deutschschweiz zuerst). */
