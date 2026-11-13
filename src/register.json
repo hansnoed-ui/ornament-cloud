@@ -43,7 +43,7 @@
    "status": "oeffentlich",
    "adresse": "b/werke/",
    "kurz": "Sieben Fotografien; Ankündigung für Prints, Originale, Arbeiten im Raum und Editionen.",
-   "wartet": "Titel, Ort und Jahr der Fotografien; erstes Werk mit Preis und Zahlungslink."
+   "wartet": "Erstes Werk mit Preis und Zahlungslink."
   },
   {
    "id": "art",
@@ -267,7 +267,7 @@
    "status": "oeffentlich",
    "adresse": "b/angebot/webdesign/",
    "kurz": "",
-   "wartet": "Ab-Preise fehlen; dritte Referenz ausserhalb der eigenen Arbeit wäre gut."
+   "wartet": "Ab-Preise; ein Bildschirmfoto von kaiserbuehne.ch (die Seite war aus der Cloud-Sitzung nicht erreichbar)."
   },
   {
    "id": "angebot-vermittlung",
@@ -286,7 +286,7 @@
    "status": "oeffentlich",
    "adresse": "b/angebot/kuration/",
    "kurz": "",
-   "wartet": "Referenzen und Ab-Preise fehlen."
+   "wartet": "Ab-Preise; ein Bild der Ausstellung «Supervisionen» oder der Website oberer-turm.ch."
   },
   {
    "id": "angebot-fotografie",
@@ -296,7 +296,7 @@
    "status": "oeffentlich",
    "adresse": "b/angebot/fotografie/",
    "kurz": "",
-   "wartet": "Text der Leistung bestätigen (von Claude geschrieben); Stück, Ort, Jahr und Einverständnis zu den Bühnenbildern; Ab-Preis."
+   "wartet": "Ab-Preis; Stück und Jahr der Bühnenbilder."
   },
   {
    "id": "angebot-produkte",

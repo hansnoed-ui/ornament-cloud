@@ -116,7 +116,7 @@ export const UI = {
       alle: "Alle Beiträge mit Schlagworten, Autor:innen und Feed: ", neues: "Neues per ", seitenTitel: "Zuletzt – Beiträge aus Social Media", beschreibung: "Ausgewählte Beiträge aus X, Facebook und Instagram, gesichert mit Beleg und Schlagworten.", bildAlt: "Zuletzt: Beiträge aus Social Media",
     },
     ueber: {
-      small: "Webdesign, Vermittlung und Beratung, kuratorische Projekte und Produkte. Lebt und arbeitet zwischen Zürich, Basel und Aarau.",
+      bildAltPortraet: "Christian Strickler mit Mütze und Kamera in den Händen, hinter ihm Bilder an einer weissen Wand; schwarzweiss", small: "Webdesign, Vermittlung und Beratung, kuratorische Projekte und Produkte. Lebt und arbeitet zwischen Zürich, Basel und Aarau.",
       austragen: "Der Link öffnet eine fertige Mail. Austragen mit einer Antwort; die Adresse bleibt bei mir.", impressum: "Impressum, AGB und Datenschutz",
       teilenText: "Kunst, Design, Webdesign, Therapie und Theorie.", seitenTitel: (name) => `Über ${name}`,
       beschreibung: (name) => `${name}, zwischen Zürich, Basel und Aarau: Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte. Hintergrund, Kontakt und Liste.`,
@@ -233,7 +233,7 @@ export const UI = {
       alle: "All posts with keywords, authors and feed: ", neues: "New posts via ", seitenTitel: "Latest – posts from social media", beschreibung: "Selected posts from X, Facebook and Instagram, kept with source and keywords.", bildAlt: "Latest: posts from social media",
     },
     ueber: {
-      small: "Web design, education and consulting, curatorial projects and products. Lives and works between Zurich, Basel and Aarau.",
+      bildAltPortraet: "Christian Strickler wearing a beanie, a camera in his hands, pictures on a white wall behind him; black and white", small: "Web design, education and consulting, curatorial projects and products. Lives and works between Zurich, Basel and Aarau.",
       austragen: "The link opens a ready-made email. Unsubscribe with a reply; the address stays with me.", impressum: "Imprint, terms and privacy",
       teilenText: "Art, design, web design, therapy and theory.", seitenTitel: (name) => `About ${name}`,
       beschreibung: (name) => `${name}, between Zurich, Basel and Aarau: web design, education and consulting, curatorial projects, products. Background, contact and list.`,

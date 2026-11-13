@@ -149,6 +149,9 @@ export const ANGEBOTE = [
     fuer: "For artists, practices, associations, galleries, museums, schools and small businesses that need an address that lasts, or a tool that does not live in an app store.",
     ablauf: ["A conversation about what the site or the app should do, and for whom.", "A draft in the browser, to touch rather than a picture; for apps a working prototype within days.", "Build, texts, images, publication at your own address; afterwards everything stays in your hands."],
     schau: [
+      { name: "Kaiserbühne", von: "website and stage photography", jahr: "2026", url: "https://kaiserbuehne.ch/", adresse: "kaiserbuehne.ch", bild: "b/bilder/fotografie/buehne-3-1600.jpg", mass: [1600, 1067],
+        bildAlt: "Stage photograph for the Kaiserbühne, black and white: a man crouches inside a large wheel of metal rings, two more people beside him",
+        text: "The website of the Kaiserbühne theatre. The stage photographs for the house are by Christian Strickler as well; the image shows one of them. In German." },
       { name: "Principesse", von: "for Katharina Strickler", jahr: "2026", url: "https://principesse.ch/", adresse: "principesse.ch", bild: "b/bilder/schau/principesse.jpg",
         bildAlt: "Principesse: a drawn princess with a crown and a dog with a crown on a meadow, framed as a small film",
         text: "A one-pager that opens with a small film: the principessa leaves her drawn picture, jumps out and flies through the page as you scroll. At the end an order card with choices and a preview. In German." },
@@ -174,14 +177,14 @@ export const ANGEBOTE = [
     text: "From concept to closing: selecting works, reading rooms, writing texts, negotiating with artists and hosts, building the hanging, thinking the education along. Most recently «Supervisionen», six months in the Oberer Turm in Kaiserstuhl with nine artists, for Pro Kaiserstuhl and the municipality of Zurzach (2026), before that a year of clients' works at the Behmen in Aarau, for the BKS Aargau and the FARO Foundation (2024).",
     fuer: "For municipalities, art spaces, galleries, foundations, companies with rooms and artists who do not want to carry an exhibition alone.",
     ablauf: ["A walk through the space, with the theme in mind.", "Concept, selection and programme on paper, budget and dates included.", "Installation, opening, accompanying programme, dismantling."],
-    referenzen: [["2026", "«Supervisionen», Oberer Turm, Kaiserstuhl: six months, nine artists; for Pro Kaiserstuhl, municipality of Zurzach"], ["2024", "Exhibition of clients' works, Behmen, Aarau: one year; for the BKS Aargau and the FARO Foundation"]],
+    referenzen: [["2026", "«Supervisionen», Oberer Turm, Kaiserstuhl: six months, nine artists; for Pro Kaiserstuhl, municipality of Zurzach. Exhibition and website.", "https://www.oberer-turm.ch/", "oberer-turm.ch"], ["2024", "Exhibition of clients' works, Behmen, Aarau: one year; for the BKS Aargau and the FARO Foundation"]],
     dialog: [
       { frage: "Which space?", wahlen: ["a house with a history", "a white cube", "a public place", "an office or a business"] },
       { frage: "Who exhibits?", wahlen: ["one person", "a group", "a collection", "open"] },
       { frage: "When?", wahlen: ["in three months", "in a year", "next year", "open"] },
     ] },
   { slug: "fotografie", name: "Photography", kurz: "Stage, exhibition, space and landscape in pictures.",
-    text: "Photography of stage and exhibition, of spaces, places and landscapes: a rehearsal, an evening, a hanging, a house from the inside, a lake. In colour or black and white, for website, press and print.",
+    text: "Photography of stage and exhibition, of spaces, places and landscapes: a rehearsal, an evening, a hanging, a house from the inside, a lake. In colour or black and white, for website, press and print. The stage photographs shown here were made for the Kaiserbühne theatre.",
     fuer: "For theatres, art spaces, artists, institutions and anyone who wants to keep an evening or a place.",
     ablauf: ["A conversation about what is to be photographed, where and what for.", "The shoot on site: at the rehearsal, on the evening, in the space.", "A selection of edited images, in the sizes you need."],
     fotos: "buehne", ohneJev: true,   // noch nicht in der jev-Tabelle (tools/build-b-jev.mjs)

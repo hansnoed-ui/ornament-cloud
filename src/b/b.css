@@ -694,3 +694,8 @@ body[data-bereich="sehen"] main > :first-child + .abschnitt { padding-top: clamp
 body[data-bereich="sehen"] .schau-film { margin-bottom: 0; }
 .schau-film h2 { font-weight: 500; font-size: clamp(2.2rem, 6vw, 4.2rem); letter-spacing: -0.035em; line-height: 0.98; }
 .schau-film:hover h2 { color: var(--faden); }
+
+/* Porträt auf «Über» und der Link einer Referenz (13. November 2026) */
+.ueber-bild { margin: 28px 0 0; max-width: 640px; }
+.ueber-bild img { display: block; width: 100%; height: auto; }
+.ref-link { white-space: nowrap; color: var(--faden); margin-left: 0.3em; }

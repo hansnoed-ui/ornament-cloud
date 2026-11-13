@@ -74,7 +74,7 @@ test("b/: nichts von aussen – keine Skripte, Stile, Bilder oder Schriften von 
   for (const p of seiten) {
     // Ausnahme seit 13. November 2026: ein Schaubild darf als Link auf eine fremde Seite führen (Referenz principesse.ch, in neuem Fenster). Das ist ein
     // Weg hinaus, den der Besucher wählt; geladen wird von dort weiterhin nichts (das Bild liegt unter b/bilder/schau/).
-    const html = lies(`b/${p}index.html`).replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g, "").replace(/<a class="schau-stueck" href="https:\/\/[^"]+" target="_blank" rel="noopener">/g, '<a class="schau-stueck">');
+    const html = lies(`b/${p}index.html`).replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g, "").replace(/<a class="(schau-stueck|ref-link)" href="https:\/\/[^"]+" target="_blank" rel="noopener">/g, '<a class="$1">');
     for (const m of html.matchAll(/(?:src|href)="(https?:\/\/[^"]+)"/g)) assert.ok(/^https:\/\/ornament\.cloud\//.test(m[1]), `${p}: ${m[1]}`);
     assert.doesNotMatch(html, /fonts\.googleapis|cdn\.|unpkg|jsdelivr/, `${p}: keine CDNs`);
   }
@@ -415,7 +415,7 @@ test("Schaubilder: auf der Startseite Das Dritte Rad und OMNA COLOR vor der Musi
   for (const datei of ["b/angebot/webdesign/index.html", "b/en/angebot/webdesign/index.html"]) {
     const html = lies(datei), schau = html.match(/<section class="referenzen schau-abschnitt"[\s\S]*?<\/section>/)?.[0];
     assert.ok(schau, `${datei}: Abschnitt zum Anschauen`);
-    assert.deepEqual([...schau.matchAll(/<a class="schau-stueck" href="([^"]+)" target="_blank" rel="noopener"/g)].map((m) => m[1]), ["https://principesse.ch/", "/gamma/"], `${datei}: Principesse und Gamma, in neuem Fenster`);
+    assert.deepEqual([...schau.matchAll(/<a class="schau-stueck" href="([^"]+)" target="_blank" rel="noopener"/g)].map((m) => m[1]), ["https://kaiserbuehne.ch/", "https://principesse.ch/", "/gamma/"], `${datei}: Kaiserbühne, Principesse und Gamma, in neuem Fenster`);
     assert.ok(schau.includes("Katharina Strickler"), `${datei}: für wen die Seite gebaut ist`);
   }
   assert.ok(statSync(new URL("b/bilder/schau/animations.mp4", root)).size < 2_500_000, "der Film bleibt unter 2,5 MB");
@@ -496,4 +496,12 @@ test("Prüfraster nicht öffentlich: erreichbar unter b/raster/, aber gesperrt, 
   assert.ok(!/Prüfraster|test grid|\/raster\//i.test(lies("b/index.html") + lies("b/en/index.html")), "Startseite: kein Wort mehr von den Prüfrastern");
   assert.match(lies("masterprompts/index.html"), /<meta name="robots" content="noindex">/);
   assert.ok(!sitemap.includes("/masterprompts/"), "Masterprompts nicht in der Sitemap");
+});
+
+test("Referenzen und Porträt (13. November 2026): Kuration nennt die Website von «Supervisionen», die Bühnenbilder tragen «für die Kaiserbühne», «Über» zeigt das Porträt", () => {
+  for (const B of ["b/", "b/en/"]) {
+    assert.ok(lies(`${B}angebot/kuration/index.html`).includes('<a class="ref-link" href="https://www.oberer-turm.ch/" target="_blank" rel="noopener">oberer-turm.ch ↗</a>'), `${B}: Supervisionen mit Website`);
+    assert.equal((lies(`${B}werke/index.html`).match(/Kaiserbühne<\/figcaption>/g) || []).length, 3, `${B}: drei Bühnenbilder mit Angabe`);
+    assert.match(lies(`${B}ueber/index.html`), /<figure class="ueber-bild"><img src="\/b\/bilder\/ueber\/christian-strickler\.jpg\?v=[0-9a-f]{10}" alt="Christian Strickler [^"]{30,}" width="1080" height="720">/, `${B}: Porträt mit Beschreibung`);
+  }
 });

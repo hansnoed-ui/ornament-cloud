@@ -39,7 +39,7 @@ const HAUPT = ["sehen/", "zettel/", "apps/", "angebot/"];
 // Fäden, Dialog und Sitemap. Wer die Adresse kennt, erreicht sie; ein Passwortschutz wäre ein eigener Schritt auf dem Webspace.
 // Wieder öffentlich: RASTER_OEFFENTLICH = true.
 const RASTER_OEFFENTLICH = false;
-const V = 51;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 52;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 const INHALT = { de: DE, en: EN };
@@ -371,7 +371,7 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
       const bild = `<img src="${attr(mitMarke(`b/bilder/fotografie/${f.slug}-800.jpg`))}"${quadrat ? "" : ` srcset="${attr(mitMarke(`b/bilder/fotografie/${f.slug}-800.jpg`))} 800w, ${attr(mitMarke(`b/bilder/fotografie/${f.slug}-1600.jpg`))} 1600w" sizes="(max-width: 760px) 100vw, 360px"`} alt="${attr(f.alt[sprache])}" width="${Math.round(b * k)}" height="${Math.round(h * k)}" loading="lazy">`;
       return quadrat
         ? `<a class="foto" href="${B}werke/#foto-${f.slug}" title="${attr(t)}">${bild}</a>`
-        : `<figure class="foto" id="foto-${f.slug}"><a href="${attr(mitMarke(`b/bilder/fotografie/${f.slug}-1600.jpg`))}" target="_blank" rel="noopener" title="${attr(T.werke.fotoGross(t))}">${bild}</a><figcaption>${esc(t)}</figcaption></figure>`;
+        : `<figure class="foto" id="foto-${f.slug}"><a href="${attr(mitMarke(`b/bilder/fotografie/${f.slug}-1600.jpg`))}" target="_blank" rel="noopener" title="${attr(T.werke.fotoGross(t))}">${bild}</a><figcaption>${esc(t)}${f.fuer ? `, ${esc(f.fuer[sprache])}` : ""}</figcaption></figure>`;
     }).join("")}</div>`;
   }
 
@@ -385,7 +385,7 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
   function schauStueck(s) {
     const aussen = /^https?:/.test(s.ziel || s.url || ""), ziel = s.url || (s.ziel.startsWith("/") ? s.ziel : `${B}${s.ziel}`);
     const neu = aussen || s.neuesFenster || s.url;
-    return `<a class="schau-stueck" href="${attr(ziel)}"${neu ? ' target="_blank" rel="noopener"' : ""}><span class="bild"><img src="${attr(mitMarke(s.bild))}" alt="${attr(s.bildAlt)}" width="1280" height="800" loading="lazy"></span><h3>${esc(s.name)}${s.von ? `<small>${esc(s.von)}, ${esc(s.jahr)}</small>` : ""}</h3><p>${esc(s.kurz || s.text)}</p><span class="weiter">${esc(s.adresse || s.weiter)}${neu ? " ↗" : ""}</span></a>`;
+    return `<a class="schau-stueck" href="${attr(ziel)}"${neu ? ' target="_blank" rel="noopener"' : ""}><span class="bild"><img src="${attr(mitMarke(s.bild))}" alt="${attr(s.bildAlt)}" width="${s.mass?.[0] || 1280}" height="${s.mass?.[1] || 800}" loading="lazy"></span><h3>${esc(s.name)}${s.von ? `<small>${esc(s.von)}, ${esc(s.jahr)}</small>` : ""}</h3><p>${esc(s.kurz || s.text)}</p><span class="weiter">${esc(s.adresse || s.weiter)}${neu ? " ↗" : ""}</span></a>`;
   }
 
   /** Eine Musik-Veröffentlichung als Platte: Cover, Name, Titel, Art, Tracks mit Dauer, «Anhören» führt auf die Hörseite listen/<slug>/ (seit 13. November 2026) */
@@ -764,7 +764,7 @@ ${faeden([...zs.map((z) => fZettel(z)), r.slug === "nebeneinander-nacheinander" 
 </div></section>
 ${a.fotos ? `<section class="referenzen schau-abschnitt" aria-labelledby="schau-titel"><div class="spalte"><h2 id="schau-titel">${esc(T.angebot.schau)}</h2>${fotoGalerie(FOTOS.filter((f) => f.gruppe === a.fotos))}<p class="klein" style="margin-top:14px"><a href="${B}werke/#fotografie">${esc(T.start.wasKommt)}</a></p></div></section>` : ""}
 ${a.schau ? `<section class="referenzen schau-abschnitt" aria-labelledby="schau-titel"><div class="spalte"><h2 id="schau-titel">${esc(T.angebot.schau)}</h2><div class="schau">${a.schau.map(schauStueck).join("")}</div></div></section>` : ""}
-${a.referenzen ? `<section class="referenzen" aria-labelledby="ref-titel"><div class="spalte"><h2 id="ref-titel">${esc(T.angebot.referenzen)}</h2><ol class="jahre">${a.referenzen.map(([j, t]) => `<li><span class="jahr">${esc(j)}</span><span>${esc(t)}</span></li>`).join("")}</ol></div></section>` : ""}
+${a.referenzen ? `<section class="referenzen" aria-labelledby="ref-titel"><div class="spalte"><h2 id="ref-titel">${esc(T.angebot.referenzen)}</h2><ol class="jahre">${a.referenzen.map(([j, t, url, adresse]) => `<li><span class="jahr">${esc(j)}</span><span>${esc(t)}${url ? ` <a class="ref-link" href="${attr(url)}" target="_blank" rel="noopener">${esc(adresse)} ↗</a>` : ""}</span></li>`).join("")}</ol></div></section>` : ""}
 <section class="briefing" id="briefing" aria-labelledby="briefing-titel"><div class="spalte">
   <h2 id="briefing-titel">${esc(T.angebot.dein)}</h2>
   <p>${esc(T.angebot.deinText)}</p>
@@ -830,6 +830,8 @@ ${faeden([fZettel(zettel[40]), fZettel(zettel[36]), fApp(appVon("orna"))])}`;
 <section class="stueck-kopf"><div class="spalte sieben">
   <div class="s-4">
     <h1 class="titel">${esc(SEITE.person.name)}<small>${esc(T.ueber.small)}</small></h1>
+    <!-- Porträt seit 13. November 2026 (von Christian geschickt: «ja das bin ich, also in "über"») -->
+    <figure class="ueber-bild"><img src="${attr(mitMarke("b/bilder/ueber/christian-strickler.jpg"))}" alt="${attr(T.ueber.bildAltPortraet)}" width="1080" height="720"></figure>
     <div class="ueber-text" style="margin-top:32px">${UEBER.text.map((t) => `<p>${esc(t)}</p>`).join("")}</div>
     <div class="hintergrund" id="hintergrund">
       <h2>${esc(UEBER.hintergrund.titel)}</h2>
