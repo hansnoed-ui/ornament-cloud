@@ -621,7 +621,8 @@ body.buehne-seite { height: 100dvh; display: grid; grid-template-rows: 48px minm
 @media (max-width: 900px) { .angebote.tueren { grid-template-columns: minmax(0, 1fr); } }
 html { scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
-:is(#hoeren-sehen, #spielen-denken, #beauftragen) { scroll-margin-top: 8px; }
+/* Ein Tipp auf eine Tür landet genau am Farbwechsel (13. November 2026, Christian: «scrollt es nicht gaaanz exakt»; vorher 8 px Rand, der als Streifen der vorigen Farbe stehen blieb) */
+:is(#hoeren-sehen, #spielen-denken, #beauftragen) { scroll-margin-top: -1px; }   /* -1 px: auch bei Bruchteilen von Pixeln keine Haarlinie der vorigen Farbe */
 
 .platte { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 24px 48px; align-items: center; padding-bottom: 8px; }
 .platte + .platte { margin-top: 40px; padding-top: 40px; border-top: 1px solid var(--linie); }
