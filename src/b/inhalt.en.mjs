@@ -156,7 +156,7 @@ export const ANGEBOTE = [
         bildAlt: "Website of the exhibition «Supervisionen»: yellow header with the title and «Werkdialog», below it the invitation to an opening with the picture of a reclining figure",
         text: "The website for the exhibition in the Oberer Turm Kaiserstuhl: programme, openings, reviews and the tower as an exhibition space. Built plainly so that it can be updated quickly over six months." },
       { name: "Principesse", von: "for Katharina Strickler", jahr: "2026", url: "https://principesse.ch/", adresse: "principesse.ch", bild: "b/bilder/schau/principesse.jpg", film: "b/bilder/schau/principesse.mp4",
-        bildAlt: "Principesse on film: three drawn princesses with crowns and a dog with a crown float as figures in space through sky, water and night while the page scrolls down",
+        bildAlt: "Principesse on film: three drawn princesses with crowns and a dog with a crown float as figures in space before a night sky with moon and stars",
         text: "A one-pager that opens with a small film: the principessa leaves her drawn picture, jumps out and flies through the page as you scroll. At the end an order card with choices and a preview. In German." },
       { name: "Das Dritte Rad", von: "website as application", jahr: "2026", url: "/beta/drittes-rad/", adresse: "ornament.cloud/beta/drittes-rad", bild: "b/bilder/schau/drittes-rad.jpg", film: "b/bilder/schau/drittes-rad.mp4",
         bildAlt: "Das Dritte Rad on film: the sign of the wheel slowly builds up, a colour circle turns across the whole surface, then the application with its three rings appears",
