@@ -149,9 +149,9 @@ export const ANGEBOTE = [
     fuer: "For artists, practices, associations, galleries, museums, schools and small businesses that need an address that lasts, or a tool that does not live in an app store.",
     ablauf: ["A conversation about what the site or the app should do, and for whom.", "A draft in the browser, to touch rather than a picture; for apps a working prototype within days.", "Build, texts, images, publication at your own address; afterwards everything stays in your hands."],
     schau: [
-      { name: "Kaiserbühne", von: "website and stage photography", jahr: "2026", url: "https://kaiserbuehne.ch/", adresse: "kaiserbuehne.ch", bild: "b/bilder/fotografie/buehne-3-1600.jpg", mass: [1600, 1067],
-        bildAlt: "Stage photograph for the Kaiserbühne, black and white: a man crouches inside a large wheel of metal rings, two more people beside him",
-        text: "The website of the Kaiserbühne theatre. The stage photographs for the house are by Christian Strickler as well; the image shows one of them. In German." },
+      { name: "Kaiserbühne", von: "website and stage photography", jahr: "2026", url: "https://kaiserbuehne.ch/", adresse: "kaiserbuehne.ch", bild: "b/bilder/schau/kaiserbuehne.jpg", mass: [1165, 728],
+        bildAlt: "Website of the Kaiserbühne: the programme of the 2026/27 season as coloured tiles with the titles of the plays, above it the header with news, tickets, programme, about and rental",
+        text: "The website of the Kaiserbühne theatre with the programme as coloured tiles. The stage photographs for the house are by Christian Strickler as well. In German." },
       { name: "Principesse", von: "for Katharina Strickler", jahr: "2026", url: "https://principesse.ch/", adresse: "principesse.ch", bild: "b/bilder/schau/principesse.jpg",
         bildAlt: "Principesse: a drawn princess with a crown and a dog with a crown on a meadow, framed as a small film",
         text: "A one-pager that opens with a small film: the principessa leaves her drawn picture, jumps out and flies through the page as you scroll. At the end an order card with choices and a preview. In German." },
