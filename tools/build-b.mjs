@@ -29,7 +29,7 @@ const UNTER_UEBER = ["ueber/", "werke/", "zuletzt/"];
 // im Menü, sondern auf der Seite «Atelier» (b/atelier/, aus src/register.json); «Beta» gibt es im Menü nicht mehr, «Raster» und «Angebot» stehen
 // wieder für sich. Das ersetzt die Wünsche vom 5. und 8. November 2026 (Animations zuvorderst, Multiverse im Hauptmenü, Raster unter Beta).
 const HAUPT = ["hoeren/", "zettel/", "apps/", "raster/", "angebot/"];
-const V = 47;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 48;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 const INHALT = { de: DE, en: EN };
@@ -421,21 +421,11 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
   <script type="application/json" id="zettel-daten">${JSON.stringify(daten).replace(/</g, "\\u003c")}</script>
 </section>
 
-<section class="dialog kapitel kapitel-rot" aria-labelledby="dialog-titel">
-  <div class="spalte">
-    <h2 id="dialog-titel">${esc(DIALOG.frage)}</h2>
-    <div class="chips" role="radiogroup" aria-label="${attr(DIALOG.frage)}">
-      ${DIALOG.wahlen.map((w) => `<input type="radio" name="mit" id="mit-${w.id}"><label class="chip" for="mit-${w.id}">${esc(w.wort)}</label>`).join("\n      ")}
-    </div>
-    ${DIALOG.wahlen.map((w) => `<div class="weg weg-${w.id}"><p>${esc(w.satz)}</p><ol>${w.weg.map(([h, t]) => `<li><a href="/${attr(h)}">${esc(t)}</a></li>`).join("")}</ol></div>`).join("\n    ")}
-  </div>
-</section>
-
 <section class="abschnitt kapitel kapitel-senf" aria-labelledby="spielen-titel">
   <div class="spalte">
     <div class="abschnitt-kopf"><h2 id="spielen-titel">${zeichen("spielen")}${esc(T.start.spielen)}</h2><p>${esc(T.start.spielenText)}</p><a class="weiter" href="${B}apps/">${esc(T.start.alleApps)}</a></div>
     <div class="reihe zeilen">${APPS.map(appKachel).join("")}</div>
-    <p class="auch klein">${esc(T.start.auch)} ${register.arbeiten.filter((e) => e.atelier && e.tuer === "spielen-denken").map((e) => `<a href="/${attr(e.adresse)}" target="_blank" rel="noopener">${esc(e.name)}</a>`).join(" · ")} · <a href="${B}atelier/">${esc(T.start.atelier)}</a></p>
+    <p class="auch klein">${esc(T.start.auch)} ${register.arbeiten.filter((e) => e.atelier && e.tuer === "spielen-denken" && ![ZEIGEN_FILM.slug, ...ZEIGEN.map((z) => z.slug)].includes(e.id)).map((e) => `<a href="/${attr(e.adresse)}" target="_blank" rel="noopener">${esc(e.name)}</a>`).join(" · ")} · <a href="${B}atelier/">${esc(T.start.atelier)}</a></p>
   </div>
 </section>
 
@@ -444,6 +434,17 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
   <div class="spalte">
     <div class="abschnitt-kopf"><h2 id="raster-titel">${zeichen("raster")}${esc(T.start.raster)}</h2><p>${esc(T.start.rasterText)}</p><a class="weiter" href="${B}raster/">${esc(T.start.alleRaster)}</a></div>
     <ul class="liste-linien">${RASTER.map((r) => `<li><a href="${B}raster/${r.slug}/"><span class="n">${zeichen(r.slug)}</span><span class="name">${esc(r.name)}</span><span class="pfeil">${esc(r.stand)}</span><span class="kurz">${esc(r.kurz)}</span></a></li>`).join("")}</ul>
+  </div>
+</section>
+
+<!-- Der Dialog steht seit 13. November 2026 hier, vor den Leistungen (vorher zwischen Zettelkasten und Spielen): er ist ein Wegweiser für alle, die nach dem Schauen noch nicht wissen, wohin -->
+<section class="dialog kapitel kapitel-rot" aria-labelledby="dialog-titel">
+  <div class="spalte">
+    <h2 id="dialog-titel">${esc(DIALOG.frage)}</h2>
+    <div class="chips" role="radiogroup" aria-label="${attr(DIALOG.frage)}">
+      ${DIALOG.wahlen.map((w) => `<input type="radio" name="mit" id="mit-${w.id}"><label class="chip" for="mit-${w.id}">${esc(w.wort)}</label>`).join("\n      ")}
+    </div>
+    ${DIALOG.wahlen.map((w) => `<div class="weg weg-${w.id}"><p>${esc(w.satz)}</p><ol>${w.weg.map(([h, t]) => `<li><a href="/${attr(h)}">${esc(t)}</a></li>`).join("")}</ol></div>`).join("\n    ")}
   </div>
 </section>
 

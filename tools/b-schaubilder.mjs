@@ -24,8 +24,10 @@ const diene = (wurzel) => new Promise((ok) => { const s = createServer((req, res
 // warten: Zeit, bis die Seite ihr Bild hat; rollen: so weit nach unten (Principesse: der Film läuft beim Rollen bis zum Spaziergang)
 export const SCHAUBILDER = [
   { name: "gamma", pfad: "gamma/", warten: 4000 },
-  { name: "drittes-rad", pfad: "beta/drittes-rad/", warten: 4000 },
-  { name: "omna-color", pfad: "alpha/omna-color/?sprache=de", warten: 4000 },
+  // Das Dritte Rad und OMNA COLOR näher (13. November 2026: im grossen Fenster stand das Rad klein auf viel Fläche): ein Fenster von 800 × 500, 1,6-fach
+  // aufgenommen, gibt dasselbe Mass von 1280 × 800 mit dem Rad gross im Bild
+  { name: "drittes-rad", pfad: "beta/drittes-rad/", warten: 4000, fenster: [800, 500], faktor: 1.6 },
+  { name: "omna-color", pfad: "alpha/omna-color/?sprache=de&b=1", warten: 4000, fenster: [800, 500], faktor: 1.6, rollen: 110 },
   { name: "principesse", fremd: "PRINCIPESSE", pfad: "", warten: 9000, rollen: 900 },
 ];
 
@@ -37,7 +39,8 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     const wurzel = b.fremd ? process.env[b.fremd] && resolve(process.env[b.fremd]) : ROOT;
     if (!wurzel) { console.log(`${b.name}: übersprungen (${b.fremd}=<pfad> fehlt)`); continue; }
     const server = await diene(wurzel);
-    const seite = await browser.newPage({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1, colorScheme: "dark" });
+    const [fb, fh] = b.fenster || [1280, 800];
+    const seite = await browser.newPage({ viewport: { width: fb, height: fh }, deviceScaleFactor: b.faktor || 1, colorScheme: "dark" });
     await seite.goto(`http://localhost:${server.address().port}/${b.pfad}`, { waitUntil: "load" });
     await seite.waitForTimeout(b.warten);
     if (b.rollen) { await seite.evaluate((y) => window.scrollTo(0, y), b.rollen); await seite.waitForTimeout(1500); }
