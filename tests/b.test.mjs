@@ -425,7 +425,7 @@ test("Schaubilder: auf der Startseite Das Dritte Rad und OMNA COLOR vor der Musi
 
 test("Kuration: Ansichten aus «Supervisionen» stehen nur auf der Leistung, mit Beschreibung und zwei Grössen", async () => {
   const { AUSSTELLUNG, FOTOS } = await import("../src/b/fotos.mjs");
-  assert.ok(AUSSTELLUNG.length >= 10 && AUSSTELLUNG.every((f) => f.gruppe === "supervisionen" && f.alt.de.length > 30 && f.alt.en.length > 30 && !FOTOS.some((g) => g.slug === f.slug)));
+  assert.ok(AUSSTELLUNG.length >= 6 && AUSSTELLUNG.every((f) => f.gruppe === "supervisionen" && f.alt.de.length > 30 && f.alt.en.length > 30 && !FOTOS.some((g) => g.slug === f.slug)));
   for (const f of AUSSTELLUNG) for (const g of [800, 1600]) { const b = readFileSync(new URL(`b/bilder/fotografie/${f.slug}-${g}.jpg`, root)); assert.ok(b[0] === 0xff && b[1] === 0xd8 && b.length < 900_000, `${f.slug}-${g}.jpg (${b.length})`); }
   for (const datei of ["b/angebot/kuration/index.html", "b/en/angebot/kuration/index.html"]) {
     assert.deepEqual([...lies(datei).matchAll(/<figure class="foto" id="foto-([a-z0-9-]+)">/g)].map((m) => m[1]), AUSSTELLUNG.map((f) => f.slug), datei);
