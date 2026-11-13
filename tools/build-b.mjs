@@ -39,7 +39,7 @@ const HAUPT = ["sehen/", "zettel/", "apps/", "angebot/"];
 // Fäden, Dialog und Sitemap. Wer die Adresse kennt, erreicht sie; ein Passwortschutz wäre ein eigener Schritt auf dem Webspace.
 // Wieder öffentlich: RASTER_OEFFENTLICH = true.
 const RASTER_OEFFENTLICH = false;
-const V = 53;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 54;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 const INHALT = { de: DE, en: EN };
@@ -386,7 +386,7 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
   function schauStueck(s) {
     const aussen = /^https?:/.test(s.ziel || s.url || ""), ziel = s.url || (s.ziel.startsWith("/") ? s.ziel : `${B}${s.ziel}`);
     const neu = aussen || s.neuesFenster || s.url;
-    return `<a class="schau-stueck" href="${attr(ziel)}"${neu ? ' target="_blank" rel="noopener"' : ""}><span class="bild"><img src="${attr(mitMarke(s.bild))}" alt="${attr(s.bildAlt)}" width="${s.mass?.[0] || 1280}" height="${s.mass?.[1] || 800}" loading="lazy"></span><h3>${esc(s.name)}${s.von ? `<small>${esc(s.von)}, ${esc(s.jahr)}</small>` : ""}</h3><p>${esc(s.kurz || s.text)}</p><span class="weiter">${esc(s.adresse || s.weiter)}${neu ? " ↗" : ""}</span></a>`;
+    return `<a class="schau-stueck" href="${attr(ziel)}"${neu ? ' target="_blank" rel="noopener"' : ""}><span class="bild">${s.film ? `<video class="kachel-film" muted loop playsinline preload="none" poster="${attr(mitMarke(s.bild))}" width="960" height="600" aria-label="${attr(s.bildAlt)}"><source src="${attr(mitMarke(s.film))}" type="video/mp4"></video>` : `<img src="${attr(mitMarke(s.bild))}" alt="${attr(s.bildAlt)}" width="${s.mass?.[0] || 1280}" height="${s.mass?.[1] || 800}" loading="lazy">`}</span><h3>${esc(s.name)}${s.von ? `<small>${esc(s.von)}, ${esc(s.jahr)}</small>` : ""}</h3><p>${esc(s.kurz || s.text)}</p><span class="weiter">${esc(s.adresse || s.weiter)}${neu ? " ↗" : ""}</span></a>`;
   }
 
   /** Eine Musik-Veröffentlichung als Platte: Cover, Name, Titel, Art, Tracks mit Dauer, «Anhören» führt auf die Hörseite listen/<slug>/ (seit 13. November 2026) */
@@ -778,7 +778,7 @@ ${a.referenzen ? `<section class="referenzen" aria-labelledby="ref-titel"><div c
 </div></section>
 <section class="spalte">${teilen({ pfad: `angebot/${a.slug}/`, titel: `${a.name} – ${SEITE.person.name}`, text: a.kurz })}</section>
 ${faeden([...zs.map((z) => fZettel(z)), fApp(appVon(appTop)), fAngebot(ANGEBOTE[(i + 1) % ANGEBOTE.length])])}`;
-    veroeffentliche({ pfad: `angebot/${a.slug}/`, aktiv: "angebot/", titel: `${a.name} – ${a.kurz.replace(/\.$/, "")}`, kopfTitel: T.angebot.kopfTitel(a.name), beschreibung: beschreibung(`${a.kurz} ${a.fuer}`), body,
+    veroeffentliche({ pfad: `angebot/${a.slug}/`, aktiv: "angebot/", titel: `${a.name} – ${a.kurz.replace(/\.$/, "")}`, kopfTitel: T.angebot.kopfTitel(a.name), beschreibung: beschreibung(`${a.kurz} ${a.fuer}`), body, module: a.schau?.some((x) => x.film) ? ["tafeln-leben.js"] : [],
       jsonld: [{ "@context": "https://schema.org", "@type": "Service", name: a.name, description: a.text, serviceType: a.name, areaServed: ["CH", "DE", "AT"], url: `${BASIS}${B}angebot/${a.slug}/`, provider: { "@type": "Person", name: SEITE.person.name, address: { "@type": "PostalAddress", addressLocality: "Kaiserstuhl", addressRegion: "AG", addressCountry: "CH" }, workLocation: ["Zürich", "Basel", "Aarau"] } }] });
   }
 
