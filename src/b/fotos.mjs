@@ -20,8 +20,8 @@ export const FOTOS = [
 ];
 
 // Ansichten der Ausstellung «Supervisionen» (Oberer Turm Kaiserstuhl, 2026). Am 13. November 2026 zuerst zwölf Handybilder, am Abend von Christian
-// ersetzt («Hier bitte die Bilder der Ausstellung ersetzen mit diesen», «mehr folgen»): sieben bearbeitete Aufnahmen. Auf «turm-am-bild» ist eine Frau
-// im Profil zu erkennen; Christian hat das Bild ausdrücklich geschickt. Die Werke an den Wänden stammen von den ausstellenden Künstler:innen; die
+// ersetzt («Hier bitte die Bilder der Ausstellung ersetzen mit diesen», «mehr folgen»): sieben bearbeitete Aufnahmen, dann zwei weitere. Auf «turm-am-bild»
+// und «turm-kreise» sind Besucherinnen zu erkennen; Christian hat die Bilder ausdrücklich geschickt. Die Werke an den Wänden stammen von den ausstellenden Künstler:innen; die
 // Beschreibungen nennen niemanden. Steht auf der Leistung «Kuratorische Projekte» und (die ersten sechs) auf «Sehen», nicht in der Galerie auf «Werke».
 export const AUSSTELLUNG = [
   { slug: "turm-ansicht", gruppe: "supervisionen", titel: { de: "Der Turm", en: "The tower" },
@@ -38,6 +38,10 @@ export const AUSSTELLUNG = [
     alt: { de: "Ein Gemälde aus geschwungenen Farbflächen in Blau, Rot, Gelb und Orange an der rohen Wand, davor ein Tisch mit drei Blättern in Passepartouts", en: "A painting of curved fields of colour in blue, red, yellow and orange on the rough wall, a table with three matted sheets in front" } },
   { slug: "turm-am-bild", gruppe: "supervisionen", titel: { de: "Im Gespräch", en: "In conversation" },
     alt: { de: "Zwei Frauen stehen nah vor einem Gemälde in hellen Blau- und Sandtönen, eine streckt die Hand zur Leinwand aus", en: "Two women stand close to a painting in pale blue and sand tones, one reaching her hand towards the canvas" } },
+  { slug: "turm-stillleben", gruppe: "supervisionen", titel: { de: "Vor den Stillleben", en: "Before the still lifes" },
+    alt: { de: "Eine Frau im gemusterten Kleid steht mit dem Rücken zur Kamera vor vier gerahmten Blättern mit Stillleben aus Krügen, Flaschen und Schalen", en: "A woman in a patterned dress stands with her back to the camera in front of four framed sheets with still lifes of jugs, bottles and bowls" } },
+  { slug: "turm-kreise", gruppe: "supervisionen", titel: { de: "Vor den Kreisen", en: "Before the circles" },
+    alt: { de: "Zwei Frauen im Gespräch vor einer Reihe kleiner gerahmter Blätter mit Kreisen und Scheiben, eine erklärt mit den Händen", en: "Two women in conversation in front of a row of small framed sheets with circles and discs, one explaining with her hands" } },
 ];
 
 // Prints (13. November 2026: Christian schickt acht Motive mit dem einen Wort «Prints»). Stehen auf «Werke» unter «Prints und Originale», ohne Bildzeile:
