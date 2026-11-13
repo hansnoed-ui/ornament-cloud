@@ -22,14 +22,16 @@ export const UI = {
     teilen: "Teilen", karte: "Karte herunterladen", vorschau: "Vorschau mit Bild auf allen Plattformen.",
     buehne: { vollbild: "Vollbild", tabTitel: "In eigenem Tab öffnen", tab: "Eigener Tab", zurueckTitel: "Zurück zur Seite der App", zurueck: "Zurück", feld: "das Feld" },
     start: {
-      // Einstieg «Künstler zuerst» mit drei Türen (13. November 2026, Entscheid von Christian): Hören und Sehen, Spielen und Denken, Beauftragen
+      // Einstieg mit drei Türen (13. November 2026, Entscheid von Christian). Am Abend desselben Tages: «Ich würde die Startseite dennoch mit den
+      // Leistungen beginnen, musik ganz zuletzt.» Darum Beauftragen zuerst; danach «Beauftragen, Spielen und Denken, Sehen und Hören»
+      // (Christian, gleich danach), die Musik am Schluss von «Sehen und Hören».
       tueren: [
-        { id: "hoeren-sehen", name: "Sehen und Hören", kurz: "Räder, Farben, Bilder in Bewegung. Und Musik.", weiter: "Zum Zeigen", ziel: "#hoeren-sehen", zeichen: "sehen" },
-        { id: "spielen-denken", name: "Spielen und Denken", kurz: "Ein Zettelkasten und sieben Apps.", weiter: "Zum Zettelkasten", ziel: "#spielen-denken", zeichen: "spielen" },
         { id: "beauftragen", name: "Beauftragen", kurz: "Webdesign, Vermittlung, Kuration, Fotografie, Produkte.", weiter: "Zu den Leistungen", ziel: "#beauftragen", zeichen: "arbeiten" },
+        { id: "spielen-denken", name: "Spielen und Denken", kurz: "Ein Zettelkasten und sieben Apps.", weiter: "Zum Zettelkasten", ziel: "#spielen-denken", zeichen: "spielen" },
+        { id: "hoeren-sehen", name: "Sehen und Hören", kurz: "Räder, Farben, Fotografien, Bilder in Bewegung. Und Musik.", weiter: "Zum Zeigen", ziel: "#hoeren-sehen", zeichen: "sehen" },
       ],
       tuerenAria: "Die drei Türen",
-      hoeren: "Sehen und Hören", hoerenText: "Was fertig ist und sich zeigen lässt. Zuerst das, was man sieht und dreht, dann die Musik.", alleMusik: "Alle Musik", musik: "Musik", musikText: "the i: die erste Veröffentlichung.",
+      hoeren: "Sehen und Hören", hoerenText: "Was fertig ist und sich zeigen lässt: ein Film, zwei Räder, Fotografien. Ganz zuletzt die Musik.", alleMusik: "Alle Musik", musik: "Musik", musikText: "the i: die erste Veröffentlichung.",
       neu: "Neu", anhoeren: "Anhören", tracks: (n) => `${n} Tracks`, minuten: (m) => `${m} Minuten`,
       beauftragen: "Beauftragen", beauftragenText: "Fünf Leistungen, made in Switzerland. Jede beginnt mit einem Gespräch und einem Briefing.", alleAngebote: "Alle Leistungen",
       auch: "Auch zum Spielen:", atelier: "Atelier",
@@ -142,12 +144,12 @@ export const UI = {
     buehne: { vollbild: "Full screen", tabTitel: "Open in its own tab", tab: "Own tab", zurueckTitel: "Back to the app's page", zurueck: "Back", feld: "the field" },
     start: {
       tueren: [
-        { id: "hoeren-sehen", name: "Look and listen", kurz: "Wheels, colours, images in motion. And music.", weiter: "To the showpieces", ziel: "#hoeren-sehen", zeichen: "sehen" },
-        { id: "spielen-denken", name: "Play and think", kurz: "A Zettelkasten and seven apps.", weiter: "To the Zettelkasten", ziel: "#spielen-denken", zeichen: "spielen" },
         { id: "beauftragen", name: "Commission", kurz: "Web design, education, curating, photography, products.", weiter: "To the services", ziel: "#beauftragen", zeichen: "arbeiten" },
+        { id: "spielen-denken", name: "Play and think", kurz: "A Zettelkasten and seven apps.", weiter: "To the Zettelkasten", ziel: "#spielen-denken", zeichen: "spielen" },
+        { id: "hoeren-sehen", name: "Look and listen", kurz: "Wheels, colours, photographs, images in motion. And music.", weiter: "To the showpieces", ziel: "#hoeren-sehen", zeichen: "sehen" },
       ],
       tuerenAria: "The three doors",
-      hoeren: "Look and listen", hoerenText: "What is finished and can be shown. First what you can see and spin, then the music.", alleMusik: "All music", musik: "Music", musikText: "the i: the first release.",
+      hoeren: "Look and listen", hoerenText: "What is finished and can be shown: a film, two wheels, photographs. Last of all, the music.", alleMusik: "All music", musik: "Music", musikText: "the i: the first release.",
       neu: "New", anhoeren: "Listen", tracks: (n) => `${n} tracks`, minuten: (m) => `${m} minutes`,
       beauftragen: "Commission", beauftragenText: "Five services, made in Switzerland. Each begins with a conversation and a briefing.", alleAngebote: "All services",
       auch: "Also to play with:", atelier: "Studio",
