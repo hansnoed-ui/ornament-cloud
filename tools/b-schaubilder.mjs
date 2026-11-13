@@ -28,6 +28,8 @@ export const SCHAUBILDER = [
   // aufgenommen, gibt dasselbe Mass von 1280 × 800 mit dem Rad gross im Bild
   { name: "drittes-rad", pfad: "beta/drittes-rad/", warten: 4000, fenster: [800, 500], faktor: 1.6 },
   { name: "omna-color", pfad: "alpha/omna-color/?sprache=de&b=1", warten: 4000, fenster: [800, 500], faktor: 1.6, rollen: 110 },
+  // Multiverse als Website-Referenz (13. November 2026, Christian: «und auch noch: Multiverse»)
+  { name: "multiverse", pfad: "multiverse/", warten: 6000 },
   { name: "principesse", fremd: "PRINCIPESSE", pfad: "", warten: 9000, rollen: 900 },
 ];
 
