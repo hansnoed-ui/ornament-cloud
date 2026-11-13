@@ -415,7 +415,7 @@ test("Schaubilder: auf der Startseite Das Dritte Rad und OMNA COLOR vor der Musi
   for (const datei of ["b/angebot/webdesign/index.html", "b/en/angebot/webdesign/index.html"]) {
     const html = lies(datei), schau = html.match(/<section class="referenzen schau-abschnitt"[\s\S]*?<\/section>/)?.[0];
     assert.ok(schau, `${datei}: Abschnitt zum Anschauen`);
-    assert.deepEqual([...schau.matchAll(/<a class="schau-stueck" href="([^"]+)" target="_blank" rel="noopener"/g)].map((m) => m[1]), ["https://kaiserbuehne.ch/", "https://principesse.ch/", "/gamma/"], `${datei}: Kaiserbühne, Principesse und Gamma, in neuem Fenster`);
+    assert.deepEqual([...schau.matchAll(/<a class="schau-stueck" href="([^"]+)" target="_blank" rel="noopener"/g)].map((m) => m[1]), ["https://kaiserbuehne.ch/", "https://www.oberer-turm.ch/", "https://principesse.ch/", "/beta/drittes-rad/", "/multiverse/", "/gamma/"], `${datei}: Kaiserbühne, Supervisionen, Principesse, Das Dritte Rad, Multiverse und Gamma, in neuem Fenster`);
     assert.ok(schau.includes("Katharina Strickler"), `${datei}: für wen die Seite gebaut ist`);
   }
   assert.ok(statSync(new URL("b/bilder/schau/animations.mp4", root)).size < 2_500_000, "der Film bleibt unter 2,5 MB");
