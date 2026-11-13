@@ -109,6 +109,57 @@
       "status": "unbekannt",
       "geprueft": null,
       "geaendert": "2026-10-19T08:59:16Z"
+    },
+    {
+      "nr": 3,
+      "id": "3-ornamente-als-problem-des-symmetriebruchs",
+      "plattform": "facebook",
+      "kontext": null,
+      "titel": "Ornamente als Problem des Symmetriebruchs",
+      "autor": {
+        "name": "Christian Strickler",
+        "handle": null,
+        "profil": null,
+        "verifiziert": false,
+        "avatar": "medien/3/avatar.webp"
+      },
+      "quelle": null,
+      "veroeffentlicht": "2026-10-22T03:38:00Z",
+      "veroeffentlichtQuelle": "bild",
+      "erfasst": "2026-11-12T11:38:00Z",
+      "sprache": "de",
+      "uebersetzung": null,
+      "text": "Allen Ornamenten liegt das Problem des Symmetriebruchs zugrunde, also das Problem der Form.\n\nEs geht um die Projektierung von Asymmetrien, die noch erkennen lassen, aus welchen Symmetrien sie entstanden sind.\n\nOrnamente sind Rekursionen, Rückgriffe und Vorgriffe, die sich als solche fortsetzen.",
+      "medien": [],
+      "zitiert": null,
+      "kennzahlen": {
+        "reaktionen": null,
+        "kommentare": null,
+        "teilungen": null
+      },
+      "beleg": {
+        "datei": "medien/3/beleg.webp",
+        "breite": 1400,
+        "hoehe": 1053,
+        "sha256": "a7fe92ed8c29e323b767ae0436f49aa0c61b40bc26d629a42093812321f0f288",
+        "geschwaerzt": false
+      },
+      "karte": {
+        "datei": "medien/3/karte.jpg",
+        "breite": 1200,
+        "hoehe": 630
+      },
+      "kommentar": "",
+      "schlagworte": [
+        "Ornament",
+        "Symmetriebruch",
+        "Form",
+        "Rekursion"
+      ],
+      "verweise": [],
+      "status": "unbekannt",
+      "geprueft": null,
+      "geaendert": "2026-11-13T22:58:20Z"
     }
   ]
 }
