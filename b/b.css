@@ -660,7 +660,7 @@ html { scroll-behavior: smooth; }
 /* Der Einstieg am Telefon: das Signet kleiner und links, weniger Luft; die drei Türen als Zeilen (Zeichen links, Name und Satz rechts) statt als hohe Blöcke */
 @media (max-width: 760px) {
   .einstieg-kopf { gap: 4px; margin-bottom: 28px; }
-  .einstieg-kopf .signet-tafel { width: 76px; max-width: 76px; justify-self: start; margin: -14px 0 -6px -8px; }
+  .einstieg-kopf .signet-tafel { width: 76px; max-width: 76px; justify-self: start; margin: -14px 0 18px -8px; }   /* 18 px zum Titel (13.11.2026, Christian: «Hier kommt das Logo etwas zu nahe an die Schrift») */
   .einstieg .titel { margin-bottom: 0; }
   .angebote.tueren .angebot { grid-template-columns: 44px minmax(0, 1fr); column-gap: 14px; row-gap: 2px; align-items: start; padding: 16px 0 18px; }
   .angebote.tueren .angebot .zeichen-gross { grid-row: 1 / span 3; font-size: 34px; margin: 2px 0 0; }
@@ -687,3 +687,10 @@ body:is([data-bereich="hoeren"], [data-bereich="atelier"]) main > :first-child +
 @media (prefers-reduced-motion: reduce) { .fotos .foto img { transition: none; } .fotos .foto a:hover img, .fotos.fotos-reihe .foto:hover img { transform: none; } }
 body[data-bereich="werke"] #fotografie .abschnitt-kopf { margin-bottom: 24px; }
 @media (min-width: 1000px) { .angebote:not(.tueren) { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0 20px; } .angebote:not(.tueren) .angebot h3, .angebote:not(.tueren) .angebot h2 { font-size: 1.2rem; } }
+
+/* «Sehen» (13. November 2026): wie Hören und Atelier ohne leeres Band unter dem Titel; der Film schliesst ohne Abstand nach unten an die nächste Überschrift an */
+body[data-bereich="sehen"] main > :first-child { padding-bottom: 0; }
+body[data-bereich="sehen"] main > :first-child + .abschnitt { padding-top: clamp(28px, 4vw, 48px); }
+body[data-bereich="sehen"] .schau-film { margin-bottom: 0; }
+.schau-film h2 { font-weight: 500; font-size: clamp(2.2rem, 6vw, 4.2rem); letter-spacing: -0.035em; line-height: 0.98; }
+.schau-film:hover h2 { color: var(--faden); }

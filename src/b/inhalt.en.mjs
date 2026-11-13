@@ -12,7 +12,7 @@ export const SEITE = {
   titel: "Theory you can touch.",
   lead: "Music, images, apps and a Zettelkasten by Christian Strickler. And five services for anyone who needs something like this for themselves.",
   claimAlt: "Theory you can touch.",
-  beschreibung: "Theory you can touch: music, works, seven apps, 49 notes and four test grids by Christian Strickler. Plus web design, education, curating and products.",
+  beschreibung: "Theory you can touch: photography, music, seven apps and 49 notes by Christian Strickler. Plus web design, education, curating, photography and products.",
   person: { name: "Christian Strickler", ort: "between Zurich, Basel and Aarau", strasse: "Rheingasse 8b", plz: "CH-5466 Kaiserstuhl", mail: "hansnoed@gmail.com" },
   sprache: "en",
 };
@@ -215,7 +215,7 @@ export const UEBER = {
       "Curatorial work most recently: a year of clients' works at the Behmen in Aarau, for the BKS Aargau and the FARO Foundation (2024), and «Supervisionen» in the Oberer Turm in Kaiserstuhl, six months, nine artists, for Pro Kaiserstuhl and the municipality of Zurzach (2026).",
     ],
   },
-  liste: { titel: "When something is finished, I write", text: "No rhythm and no announcements. A short email when a grid, an app or a text is ready to work with.", mailto: "mailto:hansnoed@gmail.com?subject=List&body=Please%20add%20me%20to%20the%20list." },
+  liste: { titel: "When something is finished, I write", text: "No rhythm and no announcements. A short email when an app, a work or a text is ready to work with.", mailto: "mailto:hansnoed@gmail.com?subject=List&body=Please%20add%20me%20to%20the%20list." },
 };
 
 export const SEO = {

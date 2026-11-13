@@ -8,6 +8,15 @@
  ],
  "arbeiten": [
   {
+   "id": "sehen",
+   "name": "Sehen",
+   "tuer": "hoeren-sehen",
+   "art": "Übersicht",
+   "status": "oeffentlich",
+   "adresse": "b/sehen/",
+   "kurz": "Film aus Animations, Fotografien, Filme der Bild-Apps, die zwei Räder."
+  },
+  {
    "id": "directer",
    "name": "the i – directer",
    "tuer": "hoeren-sehen",
@@ -149,7 +158,7 @@
    "name": "Nebeneinander und Nacheinander",
    "tuer": "spielen-denken",
    "art": "Prüfraster",
-   "status": "oeffentlich",
+   "status": "direktlink",
    "adresse": "b/raster/nebeneinander-nacheinander/",
    "kurz": ""
   },
@@ -158,7 +167,7 @@
    "name": "Der Verteilapparat des Körpers",
    "tuer": "spielen-denken",
    "art": "Prüfraster",
-   "status": "oeffentlich",
+   "status": "direktlink",
    "adresse": "b/raster/verteilapparat/",
    "kurz": ""
   },
@@ -167,7 +176,7 @@
    "name": "Prüfraster für Gesellschaftskonzepte",
    "tuer": "spielen-denken",
    "art": "Prüfraster",
-   "status": "oeffentlich",
+   "status": "direktlink",
    "adresse": "b/raster/gesellschaftskonzepte/",
    "kurz": ""
   },
@@ -176,7 +185,7 @@
    "name": "Prüfraster journalistischer Texte",
    "tuer": "spielen-denken",
    "art": "Prüfraster",
-   "status": "oeffentlich",
+   "status": "direktlink",
    "adresse": "b/raster/journalistische-texte/",
    "kurz": ""
   },

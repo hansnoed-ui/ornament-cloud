@@ -15,7 +15,7 @@ export const SEITE = {
   titel: "Theorie, die man anfassen kann.",
   lead: "Musik, Bilder, Apps und ein Zettelkasten von Christian Strickler. Und fünf Leistungen für alle, die so etwas für sich brauchen.",
   claimAlt: "Theorie, die man anfassen kann.",
-  beschreibung: "Theorie, die man anfassen kann: Musik, Werke, sieben Apps, 49 Zettel und vier Prüfraster von Christian Strickler. Dazu Webdesign, Vermittlung, Kuration und Produkte.",
+  beschreibung: "Theorie, die man anfassen kann: Fotografie, Musik, sieben Apps und 49 Zettel von Christian Strickler. Dazu Webdesign, Vermittlung, Kuration, Fotografie und Produkte.",
   person: { name: "Christian Strickler", ort: "zwischen Zürich, Basel und Aarau", strasse: "Rheingasse 8b", plz: "CH-5466 Kaiserstuhl", mail: "hansnoed@gmail.com" },
   sprache: "de-CH",
 };
@@ -258,7 +258,7 @@ export const UEBER = {
       "Kuratorisch zuletzt: ein Jahr lang Werke von Klient:innen im Behmen in Aarau, für das BKS Aargau und die Stiftung FARO (2024), und «Supervisionen» im Oberen Turm Kaiserstuhl, sechs Monate, neun Künstler:innen, für Pro Kaiserstuhl und die Gemeinde Zurzach (2026).",
     ],
   },
-  liste: { titel: "Wenn etwas fertig ist, schreibe ich", text: "Kein Rhythmus und keine Ankündigungen. Eine kurze Mail, wenn ein Raster, eine App oder ein Text so weit ist, dass man damit arbeiten kann.", mailto: "mailto:hansnoed@gmail.com?subject=Liste&body=Bitte%20nimm%20mich%20in%20die%20Liste%20auf." },
+  liste: { titel: "Wenn etwas fertig ist, schreibe ich", text: "Kein Rhythmus und keine Ankündigungen. Eine kurze Mail, wenn eine App, ein Werk oder ein Text so weit ist, dass man damit arbeiten kann.", mailto: "mailto:hansnoed@gmail.com?subject=Liste&body=Bitte%20nimm%20mich%20in%20die%20Liste%20auf." },
 };
 
 /** Stichworte für Suchmaschinen je Seite (Deutschschweiz zuerst). */

@@ -8,7 +8,7 @@ export const UI = {
     lang: "de", locale: "de-CH", ogLocale: "de_CH", inLanguage: "de-CH", praefix: "/b/", andere: "en",
     sprache: { aria: "Sprache", de: "Deutsch", en: "English" },
     sprung: "Zum Inhalt", hauptnav: "Hauptnavigation",
-    nav: { "hoeren/": "Hören", "zettel/": "Zettel", "apps/": "Apps", "raster/": "Raster", "angebot/": "Angebot", "werke/": "Werke", "zuletzt/": "Zuletzt", "ueber/": "Über", "atelier/": "Atelier" },
+    nav: { "sehen/": "Sehen", "hoeren/": "Hören", "zettel/": "Zettel", "apps/": "Apps", "raster/": "Raster", "angebot/": "Angebot", "werke/": "Werke", "zuletzt/": "Zuletzt", "ueber/": "Über", "atelier/": "Atelier" },
     kopfTitelStart: "ornament.cloud – Kunst, Design und Theorie, Christian Strickler", feedTitel: "ornament.cloud – News",
     fuss: { ueber: "Über", impressum: "Impressum und Datenschutz", bisher: "Zur bisherigen Website", feed: "Feed", ohne: "Diese Seite lädt nichts von aussen: keine Cookies, keine Werbung, keine Tracker." },
     feldchen: (n) => (n ? `Zum Zettelkasten – Zettel ${n} von 49 im Feld` : "Zum Zettelkasten"),
@@ -25,7 +25,7 @@ export const UI = {
       // Einstieg «Künstler zuerst» mit drei Türen (13. November 2026, Entscheid von Christian): Hören und Sehen, Spielen und Denken, Beauftragen
       tueren: [
         { id: "hoeren-sehen", name: "Sehen und Hören", kurz: "Räder, Farben, Bilder in Bewegung. Und Musik.", weiter: "Zum Zeigen", ziel: "#hoeren-sehen", zeichen: "sehen" },
-        { id: "spielen-denken", name: "Spielen und Denken", kurz: "Ein Zettelkasten, sieben Apps, vier Prüfraster.", weiter: "Zum Zettelkasten", ziel: "#spielen-denken", zeichen: "spielen" },
+        { id: "spielen-denken", name: "Spielen und Denken", kurz: "Ein Zettelkasten und sieben Apps.", weiter: "Zum Zettelkasten", ziel: "#spielen-denken", zeichen: "spielen" },
         { id: "beauftragen", name: "Beauftragen", kurz: "Webdesign, Vermittlung, Kuration, Fotografie, Produkte.", weiter: "Zu den Leistungen", ziel: "#beauftragen", zeichen: "arbeiten" },
       ],
       tuerenAria: "Die drei Türen",
@@ -47,6 +47,14 @@ export const UI = {
     zettelN: (n) => `Zettel ${n}`, zettelLesen: "Zettel lesen", nochEiner: "Noch einer",
     person: { jobTitle: "Webdesigner, Kurator, Künstler, Sozialarbeiter", knowsAbout: ["Systemtheorie", "Webdesign", "Kunstvermittlung", "Kuration", "Maltherapie", "Soziale Arbeit"] },
     beitragLink: "Beleg, Schlagworte und Kommentar im Zettelkasten", beitraegeDeutsch: "",
+    sehen: {
+      titel: "Sehen", small: "Was sich zeigen lässt: ein Film vom Mischpult, Fotografien, die Filme der Bild-Apps und zwei Räder zum Drehen.",
+      seitenTitel: "Sehen – Filme, Fotografien, Bilder in Bewegung", beschreibung: "Bilder von Christian Strickler: ein Film aus Animations, Fotografien von Bühne, Raum und Landschaft, Filme aus PHORMA und The Fictory, Das Dritte Rad und OMNA COLOR.", bildAlt: "Sehen: Filme und Fotografien",
+      fotografie: "Fotografie", fotografieText: "Bühne, Räume, Landschaften.", alleFotos: "Alle Fotografien",
+      filme: "Bilder in Bewegung", filmeText: "Was die Bild-Apps aus einem Foto oder einem Ton machen. Jede Kachel führt zur App und ihrem ganzen Film.",
+      raeder: "Zum Drehen", raederText: "Zwei Räder, die etwas ziehen: einen Zettel, eine Begegnung, eine Übung.",
+      teilenTitel: "Sehen – ornament.cloud", teilenText: "Filme, Fotografien, Bilder in Bewegung.",
+    },
     hoeren: {
       titel: "Hören", small: "Musik von the i. Ein Link, einmal auf Play tippen, die Veröffentlichung läuft durch, auch mit gesperrtem Bildschirm.",
       seitenTitel: "Hören – Musik von the i", beschreibung: "Musik von the i zum Hören im Browser: jede Veröffentlichung mit Cover, Tracks und Dauer, ohne Anmeldung und ohne Dienste von aussen.", bildAlt: "Hören: Musik von the i",
@@ -118,7 +126,7 @@ export const UI = {
     lang: "en", locale: "en-GB", ogLocale: "en_GB", inLanguage: "en", praefix: "/b/en/", andere: "de",
     sprache: { aria: "Language", de: "Deutsch", en: "English" },
     sprung: "Skip to content", hauptnav: "Main navigation",
-    nav: { "hoeren/": "Listen", "zettel/": "Notes", "apps/": "Apps", "raster/": "Grids", "angebot/": "Services", "werke/": "Works", "zuletzt/": "Latest", "ueber/": "About", "atelier/": "Studio" },
+    nav: { "sehen/": "Look", "hoeren/": "Listen", "zettel/": "Notes", "apps/": "Apps", "raster/": "Grids", "angebot/": "Services", "werke/": "Works", "zuletzt/": "Latest", "ueber/": "About", "atelier/": "Studio" },
     kopfTitelStart: "ornament.cloud – art, design and theory, Christian Strickler", feedTitel: "ornament.cloud – News",
     fuss: { ueber: "About", impressum: "Imprint and privacy", bisher: "Previous website", feed: "Feed", ohne: "This site loads nothing from outside: no cookies, no advertising, no trackers." },
     feldchen: (n) => (n ? `To the Zettelkasten – note ${n} of 49 in the field` : "To the Zettelkasten"),
@@ -134,7 +142,7 @@ export const UI = {
     start: {
       tueren: [
         { id: "hoeren-sehen", name: "Look and listen", kurz: "Wheels, colours, images in motion. And music.", weiter: "To the showpieces", ziel: "#hoeren-sehen", zeichen: "sehen" },
-        { id: "spielen-denken", name: "Play and think", kurz: "A Zettelkasten, seven apps, four test grids.", weiter: "To the Zettelkasten", ziel: "#spielen-denken", zeichen: "spielen" },
+        { id: "spielen-denken", name: "Play and think", kurz: "A Zettelkasten and seven apps.", weiter: "To the Zettelkasten", ziel: "#spielen-denken", zeichen: "spielen" },
         { id: "beauftragen", name: "Commission", kurz: "Web design, education, curating, photography, products.", weiter: "To the services", ziel: "#beauftragen", zeichen: "arbeiten" },
       ],
       tuerenAria: "The three doors",
@@ -156,6 +164,14 @@ export const UI = {
     zettelN: (n) => `Note ${n}`, zettelLesen: "Read the note", nochEiner: "Another one",
     person: { jobTitle: "Web designer, curator, artist, social worker", knowsAbout: ["Systems theory", "Web design", "Art education", "Curation", "Art therapy", "Social work"] },
     beitragLink: "Source, keywords and comment in the Zettelkasten", beitraegeDeutsch: "The posts are in German.",
+    sehen: {
+      titel: "Look", small: "What can be shown: a film from the mixing desk, photographs, the films of the image apps and two wheels to spin.",
+      seitenTitel: "Look – films, photographs, images in motion", beschreibung: "Images by Christian Strickler: a film from Animations, photographs of stage, space and landscape, films from PHORMA and The Fictory, Das Dritte Rad and OMNA COLOR.", bildAlt: "Look: films and photographs",
+      fotografie: "Photography", fotografieText: "Stage, spaces, landscapes.", alleFotos: "All photographs",
+      filme: "Images in motion", filmeText: "What the image apps make of a photo or a sound. Each tile leads to the app and its whole film.",
+      raeder: "To spin", raederText: "Two wheels that draw something: a note, an encounter, an exercise.",
+      teilenTitel: "Look – ornament.cloud", teilenText: "Films, photographs, images in motion.",
+    },
     hoeren: {
       titel: "Listen", small: "Music by the i. One link, one tap on play, the release runs through, even with the screen locked.",
       seitenTitel: "Listen – music by the i", beschreibung: "Music by the i to listen to in the browser: each release with cover, tracks and duration, no sign-up and no outside services.", bildAlt: "Listen: music by the i",

@@ -57,6 +57,8 @@ Sitzung wissen muss, damit dieselben Fehler nicht zweimal passieren.
 - Die Apps (Zettelkasten, ORNA, PHORMA, The Fictory, Signet) werden vom Lab nur
   gelesen, nie verändert.
 - Die Lab-Seiten bleiben `noindex` und ausserhalb der Sitemap.
+- Die Prüfraster sind seit 13.11.2026 nicht öffentlich (`RASTER_OEFFENTLICH` in `tools/build-b.mjs`):
+  nicht verlinken, nicht in die Sitemap, nicht auf Start- oder Übersichtsseiten nennen.
 - Schlüssel und Tokens (jev, Hostpoint, Stimme) nur als GitHub-Secrets – nie ins
   Repo, ins Frontend oder in den Chat. jev nie live aus dem Container aufrufen.
 - Testdateien wie `gamma/_test.html` nie committen.
