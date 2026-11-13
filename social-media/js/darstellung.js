@@ -5,12 +5,12 @@
 //
 // Zwei Stimmen, zwei Schriften: Der Beitrag (die Abschrift) steht in der Schrift der Website, wie auf der Plattform; der Kommentar steht in Newsreader.
 
-import { welleUndMenu } from "../../kopfleiste.js";
+import { V, ICON, kopf as rahmenKopf, FUSS } from "../../b/rahmen.js";
 import { PLATTFORMEN, PLATTFORM_NAME, profilUrl } from "./quelle.js";
 
 export const ADRESSE = "https://ornament.cloud/";
 export const BEREICH = "social-media/";
-export const MARKE = { styles: 49, icons: 14, social: 2 };   // ?v= der eingebundenen Dateien (styles.css, icons.js, social.css/-js)
+export const MARKE = { social: 3 };   // ?v= von social.css und den Skripten in social-media/js/ (b.css und b.js: V aus b/rahmen.js)
 export const KENNZAHLEN = ["antworten", "reposts", "likes", "ansichten", "lesezeichen", "reaktionen", "kommentare", "teilungen"];
 /** Arten von Verweisen: [vom Zettel aus gelesen, vom Ziel aus gelesen] */
 export const VERWEIS_ARTEN = { antwort: ["Antwort auf", "Antwort darauf"], widerspruch: ["Widerspruch zu", "Widerspruch dazu"], ergaenzung: ["Ergänzung zu", "Ergänzung dazu"],
@@ -376,20 +376,21 @@ ${e.veroeffentlicht ? `<p class="beitrag-zeit">${zeitTag(e, datum(e.veroeffentli
 
 // ---------- Seitenrahmen ----------
 
-const seitenweg = (site, einzug) => `${einzug}<nav class="seitenweg" aria-label="Ornament Cloud">
-${einzug}  <a href="${site}" aria-current="true">Ornament Cloud</a>
-${einzug}  <a href="${site}alpha/drittes-rad/">Das Dritte Rad</a>
-${einzug}</nav>`;
+/** Kopf einer Seite im Stil des Neubaus: kleine Zeile darüber (gattung, darf Links enthalten), Titel, Satz darunter */
+const stueckKopf = ({ gattung = "", titel, lead = "" }) => `<section class="stueck-kopf"><div class="spalte">
+  ${gattung ? `<p class="gattung">${gattung}</p>\n  ` : ""}<h1 class="titel">${titel}${lead ? `<small>${lead}</small>` : ""}</h1>
+</div></section>`;
+const zurSammlung = `<a href="/${BEREICH}">Social Media</a>`;
 
 /** Vorschaukarte der Übersicht und der Register (1200 × 630, tools/b-kacheln.mjs alt, in der Gestaltung des Neubaus; seit 24. Oktober 2026) */
 const kachel = (name, titel) => ({ bild: `kacheln/${name}.png`, breite: 1200, hoehe: 630, typ: "website", alt: `Vorschaukarte «${titel}» von ornament.cloud: Titel und kurzer Satz neben dem Feld aus 49 Punkten` });
 
 /**
- * Seite: pfad ab der Wurzel («social-media/12-titel/»), titel, beschreibung, inhalt (main), kopfInhalt (Titel und Lead im Kopf);
+ * Seite im Rahmen des Neubaus (seit 14. November 2026; Kopf und Fuss aus b/rahmen.js, erzeugt von tools/build-b.mjs):
+ * pfad ab der Wurzel («social-media/12-titel/»), titel, beschreibung, kopf (stueckKopf), inhalt;
  * og: { bild, breite, hoehe, alt, typ }; skripte: Dateien in social-media/js/; noindex
  */
-export function seite({ pfad, titel, beschreibung, kopf, inhalt, og = null, skripte = [], noindex = false, aktuell = "true", fuss = "" }) {
-  const tiefe = pfad.split("/").filter(Boolean).length, site = "../".repeat(tiefe), bereich = "../".repeat(tiefe - 1);
+export function seite({ pfad, titel, beschreibung, kopf, inhalt, og = null, skripte = [], noindex = false }) {
   const url = ADRESSE + pfad;
   const ogBlock = og ? `
   <meta property="og:type" content="${og.typ ?? "article"}">
@@ -408,43 +409,32 @@ export function seite({ pfad, titel, beschreibung, kopf, inhalt, og = null, skri
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>${esc(titel)}${pfad === BEREICH ? "" : " – Social Media"} – Ornament Cloud</title>
+  <title>${esc(titel)}${pfad === BEREICH ? "" : " – Social Media"} – ornament.cloud</title>
   <meta name="description" content="${esc(beschreibung)}">${noindex ? `
   <meta name="robots" content="noindex">` : `
-  <link rel="canonical" href="${esc(url)}">`}${ogBlock}
-  <link rel="alternate" type="application/rss+xml" title="Ornament Cloud – Social Media" href="${bereich}feed.xml">
-  <link rel="alternate" type="application/rss+xml" title="Ornament Cloud" href="${site}feed.xml">
-  <link rel="stylesheet" href="${site}styles.css?v=${MARKE.styles}">
-  <link rel="stylesheet" href="${site}vendor/fonts/fonts.css">
-  <link rel="stylesheet" href="${bereich}social.css?v=${MARKE.social}">
+  <link rel="canonical" href="${esc(url)}">`}
+  <meta name="author" content="Christian Strickler">
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" href="${ICON}">${ogBlock}
+  <link rel="alternate" type="application/rss+xml" title="ornament.cloud – Social Media" href="/${BEREICH}feed.xml">
+  <link rel="preload" href="/vendor/fonts/instrument-sans-normal-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/vendor/fonts/newsreader-italic-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/vendor/fonts/fonts.css">
+  <link rel="stylesheet" href="/b/b.css?v=${V}">
+  <link rel="stylesheet" href="/${BEREICH}social.css?v=${MARKE.social}">
 </head>
-<body class="sm">
+<body class="sm" data-bereich="zuletzt">
   <!-- Erzeugt aus social-media/daten/eintraege.json (social-media/js/darstellung.js; Redaktion oder tools/build-social-media.mjs). Nicht von Hand ändern. -->
-  <header class="site-header">
-    <div class="wrap">
-      <div class="topbar">
-${seitenweg(site, "        ")}
-${welleUndMenu(site, { aktiv: "Social", aktuell, einzug: "        " })}
-      </div>
+${rahmenKopf(pfad)}  <main id="inhalt">
 ${kopf}
-    </div>
-  </header>
-
-  <main class="wrap">
+<div class="spalte sm-inhalt">
 ${inhalt}
+  <p class="sm-hinweis">Die Beiträge sind Zitate: gesichert, abgeschrieben und kommentiert, zur Erläuterung und Veranschaulichung. Wer hier zitiert ist und das nicht möchte, schreibt mir; der Zettel verschwindet.</p>
+</div>
   </main>
-${fuss}
-  <footer class="site-footer">
-    <div class="wrap">
-      <p>Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
-      <p><a href="${site}impressum/">Impressum</a></p>
-      <p>Die Beiträge sind Zitate: gesichert, abgeschrieben und kommentiert, zur Erläuterung und Veranschaulichung. Wer hier zitiert ist und das nicht möchte, schreibt mir; der Zettel verschwindet.</p>
-    </div>
-  </footer>
-${skripte.map((s) => `  <script type="module" src="${bereich}js/${s}?v=${MARKE.social}"></script>`).join("\n")}
-  <script src="${site}icons.js?v=${MARKE.icons}" defer></script>
-  <!-- Besuchsstatistik ohne Cookies: https://ornament-cloud.goatcounter.com -->
-  <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="${site}vendor/goatcounter/count.js"></script>
+${FUSS}
+  <script type="module" src="/b/b.js?v=${V}"></script>
+${skripte.map((s) => `  <script type="module" src="/${BEREICH}js/${s}?v=${MARKE.social}"></script>`).join("\n")}${skripte.length ? "\n" : ""}  <script data-goatcounter="https://ornament-cloud.goatcounter.com/count" async src="/vendor/goatcounter/count.js"></script>
 </body>
 </html>
 `;
@@ -510,8 +500,7 @@ export function zeitleisteSeite(alle) {
     zeilen.push(zettelInZeitleiste(e));
   }
   const zaehler = `${alle.length} Zettel, ${a.length} ${a.length === 1 ? "Autor:in" : "Autor:innen"}, ${s.length} ${s.length === 1 ? "Schlagwort" : "Schlagworte"}`;
-  const kopf = `      <h1>Social Media</h1>
-      <p class="lead">Ausgewählte Beiträge aus X, Facebook und Instagram.</p>`;   // Wunsch vom 19. Oktober 2026: «keine langfädige Einleitung»
+  const kopf = stueckKopf({ gattung: "Zettelkasten", titel: "Social Media", lead: "Ausgewählte Beiträge aus X, Facebook und Instagram." });   // Wunsch vom 19. Oktober 2026: «keine langfädige Einleitung»
   const plattformKnoepfe = [["", "Alle"], ...PLATTFORMEN.map((p) => [p, PLATTFORM_NAME[p]])].map(([p, n]) => {
     const anzahl = p ? alle.filter((e) => e.plattform === p).length : alle.length;
     return `<button type="button" class="wahl" data-plattform="${p}" aria-pressed="${p ? "false" : "true"}"${p && !anzahl ? " disabled" : ""}>${n} <span class="anzahl">${anzahl}</span></button>`;
@@ -545,7 +534,7 @@ ${zeilen.join("\n")}
       <h2>Noch keine Zettel</h2>
       <p>Hier entsteht eine Sammlung kommentierter Beiträge. Der erste Zettel ist in Arbeit.</p>
     </section>`;
-  return seite({ pfad: BEREICH, titel: "Social Media", beschreibung: "Ausgewählte Beiträge aus X, Facebook und Instagram.", kopf, inhalt, og: kachel("social-media", "Social Media"), skripte: alle.length ? ["zeitleiste.js"] : [], aktuell: "page" });
+  return seite({ pfad: BEREICH, titel: "Social Media", beschreibung: "Ausgewählte Beiträge aus X, Facebook und Instagram.", kopf, inhalt, og: kachel("social-media", "Social Media"), skripte: alle.length ? ["zeitleiste.js"] : [] });
 }
 
 // ---------- Zettel (eigene Seite) ----------
@@ -595,9 +584,7 @@ export function zettelSeite(e, alle) {
   const rueck = alle.filter((x) => (x.verweise ?? []).some((v) => v.id === e.id)).map((z) => { const v = z.verweise.find((v) => v.id === e.id); return `<li><a href="../${esc(z.id)}/">Zettel ${z.nr}: ${esc(titelVon(z))}</a> <span class="verweis-art">${esc(VERWEIS_ARTEN[v.art]?.[1] ?? "verweist hierher")}</span></li>`; }).join("");
   const kurzliste = (xs) => xs.map((z) => `<li><a href="../${esc(z.id)}/"><span class="zettel-nr">Zettel ${z.nr}</span> ${esc(titelVon(z))}</a></li>`).join("");
 
-  const kopf = `      <p class="sm-zurueck"><a href="../">Social Media</a></p>
-      <p class="zettel-nr zettel-nr--seite">Zettel ${e.nr} <span class="leise">aus ${PLATTFORM_NAME[e.plattform]}</span></p>
-      <h1>${esc(titel)}</h1>`;
+  const kopf = stueckKopf({ gattung: `${zurSammlung} · Zettel ${e.nr} aus ${PLATTFORM_NAME[e.plattform]}`, titel: esc(titel) });
   const inhalt = `    <div class="zettel-seite zettel-karte--${e.plattform}">
       ${e.kommentar?.trim() ? `<div class="zettel-kommentar zettel-kommentar--seite">\n${kommentarHtml(e.kommentar)}\n      </div>` : ""}
       <div class="zettel-beitrag zettel-beitrag--seite">
@@ -645,9 +632,7 @@ ${xs.map((x) => `          <dt><a href="../?schlagwort=${esc(x.slug)}">${esc(x.w
         </dl>
       </section>`).join("\n")}
     </div>` : `    <p>Noch keine Schlagworte.</p>`;
-  const kopf = `      <p class="sm-zurueck"><a href="../">Social Media</a></p>
-      <h1>Schlagworte</h1>
-      <p class="lead">${s.length} Schlagworte, von A bis Z, mit den Zetteln dazu.</p>`;
+  const kopf = stueckKopf({ gattung: zurSammlung, titel: "Schlagworte", lead: `${s.length} Schlagworte, von A bis Z, mit den Zetteln dazu.` });
   return seite({ pfad: `${BEREICH}schlagworte/`, titel: "Schlagworte", beschreibung: "Register der Schlagworte im Zettelkasten «Social Media».", kopf, inhalt, og: kachel("schlagworte", "Schlagworte") });
 }
 
@@ -664,9 +649,7 @@ ${a.filter((x) => x.plattform === p).sort((x, y) => vergleich(x.autor.name, y.au
         </ul>
       </section>`).join("\n")}
     </div>` : `    <p>Noch keine Autor:innen.</p>`;
-  const kopf = `      <p class="sm-zurueck"><a href="../">Social Media</a></p>
-      <h1>Autor:innen</h1>
-      <p class="lead">${a.length === 1 ? "Eine Person" : `${a.length} Personen`}, deren Beiträge hier gesichert sind, nach Plattform.</p>`;
+  const kopf = stueckKopf({ gattung: zurSammlung, titel: "Autor:innen", lead: `${a.length === 1 ? "Eine Person" : `${a.length} Personen`}, deren Beiträge hier gesichert sind, nach Plattform.` });
   return seite({ pfad: `${BEREICH}autorinnen/`, titel: "Autor:innen", beschreibung: "Register der Autor:innen im Zettelkasten «Social Media».", kopf, inhalt, og: kachel("autorinnen", "Autor:innen") });
 }
 

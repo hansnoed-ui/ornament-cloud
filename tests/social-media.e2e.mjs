@@ -67,7 +67,7 @@ await check("Zeitleiste: alle sechs Beispielzettel, zuletzt gesicherte zuerst, n
   assert.ok(await page.locator(".filter").isVisible(), "Filter sichtbar");
   assert.equal(await page.locator(".zeitband .woche-alle").count() > 0, true);
   assert.match(await page.locator(".sm-zaehler").textContent(), /6 Zettel, 5 Autor:innen, 10 Schlagworte/);
-  assert.equal(await page.locator('.menu-item[aria-current="page"] span').textContent(), "Social");
+  assert.equal(await page.locator('.kopf .hauptnav summary.aktiv').textContent(), "Über");   // seit 14. November 2026 im Rahmen des Neubaus, unter «Über → Zuletzt»
   assert.deepEqual(fehler, []);
   await ctx.close();
 });

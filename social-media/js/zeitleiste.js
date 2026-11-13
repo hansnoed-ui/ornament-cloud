@@ -2,7 +2,7 @@
 // mit Skript: Suche, Plattform, Schlagworte (alle gewählten müssen zutreffen), Autor:innen (eine der gewählten), eine Woche aus dem Zeitband,
 // Ordnung nach Sicherung oder Veröffentlichung. Der Stand steht in der Adresse (?q=…&plattform=…&schlagwort=a,b&autor=…&woche=…&ordnung=…),
 // gesetzt mit history.replaceState, damit man eine gefilterte Ansicht teilen kann.
-import { zuerichVersatz, monatsname, falten } from "./darstellung.js";
+import { zuerichVersatz, monatsname, falten } from "./darstellung.js?v=3";
 import { karusselle } from "./karussell.js";
 
 const liste = document.querySelector(".zeitleiste");

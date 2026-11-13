@@ -33,7 +33,7 @@ if (ziel === ROOT) {
   writeFileSync(sm, sitemapEinsetzen(readFileSync(sm, "utf8"), daten.eintraege));
 } else {
   // Vorschau: dazu, was die Seiten brauchen (Gestaltung, Skripte, Schriften, Medien der Beispieldaten)
-  for (const p of ["styles.css", "icons.js", "kopfleiste.js", "vendor/fonts", "vendor/goatcounter", `${BEREICH}social.css`, `${BEREICH}js`]) cpSync(join(ROOT, p), join(ziel, p), { recursive: true });
+  for (const p of ["b/b.css", "b/b.js", "b/rahmen.js", "vendor/fonts", "vendor/goatcounter", `${BEREICH}social.css`, `${BEREICH}js`]) cpSync(join(ROOT, p), join(ziel, p), { recursive: true });
   const medien = join(dirname(datenDatei), "medien");
   if (existsSync(medien)) cpSync(medien, join(ziel, BEREICH, "medien"), { recursive: true });
 }

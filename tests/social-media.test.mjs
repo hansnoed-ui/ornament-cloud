@@ -89,16 +89,20 @@ test("Darstellung: ohne Intl und localeCompare, damit Browser und Node dieselben
 
 // ---------- Prüfen, Register, Seiten ----------
 
-test("Beispielzettel: gültig, alle Seiten mit Kopf, Menü (Social aktiv), Fuss; Register, Feed und Verweise", () => {
+test("Beispielzettel: gültig, alle Seiten im Rahmen des Neubaus (Kopf, Hauptnavigation mit «Über» aktiv, Fuss); Register, Feed und Verweise", () => {
   const alle = BEISPIEL.eintraege;
   for (const e of alle) assert.deepEqual(D.pruefen(e, alle), [], `Zettel ${e.nr}`);
   const seiten = D.alleSeiten(BEISPIEL);
   assert.deepEqual([...seiten.keys()].sort(), ["social-media/autorinnen/index.html", "social-media/feed.xml", "social-media/index.html", "social-media/schlagworte/index.html", ...alle.map((e) => `social-media/${e.id}/index.html`)].sort());
   for (const [p, html] of seiten) {
     if (!p.endsWith(".html")) continue;
-    assert.match(html, /<nav class="seitenweg" aria-label="Ornament Cloud">/, p);
-    assert.match(html, new RegExp(`<a class="menu-item" href="[./]*social-media/" aria-current="${p === "social-media/index.html" ? "page" : "true"}">`), p);
-    assert.match(html, /<footer class="site-footer">[\s\S]*Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com<\/a>/, p);
+    // seit 14. November 2026 im Neubau: Kopf und Fuss aus b/rahmen.js (tools/build-b.mjs), Stil b.css, Gruppe «Über → Zuletzt» in der Navigation
+    assert.match(html, /<link rel="stylesheet" href="\/b\/b\.css\?v=\d+">/, p);
+    assert.match(html, /<header class="kopf">[\s\S]*<nav class="hauptnav"[\s\S]*<summary class="aktiv">Über<\/summary>[\s\S]*<a href="\/b\/zuletzt\/">Zuletzt<\/a>/, p);
+    assert.match(html, /<main id="inhalt">\n<section class="stueck-kopf">/, p);
+    assert.match(html, /<footer class="fuss">[\s\S]*<a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com<\/a>/, p);
+    assert.match(html, /<p class="sm-hinweis">Die Beiträge sind Zitate/, p);
+    assert.ok(!/styles\.css|kopfleiste|icons\.js|class="seitenweg"/.test(html), `${p}: nichts mehr vom alten Rahmen`);
     assert.match(html, /<link rel="canonical" href="https:\/\/ornament\.cloud\/social-media\//, p);
     assert.ok(!/<script>|onerror=|javascript:/i.test(html), `${p}: nichts Ausführbares aus den Daten`);
   }

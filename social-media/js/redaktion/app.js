@@ -2,10 +2,10 @@
 // Ablauf: Material ablegen → Claude liest (Text, Person, Zeit, Zahlen, Bereiche, Vorschläge) → prüfen, kommentieren, verschlagworten →
 // veröffentlichen (ein Commit mit Medien, Daten, allen Seiten und der Sitemap) → nach etwa einer Minute online.
 // Der Entwurf liegt laufend in IndexedDB; geht die Seite zu, ist beim nächsten Öffnen alles wieder da.
-import { zettelInZeitleiste, pruefen, neueId, schlagwortListe, autorListe, titelVon, zeit, datum, auszug, zuerichVersatz, slug, esc, BEREICH, handleOhneAt } from "../darstellung.js";
+import { zettelInZeitleiste, pruefen, neueId, schlagwortListe, autorListe, titelVon, zeit, datum, auszug, zuerichVersatz, slug, esc, BEREICH, handleOhneAt } from "../darstellung.js?v=3";
 import { ausAdresse, profilUrl, PLATTFORM_NAME } from "../quelle.js";
 import { GitHub, GitHubFehler } from "./github.js";
-import { zusammenstellen, DATEN } from "./zusammenstellen.js";
+import { zusammenstellen, DATEN } from "./zusammenstellen.js?v=2";
 import { erkennen, ErkennenFehler, anweisungFuerChat, antwortLesen } from "./erkennen.js";
 import * as B from "./bilder.js";
 import * as A from "./ablage.js";

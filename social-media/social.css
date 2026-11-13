@@ -75,7 +75,7 @@
 .filter-titel { font-size: 0.85rem; color: var(--muted); margin-right: 2px; }
 
 .wahl,
-.marke,
+button.marke,
 .filter-zurueck,
 .knopf-leise {
   font: inherit;
@@ -83,7 +83,7 @@
   cursor: pointer;
 }
 .wahl,
-.marke {
+button.marke {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -95,14 +95,14 @@
   line-height: 1.4;
 }
 .wahl:hover,
-.marke:hover { border-color: var(--text); }
+button.marke:hover { border-color: var(--text); }
 .wahl[aria-pressed="true"],
-.marke[aria-pressed="true"] { background: var(--text); border-color: var(--text); color: var(--bg); }
+button.marke[aria-pressed="true"] { background: var(--text); border-color: var(--text); color: var(--bg); }
 .wahl[aria-pressed="true"] .anzahl,
-.marke[aria-pressed="true"] .anzahl { color: inherit; opacity: 0.7; }
+button.marke[aria-pressed="true"] .anzahl { color: inherit; opacity: 0.7; }
 .wahl:disabled { opacity: 0.4; cursor: default; }
 .wahl:focus-visible,
-.marke:focus-visible,
+button.marke:focus-visible,
 .filter-zurueck:focus-visible,
 .knopf-leise:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
 .anzahl { color: var(--muted); font-size: 0.78rem; font-variant-numeric: tabular-nums; }
@@ -444,3 +444,11 @@
 .zeitband .woche.gewaehlt .woche-treffer { fill: var(--accent); }
 .zeitband .woche:focus-visible { outline: none; }
 .zeitband .woche:focus-visible .woche-alle { fill: var(--muted); }
+
+/* ---------- Im Rahmen des Neubaus (seit 14. November 2026: Kopf, Fuss und Farben aus b/b.css) ----------
+   Die Namen von styles.css zeigen auf die Farben des Neubaus; die Redaktion setzt sie selbst (redaktion.css) und trägt body.sm nicht. */
+body.sm { --bg: var(--papier); --surface: var(--papier); --text: var(--tinte); --muted: var(--grau); --border: var(--linie); --accent: var(--faden); --font: var(--sans); }
+body.sm .sm-inhalt { padding-top: 48px; padding-bottom: 72px; }
+body.sm .stueck-kopf .gattung a { color: inherit; }
+body.sm .sm-hinweis { margin: 64px 0 0; padding-top: 16px; border-top: 1px solid var(--linie); max-width: 62ch; font-size: 0.875rem; line-height: 1.5; color: var(--grau); }
+@media (max-width: 560px) { body.sm .sm-inhalt { padding-top: 28px; } }

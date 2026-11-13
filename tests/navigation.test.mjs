@@ -38,6 +38,7 @@ const AUSNAHMEN = [
   ["Die Website für das Maltherapie-Angebot, eigenständig und in sich geschlossen; zieht später auf eine eigene Adresse bei Hostpoint (24. Oktober 2026, maltherapie/DESIGN.md)", /^maltherapie\//],
   ["KONSTELLATION, statische Fassung der App aus hansnoed-ui/konstellation mit eigener nüchterner Kopfzeile, steht für sich, nur per Direktlink, noindex (6. November 2026)", /^alpha\/konstellation\//],
   ["Hörseite der EP «directer» von the i, schlichter Player für Freunde, steht für sich mit eigener dunkler Oberfläche; bis 13. November 2026 nur per Direktlink, seither öffentlich (10. November 2026, docs/ep-directer.md)", /^listen\//],
+  ["Der Zettelkasten «Social Media» im Rahmen des Neubaus (14. November 2026, Kopf und Fuss aus b/rahmen.js); eigene Tests in tests/social-media.test.mjs", /^social-media\/(index\.html|schlagworte\/|autorinnen\/|\d+-)/],
   ["Der Neubau unter b/ mit eigener Kopfzeile (20. Oktober 2026, docs/superpowers/specs/2026-10-20-b-neubau-design.md); eigene Tests in tests/b.test.mjs", /^b\//],
 ];
 const ueberspringen = new Set(["node_modules", "dist", "vendor", ".git", "404.html"]);   // 404.html (20. Oktober 2026, Hostpoint): Kopf wie überall, aber absolute Verweise, weil Apache sie unter jeder Adresse ausliefert; tests/hostpoint.test.mjs

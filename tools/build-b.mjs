@@ -881,10 +881,26 @@ ${form}</div>`;
       kopfMehr: [
         `<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; media-src 'self' blob:; font-src 'self'; connect-src 'self' https://api.github.com https://api.anthropic.com; object-src 'none'; base-uri 'self'; form-action 'none'">`,
         `<meta name="referrer" content="no-referrer">`,
-        `<link rel="stylesheet" href="/social-media/social.css?v=2">`,
+        `<link rel="stylesheet" href="/social-media/social.css?v=3">`,
         `<link rel="stylesheet" href="/social-media/redaktion/redaktion.css?v=4">`,
       ].join("\n  "),
-      skripte: ["/social-media/js/redaktion/app.js?v=4", "/social-media/js/redaktion/schritte.js?v=2"] });
+      skripte: ["/social-media/js/redaktion/app.js?v=5", "/social-media/js/redaktion/schritte.js?v=2"] });
+
+    /* Rahmen für den Zettelkasten «Social Media» (seit 14. November 2026, Wunsch: die Seiten unter /social-media/ im neuen Design): Kopf und Fuss
+       des Neubaus als Modul b/rahmen.js. social-media/js/darstellung.js setzt damit die Seiten zusammen, in Node und in der Redaktion im Browser,
+       darum hier aus derselben seite() geschnitten statt nachgebaut. In der Navigation gehören die Seiten zu «Über → Zuletzt». */
+    const muster = seite({ pfad: "@@PFAD@@", titel: "", beschreibung: "", body: "@@INHALT@@", aktiv: "zuletzt/", nurDe: true });
+    const kopf = muster.slice(muster.indexOf("  <a class=\"sprung\""), muster.indexOf("  <main id=\"inhalt\">"))
+      .replace(/<a href="\/b\/@@PFAD@@" lang="de"/, '<a href="/@@PFAD@@" lang="de"').replace(/ aria-current="page">Zuletzt</, ">Zuletzt<");
+    const fuss = muster.slice(muster.indexOf("  <footer class=\"fuss\">"), muster.indexOf("  </footer>") + "  </footer>\n".length);
+    if (kopf.includes("@@PFAD@@/") || !kopf.includes("@@PFAD@@") || !fuss) throw new Error("Rahmen für Social Media: Kopf oder Fuss nicht gefunden");
+    writeFileSync(new URL("rahmen.js", AUS_DE), `// Erzeugt von tools/build-b.mjs: Kopf und Fuss des Neubaus für die Seiten von «Social Media» (social-media/js/darstellung.js). Nicht von Hand ändern.
+export const V = ${V};
+export const ICON = ${JSON.stringify(ICON)};
+/** Kopf bis vor <main>; pfad ab der Wurzel, z. B. «social-media/schlagworte/» */
+export const kopf = (pfad) => ${JSON.stringify(kopf)}.replace("@@PFAD@@", pfad);
+export const FUSS = ${JSON.stringify(fuss)};
+`);
   }
 
   /* ---------- Werkstatt (nicht verlinkt, noindex; nur deutsch) ---------- */
