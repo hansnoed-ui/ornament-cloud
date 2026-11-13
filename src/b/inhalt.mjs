@@ -65,6 +65,9 @@ export const APPS = [
     fuer: "Für alle, die aus einem Bild ein Reel machen wollen, ohne Schnittprogramm.",
     url: "alpha/bildfragmentieren/", app: "alpha/bildfragmentieren/?installieren", bild: "b/bilder/apps/phorma-i.svg", bildDunkel: "b/bilder/apps/phorma-i-dunkel.svg", bildAlt: "PHORMA I, gezeichnet: ein Kristall aus Scherben, Dreiecke über einer Scheibe, eine Scherbe in Blau",
     beispiele: [
+      // Seit 13. November 2026 zuerst der Film, den Christian an dem Tag geschickt hat («phorma-i-2026-11-13-1143», 19 s ohne Ton, 1080 × 1350);
+      // hier 720 × 900 (ffmpeg: scale=720:900:flags=lanczos, libx264 crf 30). Der bisherige Film (Verwandlung, Saturn) bleibt als zweiter.
+      { art: "video", datei: "assets/beispiele/phorma-i-fragmente.mp4", bild: "assets/beispiele/phorma-i-fragmente.jpg", mass: [720, 900], text: "Der Ablauf «Fragmente» in vier Schritten: Linien zeichnen das Bild nach, Formen aus Dreiecken füllen es, die Farben kommen dazu, und am Ende setzen Scherben das Bild zusammen. Gerechnet aus der App, ohne Ton." },
       { art: "video", datei: "assets/beispiele/phorma-i.mp4", bild: "assets/beispiele/phorma-i.jpg", mass: [540, 676], text: "Der Ablauf «Verwandlung» mit einem Foto des Saturn: Funken strömen, verdichten sich zu einem Glaskörper, er zerspringt in Scherben, daraus wird ein Gebirge aus Höhenlinien im Streiflicht – und am Ende das Foto. Gerechnet aus der App, ohne Ton." },
     ],
     bewegung: "So arbeitet PHORMA I, in drei Abläufen: «Fragmente» montiert das Foto aus Linien, Formen und Farben; «Verwandlung» führt über Funken, Glaskörper, Scherben, Echo und Gebirge zum Foto; der «Relief-Flug» fliegt über die Formen, bis das Bild flach daliegt. Die Tafel zeigt die Scherben.",
@@ -74,6 +77,9 @@ export const APPS = [
     fuer: "Für Künstler:innen, Galerien und Museen, die ein Werk in Bewegung zeigen wollen.",
     url: "alpha/phorma-ii/", app: "alpha/phorma-ii/?installieren", bild: "b/bilder/apps/phorma-ii.svg", bildDunkel: "b/bilder/apps/phorma-ii-dunkel.svg", bildAlt: "PHORMA II, gezeichnet: ein Netz aus Adern, das aus fünf Keimen wächst und sich auf eine Form legt, dort in Blau",
     beispiele: [
+      // Seit 13. November 2026 zuerst der Film, den Christian an dem Tag geschickt hat («phorma-ii-2026-11-13-1141», 24,3 s ohne Ton, 1080 × 1350);
+      // hier 720 × 900 (ffmpeg: scale=720:900:flags=lanczos, libx264 crf 30; der Rasterdruck macht die Datei gross, 5,5 MB). Der bisherige Film bleibt als zweiter.
+      { art: "video", datei: "assets/beispiele/phorma-ii-kette.mp4", bild: "assets/beispiele/phorma-ii-kette.jpg", mass: [720, 900], text: "Eine Kette in sechs Schritten: Keime wachsen zu einem Netz (Physarum), das Netz legt eine Form frei, sie wird zum Rasterdruck, dessen Platten verrutschen, und zerfällt am Ende in Rechtecke (Montage). Gerechnet aus der App, ohne Ton." },
       { art: "video", datei: "assets/beispiele/phorma-ii.mp4", bild: "assets/beispiele/phorma-ii.jpg", mass: [540, 676], text: "Eine Kette mit einem schillernden, gespiegelten Bild: ein Schleimpilz legt sein Netz auf die Formen (Physarum), das Bild weht als Seidentuch (Tuch) und zerfällt im Takt in Rechtecke (Montage) – bis zum Signet. Gerechnet aus der App, ohne Ton." },
     ],
     bewegung: "So arbeitet PHORMA II, in sechs Effekten, einzeln oder als Kette: ein Schleimpilz findet seine Formen (Physarum), eine Lichtebene tastet die Tiefe ab (Tiefe), das Bild liegt unter ruhigem Wasser (Wellenwanne), das Foto weht als Seidentuch (Tuch), es wird zum Vierfarbendruck, dessen Platten verrutschen (Rasterdruck) oder es zerfällt im Takt in Rechtecke (Montage). Die Tafel zeigt eine einzige Linie, die eine Fläche füllt.",
@@ -83,6 +89,10 @@ export const APPS = [
     fuer: "Für Musiker:innen, Sprecher:innen und alle, die zu einem Ton ein Bild brauchen.",
     url: "alpha/phorma-iii/", app: "alpha/phorma-iii/?installieren", bild: "b/bilder/apps/phorma-iii.svg", bildDunkel: "b/bilder/apps/phorma-iii-dunkel.svg", bildAlt: "PHORMA III, gezeichnet: drei Bänder aus feinen Linien wie zerknitterte Seide, eines in Blau",
     beispiele: [
+      // Seit 13. November 2026 zuerst der Film, den Christian an dem Tag geschickt hat («phorma-iii-2026-11-09-2235», Würfel und Irrfahrt, 12,7 s mit Ton,
+      // 1080 × 1350); hier 720 × 900 (ffmpeg aus dem Original: scale=720:900:flags=lanczos, libx264 crf 27, AAC 128 kbit/s). Das Gewebe bleibt als zweiter Film.
+      // Die Kachel auf /b/apps/ zeigt weiter die Traube (Wunsch vom 30. Oktober 2026).
+      { art: "video", datei: "assets/beispiele/phorma-iii-wuerfel.mp4", bild: "assets/beispiele/phorma-iii-wuerfel.jpg", mass: [720, 900], text: "Würfel und Irrfahrt zum Ton: Ein Würfel zeichnet seine Kanten, in ihm irrt ein leuchtender Faden. Mit den Einsätzen werden es drei Würfel, einmal kehrt das Bild ins Helle um. Gerechnet aus der App, mit Ton." },
       { art: "video", datei: "assets/beispiele/phorma-iii.mp4", bild: "assets/beispiele/phorma-iii.jpg", mass: [540, 676], text: "Das Gewebe zu einem Stück Musik: Flächen aus feinen Linien auf hellem Papier, bei jedem kräftigen Einsatz ein neues Bild, am Ende das Signet. Gerechnet aus der App, mit Ton." },
     ],
     bewegung: "So arbeitet PHORMA III, in fünf Effekten zum Ton: Flächen aus feinen Linien (Gewebe), ein Faden im Würfel aus Licht, wild oder ruhig (Irrfahrt, Lichtwürfel), Perlen in einer Kugel aus Fäden (Traube) oder das Video selbst, gescratcht und verfrickelt (Video). Jeder Schlag bewegt das Bild. Die Tafel zeigt das Gewebe.",
