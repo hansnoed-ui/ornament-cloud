@@ -1,0 +1,54 @@
+# Neubau nach einem neuen Social-Media-Zettel (seit 14. November 2026, Wunsch: neue Zettel sollen von selbst auf «Zuletzt» und der Startseite stehen).
+# Die Redaktion (b/redaktion/) schreibt nur die Seiten unter social-media/. «Zuletzt» (/b/zuletzt/, /b/en/zuletzt/) und die Startseiten des Neubaus
+# baut tools/build-b.mjs; dieser Workflow tut das nach jeder Änderung an social-media/daten/eintraege.json, schreibt das Ergebnis auf main zurück
+# und stösst danach den Workflow «Hostpoint» an (ein Push mit dem GITHUB_TOKEN löst selbst keinen Workflow aus). Keine Secrets nötig.
+name: Neubau nach neuem Zettel
+
+on:
+  push:
+    branches: [main]
+    paths: [social-media/daten/eintraege.json]
+  workflow_dispatch:
+
+concurrency:
+  group: neubau-zuletzt
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  bauen:
+    name: Zuletzt und Startseite neu bauen
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Neubau
+        run: node tools/build-b.mjs
+      - name: Zurückschreiben und veröffentlichen
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet -- b sitemap.xml; then echo "Neubau unverändert"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add b sitemap.xml
+          git commit -m "Neubau: Zuletzt und Startseite mit dem neuen Zettel"
+          # Ist main inzwischen weiter (noch ein Zettel aus der Redaktion), neu aufsetzen und noch einmal bauen
+          for i in 1 2 3 4; do
+            git push origin HEAD:main && { gesendet=1; break; }
+            git fetch origin main && git reset --hard origin/main
+            node tools/build-b.mjs
+            if git diff --quiet -- b sitemap.xml; then echo "Neubau inzwischen aktuell"; exit 0; fi
+            git add b sitemap.xml
+            git commit -m "Neubau: Zuletzt und Startseite mit dem neuen Zettel"
+            sleep $((i * 5))
+          done
+          [ -n "$gesendet" ] || { echo "::error::main bewegte sich zu oft, Neubau nicht zurückgeschrieben"; exit 1; }
+          gh workflow run hostpoint.yml --ref main
