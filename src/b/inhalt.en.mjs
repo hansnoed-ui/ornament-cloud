@@ -165,7 +165,7 @@ export const ANGEBOTE = [
         bildAlt: "Multiverse: four applications side by side in columns, ORNA, PHORMA III, Das Dritte Rad and The Fictory, with a bar above to switch them on and off",
         text: "Nine applications, clearly laid out to show and hide side by side. This way of designing a website is especially popular with clients at the moment." },
       { name: "ornament.cloud, Gamma version", von: "own site", jahr: "2026", url: "/gamma/", adresse: "ornament.cloud/gamma", bild: "b/bilder/schau/gamma.jpg", film: "b/bilder/schau/gamma.mp4",
-        bildAlt: "Gamma on film: the page rolls as a coloured band through dark space, with the fields Websites, Apps, Art, Specials, Notes and Social and wireframe models beside it",
+        bildAlt: "Gamma on film: the page rolls as a coloured band through dark space, with the fields Websites, Apps, Art and Specials and wireframe models beside it",
         text: "The same content in a second design: dark, with the signet in motion and films as tiles. It shows how far a site can change while its content stays the same. In German." },
     ],
     dialog: [

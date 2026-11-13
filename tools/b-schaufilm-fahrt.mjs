@@ -19,7 +19,7 @@ try { playwright = require("playwright"); } catch { playwright = require(join(pr
 // Die Fahrt: [Anteil des Rollwegs, Bilder bis dorthin]; gleicher Anteil hintereinander heisst Halt. 20 Bilder je Sekunde.
 const FILME = {
   principesse: { wurzel: resolve(process.env.PRINCIPESSE || "../principessa"), pfad: "", warten: 9000, fahrt: [[0.27, 0], [0.27, 50], [0.55, 110], [0.55, 50], [0.85, 120], [0.85, 80]], ab: 13 },   // nur die Nacht kommt in den Film («die letzte szene ist gut, die ersten beiden hüpfen»)
-  gamma: { wurzel: fileURLToPath(new URL("../", import.meta.url)), pfad: "gamma/", warten: 6000, fahrt: [[0.58, 0], [0.58, 30], [0.72, 80], [0.72, 30], [0.86, 80], [0.86, 30], [1, 80], [1, 50]] },
+  gamma: { wurzel: fileURLToPath(new URL("../", import.meta.url)), pfad: "gamma/", warten: 6000, fahrt: [[0.58, 0], [0.58, 30], [0.72, 80], [0.72, 30], [0.86, 80], [0.86, 30]] },   // bis «Specials»; die ganze Seite dauert ohne Grafikkarte länger als eine halbe Stunde
 };
 const NAME = process.argv[2] || "principesse", F = FILME[NAME];
 const AUS = fileURLToPath(new URL(`../b/bilder/schau/${NAME}.mp4`, import.meta.url));

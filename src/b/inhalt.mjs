@@ -185,7 +185,7 @@ export const ANGEBOTE = [
         bildAlt: "Multiverse: vier Anwendungen nebeneinander in Spalten, ORNA, PHORMA III, Das Dritte Rad und The Fictory, darüber eine Leiste zum Ein- und Ausschalten",
         text: "Neun Anwendungen, übersichtlich zum Ein- und Ausblenden nebeneinander. Diese Art, eine Website zu gestalten, ist bei den Kund:innen zurzeit besonders beliebt." },
       { name: "ornament.cloud, Fassung Gamma", von: "eigene Seite", jahr: "2026", url: "/gamma/", adresse: "ornament.cloud/gamma", bild: "b/bilder/schau/gamma.jpg", film: "b/bilder/schau/gamma.mp4",
-        bildAlt: "Gamma im Film: die Seite rollt als farbiges Band durch den dunklen Raum, mit den Feldern Websites, Apps, Kunst, Specials, Zettel und Social und Drahtmodellen daneben",
+        bildAlt: "Gamma im Film: die Seite rollt als farbiges Band durch den dunklen Raum, mit den Feldern Websites, Apps, Kunst und Specials und Drahtmodellen daneben",
         text: "Dieselben Inhalte in einer zweiten Gestaltung: dunkel, mit dem Signet in Bewegung und Filmen als Kacheln. Sie zeigt, wie weit sich eine Seite verändern lässt, ohne dass sich ihre Inhalte ändern." },
     ],
     dialog: [
