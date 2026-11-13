@@ -19,3 +19,6 @@ animations/werke/
 # Hörseite der EP «directer» (listen/directer/): die durchgehende WAV ist zu gross für Git und wird separat auf den Webspace geladen (docs/ep-directer.md)
 listen/directer/audio/
 *.ep-zwischen.wav
+
+# Social-Paket (tools/social-paket.mjs): Filme, Standbilder und Texte werden lokal oder im Workflow «Social-Paket» gerechnet und nicht eingecheckt
+docs/social/

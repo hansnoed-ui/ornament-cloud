@@ -18,8 +18,8 @@ const seitenEn = walk("b/en/").filter((p) => !/\/(oeffnen|feld)\/$/.test(p));
 const meta = (html, name) => html.match(new RegExp(`<meta (?:name|property)="${name}" content="([^"]*)"`))?.[1];
 const pngMass = (buf) => [buf.readUInt32BE(16), buf.readUInt32BE(20)];
 
-test("b/: alle Seiten (72), jede mit Titel, Beschreibung, Canonical oder noindex, Open Graph, X-Karte und JSON-LD", () => {
-  assert.equal(seiten.length, 1 + 1 + 49 + 1 + APPS.length + 1 + RASTER.length + 1 + ANGEBOTE.length + 4);
+test("b/: alle Seiten (74, seit 13. November 2026 mit «Hören» und «Atelier»), jede mit Titel, Beschreibung, Canonical oder noindex, Open Graph, X-Karte und JSON-LD", () => {
+  assert.equal(seiten.length, 1 + 1 + 49 + 1 + APPS.length + 1 + RASTER.length + 1 + ANGEBOTE.length + 4 + 2);
   for (const p of seiten) {
     const html = lies(`b/${p}index.html`);
     assert.match(html, /<html lang="de">/, p);
@@ -295,7 +295,7 @@ test("Werke: nur die Ankündigungen (Prints und Originale, Im Raum, Editionen), 
   for (const t of ['id="prints-titel"', 'id="raum-titel"', 'id="editionen-titel"', "In Vorbereitung"]) assert.ok(seite.includes(t), t);
   for (const w of werkeDaten.werke.filter((x) => x.muster)) for (const html of [seite, start]) assert.ok(!html.includes(`/${w.slug}/`) && !html.includes(`#${w.slug}`), `${w.slug}: Muster nicht im Neubau`);
   for (const t of ["Beispiel", "Interesse melden", "stellenfeld", "reentry", 'class="werk"', 'class="stueck"']) { assert.ok(!seite.includes(t), `Werke: kein ${t}`); }
-  assert.ok(!start.includes("Beispiel, Angaben folgen") && !/werke-titel[\s\S]*?class="stueck"[\s\S]*?zuletzt-titel/.test(start), "Startseite: der Abschnitt Werke ohne Beispiele");
+  assert.ok(!start.includes("Beispiel, Angaben folgen") && !/werke-titel[\s\S]*?class="stueck"[\s\S]*?id="spielen-denken"/.test(start), "Startseite: der Abschnitt Werke ohne Beispiele");
 });
 
 test("Zettel: das kleine Feld führt zurück zum grossen; am Telefon steht die Anleitung fürs Tippen", () => {
@@ -319,9 +319,10 @@ test("b/en/: jede Seite auch auf Englisch (ohne die Werkstatt), lang=en, hreflan
     assert.ok(html.includes(`<link rel="alternate" hreflang="de" href="https://ornament.cloud/b/${p}">`) && html.includes(`<link rel="alternate" hreflang="en" href="https://ornament.cloud/b/en/${p}">`), `${p}: hreflang`);
     assert.ok(html.includes(`<nav class="sprache" aria-label="Language"><a href="/b/${p}" lang="de" hreflang="de" title="Deutsch">d</a><a href="/b/en/${p}" lang="en" hreflang="en" title="English" aria-current="true">e</a></nav>`), `${p}: Schalter`);
     for (const d of deutsch) assert.ok(!html.includes(d), `${p}: «${d}» ist nicht übersetzt`);
-    assert.ok(/<nav class="hauptnav"[^>]*><a href="\/animations\/" target="_blank" rel="noopener">Animations<\/a><a href="\/multiverse\/" target="_blank" rel="noopener">Multiverse<\/a><a href="\/b\/en\/zettel\/"[^>]*>Notes<\/a>[\s\S]*?<details class="beta"><summary[^>]*>Beta<\/summary><span class="beta-liste"><a class="intern" href="\/b\/en\/raster\/"[^>]*>Grids<\/a><a href="\/beta\/lab\/" target="_blank" rel="noopener">Lab<\/a><a href="\/beta\/drittes-rad\/" target="_blank" rel="noopener">Das 3\. Rad<\/a><\/span><\/details><a href="\/gamma\/" target="_blank" rel="noopener">Gamma<\/a><\/nav>/.test(html), `${p}: die Navigation auf Englisch unter /b/en/ (seit 28. Oktober 2026 zuletzt «Beta» zum Aufklappen mit Lab und Das 3. Rad, seit 31. Oktober 2026 daneben «Gamma», neues Fenster, seit 5. November 2026 zuvorderst «Animations», neues Fenster)`);
-    assert.ok(!/<nav class="hauptnav"[^>]*>(?:(?!<details)[\s\S])*?>Grids<\/a>/.test(html), `${p}: «Grids» seit 8. November 2026 nur unter «Beta»`);
-    assert.ok(/<details class="beta ueber"><summary[^>]*>About<\/summary><span class="beta-liste"><a href="\/b\/en\/ueber\/"[^>]*>About<\/a><a href="\/b\/en\/angebot\/"[^>]*>Services<\/a><a href="\/b\/en\/werke\/"[^>]*>Works<\/a><a href="\/b\/en\/zuletzt\/"[^>]*>Latest<\/a><\/span><\/details>/.test(html), `${p}: seit 5. November 2026 Angebot, Werke und Zuletzt unter «Über» (aufklappbar)`);
+    // Seit 13. November 2026 («Künstler zuerst», Paket «Schaufenster»): Hören, Zettel, Apps, Raster, Angebot, Über (mit Werke und Zuletzt), Atelier.
+    // Animations, Multiverse, Lab, Das 3. Rad und Gamma stehen auf der Seite «Atelier» statt im Menü; «Beta» gibt es im Menü nicht mehr.
+    assert.ok(/<nav class="hauptnav"[^>]*><a href="\/b\/en\/hoeren\/"[^>]*>Listen<\/a><a href="\/b\/en\/zettel\/"[^>]*>Notes<\/a><a href="\/b\/en\/apps\/"[^>]*>Apps<\/a><a href="\/b\/en\/raster\/"[^>]*>Grids<\/a><a href="\/b\/en\/angebot\/"[^>]*>Services<\/a><details class="beta ueber"><summary[^>]*>About<\/summary><span class="beta-liste"><a href="\/b\/en\/ueber\/"[^>]*>About<\/a><a href="\/b\/en\/werke\/"[^>]*>Works<\/a><a href="\/b\/en\/zuletzt\/"[^>]*>Latest<\/a><\/span><\/details><a class="atelier-link" href="\/b\/en\/atelier\/"[^>]*>Studio<\/a><\/nav>/.test(html), `${p}: die Navigation auf Englisch unter /b/en/`);
+    assert.ok(!/<nav class="hauptnav"[\s\S]*?(animations|multiverse|gamma|beta\/)[\s\S]*?<\/nav>/.test(html.match(/<nav class="hauptnav"[\s\S]*?<\/nav>/)[0]), `${p}: nichts aus dem Atelier im Hauptmenü`);
   }
   // die deutschen Seiten zeigen den Schalter mit d aktiv und verweisen auf /b/en/
   for (const p of seiten.filter((x) => x !== "werkstatt/")) {
@@ -343,3 +344,43 @@ test("b/en/: jede Seite auch auf Englisch (ohne die Werkstatt), lang=en, hreflan
   assert.ok(sm.includes("<loc>https://ornament.cloud/b/en/</loc>") && sm.includes("<loc>https://ornament.cloud/b/en/zettel/1-die-bruecke/</loc>"), "Sitemap mit /b/en/");
 });
 
+
+// ---------- Schaufenster (13. November 2026, Entscheid von Christian: «Künstler zuerst»; Pakete «Schaufenster» und «Veröffentlichung») ----------
+test("Startseite: drei Türen, dann «Hören und Sehen» mit dem Neusten, Zettelkasten, Spielen, Prüfraster, «Beauftragen» mit den vier Leistungen", () => {
+  for (const [datei, tueren] of [["b/index.html", ["Hören und Sehen", "Spielen und Denken", "Beauftragen"]], ["b/en/index.html", ["Listen and look", "Play and think", "Commission"]]]) {
+    const html = lies(datei);
+    const nav = html.match(/<nav class="angebote tueren"[\s\S]*?<\/nav>/)?.[0];
+    assert.ok(nav, `${datei}: die Türen`);
+    assert.deepEqual([...nav.matchAll(/<h2>([^<]+)<\/h2>/g)].map((m) => m[1]), tueren);
+    assert.deepEqual([...nav.matchAll(/<a class="angebot" href="([^"]+)"/g)].map((m) => m[1]), ["#hoeren-sehen", "#spielen-denken", "#beauftragen"]);
+    for (const id of ["hoeren-sehen", "spielen-denken", "beauftragen"]) assert.ok(html.includes(` id="${id}"`), `${datei}: Ziel #${id}`);
+    const folge = ['class="angebote tueren"', 'id="hoeren-sehen"', 'id="spielen-denken"', 'id="spielen-titel"', 'id="raster-titel"', 'id="beauftragen"', 'id="zuletzt-titel"'].map((t) => html.indexOf(t));
+    assert.ok(folge.every((x, i) => x > 0 && (i === 0 || x > folge[i - 1])), `${datei}: Reihenfolge der Abschnitte`);
+    const beauftragen = html.slice(html.indexOf('id="beauftragen"'), html.indexOf('id="zuletzt-titel"'));
+    assert.equal((beauftragen.match(/<a class="angebot" role="listitem"/g) || []).length, ANGEBOTE.length, `${datei}: vier Leistungen unter «Beauftragen»`);
+  }
+  assert.ok(lies("b/index.html").includes("<h1 class=\"titel\" id=\"einstieg-titel\">Theorie, die man anfassen kann."), "der Titel");
+});
+
+test("Hören: jede öffentliche Veröffentlichung (listen/<slug>/ep.json mit \"oeffentlich\": true) als Platte auf /b/hoeren/ und die neuste auf der Startseite", () => {
+  const ep = JSON.parse(lies("listen/directer/ep.json"));
+  for (const datei of ["b/hoeren/index.html", "b/en/hoeren/index.html", "b/index.html", "b/en/index.html"]) {
+    const html = lies(datei), platte = html.match(/<article class="platte" id="directer">[\s\S]*?<\/article>/)?.[0];
+    if (ep.oeffentlich !== true) { assert.ok(!platte, `${datei}: keine Platte, solange privat`); continue; }
+    assert.ok(platte, `${datei}: die Platte`);
+    assert.ok(platte.includes('href="/listen/directer/"') && platte.includes(`>${ep.titel}</`) && platte.includes(`<span>${ep.anzeigename}</span>`), `${datei}: Name, Titel, Weg zur Hörseite`);
+    assert.deepEqual([...platte.matchAll(/<li><span>([^<]+)<\/span>/g)].map((m) => m[1]), ep.tracks.map((t) => t.titel), `${datei}: die Tracks`);
+    assert.match(platte, /<img src="\/listen\/directer\/cover-512\.jpg\?v=[0-9a-f]{10}"/, `${datei}: Cover mit Versionsmarke`);
+  }
+  const ld = [...lies("b/hoeren/index.html").matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].flatMap((m) => JSON.parse(m[1]));
+  if (ep.oeffentlich === true) assert.ok(ld.some((x) => x["@type"] === "MusicAlbum" && x.name === ep.titel && x.numTracks === ep.tracks.length), "JSON-LD MusicAlbum");
+});
+
+test("Atelier: die Einträge mit \"atelier\": true aus src/register.json, jeder in neuem Fenster; nichts, was nur per Direktlink erreichbar sein soll", () => {
+  const register = JSON.parse(lies("src/register.json"));
+  const html = lies("b/atelier/index.html"), liste = html.match(/<ul class="liste-linien am-ende">[\s\S]*?<\/ul>/)[0];
+  const soll = register.arbeiten.filter((e) => e.atelier);
+  assert.deepEqual([...liste.matchAll(/<a href="\/([^"]*)" target="_blank" rel="noopener"/g)].map((m) => m[1]), soll.map((e) => e.adresse));
+  for (const e of soll) assert.ok(["verlinkt", "oeffentlich"].includes(e.status) && e.kurz && e.kurzEn, `${e.id}: im Atelier nur Verlinktes, mit Text in beiden Sprachen`);
+  for (const e of register.arbeiten.filter((x) => x.status === "direktlink")) for (const datei of ["b/atelier/index.html", "b/en/atelier/index.html", "b/index.html"]) assert.ok(!lies(datei).includes(`href="/${e.adresse}"`), `${datei}: ${e.id} bleibt unverlinkt`);
+});

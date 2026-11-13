@@ -8,7 +8,7 @@ export const UI = {
     lang: "de", locale: "de-CH", ogLocale: "de_CH", inLanguage: "de-CH", praefix: "/b/", andere: "en",
     sprache: { aria: "Sprache", de: "Deutsch", en: "English" },
     sprung: "Zum Inhalt", hauptnav: "Hauptnavigation",
-    nav: { "zettel/": "Zettel", "apps/": "Apps", "raster/": "Raster", "angebot/": "Angebot", "werke/": "Werke", "zuletzt/": "Zuletzt", "ueber/": "Über" },
+    nav: { "hoeren/": "Hören", "zettel/": "Zettel", "apps/": "Apps", "raster/": "Raster", "angebot/": "Angebot", "werke/": "Werke", "zuletzt/": "Zuletzt", "ueber/": "Über", "atelier/": "Atelier" },
     kopfTitelStart: "ornament.cloud – Kunst, Design und Theorie, Christian Strickler", feedTitel: "ornament.cloud – News",
     fuss: { ueber: "Über", impressum: "Impressum und Datenschutz", bisher: "Zur bisherigen Website", feed: "Feed", ohne: "Diese Seite lädt nichts von aussen: keine Cookies, keine Werbung, keine Tracker." },
     feldchen: (n) => (n ? `Zum Zettelkasten – Zettel ${n} von 49 im Feld` : "Zum Zettelkasten"),
@@ -22,6 +22,17 @@ export const UI = {
     teilen: "Teilen", karte: "Karte herunterladen", vorschau: "Vorschau mit Bild auf allen Plattformen.",
     buehne: { vollbild: "Vollbild", tabTitel: "In eigenem Tab öffnen", tab: "Eigener Tab", zurueckTitel: "Zurück zur Seite der App", zurueck: "Zurück", feld: "das Feld" },
     start: {
+      // Einstieg «Künstler zuerst» mit drei Türen (13. November 2026, Entscheid von Christian): Hören und Sehen, Spielen und Denken, Beauftragen
+      tueren: [
+        { id: "hoeren-sehen", name: "Hören und Sehen", kurz: "Musik, Werke und Filme.", weiter: "Zum Neusten", ziel: "#hoeren-sehen", zeichen: "hoeren" },
+        { id: "spielen-denken", name: "Spielen und Denken", kurz: "Ein Zettelkasten, sieben Apps, vier Prüfraster.", weiter: "Zum Zettelkasten", ziel: "#spielen-denken", zeichen: "spielen" },
+        { id: "beauftragen", name: "Beauftragen", kurz: "Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte.", weiter: "Zu den Leistungen", ziel: "#beauftragen", zeichen: "arbeiten" },
+      ],
+      tuerenAria: "Die drei Türen",
+      hoeren: "Hören und Sehen", hoerenText: "Was fertig ist und sich zeigen lässt: Musik, Werke, Filme. Das Neuste zuoberst.", alleMusik: "Alle Musik",
+      neu: "Neu", anhoeren: "Anhören", tracks: (n) => `${n} Tracks`, minuten: (m) => `${m} Minuten`,
+      beauftragen: "Beauftragen", beauftragenText: "Vier Leistungen, made in Switzerland. Jede beginnt mit einem Gespräch und einem Briefing.", alleAngebote: "Alle Leistungen",
+      auch: "Auch zum Spielen:", atelier: "Atelier",
       leistung: "Leistung und Briefing",
       satz: "Diese Seite ist das Beispiel: ein Zettelkasten zum Lesen, sieben Apps zum Spielen, vier Prüfraster zum Hinsehen.",
       kasten: "Der Zettelkasten", kastenText: "49 Zettel zu Operation, Kunst, Gesellschaft und künstlicher Kommunikation, in sieben Zyklen.", alleZettel: "Alle Zettel",
@@ -36,6 +47,17 @@ export const UI = {
     zettelN: (n) => `Zettel ${n}`, zettelLesen: "Zettel lesen", nochEiner: "Noch einer",
     person: { jobTitle: "Webdesigner, Kurator, Künstler, Sozialarbeiter", knowsAbout: ["Systemtheorie", "Webdesign", "Kunstvermittlung", "Kuration", "Maltherapie", "Soziale Arbeit"] },
     beitragLink: "Beleg, Schlagworte und Kommentar im Zettelkasten", beitraegeDeutsch: "",
+    hoeren: {
+      titel: "Hören", small: "Musik von the i. Ein Link, einmal auf Play tippen, die Veröffentlichung läuft durch, auch mit gesperrtem Bildschirm.",
+      seitenTitel: "Hören – Musik von the i", beschreibung: "Musik von the i zum Hören im Browser: jede Veröffentlichung mit Cover, Tracks und Dauer, ohne Anmeldung und ohne Dienste von aussen.", bildAlt: "Hören: Musik von the i",
+      leer: "Die erste Veröffentlichung ist in Vorbereitung.", cover: (v) => `Cover: ${v.anzeigename} – ${v.titel}`, herunterladen: "Die Tracks lassen sich auf der Hörseite einzeln herunterladen.",
+      teilenTitel: "Hören – ornament.cloud", teilenText: "Musik von the i.", art: (v) => v.art || "",
+    },
+    atelier: {
+      titel: "Atelier", small: "Wo gearbeitet wird: Werkzeuge im Bau, Proben und andere Fassungen dieser Website. Nicht alles ist fertig, manches verändert sich von Tag zu Tag.",
+      seitenTitel: "Atelier – Werkzeuge, Proben, andere Fassungen", beschreibung: "Das Atelier von ornament.cloud: Werkzeuge im Bau, Proben und andere Fassungen der Website.", bildAlt: "Atelier",
+      oeffnen: "öffnet in neuem Fenster", kurz: (e) => e.kurz,
+    },
     kasten: {
       titel: "Zettelkasten", small: "Jeder Zettel hat einen Leitsatz, einen Text und vier Verweise. Die Fäden zeigen, wer dieselben Personen nennt.",
       feldAria: "Das Feld", kickerSatz: "hier erscheint der Leitsatz des Zettels, die Fäden zeigen, wer dieselben Personen nennt.",
@@ -95,7 +117,7 @@ export const UI = {
     lang: "en", locale: "en-GB", ogLocale: "en_GB", inLanguage: "en", praefix: "/b/en/", andere: "de",
     sprache: { aria: "Language", de: "Deutsch", en: "English" },
     sprung: "Skip to content", hauptnav: "Main navigation",
-    nav: { "zettel/": "Notes", "apps/": "Apps", "raster/": "Grids", "angebot/": "Services", "werke/": "Works", "zuletzt/": "Latest", "ueber/": "About" },
+    nav: { "hoeren/": "Listen", "zettel/": "Notes", "apps/": "Apps", "raster/": "Grids", "angebot/": "Services", "werke/": "Works", "zuletzt/": "Latest", "ueber/": "About", "atelier/": "Studio" },
     kopfTitelStart: "ornament.cloud – art, design and theory, Christian Strickler", feedTitel: "ornament.cloud – News",
     fuss: { ueber: "About", impressum: "Imprint and privacy", bisher: "Previous website", feed: "Feed", ohne: "This site loads nothing from outside: no cookies, no advertising, no trackers." },
     feldchen: (n) => (n ? `To the Zettelkasten – note ${n} of 49 in the field` : "To the Zettelkasten"),
@@ -109,6 +131,16 @@ export const UI = {
     teilen: "Share", karte: "Download card", vorschau: "Preview with image on all platforms.",
     buehne: { vollbild: "Full screen", tabTitel: "Open in its own tab", tab: "Own tab", zurueckTitel: "Back to the app's page", zurueck: "Back", feld: "the field" },
     start: {
+      tueren: [
+        { id: "hoeren-sehen", name: "Listen and look", kurz: "Music, works and films.", weiter: "To the latest", ziel: "#hoeren-sehen", zeichen: "hoeren" },
+        { id: "spielen-denken", name: "Play and think", kurz: "A Zettelkasten, seven apps, four test grids.", weiter: "To the Zettelkasten", ziel: "#spielen-denken", zeichen: "spielen" },
+        { id: "beauftragen", name: "Commission", kurz: "Web design, education and consulting, curatorial projects, products.", weiter: "To the services", ziel: "#beauftragen", zeichen: "arbeiten" },
+      ],
+      tuerenAria: "The three doors",
+      hoeren: "Listen and look", hoerenText: "What is finished and can be shown: music, works, films. The latest first.", alleMusik: "All music",
+      neu: "New", anhoeren: "Listen", tracks: (n) => `${n} tracks`, minuten: (m) => `${m} minutes`,
+      beauftragen: "Commission", beauftragenText: "Four services, made in Switzerland. Each begins with a conversation and a briefing.", alleAngebote: "All services",
+      auch: "Also to play with:", atelier: "Studio",
       leistung: "Service and briefing",
       satz: "This site is the example: a Zettelkasten to read, seven apps to play with, four test grids for looking closer.",
       kasten: "The Zettelkasten", kastenText: "49 notes on operation, art, society and artificial communication, in seven cycles.", alleZettel: "All notes",
@@ -123,6 +155,17 @@ export const UI = {
     zettelN: (n) => `Note ${n}`, zettelLesen: "Read the note", nochEiner: "Another one",
     person: { jobTitle: "Web designer, curator, artist, social worker", knowsAbout: ["Systems theory", "Web design", "Art education", "Curation", "Art therapy", "Social work"] },
     beitragLink: "Source, keywords and comment in the Zettelkasten", beitraegeDeutsch: "The posts are in German.",
+    hoeren: {
+      titel: "Listen", small: "Music by the i. One link, one tap on play, the release runs through, even with the screen locked.",
+      seitenTitel: "Listen – music by the i", beschreibung: "Music by the i to listen to in the browser: each release with cover, tracks and duration, no sign-up and no outside services.", bildAlt: "Listen: music by the i",
+      leer: "The first release is in preparation.", cover: (v) => `Cover: ${v.anzeigename} – ${v.titel}`, herunterladen: "The tracks can be downloaded one by one on the listening page.",
+      teilenTitel: "Listen – ornament.cloud", teilenText: "Music by the i.", art: (v) => v.artEn || v.art || "",
+    },
+    atelier: {
+      titel: "Studio", small: "Where the work happens: tools under construction, trials and other versions of this website. Not everything is finished, some of it changes from day to day.",
+      seitenTitel: "Studio – tools, trials, other versions", beschreibung: "The studio of ornament.cloud: tools under construction, trials and other versions of the website.", bildAlt: "Studio",
+      oeffnen: "opens in a new window", kurz: (e) => e.kurzEn || e.kurz,
+    },
     kasten: {
       titel: "Zettelkasten", small: "Each note has a lead sentence, a text and four references. The threads show who names the same people.",
       feldAria: "The field", kickerSatz: "the note's lead sentence appears here, the threads show who names the same people.",

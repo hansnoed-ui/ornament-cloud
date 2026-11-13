@@ -9,10 +9,13 @@ export const SEITE = {
   claim: "Beobachtung ist Anlass für Veränderung in der Realität.",
   // Einstieg über das Angebot (20. Oktober 2026, Wunsch: «landing-page: ich denke, es sollte die ‹Angebote›-Seite sein, damit der Einstieg in die Website klarer ist»;
   // Entscheid: /b/ beginnt mit den vier Leistungen, Feld, Apps und Zettel folgen). Bis dahin: «Theorie, die man anfassen kann.»
-  titel: "Gestalten, vermitteln, kuratieren.",
-  lead: "Webdesign, Vermittlung und Beratung, kuratorische Projekte und Produkte, made in Switzerland. Dazu ein Zettelkasten, sieben Apps und vier Prüfraster, die zeigen, wie hier gearbeitet wird.",
+  // Seit 13. November 2026 «Künstler zuerst» (Entscheid von Christian): der Einstieg beginnt wieder mit «Theorie, die man anfassen kann.» und drei Türen
+  // (Hören und Sehen, Spielen und Denken, Beauftragen); die vier Leistungen stehen als eigener Abschnitt «Beauftragen» weiter unten.
+  // Vom 20. Oktober bis 13. November 2026: titel «Gestalten, vermitteln, kuratieren.», die vier Leistungen zuoberst.
+  titel: "Theorie, die man anfassen kann.",
+  lead: "Musik, Bilder, Apps und ein Zettelkasten von Christian Strickler. Und vier Leistungen für alle, die so etwas für sich brauchen.",
   claimAlt: "Theorie, die man anfassen kann.",
-  beschreibung: "49 Zettel, sieben Apps, vier Prüfraster und vier Leistungen, made in Switzerland: Webdesign, Vermittlung und Beratung, kuratorische Projekte, Produkte.",
+  beschreibung: "Theorie, die man anfassen kann: Musik, Werke, sieben Apps, 49 Zettel und vier Prüfraster von Christian Strickler. Dazu Webdesign, Vermittlung, Kuration und Produkte.",
   person: { name: "Christian Strickler", ort: "zwischen Zürich, Basel und Aarau", strasse: "Rheingasse 8b", plz: "CH-5466 Kaiserstuhl", mail: "hansnoed@gmail.com" },
   sprache: "de-CH",
 };

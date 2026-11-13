@@ -12,7 +12,7 @@ import { mkdirSync, readFileSync, writeFileSync, copyFileSync, existsSync, readd
 import * as DE from "../src/b/inhalt.mjs";
 import * as EN from "../src/b/inhalt.en.mjs";
 import { UI } from "../src/b/ui.mjs";
-import { ladeZettel, ladeZettelkasten, ladeOrma, ladeWerke, ladeBeitraege, ladeOmna, ladeKonstellationen, ladePersonen } from "./b-daten.mjs";
+import { ladeZettel, ladeZettelkasten, ladeOrma, ladeWerke, ladeBeitraege, ladeOmna, ladeKonstellationen, ladePersonen, ladeRegister, ladeVeroeffentlichungen } from "./b-daten.mjs";
 import { pruefsumme } from "./build-b-jev.mjs";
 import { zeichen } from "../src/b/zeichen.mjs";
 import { createHash } from "node:crypto";
@@ -23,10 +23,13 @@ const AUS_DE = new URL("b/", ROOT);
 // Gleich dahinter seit 8. November 2026 «Multiverse» (/multiverse/, neues Fenster), Wunsch: «nimm das multiverse ins hauptmenu der seite».
 // Seit 5. November 2026 stehen Angebot, Werke und Zuletzt unter «Über» (aufklappbar wie «Beta», mit der Seite «Über» zuoberst);
 // Wunsch: «Nimm Angebote, zuletzt und werke mal unter "über"».
-const UNTER_UEBER = ["ueber/", "angebot/", "werke/", "zuletzt/"];
-// Seit 8. November 2026 steht «Raster» unter «Beta», zuoberst und in derselben Seite (Wunsch: «du kannst die raster unter "beta" nehmen»).
-const UNTER_BETA = ["raster/"];
-const V = 44;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const UNTER_UEBER = ["ueber/", "werke/", "zuletzt/"];
+// Seit 13. November 2026 (Entscheid von Christian: «Künstler zuerst», Paket «Schaufenster»): das Hauptmenü zeigt die drei Türen und sonst nichts –
+// Hören, Zettel, Apps, Raster, Angebot, Über (mit Werke und Zuletzt), Atelier. Animations, Multiverse, Lab, Das 3. Rad und Gamma stehen nicht mehr
+// im Menü, sondern auf der Seite «Atelier» (b/atelier/, aus src/register.json); «Beta» gibt es im Menü nicht mehr, «Raster» und «Angebot» stehen
+// wieder für sich. Das ersetzt die Wünsche vom 5. und 8. November 2026 (Animations zuvorderst, Multiverse im Hauptmenü, Raster unter Beta).
+const HAUPT = ["hoeren/", "zettel/", "apps/", "raster/", "angebot/"];
+const V = 45;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 const INHALT = { de: DE, en: EN };
@@ -47,6 +50,9 @@ const echteWerke = werke.werke.filter((w) => !w.muster);
 const MARKEN = new Map();
 const mitMarke = (pfad) => { if (!MARKEN.has(pfad)) MARKEN.set(pfad, createHash("sha256").update(readFileSync(new URL(pfad, ROOT))).digest("hex").slice(0, 10)); return `/${pfad}?v=${MARKEN.get(pfad)}`; };   // Muster (muster: true) kommen nie in den Neubau (20. Oktober 2026: «die Beispiel-Werke von der Seite Werke entfernen»)
 const beitraege = ladeBeitraege();
+const register = ladeRegister();
+const musik = ladeVeroeffentlichungen();   // nur die mit "oeffentlich": true, neueste zuerst
+const zeitText = (sek) => `${Math.floor(sek / 60)}:${String(Math.round(sek % 60)).padStart(2, "0")}`;
 const omnaUebungen = ladeOmna();
 const konstellationen = ladeKonstellationen();
 const namen = ladePersonen();
@@ -261,7 +267,7 @@ function bau(sprache) {
   <header class="kopf">
     <div class="spalte">
       <div class="marke"><a class="signet" href="${B}"${pfad === "" ? ' aria-current="page"' : ""}>${SIGNET}<span>ornament.cloud</span></a>${sprachwahl(pfad, nurDe)}</div>
-      <nav class="hauptnav" aria-label="${attr(T.hauptnav)}"><a href="/animations/" target="_blank" rel="noopener">Animations</a><a href="/multiverse/" target="_blank" rel="noopener">Multiverse</a>${Object.entries(T.nav).filter(([p]) => !UNTER_UEBER.includes(p) && !UNTER_BETA.includes(p)).map(([p, n]) => `<a href="${B}${p}"${aktiv === p ? ' aria-current="page"' : ""}>${n}</a>`).join("")}<details class="beta ueber"><summary${UNTER_UEBER.includes(aktiv) ? ' class="aktiv"' : ""}>${T.nav["ueber/"]}</summary><span class="beta-liste">${UNTER_UEBER.map((p) => `<a href="${B}${p}"${aktiv === p ? ' aria-current="page"' : ""}>${T.nav[p]}</a>`).join("")}</span></details><details class="beta"><summary${UNTER_BETA.includes(aktiv) ? ' class="aktiv"' : ""}>Beta</summary><span class="beta-liste">${UNTER_BETA.map((p) => `<a class="intern" href="${B}${p}"${aktiv === p ? ' aria-current="page"' : ""}>${T.nav[p]}</a>`).join("")}<a href="/beta/lab/" target="_blank" rel="noopener">Lab</a><a href="/beta/drittes-rad/" target="_blank" rel="noopener">Das 3. Rad</a></span></details><a href="/gamma/" target="_blank" rel="noopener">Gamma</a></nav>
+      <nav class="hauptnav" aria-label="${attr(T.hauptnav)}">${HAUPT.map((p) => `<a href="${B}${p}"${aktiv === p ? ' aria-current="page"' : ""}>${T.nav[p]}</a>`).join("")}<details class="beta ueber"><summary${UNTER_UEBER.includes(aktiv) ? ' class="aktiv"' : ""}>${T.nav["ueber/"]}</summary><span class="beta-liste">${UNTER_UEBER.map((p) => `<a href="${B}${p}"${aktiv === p ? ' aria-current="page"' : ""}>${T.nav[p]}</a>`).join("")}</span></details><a class="atelier-link" href="${B}atelier/"${aktiv === "atelier/" ? ' aria-current="page"' : ""}>${T.nav["atelier/"]}</a></nav>
     </div>
   </header>
   <main id="inhalt">
@@ -346,6 +352,20 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
 </article>`;
   }
 
+  /** Eine Musik-Veröffentlichung als Platte: Cover, Name, Titel, Art, Tracks mit Dauer, «Anhören» führt auf die Hörseite listen/<slug>/ (seit 13. November 2026) */
+  function platte(v, { neu = false, ebene = "h3" } = {}) {
+    const ziel = `/${v.pfad}`;
+    return `<article class="platte" id="${attr(v.slug)}">
+  <a class="platte-cover" href="${attr(ziel)}"><img src="${attr(mitMarke(`${v.pfad}${v.coverKlein || v.cover}`))}" alt="${attr(T.hoeren.cover(v))}" width="512" height="512" loading="lazy"></a>
+  <div class="platte-text">
+    <p class="gattung">${neu ? `<b class="neu">${esc(T.start.neu)}</b>` : ""}${esc([T.hoeren.art(v), T.start.tracks(v.tracks.length), T.start.minuten(v.minuten)].filter(Boolean).join(" · "))}</p>
+    <${ebene} class="platte-titel"><span>${esc(v.anzeigename)}</span>${esc(v.titel)}</${ebene}>
+    <ol class="platte-tracks">${v.tracks.map((t) => `<li><span>${esc(t.titel)}</span><span class="zeit">${zeitText(t.samples / v.abtastrate)}</span></li>`).join("")}</ol>
+    <p class="knopfreihe"><a class="knopf voll" href="${attr(ziel)}">${zeichen("hoeren")}<span>${esc(T.start.anhoeren)}</span></a></p>
+  </div>
+</article>`;
+  }
+
   /* ---------- Startseite ---------- */
   {
     const erster = zettel[0];
@@ -357,12 +377,21 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
       <h1 class="titel" id="einstieg-titel">${esc(SEITE.titel)}<small>${esc(SEITE.lead)}</small></h1>
       ${SIGNET_TAFEL}
     </div>
-    <div class="angebote" role="list">${ANGEBOTE.map((a) => `<a class="angebot" role="listitem" href="${B}angebot/${a.slug}/"><span class="zeichen-gross">${zeichen(a.slug)}</span><h2>${esc(a.name)}</h2><p>${esc(a.kurz)}</p><span class="weiter">${esc(T.start.leistung)}</span></a>`).join("")}</div>
-    <p class="einstieg-satz">${esc(SEITE.claimAlt)} ${esc(T.start.satz)}</p>
+    <nav class="angebote tueren" aria-label="${attr(T.start.tuerenAria)}">${T.start.tueren.map((t) => `<a class="angebot" href="${t.ziel}"><span class="zeichen-gross">${zeichen(t.zeichen)}</span><h2>${esc(t.name)}</h2><p>${esc(t.kurz)}</p><span class="weiter">${esc(t.weiter)}</span></a>`).join("")}</nav>
   </div>
 </section>
 
-<section class="buehne kapitel kapitel-papier" data-aktuell="${erster.number}" aria-labelledby="feld-titel">
+<!-- Hören und Sehen (seit 13. November 2026): das Neuste zuoberst – die Musik aus listen/<slug>/ep.json mit "oeffentlich": true, dann die Werke -->
+<section class="abschnitt kapitel tinte" id="hoeren-sehen" aria-labelledby="hoeren-titel">
+  <div class="spalte">
+    <div class="abschnitt-kopf"><h2 id="hoeren-titel">${zeichen("hoeren")}${esc(T.start.hoeren)}</h2><p>${esc(T.start.hoerenText)}</p>${musik.length ? `<a class="weiter" href="${B}hoeren/">${esc(T.start.alleMusik)}</a>` : ""}</div>
+    ${musik.slice(0, 1).map((v) => platte(v, { neu: true })).join("")}
+    <div class="abschnitt-kopf werke-kopf"><h3 id="werke-titel">${zeichen("werke")}${esc(T.start.werke)}</h3><p>${esc(echteWerke.length ? T.start.werkeText : T.start.werkeBald)}</p><a class="weiter" href="${B}werke/">${esc(echteWerke.length ? T.start.alleWerke : T.start.wasKommt)}</a></div>
+    ${echteWerke.length ? `<div class="reihe zeilen">${echteWerke.map((w) => `<a class="stueck" href="${B}werke/#${w.slug}"><span class="bild"><img src="/art/bilder/${w.slug}-1-800.webp" alt="${attr(w.bilder[0].alt)}" loading="lazy" width="800" height="1067"></span><h3>${esc(w.titel)}</h3><p>${esc(w.technik)}, ${w.masse.b} × ${w.masse.h} cm</p></a>`).join("")}</div>` : ""}
+  </div>
+</section>
+
+<section class="buehne kapitel kapitel-papier" id="spielen-denken" data-aktuell="${erster.number}" aria-labelledby="feld-titel">
   <div class="spalte">
     <div class="abschnitt-kopf"><h2 id="feld-titel">${zeichen("zettel")}${esc(T.start.kasten)}</h2><p>${esc(T.start.kastenText)}</p><a class="weiter" href="${B}zettel/">${esc(T.start.alleZettel)}</a></div>
   </div>
@@ -388,6 +417,14 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
   </div>
 </section>
 
+<section class="abschnitt kapitel kapitel-senf" aria-labelledby="spielen-titel">
+  <div class="spalte">
+    <div class="abschnitt-kopf"><h2 id="spielen-titel">${zeichen("spielen")}${esc(T.start.spielen)}</h2><p>${esc(T.start.spielenText)}</p><a class="weiter" href="${B}apps/">${esc(T.start.alleApps)}</a></div>
+    <div class="reihe zeilen">${APPS.map(appKachel).join("")}</div>
+    <p class="auch klein">${esc(T.start.auch)} ${register.arbeiten.filter((e) => e.atelier && e.tuer === "spielen-denken").map((e) => `<a href="/${attr(e.adresse)}" target="_blank" rel="noopener">${esc(e.name)}</a>`).join(" · ")} · <a href="${B}atelier/">${esc(T.start.atelier)}</a></p>
+  </div>
+</section>
+
 <!-- Prüfraster (seit 21. Oktober 2026 statt «Denken»: die sieben Zyklen standen doppelt, der Zettelkasten hat oben seinen Abschnitt; die Raster hatten keinen Titel) -->
 <section class="abschnitt kapitel tinte" aria-labelledby="raster-titel">
   <div class="spalte">
@@ -396,17 +433,11 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
   </div>
 </section>
 
-<section class="abschnitt kapitel kapitel-senf" aria-labelledby="spielen-titel">
+<!-- Beauftragen (seit 13. November 2026 hier; vom 20. Oktober bis dahin waren die vier Leistungen der Einstieg) -->
+<section class="abschnitt kapitel kapitel-gruen" id="beauftragen" aria-labelledby="beauftragen-titel">
   <div class="spalte">
-    <div class="abschnitt-kopf"><h2 id="spielen-titel">${zeichen("spielen")}${esc(T.start.spielen)}</h2><p>${esc(T.start.spielenText)}</p><a class="weiter" href="${B}apps/">${esc(T.start.alleApps)}</a></div>
-    <div class="reihe zeilen">${APPS.map(appKachel).join("")}</div>
-  </div>
-</section>
-
-<section class="abschnitt kapitel tinte" aria-labelledby="werke-titel">
-  <div class="spalte">
-    <div class="abschnitt-kopf"><h2 id="werke-titel">${zeichen("werke")}${esc(T.start.werke)}</h2><p>${esc(echteWerke.length ? T.start.werkeText : T.start.werkeBald)}</p><a class="weiter" href="${B}werke/">${esc(echteWerke.length ? T.start.alleWerke : T.start.wasKommt)}</a></div>
-    ${echteWerke.length ? `<div class="reihe zeilen">${echteWerke.map((w) => `<a class="stueck" href="${B}werke/#${w.slug}"><span class="bild"><img src="/art/bilder/${w.slug}-1-800.webp" alt="${attr(w.bilder[0].alt)}" loading="lazy" width="800" height="1067"></span><h3>${esc(w.titel)}</h3><p>${esc(w.technik)}, ${w.masse.b} × ${w.masse.h} cm</p></a>`).join("")}</div>` : ""}
+    <div class="abschnitt-kopf"><h2 id="beauftragen-titel">${zeichen("arbeiten")}${esc(T.start.beauftragen)}</h2><p>${esc(T.start.beauftragenText)}</p><a class="weiter" href="${B}angebot/">${esc(T.start.alleAngebote)}</a></div>
+    <div class="angebote" role="list">${ANGEBOTE.map((a) => `<a class="angebot" role="listitem" href="${B}angebot/${a.slug}/"><span class="zeichen-gross">${zeichen(a.slug)}</span><h3>${esc(a.name)}</h3><p>${esc(a.kurz)}</p><span class="weiter">${esc(T.start.leistung)}</span></a>`).join("")}</div>
   </div>
 </section>
 
@@ -427,6 +458,36 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
   </div>
 </section>`;
     veroeffentliche({ pfad: "", titel: "ornament.cloud", beschreibung: SEITE.beschreibung, body, jsonld: [personLd()], module: ["tafeln-leben.js"], bildAlt: T.start.bildAlt });
+  }
+
+  /* ---------- Hören (seit 13. November 2026): die Musik, je Veröffentlichung eine Platte; die Hörseite selbst liegt unter listen/<slug>/ ---------- */
+  {
+    const body = `
+<section class="stueck-kopf"><div class="spalte">
+  <h1 class="titel">${esc(T.hoeren.titel)}<small>${esc(T.hoeren.small)}</small></h1>
+</div></section>
+<section class="abschnitt"><div class="spalte">
+  ${musik.length ? musik.map((v) => platte(v, { ebene: "h2" })).join("") : `<p>${esc(T.hoeren.leer)}</p>`}
+  ${musik.length ? `<p class="klein" style="margin-top:18px">${esc(T.hoeren.herunterladen)}</p>` : ""}
+</div></section>
+<section class="spalte">${teilen({ pfad: "hoeren/", titel: T.hoeren.teilenTitel, text: T.hoeren.teilenText })}</section>
+${faeden([fApp(appVon("phorma-iii")), fZettel(zettel[32]), fZettel(zettel[28])])}`;
+    veroeffentliche({ pfad: "hoeren/", aktiv: "hoeren/", titel: T.hoeren.seitenTitel, beschreibung: T.hoeren.beschreibung, body, bildAlt: T.hoeren.bildAlt, noindex: !musik.length,
+      jsonld: musik.map((v) => ({ "@context": "https://schema.org", "@type": "MusicAlbum", name: v.titel, byArtist: { "@type": "MusicGroup", name: v.anzeigename }, numTracks: v.tracks.length, url: `${BASIS}/${v.pfad}`, image: `${BASIS}/${v.pfad}${v.cover}`, ...(v.datum ? { datePublished: v.datum } : {}),
+        track: v.tracks.map((t, i) => ({ "@type": "MusicRecording", name: t.titel, position: i + 1, duration: `PT${Math.floor(t.samples / v.abtastrate / 60)}M${Math.round((t.samples / v.abtastrate) % 60)}S` })) })) });
+  }
+
+  /* ---------- Atelier (seit 13. November 2026): was bis dahin im Hauptmenü stand und kein Schaufenster ist – aus src/register.json, Einträge mit "atelier": true ---------- */
+  {
+    const eintraege = register.arbeiten.filter((e) => e.atelier);
+    const body = `
+<section class="stueck-kopf"><div class="spalte">
+  <h1 class="titel">${esc(T.atelier.titel)}<small>${esc(T.atelier.small)}</small></h1>
+</div></section>
+<section class="abschnitt"><div class="spalte">
+  <ul class="liste-linien am-ende">${eintraege.map((e) => `<li><a href="/${attr(e.adresse)}" target="_blank" rel="noopener" title="${attr(T.atelier.oeffnen)}"><span class="n">${zeichen("tab")}</span><span class="name">${esc(e.name)}</span><span class="kurz">${esc(T.atelier.kurz(e))}</span></a></li>`).join("")}</ul>
+</div></section>`;
+    veroeffentliche({ pfad: "atelier/", aktiv: "atelier/", titel: T.atelier.seitenTitel, beschreibung: T.atelier.beschreibung, body, bildAlt: T.atelier.bildAlt });
   }
 
   /* ---------- Zettel ---------- */
@@ -786,6 +847,16 @@ writeFileSync(new URL("en/kacheln/liste.json", AUS_DE), JSON.stringify(kachelSei
   let xml = readFileSync(sm, "utf8");
   const block = `  <!-- B:START (erzeugt aus tools/build-b.mjs, der Neubau unter /b/ und /b/en/) -->\n${sitemapSeiten.map((p) => `  <url><loc>${BASIS}/${p}</loc><lastmod>${HEUTE}</lastmod></url>`).join("\n")}\n  <!-- B:END -->\n`;
   xml = /<!-- B:START/.test(xml) ? xml.replace(/  <!-- B:START[\s\S]*?<!-- B:END -->\n/, block) : xml.replace("</urlset>", block + "</urlset>");
+  writeFileSync(sm, xml);
+}
+// die öffentlichen Hörseiten (listen/<slug>/, "oeffentlich": true in ep.json) stehen in einem eigenen Block der Sitemap
+{
+  const sm = new URL("sitemap.xml", ROOT);
+  let xml = readFileSync(sm, "utf8");
+  const alt = xml.match(/  <!-- HOEREN:START[\s\S]*?<!-- HOEREN:END -->\n/)?.[0] || "";
+  const datum = (pfad) => alt.match(new RegExp(`<loc>${BASIS}/${pfad}</loc><lastmod>([^<]+)`))?.[1] || HEUTE;   // das Datum bleibt, solange die Seite steht
+  const block = musik.length ? `  <!-- HOEREN:START (erzeugt aus tools/build-b.mjs: Hörseiten mit "oeffentlich": true in listen/<slug>/ep.json) -->\n${musik.map((v) => `  <url><loc>${BASIS}/${v.pfad}</loc><lastmod>${datum(v.pfad)}</lastmod></url>`).join("\n")}\n  <!-- HOEREN:END -->\n` : "";
+  xml = alt ? xml.replace(alt, block) : xml.replace("</urlset>", block + "</urlset>");
   writeFileSync(sm, xml);
 }
 console.log(`${sitemapSeiten.length} Seiten unter b/ und b/en/ geschrieben${jev ? "" : " (ohne jev)"}`);

@@ -30,19 +30,29 @@ test("ep.json: vollständig und ohne Fehler; Platzhalter sind als solche erkennb
   for (const t of ep.tracks) if (t.startSample == null) assert.equal(t.samples, null, "ohne Marke auch keine Länge");
 });
 
-test("Seite: ein natives <audio> mit preload=metadata, noindex, Titel für Linkvorschauen passt zu ep.json, keine fremden Quellen", () => {
+// Seit 13. November 2026 ist die Seite öffentlich (Entscheid von Christian): "oeffentlich": true in ep.json. Seite, Sitemap und /b/hoeren/ folgen dem Feld.
+test("Seite: ein natives <audio> mit preload=metadata, Titel für Linkvorschauen passt zu ep.json, keine fremden Quellen; öffentlich oder noindex je nach ep.json", () => {
   const html = lies("listen/directer/index.html");
   assert.equal(html.match(/<audio\b/g).length, 1, "genau ein Audioelement");
   assert.match(html, /<audio id="audio" preload="metadata"><\/audio>/);
   assert.doesNotMatch(html, /autoplay/, "der erste Start kommt vom Tipp");
-  assert.match(html, /<meta name="robots" content="noindex">/);
+  if (ep.oeffentlich === true) {
+    assert.doesNotMatch(html, /name="robots" content="noindex/, "öffentlich: nicht gesperrt");
+    assert.ok(html.includes('<link rel="canonical" href="https://ornament.cloud/listen/directer/">'), "öffentlich: kanonische Adresse");
+    assert.ok(lies("sitemap.xml").includes("<loc>https://ornament.cloud/listen/directer/</loc>"), "öffentlich: in der Sitemap (Block HOEREN, tools/build-b.mjs)");
+    assert.ok(lies("b/hoeren/index.html").includes('href="/listen/directer/"'), "öffentlich: /b/hoeren/ führt hin");
+    assert.ok(html.includes('<a href="/b/hoeren/">ornament.cloud</a>'), "ein Weg zurück zur Website");
+  } else {
+    assert.match(html, /<meta name="robots" content="noindex">/);
+    assert.ok(!lies("sitemap.xml").includes("/listen/"), "nicht in der Sitemap");
+    assert.ok(!lies("b/hoeren/index.html").includes("/listen/directer/"), "nicht auf /b/hoeren/");
+  }
   const titel = `${ep.anzeigename} – ${ep.titel}`;
   assert.ok(html.includes(`<title>${titel}</title>`) && html.includes(`<meta property="og:title" content="${titel}">`), "Titel und og:title wie in ep.json");
   assert.ok(html.includes('<meta property="og:image" content="https://ornament.cloud/listen/directer/og-directer.jpg">'), "Vorschaubild für Linkvorschauen");
   assert.match(html, /<meta property="og:type" content="website">/, "Facebook nimmt music.album nur mit weiteren music:-Angaben an");
   assert.ok(statSync(new URL("listen/directer/og-directer.jpg", root)).size < 300_000, "Vorschaubild unter 300 KB (WhatsApp lässt grössere weg)");
-  assert.doesNotMatch(html + lies("listen/directer/player.css") + lies("listen/directer/player.js"), /(src|href)="https?:|@import|fonts\.googleapis/, "alles vom eigenen Server");
-  assert.ok(!lies("sitemap.xml").includes("/listen/"), "nicht in der Sitemap");
+  assert.doesNotMatch(html.replace(/<link rel="canonical"[^>]*>/, "") + lies("listen/directer/player.css") + lies("listen/directer/player.js"), /(src|href)="https?:|@import|fonts\.googleapis/, "alles vom eigenen Server");
   const js = lies("listen/directer/player.js");
   assert.doesNotMatch(js, /new Audio\(|createElement\("audio"\)|AudioContext/, "keine zweite Wiedergabe neben dem Audioelement");
   assert.match(js, /mediaSession/);

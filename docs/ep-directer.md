@@ -6,7 +6,9 @@ Seit 10. November 2026 (Wunsch von Christian): eine schlichte Seite für Freunde
 
 Seit 11. November 2026 (Wunsch: «beim 3. track die ersten 35 sekunden wegschneiden und direkt mit dem hellen sample einsteigen … einen schönen, fliessenden einstieg»): «directer reprise» beginnt bei 36,46 s des bisherigen Masters, ein halbe Sekunde vor dem hellen Sample (Takt 12 bei 78 BPM, Marker «Fragment · wörtlich»), mit einer weichen Einblendung (sin², 0,5 s), die genau beim Anschwellen des Samples voll ist. Neuer Master `the dancer reprise (ab 36,46 s).wav` in `ornament-material/hoerproben/lucerne-feinschliff/`, das Original bleibt. Länge 5:39 statt 6:15, die Maxi 14:18. Neue Dateinamen `the-i-directer-2.wav` und `the-i-03-directer-reprise-2.wav` (Zwischenspeicher); Track 1 und 2 sind unverändert.
 
-- **Route:** `https://ornament.cloud/listen/directer/` (nur per Direktlink, `noindex`, nicht in der Sitemap, nicht im Menü; Ausnahme in `tests/navigation.test.mjs`)
+Seit 13. November 2026 (Entscheid von Christian: «öffentlich vorbereiten»): `ep.json` trägt `"oeffentlich": true`. Damit steht die Maxi auf `/b/hoeren/`, als «Neu» auf der Startseite und in der Sitemap (Block `HOEREN`, `tools/build-b.mjs`); die Seite hat die kanonische Adresse statt `noindex` und zuunterst den Link «ornament.cloud». Weitere Felder: `art` («Maxi»), `artEn`, `datum`, `social` (für `tools/social-paket.mjs`, siehe `docs/social-paket.md`). Wieder privat: `"oeffentlich": false`, in `index.html` `<meta name="robots" content="noindex">` statt der Zeile `<link rel="canonical" …>`, dann `node tools/build-b.mjs` und `src/register.json` auf `direktlink`.
+
+- **Route:** `https://ornament.cloud/listen/directer/` (bis 13. November 2026 nur per Direktlink und `noindex`; eigene dunkle Oberfläche ohne Menü, Ausnahme in `tests/navigation.test.mjs`)
 - **Lokal:** `node tools/ep-server.mjs` → http://localhost:8795/listen/directer/ (beantwortet Range-Anfragen mit 206 wie Apache; auf dem Telefon im selben WLAN `http://<IP des Rechners>:8795/listen/directer/`)
 
 ## Dateien

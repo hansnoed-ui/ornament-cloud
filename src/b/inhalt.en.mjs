@@ -9,10 +9,10 @@ export const SEITE = {
   name: "ornament.cloud",
   adresse: "https://ornament.cloud/b/en/",
   claim: "Observation is an occasion for change in reality.",
-  titel: "Designing, teaching, curating.",
-  lead: "Web design, education and consulting, curatorial projects and products, made in Switzerland. Plus a Zettelkasten, seven apps and four test grids that show how work is done here.",
+  titel: "Theory you can touch.",
+  lead: "Music, images, apps and a Zettelkasten by Christian Strickler. And four services for anyone who needs something like this for themselves.",
   claimAlt: "Theory you can touch.",
-  beschreibung: "49 notes, seven apps, four test grids and four services, made in Switzerland: web design, education and consulting, curatorial projects, products.",
+  beschreibung: "Theory you can touch: music, works, seven apps, 49 notes and four test grids by Christian Strickler. Plus web design, education, curating and products.",
   person: { name: "Christian Strickler", ort: "between Zurich, Basel and Aarau", strasse: "Rheingasse 8b", plz: "CH-5466 Kaiserstuhl", mail: "hansnoed@gmail.com" },
   sprache: "en",
 };

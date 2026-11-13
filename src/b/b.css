@@ -589,3 +589,37 @@ body.buehne-seite { height: 100dvh; display: grid; grid-template-rows: 48px minm
   .kapitel .abschnitt-kopf { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr) 10rem; align-items: baseline; gap: 8px 32px; }
   .kapitel .abschnitt-kopf a.weiter { justify-self: end; }
 }
+
+/* ---------- Die drei Türen und die Platte (13. November 2026, Entscheid von Christian: «Künstler zuerst»; Paket «Schaufenster») ----------
+   Der Einstieg zeigt drei Türen statt der vier Leistungen (die stehen weiter unten im Abschnitt «Beauftragen»); gleiche Bausteine wie .angebote.
+   Die Platte ist eine Musik-Veröffentlichung: Cover links, rechts Art, Name, Titel, Tracks mit Dauer und «Anhören» (führt auf listen/<slug>/). */
+.angebote.tueren { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.angebot h3 { font-weight: 500; font-size: 1.35rem; letter-spacing: -0.02em; line-height: 1.1; }
+.angebot:hover h3 { color: var(--faden); }
+.kapitel-gruen:not(:first-child) .angebote { margin-top: -24px; border-top: 0; }   /* im Abschnitt «Beauftragen»: die Linie der Überschrift genügt */
+@media (max-width: 900px) { .angebote.tueren { grid-template-columns: minmax(0, 1fr); } }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+:is(#hoeren-sehen, #spielen-denken, #beauftragen) { scroll-margin-top: 8px; }
+
+.platte { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 24px 48px; align-items: center; padding-bottom: 8px; }
+.platte + .platte { margin-top: 40px; padding-top: 40px; border-top: 1px solid var(--linie); }
+.platte-cover { display: block; }
+.platte-cover img { width: 100%; height: auto; aspect-ratio: 1 / 1; object-fit: cover; }
+.platte-text { display: grid; gap: 18px; align-content: center; }
+.platte .gattung { color: var(--grau); font-size: 0.95rem; }
+.platte .neu { display: inline-block; margin-right: 10px; padding: 1px 9px; border: 1px solid var(--faden); border-radius: 999px; color: var(--faden); font-weight: 500; font-size: 0.85rem; }
+.platte-titel { font-weight: 500; font-size: clamp(2.2rem, 6vw, 4.2rem); letter-spacing: -0.035em; line-height: 0.98; }
+.platte-titel span { display: block; margin-bottom: 0.3em; color: var(--grau); font-size: 1.05rem; font-weight: 400; letter-spacing: 0; line-height: 1.2; }
+.platte-tracks { border-top: 1px solid var(--linie); counter-reset: track; }
+.platte-tracks li { display: flex; gap: 14px; align-items: baseline; padding: 11px 0; border-bottom: 1px solid var(--linie); counter-increment: track; }
+.platte-tracks li::before { content: counter(track); flex: none; width: 1.2em; color: var(--grau); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+.platte-tracks .zeit { margin-left: auto; color: var(--grau); font-variant-numeric: tabular-nums; }
+@media (max-width: 760px) { .platte { grid-template-columns: minmax(0, 1fr); } }
+/* die Werke im Abschnitt «Hören und Sehen»: eine kleinere Überschrift unter der Platte */
+.abschnitt-kopf.werke-kopf { margin-top: clamp(40px, 6vw, 72px); margin-bottom: 0; align-items: baseline; }
+.abschnitt-kopf.werke-kopf h3 { font-weight: 500; font-size: clamp(1.3rem, 2.4vw, 1.7rem); letter-spacing: -0.02em; }
+.abschnitt-kopf.werke-kopf h3 .zeichen { width: 1em; height: 1em; margin-right: 0.35em; display: inline-block; vertical-align: -0.12em; }
+.abschnitt-kopf.werke-kopf + .reihe { margin-top: 24px; }
+.auch { margin-top: 28px; color: var(--grau); }
+.auch a { color: var(--tinte); }

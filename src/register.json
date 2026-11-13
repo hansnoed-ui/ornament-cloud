@@ -1,0 +1,397 @@
+{
+ "_hinweis": "Register aller Arbeiten von ornament.cloud (seit 13. November 2026). Eine Zeile je Arbeit: «tuer» ordnet sie einer der drei Türen des Einstiegs zu (hoeren-sehen, spielen-denken, beauftragen) oder dem Atelier; «status» sagt, wie sichtbar sie ist: oeffentlich (in der Sitemap, für Suchmaschinen offen), verlinkt (im Menü oder auf einer Seite verlinkt, aber noindex), direktlink (online, noindex, nirgends verlinkt), extern (andere Adresse). «atelier»: true zeigt die Arbeit auf /b/atelier/ (mit «kurz» und «kurzEn»). «wartet» nennt, was von Christian noch fehlt; es steht nur im Cockpit (tools/cockpit.mjs), nie auf der Website. tests/register.test.mjs prüft, dass Status und Seite zusammenpassen. Das Register beschreibt die Sichtbarkeit, es schaltet sie nicht: wer eine Seite öffnet oder sperrt, ändert die Seite und trägt es hier nach.",
+ "tueren": [
+  "hoeren-sehen",
+  "spielen-denken",
+  "beauftragen",
+  "atelier"
+ ],
+ "arbeiten": [
+  {
+   "id": "directer",
+   "name": "the i – directer",
+   "tuer": "hoeren-sehen",
+   "art": "Musik",
+   "status": "oeffentlich",
+   "adresse": "listen/directer/",
+   "kurz": "Maxi, drei Tracks, 14 Minuten."
+  },
+  {
+   "id": "lab-works",
+   "name": "ornament.lab · Works",
+   "tuer": "hoeren-sehen",
+   "art": "Werkschau",
+   "status": "direktlink",
+   "adresse": "b/lab/works/",
+   "kurz": "Werkschau der Ergebnisse aus dem Lab: zwei Werke veröffentlicht, die Seite ist nirgends verlinkt.",
+   "wartet": "Vier weitere Ergebnisse wählen (Titel, Jahr, ein Satz); «Ohne Titel» benennen; entscheiden, ob Works unter «Hören und Sehen» verlinkt wird."
+  },
+  {
+   "id": "werke",
+   "name": "Werke",
+   "tuer": "hoeren-sehen",
+   "art": "Werke und Editionen",
+   "status": "oeffentlich",
+   "adresse": "b/werke/",
+   "kurz": "Ankündigung für Prints, Originale, Arbeiten im Raum und Editionen.",
+   "wartet": "Erstes echtes Werk mit Preis in src/art/werke.json; Zahlungslink."
+  },
+  {
+   "id": "art",
+   "name": "Art",
+   "tuer": "hoeren-sehen",
+   "art": "Verkaufsseite (bisherige Website)",
+   "status": "direktlink",
+   "adresse": "art/",
+   "kurz": "Verkaufsseite mit Muster-Werk."
+  },
+  {
+   "id": "stellenfeld",
+   "name": "Stellenfeld",
+   "tuer": "hoeren-sehen",
+   "art": "Werk",
+   "status": "oeffentlich",
+   "adresse": "werke/stellenfeld/",
+   "kurz": "Stelle, Objekt, Raum, Zeit, Werk, Atmosphäre."
+  },
+  {
+   "id": "reentry",
+   "name": "Re-entry",
+   "tuer": "hoeren-sehen",
+   "art": "Werk",
+   "status": "oeffentlich",
+   "adresse": "werke/reentry/",
+   "kurz": "Re-entry-Knoten, Helix, S/F-Band."
+  },
+  {
+   "id": "formen-der-zeit",
+   "name": "Formen der Zeit",
+   "tuer": "hoeren-sehen",
+   "art": "Werk",
+   "status": "direktlink",
+   "adresse": "werke/formen-der-zeit/",
+   "kurz": "Verräumlichung und Verzeitlichung in 17 Zeitformen."
+  },
+  {
+   "id": "zettelkasten",
+   "name": "Zettelkasten",
+   "tuer": "spielen-denken",
+   "art": "Theorie",
+   "status": "oeffentlich",
+   "adresse": "b/zettel/",
+   "kurz": "49 Zettel in sieben Zyklen."
+  },
+  {
+   "id": "the-fictory",
+   "name": "The Fictory",
+   "tuer": "spielen-denken",
+   "art": "App",
+   "status": "oeffentlich",
+   "adresse": "b/apps/the-fictory/",
+   "kurz": ""
+  },
+  {
+   "id": "phorma-i",
+   "name": "PHORMA I",
+   "tuer": "spielen-denken",
+   "art": "App",
+   "status": "oeffentlich",
+   "adresse": "b/apps/phorma-i/",
+   "kurz": ""
+  },
+  {
+   "id": "phorma-ii",
+   "name": "PHORMA II",
+   "tuer": "spielen-denken",
+   "art": "App",
+   "status": "oeffentlich",
+   "adresse": "b/apps/phorma-ii/",
+   "kurz": ""
+  },
+  {
+   "id": "phorma-iii",
+   "name": "PHORMA III",
+   "tuer": "spielen-denken",
+   "art": "App",
+   "status": "oeffentlich",
+   "adresse": "b/apps/phorma-iii/",
+   "kurz": ""
+  },
+  {
+   "id": "omna-color",
+   "name": "OMNA COLOR",
+   "tuer": "spielen-denken",
+   "art": "App",
+   "status": "oeffentlich",
+   "adresse": "b/apps/omna-color/",
+   "kurz": ""
+  },
+  {
+   "id": "orna",
+   "name": "ORNA",
+   "tuer": "spielen-denken",
+   "art": "App",
+   "status": "oeffentlich",
+   "adresse": "b/apps/orna/",
+   "kurz": ""
+  },
+  {
+   "id": "orma",
+   "name": "ORMA",
+   "tuer": "spielen-denken",
+   "art": "App",
+   "status": "oeffentlich",
+   "adresse": "b/apps/orma/",
+   "kurz": ""
+  },
+  {
+   "id": "raster-nebeneinander-nacheinander",
+   "name": "Nebeneinander und Nacheinander",
+   "tuer": "spielen-denken",
+   "art": "Prüfraster",
+   "status": "oeffentlich",
+   "adresse": "b/raster/nebeneinander-nacheinander/",
+   "kurz": ""
+  },
+  {
+   "id": "raster-verteilapparat",
+   "name": "Der Verteilapparat des Körpers",
+   "tuer": "spielen-denken",
+   "art": "Prüfraster",
+   "status": "oeffentlich",
+   "adresse": "b/raster/verteilapparat/",
+   "kurz": ""
+  },
+  {
+   "id": "raster-gesellschaftskonzepte",
+   "name": "Prüfraster für Gesellschaftskonzepte",
+   "tuer": "spielen-denken",
+   "art": "Prüfraster",
+   "status": "oeffentlich",
+   "adresse": "b/raster/gesellschaftskonzepte/",
+   "kurz": ""
+  },
+  {
+   "id": "raster-journalistische-texte",
+   "name": "Prüfraster journalistischer Texte",
+   "tuer": "spielen-denken",
+   "art": "Prüfraster",
+   "status": "oeffentlich",
+   "adresse": "b/raster/journalistische-texte/",
+   "kurz": ""
+  },
+  {
+   "id": "animations",
+   "name": "Animations",
+   "tuer": "spielen-denken",
+   "art": "Mischpult",
+   "status": "verlinkt",
+   "adresse": "animations/",
+   "kurz": "Ein Bild, 24 Effekte, bis zu drei Ebenen: das Mischpult für eigene Animationen.",
+   "kurzEn": "One image, 24 effects, up to three layers: the mixing desk for your own animations.",
+   "atelier": true
+  },
+  {
+   "id": "multiverse",
+   "name": "Multiverse",
+   "tuer": "spielen-denken",
+   "art": "Übersicht",
+   "status": "verlinkt",
+   "adresse": "multiverse/",
+   "kurz": "Vier Anwendungen gleichzeitig nebeneinander, direkt bedienbar.",
+   "kurzEn": "Four applications side by side, ready to use.",
+   "atelier": true
+  },
+  {
+   "id": "drittes-rad",
+   "name": "Das 3. Rad",
+   "tuer": "spielen-denken",
+   "art": "App",
+   "status": "verlinkt",
+   "adresse": "beta/drittes-rad/",
+   "kurz": "Zettelkasten und OMNA COLOR auf einem Rad.",
+   "kurzEn": "The Zettelkasten and OMNA COLOR on one wheel.",
+   "atelier": true
+  },
+  {
+   "id": "konstellation",
+   "name": "KONSTELLATION",
+   "tuer": "spielen-denken",
+   "art": "App",
+   "status": "direktlink",
+   "adresse": "alpha/konstellation/",
+   "kurz": "Aus Name, Ort und Zeitpunkt: Wetter, Exoplanet, Kunstbild, Textstelle."
+  },
+  {
+   "id": "stadt",
+   "name": "Die Paradoxie der Stadt",
+   "tuer": "spielen-denken",
+   "art": "Simulation",
+   "status": "direktlink",
+   "adresse": "alpha/stadt/",
+   "kurz": "Simulation eines Quartiers."
+  },
+  {
+   "id": "sketchory",
+   "name": "Sketchory",
+   "tuer": "spielen-denken",
+   "art": "App",
+   "status": "direktlink",
+   "adresse": "alpha/sketchory/",
+   "kurz": ""
+  },
+  {
+   "id": "social-media",
+   "name": "Social Media",
+   "tuer": "spielen-denken",
+   "art": "Zettelkasten fremder Beiträge",
+   "status": "oeffentlich",
+   "adresse": "social-media/",
+   "kurz": "Kommentierte und verschlagwortete Beiträge von X, Facebook und Instagram."
+  },
+  {
+   "id": "angebot-webdesign",
+   "name": "Webdesign",
+   "tuer": "beauftragen",
+   "art": "Leistung",
+   "status": "oeffentlich",
+   "adresse": "b/angebot/webdesign/",
+   "kurz": "",
+   "wartet": "Referenzen und Ab-Preise fehlen."
+  },
+  {
+   "id": "angebot-vermittlung",
+   "name": "Vermittlung und Beratung",
+   "tuer": "beauftragen",
+   "art": "Leistung",
+   "status": "oeffentlich",
+   "adresse": "b/angebot/vermittlung/",
+   "kurz": ""
+  },
+  {
+   "id": "angebot-kuration",
+   "name": "Kuratorische Projekte",
+   "tuer": "beauftragen",
+   "art": "Leistung",
+   "status": "oeffentlich",
+   "adresse": "b/angebot/kuration/",
+   "kurz": "",
+   "wartet": "Referenzen und Ab-Preise fehlen."
+  },
+  {
+   "id": "angebot-produkte",
+   "name": "Produkte",
+   "tuer": "beauftragen",
+   "art": "Leistung",
+   "status": "oeffentlich",
+   "adresse": "b/angebot/produkte/",
+   "kurz": ""
+  },
+  {
+   "id": "ueber",
+   "name": "Über",
+   "tuer": "beauftragen",
+   "art": "Person",
+   "status": "oeffentlich",
+   "adresse": "b/ueber/",
+   "kurz": "Christian Strickler, Hintergrund und Adresse."
+  },
+  {
+   "id": "principesse",
+   "name": "Principesse",
+   "tuer": "beauftragen",
+   "art": "Auftragsarbeit",
+   "status": "extern",
+   "adresse": "https://principesse.ch/",
+   "kurz": "One-Pager mit 3D-Figur und Bestellkarte.",
+   "wartet": "Als Referenz für Webdesign zeigen? Einverständnis klären."
+  },
+  {
+   "id": "lab",
+   "name": "ORNAMENT LAB",
+   "tuer": "atelier",
+   "art": "Werkzeug",
+   "status": "verlinkt",
+   "adresse": "beta/lab/",
+   "kurz": "Ein Bild wird Material, Operationen verändern es, der Verlauf bleibt erhalten.",
+   "kurzEn": "An image becomes material, operations change it, the whole course is kept.",
+   "atelier": true
+  },
+  {
+   "id": "lab-app",
+   "name": "ORNAMENT LAB 0.1 (Anwendung)",
+   "tuer": "atelier",
+   "art": "Werkzeug",
+   "status": "direktlink",
+   "adresse": "alpha/lab/",
+   "kurz": "Die Anwendung selbst."
+  },
+  {
+   "id": "composer",
+   "name": "ORNAMENT COMPOSER",
+   "tuer": "atelier",
+   "art": "Werkzeug",
+   "status": "direktlink",
+   "adresse": "alpha/composer/",
+   "kurz": "Spuren, Plugins und Stile (lucerne, bienne, Grooves)."
+  },
+  {
+   "id": "av",
+   "name": "ORNAMENT AV STUDIO",
+   "tuer": "atelier",
+   "art": "Werkzeug",
+   "status": "direktlink",
+   "adresse": "alpha/av/",
+   "kurz": "Film mit Ton aus Composer und Animationen."
+  },
+  {
+   "id": "voice",
+   "name": "Stimme",
+   "tuer": "atelier",
+   "art": "Werkzeug",
+   "status": "direktlink",
+   "adresse": "alpha/voice/",
+   "kurz": "Texte in Christians Stimme."
+  },
+  {
+   "id": "gamma",
+   "name": "Gamma",
+   "tuer": "atelier",
+   "art": "Fassung der Website",
+   "status": "verlinkt",
+   "adresse": "gamma/",
+   "kurz": "Eine andere Fassung dieser Website.",
+   "kurzEn": "Another version of this website.",
+   "atelier": true
+  },
+  {
+   "id": "delta",
+   "name": "Delta",
+   "tuer": "atelier",
+   "art": "Fassung der Website",
+   "status": "direktlink",
+   "adresse": "delta/",
+   "kurz": "Die Inhalte des Neubaus in technischer Rasteroptik."
+  },
+  {
+   "id": "bisher",
+   "name": "Bisherige Website",
+   "tuer": "atelier",
+   "art": "Fassung der Website",
+   "status": "verlinkt",
+   "adresse": "?bisher",
+   "kurz": "Die Website bis zum 20. Oktober 2026.",
+   "kurzEn": "The website up to 20 October 2026.",
+   "atelier": true
+  },
+  {
+   "id": "pod",
+   "name": "Print on Demand",
+   "tuer": "atelier",
+   "art": "Vorbereitung",
+   "status": "direktlink",
+   "adresse": "b/werkstatt/",
+   "kurz": "Produkte aus dem Bestand für Print on Demand."
+  }
+ ]
+}
