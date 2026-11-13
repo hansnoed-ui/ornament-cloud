@@ -24,7 +24,9 @@ const AUS_DE = new URL("b/", ROOT);
 // Gleich dahinter seit 8. November 2026 «Multiverse» (/multiverse/, neues Fenster), Wunsch: «nimm das multiverse ins hauptmenu der seite».
 // Seit 5. November 2026 stehen Angebot, Werke und Zuletzt unter «Über» (aufklappbar wie «Beta», mit der Seite «Über» zuoberst);
 // Wunsch: «Nimm Angebote, zuletzt und werke mal unter "über"».
-const UNTER_UEBER = ["ueber/", "werke/", "zuletzt/"];
+// Seit 13. November 2026 steht «Werke» wieder für sich, zwischen «Über» und «Atelier» (Christian: «die werke können mittlerweile schon wieder raus
+// aus dem untermenu bei "über". zb zwischen über und atelier»).
+const UNTER_UEBER = ["ueber/", "zuletzt/"];
 // Seit 13. November 2026 (Entscheid von Christian: «Künstler zuerst», Paket «Schaufenster»): das Hauptmenü zeigt die drei Türen und sonst nichts –
 // Hören, Zettel, Apps, Raster, Angebot, Über (mit Werke und Zuletzt), Atelier. Animations, Multiverse, Lab, Das 3. Rad und Gamma stehen nicht mehr
 // im Menü, sondern auf der Seite «Atelier» (b/atelier/, aus src/register.json); «Beta» gibt es im Menü nicht mehr, «Raster» und «Angebot» stehen
@@ -39,7 +41,7 @@ const HAUPT = ["sehen/", "zettel/", "apps/", "angebot/"];
 // Fäden, Dialog und Sitemap. Wer die Adresse kennt, erreicht sie; ein Passwortschutz wäre ein eigener Schritt auf dem Webspace.
 // Wieder öffentlich: RASTER_OEFFENTLICH = true.
 const RASTER_OEFFENTLICH = false;
-const V = 54;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 56;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 const INHALT = { de: DE, en: EN };
@@ -278,7 +280,7 @@ function bau(sprache) {
   <header class="kopf">
     <div class="spalte">
       <div class="marke"><a class="signet" href="${B}"${pfad === "" ? ' aria-current="page"' : ""}>${SIGNET}<span>ornament.cloud</span></a>${sprachwahl(pfad, nurDe)}</div>
-      <nav class="hauptnav" aria-label="${attr(T.hauptnav)}">${HAUPT.map((p) => `<a href="${B}${p}"${aktiv === p ? ' aria-current="page"' : ""}>${T.nav[p]}</a>`).join("")}<details class="beta ueber"><summary${UNTER_UEBER.includes(aktiv) ? ' class="aktiv"' : ""}>${T.nav["ueber/"]}</summary><span class="beta-liste">${UNTER_UEBER.map((p) => `<a href="${B}${p}"${aktiv === p ? ' aria-current="page"' : ""}>${T.nav[p]}</a>`).join("")}</span></details><a class="atelier-link" href="${B}atelier/"${aktiv === "atelier/" ? ' aria-current="page"' : ""}>${T.nav["atelier/"]}</a><a href="${B}hoeren/"${aktiv === "hoeren/" ? ' aria-current="page"' : ""}>${T.nav["hoeren/"]}</a></nav>
+      <nav class="hauptnav" aria-label="${attr(T.hauptnav)}">${HAUPT.map((p) => `<a href="${B}${p}"${aktiv === p ? ' aria-current="page"' : ""}>${T.nav[p]}</a>`).join("")}<details class="beta ueber"><summary${UNTER_UEBER.includes(aktiv) ? ' class="aktiv"' : ""}>${T.nav["ueber/"]}</summary><span class="beta-liste">${UNTER_UEBER.map((p) => `<a href="${B}${p}"${aktiv === p ? ' aria-current="page"' : ""}>${T.nav[p]}</a>`).join("")}</span></details><a href="${B}werke/"${aktiv === "werke/" ? ' aria-current="page"' : ""}>${T.nav["werke/"]}</a><a class="atelier-link" href="${B}atelier/"${aktiv === "atelier/" ? ' aria-current="page"' : ""}>${T.nav["atelier/"]}</a><a href="${B}hoeren/"${aktiv === "hoeren/" ? ' aria-current="page"' : ""}>${T.nav["hoeren/"]}</a></nav>
     </div>
   </header>
   <main id="inhalt">

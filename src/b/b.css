@@ -274,7 +274,7 @@ body[data-bereich="zettel"] :is(.kopf, main > :first-child) {
   color-scheme: light;
 }
 .kapitel-rot,
-body[data-bereich="raster"] :is(.kopf, main > :first-child), body[data-bereich="angebot"] .briefing {
+body[data-bereich="raster"] :is(.kopf, main > :first-child), body[data-bereich="hoeren"] :is(.kopf, main > :first-child), body[data-bereich="angebot"] .briefing {
   --papier: #e0503c; --tinte: #000000; --grau: rgba(0, 0, 0, 0.74); --linie: rgba(0, 0, 0, 0.26);
   --flaeche: #d4442f; --faden: #000000; --faden-hell: rgba(0, 0, 0, 0.14);
   color-scheme: light;
@@ -291,6 +291,27 @@ body[data-bereich="werke"] :is(.kopf, main > :first-child), body[data-bereich="u
   --flaeche: #e9a1b1; --faden: #000000; --faden-hell: rgba(0, 0, 0, 0.14);
   color-scheme: light;
 }
+/* Vier Töne mehr (13. November 2026, Christian: «die schwarzen titel flächen bei sehen, hören, über und zuletzt finde ich schade. grün, gelb, rosa
+   und weiss funktionieren gut. finde für die schwarzen noch neue farbtöne»): Sehen Himmelblau, Hören das Rot der Prüfraster (die nicht mehr
+   öffentlich sind), Zuletzt Sand, Atelier Flieder. Über war schon Rosa wie Werke. */
+.kapitel-himmel,
+body[data-bereich="sehen"] :is(.kopf, main > :first-child) {
+  --papier: #a9c7ea; --tinte: #000000; --grau: rgba(0, 0, 0, 0.72); --linie: rgba(0, 0, 0, 0.24);
+  --flaeche: #98b9e0; --faden: #000000; --faden-hell: rgba(0, 0, 0, 0.14);
+  color-scheme: light;
+}
+.kapitel-sand,
+body[data-bereich="zuletzt"] :is(.kopf, main > :first-child) {
+  --papier: #e8dcc2; --tinte: #000000; --grau: rgba(0, 0, 0, 0.72); --linie: rgba(0, 0, 0, 0.24);
+  --flaeche: #dccfb1; --faden: #000000; --faden-hell: rgba(0, 0, 0, 0.14);
+  color-scheme: light;
+}
+.kapitel-flieder,
+body[data-bereich="atelier"] :is(.kopf, main > :first-child) {
+  --papier: #c4b5ec; --tinte: #000000; --grau: rgba(0, 0, 0, 0.72); --linie: rgba(0, 0, 0, 0.24);
+  --flaeche: #b5a4e2; --faden: #000000; --faden-hell: rgba(0, 0, 0, 0.14);
+  color-scheme: light;
+}
 .kapitel ::selection { background: var(--tinte); color: var(--papier); }
 /* Bereiche: die Farben der Startseite auf den anderen Seiten (27. Oktober 2026, Wunsch: «Mir gefällt das Farbkonzept mit dem grün, orange, gelb …
    Schau … ob es auf anderen Seiten auch passt, die Pakette etwas zu erweitern»). Kopf und erster Abschnitt jeder Seite tragen die Farbe ihres
@@ -298,7 +319,7 @@ body[data-bereich="werke"] :is(.kopf, main > :first-child), body[data-bereich="u
    Zettelkasten, Raster Rot, Werke und Über Rosa (neu in der Palette), Zuletzt bleibt Tinte. Auf den Angebotsseiten steht das Briefing auf Rot. */
 body[data-bereich] :is(.kopf, main > :first-child), body[data-bereich="angebot"] .briefing { background: var(--papier); color: var(--tinte); }
 body[data-bereich] .kopf::after { background: transparent; }
-body[data-bereich]:not([data-bereich="zuletzt"]) main > :first-child { padding-top: clamp(24px, 3.5vw, 44px); padding-bottom: clamp(44px, 6vw, 80px); }
+body[data-bereich] main > :first-child { padding-top: clamp(24px, 3.5vw, 44px); padding-bottom: clamp(44px, 6vw, 80px); }
 body[data-bereich="angebot"] .briefing { margin-top: 48px; padding-bottom: clamp(44px, 6vw, 80px); }
 body[data-bereich="zettel"] .buehne-zettel { padding-top: clamp(48px, 7vw, 88px); }   /* das Feld nicht direkt an den Farbwechsel («etwas knapp an den farbwechsel gesetzt») */
 body[data-bereich] :is(main > :first-child, .briefing) ::selection { background: var(--tinte); color: var(--papier); }
