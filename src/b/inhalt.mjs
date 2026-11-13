@@ -56,6 +56,9 @@ export const APPS = [
     fuer: "Für alle, die sehen wollen, was ein Bild noch sein könnte.",
     url: "alpha/the-fictory/", app: "alpha/the-fictory/?installieren", bild: "b/bilder/apps/the-fictory.svg", bildDunkel: "b/bilder/apps/the-fictory-dunkel.svg", bildAlt: "The Fictory, gezeichnet: ein Raster von Kacheln, jede aus ihrer Herkunft gewandert und gedreht, mit Spuren und Fäden",
     beispiele: [
+      // Seit 13. November 2026 zuerst der Film, den Christian an dem Tag geschickt hat (ein Bergfoto, 31 s ohne Ton, 810 × 1080); hier 540 × 720
+      // (ffmpeg: scale=540:720:flags=lanczos, libx264 crf 30; in 720 × 960 wären es 7 MB). Der bisherige Film (ein Gemälde) bleibt als zweiter.
+      { art: "video", datei: "assets/beispiele/the-fictory-berg.mp4", bild: "assets/beispiele/the-fictory-berg.jpg", mass: [540, 720], text: "Ein ganzer Lauf mit einem Bergfoto: Das Bild wird in Felder geteilt und zerfällt in seine Teile, die Teile wandern über Höhenlinien und drehen sich, und am Ende steht der Berg wieder da. Gerechnet aus der App, ohne Ton." },
       { art: "video", datei: "assets/beispiele/the-fictory.mp4", bild: "assets/beispiele/the-fictory.jpg", mass: [540, 720], text: "Ein ganzer Lauf mit einem Gemälde: Das Bild zerfällt in seine Teile, die Teile wandern als Spuren über Höhenlinien, Fäden verbinden sie, und am Ende setzt sich das Bild wieder zusammen. Gerechnet aus der App, ohne Ton." },
     ],
     bewegung: "So arbeitet The Fictory: Das Bild zerfällt in seine Teile, die Teile wandern, Fäden verbinden sie, und am Ende setzt sich das Bild wieder zusammen.",
