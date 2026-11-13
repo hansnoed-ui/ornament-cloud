@@ -15,7 +15,7 @@ import { UI } from "../src/b/ui.mjs";
 import { ladeZettel, ladeZettelkasten, ladeOrma, ladeWerke, ladeBeitraege, ladeOmna, ladeKonstellationen, ladePersonen, ladeRegister, ladeVeroeffentlichungen } from "./b-daten.mjs";
 import { pruefsumme } from "./build-b-jev.mjs";
 import { zeichen } from "../src/b/zeichen.mjs";
-import { FOTOS, AUSSTELLUNG } from "../src/b/fotos.mjs";
+import { FOTOS, AUSSTELLUNG, PRINTS } from "../src/b/fotos.mjs";
 import { createHash } from "node:crypto";
 
 const ROOT = new URL("../", import.meta.url);
@@ -365,13 +365,13 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
 
   /** Fotografien (seit 13. November 2026, src/b/fotos.mjs): eine Galerie in Spalten, jedes Bild im eigenen Seitenverhältnis; ein Tipp öffnet die grosse Fassung.
    *  «quadrat» schneidet für die Reihe auf der Startseite auf ein Quadrat zu und führt auf die Galerie statt aufs Bild. */
-  function fotoGalerie(liste, { quadrat = false } = {}) {
+  function fotoGalerie(liste, { quadrat = false, ohneZeile = false } = {}) {
     return `<div class="fotos${quadrat ? " fotos-reihe" : ""}">${liste.map((f) => {
       const [b, h] = fotoMass[f.slug], t = f.titel[sprache], k = 800 / Math.max(b, h);
       const bild = `<img src="${attr(mitMarke(`b/bilder/fotografie/${f.slug}-800.jpg`))}"${quadrat ? "" : ` srcset="${attr(mitMarke(`b/bilder/fotografie/${f.slug}-800.jpg`))} 800w, ${attr(mitMarke(`b/bilder/fotografie/${f.slug}-1600.jpg`))} 1600w" sizes="(max-width: 760px) 100vw, 360px"`} alt="${attr(f.alt[sprache])}" width="${Math.round(b * k)}" height="${Math.round(h * k)}" loading="lazy">`;
       return quadrat
         ? `<a class="foto" href="${B}werke/#foto-${f.slug}" title="${attr(t)}">${bild}</a>`
-        : `<figure class="foto" id="foto-${f.slug}"><a href="${attr(mitMarke(`b/bilder/fotografie/${f.slug}-1600.jpg`))}" target="_blank" rel="noopener" title="${attr(T.werke.fotoGross(t))}">${bild}</a><figcaption>${esc(t)}${f.fuer ? `, ${esc(f.fuer[sprache])}` : ""}</figcaption></figure>`;
+        : `<figure class="foto" id="foto-${f.slug}"><a href="${attr(mitMarke(`b/bilder/fotografie/${f.slug}-1600.jpg`))}" target="_blank" rel="noopener" title="${attr(T.werke.fotoGross(t))}">${bild}</a>${ohneZeile ? "" : `<figcaption>${esc(t)}${f.fuer ? `, ${esc(f.fuer[sprache])}` : ""}</figcaption>`}</figure>`;
     }).join("")}</div>`;
   }
 
@@ -795,7 +795,8 @@ ${faeden([...zs.map((z) => fZettel(z)), fApp(appVon(appTop)), fAngebot(ANGEBOTE[
   ${fotoGalerie(FOTOS)}
 </div></section>
 <section class="abschnitt" aria-labelledby="prints-titel"><div class="spalte">
-  <div class="abschnitt-kopf"><h2 id="prints-titel">${esc(T.werke.prints)}</h2><p>${esc(ankuendigung)}</p></div>
+  <div class="abschnitt-kopf"><h2 id="prints-titel">${esc(T.werke.prints)}</h2><p>${esc(PRINTS.length ? T.werke.printsText : ankuendigung)}</p>${PRINTS.length ? `<a class="weiter" href="mailto:${attr(SEITE.person.mail)}?subject=${encodeURIComponent(T.werke.prints)}">${esc(T.werke.printsAnfrage)}</a>` : ""}</div>
+  ${PRINTS.length ? fotoGalerie(PRINTS, { ohneZeile: true }) : ""}
   ${echteWerke.length ? `<div class="reihe zeilen">${echteWerke.map((w) => `<article class="werk" id="${w.slug}"><a href="/art/${w.slug}/"><span class="bild"><img src="/art/bilder/${w.slug}-1-800.webp" alt="${attr(w.bilder[0].alt)}" loading="lazy" width="800" height="1067"></span></a><h3>${esc(w.titel)}</h3><p class="klein">${esc(w.technik)}, ${w.masse.b} × ${w.masse.h} cm, ${esc(T.werke.auflage(w.auflage.gesamt))}</p><p class="preis">CHF ${w.preis}.–</p><p><a href="/art/${w.slug}/">${esc(T.werke.bestellen)}</a></p></article>`).join("")}</div>` : ""}
 </div></section>
 <section class="abschnitt" aria-labelledby="raum-titel"><div class="spalte">
