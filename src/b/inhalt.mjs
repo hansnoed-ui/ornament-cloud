@@ -176,7 +176,7 @@ export const ANGEBOTE = [
         bildAlt: "Website der Ausstellung «Supervisionen»: gelbes Kopfband mit dem Titel und «Werkdialog», darunter die Einladung zu einer Vernissage mit dem Bild einer liegenden Figur",
         text: "Die Website zur Ausstellung im Oberen Turm Kaiserstuhl: Programm, Vernissagen, Rückblicke und der Turm als Ausstellungsraum. Schlicht gebaut, damit sie über sechs Monate schnell nachgeführt werden kann." },
       { name: "Principesse", von: "für Katharina Strickler", jahr: "2026", url: "https://principesse.ch/", adresse: "principesse.ch", bild: "b/bilder/schau/principesse.jpg", film: "b/bilder/schau/principesse.mp4",
-        bildAlt: "Principesse im Film: drei gezeichnete Prinzessinnen mit Kronen und ein Hund mit Krone schweben als Figuren im Raum durch Himmel, Wasser und Nacht, während die Seite nach unten rollt",
+        bildAlt: "Principesse im Film: drei gezeichnete Prinzessinnen mit Kronen und ein Hund mit Krone schweben als Figuren im Raum vor einem Nachthimmel mit Mond und Sternen",
         text: "Ein One-Pager, der mit einem kleinen Film beginnt: Die Principessa löst sich aus ihrem gezeichneten Bild, springt heraus und fliegt beim Scrollen durch die Seite. Am Ende eine Bestellkarte mit Auswahl und Vorschau." },
       { name: "Das Dritte Rad", von: "Website als Anwendung", jahr: "2026", url: "/beta/drittes-rad/", adresse: "ornament.cloud/beta/drittes-rad", bild: "b/bilder/schau/drittes-rad.jpg", film: "b/bilder/schau/drittes-rad.mp4",
         bildAlt: "Das Dritte Rad im Film: das Zeichen des Rads baut sich langsam auf, ein Farbenkreis dreht über die ganze Fläche, dann erscheint die Anwendung mit den drei Ringen",

@@ -18,7 +18,7 @@ let playwright;
 try { playwright = require("playwright"); } catch { playwright = require(join(process.env.NODE_PATH || "", "playwright")); }
 // Die Fahrt: [Anteil des Rollwegs, Bilder bis dorthin]; gleicher Anteil hintereinander heisst Halt. 20 Bilder je Sekunde.
 const FILME = {
-  principesse: { wurzel: resolve(process.env.PRINCIPESSE || "../principessa"), pfad: "", warten: 9000, fahrt: [[0.27, 0], [0.27, 50], [0.55, 110], [0.55, 50], [0.85, 120], [0.85, 80]] },
+  principesse: { wurzel: resolve(process.env.PRINCIPESSE || "../principessa"), pfad: "", warten: 9000, fahrt: [[0.27, 0], [0.27, 50], [0.55, 110], [0.55, 50], [0.85, 120], [0.85, 80]], ab: 13 },   // nur die Nacht kommt in den Film («die letzte szene ist gut, die ersten beiden hüpfen»)
   gamma: { wurzel: fileURLToPath(new URL("../", import.meta.url)), pfad: "gamma/", warten: 6000, fahrt: [[0.58, 0], [0.58, 30], [0.72, 80], [0.72, 30], [0.86, 80], [0.86, 30], [1, 80], [1, 50]] },
 };
 const NAME = process.argv[2] || "principesse", F = FILME[NAME];
@@ -54,7 +54,7 @@ for (let i = 1; i < FAHRT.length; i++) {
 }
 await browser.close(); server.close();
 if (!process.env.ORDNER) {
-  execFileSync("ffmpeg", ["-loglevel", "error", "-y", "-framerate", String(RATE), "-i", join(ordner, "%04d.jpg"), "-vf", "scale=960:600:flags=lanczos", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "28", "-preset", "slow", "-movflags", "+faststart", "-an", AUS]);
+  execFileSync("ffmpeg", ["-loglevel", "error", "-y", "-framerate", String(RATE), "-start_number", String(Math.round((F.ab || 0) * RATE)), "-i", join(ordner, "%04d.jpg"), "-vf", "scale=960:600:flags=lanczos", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "28", "-preset", "slow", "-movflags", "+faststart", "-an", AUS]);
   rmSync(ordner, { recursive: true });
 }
 console.log(`${n} Bilder, b/bilder/schau/${NAME}.mp4`);
