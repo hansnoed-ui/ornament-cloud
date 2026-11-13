@@ -10,6 +10,7 @@
 // Danach, wenn sich der Bestand geändert hat: tools/build-jev-kunst.ts (jev bewertet die neuen Beiträge; alte Werte bleiben im Zwischenspeicher).
 import { readFileSync, writeFileSync } from "node:fs";
 import { THEMEN, themenVon } from "../alpha/kunst/themen.js";
+import { ausgeschlossen } from "./kunst-ausschluss.mjs";   // Beiträge, die Christian nicht auf der Seite will (13. November 2026: Corona)
 
 const [, , quelle, ...rest] = process.argv;
 if (!quelle) { console.error("Aufruf: node tools/build-kunst.mjs <auswahl.json> [--nur <kennungen.txt>]"); process.exit(2); }
@@ -26,7 +27,7 @@ const tag = (v) => {
 };
 const beitraege = liste
   .map((b) => { const t = String(b.text ?? b.t ?? "").replace(/\r\n?/g, "\n").trim(); return { i: String(b.id ?? b.i), d: tag(b.datetime ?? b.date ?? b.d ?? b.timestamp), t, th: themenVon(t) }; })
-  .filter((b) => b.t && b.th.length && (!nur || nur.has(b.i)))
+  .filter((b) => b.t && b.th.length && (!nur || nur.has(b.i)) && !ausgeschlossen(b.t))
   .sort((a, b) => a.d.localeCompare(b.d) || a.i.localeCompare(b.i));
 const doppelt = beitraege.find((b, k) => k && b.i === beitraege[k - 1].i);
 if (doppelt) throw new Error(`Kennung doppelt: ${doppelt.i}`);
