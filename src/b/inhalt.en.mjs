@@ -44,6 +44,7 @@ export const APPS = [
     fuer: "For everyone who wants to see what else an image could be.",
     url: "alpha/the-fictory/", app: "alpha/the-fictory/?installieren", bild: "b/bilder/apps/the-fictory.svg", bildDunkel: "b/bilder/apps/the-fictory-dunkel.svg", bildAlt: "The Fictory, drawn: a grid of tiles, each wandered and turned away from its origin, with traces and threads",
     beispiele: [
+      { art: "video", datei: "assets/beispiele/the-fictory-berg.mp4", bild: "assets/beispiele/the-fictory-berg.jpg", mass: [540, 720], text: "A whole run with a photograph of a mountain: the image is divided into fields and falls apart into its pieces, the pieces wander over contour lines and turn, and in the end the mountain is back. Computed from the app, without sound." },
       { art: "video", datei: "assets/beispiele/the-fictory.mp4", bild: "assets/beispiele/the-fictory.jpg", mass: [540, 720], text: "A whole run with a painting: the image falls apart into its pieces, the pieces travel as traces across contour lines, threads connect them, and at the end the image comes together again. Computed from the app, without sound." },
     ],
     bewegung: "How The Fictory works: the image falls apart into its pieces, the pieces wander, threads connect them, and in the end the image comes back together.",
