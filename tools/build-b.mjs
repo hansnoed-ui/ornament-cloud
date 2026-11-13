@@ -41,7 +41,7 @@ const HAUPT = ["sehen/", "zettel/", "apps/", "angebot/"];
 // Fäden, Dialog und Sitemap. Wer die Adresse kennt, erreicht sie; ein Passwortschutz wäre ein eigener Schritt auf dem Webspace.
 // Wieder öffentlich: RASTER_OEFFENTLICH = true.
 const RASTER_OEFFENTLICH = false;
-const V = 59;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 60;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 const INHALT = { de: DE, en: EN };
@@ -420,24 +420,11 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
   </div>
 </section>
 
-<!-- Beauftragen gleich nach dem Einstieg (13. November 2026 abends, Christian: «Ich würde die Startseite dennoch mit den Leistungen beginnen, musik ganz zuletzt»); auf Papier, damit es sich vom grünen Einstieg abhebt -->
-<section class="abschnitt kapitel kapitel-papier" id="beauftragen" aria-labelledby="beauftragen-titel">
+<!-- Beauftragen gleich nach dem Einstieg (13. November 2026 abends, Christian: «Ich würde die Startseite dennoch mit den Leistungen beginnen, musik ganz zuletzt»); auf Tinte, zwischen dem grünen Einstieg und dem weissen Zettelkasten -->
+<section class="abschnitt kapitel tinte" id="beauftragen" aria-labelledby="beauftragen-titel">
   <div class="spalte">
     <div class="abschnitt-kopf"><h2 id="beauftragen-titel">${zeichen("arbeiten")}${esc(T.start.beauftragen)}</h2><p>${esc(T.start.beauftragenText)}</p><a class="weiter" href="${B}angebot/">${esc(T.start.alleAngebote)}</a></div>
     <div class="angebote" role="list">${ANGEBOTE.map((a) => `<a class="angebot" role="listitem" href="${B}angebot/${a.slug}/"><span class="zeichen-gross">${zeichen(a.slug)}</span><h3>${esc(a.name)}</h3><p>${esc(a.kurz)}</p><span class="weiter">${esc(T.start.leistung)}</span></a>`).join("")}</div>
-  </div>
-</section>
-
-<!-- Sehen und Hören (seit 13. November 2026): zuerst zwei Stücke zum Zeigen (ZEIGEN in inhalt.mjs), dann die Musik aus listen/<slug>/ep.json mit "oeffentlich": true, dann die Werke -->
-<section class="abschnitt kapitel tinte" id="hoeren-sehen" aria-labelledby="hoeren-titel">
-  <div class="spalte">
-    <div class="abschnitt-kopf"><h2 id="hoeren-titel">${zeichen("sehen")}${esc(T.start.hoeren)}</h2><p>${esc(T.start.hoerenText)}</p></div>
-    <!-- Visuelles zuerst (13. November 2026, Christian: «Grundsätzlich würd ich nicht mit der Musik beginnen, visuelles scheint mir zugänglicher»): zwei Stücke zum Zeigen, dann die Musik -->
-    ${schauFilm()}
-    <div class="schau">${ZEIGEN.map(schauStueck).join("")}</div>
-    <div class="abschnitt-kopf werke-kopf"><h3 id="werke-titel">${zeichen("werke")}${esc(T.start.werke)}</h3><p>${esc(echteWerke.length ? T.start.werkeText : T.start.werkeBald)}</p><a class="weiter" href="${B}werke/">${esc(echteWerke.length ? T.start.alleWerke : T.start.wasKommt)}</a></div>
-    ${fotoGalerie(FOTOS.filter((f) => f.start), { quadrat: true })}
-    ${echteWerke.length ? `<div class="reihe zeilen">${echteWerke.map((w) => `<a class="stueck" href="${B}werke/#${w.slug}"><span class="bild"><img src="/art/bilder/${w.slug}-1-800.webp" alt="${attr(w.bilder[0].alt)}" loading="lazy" width="800" height="1067"></span><h3>${esc(w.titel)}</h3><p>${esc(w.technik)}, ${w.masse.b} × ${w.masse.h} cm</p></a>`).join("")}</div>` : ""}
   </div>
 </section>
 
@@ -491,6 +478,22 @@ ${RASTER_OEFFENTLICH ? `<!-- Prüfraster (seit 21. Oktober 2026 statt «Denken»
   </div>
 </section>
 
+<!-- Sehen und Hören (seit 13. November 2026; seit dem Abend als letztes Kapitel vor der Liste, die Musik zuletzt): zuerst zwei Stücke zum Zeigen (ZEIGEN in inhalt.mjs), dann die Musik aus listen/<slug>/ep.json mit "oeffentlich": true, dann die Werke -->
+<section class="abschnitt kapitel tinte" id="hoeren-sehen" aria-labelledby="hoeren-titel">
+  <div class="spalte">
+    <div class="abschnitt-kopf"><h2 id="hoeren-titel">${zeichen("sehen")}${esc(T.start.hoeren)}</h2><p>${esc(T.start.hoerenText)}</p></div>
+    <!-- Visuelles zuerst (13. November 2026, Christian: «Grundsätzlich würd ich nicht mit der Musik beginnen, visuelles scheint mir zugänglicher»): zwei Stücke zum Zeigen, dann die Musik -->
+    ${schauFilm()}
+    <div class="schau">${ZEIGEN.map(schauStueck).join("")}</div>
+    <div class="abschnitt-kopf werke-kopf"><h3 id="werke-titel">${zeichen("werke")}${esc(T.start.werke)}</h3><p>${esc(echteWerke.length ? T.start.werkeText : T.start.werkeBald)}</p><a class="weiter" href="${B}werke/">${esc(echteWerke.length ? T.start.alleWerke : T.start.wasKommt)}</a></div>
+    ${fotoGalerie(FOTOS.filter((f) => f.start), { quadrat: true })}
+    ${echteWerke.length ? `<div class="reihe zeilen">${echteWerke.map((w) => `<a class="stueck" href="${B}werke/#${w.slug}"><span class="bild"><img src="/art/bilder/${w.slug}-1-800.webp" alt="${attr(w.bilder[0].alt)}" loading="lazy" width="800" height="1067"></span><h3>${esc(w.titel)}</h3><p>${esc(w.technik)}, ${w.masse.b} × ${w.masse.h} cm</p></a>`).join("")}</div>` : ""}
+    <!-- Musik am Schluss (13. November 2026 abends, Christian: «musik ganz zuletzt»; Türen «Beauftragen, Spielen und Denken, Sehen und Hören») -->
+    ${musik.length ? `<div class="abschnitt-kopf werke-kopf musik-kopf"><h3 id="musik-titel">${zeichen("hoeren")}${esc(T.start.musik)}</h3><p>${esc(T.start.musikText)}</p><a class="weiter" href="${B}hoeren/">${esc(T.start.alleMusik)}</a></div>` : ""}
+    ${musik.slice(0, 1).map((v) => platte(v, { neu: true })).join("")}
+  </div>
+</section>
+
 <section class="abschnitt kapitel kapitel-papier" aria-labelledby="liste-titel">
   <div class="spalte">
     <div class="liste-kasten" style="margin-top:0;border-top:0;padding-top:0">
@@ -499,15 +502,7 @@ ${RASTER_OEFFENTLICH ? `<!-- Prüfraster (seit 21. Oktober 2026 statt «Denken»
       <p class="knopfreihe"><a class="knopf" href="${attr(UEBER.liste.mailto)}">${esc(T.start.eintragen)}</a><a class="knopf still" href="${B}ueber/">${esc(T.start.ueberPerson)}</a></p>
     </div>
   </div>
-</section>
-${musik.length ? `
-<!-- Musik ganz zuletzt (13. November 2026 abends, Christian: «musik ganz zuletzt») -->
-<section class="abschnitt kapitel tinte" id="musik" aria-labelledby="musik-titel">
-  <div class="spalte">
-    <div class="abschnitt-kopf"><h2 id="musik-titel">${zeichen("hoeren")}${esc(T.start.musik)}</h2><p>${esc(T.start.musikText)}</p><a class="weiter" href="${B}hoeren/">${esc(T.start.alleMusik)}</a></div>
-    ${musik.slice(0, 1).map((v) => platte(v, { neu: true })).join("")}
-  </div>
-</section>` : ""}`;
+</section>`;
     veroeffentliche({ pfad: "", titel: "ornament.cloud", beschreibung: SEITE.beschreibung, body, jsonld: [personLd()], module: ["tafeln-leben.js"], bildAlt: T.start.bildAlt });
   }
 
