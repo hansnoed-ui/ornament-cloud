@@ -15,6 +15,7 @@ import { UI } from "../src/b/ui.mjs";
 import { ladeZettel, ladeZettelkasten, ladeOrma, ladeWerke, ladeBeitraege, ladeOmna, ladeKonstellationen, ladePersonen, ladeRegister, ladeVeroeffentlichungen } from "./b-daten.mjs";
 import { pruefsumme } from "./build-b-jev.mjs";
 import { zeichen } from "../src/b/zeichen.mjs";
+import { FOTOS } from "../src/b/fotos.mjs";
 import { createHash } from "node:crypto";
 
 const ROOT = new URL("../", import.meta.url);
@@ -29,7 +30,7 @@ const UNTER_UEBER = ["ueber/", "werke/", "zuletzt/"];
 // im Menü, sondern auf der Seite «Atelier» (b/atelier/, aus src/register.json); «Beta» gibt es im Menü nicht mehr, «Raster» und «Angebot» stehen
 // wieder für sich. Das ersetzt die Wünsche vom 5. und 8. November 2026 (Animations zuvorderst, Multiverse im Hauptmenü, Raster unter Beta).
 const HAUPT = ["hoeren/", "zettel/", "apps/", "raster/", "angebot/"];
-const V = 48;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 49;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
 const HEUTE = new Date().toISOString().slice(0, 10);
 const INHALT = { de: DE, en: EN };
@@ -52,6 +53,7 @@ const mitMarke = (pfad) => { if (!MARKEN.has(pfad)) MARKEN.set(pfad, createHash(
 const beitraege = ladeBeitraege();
 const register = ladeRegister();
 const musik = ladeVeroeffentlichungen();   // nur die mit "oeffentlich": true, neueste zuerst
+const fotoMass = JSON.parse(readFileSync(new URL("src/b/fotos.json", ROOT), "utf8"));   // Masse der Vorlagen (tools/b-fotos.mjs)
 const zeitText = (sek) => `${Math.floor(sek / 60)}:${String(Math.round(sek % 60)).padStart(2, "0")}`;
 const omnaUebungen = ladeOmna();
 const konstellationen = ladeKonstellationen();
@@ -352,6 +354,18 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
 </article>`;
   }
 
+  /** Fotografien (seit 13. November 2026, src/b/fotos.mjs): eine Galerie in Spalten, jedes Bild im eigenen Seitenverhältnis; ein Tipp öffnet die grosse Fassung.
+   *  «quadrat» schneidet für die Reihe auf der Startseite auf ein Quadrat zu und führt auf die Galerie statt aufs Bild. */
+  function fotoGalerie(liste, { quadrat = false } = {}) {
+    return `<div class="fotos${quadrat ? " fotos-reihe" : ""}">${liste.map((f) => {
+      const [b, h] = fotoMass[f.slug], t = f.titel[sprache], k = 800 / Math.max(b, h);
+      const bild = `<img src="${attr(mitMarke(`b/bilder/fotografie/${f.slug}-800.jpg`))}"${quadrat ? "" : ` srcset="${attr(mitMarke(`b/bilder/fotografie/${f.slug}-800.jpg`))} 800w, ${attr(mitMarke(`b/bilder/fotografie/${f.slug}-1600.jpg`))} 1600w" sizes="(max-width: 760px) 100vw, 360px"`} alt="${attr(f.alt[sprache])}" width="${Math.round(b * k)}" height="${Math.round(h * k)}" loading="lazy">`;
+      return quadrat
+        ? `<a class="foto" href="${B}werke/#foto-${f.slug}" title="${attr(t)}">${bild}</a>`
+        : `<figure class="foto" id="foto-${f.slug}"><a href="${attr(mitMarke(`b/bilder/fotografie/${f.slug}-1600.jpg`))}" target="_blank" rel="noopener" title="${attr(T.werke.fotoGross(t))}">${bild}</a><figcaption>${esc(t)}</figcaption></figure>`;
+    }).join("")}</div>`;
+  }
+
   /** Ein Schaubild mit Name, Satz und Weg: auf der Startseite (ZEIGEN) und als Referenz auf einer Leistung (schau). Bild 1280 × 800 aus tools/b-schaubilder.mjs */
   function schauStueck(s) {
     const aussen = /^https?:/.test(s.ziel || s.url || ""), ziel = s.url || (s.ziel.startsWith("/") ? s.ziel : `${B}${s.ziel}`);
@@ -401,6 +415,7 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
     ${musik.length ? `<div class="abschnitt-kopf werke-kopf musik-kopf"><h3 id="musik-titel">${zeichen("hoeren")}${esc(T.start.musik)}</h3><p>${esc(T.start.musikText)}</p><a class="weiter" href="${B}hoeren/">${esc(T.start.alleMusik)}</a></div>` : ""}
     ${musik.slice(0, 1).map((v) => platte(v, { neu: true })).join("")}
     <div class="abschnitt-kopf werke-kopf"><h3 id="werke-titel">${zeichen("werke")}${esc(T.start.werke)}</h3><p>${esc(echteWerke.length ? T.start.werkeText : T.start.werkeBald)}</p><a class="weiter" href="${B}werke/">${esc(echteWerke.length ? T.start.alleWerke : T.start.wasKommt)}</a></div>
+    ${fotoGalerie(FOTOS.filter((f) => f.start), { quadrat: true })}
     ${echteWerke.length ? `<div class="reihe zeilen">${echteWerke.map((w) => `<a class="stueck" href="${B}werke/#${w.slug}"><span class="bild"><img src="/art/bilder/${w.slug}-1-800.webp" alt="${attr(w.bilder[0].alt)}" loading="lazy" width="800" height="1067"></span><h3>${esc(w.titel)}</h3><p>${esc(w.technik)}, ${w.masse.b} × ${w.masse.h} cm</p></a>`).join("")}</div>` : ""}
   </div>
 </section>
@@ -708,6 +723,7 @@ ${faeden([...zs.map((z) => fZettel(z)), r.slug === "nebeneinander-nacheinander" 
   <h2 id="ablauf-titel">${esc(T.angebot.soGeht)}</h2>
   <ol>${a.ablauf.map((s) => `<li><span>${esc(s)}</span></li>`).join("")}</ol>
 </div></section>
+${a.fotos ? `<section class="referenzen schau-abschnitt" aria-labelledby="schau-titel"><div class="spalte"><h2 id="schau-titel">${esc(T.angebot.schau)}</h2>${fotoGalerie(FOTOS.filter((f) => f.gruppe === a.fotos))}<p class="klein" style="margin-top:14px"><a href="${B}werke/#fotografie">${esc(T.start.wasKommt)}</a></p></div></section>` : ""}
 ${a.schau ? `<section class="referenzen schau-abschnitt" aria-labelledby="schau-titel"><div class="spalte"><h2 id="schau-titel">${esc(T.angebot.schau)}</h2><div class="schau">${a.schau.map(schauStueck).join("")}</div></div></section>` : ""}
 ${a.referenzen ? `<section class="referenzen" aria-labelledby="ref-titel"><div class="spalte"><h2 id="ref-titel">${esc(T.angebot.referenzen)}</h2><ol class="jahre">${a.referenzen.map(([j, t]) => `<li><span class="jahr">${esc(j)}</span><span>${esc(t)}</span></li>`).join("")}</ol></div></section>` : ""}
 <section class="briefing" id="briefing" aria-labelledby="briefing-titel"><div class="spalte">
@@ -734,6 +750,10 @@ ${faeden([...zs.map((z) => fZettel(z)), fApp(appVon(appTop)), fAngebot(ANGEBOTE[
     const body = `
 <section class="stueck-kopf"><div class="spalte">
   <h1 class="titel">${esc(T.werke.titel)}<small>${esc(T.werke.small)}</small></h1>
+</div></section>
+<section class="abschnitt" id="fotografie" aria-labelledby="fotografie-titel"><div class="spalte">
+  <div class="abschnitt-kopf"><h2 id="fotografie-titel">${esc(T.werke.fotografie)}</h2><p>${esc(T.werke.fotografieText)}</p><a class="weiter" href="${B}angebot/fotografie/">${esc(T.werke.fotoAuftrag)}</a></div>
+  ${fotoGalerie(FOTOS)}
 </div></section>
 <section class="abschnitt" aria-labelledby="prints-titel"><div class="spalte">
   <div class="abschnitt-kopf"><h2 id="prints-titel">${esc(T.werke.prints)}</h2><p>${esc(ankuendigung)}</p></div>

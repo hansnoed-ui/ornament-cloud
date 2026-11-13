@@ -42,11 +42,16 @@ async function frage(zustand, fragen) {
   }
 }
 
+// Leistungen mit `ohneJev: true` (seit 13. November 2026: «Fotografie») stehen noch nicht in der jev-Tabelle: Sie gehen weder in die Prüfsumme noch in die
+// Fragen ein, damit die bestehende Tabelle gültig bleibt (jev lässt sich aus der Cloud-Sitzung nicht aufrufen). Beim nächsten Lauf dieses Werkzeugs mit
+// Schlüssel: `ohneJev` in src/b/inhalt.mjs und inhalt.en.mjs streichen, dann wird die Leistung mit eingeschätzt.
+const JEV_ANGEBOTE = ANGEBOTE.filter((a) => !a.ohneJev);
+
 /** Prüfsumme über alles, was die Fragen bestimmt: Zettel, Angebote, Apps, Raster, ORMA-Auswahl */
 export function pruefsumme(zettel, orma) {
   const h = createHash("sha256");
   for (const z of zettel) h.update(`${z.number}|${z.title}|${z.bottom_line}|${z.text}\n`);
-  for (const a of ANGEBOTE) h.update(`A|${a.slug}|${a.kurz}\n`);
+  for (const a of JEV_ANGEBOTE) h.update(`A|${a.slug}|${a.kurz}\n`);
   for (const a of APPS) h.update(`P|${a.slug}|${a.kurz}\n`);
   for (const r of RASTER) h.update(`R|${r.slug}|${r.kurz}\n`);
   for (const k of orma) h.update(`O|${k.id}\n`);
@@ -59,7 +64,7 @@ export async function main(argv) {
   const orma = ladeOrma();
   const summe = pruefsumme(zettel, orma);
   const kriterien = {
-    angebot: Object.fromEntries(ANGEBOTE.map((a) => [a.slug, `${a.name}: ${a.kurz} ${a.fuer}`])),
+    angebot: Object.fromEntries(JEV_ANGEBOTE.map((a) => [a.slug, `${a.name}: ${a.kurz} ${a.fuer}`])),
     app: Object.fromEntries(APPS.map((a) => [a.slug, `${a.name}: ${a.kurz} ${a.fuer}`])),
     raster: Object.fromEntries(RASTER.map((r) => [r.slug, `${r.name}: ${r.kurz}`])),
     orma: Object.fromEntries(orma.map((k) => [k.id, `${k.kuenstler} × ${k.theoretiker}: ${ersterSatz(k.einstieg)}`])),

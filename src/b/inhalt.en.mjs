@@ -10,7 +10,7 @@ export const SEITE = {
   adresse: "https://ornament.cloud/b/en/",
   claim: "Observation is an occasion for change in reality.",
   titel: "Theory you can touch.",
-  lead: "Music, images, apps and a Zettelkasten by Christian Strickler. And four services for anyone who needs something like this for themselves.",
+  lead: "Music, images, apps and a Zettelkasten by Christian Strickler. And five services for anyone who needs something like this for themselves.",
   claimAlt: "Theory you can touch.",
   beschreibung: "Theory you can touch: music, works, seven apps, 49 notes and four test grids by Christian Strickler. Plus web design, education, curating and products.",
   person: { name: "Christian Strickler", ort: "between Zurich, Basel and Aarau", strasse: "Rheingasse 8b", plz: "CH-5466 Kaiserstuhl", mail: "hansnoed@gmail.com" },
@@ -180,6 +180,16 @@ export const ANGEBOTE = [
       { frage: "Who exhibits?", wahlen: ["one person", "a group", "a collection", "open"] },
       { frage: "When?", wahlen: ["in three months", "in a year", "next year", "open"] },
     ] },
+  { slug: "fotografie", name: "Photography", kurz: "Stage, exhibition, space and landscape in pictures.",
+    text: "Photography of stage and exhibition, of spaces, places and landscapes: a rehearsal, an evening, a hanging, a house from the inside, a lake. In colour or black and white, for website, press and print.",
+    fuer: "For theatres, art spaces, artists, institutions and anyone who wants to keep an evening or a place.",
+    ablauf: ["A conversation about what is to be photographed, where and what for.", "The shoot on site: at the rehearsal, on the evening, in the space.", "A selection of edited images, in the sizes you need."],
+    fotos: "buehne", ohneJev: true,   // noch nicht in der jev-Tabelle (tools/build-b-jev.mjs)
+    dialog: [
+      { frage: "What?", wahlen: ["a rehearsal or performance", "an exhibition", "a space or a house", "something else"] },
+      { frage: "What for?", wahlen: ["website", "press", "print", "archive"] },
+      { frage: "How much?", wahlen: ["one session", "one day", "a series", "open"] },
+    ] },
   { slug: "produkte", name: "Products", kurz: "Works, prints, editions and commissions, classic and digital.",
     text: "Works on paper and canvas, prints in small editions, installations with image, motion and sound, works for rooms and screens. Plus editions from the Zettelkasten: the book, the card set, the poster and the notebooks, printed on demand. Orders by email, payment by QR invoice or TWINT; shipping within Switzerland included. Commissions for institutions, companies and private clients after a conversation.",
     fuer: "For collectors, architects, companies, municipalities, institutions and for everyone looking for a work or a book for a particular place.",
@@ -194,7 +204,7 @@ export const ANGEBOTE = [
 export const UEBER = {
   text: [
     "Christian Strickler lives and works between Zurich, Basel and Aarau. He turns theory into things you can touch: a Zettelkasten, a wheel that brings artists and theorists together, colour wheels with exercises, machines that make images from photos and sounds, and test grids for questioning theories, texts and bodily events.",
-    "Four services: web design, education and consulting, curatorial projects and products. He designs and builds websites and apps, leads seminars and projects with schools and teams, advises institutions that want to make art a part of their work, curates exhibitions and sells works, prints and editions.",
+    "Five services: web design, education and consulting, curatorial projects, photography and products. He designs and builds websites and apps, leads seminars and projects with schools and teams, advises institutions that want to make art a part of their work, curates exhibitions, photographs stages, spaces and places and sells works, prints and editions.",
     "Everything on this site runs without outside services: no cookies, no advertising, no trackers. Visits are counted without cookies. The apps compute on your device; your images never leave it.",
   ],
   hintergrund: {

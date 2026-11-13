@@ -670,3 +670,20 @@ html { scroll-behavior: smooth; }
 /* Seiten ohne eigene Farbe (Hören, Atelier): Titel und Inhalt rücken zusammen, statt dass ein leeres schwarzes Band dazwischen steht */
 body:is([data-bereich="hoeren"], [data-bereich="atelier"]) main > :first-child { padding-bottom: 0; }
 body:is([data-bereich="hoeren"], [data-bereich="atelier"]) main > :first-child + .abschnitt { padding-top: clamp(28px, 4vw, 48px); }
+
+/* ---------- Fotografie (13. November 2026): Galerie in Spalten auf «Werke» und auf der Leistung, eine Reihe von Quadraten auf der Startseite.
+   Die fünf Leistungen stehen auf breiten Bildschirmen in fünf Spalten. ---------- */
+.fotos { columns: 3 300px; column-gap: 20px; }
+.fotos .foto { break-inside: avoid; margin: 0 0 20px; display: block; }
+.fotos .foto a { display: block; overflow: hidden; background: var(--flaeche); }
+.fotos .foto img { display: block; width: 100%; height: auto; transition: transform 0.6s cubic-bezier(0.2, 0.6, 0.2, 1); }
+.fotos .foto a:hover img { transform: scale(1.02); }
+.fotos figcaption { margin-top: 8px; color: var(--grau); font-size: 0.9rem; }
+.fotos.fotos-reihe { columns: auto; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 24px; }
+.fotos.fotos-reihe .foto { margin: 0; overflow: hidden; background: var(--flaeche); }
+.fotos.fotos-reihe .foto img { aspect-ratio: 1; object-fit: cover; height: 100%; }
+.fotos.fotos-reihe .foto:hover img { transform: scale(1.03); }
+@media (max-width: 560px) { .fotos.fotos-reihe { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (prefers-reduced-motion: reduce) { .fotos .foto img { transition: none; } .fotos .foto a:hover img, .fotos.fotos-reihe .foto:hover img { transform: none; } }
+body[data-bereich="werke"] #fotografie .abschnitt-kopf { margin-bottom: 24px; }
+@media (min-width: 1000px) { .angebote:not(.tueren) { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0 20px; } .angebote:not(.tueren) .angebot h3, .angebote:not(.tueren) .angebot h2 { font-size: 1.2rem; } }

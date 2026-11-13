@@ -13,7 +13,7 @@ export const SEITE = {
   // (Hören und Sehen, Spielen und Denken, Beauftragen); die vier Leistungen stehen als eigener Abschnitt «Beauftragen» weiter unten.
   // Vom 20. Oktober bis 13. November 2026: titel «Gestalten, vermitteln, kuratieren.», die vier Leistungen zuoberst.
   titel: "Theorie, die man anfassen kann.",
-  lead: "Musik, Bilder, Apps und ein Zettelkasten von Christian Strickler. Und vier Leistungen für alle, die so etwas für sich brauchen.",
+  lead: "Musik, Bilder, Apps und ein Zettelkasten von Christian Strickler. Und fünf Leistungen für alle, die so etwas für sich brauchen.",
   claimAlt: "Theorie, die man anfassen kann.",
   beschreibung: "Theorie, die man anfassen kann: Musik, Werke, sieben Apps, 49 Zettel und vier Prüfraster von Christian Strickler. Dazu Webdesign, Vermittlung, Kuration und Produkte.",
   person: { name: "Christian Strickler", ort: "zwischen Zürich, Basel und Aarau", strasse: "Rheingasse 8b", plz: "CH-5466 Kaiserstuhl", mail: "hansnoed@gmail.com" },
@@ -196,6 +196,18 @@ export const ANGEBOTE = [
       { frage: "Wer stellt aus?", wahlen: ["eine Person", "eine Gruppe", "eine Sammlung", "offen"] },
       { frage: "Wann?", wahlen: ["in drei Monaten", "in einem Jahr", "nächstes Jahr", "offen"] },
     ] },
+  // Fünfte Leistung seit 13. November 2026 (Christian: «Nimm noch etwas zum Thema Fotographie: Angebote/Werke»). Der Text ist von Claude nach den
+  // geschickten Bildern geschrieben (Bühne, Raum, Landschaft) und knapp gehalten: was genau angeboten wird, zu welchem Preis und für wen, bestätigt Christian.
+  { slug: "fotografie", name: "Fotografie", kurz: "Bühne, Ausstellung, Raum und Landschaft im Bild.",
+    text: "Fotografie von Bühne und Ausstellung, von Räumen, Orten und Landschaften: eine Probe, ein Abend, eine Hängung, ein Haus von innen, ein See. In Farbe oder Schwarzweiss, für Website, Presse und Druck.",
+    fuer: "Für Theater, Kunsträume, Künstler:innen, Häuser und für alle, die einen Abend oder einen Ort festhalten wollen.",
+    ablauf: ["Ein Gespräch über das, was fotografiert werden soll, wo und wofür.", "Die Aufnahme vor Ort: bei der Probe, am Abend, im Raum.", "Eine Auswahl bearbeiteter Bilder, in den Grössen, die du brauchst."],
+    fotos: "buehne", ohneJev: true,   // noch nicht in der jev-Tabelle (tools/build-b-jev.mjs)
+    dialog: [
+      { frage: "Was?", wahlen: ["eine Probe oder Aufführung", "eine Ausstellung", "ein Raum oder ein Haus", "etwas anderes"] },
+      { frage: "Wofür?", wahlen: ["Website", "Presse", "Druck", "Archiv"] },
+      { frage: "Wie viel?", wahlen: ["ein Termin", "ein Tag", "eine Reihe", "offen"] },
+    ] },
   { slug: "produkte", name: "Produkte", kurz: "Werke, Prints, Editionen und Auftragsarbeiten, klassisch und digital.",
     text: "Werke auf Papier und Leinwand, Prints in kleinen Auflagen, Installationen mit Bild, Bewegung und Ton, Arbeiten für Räume und Bildschirme. Dazu Editionen aus dem Zettelkasten: das Buch, das Kartenset, das Poster und die Notizbücher, gedruckt auf Bestellung. Bestellt wird per Mail, bezahlt per QR-Rechnung oder TWINT; Versand in der Schweiz inbegriffen. Auftragsarbeiten für Häuser, Firmen und Private nach Gespräch.",
     fuer: "Für Sammler:innen, Architekt:innen, Firmen, Gemeinden, Häuser und für alle, die ein Werk oder ein Buch für einen bestimmten Ort suchen.",
@@ -235,7 +247,7 @@ export const PRODUKTE = [
 export const UEBER = {
   text: [
     "Christian Strickler lebt und arbeitet zwischen Zürich, Basel und Aarau. Er macht Theorie zu Dingen, die man anfassen kann: einen Zettelkasten, ein Rad, das Künstler:innen und Theoretiker:innen zusammenbringt, Farbräder mit Übungen, Maschinen, die aus Fotos und Tönen Bilder machen, und Prüfraster, mit denen sich Theorien, Texte und Körperereignisse befragen lassen.",
-    "Vier Leistungen: Webdesign, Vermittlung und Beratung, kuratorische Projekte und Produkte. Er gestaltet und baut Websites und Apps, leitet Seminare und Projekte mit Schulen und Teams, berät Institutionen, die Kunst zu einem Teil ihrer Arbeit machen wollen, kuratiert Ausstellungen und verkauft Werke, Prints und Editionen.",
+    "Fünf Leistungen: Webdesign, Vermittlung und Beratung, kuratorische Projekte, Fotografie und Produkte. Er gestaltet und baut Websites und Apps, leitet Seminare und Projekte mit Schulen und Teams, berät Institutionen, die Kunst zu einem Teil ihrer Arbeit machen wollen, kuratiert Ausstellungen, fotografiert Bühnen, Räume und Orte und verkauft Werke, Prints und Editionen.",
     "Alles auf dieser Seite läuft ohne Dienste von aussen: keine Cookies, keine Werbung, keine Tracker. Besuche werden ohne Cookies gezählt. Die Apps rechnen auf deinem Gerät; deine Bilder verlassen es nicht.",
   ],
   hintergrund: {

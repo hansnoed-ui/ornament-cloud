@@ -33,8 +33,8 @@
    "art": "Werke und Editionen",
    "status": "oeffentlich",
    "adresse": "b/werke/",
-   "kurz": "Ankündigung für Prints, Originale, Arbeiten im Raum und Editionen.",
-   "wartet": "Erstes echtes Werk mit Preis in src/art/werke.json; Zahlungslink."
+   "kurz": "Sieben Fotografien; Ankündigung für Prints, Originale, Arbeiten im Raum und Editionen.",
+   "wartet": "Titel, Ort und Jahr der Fotografien; erstes Werk mit Preis und Zahlungslink."
   },
   {
    "id": "art",
@@ -278,6 +278,16 @@
    "adresse": "b/angebot/kuration/",
    "kurz": "",
    "wartet": "Referenzen und Ab-Preise fehlen."
+  },
+  {
+   "id": "angebot-fotografie",
+   "name": "Fotografie",
+   "tuer": "beauftragen",
+   "art": "Leistung",
+   "status": "oeffentlich",
+   "adresse": "b/angebot/fotografie/",
+   "kurz": "",
+   "wartet": "Text der Leistung bestätigen (von Claude geschrieben); Stück, Ort, Jahr und Einverständnis zu den Bühnenbildern; Ab-Preis."
   },
   {
    "id": "angebot-produkte",

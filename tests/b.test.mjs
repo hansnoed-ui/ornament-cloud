@@ -157,7 +157,7 @@ test("b/: die jev-Tabelle passt zu Zetteln, Angeboten, Apps, Rastern und ORMA (s
   assert.equal(Object.keys(j.zettel).length, 49);
   for (const [n, a] of Object.entries(j.zettel)) {
     assert.deepEqual(Object.keys(a).sort(), ["angebot", "app", "orma", "raster"], `Zettel ${n}`);
-    assert.deepEqual(Object.keys(a.angebot).sort(), ANGEBOTE.map((x) => x.slug).sort(), `Zettel ${n}: Angebote`);
+    assert.deepEqual(Object.keys(a.angebot).sort(), ANGEBOTE.filter((x) => !x.ohneJev).map((x) => x.slug).sort(), `Zettel ${n}: Angebote (ohne die mit ohneJev, seit 13. November 2026)`);
     assert.deepEqual(Object.keys(a.app).sort(), APPS.map((x) => x.slug).sort(), `Zettel ${n}: Apps`);
   }
   assert.match(lies("b/zettel/1-die-bruecke/index.html"), new RegExp(`jev \\(${j.modell.replace(/\./g, "\\.")}, api\\.typesafe\\.ai\\)`), "die Seite nennt, woher die Fäden kommen");
@@ -439,4 +439,31 @@ test("Kachelfilme der Bild-Apps: quadratisch 480, stumm, unter 1 MB, mit Standbi
     assert.ok(film.includes(Buffer.from("avc1")) && !film.includes(Buffer.from("mp4a")), `${n}.mp4: H.264 ohne Tonspur`);
     assert.ok(bild[0] === 0xff && bild[1] === 0xd8, `${n}.jpg`);
   }
+});
+
+// ---------- Fotografie (13. November 2026, Christian: «Nimm noch etwas zum Thema Fotographie: Angebote/Werke») ----------
+test("Fotografie: Galerie auf «Werke», Reihe auf der Startseite, fünfte Leistung mit den Bühnenbildern; jedes Bild in zwei Grössen, mit Beschreibung", async () => {
+  const { FOTOS } = await import("../src/b/fotos.mjs");
+  const mass = JSON.parse(lies("src/b/fotos.json"));
+  assert.ok(FOTOS.length >= 7);
+  for (const f of FOTOS) {
+    assert.ok(existsSync(new URL(`src/b/fotos/${f.slug}.jpg`, root)), `${f.slug}: Vorlage`);
+    for (const g of [800, 1600]) { const b = readFileSync(new URL(`b/bilder/fotografie/${f.slug}-${g}.jpg`, root)); assert.ok(b[0] === 0xff && b[1] === 0xd8 && b.length < 900_000, `${f.slug}-${g}.jpg (${b.length})`); }
+    assert.ok(Array.isArray(mass[f.slug]) && mass[f.slug].length === 2, `${f.slug}: Masse`);
+    for (const l of ["de", "en"]) assert.ok(f.titel[l] && f.alt[l].length >= 30 && !f.alt[l].includes("ß"), `${f.slug}: Titel und Beschreibung (${l})`);
+  }
+  for (const [datei, B, titel] of [["b/werke/index.html", "/b/", "Fotografie"], ["b/en/werke/index.html", "/b/en/", "Photography"]]) {
+    const html = lies(datei), teil = html.slice(html.indexOf('id="fotografie"'), html.indexOf('id="prints-titel"'));
+    assert.ok(teil.includes(`<h2 id="fotografie-titel">${titel}</h2>`), `${datei}: Abschnitt`);
+    assert.deepEqual([...teil.matchAll(/<figure class="foto" id="foto-([a-z0-9-]+)">/g)].map((m) => m[1]), FOTOS.map((f) => f.slug), `${datei}: alle Bilder in der Reihenfolge der Daten`);
+    assert.match(teil, /<img src="\/b\/bilder\/fotografie\/[a-z0-9-]+-800\.jpg\?v=[0-9a-f]{10}" srcset="[^"]+ 800w, [^"]+ 1600w" sizes="[^"]+" alt="[^"]{30,}" width="\d+" height="\d+" loading="lazy">/, `${datei}: Bild mit zwei Grössen, Beschreibung und Massen`);
+    assert.ok(teil.includes(`href="${B}angebot/fotografie/"`), `${datei}: Weg zur Leistung`);
+  }
+  const start = lies("b/index.html");
+  assert.deepEqual([...start.matchAll(/<a class="foto" href="\/b\/werke\/#foto-([a-z0-9-]+)"/g)].map((m) => m[1]), FOTOS.filter((f) => f.start).map((f) => f.slug), "Startseite: die Reihe");
+  const leistung = lies("b/angebot/fotografie/index.html");
+  assert.deepEqual([...leistung.matchAll(/<figure class="foto" id="foto-([a-z0-9-]+)">/g)].map((m) => m[1]), FOTOS.filter((f) => f.gruppe === "buehne").map((f) => f.slug), "Leistung: die Bühnenbilder");
+  assert.equal(ANGEBOTE.length, 5);
+  assert.ok(ANGEBOTE.find((a) => a.slug === "fotografie").ohneJev, "noch nicht in der jev-Tabelle; die Tabelle bleibt gültig");
+  assert.equal(JSON.parse(lies("src/b/jev.json")).pruefsumme, pruefsumme(ladeZettel("de"), ladeOrma()), "jev-Tabelle passt weiter zur Prüfsumme");
 });
