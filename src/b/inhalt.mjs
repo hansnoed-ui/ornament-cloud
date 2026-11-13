@@ -164,12 +164,12 @@ export const ANGEBOTE = [
     ablauf: ["Ein Gespräch über das, was die Seite oder die App tun soll, und für wen.", "Ein Entwurf im Browser, zum Anfassen, nicht als Bild; bei Apps ein lauffähiger Prototyp innert Tagen.", "Bau, Texte, Bilder, Veröffentlichung auf der eigenen Adresse; danach bleibt alles in deiner Hand."],
     // Zum Anschauen (13. November 2026, Christian: «Erst principessa als website referenz und gamma»). Am 20. Oktober 2026 war der Abschnitt
     // herausgenommen worden, bis Referenzen von Christian kommen; das sind sie. Bilder: tools/b-schaubilder.mjs.
-    // Kaiserbühne seit 13. November 2026 (Christian: «nimm zu den referenzen website auch noch kaiserbuehne.ch auf, die habe ich auch gemacht»). Die Seite war aus
-    // der Cloud-Sitzung nicht erreichbar, darum kein Bildschirmfoto: das Bild ist eine von Christians Bühnenfotografien für das Haus (src/b/fotos.mjs).
+    // Kaiserbühne seit 13. November 2026 (Christian: «nimm zu den referenzen website auch noch kaiserbuehne.ch auf, die habe ich auch gemacht»). Das Bild
+    // ist ein Bildschirmfoto der Seite, das Christian am selben Tag geschickt hat (b/bilder/schau/kaiserbuehne.jpg; die Seite ist aus der Cloud-Sitzung nicht erreichbar).
     schau: [
-      { name: "Kaiserbühne", von: "Website und Bühnenfotografie", jahr: "2026", url: "https://kaiserbuehne.ch/", adresse: "kaiserbuehne.ch", bild: "b/bilder/fotografie/buehne-3-1600.jpg", mass: [1600, 1067],
-        bildAlt: "Bühnenfotografie für die Kaiserbühne, schwarzweiss: ein Mann kauert in einem grossen Rad aus Metallringen, daneben zwei weitere Personen",
-        text: "Die Website der Kaiserbühne. Auch die Bühnenfotografien für das Haus stammen von Christian Strickler; das Bild zeigt eine davon." },
+      { name: "Kaiserbühne", von: "Website und Bühnenfotografie", jahr: "2026", url: "https://kaiserbuehne.ch/", adresse: "kaiserbuehne.ch", bild: "b/bilder/schau/kaiserbuehne.jpg", mass: [1165, 728],
+        bildAlt: "Website der Kaiserbühne: der Spielplan der Saison 2026/27 als farbige Kacheln mit den Titeln der Stücke, darüber die Kopfzeile mit Aktuell, Tickets, Spielplan, Über uns und Vermietung",
+        text: "Die Website der Kaiserbühne mit dem Spielplan als farbigen Kacheln. Auch die Bühnenfotografien für das Haus stammen von Christian Strickler." },
       { name: "Principesse", von: "für Katharina Strickler", jahr: "2026", url: "https://principesse.ch/", adresse: "principesse.ch", bild: "b/bilder/schau/principesse.jpg",
         bildAlt: "Principesse: eine gezeichnete Prinzessin mit Krone und ein Hund mit Krone auf einer Wiese, im Rahmen eines kleinen Films",
         text: "Ein One-Pager, der mit einem kleinen Film beginnt: Die Principessa löst sich aus ihrem gezeichneten Bild, springt heraus und fliegt beim Scrollen durch die Seite. Am Ende eine Bestellkarte mit Auswahl und Vorschau." },
