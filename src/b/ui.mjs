@@ -23,15 +23,15 @@ export const UI = {
     buehne: { vollbild: "Vollbild", tabTitel: "In eigenem Tab öffnen", tab: "Eigener Tab", zurueckTitel: "Zurück zur Seite der App", zurueck: "Zurück", feld: "das Feld" },
     start: {
       // Einstieg mit drei Türen (13. November 2026, Entscheid von Christian). Am Abend desselben Tages: «Ich würde die Startseite dennoch mit den
-      // Leistungen beginnen, musik ganz zuletzt.» Darum Beauftragen zuerst; danach «Beauftragen, Spielen und Denken, Sehen und Hören»
-      // (Christian, gleich danach), die Musik am Schluss von «Sehen und Hören».
+      // Leistungen beginnen, musik ganz zuletzt.» Darum Beauftragen zuerst. Auf die Frage «Was hältst du von: Beauftragen, sehen, spielen
+      // und denken?» und Claudes Zustimmung: «ja, so». Die Musik steht als eigener Abschnitt nach «Zuletzt».
       tueren: [
         { id: "beauftragen", name: "Beauftragen", kurz: "Webdesign, Vermittlung, Kuration, Fotografie, Produkte.", weiter: "Zu den Leistungen", ziel: "#beauftragen", zeichen: "arbeiten" },
+        { id: "hoeren-sehen", name: "Sehen", kurz: "Räder, Farben, Fotografien, Bilder in Bewegung.", weiter: "Zum Zeigen", ziel: "#hoeren-sehen", zeichen: "sehen" },
         { id: "spielen-denken", name: "Spielen und Denken", kurz: "Ein Zettelkasten und sieben Apps.", weiter: "Zum Zettelkasten", ziel: "#spielen-denken", zeichen: "spielen" },
-        { id: "hoeren-sehen", name: "Sehen und Hören", kurz: "Räder, Farben, Fotografien, Bilder in Bewegung. Und Musik.", weiter: "Zum Zeigen", ziel: "#hoeren-sehen", zeichen: "sehen" },
       ],
       tuerenAria: "Die drei Türen",
-      hoeren: "Sehen und Hören", hoerenText: "Was fertig ist und sich zeigen lässt: ein Film, zwei Räder, Fotografien. Ganz zuletzt die Musik.", alleMusik: "Alle Musik", musik: "Musik", musikText: "the i: die erste Veröffentlichung.",
+      hoeren: "Sehen", hoerenText: "Was fertig ist und sich zeigen lässt: ein Film, zwei Räder, Fotografien.", alleMusik: "Alle Musik", musik: "Musik", musikText: "the i: die erste Veröffentlichung.",
       neu: "Neu", anhoeren: "Anhören", tracks: (n) => `${n} Tracks`, minuten: (m) => `${m} Minuten`,
       beauftragen: "Beauftragen", beauftragenText: "Fünf Leistungen, made in Switzerland. Jede beginnt mit einem Gespräch und einem Briefing.", alleAngebote: "Alle Leistungen",
       auch: "Auch zum Spielen:", atelier: "Atelier",
@@ -41,7 +41,7 @@ export const UI = {
       kicker: "Ein Zettel aus dem Zettelkasten, jedes Mal ein anderer. ", kickerSatz: "die Fäden verbinden Zettel, die dieselben Personen nennen.",
       raster: "Prüfraster", rasterText: "Vier Instrumente zum genaueren Hinsehen. Mit Grundlagenpapier und Anwendungsprompt lassen sich Theorien, Texte und Körperereignisse befragen.", alleRaster: "Alle Prüfraster",
       spielen: "Spielen", spielenText: "Sieben Apps, die im Browser laufen und auf dem Gerät rechnen. Ohne Anmeldung, ohne Netz, ohne dass ein Bild das Gerät verlässt.", alleApps: "Alle Apps",
-      werke: "Werke", werkeText: "Originale, Prints in kleinen Auflagen und Arbeiten im Raum.", werkeBald: "Fotografien. Originale, Prints und Editionen sind in Vorbereitung.", alleWerke: "Alle Werke", wasKommt: "Alle Fotografien",
+      werke: "Werke", werkeText: "Originale, Prints in kleinen Auflagen und Arbeiten im Raum.", werkeBald: "Fotografien und Prints. Originale und Editionen sind in Vorbereitung.", alleWerke: "Alle Werke", wasKommt: "Alle Fotografien",
       zuletzt: "Zuletzt", zuletztText: "Beiträge aus dem Zettelkasten für Social Media.", alleBeitraege: "Alle Beiträge",
       eintragen: "Eintragen lassen", ueberPerson: "Über Christian Strickler",
       bildAlt: "Das Feld: 49 Zettel in sieben Reihen, mit blauen Fäden dazwischen",
@@ -107,7 +107,7 @@ export const UI = {
       kopfTitel: (name) => `${name} – Christian Strickler, Zürich, Basel, Aarau – ornament.cloud`,
     },
     werke: {
-      titel: "Werke", small: "Fotografien. Dazu Originale und Prints in kleinen Auflagen, Arbeiten im Raum und Editionen, die in Vorbereitung sind.",
+      titel: "Werke", small: "Fotografien und Prints. Dazu Originale, Arbeiten im Raum und Editionen, die in Vorbereitung sind.",
       fotografie: "Fotografie", fotografieText: "Bühne, Räume, Landschaften. Ein Tipp auf ein Bild öffnet es gross.", fotoGross: (t) => `${t} gross ansehen`, fotoAuftrag: "Fotografie als Leistung",
       prints: "Prints und Originale", printsText: "Acht Motive als Print. Format, Papier und Preis auf Anfrage.", printsAnfrage: "Anfragen", ankuendigung: null, auflage: (n) => `Auflage ${n}`, bestellen: "Bestellen",
       raum: "Im Raum", raumText: "In Vorbereitung: Arbeiten in 3D für Bildschirm und Projektion, die im Browser laufen.",
@@ -145,11 +145,11 @@ export const UI = {
     start: {
       tueren: [
         { id: "beauftragen", name: "Commission", kurz: "Web design, education, curating, photography, products.", weiter: "To the services", ziel: "#beauftragen", zeichen: "arbeiten" },
+        { id: "hoeren-sehen", name: "Look", kurz: "Wheels, colours, photographs, images in motion.", weiter: "To the showpieces", ziel: "#hoeren-sehen", zeichen: "sehen" },
         { id: "spielen-denken", name: "Play and think", kurz: "A Zettelkasten and seven apps.", weiter: "To the Zettelkasten", ziel: "#spielen-denken", zeichen: "spielen" },
-        { id: "hoeren-sehen", name: "Look and listen", kurz: "Wheels, colours, photographs, images in motion. And music.", weiter: "To the showpieces", ziel: "#hoeren-sehen", zeichen: "sehen" },
       ],
       tuerenAria: "The three doors",
-      hoeren: "Look and listen", hoerenText: "What is finished and can be shown: a film, two wheels, photographs. Last of all, the music.", alleMusik: "All music", musik: "Music", musikText: "the i: the first release.",
+      hoeren: "Look", hoerenText: "What is finished and can be shown: a film, two wheels, photographs.", alleMusik: "All music", musik: "Music", musikText: "the i: the first release.",
       neu: "New", anhoeren: "Listen", tracks: (n) => `${n} tracks`, minuten: (m) => `${m} minutes`,
       beauftragen: "Commission", beauftragenText: "Five services, made in Switzerland. Each begins with a conversation and a briefing.", alleAngebote: "All services",
       auch: "Also to play with:", atelier: "Studio",
@@ -159,7 +159,7 @@ export const UI = {
       kicker: "A note from the Zettelkasten, a different one each time. ", kickerSatz: "the threads connect notes that name the same people.",
       raster: "Test grids", rasterText: "Four instruments for looking closer. With a background paper and an application prompt, they question theories, texts and bodily events.", alleRaster: "All test grids",
       spielen: "Playing", spielenText: "Seven apps that run in the browser and compute on the device. No sign-up, no network, no image ever leaves the device.", alleApps: "All apps",
-      werke: "Works", werkeText: "Originals, prints in small editions and works in space.", werkeBald: "Photographs. Originals, prints and editions are in preparation.", alleWerke: "All works", wasKommt: "All photographs",
+      werke: "Works", werkeText: "Originals, prints in small editions and works in space.", werkeBald: "Photographs and prints. Originals and editions are in preparation.", alleWerke: "All works", wasKommt: "All photographs",
       zuletzt: "Latest", zuletztText: "Posts from the Zettelkasten for social media.", alleBeitraege: "All posts",
       eintragen: "Join the list", ueberPerson: "About Christian Strickler",
       bildAlt: "The field: 49 notes in seven rows, with blue threads between them",
@@ -225,7 +225,7 @@ export const UI = {
       kopfTitel: (name) => `${name} – Christian Strickler, Zurich, Basel, Aarau – ornament.cloud`,
     },
     werke: {
-      titel: "Works", small: "Photographs. Plus originals and prints in small editions, works in space and editions, which are in preparation.",
+      titel: "Works", small: "Photographs and prints. Plus originals, works in space and editions, which are in preparation.",
       fotografie: "Photography", fotografieText: "Stage, spaces, landscapes. Tap an image to open it large.", fotoGross: (t) => `View ${t} large`, fotoAuftrag: "Photography as a service",
       prints: "Prints and originals", printsText: "Eight motifs as prints. Format, paper and price on request.", printsAnfrage: "Enquire", ankuendigung: "Originals and prints for sale are being prepared here over the coming days.", auflage: (n) => `edition of ${n}`, bestellen: "Order",
       raum: "In space", raumText: "In preparation: works in 3D for screen and projection, running in the browser.",

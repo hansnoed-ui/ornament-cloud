@@ -353,17 +353,17 @@ test("b/en/: jede Seite auch auf Englisch (ohne die Werkstatt), lang=en, hreflan
 
 
 // ---------- Schaufenster (13. November 2026, Entscheid von Christian: «Künstler zuerst»; Pakete «Schaufenster» und «Veröffentlichung») ----------
-test("Startseite: drei Türen, dann «Beauftragen» mit allen Leistungen, Zettelkasten, Spielen, Zuletzt, «Sehen und Hören» mit der Musik zuletzt (13. November 2026 abends)", () => {
-  for (const [datei, tueren] of [["b/index.html", ["Beauftragen", "Spielen und Denken", "Sehen und Hören"]], ["b/en/index.html", ["Commission", "Play and think", "Look and listen"]]]) {
+test("Startseite: drei Türen, dann «Beauftragen» mit allen Leistungen, «Sehen», Zettelkasten, Spielen, Zuletzt, Musik (13. November 2026 abends)", () => {
+  for (const [datei, tueren] of [["b/index.html", ["Beauftragen", "Sehen", "Spielen und Denken"]], ["b/en/index.html", ["Commission", "Look", "Play and think"]]]) {
     const html = lies(datei);
     const nav = html.match(/<nav class="angebote tueren"[\s\S]*?<\/nav>/)?.[0];
     assert.ok(nav, `${datei}: die Türen`);
     assert.deepEqual([...nav.matchAll(/<h2>([^<]+)<\/h2>/g)].map((m) => m[1]), tueren);
-    assert.deepEqual([...nav.matchAll(/<a class="angebot" href="([^"]+)"/g)].map((m) => m[1]), ["#beauftragen", "#spielen-denken", "#hoeren-sehen"]);
+    assert.deepEqual([...nav.matchAll(/<a class="angebot" href="([^"]+)"/g)].map((m) => m[1]), ["#beauftragen", "#hoeren-sehen", "#spielen-denken"]);
     for (const id of ["hoeren-sehen", "spielen-denken", "beauftragen"]) assert.ok(html.includes(` id="${id}"`), `${datei}: Ziel #${id}`);
-    const folge = ['class="angebote tueren"', 'id="beauftragen"', 'id="spielen-denken"', 'id="spielen-titel"', 'id="zuletzt-titel"', 'id="hoeren-sehen"', 'id="musik-titel"', 'id="liste-titel"'].map((t) => html.indexOf(t));
+    const folge = ['class="angebote tueren"', 'id="beauftragen"', 'id="hoeren-sehen"', 'id="spielen-denken"', 'id="spielen-titel"', 'id="zuletzt-titel"', 'id="musik-titel"', 'id="liste-titel"'].map((t) => html.indexOf(t));
     assert.ok(folge.every((x, i) => x > 0 && (i === 0 || x > folge[i - 1])), `${datei}: Reihenfolge der Abschnitte`);
-    const beauftragen = html.slice(html.indexOf('id="beauftragen"'), html.indexOf('id="spielen-denken"'));
+    const beauftragen = html.slice(html.indexOf('id="beauftragen"'), html.indexOf('id="hoeren-sehen"'));
     assert.equal((beauftragen.match(/<a class="angebot" role="listitem"/g) || []).length, ANGEBOTE.length, `${datei}: vier Leistungen unter «Beauftragen»`);
   }
   assert.ok(lies("b/index.html").includes("<h1 class=\"titel\" id=\"einstieg-titel\">Theorie, die man anfassen kann."), "der Titel");
@@ -401,10 +401,10 @@ test("Schaubilder: auf der Startseite Das Dritte Rad und OMNA COLOR vor der Musi
     assert.ok(buf[0] === 0xff && buf[1] === 0xd8 && buf.length < 250_000, `${b.name}.jpg: JPEG unter 250 KB`);
   }
   for (const [datei, B] of [["b/index.html", "/b/"], ["b/en/index.html", "/b/en/"]]) {
-    const html = lies(datei), abschnitt = html.slice(html.indexOf('id="hoeren-sehen"'), html.indexOf('id="liste-titel"'));
+    const html = lies(datei), abschnitt = html.slice(html.indexOf('id="hoeren-sehen"'), html.indexOf('id="spielen-denken"'));
     const stuecke = [...abschnitt.matchAll(/<a class="schau-stueck" href="([^"]+)"/g)].map((m) => m[1]);
     assert.deepEqual(stuecke, ["/beta/drittes-rad/", `${B}apps/omna-color/`], `${datei}: zwei Stücke zum Zeigen`);
-    assert.ok(abschnitt.indexOf('class="schau"') < abschnitt.indexOf('class="platte"') && abschnitt.indexOf('class="fotos') < abschnitt.indexOf('class="platte"'), `${datei}: die Musik steht zuletzt`);
+    assert.ok(!abschnitt.includes('class="platte"') && html.indexOf('class="platte"') > html.indexOf('id="zuletzt-titel"') && html.indexOf('class="platte"') < html.indexOf('id="liste-titel"'), `${datei}: die Musik steht nicht bei «Sehen», sondern nach «Zuletzt»`);
     // zuoberst der Film aus Animations (von Christian, 13. November 2026): stumm, als Schlaufe, erst geladen, wenn er ins Bild kommt
     const film = abschnitt.match(/<a class="schau-film" href="\/animations\/" target="_blank" rel="noopener">[\s\S]*?<\/a>/)?.[0];
     assert.ok(film && abschnitt.indexOf('class="schau-film"') < abschnitt.indexOf('class="schau"'), `${datei}: der Film steht zuoberst`);
