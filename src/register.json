@@ -232,8 +232,7 @@
    "status": "verlinkt",
    "adresse": "beta/drittes-rad/",
    "kurz": "Zettelkasten und OMNA COLOR auf einem Rad.",
-   "kurzEn": "The Zettelkasten and OMNA COLOR on one wheel.",
-   "atelier": true
+   "kurzEn": "The Zettelkasten and OMNA COLOR on one wheel."
   },
   {
    "id": "konstellation",
@@ -362,9 +361,11 @@
    "name": "ORNAMENT COMPOSER",
    "tuer": "atelier",
    "art": "Werkzeug",
-   "status": "direktlink",
+   "status": "verlinkt",
    "adresse": "alpha/composer/",
-   "kurz": "Spuren, Plugins und Stile (lucerne, bienne, Grooves)."
+   "kurz": "Spuren, Plugins und Stile (lucerne, bienne, Grooves).",
+   "kurzEn": "Tracks, plugins and styles (lucerne, bienne, grooves).",
+   "atelier": true
   },
   {
    "id": "av",
@@ -412,8 +413,7 @@
    "status": "verlinkt",
    "adresse": "?bisher",
    "kurz": "Die Website bis zum 20. Oktober 2026.",
-   "kurzEn": "The website up to 20 October 2026.",
-   "atelier": true
+   "kurzEn": "The website up to 20 October 2026."
   },
   {
    "id": "pod",

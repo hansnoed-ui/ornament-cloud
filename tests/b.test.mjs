@@ -384,7 +384,8 @@ test("Hören: jede öffentliche Veröffentlichung (listen/<slug>/ep.json mit \"o
 test("Atelier: die Einträge mit \"atelier\": true aus src/register.json, jeder in neuem Fenster; nichts, was nur per Direktlink erreichbar sein soll", () => {
   const register = JSON.parse(lies("src/register.json"));
   const html = lies("b/atelier/index.html"), liste = html.match(/<ul class="liste-linien am-ende">[\s\S]*?<\/ul>/)[0];
-  const soll = register.arbeiten.filter((e) => e.atelier && !["zettelkasten", "kunst-hypertext"].includes(e.id));   // die zwei stehen oben unter «Denken»
+  const soll = ["animations", "composer", "lab", "multiverse", "gamma"].map((id) => register.arbeiten.find((e) => e.id === id));   // Folge vom 14. November 2026; Zettelkasten und Hypertext stehen oben unter «Denken»
+  assert.deepEqual(register.arbeiten.filter((e) => e.atelier && !["zettelkasten", "kunst-hypertext"].includes(e.id)).map((e) => e.id).sort(), soll.map((e) => e.id).sort(), "genau diese im Atelier");
   assert.deepEqual([...liste.matchAll(/<a href="\/([^"]*)" target="_blank" rel="noopener"/g)].map((m) => m[1]), soll.map((e) => e.adresse));
   for (const e of soll) assert.ok(["verlinkt", "oeffentlich"].includes(e.status) && e.kurz && e.kurzEn, `${e.id}: im Atelier nur Verlinktes, mit Text in beiden Sprachen`);
   for (const e of register.arbeiten.filter((x) => x.status === "direktlink")) for (const datei of ["b/atelier/index.html", "b/en/atelier/index.html", "b/index.html"]) assert.ok(!lies(datei).includes(`href="/${e.adresse}"`), `${datei}: ${e.id} bleibt unverlinkt`);
@@ -440,7 +441,7 @@ test("Ordnung der Startseite: «Beauftragen» zuerst, der Dialog nach Spielen; �
     const folge = ['id="beauftragen"', 'id="spielen-denken"', 'id="spielen-titel"', 'id="dialog-titel"', 'id="zuletzt-titel"'].map((t) => html.indexOf(t));
     assert.ok(folge.every((x, i) => x > 0 && (i === 0 || x > folge[i - 1])), `${datei}: Beauftragen, Zettelkasten, Spielen, Dialog, Zuletzt`);
     const auch = html.match(/<p class="auch klein">[\s\S]*?<\/p>/)[0];
-    assert.ok(!/animations|drittes-rad/.test(auch) && auch.includes("/multiverse/") && auch.includes("atelier/"), `${datei}: nur Multiverse und Atelier`);
+    assert.ok(!/animations|drittes-rad/.test(auch) && auch.includes("/multiverse/") && auch.includes("atelier/"), `${datei}: nur Multiverse und Atelier`);   // Das Dritte Rad seit 14. November 2026 nicht mehr im Atelier
   }
   const css = lies("b/b.css");
   assert.match(css, /\.kapitel-senf \.stueck \.bild\.kachel-lebt \{[^}]*--papier: #000000;[^}]*--tinte: #ffffff;/, "eigene Farben für die Kachel auf Senf (sonst Schwarz auf Schwarz)");
