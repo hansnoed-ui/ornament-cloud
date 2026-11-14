@@ -308,3 +308,13 @@ die Blasen prallen aneinander ab, verändern sich gegenseitig, die Zuspätgekomm
 - Der Ton liegt nicht im Repository. Stumm rendern, dann aus der Aufnahme übernehmen:
   `npx remotion render PublikumVideo out/publikum-stumm.mp4 --codec=h264 --crf=18`, danach
   `ffmpeg -i out/publikum-stumm.mp4 -i <aufnahme>.mp4 -map 0:v -map 1:a -c:v libx264 -crf 19 -pix_fmt yuv420p -c:a copy -movflags +faststart <ziel>.mp4`.
+
+## «Zettel 15 · Die Adresse» (14. November 2026)
+
+58 s, **4:5** (`AdresseVideo`) und **9:16** (`AdresseHoch`), **mit Ton** (Christians Stimme, ornament-studio Lauf «zettel-15-ruhig», über
+`ablage/zettel-15` geholt; `daten.mjs` kopiert sie nach `public/adresse/`). Gestaltung wie «Zettel 33 · Das Publikum» (Petrol, Kreide, Gelb).
+Vier Briefkästen mit Namensschildern, Figuren davor: Briefe kommen an (Adressen), eine Figur geht und die Post kommt trotzdem (abwesend),
+ein blasses Schild wird mit jedem Brief deutlicher (wiederholte Bezugnahmen), Denkblase und Herz bleiben bei der Figur (nicht der Ursprung
+jedes körperlichen oder psychischen Geschehens), Brief, Antwort und Stempel (Zurechnung), Tag und Nacht über offenen Klappen, ein
+Namensschild bleibt am Pfosten hängen, während die Figur weitergeht (Identität ohne Leben). Satzzeiten in `src/adresse/daten.mjs`.
+

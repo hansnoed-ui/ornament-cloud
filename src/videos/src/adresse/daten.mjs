@@ -13,7 +13,7 @@ const saetze = z.text.match(/[^.!?]+[.!?]+(\s+|$)/g).map((x) => x.trim());
 if (saetze.join(" ") !== z.text) throw new Error("adresse: Sätze weichen vom Text ab");
 
 // [Beginn, Ende] je Satz in Sekunden der Tonspur; titel: «Zettel fünfzehn. Die Adresse.»; ende: letzte Silbe
-const ZEITEN = { titel: [0, 3], saetze: [[4, 9], [9, 16], [16, 21], [21, 26], [26, 34], [34, 39], [39, 46]], ende: 46 };
+const ZEITEN = { titel: [0, 4.04], saetze: [[4.66, 10.23], [10.7, 18.55], [19.68, 23.49], [23.92, 28.26], [28.86, 36.74], [37.16, 41.43], [41.85, 47.61]], ende: 47.61 };   // gemessen: silencedetect -36 dB, 0,15 s
 if (ZEITEN.saetze.length !== saetze.length) throw new Error(`adresse: ${saetze.length} Sätze, aber ${ZEITEN.saetze.length} Zeiten`);
 
 mkdirSync(hier("data/"), { recursive: true });
