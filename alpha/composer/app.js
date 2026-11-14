@@ -393,6 +393,7 @@ function stileAufbauen() {
     const st = stilVon(sel.value); $("erzBpm").value = st.bpm;
     if (st.bass) { $("bassStimme").value = st.bass.stimme; $("bassLinie").value = st.bass.linie; $("leiter").value = st.bass.leiter; }
   };
+  sel.value = "ornament";   // Vorgabe «Ornament» statt «ornament.lucerne» (14. November 2026, Christian: «nimm beim composer nicht "lucerne" als default, sondern "ornament"»)
   sel.onchange();
 }
 
