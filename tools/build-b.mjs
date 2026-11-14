@@ -906,6 +906,72 @@ export const FUSS = ${JSON.stringify(fuss)};
 `);
   }
 
+  /* ---------- Stimme (alpha/voice/) im Rahmen des Neubaus (14. November 2026, Christian: «kannst du die anwendung "stimme" noch an das neue
+     design anpassen?», dann: «nur neues design, nichts frei geben»): weiter nur per Direktlink, noindex, mit Passwort; Ablauf in voice.js und
+     stimme.php unverändert. In der Navigation gehört die Seite zum Atelier. ---------- */
+  if (istDe) {
+    const STIMME_V = 4;
+    const body = `
+<section class="stueck-kopf"><div class="spalte">
+  <p class="gattung">ornament.studio · Werkzeug im Atelier</p>
+  <h1 class="titel">Stimme<small>Texte in meiner Stimme sprechen lassen, lebhaft oder ruhig, und als WAV oder MP3 herunterladen. Nur mit Passwort.</small></h1>
+</div></section>
+<section class="abschnitt stimme" id="stimme"><div class="spalte">
+  <p class="stand" id="stand" role="status">Ich sehe nach, ob die Stimme bereit ist …</p>
+
+  <section class="teil" id="anmeldung" hidden aria-labelledby="anmelden-titel">
+    <h2 id="anmelden-titel">Anmelden</h2>
+    <form class="reihe-knopf" id="anmeldeform">
+      <label class="unsichtbar" for="passwort">Passwort</label>
+      <input type="password" id="passwort" autocomplete="current-password" placeholder="Passwort" required>
+      <button class="knopf voll" type="submit">Anmelden</button>
+    </form>
+  </section>
+
+  <section class="teil" id="arbeit" hidden aria-labelledby="text-titel">
+    <h2 id="text-titel">Text</h2>
+    <textarea id="text" maxlength="5000" placeholder="Text hier eingeben oder unten eine Textdatei laden. Leerzeilen werden zu längeren Pausen."></textarea>
+    <div class="reihe-knopf">
+      <span class="klein" id="zaehler">0 / 5000 Zeichen</span>
+      <label class="knopf still" for="datei">Textdatei laden</label>
+      <input type="file" id="datei" accept=".txt,.md,text/plain,text/markdown" hidden>
+    </div>
+    <fieldset class="sprechweise">
+      <legend class="klein">Sprechweise</legend>
+      <div class="chips">
+        <input type="radio" name="stil" value="b" id="stil-b" checked><label class="chip" for="stil-b">Lebhaft</label>
+        <input type="radio" name="stil" value="g" id="stil-g"><label class="chip" for="stil-g">Ruhig</label>
+      </div>
+    </fieldset>
+    <div class="reihe-knopf">
+      <button class="knopf voll" id="sprechen" type="button">Sprechen</button>
+      <span class="klein" id="schaetzung"></span>
+    </div>
+  </section>
+
+  <section class="teil" id="liste" hidden aria-labelledby="aufnahmen-titel">
+    <h2 id="aufnahmen-titel">Aufnahmen</h2>
+    <ul class="aufnahmen" id="aufnahmen"></ul>
+    <div class="reihe-knopf"><button class="knopf still" id="abmelden" type="button">Abmelden</button></div>
+  </section>
+
+  <ul class="hinweise klein">
+    <li>Gerechnet wird in einem privaten Repository bei GitHub. Der Start dauert zwei bis drei Minuten, danach etwa eine Viertelminute Rechnen je Sekunde Sprache. Die Seite darf zu bleiben: die Aufnahme wartet hier.</li>
+    <li>Download als WAV (48 kHz, 24 bit, Stereo mit Raum) und MP3 (320 kbit/s). Das Modell selbst spricht mit 24 kHz.</li>
+    <li>Fremde Namen und Schreibweisen wie «Orna-ment» kommen aus einem Aussprache-Wörterbuch. Zahlen werden ausgeschrieben, Links weggelassen.</li>
+    <li>Jede Aufnahme trägt ein unhörbares Wasserzeichen (Perth), das sie als KI-erzeugt kennzeichnet.</li>
+  </ul>
+</div></section>`;
+    const html = seite({ pfad: "stimme/", titel: "Stimme", kopfTitel: "Stimme – ornament.studio", noindex: true, nurDe: true, aktiv: "atelier/", body,
+      beschreibung: "Texte in Christians Stimme sprechen lassen, lebhaft oder ruhig, und als WAV oder MP3 herunterladen. Nur mit Passwort.",
+      bild: `${BASIS}/alpha/voice/og-voice.png`, bildAlt: "Stimme: links Titel und Satz, rechts ein Feld aus Punkten",
+      kopfMehr: `<link rel="stylesheet" href="/alpha/voice/stimme.css?v=${STIMME_V}">`, skripte: [`/alpha/voice/voice.js?v=${STIMME_V}`] })
+      .replaceAll(`${BASIS}${B}stimme/`, `${BASIS}/alpha/voice/`).replaceAll(`"${B}stimme/"`, `"/alpha/voice/"`)
+      .replace(/ aria-current="page">Atelier</, ">Atelier<");
+    if (html.includes("/b/stimme/")) throw new Error("Stimme: Adresse /b/stimme/ steht noch in der Seite");
+    writeFileSync(new URL("alpha/voice/index.html", ROOT), html.replace("<head>", "<head>\n  <!-- Erzeugt von tools/build-b.mjs (Abschnitt «Stimme») – nicht von Hand bearbeiten. Nur per Direktlink, nur mit Passwort. -->"));
+  }
+
   /* ---------- Werkstatt (nicht verlinkt, noindex; nur deutsch) ---------- */
   if (istDe) {
     const body = `

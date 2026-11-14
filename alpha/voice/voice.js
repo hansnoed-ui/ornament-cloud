@@ -1,4 +1,4 @@
-// ornament.studio – Stimme (alpha/voice/): anmelden, Text schicken, auf die Aufnahme warten, anhören und herunterladen.
+// ornament.studio – Stimme (alpha/voice/, Seite seit 14. November 2026 aus tools/build-b.mjs im Rahmen des Neubaus): anmelden, Text schicken, auf die Aufnahme warten, anhören und herunterladen.
 // Alles Geheime bleibt in stimme.php und ausserhalb der Website; die Seite hält nur das Sitzungs-Cookie.
 const API = "stimme.php";
 const $ = (id) => document.getElementById(id);
@@ -25,23 +25,23 @@ const sek = (d) => d >= 60 ? `${Math.floor(d / 60)} min ${Math.round(d % 60)} s`
 
 function eintrag(a) {
   const li = document.createElement("li");
-  const kopf = document.createElement("div"); kopf.className = "zeile";
-  const marke = document.createElement("span"); marke.className = `marke ${a.status}`; marke.textContent = STATUS[a.status] ?? a.status;
+  const kopf = document.createElement("div"); kopf.className = "reihe-knopf";
+  const marke = document.createElement("span"); marke.className = `zustand ${a.status}`; marke.textContent = STATUS[a.status] ?? a.status;
   const info = document.createElement("span"); info.className = "klein";
   info.textContent = `${zeit(a.zeit)} · ${a.stil === "g" ? "ruhig" : "lebhaft"}${a.dauer ? " · " + sek(a.dauer) : ""}`;
   kopf.append(marke, info);
   const anfang = document.createElement("p"); anfang.className = "anfang"; anfang.textContent = a.anfang + (a.anfang.length >= 80 ? " …" : "");
   li.append(kopf, anfang);
   if (a.status === "wartet" || a.status === "laeuft") {
-    const halt = document.createElement("button"); halt.type = "button"; halt.className = "knopf"; halt.textContent = "Stoppen";
+    const halt = document.createElement("button"); halt.type = "button"; halt.className = "knopf still"; halt.textContent = "Stoppen";
     halt.addEventListener("click", () => stoppen(a.id, halt));
     kopf.append(halt);
   }
   if (a.status === "fertig") {
     const ton = document.createElement("audio"); ton.controls = true; ton.preload = "none"; ton.src = `${API}?laden=${a.id}&format=mp3&hoeren=1`;
-    const knoepfe = document.createElement("div"); knoepfe.className = "zeile";
+    const knoepfe = document.createElement("div"); knoepfe.className = "reihe-knopf";
     for (const [f, t] of [["wav", "WAV herunterladen"], ["mp3", "MP3 herunterladen"]]) {
-      const l = document.createElement("a"); l.className = "knopf"; l.href = `${API}?laden=${a.id}&format=${f}`; l.textContent = t; l.setAttribute("download", "");
+      const l = document.createElement("a"); l.className = "knopf still"; l.href = `${API}?laden=${a.id}&format=${f}`; l.textContent = t; l.setAttribute("download", "");
       knoepfe.append(l);
     }
     li.append(ton, knoepfe);
