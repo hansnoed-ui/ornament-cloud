@@ -1,0 +1,29 @@
+/* Stimme (alpha/voice/) im Neubau (14. November 2026): nur, was b.css nicht schon hat. Knöpfe, Chips, Farben und Schrift kommen aus /b/b.css. */
+.stimme [hidden] { display: none !important; }   /* Anmelden, Text und Aufnahmen blendet voice.js mit hidden ein und aus */
+.stimme .spalte { display: grid; gap: 34px; max-width: 760px; padding-bottom: 72px; }
+.stimme .teil { display: grid; gap: 14px; }
+.stimme h2 { font-weight: 500; font-size: 1.5rem; letter-spacing: -0.02em; }
+.stimme .stand { color: var(--grau); }
+.stimme .stand.fehler { color: #c2410c; }
+.stimme .reihe-knopf { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.stimme input[type="password"], .stimme textarea {
+  font: inherit; color: var(--tinte); background: var(--papier); border: 1px solid var(--linie); border-radius: 22px;
+}
+.stimme input[type="password"] { flex: 1 1 220px; min-width: 0; min-height: 44px; padding: 0 18px; }
+.stimme textarea { width: 100%; min-height: 14rem; padding: 14px 18px; border-radius: 14px; line-height: 1.5; resize: vertical; }
+.stimme input:focus-visible, .stimme textarea:focus-visible { outline: 2px solid var(--faden); outline-offset: 2px; border-color: var(--tinte); }
+.stimme .knopf:disabled { opacity: 0.4; cursor: default; }
+.stimme .knopf:disabled:hover { background: transparent; color: inherit; }
+.stimme .knopf.voll:disabled:hover { background: var(--tinte); color: var(--papier); }
+.stimme .sprechweise { border: 0; margin: 0; padding: 0; display: grid; gap: 8px; }
+.stimme .unsichtbar { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.stimme .aufnahmen { list-style: none; margin: 0; padding: 0; display: grid; }
+.stimme .aufnahmen li { display: grid; gap: 10px; padding: 18px 0; border-top: 1px solid var(--linie); min-width: 0; }
+.stimme .aufnahmen li:last-child { border-bottom: 1px solid var(--linie); }
+.stimme .aufnahmen .anfang { overflow-wrap: anywhere; }
+.stimme .aufnahmen audio { width: 100%; }
+.stimme .zustand { display: inline-flex; align-items: center; min-height: 26px; padding: 0 10px; border: 1px solid var(--linie); border-radius: 999px; font-size: 0.82rem; }
+.stimme .zustand.fertig { border-color: var(--tinte); }
+.stimme .zustand.fehler { border-color: #c2410c; color: #c2410c; }
+.stimme .zustand.abgebrochen { opacity: 0.6; }
+.stimme .hinweise { margin: 0; padding-left: 1.1em; display: grid; gap: 6px; }
