@@ -45,7 +45,7 @@ function themenKnoepfe() {
 }
 $("#themen").addEventListener("click", (e) => { const k = e.target.closest("button"); if (!k) return; zustand.thema = k.dataset.thema || null; themenKnoepfe(); zeichneListe(); });
 function jahresKnoepfe() {
-  $("#jahre").innerHTML = [null, ...jahre].map((j) => `<button type="button" data-jahr="${j ?? ""}" aria-pressed="${zustand.jahr === j}">${j ?? "Alle"}</button>`).join("");
+  $("#jahre").innerHTML = [null, ...[...jahre].reverse()].map((j) => `<button type="button" data-jahr="${j ?? ""}" aria-pressed="${zustand.jahr === j}">${j ?? "Alle"}</button>`).join("");
 }
 $("#jahre").addEventListener("click", (e) => { const k = e.target.closest("button"); if (!k) return; zustand.jahr = k.dataset.jahr || null; jahresKnoepfe(); zeichneListe(); });
 
@@ -53,7 +53,8 @@ function trifft(b, q) { if (!q) return true; const t = norm(b.t); return q.split
 function zeichneListe() {
   const q = norm(zustand.suche.trim());
   if (zustand.reiter === "beitraege") {
-    const treffer = BEITRAEGE.map((b, i) => [b, i]).filter(([b]) => imFilter(b) && trifft(b, q));
+    // neueste zuerst (Wunsch 14.11.2026: «vom neuesten zum ältesten»); BEITRAEGE selbst bleibt alt → neu, Blättern und Nummern hängen daran
+    const treffer = BEITRAEGE.map((b, i) => [b, i]).filter(([b]) => imFilter(b) && trifft(b, q)).reverse();
     $("#liste").innerHTML = treffer.map(([b]) => {
       const m = markiert.includes(b.i);
       const voll = !m && markiert.length >= MAX_MARKIERT;
@@ -160,7 +161,7 @@ function zeigeWort(st) {
     <p class="leise">${l.length} Beiträge</p>
     <div class="balken" aria-hidden="true">${proJahr.map((n, k) => `<span style="height:${Math.round((n / max) * 100)}%" title="${jahre[k]}: ${n}"></span>`).join("")}</div>
     <div class="balken-jahre" aria-hidden="true">${jahre.map((j) => `<span>${j.slice(2)}</span>`).join("")}</div>
-    <ol class="treffer">${l.map((i) => BEITRAEGE[i]).sort((a, b) => a.d.localeCompare(b.d)).map((b) => `<li><a href="#b=${encodeURIComponent(b.i)}"><span class="leise">${datum(b.d)}</span><p class="auszug">${auszug(b.t)}</p></a></li>`).join("")}</ol>
+    <ol class="treffer">${l.map((i) => BEITRAEGE[i]).sort((a, b) => b.d.localeCompare(a.d)).map((b) => `<li><a href="#b=${encodeURIComponent(b.i)}"><span class="leise">${datum(b.d)}</span><p class="auszug">${auszug(b.t)}</p></a></li>`).join("")}</ol>
   </section>`;
   $("#verwandte").innerHTML = "";
   $("#marken").innerHTML = "";
