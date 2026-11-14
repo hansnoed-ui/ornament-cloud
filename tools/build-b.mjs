@@ -550,7 +550,10 @@ ${faeden([fApp(appVon("phorma-iii")), fZettel(zettel[32]), fZettel(zettel[28])])
 
   /* ---------- Atelier (seit 13. November 2026): was bis dahin im Hauptmenü stand und kein Schaufenster ist – aus src/register.json, Einträge mit "atelier": true ---------- */
   {
-    const eintraege = register.arbeiten.filter((e) => e.atelier && !DENKEN.some((d) => d.slug === e.id));
+    // Reihenfolge unter «Werkzeuge und Proben» (14. November 2026, Christian: «animations, composer, lab, multiverse, gamma (3. rad und alte website
+    // aus dem atelier raus)»); was hier fehlt, aber "atelier": true hat, kommt danach in der Folge des Registers
+    const FOLGE = ["animations", "composer", "lab", "multiverse", "gamma"], rang = (e) => (FOLGE.indexOf(e.id) + 1 || 99);
+    const eintraege = register.arbeiten.filter((e) => e.atelier && !DENKEN.some((d) => d.slug === e.id)).sort((a, b) => rang(a) - rang(b));
     const body = `
 <section class="stueck-kopf"><div class="spalte">
   <h1 class="titel">${esc(T.atelier.titel)}<small>${esc(T.atelier.small)}</small></h1>
