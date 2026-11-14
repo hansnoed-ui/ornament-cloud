@@ -226,6 +226,7 @@ const ALT = [
   { datei: "alpha/composer/og-composer.png", kicker: "ORNAMENT COMPOSER · Alpha", titel: "ORNAMENT COMPOSER", titelGroesse: 66, satz: "Spuren mischen mit eigenen, versionierten Plugins, vorher und nachher hören, gegen eine Referenz messen.", fuss: "ornament.cloud/alpha/composer", feld: feldSvg({ hier: 24, nah: [10, 17, 23, 25, 31, 38] }) },
   { datei: "alpha/kunst/og-kunst.png", kicker: "Hypertext · Facebook, 2013–2026", titel: "Kunst, Kommunikation, Gesellschaft", titelGroesse: 58, titelBreite: 22, satz: "Beiträge von Christian Strickler, verknüpft über Schlagwörter. Markieren, montieren, weiterschreiben.", fuss: "ornament.cloud/alpha/kunst", feld: feldSvg({ hier: 32, nah: [4, 19, 26, 33, 39, 45] }) },
   { datei: "alpha/omna-color/og-omna-color.png", kicker: "App · Gestaltung", titel: "OMNA COLOR", satz: "Zwei Farbräder drehen gegeneinander. Was sie zeigen, wird eine Gestaltungsübung: 180 gibt es.", fuss: "ornament.cloud/alpha/omna-color", feld: feldSvg({ hier: 8, nah: [1, 2, 9, 15, 16, 29] }) },
+  { datei: "alpha/voice/og-voice.png", kicker: "ornament.studio · Stimme", titel: "Stimme", satz: "Texte in Christians Stimme sprechen lassen, lebhaft oder ruhig, und als WAV oder MP3 herunterladen.", fuss: "ornament.cloud/alpha/voice", feld: feldSvg({ hier: 22, nah: [15, 21, 23, 29, 8, 36] }) },   // 14. November 2026, Christian: «mach auch eine für die stimme»
   { datei: "social-media/kacheln/autorinnen.png", kicker: "Social Media · Register", titel: "Autor:innen", satz: "Die Autor:innen im Zettelkasten «Social Media»." },
 ];
 
