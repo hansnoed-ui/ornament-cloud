@@ -221,6 +221,11 @@ const ALT = [
   { datei: "assets/kacheln/gamma.png", kicker: "ornament.cloud · Gamma", titel: "Sechs Bereiche, ein Netz.", titelGroesse: 66, titelBreite: 22, satz: "Websites, Apps, Kunst, Specials, Zettel und Social von Christian Strickler.", fuss: "ornament.cloud/gamma", feld: feldSvg({ hier: 25, nah: [1, 7, 19, 31, 43, 49] }) },   // seit 31. Oktober 2026 (SEO-Check: Gamma hatte keine Vorschaukarte)
   { datei: "multiverse/og-multiverse.png", kicker: "ornament.cloud", titel: "Multiverse", satz: "Vier Anwendungen zugleich, nebeneinander und bedienbar.", fuss: "ornament.cloud/multiverse", feld: multiverseSvg() },   // seit 8. November 2026 (Wunsch: «Teilenkachel … Titel ‹ornament.cloud · Multiverse›»)
   { datei: "alpha/konstellation/og-konstellation.png", html: konstellationHtml() },   // seit 8. November 2026, eine echte Konstellation aus dem Bestand der Seite
+  // seit 14. November 2026 (Frage: «gibt es eigentlich stimmige vorschaukarten für social media aller anwendungen?», Antwort «1»): die drei verlinkten
+  // Anwendungen, die bis dahin keine Karte hatten
+  { datei: "alpha/composer/og-composer.png", kicker: "ORNAMENT COMPOSER · Alpha", titel: "ORNAMENT COMPOSER", titelGroesse: 66, satz: "Spuren mischen mit eigenen, versionierten Plugins, vorher und nachher hören, gegen eine Referenz messen.", fuss: "ornament.cloud/alpha/composer", feld: feldSvg({ hier: 24, nah: [10, 17, 23, 25, 31, 38] }) },
+  { datei: "alpha/kunst/og-kunst.png", kicker: "Hypertext · Facebook, 2013–2026", titel: "Kunst, Kommunikation, Gesellschaft", titelGroesse: 58, titelBreite: 22, satz: "Beiträge von Christian Strickler, verknüpft über Schlagwörter. Markieren, montieren, weiterschreiben.", fuss: "ornament.cloud/alpha/kunst", feld: feldSvg({ hier: 32, nah: [4, 19, 26, 33, 39, 45] }) },
+  { datei: "alpha/omna-color/og-omna-color.png", kicker: "App · Gestaltung", titel: "OMNA COLOR", satz: "Zwei Farbräder drehen gegeneinander. Was sie zeigen, wird eine Gestaltungsübung: 180 gibt es.", fuss: "ornament.cloud/alpha/omna-color", feld: feldSvg({ hier: 8, nah: [1, 2, 9, 15, 16, 29] }) },
   { datei: "social-media/kacheln/autorinnen.png", kicker: "Social Media · Register", titel: "Autor:innen", satz: "Die Autor:innen im Zettelkasten «Social Media»." },
 ];
 
