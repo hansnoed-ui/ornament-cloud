@@ -275,6 +275,8 @@ export function planen(eingabe) {
       // Abschnitts-Option «bass»: "aus" | "lang" (ganze Töne) | "kick" (kurz mit jeder Kick) | "standard" | Zahl (Standard ab diesem Takt)
       const ob = a.opt?.bass, kickT = (drumZeilen.kick[b] ?? "").split(" ");
       if (ob === "aus") { /* still */ }
+      // Riff: Zeilen mit Stufen relativ zum Akkordgrundton (1 = Grundton, 5 = Quinte, 8 = Oktave; Zeichen wie sonst: - ' _ ~), je Takt die nächste
+      else if (Array.isArray(ob)) { const z = String(ob[p % ob.length]).trim().split(/\s+/); for (let i = 0; i < 16; i++) { const m = /^(\d+)(.*)$/.exec(z[i] ?? "."); t[i] = m ? `${((r - 1 + Number(m[1]) - 1) % 7) + 1}${Number(m[1]) >= 8 ? "'" : ""}${m[2]}` : (z[i] ?? "."); } }
       else if (ob === "lang") { t[0] = `${r}`; for (let i = 1; i < 16; i++) t[i] = "-"; if (n !== r && p % 2) { t[12] = `${naehe}_`; t[13] = "-"; } }
       else if (ob === "kick") { kickT.forEach((x, i) => { if (x === "." || i >= 16) return; t[i] = i === 0 ? `${r}` : (i % 4 === 2 && rnd() < 0.35 ? `${quinte}_` : `${r}`); if (i + 1 < 16 && kickT[i + 1] === ".") t[i + 1] = "-"; }); }
       else if (ob != null ? (ob === "standard" || (typeof ob === "number" && p >= ob)) : ((["gedanke", "vertiefung", "wiederkehr"].includes(a.typ) && !(a.typ === "gedanke" && p < (eingabe.einstieg?.bassAb ?? 4) && !studie)) || (a.typ === "auftauchen" && p >= (eingabe.einstieg?.bassImAuftauchen ?? 999)))) {   // einstieg: { auftakt, bassAb (Takte im Ersten Gedanken), bassImAuftauchen (ab Takt) }
@@ -507,6 +509,38 @@ export function planen(eingabe) {
     if (nb) ev.push({ t: nb.von + 4, klang: "s", staerke: 0.4, schritte: [{ art: "umkehr" }] });
     for (const e of ev) plan.marker.push({ art: "stimme", takt: e.t, text: "Stimmfragment" });
     sampler("stimme", `Stimme · ${quelleName(a.quelle)}`, "voice_optional", "stimme", { s: klangVon(a.id, warm([{ art: "band", halbtoene: trans }, { art: "hochpass", f: 220 }, { art: "tiefpass", f: 3800 }, { art: "normal", db: -20 }])) }, ev, { pegel: -11, pan: 0.12, raum: hall(34, 3), echo: { anteil: Math.round(25 * raumM), zeit: Math.round((0.75 * 60000) / bpm) } });
+  }
+
+  // Flächen aus eigener Synthese (seit 12.11.2026, für Strikk 2 freigegeben): Dreiklänge der Harmonie, weich geführt
+  // eingabe.flaechen: [{ key, name, erzeuger, stimme, werte, pegel, raum, abschnitte: [Index im Gerüst], oktave, staerke, septime }]
+  for (const [fi, f] of (eingabe.flaechen ?? []).entries()) {
+    const noten = [], basis = 12 * (4 + (f.oktave ?? 0)) + ton.grundton;   // Bezug um C4
+    let vorher = null;
+    for (const ai of f.abschnitte ?? abschnitte.map((_, i) => i)) {
+      const a = abschnitte[ai]; if (!a) continue;
+      let b = a.von;
+      while (b < a.bis) {
+        let e = b + 1; while (e < a.bis && harmonie[e] === harmonie[b]) e++;
+        const st = harmonie[b], stufen = [st, st + 2, st + 4, ...(f.septime ? [st + 6] : [])];
+        let akk = stufen.map((x) => basis + halbVon(x, 0, ton.leiter));
+        if (vorher) akk = akk.map((m) => { let best = m; for (const o of [-12, 0, 12]) if (vorher.some(() => true) && Math.min(...vorher.map((v) => Math.abs(v - (m + o)))) < Math.min(...vorher.map((v) => Math.abs(v - best)))) best = m + o; return best; });
+        akk.sort((x, y) => x - y); vorher = akk;
+        akk.forEach((m, k) => noten.push({ t: b, d: e - b + 0.05, midi: m, staerke: (f.staerke ?? 0.6) * (k ? 0.85 : 1) }));
+        b = e;
+      }
+    }
+    if (noten.length) plan.spuren.push({ key: f.key ?? `flaeche${fi}`, name: f.name ?? "Fläche (Synthese)", typ: "flaeche", rolle: "harmonic_layer", pegel: f.pegel ?? -14, pan: f.pan ?? 0, raum: f.raum ?? hall(34, 3.6), quelle: { art: "erzeugt", erzeuger: f.erzeuger ?? "synth@0.2.0", stimme: f.stimme ?? "shadow", werte: f.werte ?? { patch: "shadowChord" }, noten, anzahl: gesamt, bpm, kammerton: plan.kammerton, seed: hash(seed, "flaeche", fi) % 99991 + 1 } });
+  }
+  // Geräusche (geraeusch@0.1.0): [{ takt, art, variante, dauer (Takte), staerke, ende (true: der Riser endet auf «takt») }]
+  if (eingabe.geraeusche?.length) {
+    const nachArt = {};
+    for (const g of eingabe.geraeusche) (nachArt[`${g.art}|${g.variante ?? ""}`] ??= []).push(g);
+    for (const [k, liste] of Object.entries(nachArt)) {
+      const [art, variante] = k.split("|"), st = stimmeVon("geraeusch@0.1.0", art), v = st.varianten.find((x) => x.name === variante) ?? st.varianten[0];
+      const noten = liste.map((g) => ({ t: g.ende ? g.takt - g.dauer : g.takt, d: g.dauer ?? 2, midi: 60 + ton.grundton, staerke: g.staerke ?? 0.8 }));
+      for (const g of liste) plan.marker.push({ art: "geraeusch", takt: g.takt, text: `${st.name}${g.ende ? " (endet hier)" : ""}` });
+      plan.spuren.push({ key: `g-${art}${variante ? "-" + variante : ""}`, name: `Geräusch · ${st.name}${variante ? " " + variante : ""}`, typ: "flaeche", rolle: "texture", pegel: (st.pegel ?? -10) + (liste[0].pegel ?? 0), pan: 0, raum: hall(26, 3), quelle: { art: "erzeugt", erzeuger: "geraeusch@0.1.0", stimme: art, werte: { ...v.werte }, noten, anzahl: gesamt, bpm, kammerton: plan.kammerton, seed: hash(seed, k) % 99991 + 1 } });
+    }
   }
 
   // Schnipsel (seit 12.11.2026): klar erkennbare Ausschnitte an festen Stellen, unverfremdet und ohne Leiern.
