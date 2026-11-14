@@ -1105,3 +1105,24 @@ test("Lucerne: Architektur je Abschnitt (Beat, Fills, Bass, Harmonie, Motiv, Atm
   const g0 = geruest.map(([t, l]) => [t, l]);
   assert.equal(JSON.stringify(LU.planen({ sammlung: s, seed: 2, geruest: g0 })), JSON.stringify(LU.planen({ sammlung: s, seed: 2, geruest: g0, schnipsel: [] })));
 });
+
+// ---------- Lucerne-Streuung (Schritt 2, 14.11.2026): Startwert verteilt Groove, Aufbau, Drums …; «klassisch» bleibt unberührt ----------
+const ST = await c("kern/lucerne-streuung.js");
+test("Lucerne-Streuung: reproduzierbar, verschieden je Startwert, jeder Plan gültig", () => {
+  const { s } = testsammlung();
+  assert.equal(JSON.stringify(ST.streuen(5)), JSON.stringify(ST.streuen(5)), "gleicher Startwert, gleiche Streuung");
+  const boegen = new Set(), tempi = new Set(), takte = new Set();
+  for (let seed = 1; seed <= 40; seed++) {
+    const { eingaben, beschreibung } = ST.streuen(seed, { material: seed % 4 === 0 ? { loop: true, quelleBpm: 115.9, nurMoll: true } : {} });
+    boegen.add(beschreibung.bogen); tempi.add(Math.round(beschreibung.bpm / 10)); takte.add(beschreibung.takte);
+    if (seed % 4 === 0) { assert.equal(eingaben.bpm, 115.9, "Tempo des Loops gilt"); assert.ok(eingaben.harmonie.p1.every((x) => [1, 4, 5].includes(x)), "nur Moll-Stufen"); }
+    const plan = LU.planen({ sammlung: s, ...Object.fromEntries(Object.entries(eingaben).filter(([, v]) => v !== undefined)), seed });
+    assert.equal(plan.takte, beschreibung.takte);
+    for (const f of eingaben.flaechen ?? []) for (const i of f.abschnitte) assert.ok(plan.abschnitte[i], "Fläche zeigt auf einen Abschnitt");
+  }
+  assert.equal(boegen.size, 3, "alle drei Bögen kommen vor"); assert.ok(tempi.size >= 4, "verschiedene Tempi"); assert.ok(takte.size >= 6, "verschiedene Längen");
+  // Gewichte verschieben sanft, schliessen aber nichts aus
+  const haupt = (g) => Array.from({ length: 200 }, (_, i) => ST.streuen(i + 1, { gewichte: g }).beschreibung.haupt);
+  const viel = haupt({ classics: 4 }).filter((x) => x === "classics").length, normal = haupt({}).filter((x) => x === "classics").length;
+  assert.ok(viel > normal * 1.8, `Gewicht wirkt (${normal} → ${viel})`); assert.ok(haupt({ classics: 4 }).includes("piano"), "andere bleiben möglich");
+});
