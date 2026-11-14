@@ -11,6 +11,7 @@ import { WissenVideo, T as TWissen } from "./wissen/Video";
 import { FahrtVideo, T as TFahrt } from "./fahrt/Video";
 import { ReiseVideo, MASSE as MReise, T as TReise, zeitplan as zeitplanReise } from "./reise/Video";
 import { PublikumVideo, T as TPublikum } from "./publikum/Video";
+import { AdresseVideo, T as TAdresse } from "./adresse/Video";
 // neue Videos: Import
 
 export const RemotionRoot: React.FC = () => (
@@ -53,6 +54,9 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="KoerperGewebeQuer" component={ReiseVideo} durationInFrames={zeitplanReise("koerper").ende} fps={FPS} width={MReise.quer.w} height={MReise.quer.h} defaultProps={{ format: "quer" as const, auftrag: "koerper" as const, organisch: true, gewebe: true }} />
     {/* «Zettel 33 · Das Publikum»: gesprochene Strophe mit Bildergeschichte, 4:5 (14. November 2026) */}
     <Composition id="PublikumVideo" component={PublikumVideo} durationInFrames={TPublikum.ende} fps={FPS} width={BREITE} height={1350} />
+    {/* «Zettel 15 · Die Adresse»: gesprochen, mit Briefkästen; 4:5 und 9:16 (14. November 2026) */}
+    <Composition id="AdresseVideo" component={AdresseVideo} durationInFrames={TAdresse.ende} fps={FPS} width={BREITE} height={1350} defaultProps={{ hoehe: 1350 }} />
+    <Composition id="AdresseHoch" component={AdresseVideo} durationInFrames={TAdresse.ende} fps={FPS} width={BREITE} height={HOEHE} defaultProps={{ hoehe: HOEHE }} />
     {/* neue Videos: Composition */}
   </>
 );
