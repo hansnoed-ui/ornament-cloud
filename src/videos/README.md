@@ -294,3 +294,17 @@ Remotion lädt sonst einen eigenen Browser herunter; stattdessen einen vorhanden
 `npx remotion render OrnaVideo out/orna-erklaervideo.mp4 --codec=h264 --crf=20 --browser-executable=/pfad/zu/headless_shell`.
 Für Instagram und WhatsApp danach mit ffmpeg nach `yuv420p` umwandeln:
 `ffmpeg -i out/orna-erklaervideo.mp4 -c:v libx264 -crf 20 -preset slow -pix_fmt yuv420p -movflags +faststart orna-erklaervideo.mp4`.
+
+## «Zettel 33 · Das Publikum» (14. November 2026)
+
+61,4 s, **4:5** (1080 × 1350, `PublikumVideo`), **mit Ton**: Christians gesprochene Fassung der Strophe 33, dazu eine Bildergeschichte.
+Quelle `src/publikum/`: `Video.tsx` (Zeitplan `SATZ` nach der Stimme, Figuren, Denkblasen), `daten.mjs` (acht Sätze und Leitsatz wörtlich aus
+`src/data/zu-seiner-zeit.json`). Fünf Strichfiguren vor einem Bild (darin die Schlaufe des Signets), jede mit einer Denkblase: Kreis, Quadrat,
+Spirale, Fisch, nichts. Die Blase lässt sich nicht weiterreichen (platzt), Fäden von Hand zu Hand (Anschlüsse), Fühler (empfindlich werden),
+die Blasen prallen aneinander ab, verändern sich gegenseitig, die Zuspätgekommene sieht einen Fisch auf Beinen, am Schluss ein Ring um das Bild.
+
+- Eigene Farben nur für dieses Video (Wunsch: ohne Warmweiss und Orange): Petrol `#0f3038`, Kreide `#e6f0ee`, Punkt Gelb `#ffd84a`.
+- **Das erste Bild ist eine fertige Titelkarte** (Signet vorgespult), weil Reels es als Vorschaubild nehmen – nie mit leerer Fläche beginnen.
+- Der Ton liegt nicht im Repository. Stumm rendern, dann aus der Aufnahme übernehmen:
+  `npx remotion render PublikumVideo out/publikum-stumm.mp4 --codec=h264 --crf=18`, danach
+  `ffmpeg -i out/publikum-stumm.mp4 -i <aufnahme>.mp4 -map 0:v -map 1:a -c:v libx264 -crf 19 -pix_fmt yuv420p -c:a copy -movflags +faststart <ziel>.mp4`.
