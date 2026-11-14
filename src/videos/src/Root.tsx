@@ -10,6 +10,7 @@ import { UntitledVideo, T as TUntitled } from "./untitled/Video";
 import { WissenVideo, T as TWissen } from "./wissen/Video";
 import { FahrtVideo, T as TFahrt } from "./fahrt/Video";
 import { ReiseVideo, MASSE as MReise, T as TReise, zeitplan as zeitplanReise } from "./reise/Video";
+import { PublikumVideo, T as TPublikum } from "./publikum/Video";
 // neue Videos: Import
 
 export const RemotionRoot: React.FC = () => (
@@ -50,6 +51,8 @@ export const RemotionRoot: React.FC = () => (
     {/* Test «Gewebe» (29. Oktober 2026): die Verbindungen als Bänder aus Seidenfasern (WebGL 2, Gewebe.tsx); rendern mit --gl=angle */}
     <Composition id="KoerperGewebe" component={ReiseVideo} durationInFrames={zeitplanReise("koerper").ende} fps={FPS} width={MReise.vier.w} height={MReise.vier.h} defaultProps={{ format: "vier" as const, auftrag: "koerper" as const, organisch: true, gewebe: true }} />
     <Composition id="KoerperGewebeQuer" component={ReiseVideo} durationInFrames={zeitplanReise("koerper").ende} fps={FPS} width={MReise.quer.w} height={MReise.quer.h} defaultProps={{ format: "quer" as const, auftrag: "koerper" as const, organisch: true, gewebe: true }} />
+    {/* «Zettel 33 · Das Publikum»: gesprochene Strophe mit Bildergeschichte, 4:5 (14. November 2026) */}
+    <Composition id="PublikumVideo" component={PublikumVideo} durationInFrames={TPublikum.ende} fps={FPS} width={BREITE} height={1350} />
     {/* neue Videos: Composition */}
   </>
 );
