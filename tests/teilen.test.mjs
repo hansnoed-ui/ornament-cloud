@@ -78,7 +78,9 @@ test("Teilen: The Fictory – die frühere Adresse der Vorschaukarte trägt dass
 
 test("Teilen: die Startseite steht in der Sitemap, Das Dritte Rad nicht und bleibt für Suchmaschinen gesperrt (die Vorschau holen die Dienste trotzdem)", () => {
   const sitemap = lies("sitemap.xml");
-  assert.ok(sitemap.includes("<loc>https://ornament.cloud/</loc>"));
+  // seit 16. November 2026 die Startseite des Neubaus: die Wurzel leitet auf /b/ weiter (.htaccess) und gehört als Weiterleitung nicht in die Sitemap
+  assert.ok(sitemap.includes("<loc>https://ornament.cloud/b/</loc>"));
+  assert.ok(!sitemap.includes("<loc>https://ornament.cloud/</loc>"), "keine Weiterleitung in der Sitemap");
   assert.ok(!sitemap.includes("drittes-rad"));
   assert.match(lies("alpha/drittes-rad/index.html"), /<meta name="robots" content="noindex/);
   assert.ok(!/Disallow/i.test(existsSync(new URL("robots.txt", root)) ? lies("robots.txt") : ""), "kein robots.txt, das die Dienste von der Vorschau aussperrt");

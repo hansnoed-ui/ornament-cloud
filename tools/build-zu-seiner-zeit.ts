@@ -215,12 +215,15 @@ export function model(raw = JSON.parse(readFileSync(SRC, "utf8")), extra = JSON.
 // ---------- Seiten ----------
 type M = ReturnType<typeof model>;
 
-function page(m: M, o: { depth: number; title: string; description: string; body: string; seite: string; path: string; v: string; noindex?: boolean }) {
+// kanon: die Adresse, die Suchmaschinen je Sprache zeigen sollen, wenn es dieselbe Seite schon anderswo gibt (16. November 2026, SEO:
+// die Strophen stehen deutsch und englisch auch im Neubau unter /b/zettel/ und /b/en/zettel/; ohne Verweis zählt Google sie doppelt).
+// Gilt für canonical, hreflang und og:url; die Seite selbst bleibt, wie sie ist, und fällt aus der Sitemap (sitemapBlock).
+function page(m: M, o: { depth: number; title: string; description: string; body: string; seite: string; path: string; v: string; noindex?: boolean; kanon?: Partial<Record<Lang, string>> }) {
   const u = UI[m.lang];
   const p = "../".repeat(o.depth);                         // zur Wurzel dieser Sprache (zu-seiner-zeit/ oder zu-seiner-zeit/en/ …)
   const wurzel = p + (m.lang === "de" ? "" : "../");      // zu zu-seiner-zeit/ (Gestaltung und Verhalten für alle Sprachen)
   const site = wurzel + "../";                             // zur Website
-  const url = (l: Lang) => `${SITE}${BASE}${vor(l)}${o.path}`;
+  const url = (l: Lang) => o.kanon?.[l] ?? `${SITE}${BASE}${vor(l)}${o.path}`;
   // Sprachwechsel: dieselbe Seite in den anderen Sprachen (gleiche Adressen); oben auf jeder Seite
   const ziel = (l: Lang) => `${wurzel}${vor(l)}${o.path}` || "./";
   const sprachen = LANGS.map(l => `<a href="${ziel(l)}" hreflang="${l}" lang="${l}"${l === m.lang ? ' aria-current="true"' : ""}>${SPRACHE[l]}</a>`).join("\n      ");
@@ -345,7 +348,8 @@ ${panels}
       ${reso ? `<h3 class="zsz-label">${u.resonanzen}</h3>\n      <ul class="zsz-liste">${reso}</ul>` : ""}
       <p class="zsz-weiter"><a href="../../spur/?s=${s.id}">${u.inSpur} <span aria-hidden="true">→</span></a></p>
     </section>`;
-  return page(m, { depth: d, title: `${s.id} ${s.title} – ${m.meta.title}`, description: s.bottomLine, body, seite: "strophe", path: `strophe/${s.slug}/`, v });
+  return page(m, { depth: d, title: `${s.id} ${s.title} – ${m.meta.title}`, description: s.bottomLine, body, seite: "strophe", path: `strophe/${s.slug}/`, v,
+    kanon: { de: `${SITE}b/zettel/${s.slug}/`, en: `${SITE}b/en/zettel/${s.slug}/` } });
 }
 
 function indexPage(m: M, v: string) {
@@ -478,9 +482,10 @@ export function files(m?: M) {
 /** die Strophen (deutsch) für die Startseite: «/* ZETTEL:START *\/[…]/* ZETTEL:END *\/» */
 export function zettelListe(m = model()) { return `/* ZETTEL:START */${JSON.stringify(m.stanzas.map(s => s.slug))}/* ZETTEL:END */`; }
 
-/** Sitemap-Block zwischen den Marken (alle Sprachen) */
+/** Sitemap-Block zwischen den Marken (alle Sprachen); ohne gesperrte Seiten und ohne Seiten, deren canonical woanders hinzeigt (kanon) */
 export function sitemapBlock(m = model(), f = files()) {
-  return [...f.keys()].filter(k => k.endsWith("index.html") && !f.get(k)!.includes('<meta name="robots" content="noindex">'))
+  return [...f.keys()].filter(k => k.endsWith("index.html") && !f.get(k)!.includes('<meta name="robots" content="noindex">')
+      && f.get(k)!.includes(`<link rel="canonical" href="${SITE}${BASE}${k.replace(/index\.html$/, "")}">`))
     .map(k => k.replace(/index\.html$/, "")).sort()
     .map(k => `  <url><loc>${SITE}${BASE}${k}</loc><lastmod>${m.meta.date}</lastmod></url>`).join("\n");
 }
