@@ -3,6 +3,7 @@
 //   node --experimental-strip-types --no-warnings --test tests/teilen.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
+import { dateiZu } from "./wurzel-regeln.mjs";
 import { readFileSync, statSync, existsSync, readdirSync } from "node:fs";
 
 const root = new URL("../", import.meta.url);
@@ -78,9 +79,9 @@ test("Teilen: The Fictory – die frühere Adresse der Vorschaukarte trägt dass
 
 test("Teilen: die Startseite steht in der Sitemap, Das Dritte Rad nicht und bleibt für Suchmaschinen gesperrt (die Vorschau holen die Dienste trotzdem)", () => {
   const sitemap = lies("sitemap.xml");
-  // seit 16. November 2026 die Startseite des Neubaus: die Wurzel leitet auf /b/ weiter (.htaccess) und gehört als Weiterleitung nicht in die Sitemap
-  assert.ok(sitemap.includes("<loc>https://ornament.cloud/b/</loc>"));
-  assert.ok(!sitemap.includes("<loc>https://ornament.cloud/</loc>"), "keine Weiterleitung in der Sitemap");
+  // seit 16. November 2026 liegt der Neubau an der Wurzel: / ist seine Startseite, /b/ nur noch eine Weiterleitung (nicht in der Sitemap)
+  assert.ok(sitemap.includes("<loc>https://ornament.cloud/</loc>"));
+  assert.ok(!sitemap.includes("<loc>https://ornament.cloud/b/</loc>"), "keine Weiterleitung in der Sitemap");
   assert.ok(!sitemap.includes("drittes-rad"));
   assert.match(lies("alpha/drittes-rad/index.html"), /<meta name="robots" content="noindex/);
   assert.ok(!/Disallow/i.test(existsSync(new URL("robots.txt", root)) ? lies("robots.txt") : ""), "kein robots.txt, das die Dienste von der Vorschau aussperrt");
@@ -108,7 +109,8 @@ const ALLE_HTML = (() => {
 test("Teilen: jede Seite der Sitemap hat eine Vorschaukarte mit Bild, Titel und Beschreibung", () => {
   const locs = [...lies("sitemap.xml").matchAll(/<loc>https:\/\/ornament\.cloud\/([^<]*)<\/loc>/g)].map((m) => m[1]);
   assert.ok(locs.length > 100);
-  const ohne = locs.filter((p) => { const m = metas(lies(`${p}index.html`)); return !(m.get("og:image") && m.get("og:title") && m.get("og:description")); });
+  // die Datei hinter der Adresse: der Neubau liegt unter b/ (tests/wurzel-regeln.mjs)
+  const ohne = locs.filter((p) => { const m = metas(lies(dateiZu("/" + p))); return !(m.get("og:image") && m.get("og:title") && m.get("og:description")); });
   assert.deepEqual(ohne, [], "Seiten ohne Vorschaukarte");
 });
 
@@ -117,7 +119,7 @@ test("Teilen: jede Vorschaukarte, auf die eine Seite zeigt, liegt im Repo, 1200 
   for (const d of ALLE_HTML) {
     const m = metas(lies(d)), bild = m.get("og:image");
     if (!bild?.startsWith("https://ornament.cloud/")) continue;
-    const pfad = bild.slice("https://ornament.cloud/".length).split("?")[0];
+    const pfad = dateiZu(bild.split("?")[0]) ?? bild.slice("https://ornament.cloud/".length).split("?")[0];   // was Apache unter der Adresse ausliefert
     if (!existsSync(new URL(pfad, root))) { fehlt.push(`${d} → ${pfad}`); continue; }
     if (m.get("og:image:width") === "1200" && /\.(png|jpe?g)$/.test(pfad)) { const dm = bildmass(readFileSync(new URL(pfad, root))); if (dm.b !== 1200 || dm.h !== 630) falsch.push(`${pfad}: ${dm.b} × ${dm.h}`); }
   }

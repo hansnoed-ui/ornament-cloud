@@ -5,6 +5,7 @@
 //   node --experimental-strip-types --no-warnings --test tests/struktur.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
+import { dateiZu } from "./wurzel-regeln.mjs";
 import { readFileSync, existsSync, readdirSync } from "node:fs";
 
 const root = new URL("../", import.meta.url);
@@ -263,8 +264,9 @@ test("Apps, Masterprompts, Web: eigene Seiten mit Titel, Kopfzeile, Adresse und 
     assert.match(html, /<p class="lead">[^<]{5,}<\/p>/);   // «Tests» auf «Web» (Wunsch von Christian, 9. Oktober 2026) ist kurz
     // Masterprompts ist seit 13. November 2026 nicht mehr öffentlich (Wunsch von Christian: die Prüfraster von der Website nehmen): noindex, nicht in der Sitemap
     if (ordner === "masterprompts") { assert.match(html, /<meta name="robots" content="noindex">/); assert.ok(!sitemap.includes("/masterprompts/")); }
-    // Apps seit 16. November 2026 (SEO): canonical auf den Neubau /b/apps/, nicht in der Sitemap, damit Google die Übersicht nur einmal zählt
-    else if (ordner === "apps") { assert.match(html, /<link rel="canonical" href="https:\/\/ornament\.cloud\/b\/apps\/">/); assert.ok(!sitemap.includes("<loc>https://ornament.cloud/apps/</loc>")); }
+    // Apps seit 16. November 2026: unter /apps/ liefert der Server die App-Übersicht des Neubaus (b/apps/, .htaccess); die alte Seite hier
+    // ist nur noch Ablage, ihr canonical zeigt auf dieselbe Adresse
+    else if (ordner === "apps") { assert.match(html, /<link rel="canonical" href="https:\/\/ornament\.cloud\/apps\/">/); assert.equal(dateiZu("/apps/"), "b/apps/index.html"); }
     else assert.match(html, new RegExp(`<link rel="canonical" href="https://ornament\\.cloud/${ordner}/">`));
     assert.match(html, /<meta name="description" content="[^"]{20,}">/);
     if (ordner === "web") assert.ok(sitemap.includes(`<loc>https://ornament.cloud/${ordner}/</loc>`), `${ordner}/ steht in der Sitemap`);

@@ -89,8 +89,8 @@ test("Strophenseite: Meta, Titel, direkt darunter die Bottom-Line, dann Text, We
     assert.ok(i(knopf) > i("strophe-text") && i(knopf) < i("</article>") && i(knopf) < i("Weiterdenken"), `Zufall-Knopf ${s.id}`);
     assert.equal((html.match(/<li class="verweis">/g) || []).length, 4);
     assert.equal((html.match(/<dialog class="zsz-panel"/g) || []).length, 4);
-    // die eigene Website zählt nicht als extern: seit 16. November 2026 zeigen canonical und hreflang der Strophe auf den Neubau /b/zettel/
-    assert.ok(!/href="https?:/.test(html.replace(/https:\/\/ornament\.cloud\/(zu-seiner-zeit|b)\//g, "")), "keine externen Links ohne Eintrag");
+    // die eigene Website zählt nicht als extern: seit 16. November 2026 zeigen canonical und hreflang der Strophe auf den Neubau /zettel/ (Dateien unter b/)
+    assert.ok(!/href="https?:/.test(html.replace(/https:\/\/ornament\.cloud\/(zu-seiner-zeit|zettel|en\/zettel)\//g, "")), "keine externen Links ohne Eintrag");
     if (s.id > 1) assert.ok(html.includes('rel="prev"')); else assert.ok(!html.includes('rel="prev"'));
     if (s.id < 49) assert.ok(html.includes('rel="next"')); else assert.ok(!html.includes('rel="next"'));
   }
@@ -108,7 +108,7 @@ test("Teilen: jede Seite trägt das Vorschaubild (1200 × 630, absolute Adresse)
     const lang = /^(en|es)\//.exec(k)?.[1] ?? "de";
     assert.ok(c.includes(`<meta property="og:image" content="https://ornament.cloud/zu-seiner-zeit/${build.OG_BILD[lang]}">`), k);
     assert.ok(c.includes('<meta name="twitter:card" content="summary_large_image">'), k);
-    // og:url ist die kanonische Adresse (bei den Strophen deutsch und englisch seit 16. November 2026 der Neubau /b/zettel/)
+    // og:url ist die kanonische Adresse (bei den Strophen deutsch und englisch seit 16. November 2026 der Neubau /zettel/)
     const kanon = c.match(/<link rel="canonical" href="([^"]+)">/)?.[1];
     assert.ok(kanon?.startsWith("https://ornament.cloud/") && c.includes(`<meta property="og:url" content="${kanon}">`), k);
   }
@@ -230,7 +230,7 @@ test("Sprachwechsel: jede Seite in jeder Sprache führt auf dieselbe Seite in de
     const strophe = k.match(/^(?:(en|es)\/)?strophe\/([^/]+)\/index\.html$/);
     if (strophe) {
       const [, sprache = "de", slug] = strophe;
-      const de = `https://ornament.cloud/b/zettel/${slug}/`, en = `https://ornament.cloud/b/en/zettel/${slug}/`;
+      const de = `https://ornament.cloud/zettel/${slug}/`, en = `https://ornament.cloud/en/zettel/${slug}/`;   // seit 16. November 2026 ohne /b/
       for (const [l, ziel] of [["de", de], ["en", en], ["x-default", de], ["es", `https://ornament.cloud/zu-seiner-zeit/es/strophe/${slug}/`]]) assert.ok(c.includes(`<link rel="alternate" hreflang="${l}" href="${ziel}">`), `${k}: hreflang ${l}`);
       assert.ok(c.includes(`<link rel="canonical" href="${{ de, en }[sprache] ?? `https://ornament.cloud/zu-seiner-zeit/${k.replace(/index\.html$/, "")}`}">`), `${k}: canonical`);
       assert.ok(existsSync(new URL(`b/zettel/${slug}/index.html`, root)) && existsSync(new URL(`b/en/zettel/${slug}/index.html`, root)), `${slug}: im Neubau vorhanden`);

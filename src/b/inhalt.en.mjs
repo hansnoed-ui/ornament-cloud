@@ -7,7 +7,7 @@ export { PRODUKTE };
 
 export const SEITE = {
   name: "ornament.cloud",
-  adresse: "https://ornament.cloud/b/en/",
+  adresse: "https://ornament.cloud/en/",
   claim: "Observation is an occasion for change in reality.",
   titel: "Theory you can touch.",
   lead: "Web design, education, curating, photography and products by Christian Strickler. Plus a Zettelkasten, apps, images and music.",

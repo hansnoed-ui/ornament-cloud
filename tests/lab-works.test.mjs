@@ -3,6 +3,7 @@
 //   node --test tests/lab-works.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
+import { dateiZu } from "./wurzel-regeln.mjs";
 import { readFileSync, writeFileSync, mkdtempSync, mkdirSync, existsSync, readdirSync, cpSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -31,7 +32,7 @@ test("Works ohne Werk: noindex, nur Platzhalter aus der PHORMA-Serie, keine Werk
   assert.equal((html.match(/class="werk platzhalter"/g) || []).length, 6, "sechs Platzhalter im Raster");
   assert.equal((html.match(/<span class="schild">Platzhalter<\/span>/g) || []).length, 12, "jeder beschriftet");
   for (const m of html.matchAll(/(?:src|data-film)="(\/assets\/[^"]+)"/g)) assert.ok(existsSync(new URL(m[1].slice(1), root)), `${m[1]} gibt es`);
-  for (const a of ["phorma-i", "phorma-ii", "phorma-iii"]) assert.ok(html.includes(`href="/b/apps/${a}/"`), `führt zu ${a}`);
+  for (const a of ["phorma-i", "phorma-ii", "phorma-iii"]) assert.ok(html.includes(`href="/apps/${a}/"`), `führt zu ${a}`);
   assert.ok(html.includes("Bis dahin stehen hier Beispiele aus der PHORMA-Serie als Platzhalter, keine Werke aus dem Lab."));
   assert.ok(!html.includes(`<a class="werk" href`), "kein Werk verlinkt");
 });
@@ -42,9 +43,9 @@ test("Works im Repository: gebaut wie von tools/build-lab-works.mjs, Medien vorh
   for (const e of readdirSync(new URL("b/lab/works/", root), { withFileTypes: true })) if (e.isDirectory()) cpSync(new URL(`b/lab/works/${e.name}/`, root), join(dir, e.name), { recursive: true });
   baue({ ordner: dir });
   assert.equal(readFileSync(join(dir, "index.html"), "utf8"), html, "b/lab/works/index.html entspricht dem Bau (node tools/build-lab-works.mjs)");
-  for (const m of html.matchAll(/(?:src|data-film|data-bild)="(\/b\/lab\/works\/[^"]+)"/g)) assert.ok(existsSync(new URL(m[1].slice(1), root)), `${m[1]} gibt es`);
+  for (const m of html.matchAll(/(?:src|data-film|data-bild)="(\/lab\/works\/[^"]+)"/g)) assert.ok(dateiZu(m[1]), `${m[1]} gibt es`);   // Adresse seit 16. November 2026 ohne /b/, die Datei unter b/
   if (!html.includes("dia platzhalter")) assert.ok(!html.includes("noindex"), "mit Werken indexierbar");
-  assert.ok(!lies("sitemap.xml").includes("/b/lab/works/"));
+  assert.ok(!/ornament\.cloud\/(b\/)?lab\/works\//.test(lies("sitemap.xml")));
 });
 
 test("Works: ein veröffentlichtes Werk auf Bühne, im Raster und auf seiner Seite; Entwürfe bleiben draussen", () => {
@@ -54,8 +55,8 @@ test("Works: ein veröffentlichtes Werk auf Bühne, im Raster und auf seiner Sei
   ]);
   assert.deepEqual(baue({ ordner: dir }), { werke: ["probe"], entwuerfe: ["entwurf"] });
   const html = readFileSync(join(dir, "index.html"), "utf8");
-  assert.match(html, /<link rel="canonical" href="https:\/\/ornament.cloud\/b\/lab\/works\/">/);
-  assert.match(html, /<li class="dia ist" data-href="\/b\/lab\/works\/probe\/"[^>]*style="--farbe: #c2410c">/, "Bühne mit Farbe");
+  assert.match(html, /<link rel="canonical" href="https:\/\/ornament.cloud\/lab\/works\/">/);
+  assert.match(html, /<li class="dia ist" data-href="\/lab\/works\/probe\/"[^>]*style="--farbe: #c2410c">/, "Bühne mit Farbe");
   assert.ok(html.includes('<p class="zaehler" aria-live="polite"><span class="zaehler-jetzt">01</span> / 01</p>'), "Zähler");
   assert.ok(html.includes('<span class="etikett-titel">01 · Probe, 2026</span><span class="etikett-text">Ein Satz zur Probe.</span>'), "Etikett");
   assert.ok(html.includes('data-ansicht="buehne"') && html.includes('data-ansicht="raster"'), "Pille");
@@ -69,7 +70,7 @@ test("Works: ein veröffentlichtes Werk auf Bühne, im Raster und auf seiner Sei
   assert.match(seite, /<details name="werk" open>/, "das erste offen");
   assert.deepEqual([...seite.matchAll(/<figure class="stueck (\w+)">/g)].map((m) => m[1]), ["voll", "breit", "schmal"], "Bildfolge");
   assert.ok(seite.includes('alt="Nahansicht"'));
-  assert.ok(seite.includes('href="/b/lab/works/probe/verlauf.json"'), "Protokoll");
+  assert.ok(seite.includes('href="/lab/works/probe/verlauf.json"'), "Protokoll");
   assert.ok(seite.includes('<span class="dock-text">Zurück zu Works</span>'));
 });
 

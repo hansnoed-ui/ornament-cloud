@@ -13,14 +13,27 @@ AddDefaultCharset UTF-8
   RewriteCond %{HTTPS} !=on [OR]
   RewriteCond %{HTTP_HOST} ^www\.ornament\.cloud$ [NC]
   RewriteRule ^ https://ornament.cloud%{REQUEST_URI} [R=301,L]
-  # die Startseite ist der Neubau (seit 20. Oktober 2026, wie index.html auf GitHub Pages): / → /b/, die Abfrage bleibt dran;
-  # die bisherige Startseite unter /?bisher. 302, solange der Neubau Neubau ist; später 301.
-  RewriteCond %{QUERY_STRING} !(^|&)bisher(&|=|$)
-  RewriteRule ^$ /b/ [R=302,L]
   # Kurzlinks der Animationen (5. November 2026): /a/KURZ → /animations/#a=KURZ (die Mischung liegt in animations/werke/kurz/)
   RewriteRule ^a/([0-9A-Za-z]{6,10})/?$ /animations/#a=$1 [R=302,NE,L]
   # dasselbe auf Englisch und Spanisch (5. November 2026): /a/KURZ/en → /animations/en/#a=KURZ
   RewriteRule ^a/([0-9A-Za-z]{6,10})/(en|es)/?$ /animations/$2/#a=$1 [R=302,NE,L]
+
+  # ---- Der Neubau an der Wurzel (seit 16. November 2026, SEO; vorher leitete / per 302 auf /b/ weiter) ----
+  # Die Dateien liegen weiter unter b/ (tools/build-b.mjs); die Seiten heissen aber /, /en/, /angebot/…, /zettel/… ohne /b/.
+  # 1) Alte Adressen /b/… dauerhaft (301) auf die Wurzel. Nur Seiten (Adresse endet auf / oder index.html); Bilder, Skripte und
+  #    Stylesheets bleiben unter /b/, die Seiten binden sie dort ein. THE_REQUEST ist, was der Browser verlangt hat: so greift die
+  #    Regel nicht auf die internen Umschreibungen unten (sonst liefe es im Kreis). Die Abfrage (?…) bleibt dran.
+  RewriteCond %{THE_REQUEST} \s/b/
+  RewriteRule ^b/(.*/)?(index\.html)?$ /$1 [R=301,L]
+  # 2) Die Startseite ist der Neubau; die bisherige Startseite (index.html) bleibt unter /?bisher.
+  RewriteCond %{QUERY_STRING} !(^|&)bisher(&|=|$)
+  RewriteRule ^$ /b/index.html [L]
+  RewriteRule ^en/$ /b/en/index.html [L]
+  # 3) Die Bereiche des Neubaus, intern aus b/ (tests/wurzel.test.mjs prüft, dass die Liste zu den Ordnern unter b/ passt).
+  #    Gleicher Name an der Wurzel: der Neubau gewinnt (apps/). werke/ nur die Übersicht; darunter liegen ältere Werke an der
+  #    Wurzel (werke/reentry/, werke/stellenfeld/, werke/formen-der-zeit/).
+  RewriteRule ^((?:en/)?(?:angebot|apps|atelier|hoeren|lab|raster|redaktion|sehen|ueber|werkstatt|zettel|zuletzt)(?:/.*)?)$ /b/$1 [L]
+  RewriteRule ^((?:en/)?werke/)$ /b/$1index.html [L]
 </IfModule>
 
 # ---- Fehler und Verzeichnisse ----

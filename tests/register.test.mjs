@@ -3,6 +3,7 @@
 //   node --test tests/register.test.mjs
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { zuAdresse } from "./wurzel-regeln.mjs";
 import { readFileSync, existsSync } from "node:fs";
 import { APPS, RASTER, ANGEBOTE } from "../src/b/inhalt.mjs";
 
@@ -28,7 +29,7 @@ test("Register: jede Adresse gibt es; «oeffentlich» steht in der Sitemap und i
   for (const e of lokal) {
     const datei = `${e.adresse}index.html`;
     assert.ok(existsSync(new URL(datei, root)), `${e.id}: ${datei} gibt es`);
-    const gesperrt = /<meta name="robots" content="noindex/.test(lies(datei)), drin = sitemap.includes(`<loc>https://ornament.cloud/${e.adresse}</loc>`);
+    const gesperrt = /<meta name="robots" content="noindex/.test(lies(datei)), drin = sitemap.includes(`<loc>https://ornament.cloud/${zuAdresse(e.adresse)}</loc>`);   // «adresse» ist der Ordner; der Neubau heisst seit 16. November 2026 ohne b/
     if (e.status === "oeffentlich") { assert.ok(!gesperrt, `${e.id}: öffentlich, aber noindex`); assert.ok(drin, `${e.id}: öffentlich, aber nicht in der Sitemap`); }
     else assert.ok(!drin, `${e.id}: «${e.status}», aber in der Sitemap`);
     if (e.status === "verlinkt") assert.ok(gesperrt, `${e.id}: «verlinkt» heisst noindex (sonst: oeffentlich)`);

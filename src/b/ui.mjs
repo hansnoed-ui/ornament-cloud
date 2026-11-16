@@ -1,11 +1,12 @@
 // Neubau /b/: die Wörter der Oberfläche in Deutsch und Englisch (20. Oktober 2026, Wunsch: «die ganze Seite auf Englisch übersetzen und ganz oben neben
-// dem Logo dezent die Wahl d (deutsch) und e (english) anbieten»). tools/build-b.mjs baut jede Seite zweimal, unter /b/ und /b/en/; die Inhalte
+// dem Logo dezent die Wahl d (deutsch) und e (english) anbieten»). Seit 16. November 2026 an der Wurzel: praefix ist die Adresse der Seiten
+// (/ und /en/), ordner der Ort der Dateien im Repo (b/ und b/en/); .htaccess liefert b/ unter / aus und leitet /b/… per 301 dorthin um. tools/build-b.mjs baut jede Seite zweimal, unter /b/ und /b/en/; die Inhalte
 // kommen aus src/b/inhalt.mjs bzw. inhalt.en.mjs, die Zettel aus src/data/zu-seiner-zeit.json bzw. .en.json. Was hier steht, sind die Sätze der
 // Seite selbst: Navigation, Knöpfe, Überschriften, Anleitungen. Einträge mit Platzhaltern sind Funktionen.
 
 export const UI = {
   de: {
-    lang: "de", locale: "de-CH", ogLocale: "de_CH", inLanguage: "de-CH", praefix: "/b/", andere: "en",
+    lang: "de", locale: "de-CH", ogLocale: "de_CH", inLanguage: "de-CH", praefix: "/", ordner: "b/", andere: "en",
     sprache: { aria: "Sprache", de: "Deutsch", en: "English" },
     sprung: "Zum Inhalt", hauptnav: "Hauptnavigation",
     nav: { "sehen/": "Sehen", "hoeren/": "Hören", "zettel/": "Zettel", "apps/": "Apps", "raster/": "Raster", "angebot/": "Angebot", "werke/": "Werke", "zuletzt/": "Zuletzt", "ueber/": "Über", "atelier/": "Atelier" },
@@ -127,7 +128,7 @@ export const UI = {
     },
   },
   en: {
-    lang: "en", locale: "en-GB", ogLocale: "en_GB", inLanguage: "en", praefix: "/b/en/", andere: "de",
+    lang: "en", locale: "en-GB", ogLocale: "en_GB", inLanguage: "en", praefix: "/en/", ordner: "b/en/", andere: "de",
     sprache: { aria: "Language", de: "Deutsch", en: "English" },
     sprung: "Skip to content", hauptnav: "Main navigation",
     nav: { "sehen/": "Look", "hoeren/": "Listen", "zettel/": "Notes", "apps/": "Apps", "raster/": "Grids", "angebot/": "Services", "werke/": "Works", "zuletzt/": "Latest", "ueber/": "About", "atelier/": "Studio" },

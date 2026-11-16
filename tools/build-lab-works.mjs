@@ -20,7 +20,7 @@ import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = fileURLToPath(new URL("../", import.meta.url));
-const PFAD = "/b/lab/works/";
+const PFAD = "/lab/works/";   // Adresse seit 16. November 2026 an der Wurzel; die Dateien bleiben unter b/lab/works/ (.htaccess)
 const BASIS = "https://ornament.cloud";
 const V = 15;   // Versionsmarke für works.css und works.js (?v=), bei Änderungen hochzählen
 
@@ -30,7 +30,7 @@ const nr = (i) => String(i + 1).padStart(2, "0");
 
 // Signet und Favicon wörtlich aus dem Neubau (tools/build-b.mjs schreibt sie), damit es nur eine Fassung gibt
 const neubau = readFileSync(join(ROOT, "b/werke/index.html"), "utf8");
-const SIGNET = neubau.match(/<a class="signet" href="\/b\/"[^>]*>(<svg[\s\S]*?<\/svg>)/)?.[1];
+const SIGNET = neubau.match(/<a class="signet" href="\/"[^>]*>(<svg[\s\S]*?<\/svg>)/)?.[1];   // seit 16. November 2026 zeigt das Signet auf die Wurzel
 const ICON = neubau.match(/<link rel="icon" href="([^"]+)">/)?.[1];
 if (!SIGNET || !ICON) throw new Error("Signet oder Favicon nicht in b/werke/index.html gefunden (tools/build-b.mjs gelaufen?)");
 
@@ -58,7 +58,7 @@ const MENUE = `<div class="menue" id="menue" hidden>
       <a class="kachel" href="${PFAD}"><span class="kachel-bild kachel-raster" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>Works<small>Alle Werke</small></span></a>
       <a class="kachel" href="${PFAD}#info"><span class="kachel-bild kachel-text" aria-hidden="true">Aa</span><span>Info<small>Über die Werkschau</small></span></a>
       <a class="kachel breit kachel-lab" href="/alpha/lab/">${FELDCHEN("feldchen gross")}<span>ORNAMENT LAB<small>Die Werkstatt öffnen</small></span></a>
-      <a class="kachel" href="/b/"><span class="kachel-bild kachel-signet" aria-hidden="true">${SIGNET}</span><span>ornament.cloud<small>Zur Hauptseite</small></span></a>
+      <a class="kachel" href="/"><span class="kachel-bild kachel-signet" aria-hidden="true">${SIGNET}</span><span>ornament.cloud<small>Zur Hauptseite</small></span></a>
       <div class="kachel kachel-logo" aria-hidden="true">${SIGNET}</div>
     </div>`;
 
@@ -106,9 +106,9 @@ function seite({ titel, beschreibung, pfad, indexieren, inhalt, bild, klasse, ko
 ${inhalt}
   </main>
   <footer class="fuss">
-    <a class="feldchen-link" href="/b/zettel/" aria-label="Zum Zettelkasten" title="Zum Zettelkasten">${FELDCHEN()}</a>
+    <a class="feldchen-link" href="/zettel/" aria-label="Zum Zettelkasten" title="Zum Zettelkasten">${FELDCHEN()}</a>
     <p class="zeile"><span>Christian Strickler, zwischen Zürich, Basel und Aarau</span><a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com</a></p>
-    <p class="zeile"><a href="/b/">ornament.cloud</a><a href="/alpha/lab/">ORNAMENT LAB</a><a href="/impressum/">Impressum und Datenschutz</a></p>
+    <p class="zeile"><a href="/">ornament.cloud</a><a href="/alpha/lab/">ORNAMENT LAB</a><a href="/impressum/">Impressum und Datenschutz</a></p>
     <p class="zeile"><span>Diese Seite lädt nichts von aussen: keine Cookies, keine Werbung, keine Tracker.</span></p>
   </footer>
 ${dock(dockInfo)}
@@ -131,12 +131,12 @@ function vorschau(w, { laden = "lazy" } = {}) {
 // 23. Oktober 2026: «Füll einige sachen aus der PHORMA Serie als Platzhalter»). Sie sind als Platzhalter beschriftet, führen zur jeweiligen App
 // und verschwinden, sobald das erste Werk erscheint. Material aus assets/ (dieselben Filme und Bilder wie auf /b/apps/).
 const PLATZHALTER = [
-  { titel: "PHORMA I", kurz: "Verwandlung: Funken, Glaskörper, Scherben, Höhenlinien.", bild: "/assets/beispiele/phorma-i.jpg", film: "/assets/beispiele/phorma-i.mp4", breite: 540, hoehe: 676, href: "/b/apps/phorma-i/" },
-  { titel: "PHORMA II", kurz: "Physarum, Tuch und Montage in einer Kette.", bild: "/assets/beispiele/phorma-ii.jpg", film: "/assets/beispiele/phorma-ii.mp4", breite: 540, hoehe: 676, href: "/b/apps/phorma-ii/" },
-  { titel: "PHORMA III", kurz: "Aus Klang wird Bild: ein Gewebe aus feinen Linien.", bild: "/assets/beispiele/phorma-iii.jpg", film: "/assets/beispiele/phorma-iii.mp4", breite: 540, hoehe: 676, href: "/b/apps/phorma-iii/" },
-  { titel: "PHORMA I, Standbild", kurz: "Ein Foto, in Fragmente zerlegt.", bild: "/assets/vorschau-phorma-i-2x.jpg", breite: 1280, hoehe: 1600, href: "/b/apps/phorma-i/" },
-  { titel: "PHORMA II, Standbild", kurz: "Ein Netz findet die Formen des Fotos.", bild: "/assets/vorschau-phorma-ii-2x.jpg", breite: 1080, hoehe: 1350, href: "/b/apps/phorma-ii/" },
-  { titel: "PHORMA III, Standbild", kurz: "Linien wie zerknitterte Seide.", bild: "/assets/vorschau-phorma-iii.jpg", breite: 640, hoehe: 800, href: "/b/apps/phorma-iii/" },
+  { titel: "PHORMA I", kurz: "Verwandlung: Funken, Glaskörper, Scherben, Höhenlinien.", bild: "/assets/beispiele/phorma-i.jpg", film: "/assets/beispiele/phorma-i.mp4", breite: 540, hoehe: 676, href: "/apps/phorma-i/" },
+  { titel: "PHORMA II", kurz: "Physarum, Tuch und Montage in einer Kette.", bild: "/assets/beispiele/phorma-ii.jpg", film: "/assets/beispiele/phorma-ii.mp4", breite: 540, hoehe: 676, href: "/apps/phorma-ii/" },
+  { titel: "PHORMA III", kurz: "Aus Klang wird Bild: ein Gewebe aus feinen Linien.", bild: "/assets/beispiele/phorma-iii.jpg", film: "/assets/beispiele/phorma-iii.mp4", breite: 540, hoehe: 676, href: "/apps/phorma-iii/" },
+  { titel: "PHORMA I, Standbild", kurz: "Ein Foto, in Fragmente zerlegt.", bild: "/assets/vorschau-phorma-i-2x.jpg", breite: 1280, hoehe: 1600, href: "/apps/phorma-i/" },
+  { titel: "PHORMA II, Standbild", kurz: "Ein Netz findet die Formen des Fotos.", bild: "/assets/vorschau-phorma-ii-2x.jpg", breite: 1080, hoehe: 1350, href: "/apps/phorma-ii/" },
+  { titel: "PHORMA III, Standbild", kurz: "Linien wie zerknitterte Seide.", bild: "/assets/vorschau-phorma-iii.jpg", breite: 640, hoehe: 800, href: "/apps/phorma-iii/" },
 ];
 for (const p of PLATZHALTER) for (const d of [p.bild, p.film].filter(Boolean)) if (!existsSync(join(ROOT, d))) throw new Error(`Platzhalter: ${d} fehlt`);
 

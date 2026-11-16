@@ -5,7 +5,7 @@
 
 export const SEITE = {
   name: "ornament.cloud",
-  adresse: "https://ornament.cloud/b/",
+  adresse: "https://ornament.cloud/",
   claim: "Beobachtung ist Anlass für Veränderung in der Realität.",
   // Einstieg über das Angebot (20. Oktober 2026, Wunsch: «landing-page: ich denke, es sollte die ‹Angebote›-Seite sein, damit der Einstieg in die Website klarer ist»;
   // Entscheid: /b/ beginnt mit den vier Leistungen, Feld, Apps und Zettel folgen). Bis dahin: «Theorie, die man anfassen kann.»
