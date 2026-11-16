@@ -26,6 +26,16 @@
    "kurz": "Maxi, drei Tracks, 14 Minuten."
   },
   {
+   "id": "curiosity",
+   "name": "the i – curiosity",
+   "tuer": "hoeren-sehen",
+   "art": "Musikvideo",
+   "status": "direktlink",
+   "adresse": "listen/curiosity/",
+   "kurz": "Musikvideo, 3:25, in HD und 4K.",
+   "wartet": "Video ansehen; entscheiden, ob es öffentlich wird."
+  },
+  {
    "id": "lab-works",
    "name": "ornament.lab · Works",
    "tuer": "hoeren-sehen",

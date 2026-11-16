@@ -22,3 +22,5 @@ listen/directer/audio/
 
 # Social-Paket (tools/social-paket.mjs): Filme, Standbilder und Texte werden lokal oder im Workflow «Social-Paket» gerechnet und nicht eingecheckt
 docs/social/
+# Videoseite «the i – curiosity» (listen/curiosity/): die MP4 sind zu gross für Git und werden von Hand auf den Webspace geladen (docs/video-curiosity.md)
+listen/curiosity/video/

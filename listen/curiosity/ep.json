@@ -1,0 +1,16 @@
+{
+  "anzeigename": "the i",
+  "titel": "curiosity",
+  "art": "Musikvideo",
+  "artEn": "Music video",
+  "datum": "2026-11-16",
+  "oeffentlich": false,
+  "abtastrate": 48000,
+  "tracks": [
+    {
+      "titel": "curiosity",
+      "startSample": 0,
+      "samples": 9874286
+    }
+  ]
+}
