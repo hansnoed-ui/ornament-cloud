@@ -72,6 +72,8 @@ Sitzung wissen muss, damit dieselben Fehler nicht zweimal passieren.
 - Schlüssel und Tokens (jev, Hostpoint, Stimme) nur als GitHub-Secrets – nie ins
   Repo, ins Frontend oder in den Chat. jev nie live aus dem Container aufrufen.
 - Testdateien wie `gamma/_test.html` nie committen.
+- `google5f34a117d8e3442e.html` an der Wurzel nie löschen: Damit bestätigt Google die
+  Inhaberschaft in der Search Console (16.11.2026); ohne sie geht der Zugang verloren.
 
 ## Prüfen vor dem Abschluss
 
