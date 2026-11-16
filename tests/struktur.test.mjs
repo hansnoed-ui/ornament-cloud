@@ -263,9 +263,11 @@ test("Apps, Masterprompts, Web: eigene Seiten mit Titel, Kopfzeile, Adresse und 
     assert.match(html, /<p class="lead">[^<]{5,}<\/p>/);   // «Tests» auf «Web» (Wunsch von Christian, 9. Oktober 2026) ist kurz
     // Masterprompts ist seit 13. November 2026 nicht mehr öffentlich (Wunsch von Christian: die Prüfraster von der Website nehmen): noindex, nicht in der Sitemap
     if (ordner === "masterprompts") { assert.match(html, /<meta name="robots" content="noindex">/); assert.ok(!sitemap.includes("/masterprompts/")); }
+    // Apps seit 16. November 2026 (SEO): canonical auf den Neubau /b/apps/, nicht in der Sitemap, damit Google die Übersicht nur einmal zählt
+    else if (ordner === "apps") { assert.match(html, /<link rel="canonical" href="https:\/\/ornament\.cloud\/b\/apps\/">/); assert.ok(!sitemap.includes("<loc>https://ornament.cloud/apps/</loc>")); }
     else assert.match(html, new RegExp(`<link rel="canonical" href="https://ornament\\.cloud/${ordner}/">`));
     assert.match(html, /<meta name="description" content="[^"]{20,}">/);
-    if (ordner !== "masterprompts") assert.ok(sitemap.includes(`<loc>https://ornament.cloud/${ordner}/</loc>`), `${ordner}/ steht in der Sitemap`);
+    if (ordner === "web") assert.ok(sitemap.includes(`<loc>https://ornament.cloud/${ordner}/</loc>`), `${ordner}/ steht in der Sitemap`);
     assert.match(html, /<p class="back"><a href="\.\.\/">← Zur Startseite<\/a><\/p>/);
     assert.match(html, /<nav class="seitenweg" aria-label="Ornament Cloud">\s*<a href="\.\.\/" aria-current="true">Ornament Cloud<\/a>\s*<a href="\.\.\/alpha\/drittes-rad\/">Das Dritte Rad<\/a>\s*<\/nav>/);
     assert.ok(!/class="card--b|card--d/.test(html) && (ordner === "web" || !/<video/.test(html)), "Videos nur auf «Web»");

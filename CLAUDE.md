@@ -37,6 +37,11 @@ Sitzung wissen muss, damit dieselben Fehler nicht zweimal passieren.
   App-Abschriften) kommen aus `tools/build-*.{mjs,ts}`; dort ändern, dann neu bauen.
 - Das Menü kommt aus `kopfleiste.js` / `tools/kopfleiste.mjs`, nicht von Hand in
   die Seiten schreiben.
+- Unter Windows laufen `tools/build-*.ts` über `npm run` stumm durch, ohne etwas zu
+  schreiben (der Vergleich `import.meta.url === file://…` greift dort nicht). Direkt
+  aufrufen: `node --experimental-strip-types -e "import {build} from './tools/build-zu-seiner-zeit.ts'; build()" --input-type=module`.
+- SEO: Gibt es eine Seite im Neubau `/b/` und ältere Fassungen, zeigt das canonical der
+  alten auf `/b/`, und die alte fällt aus der Sitemap (16. November 2026: Strophen, Apps).
 - **Register:** `src/register.json` führt jede Arbeit mit Tür und Status. Wer eine Seite
   öffnet, sperrt, verlinkt oder neu anlegt, trägt es dort nach (`tests/register.test.mjs`).
 - **Musik:** `"oeffentlich"` in `listen/<slug>/ep.json` steuert `/b/hoeren/`, Startseite und

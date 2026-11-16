@@ -2,7 +2,7 @@
 //   node --experimental-strip-types --no-warnings --test tests/zu-seiner-zeit.test.mjs
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync } from "node:fs";
 
 const root = new URL("../", import.meta.url);
 const build = await import(new URL("tools/build-zu-seiner-zeit.ts", root).href);
@@ -89,7 +89,8 @@ test("Strophenseite: Meta, Titel, direkt darunter die Bottom-Line, dann Text, We
     assert.ok(i(knopf) > i("strophe-text") && i(knopf) < i("</article>") && i(knopf) < i("Weiterdenken"), `Zufall-Knopf ${s.id}`);
     assert.equal((html.match(/<li class="verweis">/g) || []).length, 4);
     assert.equal((html.match(/<dialog class="zsz-panel"/g) || []).length, 4);
-    assert.ok(!/href="https?:/.test(html.replace(/https:\/\/ornament\.cloud\/zu-seiner-zeit\//g, "")), "keine externen Links ohne Eintrag");
+    // die eigene Website zählt nicht als extern: seit 16. November 2026 zeigen canonical und hreflang der Strophe auf den Neubau /b/zettel/
+    assert.ok(!/href="https?:/.test(html.replace(/https:\/\/ornament\.cloud\/(zu-seiner-zeit|b)\//g, "")), "keine externen Links ohne Eintrag");
     if (s.id > 1) assert.ok(html.includes('rel="prev"')); else assert.ok(!html.includes('rel="prev"'));
     if (s.id < 49) assert.ok(html.includes('rel="next"')); else assert.ok(!html.includes('rel="next"'));
   }
@@ -107,7 +108,9 @@ test("Teilen: jede Seite trägt das Vorschaubild (1200 × 630, absolute Adresse)
     const lang = /^(en|es)\//.exec(k)?.[1] ?? "de";
     assert.ok(c.includes(`<meta property="og:image" content="https://ornament.cloud/zu-seiner-zeit/${build.OG_BILD[lang]}">`), k);
     assert.ok(c.includes('<meta name="twitter:card" content="summary_large_image">'), k);
-    assert.ok(c.includes(`<meta property="og:url" content="https://ornament.cloud/zu-seiner-zeit/${k.replace(/index\.html$/, "")}">`), k);
+    // og:url ist die kanonische Adresse (bei den Strophen deutsch und englisch seit 16. November 2026 der Neubau /b/zettel/)
+    const kanon = c.match(/<link rel="canonical" href="([^"]+)">/)?.[1];
+    assert.ok(kanon?.startsWith("https://ornament.cloud/") && c.includes(`<meta property="og:url" content="${kanon}">`), k);
   }
   const s37 = read("strophe/37-die-information/index.html");
   assert.ok(s37.includes(`<meta property="og:description" content="${esc(m.stanzas[36].bottomLine)}">`), "Strophe: Bottom-Line als Beschreibung");
@@ -222,7 +225,19 @@ test("Sprachwechsel: jede Seite in jeder Sprache führt auf dieselbe Seite in de
       assert.ok(alle.has(ziel), `${k}: Sprachlink ${href} führt ins Leere`);
     }
     assert.equal((c.match(/<a [^>]*aria-current="true">(Deutsch|English|Español)</g) || []).length, 1, `${k}: genau eine aktuelle Sprache`);
-    for (const l of ["de", "en", "es", "x-default"]) assert.ok(c.includes(`hreflang="${l}" href="https://ornament.cloud/zu-seiner-zeit/`), `${k}: hreflang ${l}`);
-    if (!c.includes('content="noindex"')) assert.ok(sitemap.includes(`<loc>https://ornament.cloud/zu-seiner-zeit/${k.replace(/index\.html$/, "")}</loc>`), `${k} fehlt in der Sitemap`);
+    // Strophen seit 16. November 2026 (SEO): deutsch und englisch stehen sie auch im Neubau; dorthin zeigen canonical und hreflang de, en, x-default,
+    // spanisch bleibt hier. Solche Seiten (canonical woanders) fallen aus der Sitemap.
+    const strophe = k.match(/^(?:(en|es)\/)?strophe\/([^/]+)\/index\.html$/);
+    if (strophe) {
+      const [, sprache = "de", slug] = strophe;
+      const de = `https://ornament.cloud/b/zettel/${slug}/`, en = `https://ornament.cloud/b/en/zettel/${slug}/`;
+      for (const [l, ziel] of [["de", de], ["en", en], ["x-default", de], ["es", `https://ornament.cloud/zu-seiner-zeit/es/strophe/${slug}/`]]) assert.ok(c.includes(`<link rel="alternate" hreflang="${l}" href="${ziel}">`), `${k}: hreflang ${l}`);
+      assert.ok(c.includes(`<link rel="canonical" href="${{ de, en }[sprache] ?? `https://ornament.cloud/zu-seiner-zeit/${k.replace(/index\.html$/, "")}`}">`), `${k}: canonical`);
+      assert.ok(existsSync(new URL(`b/zettel/${slug}/index.html`, root)) && existsSync(new URL(`b/en/zettel/${slug}/index.html`, root)), `${slug}: im Neubau vorhanden`);
+    } else for (const l of ["de", "en", "es", "x-default"]) assert.ok(c.includes(`hreflang="${l}" href="https://ornament.cloud/zu-seiner-zeit/`), `${k}: hreflang ${l}`);
+    const eigen = c.includes(`<link rel="canonical" href="https://ornament.cloud/zu-seiner-zeit/${k.replace(/index\.html$/, "")}">`);
+    const imSitemap = sitemap.includes(`<loc>https://ornament.cloud/zu-seiner-zeit/${k.replace(/index\.html$/, "")}</loc>`);
+    if (!c.includes('content="noindex"') && eigen) assert.ok(imSitemap, `${k} fehlt in der Sitemap`);
+    if (!eigen) assert.ok(!imSitemap, `${k}: canonical woanders, darum nicht in der Sitemap`);
   }
 });
