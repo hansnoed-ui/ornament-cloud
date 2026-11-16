@@ -216,7 +216,7 @@ export function model(raw = JSON.parse(readFileSync(SRC, "utf8")), extra = JSON.
 type M = ReturnType<typeof model>;
 
 // kanon: die Adresse, die Suchmaschinen je Sprache zeigen sollen, wenn es dieselbe Seite schon anderswo gibt (16. November 2026, SEO:
-// die Strophen stehen deutsch und englisch auch im Neubau unter /b/zettel/ und /b/en/zettel/; ohne Verweis zählt Google sie doppelt).
+// die Strophen stehen deutsch und englisch auch im Neubau unter /zettel/ und /en/zettel/ (Dateien in b/); ohne Verweis zählt Google sie doppelt).
 // Gilt für canonical, hreflang und og:url; die Seite selbst bleibt, wie sie ist, und fällt aus der Sitemap (sitemapBlock).
 function page(m: M, o: { depth: number; title: string; description: string; body: string; seite: string; path: string; v: string; noindex?: boolean; kanon?: Partial<Record<Lang, string>> }) {
   const u = UI[m.lang];
@@ -349,7 +349,7 @@ ${panels}
       <p class="zsz-weiter"><a href="../../spur/?s=${s.id}">${u.inSpur} <span aria-hidden="true">→</span></a></p>
     </section>`;
   return page(m, { depth: d, title: `${s.id} ${s.title} – ${m.meta.title}`, description: s.bottomLine, body, seite: "strophe", path: `strophe/${s.slug}/`, v,
-    kanon: { de: `${SITE}b/zettel/${s.slug}/`, en: `${SITE}b/en/zettel/${s.slug}/` } });
+    kanon: { de: `${SITE}zettel/${s.slug}/`, en: `${SITE}en/zettel/${s.slug}/` } });   // seit 16. November 2026 an der Wurzel
 }
 
 function indexPage(m: M, v: string) {

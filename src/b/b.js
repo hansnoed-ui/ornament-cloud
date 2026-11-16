@@ -79,7 +79,7 @@ function buehne(el) {
     aktuell = n;
     satz.textContent = z.leitsatz;
     if (vt) { vt.querySelector(".n").textContent = `${EN ? "Note" : "Zettel"} ${z.n}`; vt.querySelector(".t").textContent = z.titel; }
-    woher.href = `${EN ? "/b/en/" : "/b/"}zettel/${z.slug}/`;   // auf Englisch zum englischen Zettel (22. Oktober 2026: «lande ich in der deutschen Version»)
+    woher.href = `${EN ? "/en/" : "/"}zettel/${z.slug}/`;   // seit 16. November 2026 an der Wurzel   // auf Englisch zum englischen Zettel (22. Oktober 2026: «lande ich in der deutschen Version»)
     if (!ruhig) { satz.classList.remove("wechsel"); void satz.offsetWidth; satz.classList.add("wechsel"); }
     if (f && markieren) f.zellen.forEach((c) => c.classList.toggle("aktiv", +c.dataset.n === n));
   }

@@ -98,7 +98,7 @@ test("Beispielzettel: gültig, alle Seiten im Rahmen des Neubaus (Kopf, Hauptnav
     if (!p.endsWith(".html")) continue;
     // seit 14. November 2026 im Neubau: Kopf und Fuss aus b/rahmen.js (tools/build-b.mjs), Stil b.css, Gruppe «Über → Zuletzt» in der Navigation
     assert.match(html, /<link rel="stylesheet" href="\/b\/b\.css\?v=\d+">/, p);
-    assert.match(html, /<header class="kopf">[\s\S]*<nav class="hauptnav"[\s\S]*<summary class="aktiv">Über<\/summary>[\s\S]*<a href="\/b\/zuletzt\/">Zuletzt<\/a>/, p);
+    assert.match(html, /<header class="kopf">[\s\S]*<nav class="hauptnav"[\s\S]*<summary class="aktiv">Über<\/summary>[\s\S]*<a href="\/zuletzt\/">Zuletzt<\/a>/, p);   // Neubau seit 16. November 2026 an der Wurzel
     assert.match(html, /<main id="inhalt">\n<section class="stueck-kopf">/, p);
     assert.match(html, /<footer class="fuss">[\s\S]*<a href="mailto:hansnoed@gmail.com">hansnoed@gmail.com<\/a>/, p);
     assert.match(html, /<p class="sm-hinweis">Die Beiträge sind Zitate/, p);

@@ -42,8 +42,10 @@ const HAUPT = ["sehen/", "apps/", "angebot/"];
 // Fäden, Dialog und Sitemap. Wer die Adresse kennt, erreicht sie; ein Passwortschutz wäre ein eigener Schritt auf dem Webspace.
 // Wieder öffentlich: RASTER_OEFFENTLICH = true.
 const RASTER_OEFFENTLICH = false;
-const V = 64;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
+const V = 65;                                     // Versionsmarke für b.css und b.js (?v=), bei Änderungen hochzählen
 const BASIS = "https://ornament.cloud";
+// Dateipfad im Repo → Adresse der Seite (seit 16. November 2026 liegt der Neubau an der Wurzel, die Dateien bleiben unter b/): «b/zettel/» → «zettel/»
+const zuAdresse = (pfad) => String(pfad).replace(/^b\//, "");
 const HEUTE = new Date().toISOString().slice(0, 10);
 const INHALT = { de: DE, en: EN };
 
@@ -124,8 +126,9 @@ const kachelSeiten = { de: [], en: [] };    // je Sprache: die Vorschaukarten li
 function bau(sprache) {
   const T = UI[sprache], I = INHALT[sprache];
   const { SEITE, DIALOG, APPS, RASTER, ANGEBOTE, PRODUKTE, UEBER, ZEIGEN, ZEIGEN_FILM, DENKEN } = I;
-  const B = T.praefix;                                   // "/b/" oder "/b/en/"
-  const AUS = new URL(B.slice(1), ROOT);
+  const B = T.praefix;                                   // Adresse der Seiten: "/" oder "/en/" (bis 16. November 2026 "/b/" und "/b/en/")
+  const D = `/${T.ordner}`;                              // Ort der Dateien: "/b/" oder "/b/en/" (Vorschaukarten); .htaccess liefert die Seiten von dort aus
+  const AUS = new URL(T.ordner, ROOT);
   const kasten = ladeZettelkasten(sprache);
   const zettel = ladeZettel(sprache);
   const istDe = sprache === "de";
@@ -228,18 +231,18 @@ function bau(sprache) {
   function teilen({ pfad, titel, text, karte }) {
     return `<div class="teilen">
   <button class="knopf teilen-knopf" type="button" data-url="${attr(BASIS + B + pfad)}" data-titel="${attr(titel)}" data-text="${attr(text || "")}">${esc(T.teilen)}</button>
-  ${karte ? `<a class="knopf still" href="${B}kacheln/${karte}" download>${esc(T.karte)}</a>` : ""}
+  ${karte ? `<a class="knopf still" href="${D}kacheln/${karte}" download>${esc(T.karte)}</a>` : ""}
   <span class="klein">${esc(T.vorschau)}</span>
 </div>`;
   }
 
   /** der Schalter d · e neben dem Signet: dieselbe Seite in der anderen Sprache (die Werkstatt gibt es nur deutsch) */
-  const sprachwahl = (pfad, nurDe = false) => `<nav class="sprache" aria-label="${attr(T.sprache.aria)}"><a href="/b/${pfad}" lang="de" hreflang="de" title="${T.sprache.de}"${istDe ? ' aria-current="true"' : ""}>d</a>${nurDe ? "" : `<a href="/b/en/${pfad}" lang="en" hreflang="en" title="${T.sprache.en}"${istDe ? "" : ' aria-current="true"'}>e</a>`}</nav>`;
+  const sprachwahl = (pfad, nurDe = false) => `<nav class="sprache" aria-label="${attr(T.sprache.aria)}"><a href="/${pfad}" lang="de" hreflang="de" title="${T.sprache.de}"${istDe ? ' aria-current="true"' : ""}>d</a>${nurDe ? "" : `<a href="/en/${pfad}" lang="en" hreflang="en" title="${T.sprache.en}"${istDe ? "" : ' aria-current="true"'}>e</a>`}</nav>`;
 
   /** Eine ganze Seite */
   function seite({ pfad, titel, beschreibung, body, aktiv, noindex = false, jsonld = [], typ = "website", bild, bildAlt, kopfTitel, module = [], nurDe = false, kopfMehr = "", skripte = [], zaehlen = true }) {
     const url = `${BASIS}${B}${pfad}`;
-    const k = `${B}kacheln/${kachelName(pfad)}.png`;
+    const k = `${D}kacheln/${kachelName(pfad)}.png`;
     const og = bild || `${BASIS}${k}`;
     const ld = [{ "@context": "https://schema.org", "@type": "WebSite", name: "ornament.cloud", url: `${BASIS}${B}`, inLanguage: T.inLanguage, author: { "@type": "Person", name: SEITE.person.name } }, ...jsonld];
     return `<!DOCTYPE html>
@@ -250,7 +253,7 @@ function bau(sprache) {
   <title>${esc(kopfTitel || (pfad ? `${titel} – ornament.cloud` : T.kopfTitelStart))}</title>
   <meta name="description" content="${attr(beschreibung)}">
   ${noindex ? '<meta name="robots" content="noindex">' : `<link rel="canonical" href="${attr(url)}">`}${kopfMehr ? `\n  ${kopfMehr}` : ""}
-  ${noindex || nurDe ? "" : `<link rel="alternate" hreflang="de" href="${BASIS}/b/${pfad}">\n  <link rel="alternate" hreflang="en" href="${BASIS}/b/en/${pfad}">\n  <link rel="alternate" hreflang="x-default" href="${BASIS}/b/${pfad}">`}
+  ${noindex || nurDe ? "" : `<link rel="alternate" hreflang="de" href="${BASIS}/${pfad}">\n  <link rel="alternate" hreflang="en" href="${BASIS}/en/${pfad}">\n  <link rel="alternate" hreflang="x-default" href="${BASIS}/${pfad}">`}
   <meta name="author" content="${attr(SEITE.person.name)}">
   <meta name="theme-color" content="#000000">
   <link rel="icon" href="${ICON}">
@@ -446,7 +449,7 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
   <div class="spalte">
     <div class="abschnitt-kopf"><h2 id="spielen-titel">${zeichen("spielen")}${esc(T.start.spielen)}</h2><p>${esc(T.start.spielenText)}</p><a class="weiter" href="${B}apps/">${esc(T.start.alleApps)}</a></div>
     <div class="reihe zeilen">${APPS.map(appKachel).join("")}</div>
-    <p class="auch klein">${esc(T.start.auch)} ${register.arbeiten.filter((e) => e.atelier && e.tuer === "spielen-denken" && ![ZEIGEN_FILM.slug, ...ZEIGEN.map((z) => z.slug), ...DENKEN.map((d) => d.slug)].includes(e.id)).map((e) => `<a href="/${attr(e.adresse)}" target="_blank" rel="noopener">${esc(e.name)}</a>`).join(" · ")} · <a href="${B}atelier/">${esc(T.start.atelier)}</a></p>
+    <p class="auch klein">${esc(T.start.auch)} ${register.arbeiten.filter((e) => e.atelier && e.tuer === "spielen-denken" && ![ZEIGEN_FILM.slug, ...ZEIGEN.map((z) => z.slug), ...DENKEN.map((d) => d.slug)].includes(e.id)).map((e) => `<a href="/${attr(zuAdresse(e.adresse))}" target="_blank" rel="noopener">${esc(e.name)}</a>`).join(" · ")} · <a href="${B}atelier/">${esc(T.start.atelier)}</a></p>
   </div>
 </section>
 
@@ -473,7 +476,7 @@ ${RASTER_OEFFENTLICH ? `<!-- Prüfraster (seit 21. Oktober 2026 statt «Denken»
     <div class="chips" role="radiogroup" aria-label="${attr(DIALOG.frage)}">
       ${DIALOG.wahlen.map((w) => `<input type="radio" name="mit" id="mit-${w.id}"><label class="chip" for="mit-${w.id}">${esc(w.wort)}</label>`).join("\n      ")}
     </div>
-    ${DIALOG.wahlen.map((w) => `<div class="weg weg-${w.id}"><p>${esc(w.satz)}</p><ol>${w.weg.filter(([h]) => RASTER_OEFFENTLICH || !/(^|\/)raster\//.test(h)).map(([h, t]) => `<li><a href="/${attr(h)}">${esc(t)}</a></li>`).join("")}</ol></div>`).join("\n    ")}
+    ${DIALOG.wahlen.map((w) => `<div class="weg weg-${w.id}"><p>${esc(w.satz)}</p><ol>${w.weg.filter(([h]) => RASTER_OEFFENTLICH || !/(^|\/)raster\//.test(h)).map(([h, t]) => `<li><a href="/${attr(zuAdresse(h))}">${esc(t)}</a></li>`).join("")}</ol></div>`).join("\n    ")}
   </div>
 </section>
 
@@ -564,7 +567,7 @@ ${faeden([fApp(appVon("phorma-iii")), fZettel(zettel[32]), fZettel(zettel[28])])
 </div></section>
 <section class="abschnitt" aria-labelledby="werkstatt-titel"><div class="spalte">
   <div class="abschnitt-kopf"><h2 id="werkstatt-titel">${zeichen("tab")}${esc(T.atelier.werkstatt)}</h2></div>
-  <ul class="liste-linien am-ende">${eintraege.map((e) => `<li><a href="/${attr(e.adresse)}" target="_blank" rel="noopener" title="${attr(T.atelier.oeffnen)}"><span class="n">${zeichen("tab")}</span><span class="name">${esc(e.name)}</span><span class="kurz">${esc(T.atelier.kurz(e))}</span></a></li>`).join("")}</ul>
+  <ul class="liste-linien am-ende">${eintraege.map((e) => `<li><a href="/${attr(zuAdresse(e.adresse))}" target="_blank" rel="noopener" title="${attr(T.atelier.oeffnen)}"><span class="n">${zeichen("tab")}</span><span class="name">${esc(e.name)}</span><span class="kurz">${esc(T.atelier.kurz(e))}</span></a></li>`).join("")}</ul>
 </div></section>`;
     veroeffentliche({ pfad: "atelier/", aktiv: "atelier/", titel: T.atelier.seitenTitel, beschreibung: T.atelier.beschreibung, body, bildAlt: T.atelier.bildAlt });
   }
@@ -1019,7 +1022,7 @@ writeFileSync(new URL("en/kacheln/liste.json", AUS_DE), JSON.stringify(kachelSei
 {
   const sm = new URL("sitemap.xml", ROOT);
   let xml = readFileSync(sm, "utf8");
-  const block = `  <!-- B:START (erzeugt aus tools/build-b.mjs, der Neubau unter /b/ und /b/en/) -->\n${sitemapSeiten.map((p) => `  <url><loc>${BASIS}/${p}</loc><lastmod>${HEUTE}</lastmod></url>`).join("\n")}\n  <!-- B:END -->\n`;
+  const block = `  <!-- B:START (erzeugt aus tools/build-b.mjs, der Neubau unter / und /en/, die Dateien unter b/ und b/en/) -->\n${sitemapSeiten.map((p) => `  <url><loc>${BASIS}/${p}</loc><lastmod>${HEUTE}</lastmod></url>`).join("\n")}\n  <!-- B:END -->\n`;
   xml = /<!-- B:START/.test(xml) ? xml.replace(/  <!-- B:START[\s\S]*?<!-- B:END -->\n/, block) : xml.replace("</urlset>", block + "</urlset>");
   writeFileSync(sm, xml);
 }

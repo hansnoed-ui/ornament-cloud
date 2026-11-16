@@ -41,7 +41,7 @@ test("Seite: ein natives <audio> mit preload=metadata, Titel für Linkvorschauen
     assert.ok(html.includes('<link rel="canonical" href="https://ornament.cloud/listen/directer/">'), "öffentlich: kanonische Adresse");
     assert.ok(lies("sitemap.xml").includes("<loc>https://ornament.cloud/listen/directer/</loc>"), "öffentlich: in der Sitemap (Block HOEREN, tools/build-b.mjs)");
     assert.ok(lies("b/hoeren/index.html").includes('href="/listen/directer/"'), "öffentlich: /b/hoeren/ führt hin");
-    assert.ok(html.includes('<a href="/b/hoeren/">ornament.cloud</a>'), "ein Weg zurück zur Website");
+    assert.ok(html.includes('<a href="/hoeren/">ornament.cloud</a>'), "ein Weg zurück zur Website");
   } else {
     assert.match(html, /<meta name="robots" content="noindex">/);
     assert.ok(!lies("sitemap.xml").includes("/listen/"), "nicht in der Sitemap");
