@@ -17,7 +17,7 @@ Gerendert offline in 3840 × 2160, 30 Bilder pro Sekunde: butterchurn in Chromiu
 |---|---|
 | `listen/curiosity/index.html` | die Seite: ein `<video>`, Umschalter HD/4K (Start nach Bildschirmgrösse, Umschalten behält die Position) |
 | `listen/curiosity/video.css` | Gestaltung, schwarz |
-| `listen/curiosity/poster.jpg`, `og-curiosity.jpg` | Standbild vor dem Start und Vorschaubild für Linkvorschauen (1200 × 630) |
+| `listen/curiosity/poster.jpg`,  `og-curiosity-2.jpg` (mit «the i» oben links und «curiosity» unten rechts, wie das Cover von directer; neues Motiv immer unter neuem Namen) | Standbild vor dem Start und Vorschaubild für Linkvorschauen (1200 × 630) |
 | `listen/curiosity/video/the-i-curiosity-1080p.mp4` und `-2160p.mp4` | **nicht in Git** (`.gitignore`) und von `rsync --delete` ausgenommen (`tools/hostpoint/ausschluss.txt`); von Hand per SFTP nach `www/ornament.cloud/listen/curiosity/video/` |
 
 Neue Fassung des Videos immer unter neuem Dateinamen hochladen und in `index.html` anpassen, sonst mischen Browser bis zu zehn Minuten alt und neu.
