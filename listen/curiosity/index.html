@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- Videoseite «the i – curiosity» (16. November 2026, Wunsch von Christian: «gerne auf repo, damit ich ihn mir online ansehen kann»).
+       Vorerst nur per Direktlink (noindex), nicht in Sitemap oder Übersichten. Die Videodateien sind zu gross für Git und liegen von Hand
+       hochgeladen unter video/ (in .gitignore und tools/hostpoint/ausschluss.txt). Anleitung: docs/video-curiosity.md -->
+  <meta name="robots" content="noindex">
+  <title>the i – curiosity</title>
+  <meta name="description" content="the i – curiosity. Musikvideo.">
+  <meta property="og:title" content="the i – curiosity">
+  <meta property="og:description" content="Musikvideo.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ornament.cloud">
+  <meta property="og:url" content="https://ornament.cloud/listen/curiosity/">
+  <meta property="og:image" content="https://ornament.cloud/listen/curiosity/og-curiosity.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#000000">
+  <link rel="stylesheet" href="video.css?v=2">
+</head>
+<body>
+  <main class="seite">
+    <div class="buehne">
+      <video id="video" controls playsinline preload="metadata" poster="poster.jpg"></video>
+    </div>
+    <header class="kopf">
+      <p class="name">the i</p>
+      <h1 class="titel">curiosity</h1>
+    </header>
+    <p class="qualitaet" aria-label="Qualität">
+      <button type="button" data-q="1080p">HD</button>
+      <button type="button" data-q="2160p">4K</button>
+    </p>
+    <p class="hinweis" id="hinweis" role="status" hidden></p>
+    <p class="herkunft"><a href="/">ornament.cloud</a></p>
+  </main>
+  <script>
+    // Zwei Fassungen: 1080p fürs Telefon, 2160p (4K) für grosse Bildschirme. Wahl nach Bildschirmgrösse, umschaltbar ohne Sprung zurück an den Anfang.
+    (function () {
+      var QUELLEN = { '1080p': 'video/the-i-curiosity-1080p.mp4', '2160p': 'video/the-i-curiosity-2160p.mp4' };
+      var v = document.getElementById('video');
+      var hinweis = document.getElementById('hinweis');
+      var knoepfe = document.querySelectorAll('.qualitaet button');
+      var px = Math.max(screen.width, screen.height) * (window.devicePixelRatio || 1);
+      var start = px >= 2500 && Math.min(screen.width, screen.height) >= 700 ? '2160p' : '1080p';
+      function waehle(q) {
+        var t = v.currentTime || 0, lief = !v.paused;
+        v.src = QUELLEN[q];
+        knoepfe.forEach(function (k) { k.setAttribute('aria-pressed', String(k.dataset.q === q)); });
+        if (t > 0) v.addEventListener('loadedmetadata', function () { v.currentTime = t; if (lief) v.play(); }, { once: true });
+      }
+      knoepfe.forEach(function (k) { k.addEventListener('click', function () { waehle(k.dataset.q); }); });
+      v.addEventListener('error', function () {
+        hinweis.textContent = 'Das Video lässt sich gerade nicht laden. Bitte später noch einmal versuchen.';
+        hinweis.hidden = false;
+      });
+      waehle(start);
+    })();
+  </script>
+</body>
+</html>
