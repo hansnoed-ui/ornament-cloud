@@ -8,9 +8,9 @@
        hochgeladen unter video/ (in .gitignore und tools/hostpoint/ausschluss.txt). Anleitung: docs/video-curiosity.md -->
   <meta name="robots" content="noindex">
   <title>the i – curiosity</title>
-  <meta name="description" content="the i – curiosity. Musikvideo.">
+  <meta name="description" content="the i – curiosity. Zwei Musikvideos: curiosity und curiosity (re-work).">
   <meta property="og:title" content="the i – curiosity">
-  <meta property="og:description" content="Musikvideo.">
+  <meta property="og:description" content="Zwei Musikvideos: curiosity und curiosity (re-work).">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="ornament.cloud">
   <meta property="og:url" content="https://ornament.cloud/listen/curiosity/">
@@ -20,17 +20,28 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://ornament.cloud/listen/curiosity/og-curiosity-2.jpg">
   <meta name="theme-color" content="#000000">
-  <link rel="stylesheet" href="video.css?v=2">
+  <link rel="stylesheet" href="video.css?v=3">
 </head>
 <body>
   <main class="seite">
-    <div class="buehne">
-      <video id="video" controls playsinline preload="metadata" poster="poster.jpg"></video>
-    </div>
-    <header class="kopf">
-      <p class="name">the i</p>
-      <h1 class="titel">curiosity</h1>
-    </header>
+    <section class="stueck" aria-labelledby="t1">
+      <div class="buehne">
+        <video data-name="the-i-curiosity" controls playsinline preload="metadata" poster="poster.jpg"></video>
+      </div>
+      <header class="kopf">
+        <p class="name">the i</p>
+        <h1 class="titel" id="t1">curiosity</h1>
+      </header>
+    </section>
+    <section class="stueck" aria-labelledby="t2">
+      <div class="buehne">
+        <video data-name="the-i-curiosity-rework" controls playsinline preload="metadata" poster="poster-rework.jpg"></video>
+      </div>
+      <header class="kopf">
+        <p class="name">the i</p>
+        <h2 class="titel" id="t2">curiosity (re-work)</h2>
+      </header>
+    </section>
     <p class="qualitaet" aria-label="Qualität">
       <button type="button" data-q="1080p">HD</button>
       <button type="button" data-q="2160p">4K</button>
@@ -39,24 +50,29 @@
     <p class="herkunft"><a href="/">ornament.cloud</a></p>
   </main>
   <script>
-    // Zwei Fassungen: 1080p fürs Telefon, 2160p (4K) für grosse Bildschirme. Wahl nach Bildschirmgrösse, umschaltbar ohne Sprung zurück an den Anfang.
+    // Zwei Videos (seit 17. November 2026: «curiosity» und «curiosity (re-work)»), je in zwei Fassungen: 1080p fürs Telefon, 2160p (4K) für grosse
+    // Bildschirme. Wahl nach Bildschirmgrösse, ein Umschalter für beide, ohne Sprung zurück an den Anfang. Startet eines, hält das andere an.
     (function () {
-      var QUELLEN = { '1080p': 'video/the-i-curiosity-1080p.mp4', '2160p': 'video/the-i-curiosity-2160p.mp4' };
-      var v = document.getElementById('video');
+      var videos = Array.prototype.slice.call(document.querySelectorAll('video[data-name]'));
       var hinweis = document.getElementById('hinweis');
       var knoepfe = document.querySelectorAll('.qualitaet button');
       var px = Math.max(screen.width, screen.height) * (window.devicePixelRatio || 1);
       var start = px >= 2500 && Math.min(screen.width, screen.height) >= 700 ? '2160p' : '1080p';
       function waehle(q) {
-        var t = v.currentTime || 0, lief = !v.paused;
-        v.src = QUELLEN[q];
+        videos.forEach(function (v) {
+          var t = v.currentTime || 0, lief = !v.paused;
+          v.src = 'video/' + v.dataset.name + '-' + q + '.mp4';
+          if (t > 0) v.addEventListener('loadedmetadata', function () { v.currentTime = t; if (lief) v.play(); }, { once: true });
+        });
         knoepfe.forEach(function (k) { k.setAttribute('aria-pressed', String(k.dataset.q === q)); });
-        if (t > 0) v.addEventListener('loadedmetadata', function () { v.currentTime = t; if (lief) v.play(); }, { once: true });
       }
       knoepfe.forEach(function (k) { k.addEventListener('click', function () { waehle(k.dataset.q); }); });
-      v.addEventListener('error', function () {
-        hinweis.textContent = 'Das Video lässt sich gerade nicht laden. Bitte später noch einmal versuchen.';
-        hinweis.hidden = false;
+      videos.forEach(function (v) {
+        v.addEventListener('play', function () { videos.forEach(function (w) { if (w !== v && !w.paused) w.pause(); }); });
+        v.addEventListener('error', function () {
+          hinweis.textContent = 'Ein Video lässt sich gerade nicht laden. Bitte später noch einmal versuchen.';
+          hinweis.hidden = false;
+        });
       });
       waehle(start);
     })();
