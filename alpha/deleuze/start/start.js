@@ -19,21 +19,21 @@ const OPS = [
 
 const TEXTE = {
   de: {
-    material: 'Material', kamera: 'Kamera', datei: 'Foto oder Video', beispiel: 'Beispiel',
+    material: 'Material für den Vorspann', kamera: 'Kamera', datei: 'Foto oder Video', beispiel: 'Beispiel',
     folgeTitel: 'Phase 1 · acht Begriffe',
     kristallAria: 'Kristall mit acht Facetten; jede zeigt dein Material durch einen anderen Begriff. Die Liste darunter führt zu denselben Seiten.',
     laeuft: 'läuft', dreh: 'in Dreharbeiten', keineKamera: 'Die Kamera lässt sich nicht öffnen. Wähle ein Foto, ein Video oder das Beispiel.',
     keinBeispiel: 'Das Beispielvideo lädt nicht. Wähle ein Foto, ein Video oder die Kamera.', letzterLauf: 'Der letzte Besuch endete unerwartet: ', tafel: 'dein Material, wie es ist'
   },
   en: {
-    material: 'Material', kamera: 'Camera', datei: 'Photo or video', beispiel: 'Example',
+    material: 'Material for the title sequence', kamera: 'Camera', datei: 'Photo or video', beispiel: 'Example',
     folgeTitel: 'Phase 1 · eight concepts',
     kristallAria: 'Crystal with eight facets; each shows your material through a different concept. The list below leads to the same pages.',
     laeuft: 'now showing', dreh: 'in production', keineKamera: 'The camera cannot be opened. Choose a photo, a video or the example.',
     keinBeispiel: 'The example video does not load. Choose a photo, a video or the camera.', letzterLauf: 'The last visit ended unexpectedly: ', tafel: 'your material as it is'
   },
   fr: {
-    material: 'Matériau', kamera: 'Caméra', datei: 'Photo ou vidéo', beispiel: 'Exemple',
+    material: 'Matériau pour le générique', kamera: 'Caméra', datei: 'Photo ou vidéo', beispiel: 'Exemple',
     folgeTitel: 'Phase 1 · huit concepts',
     kristallAria: 'Cristal à huit facettes ; chacune montre ton matériau à travers un autre concept. La liste ci-dessous mène aux mêmes pages.',
     laeuft: 'à l’affiche', dreh: 'en tournage', keineKamera: 'La caméra ne s’ouvre pas. Choisis une photo, une vidéo ou l’exemple.',
