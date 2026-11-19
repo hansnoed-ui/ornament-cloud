@@ -184,7 +184,7 @@ try {
 // ---------- Grafik ----------
 const telefon = matchMedia('(pointer: coarse)').matches || Math.min(screen.width, screen.height) < 700;
 const SCHICHTEN = telefon ? 40 : 64;       // Zeitpuffer
-const LANGE_SEITE = telefon ? 480 : 720;   // Aufnahmegrösse im Puffer
+const LANGE_SEITE = telefon ? 640 : 1080;  // Grösse der Zeitschichten im Puffer (Brechungen, Spiegelungen)
 const MAX_DPR = telefon ? 1.25 : 1.5;
 const SCHARF_SEITE = telefon ? 1280 : 1920;  // die Gegenwart: so scharf, wie der Bildschirm sie zeigt
 const MAX_F = 60;              // Ebenen: der Brillant braucht 57
@@ -550,6 +550,7 @@ function groesse() {
     for (const [k, w] of [[gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]]) gl.texParameteri(gl.TEXTURE_2D, k, w);
     gl.activeTexture(gl.TEXTURE0);
   }
+  if (fotos.length) fotoBuehneGroesse();
 }
 addEventListener('resize', groesse);
 
@@ -615,7 +616,7 @@ function beispielMalen(t) {
 }
 // Beispiel: Christians Porträt «Wan, Pendel» aus dem ORNAMENT LAB; die gemalte Szene bleibt als Rückfall
 // Beispiele: Christians Porträt «Wan, Pendel» und «Infinite Mantra»; jedes Tippen auf «Beispiel» nimmt das nächste
-const BEISPIELE = ['beispiel.mp4?v=1', 'mantra.mp4?v=1'];
+const BEISPIELE = ['beispiel.mp4?v=2', 'mantra.mp4?v=1'];
 function beispielStarten(e) {
   let nr = 0;
   try { nr = e ? (+(localStorage.getItem('kristall.beispiel') || 0)) % BEISPIELE.length : 0; localStorage.setItem('kristall.beispiel', String(nr + 1)); } catch {}
@@ -643,6 +644,11 @@ $('datei').addEventListener('change', (e) => {
 const fotoBuehne = document.createElement('canvas');
 let fotos = [], fotoStart = 0;
 const FOTO_DAUER = 3.2, FOTO_BLENDE = 1.1;
+// die Bühne der Fotos ist so gross wie die scharfe Gegenwart, nicht kleiner (sonst werden eigene Fotos weich)
+function fotoBuehneGroesse() {
+  const b = scharfB || 960, h = scharfH || Math.round(960 * innerHeight / Math.max(innerWidth, 1));
+  if (fotoBuehne.width !== b || fotoBuehne.height !== h) { fotoBuehne.width = b; fotoBuehne.height = h; spur('Fotobühne ' + b + '×' + h); }
+}
 async function fotosStarten(dateien) {
   spur('Fotos gewählt: ' + dateien.length);
   for (const f of fotos) f.close?.();
@@ -650,14 +656,14 @@ async function fotosStarten(dateien) {
   for (const d of dateien.slice(0, 24)) {
     try {
       const roh = await createImageBitmap(d);
-      // Telefonregel: höchstens 2400 Punkte; der Puffer braucht ohnehin weniger
-      const s = Math.min(1, 1600 / Math.max(roh.width, roh.height));
+      // Telefonregel: höchstens 2400 Punkte; so bleibt die Kamerafahrt durchs Foto auch am grossen Bildschirm scharf
+      const s = Math.min(1, 2400 / Math.max(roh.width, roh.height));
       fotos.push(s < 1 ? await createImageBitmap(roh, { resizeWidth: Math.round(roh.width * s), resizeHeight: Math.round(roh.height * s), resizeQuality: 'high' }) : roh);
       if (s < 1) roh.close();
     } catch { spur('Foto unlesbar'); }
   }
   if (!fotos.length) return melden(TEXTE[sprache].keineKamera);
-  fotoBuehne.width = 960; fotoBuehne.height = Math.round(960 * Math.max(innerHeight, 1) / Math.max(innerWidth, 1));
+  fotoBuehneGroesse();
   $('wenden').hidden = true; quelle = fotoBuehne; spiegelnQuelle = false; fotoStart = performance.now() / 1000; starten();
 }
 function fotoMalen(t) {
@@ -701,6 +707,7 @@ let titelUhr = 0;
 function zustandWaehlen(nr, still) {
   zustand = nr;
   document.querySelectorAll('[data-zustand]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.zustand === nr)));
+  $('r-zustand').value = String(ZUSTAND_STELLE.indexOf(nr));
   zustandText();
   try { localStorage.setItem('kristall.zustand', String(nr)); } catch {}
   if (still) return;
@@ -715,6 +722,10 @@ function zustandText() {
   $('b-zustand-text').textContent = z.text;
 }
 document.querySelectorAll('[data-zustand]').forEach((b) => b.addEventListener('click', () => zustandWaehlen(+b.dataset.zustand)));
+// die Spur: ziehen oder auf die Linie tippen, rastet bei den vier Zuständen ein (Reihenfolge eines Lebenslaufs)
+const ZUSTAND_STELLE = [2, 0, 1, 3];
+$('r-zustand').addEventListener('input', (e) => { const nr = ZUSTAND_STELLE[+e.target.value]; if (nr !== zustand) zustandWaehlen(nr); });
+$('r-zustand').addEventListener('change', () => { if (einstiegStufe === 1) { clearTimeout(einstiegUhr); einstiegUhr = setTimeout(einstiegWeiter, 1800); } });
 // jeder Besuch beginnt mit dem Brillanten ohne Verschmelzung (Christian, 19.11.2026)
 formWaehlen('brillant');
 
@@ -1074,7 +1085,7 @@ $('aufnahme').addEventListener('click', () => {
   const strom = leinwand.captureStream(30), ton = klangSpur();
   if (ton) strom.addTrack(ton);
   const typA = ton ? (['video/mp4;codecs=avc1,mp4a.40.2', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus'].find((m) => MediaRecorder.isTypeSupported(m)) || typ) : typ;
-  aufnehmer = new MediaRecorder(strom, typA ? { mimeType: typA, videoBitsPerSecond: 8e6, audioBitsPerSecond: 128e3 } : undefined);
+  aufnehmer = new MediaRecorder(strom, typA ? { mimeType: typA, videoBitsPerSecond: telefon ? 8e6 : 16e6, audioBitsPerSecond: 128e3 } : undefined);
   aufnehmer.ondataavailable = (e) => e.data.size && teile.push(e.data);
   aufnehmer.onstop = () => {
     clearInterval(uhr);
