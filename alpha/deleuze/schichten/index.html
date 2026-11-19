@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0a0a0b">
+<title>Schichten der Zeit · the deleuzian scheme</title>
+<link rel="stylesheet" href="../gemeinsam/zwischentitel.css?v=1">
+<link rel="stylesheet" href="schichten.css?v=1">
+</head>
+<body>
+<!-- Gestaltung «Zwischentitel» (docs/GESTALTUNG.md), Aufbau wie das Kristallbild. -->
+<main class="buehne" id="buehne">
+  <canvas id="leinwand" aria-label="Schichten der Zeit"></canvas>
+
+  <!-- Schwelle: der Operator als Zwischentitel -->
+  <section class="auftakt" id="auftakt">
+    <div class="zt-band">
+      <a href="../start/">← the deleuzian scheme</a>
+      <nav class="zt-sprachen" aria-label="Sprache"><button data-lang="de">de</button><button data-lang="en">en</button><button data-lang="fr">fr</button></nav>
+    </div>
+    <video class="vorspann" data-vorspann src="vorspann.mp4?v=1" muted loop playsinline autoplay aria-hidden="true"></video>
+    <div class="schwelle">
+      <p class="zt-kennung">II · Cinéma 2 · 1985</p>
+      <h1 class="zt-titel"><span data-t="titel">Schichten der Zeit</span><i>les nappes de passé</i></h1>
+      <p class="satz" data-t="satz">Die Vergangenheit liegt in Schichten, und man springt hinein.</p>
+      <div class="wahl">
+        <label class="zt-taste rot"><span data-t="video">Video oder Fotos</span><input type="file" id="datei" accept="video/*,image/*" multiple hidden></label>
+        <button class="zt-taste" id="kamera" data-t="kamera">Kamera</button>
+        <button class="zt-taste" id="beispiel" data-t="beispiel">Beispiel</button>
+      </div>
+    </div>
+  </section>
+
+  <header class="kopf zt-band" id="kopf" hidden>
+    <a href="../start/" class="marke">← II · <b data-t="titel">Schichten der Zeit</b></a>
+    <nav class="zt-sprachen" aria-label="Sprache"><button data-lang="de">de</button><button data-lang="en">en</button><button data-lang="fr">fr</button></nav>
+  </header>
+
+  <section class="regler" id="regler" hidden>
+    <nav class="formen zustaende zt-wahl" aria-label="Lesart" data-t-label="lesart">
+      <input type="range" id="r-lesart" class="zt" min="0" max="2" step="1" value="1" aria-label="Lesart"><button data-lesart="0" data-stelle="0">Kegel</button><button data-lesart="1" data-stelle="1">Grabung</button><button data-lesart="2" data-stelle="2">Überschiebung</button>
+    </nav>
+    <div class="zt-regler">
+      <label><span data-t="tiefe">Zeittiefe</span><input type="range" id="r-tiefe" min="1" max="12" step="0.1" value="6"></label>
+      <label><span data-t="schichten">Schichten</span><input type="range" id="r-schichten" min="3" max="14" step="1" value="7"></label>
+      <label><span data-t="fluss">Fluss</span><input type="range" id="r-fluss" min="0" max="1" step="0.01" value="0.35"></label>
+    </div>
+    <div class="knoepfe zt-tasten">
+      <button class="zt-taste" id="begriff-auf" data-t="begriff">Begriff</button>
+      <button class="zt-taste" id="standbild" data-t="standbild">Standbild</button>
+      <button class="zt-taste rot" id="aufnahme" data-t="aufnahme">Aufnahme</button>
+    </div>
+  </section>
+
+  <!-- Kamera wenden: das übliche Zeichen, feine Linie direkt auf dem Bild -->
+  <button class="wenden" id="wenden" hidden aria-label="Kamera wenden" data-t-label="wenden">
+    <svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <g class="kontur">
+        <path d="M4 11.5h5l2.2-3h9.6l2.2 3h5v14H4z"/>
+        <path d="M11.2 18.6a4.9 4.9 0 0 1 8.6-3.3"/><path d="M20.4 12.6v2.9h-2.9"/>
+        <path d="M20.8 18.4a4.9 4.9 0 0 1-8.6 3.3"/><path d="M11.6 24.4v-2.9h2.9"/>
+      </g>
+      <path d="M4 11.5h5l2.2-3h9.6l2.2 3h5v14H4z"/>
+      <path d="M11.2 18.6a4.9 4.9 0 0 1 8.6-3.3"/><path d="M20.4 12.6v2.9h-2.9"/>
+      <path d="M20.8 18.4a4.9 4.9 0 0 1-8.6 3.3"/><path d="M11.6 24.4v-2.9h2.9"/>
+    </svg>
+  </button>
+  <!-- Ton an und aus: dasselbe feine Zeichen, unten links -->
+  <button class="ton" id="ton" hidden aria-pressed="true" aria-label="Ton aus" data-t-label="tonAus">
+    <svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <g class="kontur"><path d="M5 12.5h5l6-5v17l-6-5H5z"/><path class="wellen" d="M20 12.2a5.4 5.4 0 0 1 0 7.6M23.2 9a9.8 9.8 0 0 1 0 14"/><path class="strich" d="M20.5 12.5l7 7M27.5 12.5l-7 7"/></g>
+      <path d="M5 12.5h5l6-5v17l-6-5H5z"/><path class="wellen" d="M20 12.2a5.4 5.4 0 0 1 0 7.6M23.2 9a9.8 9.8 0 0 1 0 14"/><path class="strich" d="M20.5 12.5l7 7M27.5 12.5l-7 7"/>
+    </svg>
+  </button>
+  <!-- Glosse als Untertitel: Begriff, Satz, Zitat im Original, Quelle -->
+  <aside class="glosse" id="glosse" hidden aria-live="polite">
+    <p class="glosse-begriff" id="glosse-begriff"></p>
+    <p class="glosse-satz" id="glosse-satz"></p>
+    <p class="glosse-zitat" id="glosse-zitat"></p>
+    <p class="glosse-quelle" id="glosse-quelle"></p>
+  </aside>
+  <p class="schichtzeit weg" id="schichtzeit" hidden></p>
+  <p class="geste" id="geste" hidden data-t="geste">Ziehen gräbt. Je tiefer, desto älter.</p>
+</main>
+
+<!-- Lektüre: eine Folge von Texttafeln, seitlich wischbar -->
+<aside class="begriff" id="begriff" hidden aria-labelledby="begriff-titel">
+  <div class="zt-band lek-band">
+    <span class="familie" data-t="familie">Zeit · Das Zeit-Bild, Kapitel 5</span>
+    <button class="zu" id="begriff-zu" aria-label="Schliessen">×</button>
+  </div>
+  <div class="zt-tafeln" id="tafeln">
+    <section class="zt-tafel">
+      <h3><span data-sprache="de">Was ist eine <b>Schicht</b> ?</span><span data-sprache="en">What is a <b>sheet</b> of the past ?</span><span data-sprache="fr">Qu’est-ce qu’une <b>nappe</b> de passé ?</span></h3>
+      <h2 class="unsichtbar" id="begriff-titel" data-t="b-titel">Schichten der Zeit</h2>
+      <div class="text" data-t="b-text"></div>
+    </section>
+    <section class="zt-tafel">
+      <p class="zt-kennung" data-t="lesart">Lesart</p>
+      <h3 id="b-lesart-titel"></h3>
+      <p id="b-lesart-text"></p>
+    </section>
+    <section class="zt-tafel gegen">
+      <h3>«wie ein Mann, der gräbt»</h3>
+      <p class="klein"><span data-sprache="de">Walter Benjamin, «Ausgraben und Erinnern», um 1932.</span><span data-sprache="en">Walter Benjamin, “Excavation and Memory”, c. 1932.</span><span data-sprache="fr">Walter Benjamin, « Fouilles et souvenir », vers 1932.</span></p>
+      <p data-sprache="de">Gegenstimme, Benjamin: Das Gedächtnis ist nicht das Werkzeug, mit dem man die Vergangenheit erkundet, sondern ihr Schauplatz. Wer gräbt, muss auch festhalten, an welcher Stelle im heutigen Boden er fand. Und jede Grabung zerstört die Schichten, die sie liest. Auch hier löscht jeder Zug des Fingers ein Stück Gegenwart. Darum steht hier kein <span class="zt-rature">Effekt</span>, sondern eine Lesart.</p>
+      <p data-sprache="en">Counter-voice, Benjamin: memory is not the instrument for exploring the past but its theatre. Whoever digs must also record where in today’s ground the find was made. And every excavation destroys the strata it reads. Here too, each stroke of the finger erases a piece of the present. That is why there is no <span class="zt-rature">effect</span> here, only a reading.</p>
+      <p data-sprache="fr">Contre-voix, Benjamin : la mémoire n’est pas l’instrument qui explore le passé, mais son théâtre. Qui fouille doit aussi noter à quel endroit du sol d’aujourd’hui il a trouvé. Et toute fouille détruit les couches qu’elle lit. Ici aussi, chaque geste du doigt efface un morceau de présent. C’est pourquoi il n’y a pas ici d’<span class="zt-rature">effet</span>, mais une lecture.</p>
+      <p class="klein">Walter Benjamin, <i>Gesammelte Schriften</i> IV.1, Frankfurt am Main : Suhrkamp 1972.</p>
+    </section>
+    <section class="zt-tafel">
+      <h3><b>?</b></h3>
+      <p class="frage" data-t="b-frage"></p>
+    </section>
+    <section class="zt-tafel">
+      <p class="zt-kennung"><span data-sprache="de">Werke</span><span data-sprache="en">Works</span><span data-sprache="fr">Œuvres</span></p>
+      <p class="werke">Welles, <i>Citizen Kane</i>, 1941<br>Resnais, <i>Hiroshima mon amour</i>, 1959<br>Resnais, <i>L’année dernière à Marienbad</i>, 1961<br>Resnais, <i>Je t’aime, je t’aime</i>, 1968<br>Frankenthaler, <i>Mountains and Sea</i>, 1952</p>
+      <p class="zt-kennung"><span data-sprache="de">Quelle</span><span data-sprache="en">Source</span><span data-sprache="fr">Source</span></p>
+      <p class="quelle klein" data-t="b-quelle"></p>
+      <p class="zt-kennung"><span data-sprache="de">Verwandt</span><span data-sprache="en">Related</span><span data-sprache="fr">Voisins</span></p>
+      <p class="verweise"><a href="../kristall/">I <span data-sprache="de">Kristallbild</span><span data-sprache="en">Crystal-image</span><span data-sprache="fr">L’image-cristal</span></a><br><a href="../start/#III">III <span data-sprache="de">Dauer</span><span data-sprache="en">Duration</span><span data-sprache="fr">La durée</span></a><br><a href="../start/#VIII">VIII <span data-sprache="de">Falte</span><span data-sprache="en">Fold</span><span data-sprache="fr">Le pli</span></a></p>
+    </section>
+  </div>
+  <div class="zt-band lek-fuss"><span class="zt-zaehler" id="zaehler">1 / 5</span><span class="zt-zaehler"><span data-sprache="de">wischen</span><span data-sprache="en">swipe</span><span data-sprache="fr">glisser</span> →</span></div>
+</aside>
+
+<aside class="ergebnis" id="ergebnis" hidden aria-label="Ergebnis">
+  <button class="zu" id="ergebnis-zu" aria-label="Schliessen">×</button>
+  <div class="ergebnis-bild" id="ergebnis-bild"></div>
+  <p class="ergebnis-mb" id="ergebnis-mb"></p>
+  <div class="ergebnis-knoepfe zt-tasten">
+    <button class="zt-taste" id="teilen" data-t="teilen">Teilen</button>
+    <button class="zt-taste" id="sichern" data-t="sichern">Sichern</button>
+  </div>
+  <p class="ergebnis-hinweis" id="ergebnis-hinweis" data-t="ergebnis-hinweis" hidden></p>
+</aside>
+
+<p class="meldung" id="meldung" hidden></p>
+<script type="module" src="schichten.js?v=1"></script>
+<script src="../gemeinsam/tafeln.js?v=3"></script>
+</body>
+</html>

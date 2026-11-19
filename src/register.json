@@ -122,6 +122,15 @@
    "kurz": "Prototyp: ein lichtbrechender Kristall über dem Kamerabild, jede Facette eine andere Zeit."
   },
   {
+   "id": "deleuze-schichten",
+   "name": "Schichten der Zeit (the deleuzian scheme)",
+   "tuer": "spielen-denken",
+   "art": "App",
+   "status": "direktlink",
+   "adresse": "alpha/deleuze/schichten/",
+   "kurz": "Prototyp: in das eigene Bild graben, jede Schicht eine ältere Zeit, in den Wänden alle Zeiten dazwischen."
+  },
+  {
    "id": "deleuze-start",
    "name": "the deleuzian scheme (Masterseite)",
    "tuer": "spielen-denken",
