@@ -30,6 +30,7 @@ const TEXTE = {
     ],
     zustand: 'Zustand',
     stein: 'Stein', brillant: 'Brillant', oval: 'Saphir', smaragd: 'Smaragd', bergkristall: 'Bergkristall', formen: 'Schliff',
+    wenden: 'Kamera wenden', keineRueckkamera: 'Die Rückkamera lässt sich nicht öffnen.',
     begriff: 'Begriff', standbild: 'Standbild', aufnahme: 'Aufnahme', stopp: 'Stopp',
     teilen: 'Teilen', sichern: 'Sichern', komma: '.', 'ergebnis-hinweis': 'Gesichert im Ordner «Downloads». «Teilen» legt es direkt in die Galerie oder eine App.',
     keineAufnahme: 'Dieser Browser kann die Leinwand nicht aufnehmen. Das Standbild geht.',
@@ -69,6 +70,7 @@ const TEXTE = {
     ],
     zustand: 'State',
     stein: 'Stone', brillant: 'Brilliant', oval: 'Sapphire', smaragd: 'Emerald', bergkristall: 'Quartz', formen: 'Cut',
+    wenden: 'Flip camera', keineRueckkamera: 'The rear camera cannot be opened.',
     begriff: 'Concept', standbild: 'Still', aufnahme: 'Record', stopp: 'Stop',
     teilen: 'Share', sichern: 'Save', komma: '.', 'ergebnis-hinweis': 'Saved to your “Downloads” folder. “Share” sends it straight to your gallery or an app.',
     keineAufnahme: 'This browser cannot record the canvas. Stills work.',
@@ -108,6 +110,7 @@ const TEXTE = {
     ],
     zustand: 'État',
     stein: 'Pierre', brillant: 'Brillant', oval: 'Saphir', smaragd: 'Émeraude', bergkristall: 'Cristal de roche', formen: 'Taille',
+    wenden: 'Retourner', keineRueckkamera: 'La caméra arrière ne s’ouvre pas.',
     begriff: 'Concept', standbild: 'Image', aufnahme: 'Enregistrer', stopp: 'Arrêter',
     teilen: 'Partager', sichern: 'Télécharger', komma: ',', 'ergebnis-hinweis': 'Enregistré dans le dossier « Téléchargements ». « Partager » l’envoie directement dans la galerie ou une app.',
     keineAufnahme: 'Ce navigateur ne peut pas enregistrer le canevas. L’image fixe fonctionne.',
@@ -537,18 +540,30 @@ let quelle = null, spiegelnQuelle = false;
 const videoEl = document.createElement('video');
 videoEl.muted = true; videoEl.playsInline = true; videoEl.loop = true;
 
+// Selfie-Kamera zuerst; «Wenden» schaltet auf die Rückkamera und zurück
+let blick = 'user';
 async function kameraStarten() {
   spur('Kamera anfragen');
   try {
-    const strom = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+    const alt = videoEl.srcObject; if (alt) alt.getTracks().forEach((t) => t.stop());
+    const strom = await navigator.mediaDevices.getUserMedia({ video: { facingMode: blick, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
     videoEl.srcObject = strom; await videoEl.play();
-    quelle = videoEl; spiegelnQuelle = true; starten();
-  } catch (e) { spur('Kamera abgelehnt'); melden(TEXTE[sprache].keineKamera); }
+    // gespiegelt wird nur, was zum Gesicht schaut
+    const echt = strom.getVideoTracks()[0]?.getSettings?.().facingMode;
+    quelle = videoEl; spiegelnQuelle = (echt || blick) !== 'environment'; starten();
+    zeigeWenden();
+  } catch (e) { spur('Kamera abgelehnt'); if (blick === 'environment') { blick = 'user'; melden(TEXTE[sprache].keineRueckkamera); } else melden(TEXTE[sprache].keineKamera); }
 }
+async function zeigeWenden() {
+  let mehrere = true;
+  try { mehrere = (await navigator.mediaDevices.enumerateDevices()).filter((d) => d.kind === 'videoinput').length > 1; } catch (e) {}
+  $('wenden').hidden = !mehrere;
+}
+$('wenden').addEventListener('click', () => { blick = blick === 'user' ? 'environment' : 'user'; kameraStarten(); });
 
 function videoStarten(datei) {
   spur('Video gewählt');
-  videoEl.srcObject = null; videoEl.src = URL.createObjectURL(datei);
+  videoEl.srcObject = null; $('wenden').hidden = true; videoEl.src = URL.createObjectURL(datei);
   videoEl.play().then(() => { quelle = videoEl; spiegelnQuelle = false; starten(); }).catch(() => melden(TEXTE[sprache].keineKamera));
 }
 
@@ -578,7 +593,7 @@ function beispielMalen(t) {
 // Beispiel: Christians Porträt «Wan, Pendel» aus dem ORNAMENT LAB; die gemalte Szene bleibt als Rückfall
 function beispielStarten() {
   spur('Beispiel');
-  videoEl.srcObject = null; videoEl.src = 'beispiel.mp4?v=1';
+  videoEl.srcObject = null; $('wenden').hidden = true; videoEl.src = 'beispiel.mp4?v=1';
   videoEl.play().then(() => { quelle = videoEl; spiegelnQuelle = false; starten(); })
     .catch(() => { spur('Beispielvideo fehlt'); quelle = beispiel; spiegelnQuelle = false; starten(); });
 }
@@ -614,7 +629,7 @@ async function fotosStarten(dateien) {
   }
   if (!fotos.length) return melden(TEXTE[sprache].keineKamera);
   fotoBuehne.width = 960; fotoBuehne.height = Math.round(960 * Math.max(innerHeight, 1) / Math.max(innerWidth, 1));
-  quelle = fotoBuehne; spiegelnQuelle = false; fotoStart = performance.now() / 1000; starten();
+  $('wenden').hidden = true; quelle = fotoBuehne; spiegelnQuelle = false; fotoStart = performance.now() / 1000; starten();
 }
 function fotoMalen(t) {
   const c = fotoBuehne.getContext('2d'), W = fotoBuehne.width, H = fotoBuehne.height;
@@ -848,7 +863,7 @@ function zeitSetzen(kopf, intervall, t) {
 // ---------- Schleife ----------
 let laeuft = false, kopf = 0, letzterFang = 0, gefuellt = false, standbildWunsch = false;
 function starten() {
-  $('auftakt').hidden = true; $('kopf').hidden = false; $('regler').hidden = false; $('geste').hidden = false;
+  $('auftakt').hidden = true; $('kopf').hidden = false; $('regler').hidden = false; $('geste').hidden = false; requestAnimationFrame(() => mitteSetzen(true));
   setTimeout(() => $('geste').classList.add('weg'), 5000);
   groesse();
   if (!laeuft && gl) { laeuft = true; requestAnimationFrame(bild); }
@@ -1019,11 +1034,25 @@ function facetteUnter(x, y) {
 let tippStart = null, zeitUhr = 0, letzterTipp = null;
 // ---------- Keim und Milieu: ein Doppeltipp setzt einen Keim, aus dem der Kristall wächst ----------
 let keimStart = -1;
-function keimSetzen(x, y) {
+let keimGesetzt = false;
+// Bildpunkt auf die Ebene des Kristalls (z = 0) zurückrechnen, als Lage 0…1
+function aufEbene(x, y) {
   const seite = innerWidth / innerHeight, sx = (x / innerWidth) * 2 - 1, sy = 1 - (y / innerHeight) * 2;
-  // Bildpunkt auf die Ebene des Kristalls (z = 0) zurückrechnen
   const lx = Math.max(-seite * 1.3, Math.min(seite * 1.3, sx * seite * 0.5 * 3.2)), ly = Math.max(-1.25, Math.min(1.25, sy * 1.6));
-  ziel.x = lx / 1.2 + 0.5; ziel.y = ly / 0.9 + 0.5;
+  return { x: lx / 1.2 + 0.5, y: ly / 0.9 + 0.5 };
+}
+// der Stein sitzt mitten in der freien Bildfläche zwischen Kopf und Bedienung, nicht in der Bildschirmmitte
+function mitteSetzen(anfang) {
+  const kopf = $('kopf').getBoundingClientRect(), r = $('regler').getBoundingClientRect();
+  const oben = kopf.height ? kopf.bottom : 0, unten = r.height && r.top > innerHeight * 0.4 ? r.top : innerHeight;
+  if (!keimGesetzt) { const m = aufEbene(innerWidth / 2, (oben + unten) / 2); ziel.x = m.x; ziel.y = m.y; if (anfang) { gegenwart.x = m.x; gegenwart.y = m.y; } }
+  // ist die freie Fläche niedrig (Telefon hochkant), beginnt der Stein etwas kleiner; Zoomen bleibt frei
+  if (anfang) { const frei = (unten - oben) / innerHeight; zoomZiel = zoom = Math.max(0.65, Math.min(1, frei / 0.72)); }
+}
+addEventListener('resize', () => requestAnimationFrame(() => mitteSetzen(false)));
+function keimSetzen(x, y) {
+  const m = aufEbene(x, y); keimGesetzt = true;
+  ziel.x = m.x; ziel.y = m.y;
   gegenwart.x = ziel.x; gegenwart.y = ziel.y;     // der Keim sitzt sofort, gewachsen wird an Ort
   keimStart = performance.now() / 1000;
   glosse('keim'); spur('Keim');
