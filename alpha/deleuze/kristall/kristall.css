@@ -37,7 +37,6 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 .regler { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; display: grid; gap: 2px;
   padding: 26px var(--rand-r) max(10px, env(safe-area-inset-bottom)) var(--rand);
   background: linear-gradient(to top, var(--noir) 62%, rgba(10,10,11,0)); }
-.zustaende button { font-family: var(--didone); font-style: italic; text-transform: none; letter-spacing: 0.01em; font-size: 0.95rem; }
 .knoepfe { margin-top: 2px; }
 #aufnahme.laeuft { animation: blinken 1s steps(2, start) infinite; }
 #aufnahme.laeuft::before { content: "● "; }
@@ -45,7 +44,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 @media (min-width: 760px) {
   .regler { grid-template-columns: 1fr 1fr; column-gap: 40px; }
   .regler .formen { grid-column: 1; }
-  .regler .zustaende { grid-column: 2; grid-row: 1; justify-content: flex-end; }
+  .regler .zustaende { grid-column: 2; grid-row: 1; align-self: end; }
   .regler .zt-wahl { flex-wrap: wrap; overflow: visible; }
   .regler .zt-regler { grid-column: 1 / -1; grid-template-columns: repeat(2, 1fr); column-gap: 40px; }
   .regler .knoepfe { grid-column: 1 / -1; justify-content: flex-start; gap: 36px; }
@@ -146,3 +145,13 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 .regler > [inert] { opacity: 0; transform: translateY(8px); }
 .regler { background-repeat: no-repeat; background-position: bottom; background-size: 100% 100%; transition: background-size 1.4s ease; }
 .regler[data-einstieg="0"] { background-size: 100% 28%; }
+
+/* Zustände als gerasterte Spur: dieselbe Haarlinie und derselbe rote Knopf wie bei den Reglern, in der Reihenfolge
+   eines Lebenslaufs (im Entstehen, vollkommen, gesprungen, im Zerfall). Schrift wie die Reglernamen (Christian, 19.11.2026). */
+.regler .zustaende { position: relative; justify-content: space-between; overflow: visible; gap: 0 10px; padding: 16px 0 2px; margin: 4px 0 4px; }
+.regler .zustaende::before { content: ""; position: absolute; left: 0; right: 0; top: 9px; height: 2px; background: rgba(241,238,230,.28); }
+.regler .zustaende button { position: relative; padding: 8px 0 6px; font-family: var(--schmal); font-style: normal; text-transform: uppercase;
+  letter-spacing: 0.13em; font-size: 0.72rem; color: var(--gris); box-shadow: none; white-space: nowrap; }
+.regler .zustaende button::before { content: ""; position: absolute; left: 50%; top: -9px; width: 1px; height: 8px; margin-left: -0.5px; background: rgba(241,238,230,.5); }
+.regler .zustaende button[aria-pressed="true"] { color: var(--blanc); box-shadow: none; }
+.regler .zustaende button[aria-pressed="true"]::before { top: -15px; width: 4px; height: 18px; margin-left: -2px; background: var(--rouge); }
