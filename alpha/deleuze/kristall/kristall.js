@@ -1199,7 +1199,8 @@ $('begriff-auf').addEventListener('click', () => { $('begriff').hidden = false; 
 $('begriff-zu').addEventListener('click', () => { $('begriff').hidden = true; });
 addEventListener('keydown', (e) => { if (e.key === 'Escape') { $('begriff').hidden = true; schliessen(); } });
 
-try { const z = +localStorage.getItem('kristall.zustand'); zustandWaehlen(z >= 0 && z < 4 ? z : 0, true); } catch { zustandWaehlen(0, true); }
+// jeder Besuch beginnt beim vollkommenen Kristall (Christian, 19.11.2026)
+zustandWaehlen(0, true);
 uebersetzen();
 // Direktstart für Tests und Vorführungen: ?beispiel
 if (new URLSearchParams(location.search).has('beispiel')) beispielStarten();
