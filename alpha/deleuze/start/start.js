@@ -85,11 +85,17 @@ function spur(schritt) { try { const s = JSON.parse(localStorage.getItem(SPUR) |
 let meldungUhr = 0;
 function melden(text) { const m = $('meldung'); m.textContent = text; m.hidden = false; clearTimeout(meldungUhr); meldungUhr = setTimeout(() => { m.hidden = true; }, 9000); }
 $('meldung').addEventListener('click', () => { $('meldung').hidden = true; });
+// Die Spur ist ein Werkzeug für uns, kein Hinweis für Gäste: sie steht in der Konsole und nur mit «?spur» auf der Seite.
+// Verlassen und Wegschalten werden vermerkt, sonst hielte die Seite jeden Besuch nach einem Tippen für abgebrochen.
 try {
   const s = JSON.parse(localStorage.getItem(SPUR) || '[]');
-  if (s.length && s.at(-1) !== '✓ läuft' && s.at(-1) !== 'Start') melden(TEXTE[sprache].letzterLauf + s.slice(-3).join(' → '));
+  if (s.length && !['✓ läuft', 'Start', 'Ende', 'Pause'].includes(s.at(-1))) {
+    console.info('[start] Der letzte Besuch endete unerwartet:', s.join(' → '));
+    if (new URLSearchParams(location.search).has('spur')) melden(TEXTE[sprache].letzterLauf + s.slice(-3).join(' → '));
+  }
   localStorage.setItem(SPUR, JSON.stringify(['Start']));
 } catch {}
+addEventListener('pagehide', () => spur('Ende'));
 
 uebersetzen();
 
@@ -118,7 +124,7 @@ $('m-kamera').addEventListener('click', async () => {
     const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 640 } }, audio: false });
     stromStoppen(); urlFreigeben(); bild = null; strom = s; spiegeln = true; fokusY = 0.5;
     video.removeAttribute('src'); video.srcObject = s; await video.play();
-    wahlZeigen('m-kamera');
+    wahlZeigen('m-kamera'); spur('Kamera an');
   } catch { spur('Kamera abgelehnt'); melden(TEXTE[sprache].keineKamera); }
 });
 $('datei').addEventListener('change', async (e) => {
@@ -258,15 +264,18 @@ function zeichnen(t) {
   });
 }
 
+// Die Beschriftung steht unter dem Kristall, nie auf dem Bild (Christian, 19.11.2026):
+// rote Kennzeile mit Nummer, Jahr und Stand, darunter der Name; der französische Begriff blau, ausser auf Französisch.
 function untertitelZeigen(k) {
   if (k === gezeigt) return; gezeigt = k;
   const el = $('untertitel');
   if (k < 0) { el.classList.remove('da'); return; }
   const o = OPS[k], t = TEXTE[sprache];
-  el.innerHTML = '';
-  const a = document.createElement('span'); a.textContent = `${o.nr} · ${o.name[sprache]}${o.href ? '' : ' · ' + t.dreh}`;
-  const b = document.createElement('em'); b.textContent = o.begriff;
-  el.append(a, b); el.classList.add('da');
+  const kennung = document.createElement('span'); kennung.className = 'zt-kennung';
+  kennung.textContent = `${o.nr} · ${o.jahr} · ${o.href ? t.laeuft : t.dreh}`;
+  const name = document.createElement('span'); name.className = 'u-name'; name.textContent = o.name[sprache];
+  if (sprache !== 'fr') { const i = document.createElement('i'); i.textContent = o.begriff; name.append(' ', i); }
+  el.replaceChildren(kennung, name); el.classList.add('da');
 }
 
 // ---------- Berühren ----------
@@ -288,7 +297,7 @@ lw.addEventListener('click', (e) => {
 // ---------- Lauf ----------
 let sichtbar = true, letzte = 0, letzterWechsel = 0;
 new IntersectionObserver((es) => { sichtbar = es[0].isIntersecting; if (sichtbar && !bild) video.play().catch(() => {}); else if (!sichtbar) video.pause(); }).observe(lw);
-document.addEventListener('visibilitychange', () => { if (document.hidden) video.pause(); else if (sichtbar && !bild) video.play().catch(() => {}); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) { video.pause(); spur('Pause'); } else { spur('zurück'); if (sichtbar && !bild) video.play().catch(() => {}); } });
 
 function lauf(ms) {
   requestAnimationFrame(lauf);
