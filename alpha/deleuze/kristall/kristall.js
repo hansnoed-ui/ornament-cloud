@@ -30,7 +30,7 @@ const TEXTE = {
     ],
     zustand: 'Zustand',
     stein: 'Stein', brillant: 'Brillant', oval: 'Saphir', smaragd: 'Smaragd', bergkristall: 'Bergkristall', formen: 'Schliff',
-    wenden: 'Kamera wenden', keineRueckkamera: 'Die Rückkamera lässt sich nicht öffnen.',
+    wenden: 'Kamera wenden',
     begriff: 'Begriff', standbild: 'Standbild', aufnahme: 'Aufnahme', stopp: 'Stopp',
     teilen: 'Teilen', sichern: 'Sichern', komma: '.', 'ergebnis-hinweis': 'Gesichert im Ordner «Downloads». «Teilen» legt es direkt in die Galerie oder eine App.',
     keineAufnahme: 'Dieser Browser kann die Leinwand nicht aufnehmen. Das Standbild geht.',
@@ -70,7 +70,7 @@ const TEXTE = {
     ],
     zustand: 'State',
     stein: 'Stone', brillant: 'Brilliant', oval: 'Sapphire', smaragd: 'Emerald', bergkristall: 'Quartz', formen: 'Cut',
-    wenden: 'Flip camera', keineRueckkamera: 'The rear camera cannot be opened.',
+    wenden: 'Flip camera',
     begriff: 'Concept', standbild: 'Still', aufnahme: 'Record', stopp: 'Stop',
     teilen: 'Share', sichern: 'Save', komma: '.', 'ergebnis-hinweis': 'Saved to your “Downloads” folder. “Share” sends it straight to your gallery or an app.',
     keineAufnahme: 'This browser cannot record the canvas. Stills work.',
@@ -110,7 +110,7 @@ const TEXTE = {
     ],
     zustand: 'État',
     stein: 'Pierre', brillant: 'Brillant', oval: 'Saphir', smaragd: 'Émeraude', bergkristall: 'Cristal de roche', formen: 'Taille',
-    wenden: 'Retourner', keineRueckkamera: 'La caméra arrière ne s’ouvre pas.',
+    wenden: 'Retourner',
     begriff: 'Concept', standbild: 'Image', aufnahme: 'Enregistrer', stopp: 'Arrêter',
     teilen: 'Partager', sichern: 'Télécharger', komma: ',', 'ergebnis-hinweis': 'Enregistré dans le dossier « Téléchargements ». « Partager » l’envoie directement dans la galerie ou une app.',
     keineAufnahme: 'Ce navigateur ne peut pas enregistrer le canevas. L’image fixe fonctionne.',
@@ -540,24 +540,28 @@ let quelle = null, spiegelnQuelle = false;
 const videoEl = document.createElement('video');
 videoEl.muted = true; videoEl.playsInline = true; videoEl.loop = true;
 
-// Selfie-Kamera zuerst; «Wenden» schaltet auf die Rückkamera und zurück
-let blick = 'user';
+// Hauptkamera (Rückseite) zuerst; «Kamera wenden» schaltet auf die Selfie-Kamera und zurück
+let blick = 'environment';
+async function kameraZahl() {
+  try { return (await navigator.mediaDevices.enumerateDevices()).filter((d) => d.kind === 'videoinput').length; } catch (e) { return 1; }
+}
 async function kameraStarten() {
   spur('Kamera anfragen');
-  try {
-    const alt = videoEl.srcObject; if (alt) alt.getTracks().forEach((t) => t.stop());
-    const strom = await navigator.mediaDevices.getUserMedia({ video: { facingMode: blick, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
-    videoEl.srcObject = strom; await videoEl.play();
-    // gespiegelt wird nur, was zum Gesicht schaut
-    const echt = strom.getVideoTracks()[0]?.getSettings?.().facingMode;
-    quelle = videoEl; spiegelnQuelle = (echt || blick) !== 'environment'; starten();
-    zeigeWenden();
-  } catch (e) { spur('Kamera abgelehnt'); if (blick === 'environment') { blick = 'user'; melden(TEXTE[sprache].keineRueckkamera); } else melden(TEXTE[sprache].keineKamera); }
-}
-async function zeigeWenden() {
-  let mehrere = true;
-  try { mehrere = (await navigator.mediaDevices.enumerateDevices()).filter((d) => d.kind === 'videoinput').length > 1; } catch (e) {}
-  $('wenden').hidden = !mehrere;
+  const alt = videoEl.srcObject; if (alt) alt.getTracks().forEach((t) => t.stop());
+  let strom = null;
+  try { strom = await navigator.mediaDevices.getUserMedia({ video: { facingMode: blick, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false }); }
+  catch (e) {
+    // gewünschte Seite fehlt: die andere versuchen
+    blick = blick === 'user' ? 'environment' : 'user';
+    try { strom = await navigator.mediaDevices.getUserMedia({ video: { facingMode: blick }, audio: false }); } catch (e2) {}
+  }
+  if (!strom) { spur('Kamera abgelehnt'); return melden(TEXTE[sprache].keineKamera); }
+  videoEl.srcObject = strom; await videoEl.play();
+  const zahl = await kameraZahl();
+  // gespiegelt wird nur, was zum Gesicht schaut; ohne Angabe (Laptop mit einer Kamera) ebenfalls
+  const echt = strom.getVideoTracks()[0]?.getSettings?.().facingMode;
+  quelle = videoEl; spiegelnQuelle = echt ? echt === 'user' : zahl < 2; starten();
+  $('wenden').hidden = zahl < 2;
 }
 $('wenden').addEventListener('click', () => { blick = blick === 'user' ? 'environment' : 'user'; kameraStarten(); });
 
