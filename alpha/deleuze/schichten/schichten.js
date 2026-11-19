@@ -13,6 +13,7 @@ const TEXTE = {
     titel: 'Schichten der Zeit', satz: 'Die Vergangenheit liegt in Schichten, und man springt hinein.',
     kamera: 'Kamera', video: 'Video oder Fotos', beispiel: 'Beispiel',
     tiefe: 'Zeittiefe', schichten: 'Schichten', fluss: 'Fluss', lesart: 'Lesart',
+    rand: 'Rand', rand4: 'Ornament', rand1: 'Relief', rand2: 'Kintsugi', rand3: 'Saum',
     glossen: {
       graben: { begriff: 'les nappes de passé', satz: 'Die Vergangenheit ist nicht vorbei, sie liegt unter der Gegenwart, in Schichten. Wer gräbt, findet keine einzelne Erinnerung, sondern eine ganze Region der Zeit.', zitat: '«Wer sich der eigenen verschütteten Vergangenheit zu nähern trachtet, muss sich verhalten wie ein Mann, der gräbt.»', quelle: 'Walter Benjamin, Ausgraben und Erinnern, um 1932' },
       tiefe: { begriff: 'la coexistence', satz: 'Die Schichten folgen nicht aufeinander, sie bestehen nebeneinander. Hier bestimmst du, wie weit die tiefste zurückreicht.', zitat: '«Le passé ne succède pas au présent qu’il n’est plus, il coexiste avec le présent qu’il a été.»', quelle: 'Deleuze, Le bergsonisme, PUF 1966, Kap. 3' },
@@ -48,6 +49,7 @@ const TEXTE = {
     titel: 'Sheets of the past', satz: 'The past lies in sheets, and one leaps into them.',
     kamera: 'Camera', video: 'Video or photos', beispiel: 'Example',
     tiefe: 'Depth of time', schichten: 'Sheets', fluss: 'Flow', lesart: 'Reading',
+    rand: 'Edge', rand4: 'Ornament', rand1: 'Relief', rand2: 'Kintsugi', rand3: 'Fringe',
     glossen: {
       graben: { begriff: 'les nappes de passé', satz: 'The past is not over, it lies beneath the present, in sheets. Whoever digs finds no single memory but a whole region of time.', zitat: '“He who seeks to approach his own buried past must conduct himself like a man digging.”', quelle: 'Walter Benjamin, Excavation and Memory, c. 1932' },
       tiefe: { begriff: 'la coexistence', satz: 'The sheets do not follow one another, they coexist. Here you decide how far back the deepest one reaches.', zitat: '« Le passé ne succède pas au présent qu’il n’est plus, il coexiste avec le présent qu’il a été. »', quelle: 'Deleuze, Le bergsonisme, PUF 1966, ch. 3 (original)' },
@@ -83,6 +85,7 @@ const TEXTE = {
     titel: 'Nappes de passé', satz: 'Le passé se tient en nappes, et l’on y saute.',
     kamera: 'Caméra', video: 'Vidéo ou photos', beispiel: 'Exemple',
     tiefe: 'Profondeur du temps', schichten: 'Nappes', fluss: 'Flux', lesart: 'Lecture',
+    rand: 'Bord', rand4: 'Ornement', rand1: 'Relief', rand2: 'Kintsugi', rand3: 'Frange',
     glossen: {
       graben: { begriff: 'les nappes de passé', satz: 'Le passé n’est pas fini, il gît sous le présent, en nappes. Qui fouille ne trouve pas un souvenir isolé, mais toute une région du temps.', zitat: '« Wer sich der eigenen verschütteten Vergangenheit zu nähern trachtet, muss sich verhalten wie ein Mann, der gräbt. »', quelle: 'Walter Benjamin, Ausgraben und Erinnern, vers 1932 (original)' },
       tiefe: { begriff: 'la coexistence', satz: 'Les nappes ne se suivent pas, elles coexistent. Ici tu décides jusqu’où remonte la plus profonde.', zitat: '« Le passé ne succède pas au présent qu’il n’est plus, il coexiste avec le présent qu’il a été. »', quelle: 'Deleuze, Le bergsonisme, PUF 1966, ch. 3' },
@@ -214,6 +217,7 @@ uniform float uKopf, uN, uSpanne, uS, uSeite, uT, uFT;
 uniform int uLesart;
 uniform vec2 uSpitze, uSchub, uGleit;
 uniform float uSprung;
+uniform int uRand;      // Gestalt der Ränder in der Grabung
 
 float hs(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float rausch(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.-2.*f);
@@ -247,7 +251,7 @@ vec3 grabung(vec2 u){
   float gl = length(g * vec2(1.0 / uSeite, 1.0)) * S + 1e-4;
   // Abstand zur nächsttieferen Grenze und zur letzten, in Bildbreiten
   float bisUnten = (1.0 - w) / gl, seitOben = w / gl;
-  float hoch = 0.016 + 0.004 * k;                    // tiefere Wände sind höher
+  float hoch = (uRand == 4 ? 0.026 : 0.016) + 0.004 * k;                    // tiefere Wände sind höher
   float wand = (1.0 - smoothstep(0.0, hoch, bisUnten)) * step(d0, 0.9995) * step(0.002, gl);
   float tw = clamp(bisUnten / hoch, 0.0, 1.0);      // 1 am oberen Rand der Wand, 0 an ihrem Fuss
   // Boden: die Schicht k, etwas verkleinert, als blicke man in einen Schacht
@@ -268,10 +272,64 @@ vec3 grabung(vec2 u){
   float sed = 0.78 + 0.22 * sin(tw * 9.0 * (1.0 + k * 0.4) + rausch(p * 40.0) * 2.0) + 0.1 * (rausch(p * vec2(90.0, 12.0)) - 0.5);
   float licht = 0.62 + 0.58 * zumLicht;
   band *= sed * licht * vec3(1.05, .97, .88) * (1.0 - 0.22 * ak) * 1.15;
-  vec3 c = mix(boden, band, wand);
+  float da = step(0.002, gl) * step(d0, 0.9995);           // nur, wo wirklich eine Grenze ist
+  float tief = step(S - 1.5, k);                             // die tiefste Schicht
+  vec3 c1 = vec3(0.0);
+  if (uRand == 1 || uRand == 4) {
+    // Relief im Streiflicht: die Wand gewölbt, oben eine Lichtkante, unten Schatten, feine Lagen wie Gestein
+    c1 = mix(boden, band * mix(0.5, 1.08, pow(tw, 0.7)), wand);
+    float lagen = 1.0 - smoothstep(0.0, 0.11, abs(fract(tw * (3.0 + k * 0.7) + 0.35 * rausch(p * 30.0)) - 0.5) * 2.0 - 0.78);
+    c1 *= 1.0 - 0.38 * lagen * wand * float(uRand == 1);
+    float grat = pow(smoothstep(0.62, 1.0, tw), 3.0) * wand;
+    c1 += vec3(1.0, 0.95, 0.86) * grat * (0.2 + 1.0 * max(0.0, zumLicht));
+    c1 = mix(c1, vec3(1.0, 0.97, 0.92), (1.0 - smoothstep(0.0, 0.0018, abs(bisUnten - hoch))) * da * (0.25 + 0.6 * max(0.0, zumLicht)));
+    c1 *= 1.0 - 0.35 * grat * max(0.0, -zumLicht);
+    float aussen = (1.0 - smoothstep(hoch, hoch + 0.012, bisUnten)) * step(hoch, bisUnten) * da;
+    c1 *= 1.0 - 0.25 * aussen * max(0.0, -zumLicht);       // auch die obere Terrasse fängt Schatten
+    if (uRand == 1) return c1;
+  }
+  vec3 c = uRand == 4 ? c1 : mix(boden, band, wand);
+  if (uRand == 2) {
+    // Kintsugi: jede Bruchkante mit Gold geschlossen, ungleich breit, im Licht glänzend; die tiefste in rotem Lack
+    float breite = 0.0022 * (0.5 + 1.1 * rausch(p * 16.0)) * (1.0 + 0.6 * tief);
+    float linie = (1.0 - smoothstep(breite * 0.5, breite, abs(bisUnten - hoch))) * da;
+    float glanz = pow(max(0.0, sin(dot(p, vec2(23.0, 17.0)) - uT * 1.3) * 0.5 + 0.5), 14.0) + max(0.0, zumLicht) * 0.5;
+    vec3 gold = mix(vec3(0.55, 0.36, 0.12), vec3(1.0, 0.86, 0.5), clamp(0.35 + glanz, 0.0, 1.0));
+    gold = mix(gold, vec3(0.62, 0.09, 0.06), tief * 0.85);
+    // feine Haarrisse laufen von der Kante in die obere Terrasse
+    float nah = (1.0 - smoothstep(0.0, 0.035, bisUnten - hoch)) * step(hoch, bisUnten) * da;
+    float riss = (1.0 - smoothstep(0.0, 0.035, abs(rausch(p * 11.0 + k * 3.1) - 0.5))) * nah * step(0.62, rausch(p * 3.0 + k));
+    c = mix(c, gold, max(linie, riss * 0.6));
+    return c;
+  }
+  if (uRand == 3) {
+    // Spektralsaum: an der Wand zerfällt die Zeit in Farben, wie Licht im Kristall; Rot älter, Blau jünger
+    vec2 q0 = u + (mitte - u) * 0.018 * kw, nach = gn * vec2(1.0 / uSeite, 1.0) * 0.0025;
+    float r = schicht(q0 - nach, lagVon(kw + 0.4)).r, g = schicht(q0, lagVon(kw)).g, b = schicht(q0 + nach, lagVon(max(0.0, kw - 0.4))).b;
+    vec3 spek = alt(vec3(r, g, b), kw / max(1.0, S - 1.0)) * (0.8 + 0.35 * licht);
+    c = mix(boden, spek, wand);
+    float aussen = (1.0 - smoothstep(hoch, hoch + 0.016, bisUnten)) * step(hoch, bisUnten) * da;
+    float x = (bisUnten - hoch) / 0.016;
+    vec3 saum = vec3(exp(-pow((x - 0.15) / 0.18, 2.0)), exp(-pow((x - 0.45) / 0.2, 2.0)), exp(-pow((x - 0.75) / 0.22, 2.0)));
+    c += (saum - 0.33) * aussen * 0.16 + saum * aussen * 0.06;
+    return c;
+  }
+  if (uRand == 4) {
+    // Ornament: in jeder Wand ein Band wie ein ägyptischer Fries, ein Zickzack zwischen zwei Linien
+    vec2 tang = vec2(-gn.y, gn.x);
+    float s = dot(p, tang) * 16.0;
+    float zig = abs(fract(s) - 0.5) * 2.0;
+    float band2 = wand * step(0.12, tw) * step(tw, 0.88);
+    float zz = 1.0 - smoothstep(0.05, 0.12, abs(tw - (0.25 + 0.5 * zig)));
+    float raender = (1.0 - smoothstep(0.0, 0.05, abs(tw - 0.12))) + (1.0 - smoothstep(0.0, 0.05, abs(tw - 0.88)));
+    vec3 farbe = mix(vec3(0.93, 0.86, 0.7), vec3(0.85, 0.15, 0.11), tief);
+    c = mix(c, c * 0.55, band2 * 0.6);
+    c = mix(c, farbe * (0.7 + 0.4 * licht), clamp(zz * band2 + raender * wand, 0.0, 1.0) * 0.85);
+    return c;
+  }
   // Kante oben an jeder Wand: haarfein weiss, an der tiefsten Schicht rot (Rot ist Zeit)
-  float kante = (1.0 - smoothstep(0.0, 0.0028, abs(bisUnten - hoch))) * step(0.002, gl) * step(d0, 0.9995);
-  vec3 kf = k >= S - 1.5 ? vec3(0.85, 0.15, 0.11) : vec3(1.0, 0.97, 0.9);
+  float kante = (1.0 - smoothstep(0.0, 0.0028, abs(bisUnten - hoch))) * da;
+  vec3 kf = tief > 0.5 ? vec3(0.85, 0.15, 0.11) : vec3(1.0, 0.97, 0.9);
   c = mix(c, kf, kante * (0.45 + 0.4 * max(0.0, zumLicht)));
   return c;
 }
@@ -431,7 +489,7 @@ if (gl) {
   const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
   gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
-  ort = orte(prog, ['uZeit', 'uScharf', 'uGrube', 'uKopf', 'uN', 'uSpanne', 'uS', 'uSeite', 'uT', 'uFT', 'uLesart', 'uSpitze', 'uSchub', 'uGleit', 'uSprung']);
+  ort = orte(prog, ['uZeit', 'uScharf', 'uGrube', 'uKopf', 'uN', 'uSpanne', 'uS', 'uSeite', 'uT', 'uFT', 'uLesart', 'uSpitze', 'uSchub', 'uGleit', 'uSprung', 'uRand']);
   ortG = orte(progGrube, ['uAlt', 'uPx', 'uStempel', 'uN', 'uAb', 'uSeite']);
   ortH = orte(progHell, ['uQ', 'uPx']); ortW = orte(progWeich, ['uQ', 'uRichtung']);
   ortZ = orte(progZusammen, ['uSzene', 'uGlow', 'uPx', 'uGlowStaerke', 'uT']);
@@ -640,6 +698,7 @@ function lesartWaehlen(nr, still) {
   lesart = nr;
   document.querySelectorAll('[data-lesart]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.lesart === nr)));
   $('r-lesart').value = String(nr);
+  document.querySelector('.raender').hidden = nr !== 1;
   lesartText();
   if (still) return;
   const z = TEXTE[sprache].lesarten[nr], g = $('geste');
@@ -692,6 +751,20 @@ let geisterStart = -1;
 const GEISTER_DAUER = 2.6;
 let geisterZug = 0;
 const VORSPANN = new URLSearchParams(location.search).has('vorspann');   // für den vorgerechneten Film der Schwelle
+// der Rand der Grabung: 4 Ornament mit Relief-Licht, 1 Relief, 2 Kintsugi, 3 Spektralsaum (0, die Haarlinie, nur mit ?rand=0)
+let rand = 4;
+try { const r = localStorage.getItem('schichten.rand'); if (r) rand = +r; } catch {}
+if (new URLSearchParams(location.search).has('rand')) rand = +new URLSearchParams(location.search).get('rand');
+rand = Math.max(0, Math.min(4, Math.round(rand) || 0));
+function randWaehlen(nr, still) {
+  rand = nr;
+  document.querySelectorAll('[data-rand]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.rand === nr)));
+  if (still) return;
+  try { localStorage.setItem('schichten.rand', String(nr)); } catch {}
+  spur('Rand ' + nr);
+}
+document.querySelectorAll('[data-rand]').forEach((b) => b.addEventListener('click', () => randWaehlen(+b.dataset.rand)));
+randWaehlen(rand, true);
 function geisterGraben(t, dt) {
   if (geisterStart < 0) return;
   const u = (t - geisterStart) / GEISTER_DAUER;
@@ -872,7 +945,7 @@ function bild(ms) {
   gl.uniform1f(ort.uKopf, kopf); gl.uniform1f(ort.uN, SCHICHTEN);
   gl.uniform1f(ort.uSpanne, Math.min(SCHICHTEN - 1, tiefe / intervall)); gl.uniform1f(ort.uS, schichtZahl);
   gl.uniform1f(ort.uSeite, innerWidth / innerHeight); gl.uniform1f(ort.uT, t % 100); gl.uniform1f(ort.uFT, ft % 1000);
-  gl.uniform1i(ort.uLesart, lesart); gl.uniform2f(ort.uSpitze, spitze.x, spitze.y); gl.uniform2f(ort.uSchub, schub.x, schub.y); gl.uniform2f(ort.uGleit, gleit.x, gleit.y); gl.uniform1f(ort.uSprung, sprung);
+  gl.uniform1i(ort.uLesart, lesart); gl.uniform2f(ort.uSpitze, spitze.x, spitze.y); gl.uniform2f(ort.uSchub, schub.x, schub.y); gl.uniform2f(ort.uGleit, gleit.x, gleit.y); gl.uniform1f(ort.uSprung, sprung); gl.uniform1i(ort.uRand, rand);
   zeichneFlaeche();
   nachbearbeiten(t);
   if (standbildWunsch) { standbildWunsch = false; leinwand.toBlob((b) => b && zeigen(b, 'schichten-' + zeitstempel() + '.png')); }

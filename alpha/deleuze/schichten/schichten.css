@@ -124,7 +124,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
   padding: 12px 14px; background: var(--noir); border-left: 3px solid var(--rouge); font-family: var(--schmal); font-size: 0.95rem; line-height: 1.35; }
 
 @media (max-width: 560px) {
-  .zt-regler label { grid-template-columns: 8em 1fr; }
+  .zt-regler label, .zt-regler .raender { grid-template-columns: 8em 1fr; }
   /* Am Handy ist die Glosse eine schmale Randnotiz: kleinere Schrift, deckt höchstens ein Drittel der Höhe,
      der Stein bleibt sichtbar (Christian, 19.11.2026) */
   .glosse { width: min(270px, 70vw); max-height: min(24vh, calc(100% - var(--regler-hoehe, 300px) - 70px));
@@ -185,3 +185,12 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 .schichtzeit { position: absolute; z-index: 1; margin: 0; padding: 3px 8px; font-family: var(--schmal); font-size: 0.82rem; letter-spacing: 0.12em; text-transform: uppercase;
   color: var(--blanc); background: var(--noir); border-left: 3px solid var(--rouge); pointer-events: none; transition: opacity .8s; white-space: nowrap; }
 .schichtzeit.weg { opacity: 0; }
+
+/* Rand der Grabung: vier Wörter in der Art der Sprachwahl, nur in der Grabung */
+.zt-regler .raender { display: grid; grid-template-columns: 8.5em 1fr; gap: 10px; align-items: center; min-height: 30px;
+  font-family: var(--schmal); font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gris); }
+.zt-regler .raender[hidden] { display: none; }
+.raender .wahl { display: flex; justify-content: space-between; gap: 2px; min-width: 0; }
+.raender button { background: none; border: 0; padding: 6px 0; cursor: pointer; font: inherit; text-transform: inherit; letter-spacing: 0.12em; color: var(--gris); white-space: nowrap; }
+.raender button[aria-pressed="true"] { color: var(--blanc); box-shadow: inset 0 -2px 0 var(--rouge); }
+@media (min-width: 900px) { .zt-regler .raender { grid-template-columns: 8em 1fr; } }
