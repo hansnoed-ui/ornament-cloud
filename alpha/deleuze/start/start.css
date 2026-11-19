@@ -11,10 +11,13 @@
   text-align: center; pointer-events: none; opacity: 0; transition: opacity .4s; }
 .untertitel.da { opacity: 1; }
 .untertitel .zt-kennung { margin: 0; }
-.u-name { font-family: var(--didone); font-style: italic; font-size: 1.4rem; line-height: 1.15; color: var(--blanc); text-wrap: balance; }
-.u-name i { color: var(--bleu); margin-left: 0.25em; }
+/* Wie ein Untertitel im Kino: schmale Schrift, aufrecht, mittig; so bleibt sie vom kursiven Leitsatz getrennt */
+.u-name { font-family: var(--schmal); font-weight: 500; font-size: 1.22rem; letter-spacing: 0.03em; line-height: 1.2; color: var(--blanc); text-wrap: balance; }
+.u-name i { font-family: var(--didone); font-weight: 400; letter-spacing: 0; color: var(--bleu); margin-left: 0.3em; }
 
-.leitsatz { font-family: var(--didone); font-weight: 400; font-style: italic; font-size: clamp(1.25rem, 1rem + 1.8vw, 1.9rem); line-height: 1.22; margin: 6px 0 18px; text-wrap: balance; }
+/* Eine Haarlinie trennt die Bühne mit dem Kristall vom Text der Seite */
+.leitsatz { font-family: var(--didone); font-weight: 400; font-style: italic; font-size: clamp(1.25rem, 1rem + 1.8vw, 1.9rem); line-height: 1.22;
+  margin: 14px 0 18px; padding-top: 18px; border-top: 1px solid var(--linie); text-wrap: balance; }
 
 .material { display: grid; gap: 2px; }
 .material .zt-kennung { margin: 0; }
@@ -63,8 +66,8 @@
   body { height: 100vh; display: flex; flex-direction: column; }
   .seite { flex: 1 1 auto; min-height: 0; width: 100%; padding-bottom: 18px; align-items: stretch; }
   .eingang { position: static; align-self: stretch; display: flex; flex-direction: column; justify-content: center; min-height: 0; }
-  .kristall-huelle { width: min(100%, calc(100vh - 300px)); min-width: 0; margin: 0 auto; }
-  .leitsatz { margin: 12px 0 14px; }
+  .kristall-huelle { width: min(100%, calc(100vh - 330px)); min-width: 0; margin: 0 auto; }
+  .leitsatz { margin: 12px 0 14px; padding-top: 16px; }
   .folge-huelle { display: flex; flex-direction: column; justify-content: center; min-height: 0; margin: 0; }
   .folge-titel { margin-bottom: 4px; }
   .folge a, .folge .zu { padding: 2px 0 4px; }
