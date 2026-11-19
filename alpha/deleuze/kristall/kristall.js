@@ -575,6 +575,7 @@ async function kameraStarten() {
   if (!strom) { spur('Kamera abgelehnt'); return melden(TEXTE[sprache].keineKamera); }
   videoEl.srcObject = strom; await videoEl.play();
   const zahl = await kameraZahl();
+  spur('Kamera ' + videoEl.videoWidth + '×' + videoEl.videoHeight);
   // gespiegelt wird nur, was zum Gesicht schaut; ohne Angabe (Laptop mit einer Kamera) ebenfalls
   const echt = strom.getVideoTracks()[0]?.getSettings?.().facingMode;
   quelle = videoEl; spiegelnQuelle = echt ? echt === 'user' : zahl < 2; starten();
@@ -949,7 +950,7 @@ function bild(ms) {
   gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, scharfTex); gl.uniform1i(ort.uScharf, 3); gl.activeTexture(gl.TEXTURE0);
   gl.uniform3fv(ort.uN, ebenenW); gl.uniform1fv(ort.uR, abstandZ); gl.uniform1fv(ort.uSchicht, schicht); gl.uniform1fv(ort.uAlter, alterAkt);
   gl.uniform1i(ort.uK, anzahl); gl.uniform1f(ort.uKante, SCHLIFFE[form].kante); gl.uniform3fv(ort.uTon, SCHLIFFE[form].ton); gl.uniform1f(ort.uFeuer, SCHLIFFE[form].feuer); gl.uniform1f(ort.uVer, milieu());
-  gl.uniform1i(ort.uZustand, zustand); gl.uniform1f(ort.uUnschaerfe, 0.005); gl.uniform1f(ort.uRad, huelle * zoom * 1.03); gl.uniform3fv(ort.uRiss, rissW.subarray(0, 3)); gl.uniform3fv(ort.uRissA, rissW.subarray(3, 6)); gl.uniform3fv(ort.uRissB, rissW.subarray(6, 9)); gl.uniform1f(ort.uSeite, innerWidth / innerHeight);
+  gl.uniform1i(ort.uZustand, zustand); gl.uniform1f(ort.uUnschaerfe, 0.0025); gl.uniform1f(ort.uRad, huelle * zoom * 1.03); gl.uniform3fv(ort.uRiss, rissW.subarray(0, 3)); gl.uniform3fv(ort.uRissA, rissW.subarray(3, 6)); gl.uniform3fv(ort.uRissB, rissW.subarray(6, 9)); gl.uniform1f(ort.uSeite, innerWidth / innerHeight);
   gl.uniform2f(ort.uLage, (gegenwart.x - 0.5) * 1.2, (gegenwart.y - 0.5) * 0.9); gl.uniform1f(ort.uJetzt, kopf);
   gl.uniform1f(ort.uBrech, brech); gl.uniform1f(ort.uT, t % 100);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -1072,11 +1073,11 @@ function aufEbene(x, y) {
   const lx = Math.max(-seite * 1.3, Math.min(seite * 1.3, sx * seite * 0.5 * 3.2)), ly = Math.max(-1.25, Math.min(1.25, sy * 1.6));
   return { x: lx / 1.2 + 0.5, y: ly / 0.9 + 0.5 };
 }
-// der Stein sitzt mitten in der freien Bildfläche zwischen Kopf und Bedienung, nicht in der Bildschirmmitte
+// der Stein sitzt in der freien Bildfläche zwischen Kopf und Bedienung, etwas unter ihrer Mitte (Christian, 19.11.2026)
 function mitteSetzen(anfang) {
   const kopf = $('kopf').getBoundingClientRect(), r = $('regler').getBoundingClientRect();
   const oben = kopf.height ? kopf.bottom : 0, unten = r.height && r.top > innerHeight * 0.4 ? r.top : innerHeight;
-  if (!keimGesetzt) { const m = aufEbene(innerWidth / 2, (oben + unten) / 2); ziel.x = m.x; ziel.y = m.y; if (anfang) { gegenwart.x = m.x; gegenwart.y = m.y; } }
+  if (!keimGesetzt) { const m = aufEbene(innerWidth / 2, oben + (unten - oben) * 0.6); ziel.x = m.x; ziel.y = m.y; if (anfang) { gegenwart.x = m.x; gegenwart.y = m.y; } }
   // ist die freie Fläche niedrig (Telefon hochkant), beginnt der Stein etwas kleiner; Zoomen bleibt frei
   if (anfang) { const frei = (unten - oben) / innerHeight; zoomZiel = zoom = Math.max(0.65, Math.min(1, frei / 0.72)); }
 }
