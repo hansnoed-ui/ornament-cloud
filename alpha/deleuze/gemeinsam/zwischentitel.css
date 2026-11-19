@@ -1,0 +1,99 @@
+/* Zwischentitel: gemeinsames Stylesheet aller Seiten von the deleuzian scheme.
+   Die Seite ist eine Montage: schwarz wie der Saal, Text kommt als Zwischentitel, Untertitel und Texttafel.
+   Regeln und Gründe: docs/GESTALTUNG.md. Schriften liegen in schriften/ (SIL Open Font License). */
+
+@font-face { font-family: "Bodoni Moda"; src: url("schriften/bodoni-moda.woff2") format("woff2"); font-style: normal; font-weight: 400 900; font-display: swap; }
+@font-face { font-family: "Bodoni Moda"; src: url("schriften/bodoni-moda-kursiv.woff2") format("woff2"); font-style: italic; font-weight: 400 900; font-display: swap; }
+@font-face { font-family: "Barlow Condensed"; src: url("schriften/barlow-condensed-400.woff2") format("woff2"); font-style: normal; font-weight: 400; font-display: swap; }
+@font-face { font-family: "Barlow Condensed"; src: url("schriften/barlow-condensed-500.woff2") format("woff2"); font-style: normal; font-weight: 500; font-display: swap; }
+
+:root {
+  /* Weiss für Text, Rot für Zeit und Handlung, Blau für das Französische und die Gegenstimme, Gelb nur im Untertitel */
+  --noir: #0a0a0b;
+  --noir-hell: #151517;
+  --blanc: #f1eee6;
+  --gris: #8b877e;
+  --gris-dunkel: #4a4843;
+  --rouge: #d8261c;
+  --bleu: #3a5fe0;      /* auf Schwarz aufgehellt, damit kleiner Text lesbar bleibt */
+  --bleu-tief: #2a4fd0; /* für grosse Titel */
+  --jaune: #f2e3a0;
+  --linie: rgba(241, 238, 230, 0.16);
+
+  --didone: "Bodoni Moda", "Didot", "Bodoni 72", "Bodoni MT", "Iowan Old Style", Georgia, serif;
+  --schmal: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+  --rand: max(16px, env(safe-area-inset-left, 0px));
+  --rand-r: max(16px, env(safe-area-inset-right, 0px));
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { background: var(--noir); color: var(--blanc); -webkit-text-size-adjust: 100%; }
+body { margin: 0; font-family: var(--didone); -webkit-font-smoothing: antialiased; }
+button, input, select { font: inherit; color: inherit; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--rouge); outline-offset: 3px; }
+::selection { background: var(--rouge); color: var(--blanc); }
+
+/* Sprachwahl: nur die Spans der aktiven Sprache (html[lang] setzt das Skript) */
+html[lang="de"] [data-sprache]:not([data-sprache="de"]),
+html[lang="en"] [data-sprache]:not([data-sprache="en"]),
+html[lang="fr"] [data-sprache]:not([data-sprache="fr"]) { display: none !important; }
+
+/* Band: Kopf und Fuss wie der Letterbox-Rand, schmale Versalien */
+.zt-band { display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+  padding: max(16px, env(safe-area-inset-top, 0px)) var(--rand-r) 10px var(--rand);
+  font-family: var(--schmal); font-size: 0.74rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gris); }
+.zt-band b, .zt-band a { color: var(--blanc); font-weight: 500; text-decoration: none; }
+.zt-sprachen { display: flex; gap: 2px; }
+.zt-sprachen button { background: none; border: 0; padding: 4px 6px; cursor: pointer; letter-spacing: 0.18em; color: var(--gris); font-family: var(--schmal); text-transform: uppercase; }
+.zt-sprachen button[aria-pressed="true"] { color: var(--blanc); box-shadow: inset 0 -2px 0 var(--rouge); }
+
+/* Zwischentitel: Versal fett, darunter der französische Begriff kursiv in Blau */
+.zt-titel { margin: 0; font-family: var(--didone); font-weight: 700; text-transform: uppercase; line-height: 0.9; letter-spacing: -0.01em; font-size: clamp(2.6rem, 2rem + 6vw, 6.5rem); }
+.zt-titel i, .zt-fr { display: block; font-weight: 400; font-style: italic; text-transform: none; color: var(--bleu-tief); font-size: 0.62em; letter-spacing: 0; }
+.zt-kennung { font-family: var(--schmal); font-size: 0.74rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--rouge); margin: 0 0 6px; }
+
+/* Untertitel: zentriert, zweisprachig, Gelb für das Original */
+.zt-untertitel { text-align: center; font-family: var(--schmal); font-size: 1.05rem; line-height: 1.3; color: var(--blanc); text-shadow: 0 1px 3px #000, 0 0 12px rgba(0,0,0,.8); }
+.zt-untertitel em { display: block; font-style: italic; color: var(--jaune); }
+
+/* Tasten: Versalien ohne Rahmen, Rot nur für Aufnahme und Handlung */
+.zt-tasten { display: flex; justify-content: space-between; gap: 10px 18px; flex-wrap: wrap; }
+.zt-taste { background: none; border: 0; padding: 0.6em 0; cursor: pointer; font-family: var(--schmal); font-size: 0.92rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--blanc); text-decoration: none; touch-action: manipulation; }
+.zt-taste:hover { box-shadow: inset 0 -2px 0 var(--blanc); }
+.zt-taste.rot { color: var(--rouge); }
+
+/* Regler: weisse Spur, roter Schnitt als Griff */
+.zt-regler { display: grid; gap: 4px; }
+.zt-regler label { display: grid; grid-template-columns: 8.5em 1fr; gap: 10px; align-items: center; font-family: var(--schmal); font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gris); }
+input[type=range].zt, .zt-regler input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 30px; background: transparent; margin: 0; touch-action: pan-y; }
+.zt-regler input[type=range]::-webkit-slider-runnable-track { height: 2px; background: rgba(241,238,230,.28); }
+.zt-regler input[type=range]::-moz-range-track { height: 2px; background: rgba(241,238,230,.28); }
+.zt-regler input[type=range]::-moz-range-progress { height: 2px; background: var(--blanc); }
+.zt-regler input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 4px; height: 18px; margin-top: -8px; background: var(--rouge); border: 0; border-radius: 0; }
+.zt-regler input[type=range]::-moz-range-thumb { width: 4px; height: 18px; background: var(--rouge); border: 0; border-radius: 0; }
+
+/* Wahlzeile: Wörter statt Pillen; die Wahl bekommt eine weisse Linie */
+.zt-wahl { display: flex; gap: 2px 16px; overflow-x: auto; scrollbar-width: none; }
+.zt-wahl::-webkit-scrollbar { display: none; }
+.zt-wahl button { flex: none; background: none; border: 0; padding: 6px 0; cursor: pointer; font-family: var(--schmal); font-size: 0.82rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gris); }
+.zt-wahl button[aria-pressed="true"] { color: var(--blanc); box-shadow: inset 0 -2px 0 var(--rouge); }
+
+/* Tafeln: Lektüre als Folge von Texttafeln, seitlich wischbar */
+.zt-tafeln { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }
+.zt-tafeln::-webkit-scrollbar { display: none; }
+.zt-tafel { flex: none; width: 100%; scroll-snap-align: start; padding: 0 var(--rand-r) 24px var(--rand); overflow-y: auto; }
+.zt-tafel h3 { font-family: var(--didone); font-weight: 400; font-style: italic; font-size: clamp(2rem, 1.6rem + 3vw, 3.4rem); line-height: 1.02; margin: 0 0 20px; text-wrap: balance; }
+.zt-tafel h3 b { font-style: normal; font-weight: 700; color: var(--rouge); text-transform: uppercase; }
+.zt-tafel h3 span { color: var(--bleu); }
+.zt-tafel p { font-size: 1.02rem; line-height: 1.55; margin: 0 0 0.9em; max-width: 34em; }
+.zt-tafel .klein { font-family: var(--schmal); font-size: 0.78rem; letter-spacing: 0.08em; color: var(--gris); line-height: 1.5; }
+.zt-tafel.gegen h3, .zt-tafel.gegen p { color: var(--bleu); }
+.zt-tafel.gegen p.klein { color: var(--gris); }
+.zt-zaehler { font-family: var(--schmal); font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gris); }
+.zt-rature { text-decoration: line-through; text-decoration-color: var(--rouge); text-decoration-thickness: 2px; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }

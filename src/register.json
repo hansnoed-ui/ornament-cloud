@@ -122,6 +122,15 @@
    "kurz": "Prototyp: ein lichtbrechender Kristall über dem Kamerabild, jede Facette eine andere Zeit."
   },
   {
+   "id": "deleuze-start",
+   "name": "the deleuzian scheme (Masterseite)",
+   "tuer": "spielen-denken",
+   "art": "App",
+   "status": "direktlink",
+   "adresse": "alpha/deleuze/start/",
+   "kurz": "Prototyp der Startseite: ein Kristall, dessen acht Facetten das eigene Material durch je einen Begriff von Deleuze zeigen."
+  },
+  {
    "id": "kunsttheorie",
    "name": "Theorie der Kunst zwischen Luhmann und Deleuze",
    "tuer": "spielen-denken",
