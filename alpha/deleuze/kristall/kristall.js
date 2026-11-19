@@ -2,7 +2,7 @@
 // Live-Bild und verzögerte Schichten als Facetten eines Kristalls.
 // WebGL2, ohne Bibliotheken, ohne CDN. Alles bleibt im Browser.
 
-import { SCHLIFFE, schliffEbenen } from './schliffe.js?v=7';
+import { SCHLIFFE, schliffEbenen } from './schliffe.js?v=8';
 
 const $ = (id) => document.getElementById(id);
 
@@ -29,7 +29,7 @@ const TEXTE = {
       { kurz: 'im Zerfall', titel: 'Der Kristall im Zerfall', wer: 'Visconti', text: 'Bei Luchino Visconti zerfällt der Kristall von innen. Eine Welt geht unter, und die Einsicht kommt zu spät. Alles im Stein ist schon tief vergangen, es vergilbt, trübt sich, und die Facetten verlieren ihren Halt. «Der Leopard», «Ludwig».' }
     ],
     zustand: 'Zustand',
-    stein: 'Stein', brillant: 'Brillant', oval: 'Oval', smaragd: 'Smaragd', bergkristall: 'Bergkristall', formen: 'Schliff',
+    stein: 'Stein', brillant: 'Brillant', oval: 'Saphir', smaragd: 'Smaragd', bergkristall: 'Bergkristall', formen: 'Schliff',
     begriff: 'Begriff', standbild: 'Standbild', aufnahme: 'Aufnahme', stopp: 'Stopp',
     teilen: 'Teilen', sichern: 'Sichern', komma: '.', 'ergebnis-hinweis': 'Gesichert im Ordner «Downloads». «Teilen» legt es direkt in die Galerie oder eine App.',
     keineAufnahme: 'Dieser Browser kann die Leinwand nicht aufnehmen. Das Standbild geht.',
@@ -68,7 +68,7 @@ const TEXTE = {
       { kurz: 'decomposing', titel: 'The crystal in decomposition', wer: 'Visconti', text: 'In Luchino Visconti the crystal decays from within. A world goes under, and understanding comes too late. Everything in the stone is already deeply past; it yellows, clouds over, and the facets lose their hold. “The Leopard”, “Ludwig”.' }
     ],
     zustand: 'State',
-    stein: 'Stone', brillant: 'Brilliant', oval: 'Oval', smaragd: 'Emerald', bergkristall: 'Quartz', formen: 'Cut',
+    stein: 'Stone', brillant: 'Brilliant', oval: 'Sapphire', smaragd: 'Emerald', bergkristall: 'Quartz', formen: 'Cut',
     begriff: 'Concept', standbild: 'Still', aufnahme: 'Record', stopp: 'Stop',
     teilen: 'Share', sichern: 'Save', komma: '.', 'ergebnis-hinweis': 'Saved to your “Downloads” folder. “Share” sends it straight to your gallery or an app.',
     keineAufnahme: 'This browser cannot record the canvas. Stills work.',
@@ -107,7 +107,7 @@ const TEXTE = {
       { kurz: 'en décomposition', titel: 'Le cristal en décomposition', wer: 'Visconti', text: 'Chez Luchino Visconti, le cristal se décompose de l’intérieur. Un monde s’effondre, et la révélation arrive trop tard. Tout dans la pierre est déjà profondément passé : cela jaunit, se trouble, et les facettes perdent prise. « Le Guépard », « Ludwig ».' }
     ],
     zustand: 'État',
-    stein: 'Pierre', brillant: 'Brillant', oval: 'Ovale', smaragd: 'Émeraude', bergkristall: 'Cristal de roche', formen: 'Taille',
+    stein: 'Pierre', brillant: 'Brillant', oval: 'Saphir', smaragd: 'Émeraude', bergkristall: 'Cristal de roche', formen: 'Taille',
     begriff: 'Concept', standbild: 'Image', aufnahme: 'Enregistrer', stopp: 'Arrêter',
     teilen: 'Partager', sichern: 'Télécharger', komma: ',', 'ergebnis-hinweis': 'Enregistré dans le dossier « Téléchargements ». « Partager » l’envoie directement dans la galerie ou une app.',
     keineAufnahme: 'Ce navigateur ne peut pas enregistrer le canevas. L’image fixe fonctionne.',
