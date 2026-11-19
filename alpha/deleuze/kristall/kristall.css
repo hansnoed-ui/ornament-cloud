@@ -127,7 +127,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
   .zt-regler label { grid-template-columns: 8em 1fr; }
   /* Am Handy ist die Glosse eine schmale Randnotiz: kleinere Schrift, deckt höchstens ein Drittel der Höhe,
      der Stein bleibt sichtbar (Christian, 19.11.2026) */
-  .glosse { width: min(290px, 74vw); max-height: min(34vh, calc(100% - var(--regler-hoehe, 300px) - 70px));
+  .glosse { width: min(270px, 70vw); max-height: min(24vh, calc(100% - var(--regler-hoehe, 300px) - 70px));
     padding: 10px max(14px, env(safe-area-inset-right)) 10px 14px; background: rgba(10, 10, 11, 0.7); }
   .glosse p { margin-bottom: 4px; }
   .glosse-begriff { font-size: 0.62rem; letter-spacing: 0.2em; }
@@ -135,6 +135,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
   .glosse-zitat { font-size: 0.84rem; line-height: 1.28; }
   .glosse-quelle { font-size: 0.56rem; letter-spacing: 0.14em; }
   .glosse-zu { top: -3px; right: calc(max(14px, env(safe-area-inset-right)) - 17px); }
+  .glosse .glosse-zitat, .glosse .glosse-quelle { display: none; }
 }
 
 /* Kamera wenden: übliches Zeichen unten rechts im Bild, über dem unteren Band; feine Linie ohne Fläche */
