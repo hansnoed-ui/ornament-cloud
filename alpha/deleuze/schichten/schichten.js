@@ -175,9 +175,9 @@ try {
 const telefon = matchMedia('(pointer: coarse)').matches || Math.min(screen.width, screen.height) < 700;
 const SCHICHTEN = telefon ? 40 : 64;          // Zeitpuffer (Bilder)
 const LANGE_SEITE = telefon ? 640 : 1080;     // Grösse der vergangenen Bilder im Puffer
-const MAX_DPR = telefon ? 1.25 : 1.5;
+const MAX_DPR = 2;   // fein wie der Bildschirm; ruckelt es, senkt tempoMessen die Auflösung (bis zur Hälfte)
 const SCHARF_SEITE = telefon ? 1280 : 1920;   // die Gegenwart: so scharf, wie der Bildschirm sie zeigt
-const GRUBE_SEITE = telefon ? 256 : 384;      // Tiefenkarte der Grabung
+const GRUBE_SEITE = telefon ? 512 : 768;      // Tiefenkarte der Grabung: fein genug für glatte Terrassen (HalfFloat, ein Kanal genügt)
 
 const leinwand = $('leinwand');
 const gl = leinwand.getContext('webgl2', { antialias: false, alpha: false, premultipliedAlpha: false, powerPreference: 'high-performance', preserveDrawingBuffer: false });
@@ -192,17 +192,22 @@ void main(){ v = a*0.5+0.5; gl_Position = vec4(a,0.,1.); }`;
 // die Wände rutschen ein wenig nach. Werte 0 (Oberfläche, Gegenwart) bis 1 (tiefste Schicht).
 const FS_GRUBE = `#version 300 es
 precision highp float; in vec2 v; out vec4 o;
-uniform sampler2D uAlt; uniform vec2 uPx; uniform vec4 uStempel[16]; uniform int uN; uniform float uAb, uSeite;
+uniform sampler2D uAlt; uniform vec2 uPx; uniform vec4 uStempel[16]; uniform vec2 uStempelR[16]; uniform int uN; uniform float uAb, uSeite;
 void main(){
   float d = texture(uAlt, v).r;
   float n = texture(uAlt, v + vec2(uPx.x, 0.)).r + texture(uAlt, v - vec2(uPx.x, 0.)).r + texture(uAlt, v + vec2(0., uPx.y)).r + texture(uAlt, v - vec2(0., uPx.y)).r;
-  d = mix(d, n * 0.25, 0.025);
+  float n2 = texture(uAlt, v + uPx).r + texture(uAlt, v - uPx).r + texture(uAlt, v + vec2(uPx.x, -uPx.y)).r + texture(uAlt, v - vec2(uPx.x, -uPx.y)).r;
+  d = mix(d, (n * 2.0 + n2) / 12.0, 0.08);   // die Wände setzen sich: kleine Unebenheiten glätten sich
   d = max(0.0, d - uAb * (0.4 + d));
+  vec2 asp = vec2(uSeite, 1.0);
   for (int i = 0; i < 16; i++) {
     if (i >= uN) break;
-    vec4 s = uStempel[i];
-    float r = length((v - s.xy) * vec2(uSeite, 1.0)) / s.z;
-    d = min(1.0, d + s.w * (1.0 - smoothstep(0.35, 1.0, r)));
+    // ein Zug ist eine Strecke von a nach b, nicht eine Reihe von Tupfen: so bleiben die Ränder ruhig
+    vec2 a = uStempel[i].xy * asp, b = uStempel[i].zw * asp, q = v * asp, ab = b - a;
+    float h = clamp(dot(q - a, ab) / max(1e-8, dot(ab, ab)), 0.0, 1.0);
+    float r = length(q - a - ab * h) / uStempelR[i].x;
+    float f = max(0.0, 1.0 - r * r);
+    d = min(1.0, d + uStempelR[i].y * f * f);
   }
   o = vec4(d, 0.0, 0.0, 1.0);
 }`;
@@ -218,6 +223,8 @@ uniform int uLesart;
 uniform vec2 uSpitze, uSchub, uGleit;
 uniform float uSprung;
 uniform int uRand;      // Gestalt der Ränder in der Grabung
+uniform int uKegel;     // Entwurf des Kegels: 1 Schnitte, 2 Abgrund
+uniform float uPxH;     // ein Bildpunkt, in Bildhöhen
 
 float hs(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float rausch(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.-2.*f);
@@ -241,18 +248,22 @@ float lagVon(float k){ return k / max(1.0, uS - 1.0) * uSpanne; }
 
 // ---- Grabung (Welles): Terrassen in der Tiefenkarte, Wände mit allen Zeiten dazwischen ----
 float grube(vec2 u){ return texture(uGrube, u).r; }
+// eine Linie gleicher Breite, weich über anderthalb Bildpunkte; Abstand und Breite in Bildhöhen
+float linie(float abst, float breite){ float h = 0.5 * breite; return 1.0 - smoothstep(h - 0.75 * uPxH, h + 0.75 * uPxH, abs(abst)); }
 vec3 grabung(vec2 u){
   vec2 p = u * vec2(uSeite, 1.0);
   float d0 = grube(u);
-  float d = clamp(d0 + 0.04 * (rausch(p * 26.0) - 0.5) * smoothstep(0.0, 0.12, d0), 0.0, 0.9999);
+  // nur eine ruhige, grossräumige Unregelmässigkeit: die Ränder sollen nicht zittern
+  float d = clamp(d0 + 0.016 * (rausch(p * 3.2) - 0.5) * smoothstep(0.0, 0.15, d0), 0.0, 0.9999);
   float S = uS, x = d * S, k = floor(x), w = x - k;
-  vec2 e = vec2(1.6 / ${GRUBE_SEITE}.0, 0.0);
+  vec2 e = vec2(1.5 / ${GRUBE_SEITE}.0, 0.0);
   vec2 g = vec2(grube(u + e.xy) - grube(u - e.xy), grube(u + e.yx) - grube(u - e.yx)) / (2.0 * e.x);
   float gl = length(g * vec2(1.0 / uSeite, 1.0)) * S + 1e-4;
-  // Abstand zur nächsttieferen Grenze und zur letzten, in Bildbreiten
+  // Abstand zur nächsttieferen Grenze und zur letzten, in Bildhöhen
   float bisUnten = (1.0 - w) / gl, seitOben = w / gl;
   float hoch = (uRand == 4 ? 0.026 : 0.016) + 0.004 * k;                    // tiefere Wände sind höher
-  float wand = (1.0 - smoothstep(0.0, hoch, bisUnten)) * step(d0, 0.9995) * step(0.002, gl);
+  float da = smoothstep(0.4, 1.2, gl) * (1.0 - step(S - 1.5, k));   // nur, wo wirklich eine Grenze ist; unter der tiefsten Schicht keine
+  float wand = (1.0 - smoothstep(0.0, hoch, bisUnten)) * da;
   float tw = clamp(bisUnten / hoch, 0.0, 1.0);      // 1 am oberen Rand der Wand, 0 an ihrem Fuss
   // Boden: die Schicht k, etwas verkleinert, als blicke man in einen Schacht
   vec2 mitte = vec2(0.5);
@@ -263,26 +274,30 @@ vec3 grabung(vec2 u){
   vec2 gn = normalize(g * vec2(1.0 / uSeite, 1.0) + 1e-6);
   float zumLicht = dot(gn, normalize(vec2(0.55, -0.65)));      // Licht von oben links
   float schattenBreite = 0.02 + 0.03 * max(0.0, -zumLicht);
-  boden *= 1.0 - (0.35 + 0.3 * max(0.0, -zumLicht)) * (1.0 - smoothstep(0.0, schattenBreite, seitOben)) * step(0.5, k);
+  boden *= 1.0 - (0.35 + 0.3 * max(0.0, -zumLicht)) * (1.0 - smoothstep(0.0, schattenBreite, seitOben)) * smoothstep(0.5, 1.0, k);
   boden *= 1.0 - 0.3 * ak;
   // Wand: die Zeit läuft von Schicht k bis k+1 durch, waagrechte Sedimentbänder
   float kw = k + (1.0 - tw);
   vec2 qw = u + (mitte - u) * 0.018 * kw;
   vec3 band = alt(schicht(qw, lagVon(kw)), kw / max(1.0, S - 1.0));
-  float sed = 0.78 + 0.22 * sin(tw * 9.0 * (1.0 + k * 0.4) + rausch(p * 40.0) * 2.0) + 0.1 * (rausch(p * vec2(90.0, 12.0)) - 0.5);
+  float sed = 0.84 + 0.16 * sin(tw * 9.0 * (1.0 + k * 0.4) + rausch(p * 5.0) * 1.5);
   float licht = 0.62 + 0.58 * zumLicht;
   band *= sed * licht * vec3(1.05, .97, .88) * (1.0 - 0.22 * ak) * 1.15;
-  float da = step(0.002, gl) * step(d0, 0.9995);           // nur, wo wirklich eine Grenze ist
-  float tief = step(S - 1.5, k);                             // die tiefste Schicht
+  float tief = step(S - 2.5, k);                             // die Wand hinab zur tiefsten Schicht
+  float px = max(uPxH, 0.0006);
   vec3 c1 = vec3(0.0);
   if (uRand == 1 || uRand == 4) {
     // Relief im Streiflicht: die Wand gewölbt, oben eine Lichtkante, unten Schatten, feine Lagen wie Gestein
     c1 = mix(boden, band * mix(0.5, 1.08, pow(tw, 0.7)), wand);
-    float lagen = 1.0 - smoothstep(0.0, 0.11, abs(fract(tw * (3.0 + k * 0.7) + 0.35 * rausch(p * 30.0)) - 0.5) * 2.0 - 0.78);
-    c1 *= 1.0 - 0.38 * lagen * wand * float(uRand == 1);
+    if (uRand == 1) {
+      float lz = tw * (3.0 + k * 0.7) + 0.25 * rausch(p * 4.0);
+      float la = abs(fract(lz) - 0.5), lb = 0.5 * px / hoch * (3.0 + k * 0.7);
+      float lagen = 1.0 - smoothstep(lb, lb + fwidth(lz) * 1.2, la);
+      c1 *= 1.0 - 0.3 * lagen * wand;
+    }
     float grat = pow(smoothstep(0.62, 1.0, tw), 3.0) * wand;
     c1 += vec3(1.0, 0.95, 0.86) * grat * (0.2 + 1.0 * max(0.0, zumLicht));
-    c1 = mix(c1, vec3(1.0, 0.97, 0.92), (1.0 - smoothstep(0.0, 0.0018, abs(bisUnten - hoch))) * da * (0.25 + 0.6 * max(0.0, zumLicht)));
+    c1 = mix(c1, vec3(1.0, 0.97, 0.92), linie(bisUnten - hoch, 1.1 * px) * da * (0.3 + 0.6 * max(0.0, zumLicht)));
     c1 *= 1.0 - 0.35 * grat * max(0.0, -zumLicht);
     float aussen = (1.0 - smoothstep(hoch, hoch + 0.012, bisUnten)) * step(hoch, bisUnten) * da;
     c1 *= 1.0 - 0.25 * aussen * max(0.0, -zumLicht);       // auch die obere Terrasse fängt Schatten
@@ -290,101 +305,124 @@ vec3 grabung(vec2 u){
   }
   vec3 c = uRand == 4 ? c1 : mix(boden, band, wand);
   if (uRand == 2) {
-    // Kintsugi: jede Bruchkante mit Gold geschlossen, ungleich breit, im Licht glänzend; die tiefste in rotem Lack
-    float breite = 0.0022 * (0.5 + 1.1 * rausch(p * 16.0)) * (1.0 + 0.6 * tief);
-    float linie = (1.0 - smoothstep(breite * 0.5, breite, abs(bisUnten - hoch))) * da;
-    float glanz = pow(max(0.0, sin(dot(p, vec2(23.0, 17.0)) - uT * 1.3) * 0.5 + 0.5), 14.0) + max(0.0, zumLicht) * 0.5;
-    vec3 gold = mix(vec3(0.55, 0.36, 0.12), vec3(1.0, 0.86, 0.5), clamp(0.35 + glanz, 0.0, 1.0));
-    gold = mix(gold, vec3(0.62, 0.09, 0.06), tief * 0.85);
-    // feine Haarrisse laufen von der Kante in die obere Terrasse
-    float nah = (1.0 - smoothstep(0.0, 0.035, bisUnten - hoch)) * step(hoch, bisUnten) * da;
-    float riss = (1.0 - smoothstep(0.0, 0.035, abs(rausch(p * 11.0 + k * 3.1) - 0.5))) * nah * step(0.62, rausch(p * 3.0 + k));
-    c = mix(c, gold, max(linie, riss * 0.6));
-    return c;
+    // Kintsugi: jede Bruchkante mit Gold geschlossen, gleichmässig fein, rund wie ein Draht im Licht; die tiefste in rotem Lack
+    float breite = (2.2 + 0.8 * tief) * px;
+    float abst = bisUnten - hoch;
+    float an = linie(abst, breite) * da;
+    float quer = clamp(abs(abst) / (0.5 * breite), 0.0, 1.0);
+    float rund = sqrt(max(0.0, 1.0 - quer * quer));                   // Querschnitt des Drahts
+    float glanz = pow(max(0.0, sin(dot(p, vec2(9.0, 6.0)) - uT * 0.9) * 0.5 + 0.5), 10.0);
+    vec3 gold = mix(vec3(0.42, 0.27, 0.09), vec3(0.98, 0.82, 0.46), rund * (0.55 + 0.45 * max(0.0, zumLicht)));
+    gold += vec3(1.0, 0.95, 0.8) * pow(rund, 6.0) * (0.25 + 0.6 * glanz);
+    gold = mix(gold, vec3(0.6, 0.08, 0.05) * (0.6 + 0.6 * rund), tief * 0.85);
+    // das Gold wirft einen warmen Schein in die Wand darunter
+    c *= 1.0 + vec3(0.16, 0.1, 0.02) * (1.0 - smoothstep(0.0, 0.01, max(0.0, -abst))) * step(abst, 0.0) * da * (1.0 - tief);
+    return mix(c, gold, an);
   }
   if (uRand == 3) {
     // Spektralsaum: an der Wand zerfällt die Zeit in Farben, wie Licht im Kristall; Rot älter, Blau jünger
     vec2 q0 = u + (mitte - u) * 0.018 * kw, nach = gn * vec2(1.0 / uSeite, 1.0) * 0.0025;
-    float r = schicht(q0 - nach, lagVon(kw + 0.4)).r, g = schicht(q0, lagVon(kw)).g, b = schicht(q0 + nach, lagVon(max(0.0, kw - 0.4))).b;
-    vec3 spek = alt(vec3(r, g, b), kw / max(1.0, S - 1.0)) * (0.8 + 0.35 * licht);
+    float r = schicht(q0 - nach, lagVon(kw + 0.4)).r, g2 = schicht(q0, lagVon(kw)).g, b = schicht(q0 + nach, lagVon(max(0.0, kw - 0.4))).b;
+    vec3 spek = alt(vec3(r, g2, b), kw / max(1.0, S - 1.0)) * (0.8 + 0.35 * licht);
     c = mix(boden, spek, wand);
     float aussen = (1.0 - smoothstep(hoch, hoch + 0.016, bisUnten)) * step(hoch, bisUnten) * da;
-    float x = (bisUnten - hoch) / 0.016;
-    vec3 saum = vec3(exp(-pow((x - 0.15) / 0.18, 2.0)), exp(-pow((x - 0.45) / 0.2, 2.0)), exp(-pow((x - 0.75) / 0.22, 2.0)));
+    float x2 = (bisUnten - hoch) / 0.016;
+    vec3 saum = vec3(exp(-pow((x2 - 0.15) / 0.18, 2.0)), exp(-pow((x2 - 0.45) / 0.2, 2.0)), exp(-pow((x2 - 0.75) / 0.22, 2.0)));
     c += (saum - 0.33) * aussen * 0.16 + saum * aussen * 0.06;
+    c = mix(c, vec3(1.0, 0.98, 0.95), linie(bisUnten - hoch, 0.9 * px) * da * 0.35);
     return c;
   }
   if (uRand == 4) {
-    // Ornament: in jeder Wand ein Band wie ein ägyptischer Fries, ein Zickzack zwischen zwei Linien
-    vec2 tang = vec2(-gn.y, gn.x);
-    float s = dot(p, tang) * 16.0;
+    // Ornament: in jeder Wand ein Fries wie in Ägypten, ein Zickzack zwischen zwei Linien, alle Striche gleich fein
+    // die Zähne folgen dem Winkel der Wand, so laufen sie gleichmässig um jede Terrasse
+    float s = (atan(gn.y, gn.x) / 6.2831853 + 0.5) * (18.0 + 4.0 * k);
     float zig = abs(fract(s) - 0.5) * 2.0;
-    float band2 = wand * step(0.12, tw) * step(tw, 0.88);
-    float zz = 1.0 - smoothstep(0.05, 0.12, abs(tw - (0.25 + 0.5 * zig)));
-    float raender = (1.0 - smoothstep(0.0, 0.05, abs(tw - 0.12))) + (1.0 - smoothstep(0.0, 0.05, abs(tw - 0.88)));
+    float band2 = wand * smoothstep(0.1, 0.14, tw) * (1.0 - smoothstep(0.86, 0.9, tw));
+    float lw = 0.55 * px / hoch;                      // halbe Strichbreite, in Anteilen der Wand
+    float dz = tw - (0.25 + 0.5 * zig);
+    float zz = 1.0 - smoothstep(lw, lw + max(fwidth(dz), 1e-4), abs(dz));
+    float ra = abs(tw - 0.12), rb = abs(tw - 0.88), fw = max(fwidth(tw), 1e-4);
+    float raender = max(1.0 - smoothstep(lw, lw + fw, ra), 1.0 - smoothstep(lw, lw + fw, rb));
     vec3 farbe = mix(vec3(0.93, 0.86, 0.7), vec3(0.85, 0.15, 0.11), tief);
-    c = mix(c, c * 0.55, band2 * 0.6);
-    c = mix(c, farbe * (0.7 + 0.4 * licht), clamp(zz * band2 + raender * wand, 0.0, 1.0) * 0.85);
+    c = mix(c, c * 0.6, band2 * 0.55);
+    c = mix(c, farbe * (0.7 + 0.4 * licht), clamp(zz * band2 + raender * wand, 0.0, 1.0) * 0.8);
     return c;
   }
   // Kante oben an jeder Wand: haarfein weiss, an der tiefsten Schicht rot (Rot ist Zeit)
-  float kante = (1.0 - smoothstep(0.0, 0.0028, abs(bisUnten - hoch))) * da;
   vec3 kf = tief > 0.5 ? vec3(0.85, 0.15, 0.11) : vec3(1.0, 0.97, 0.9);
-  c = mix(c, kf, kante * (0.45 + 0.4 * max(0.0, zumLicht)));
-  return c;
+  return mix(c, kf, linie(bisUnten - hoch, 1.1 * px) * da * (0.45 + 0.4 * max(0.0, zumLicht)));
 }
 
-// ---- Kegel (Bergson): die Spitze ist die Gegenwart, die Schichten lösen sich ringförmig von ihr ----
-vec3 kegel(vec2 u){
-  vec2 p = (u - uSpitze) * vec2(uSeite, 1.0);
-  float r = length(p), an = atan(p.y, p.x);
-  float weit = length(max(uSpitze, 1.0 - uSpitze) * vec2(uSeite, 1.0));
-  float B = weit / max(3.0, uS);   // die Schichten reichen genau bis in die fernste Ecke
-  float verz = 0.016 * sin(an * 5.0 + r * 9.0 - uFT * 0.7) + 0.028 * (fbm(vec2(an * 1.3 + 3.0, r * 3.0 - uFT * 0.2)) - 0.5);
-  float rr = (r + verz) / B, ph = fract(uFT);
-  float k = floor(rr - ph), inn = fract(rr - ph);
-  float kk = max(0.0, k + ph);                      // jede Schicht altert, während sie nach aussen wandert
-  float ak = clamp(kk / max(1.0, uS - 1.0), 0.0, 1.0);
-  // jede Schicht ist ein weiterer Schnitt durch den Kegel: sie zeigt das Bild etwas weiter
-  vec2 q = uSpitze + (u - uSpitze) * (1.0 - min(kk, 14.0) * 0.035 * (1.0 + uSprung)) + vec2(-0.004, 0.005) * kk;
-  vec3 c = alt(schicht(q, min(kk, uS - 1.0) / max(1.0, uS - 1.0) * uSpanne), ak);
-  // Stufe: innen Schatten, aussen eine helle Kante, wie eine Stufenpyramide von oben
-  float stufe = step(0.0, k);
-  c *= mix(1.0, mix(0.42, 1.0, smoothstep(0.0, 0.3, inn)), stufe);
-  c *= 1.0 - 0.5 * (1.0 - smoothstep(0.0, 0.03, inn)) * stufe;   // die Setzstufe: ein dunkler Strich innen
-  c += vec3(1.0, .98, .94) * (1.0 - smoothstep(0.0, 0.045, abs(inn - 0.975))) * 0.32 * stufe * (1.0 - ak * 0.5);
-  c *= 1.0 - 0.22 * ak;
-  // die Spitze: ein roter Punkt, die Gegenwart, die das Bild berührt
-  float spitze = 1.0 - smoothstep(0.004, 0.008, r);
-  float hof = (1.0 - smoothstep(0.008, 0.03 + 0.05 * uSprung, r)) * 0.25;
-  c = mix(c, vec3(0.85, 0.15, 0.11), max(spitze, hof * (1.0 - spitze)));
-  return c;
+// ---- Kegel (Bergson): die Spitze ist die Gegenwart, jede Schicht ein Schnitt durch den Kegel ----
+vec3 spitzePunkt(vec3 c, vec2 u){
+  float r = length((u - uSpitze) * vec2(uSeite, 1.0));
+  float sp = 1.0 - smoothstep(0.0045 - uPxH, 0.0045 + uPxH, r);
+  float ring = linie(r - 0.011 - 0.03 * uSprung, 0.9 * uPxH) * (0.55 + 0.45 * uSprung);
+  return mix(mix(c, vec3(0.85, 0.15, 0.11), sp), vec3(0.85, 0.15, 0.11), ring * (1.0 - sp));
 }
+// A, die Schnitte: vollkommene Kreise, jeder Schnitt zeigt das Bild etwas älter, weiter und gedreht; nur Haarlinien, kein Schatten
+vec3 kegelSchnitte(vec2 u){
+  vec2 p = (u - uSpitze) * vec2(uSeite, 1.0);
+  float r = length(p);
+  float weit = length(max(uSpitze, 1.0 - uSpitze) * vec2(uSeite, 1.0));
+  float B = weit / max(3.0, uS);              // die Schnitte reichen genau bis in die fernste Ecke
+  float ph = fract(uFT), rr = r / B - ph, k = floor(rr), inn = rr - k;
+  float kk = max(0.0, k + ph);                // jede Schicht altert, während sie nach aussen wandert
+  float ak = clamp(kk / max(1.0, uS - 1.0), 0.0, 1.0);
+  float dreh = 0.05 * kk * (1.0 + 0.8 * uSprung);
+  vec2 d = mat2(cos(dreh), sin(dreh), -sin(dreh), cos(dreh)) * p * (1.0 - min(kk, 14.0) * 0.028 * (1.0 + uSprung));
+  vec3 c = alt(schicht(uSpitze + d / vec2(uSeite, 1.0), min(kk, uS - 1.0) / max(1.0, uS - 1.0) * uSpanne), ak);
+  c *= (1.0 - 0.2 * ak) * (0.94 + 0.06 * inn);
+  float an = linie(min(inn, 1.0 - inn) * B, 1.0 * uPxH) * step(0.0, k);
+  c = mix(c, vec3(0.97, 0.94, 0.87), an * (0.75 - 0.35 * ak));
+  return spitzePunkt(c, u);
+}
+// B, der Abgrund: das Bild steckt in sich selbst, Rahmen in Rahmen; innen die Gegenwart, nach aussen ältere Zeit
+vec3 kegelAbgrund(vec2 u){
+  vec2 d = u - uSpitze;
+  float r = 2.0 * max(abs(d.x), abs(d.y)) + 1e-5;          // Abstand in der Gestalt des Bildschirms
+  float rmax = 2.0 * max(max(uSpitze.x, 1.0 - uSpitze.x), max(uSpitze.y, 1.0 - uSpitze.y));
+  float rmin = 0.03, S = max(3.0, uS), lz = log(rmax / rmin) / S;
+  float ph = fract(uFT), L = log(r / rmin) / lz - ph, k = floor(L);
+  float R = rmin * exp((k + 1.0 + ph) * lz), Ri = R * exp(-lz);     // äusserer und innerer Rahmen dieses Rings
+  float kk = max(0.0, k + ph);
+  float ak = clamp(kk / (S - 1.0), 0.0, 1.0);
+  vec3 c = alt(schicht(vec2(0.5) + d / R, ak * uSpanne), ak);
+  // der kleinere Rahmen liegt tiefer: ein weicher Schatten um ihn herum
+  c *= (1.0 - 0.16 * ak) * (1.0 - 0.38 * exp(-(r - Ri) / (0.05 * Ri)));
+  float achse = abs(d.x) * uSeite > abs(d.y) ? uSeite : 1.0;        // Bildpunkte je Einheit, je nach Seite des Rahmens
+  float abst = min(R - r, r - Ri) * 0.5 * achse;
+  c = mix(c, vec3(0.97, 0.94, 0.87), linie(abst, 1.0 * uPxH) * 0.7 * step(rmin * 0.6, r));
+  return spitzePunkt(c, u);
+}
+vec3 kegel(vec2 u){ return uKegel == 2 ? kegelAbgrund(u) : kegelSchnitte(u); }
 
 // ---- Überschiebung (Resnais, Frankenthaler): ein fliessendes Feld, in Schichten geschnitten; ältere liegen oben ----
+vec3 lage(vec2 u, float k){
+  vec2 schub = vec2(cos(k * 2.4), sin(k * 2.4)) * 0.012 * k + uGleit * k / uS;
+  float ak = k / max(1.0, uS - 1.0);
+  vec3 c = alt(schicht(u + schub, lagVon(k)), ak * 0.8);
+  // kaum getönt, wie verdünnte Farbe in roher Leinwand: Ocker, Rosé, Blaugrau, Gelb; die Gegenwart bleibt neutral
+  float m = mod(k, 4.0);
+  vec3 ton = m < 1. ? vec3(1.07,.98,.88) : m < 2. ? vec3(1.06,.94,.96) : m < 3. ? vec3(.93,.98,1.07) : vec3(1.06,1.03,.9);
+  return c * mix(vec3(1.0), ton, step(0.5, k));
+}
 vec3 ueberschiebung(vec2 u){
   vec2 p = (u + uSchub) * vec2(uSeite, 1.0) * 1.1;
   vec2 wq = vec2(fbm(p + vec2(1.7, 0.0) + uFT * 0.05), fbm(p + vec2(9.2, 3.1) - uFT * 0.04));
   float f = fbm(p + 2.1 * wq + vec2(uFT * 0.03, 0.0));
-  float S = uS, x = f * 8.0 + uFT * 0.05, k = mod(floor(x), S), w = fract(x);
-  // jede Schicht ist ein wenig verschoben, als sei sie über die andere geglitten
-  vec2 schub = vec2(cos(k * 2.4), sin(k * 2.4)) * 0.012 * k + uGleit * k / S;
-  vec3 c = schicht(u + schub, lagVon(k));
-  float k2 = mod(k + 1.0, S);
-  vec2 schub2 = vec2(cos(k2 * 2.4), sin(k2 * 2.4)) * 0.012 * k2 + uGleit * k2 / S;
-  vec3 c2 = schicht(u + schub2, lagVon(k2));
-  // Rand der Lache: das Pigment sammelt sich zu einem dunklen Saum, dann scheint die nächste Schicht durch
-  float saum = smoothstep(0.74, 0.97, w);
-  c = mix(c, c2, saum * 0.5);
-  c *= 1.0 - 0.72 * smoothstep(0.82, 0.97, w) * (1.0 - smoothstep(0.975, 1.0, w));
-  c *= 1.0 + 0.12 * (1.0 - smoothstep(0.0, 0.08, w));   // dahinter hell, wie getränkte Leinwand
-  c = mix(c, vec3(0.95, 0.9, 0.82), (1.0 - smoothstep(0.0, 0.012, abs(w - 0.985))) * 0.38);   // die feine helle Grenze der Lache
-  // leichte Tönung je Schicht: Ocker, Rosé, Blaugrau, Gelb (Frankenthaler), die Gegenwart bleibt neutral
-  float m = mod(k, 4.0);
-  vec3 ton = m < 1. ? vec3(1.16,.9,.68) : m < 2. ? vec3(1.12,.8,.84) : m < 3. ? vec3(.76,.9,1.16) : vec3(1.14,1.02,.7);
-  ton = mix(vec3(1.0), ton, step(0.5, k));
-  c = mix(c, lum(c) * ton * 1.08, 0.45) * mix(vec3(1.0), ton, 0.5);
-  return c;
+  float S = uS, x = f * 8.0 + uFT * 0.05, fx = max(fwidth(x), 1e-5);
+  float kx = floor(x), w = x - kx;
+  float hiK = w > 0.5 ? kx + 1.0 : kx;                 // an der nächsten Grenze: die ältere Schicht liegt oben
+  float s = (x - hiK) / fx;                             // Abstand zur Grenze in Bildpunkten, > 0 auf der älteren Seite
+  float dIm = abs(s) * uPxH;                            // derselbe Abstand in Bildhöhen
+  vec3 lo = lage(u, mod(hiK - 1.0, S)), hi = lage(u, mod(hiK, S));
+  // die obere Schicht ist eine Lasur: die untere scheint ein wenig durch
+  vec3 oben = mix(lo, hi, 0.84);
+  oben *= 1.0 - 0.42 * exp(-pow(dIm / 0.0022, 2.0));          // am Rand sammelt sich das Pigment zu einer feinen Linie
+  oben *= 1.0 + 0.07 * exp(-dIm / 0.03);                       // dahinter hell, wie getränkte Leinwand
+  vec3 unten = lo * (1.0 - 0.28 * exp(-dIm / 0.012));           // die überschobene Schicht liegt im Schatten
+  return mix(unten, oben, smoothstep(-0.75, 0.75, s));
 }
 
 void main(){
@@ -489,8 +527,8 @@ if (gl) {
   const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
   gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
-  ort = orte(prog, ['uZeit', 'uScharf', 'uGrube', 'uKopf', 'uN', 'uSpanne', 'uS', 'uSeite', 'uT', 'uFT', 'uLesart', 'uSpitze', 'uSchub', 'uGleit', 'uSprung', 'uRand']);
-  ortG = orte(progGrube, ['uAlt', 'uPx', 'uStempel', 'uN', 'uAb', 'uSeite']);
+  ort = orte(prog, ['uZeit', 'uScharf', 'uGrube', 'uKopf', 'uN', 'uSpanne', 'uS', 'uSeite', 'uT', 'uFT', 'uLesart', 'uSpitze', 'uSchub', 'uGleit', 'uSprung', 'uRand', 'uKegel', 'uPxH']);
+  ortG = orte(progGrube, ['uAlt', 'uPx', 'uStempel', 'uStempelR', 'uN', 'uAb', 'uSeite']);
   ortH = orte(progHell, ['uQ', 'uPx']); ortW = orte(progWeich, ['uQ', 'uRichtung']);
   ortZ = orte(progZusammen, ['uSzene', 'uGlow', 'uPx', 'uGlowStaerke', 'uT']);
   spur('Grafik bereit');
@@ -504,8 +542,9 @@ const sctx = scharf.getContext('2d', { alpha: false });
 
 // Auflösung passt sich an: ruckelt es, rechnet das Bild mit weniger Bildpunkten (bis zur Hälfte)
 let aufloesung = 1, messung = [], letzteAnpassung = 0;
+const FEST = new URLSearchParams(location.search).has('fest');   // feste Auflösung, für Standbilder und Prüfungen
 function tempoMessen(ms, dt) {
-  if (aufnehmer || document.hidden) { messung = []; return; }
+  if (aufnehmer || document.hidden || FEST) { messung = []; return; }
   messung.push(dt);
   if (messung.length < 30 || ms - letzteAnpassung < 1500) return;
   messung.sort((a, b) => a - b);
@@ -717,16 +756,23 @@ document.querySelectorAll('[data-lesart]').forEach((b) => b.addEventListener('cl
 $('r-lesart').addEventListener('input', (e) => { const nr = +e.target.value; if (nr !== lesart) lesartWaehlen(nr); });
 
 // ---------- Die Grube: Stempel des Fingers, auf der Grafikkarte und als grobes Abbild für Klang und Anzeige ----------
-const stempel = new Float32Array(16 * 4); let stempelN = 0;
+const stempel = new Float32Array(16 * 4), stempelR = new Float32Array(16 * 2); let stempelN = 0;
 const AB_B = 48, AB_H = 96, abbild = new Float32Array(AB_B * AB_H);   // grob genügt: Klang und die Zeitanzeige
 const pinselRadius = () => 0.085 * (innerWidth < innerHeight ? 1 : 1.25);   // in Bildhöhen
-function stempeln(x, y, menge) {
-  // x, y in 0…1 (Leinwand, y nach oben)
-  if (stempelN < 16) { stempel.set([x, y, pinselRadius(), menge], stempelN * 4); stempelN++; }
-  const seite = innerWidth / innerHeight, r = pinselRadius();
+function stempeln(x, y, menge, x0 = x, y0 = y) {
+  // eine Strecke von (x0, y0) nach (x, y), in 0…1 (Leinwand, y nach oben); weiches Profil (1 − r²)²
+  const r = pinselRadius();
+  if (stempelN < 16) { stempel.set([x0, y0, x, y], stempelN * 4); stempelR.set([r, menge], stempelN * 2); stempelN++; }
+  else {
+    // zu viele Züge in einem Bild: der letzte wird verlängert, statt dass einer verloren geht
+    const k = 15 * 4; stempel[k + 2] = x; stempel[k + 3] = y; stempelR[15 * 2 + 1] = Math.max(stempelR[15 * 2 + 1], menge);
+  }
+  const seite = innerWidth / innerHeight, ax = x0 * seite, bx = x * seite, abx = bx - ax, aby = y - y0, l2 = Math.max(1e-8, abx * abx + aby * aby);
   for (let j = 0; j < AB_H; j++) for (let i = 0; i < AB_B; i++) {
-    const dx = ((i + 0.5) / AB_B - x) * seite, dy = (j + 0.5) / AB_H - y, q = Math.hypot(dx, dy) / r;
-    if (q < 1) { const f = 1 - Math.min(1, Math.max(0, (q - 0.35) / 0.65)); const k = j * AB_B + i; abbild[k] = Math.min(1, abbild[k] + menge * f * f * (3 - 2 * f)); }
+    const qx = (i + 0.5) / AB_B * seite, qy = (j + 0.5) / AB_H;
+    const h = Math.min(1, Math.max(0, ((qx - ax) * abx + (qy - y0) * aby) / l2));
+    const q = Math.hypot(qx - ax - abx * h, qy - y0 - aby * h) / r;
+    if (q < 1) { const f = 1 - q * q; const k = j * AB_B + i; abbild[k] = Math.min(1, abbild[k] + menge * f * f); }
   }
 }
 const abbildLesen = (x, y) => abbild[Math.min(AB_H - 1, Math.max(0, Math.floor(y * AB_H))) * AB_B + Math.min(AB_B - 1, Math.max(0, Math.floor(x * AB_B)))];
@@ -737,7 +783,7 @@ function grubeRechnen(dt) {
   gl.useProgram(progGrube);
   gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D, alt.tex);
   gl.uniform1i(ortG.uAlt, 4); gl.uniform2f(ortG.uPx, 1 / grubeB, 1 / grubeH);
-  gl.uniform4fv(ortG.uStempel, stempel); gl.uniform1i(ortG.uN, stempelN); gl.uniform1f(ortG.uAb, ab); gl.uniform1f(ortG.uSeite, innerWidth / innerHeight);
+  gl.uniform4fv(ortG.uStempel, stempel); gl.uniform2fv(ortG.uStempelR, stempelR); gl.uniform1i(ortG.uN, stempelN); gl.uniform1f(ortG.uAb, ab); gl.uniform1f(ortG.uSeite, innerWidth / innerHeight);
   zeichneFlaeche();
   gl.activeTexture(gl.TEXTURE0);
   grubeNr = 1 - grubeNr; stempelN = 0;
@@ -746,12 +792,13 @@ function grubeRechnen(dt) {
   return summe / abbild.length;
 }
 
-// Erster Blick: eine unsichtbare Hand gräbt einen Zug ins Bild, damit sich die Schichten sofort zeigen
+// Nur im Vorspann gräbt eine unsichtbare Hand; sonst beginnt alles erst mit der Berührung (Christian, 19.11.2026)
 let geisterStart = -1;
 const GEISTER_DAUER = 2.6;
 let geisterZug = 0;
 const VORSPANN = new URLSearchParams(location.search).has('vorspann');   // für den vorgerechneten Film der Schwelle
 // der Rand der Grabung: 4 Ornament mit Relief-Licht, 1 Relief, 2 Kintsugi, 3 Spektralsaum (0, die Haarlinie, nur mit ?rand=0)
+const KEGEL = Math.max(1, Math.min(2, +(new URLSearchParams(location.search).get('kegel') ?? 2) || 2));   // Entwürfe für den Kegel
 let rand = 4;
 try { const r = localStorage.getItem('schichten.rand'); if (r) rand = +r; } catch {}
 if (new URLSearchParams(location.search).has('rand')) rand = +new URLSearchParams(location.search).get('rand');
@@ -804,8 +851,8 @@ leinwand.addEventListener('pointermove', (e) => {
   if (lesart === 0) spitzeZiel = p;
   else if (lesart === 1) {
     // entlang des Wegs stempeln, damit schnelle Züge keine Lücken lassen
-    const weg = Math.hypot(dx / innerHeight, dy / innerHeight), schritte = Math.min(6, Math.ceil(weg / (pinselRadius() * 0.3)));
-    for (let s = 1; s <= schritte; s++) stempeln(p.x - (dx / innerWidth) * (1 - s / schritte), p.y + (dy / innerHeight) * (1 - s / schritte), 0.035);
+    const weg = Math.hypot(dx / innerHeight, dy / innerHeight);
+    stempeln(p.x, p.y, 0.035 * Math.min(3, Math.max(1, weg / (pinselRadius() * 0.3))), p.x - dx / innerWidth, p.y + dy / innerHeight);
     grabStaerke = Math.min(1, grabStaerke + weg * 12);
   } else {
     schubV.x -= (dx / innerWidth) * 2.2; schubV.y += (dy / innerHeight) * 2.2;
@@ -882,7 +929,7 @@ function starten() {
   $('geste').textContent = TEXTE[sprache].lesarten[lesart].geste; $('geste').hidden = false; $('geste').classList.remove('weg');
   setTimeout(() => $('geste').classList.add('weg'), 5000);
   groesse();
-  if (lesart === 1 && geisterStart < 0 && !geisterGegraben) { geisterGegraben = true; geisterStart = -2; }   // beginnt, sobald der Puffer gefüllt ist
+  if (VORSPANN && lesart === 1 && geisterStart < 0 && !geisterGegraben) { geisterGegraben = true; geisterStart = -2; }   // beginnt, sobald der Puffer gefüllt ist
   if (!laeuft && gl) { laeuft = true; requestAnimationFrame(bild); }
 }
 let geisterGegraben = false;
@@ -945,7 +992,7 @@ function bild(ms) {
   gl.uniform1f(ort.uKopf, kopf); gl.uniform1f(ort.uN, SCHICHTEN);
   gl.uniform1f(ort.uSpanne, Math.min(SCHICHTEN - 1, tiefe / intervall)); gl.uniform1f(ort.uS, schichtZahl);
   gl.uniform1f(ort.uSeite, innerWidth / innerHeight); gl.uniform1f(ort.uT, t % 100); gl.uniform1f(ort.uFT, ft % 1000);
-  gl.uniform1i(ort.uLesart, lesart); gl.uniform2f(ort.uSpitze, spitze.x, spitze.y); gl.uniform2f(ort.uSchub, schub.x, schub.y); gl.uniform2f(ort.uGleit, gleit.x, gleit.y); gl.uniform1f(ort.uSprung, sprung); gl.uniform1i(ort.uRand, rand);
+  gl.uniform1i(ort.uLesart, lesart); gl.uniform2f(ort.uSpitze, spitze.x, spitze.y); gl.uniform2f(ort.uSchub, schub.x, schub.y); gl.uniform2f(ort.uGleit, gleit.x, gleit.y); gl.uniform1f(ort.uSprung, sprung); gl.uniform1i(ort.uRand, rand); gl.uniform1i(ort.uKegel, KEGEL); gl.uniform1f(ort.uPxH, 1 / leinwand.height);
   zeichneFlaeche();
   nachbearbeiten(t);
   if (standbildWunsch) { standbildWunsch = false; leinwand.toBlob((b) => b && zeigen(b, 'schichten-' + zeitstempel() + '.png')); }
