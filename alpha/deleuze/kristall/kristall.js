@@ -681,7 +681,7 @@ function fotoMalen(t) {
 }
 
 // ---------- Kristall ----------
-let facetten = 18, tiefe = 3, brech = 0.35, form = 'brillant', verschmelzung = 0.4, zustand = 0;
+let facetten = 18, tiefe = 3, brech = 0.35, form = 'brillant', verschmelzung = 0, zustand = 0;
 $('r-facetten').addEventListener('input', (e) => { facetten = +e.target.value; });
 $('r-tiefe').addEventListener('input', (e) => { tiefe = +e.target.value; });
 $('r-brechung').addEventListener('input', (e) => { brech = +e.target.value; });
@@ -715,7 +715,8 @@ function zustandText() {
   $('b-zustand-text').textContent = z.text;
 }
 document.querySelectorAll('[data-zustand]').forEach((b) => b.addEventListener('click', () => zustandWaehlen(+b.dataset.zustand)));
-try { const f = localStorage.getItem('kristall.form'); formWaehlen(SCHLIFFE[f] ? f : 'brillant'); } catch { formWaehlen('brillant'); }
+// jeder Besuch beginnt mit dem Brillanten ohne Verschmelzung (Christian, 19.11.2026)
+formWaehlen('brillant');
 
 let gegenwart = { x: 0.5, y: 0.5 }, ziel = { x: 0.5, y: 0.5 };
 // Gesten: ein Finger dreht frei in jede Richtung (Trackball), zwei Finger zoomen und drehen um die Blickachse
@@ -946,13 +947,28 @@ function malenIn(ctx, B, H) {
   const q = quelle; if (!q) return false;
   const qb = q.videoWidth || q.width, qh = q.videoHeight || q.height;
   if (!qb || !qh) return false;
-  const s = Math.max(B / qb, H / qh), b = qb * s, hh = qh * s;
   ctx.save();
   if (spiegelnQuelle) { ctx.translate(B, 0); ctx.scale(-1, 1); }
-  ctx.drawImage(q, (B - b) / 2, (H - hh) / 2, b, hh);
+  // Weicht das Format der Quelle stark vom Bildschirm ab (Hochformat am Laptop, Querformat am Handy), wird nicht
+  // beschnitten: das ganze Bild steht in der Mitte, daneben dieselbe Quelle gross, weich und abgedunkelt.
+  const deck = Math.max(B / qb, H / qh), ganz = Math.min(B / qb, H / qh);
+  if (deck / ganz > 1.7) {
+    const kb = 24, kh = Math.max(2, Math.round(24 * H / B));
+    if (klein.width !== kb || klein.height !== kh) { klein.width = kb; klein.height = kh; }
+    kctx.drawImage(q, (kb - qb * deck * kb / B) / 2, (kh - qh * deck * kh / H) / 2, qb * deck * kb / B, qh * deck * kh / H);
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(klein, 0, 0, B, H);
+    ctx.fillStyle = 'rgba(10,10,11,0.5)'; ctx.fillRect(0, 0, B, H);
+    const b = qb * ganz, hh = qh * ganz;
+    ctx.drawImage(q, (B - b) / 2, (H - hh) / 2, b, hh);
+  } else {
+    const b = qb * deck, hh = qh * deck;
+    ctx.drawImage(q, (B - b) / 2, (H - hh) / 2, b, hh);
+  }
   ctx.restore();
   return true;
 }
+const klein = document.createElement('canvas'), kctx = klein.getContext('2d', { alpha: false });
 const fangen = () => malenIn(fctx, pufferB, pufferH);
 // die Gegenwart jedes Bild neu und scharf auf die Grafikkarte
 function scharfFangen() {
