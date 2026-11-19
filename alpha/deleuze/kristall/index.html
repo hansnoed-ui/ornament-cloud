@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#050506">
 <title>Kristallbild · the deleuzian scheme</title>
-<link rel="stylesheet" href="kristall.css?v=7">
+<link rel="stylesheet" href="kristall.css?v=8">
 </head>
 <body>
 <main class="buehne" id="buehne">
@@ -58,7 +58,18 @@
   <p class="quelle" data-t="b-quelle"></p>
 </aside>
 
+<aside class="ergebnis" id="ergebnis" hidden aria-label="Ergebnis">
+  <button class="zu" id="ergebnis-zu" aria-label="Schliessen">×</button>
+  <div class="ergebnis-bild" id="ergebnis-bild"></div>
+  <p class="ergebnis-mb" id="ergebnis-mb"></p>
+  <div class="ergebnis-knoepfe">
+    <button class="haupt" id="teilen" data-t="teilen">Teilen</button>
+    <button id="sichern" data-t="sichern">Sichern</button>
+  </div>
+  <p class="ergebnis-hinweis" id="ergebnis-hinweis" data-t="ergebnis-hinweis" hidden></p>
+</aside>
+
 <p class="meldung" id="meldung" hidden></p>
-<script type="module" src="kristall.js?v=7"></script>
+<script type="module" src="kristall.js?v=8"></script>
 </body>
 </html>
