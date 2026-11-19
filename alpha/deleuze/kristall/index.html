@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#050506">
 <title>Kristallbild · the deleuzian scheme</title>
-<link rel="stylesheet" href="kristall.css?v=5">
+<link rel="stylesheet" href="kristall.css?v=6">
 </head>
 <body>
 <main class="buehne" id="buehne">
@@ -18,7 +18,7 @@
     <p class="satz" data-t="satz">Die Gegenwart spaltet sich in jedem Augenblick.</p>
     <div class="wahl">
       <button class="haupt" id="kamera" data-t="kamera">Kamera</button>
-      <label class="neben"><span data-t="video">Video wählen</span><input type="file" id="datei" accept="video/*" hidden></label>
+      <label class="neben"><span data-t="video">Video oder Fotos</span><input type="file" id="datei" accept="video/*,image/*" multiple hidden></label>
       <button class="neben" id="beispiel" data-t="beispiel">Beispiel</button>
     </div>
     <p class="hinweis" data-t="hinweis">Alles bleibt auf deinem Gerät.</p>
@@ -56,6 +56,6 @@
 </aside>
 
 <p class="meldung" id="meldung" hidden></p>
-<script type="module" src="kristall.js?v=5"></script>
+<script type="module" src="kristall.js?v=6"></script>
 </body>
 </html>
