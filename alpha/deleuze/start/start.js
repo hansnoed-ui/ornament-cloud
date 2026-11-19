@@ -19,25 +19,22 @@ const OPS = [
 
 const TEXTE = {
   de: {
-    material: 'Material für den Vorspann', kamera: 'Kamera', datei: 'Foto oder Video', beispiel: 'Beispiel',
     folgeTitel: 'Phase 1 · acht Begriffe',
-    kristallAria: 'Kristall mit acht Facetten; jede zeigt dein Material durch einen anderen Begriff. Die Liste darunter führt zu denselben Seiten.',
-    laeuft: 'läuft', dreh: 'in Dreharbeiten', keineKamera: 'Die Kamera lässt sich nicht öffnen. Wähle ein Foto, ein Video oder das Beispiel.',
-    keinBeispiel: 'Das Beispielvideo lädt nicht. Wähle ein Foto, ein Video oder die Kamera.', letzterLauf: 'Der letzte Besuch endete unerwartet: ', tafel: 'dein Material, wie es ist'
+    kristallAria: 'Kristall mit acht Facetten; jede zeigt das Bild durch einen anderen Begriff. Die Liste darunter führt zu denselben Seiten.',
+    laeuft: 'läuft', dreh: 'in Dreharbeiten',
+    letzterLauf: 'Der letzte Besuch endete unerwartet: ', tafel: 'das Bild, wie es ist'
   },
   en: {
-    material: 'Material for the title sequence', kamera: 'Camera', datei: 'Photo or video', beispiel: 'Example',
     folgeTitel: 'Phase 1 · eight concepts',
-    kristallAria: 'Crystal with eight facets; each shows your material through a different concept. The list below leads to the same pages.',
-    laeuft: 'now showing', dreh: 'in production', keineKamera: 'The camera cannot be opened. Choose a photo, a video or the example.',
-    keinBeispiel: 'The example video does not load. Choose a photo, a video or the camera.', letzterLauf: 'The last visit ended unexpectedly: ', tafel: 'your material as it is'
+    kristallAria: 'Crystal with eight facets; each shows the image through a different concept. The list below leads to the same pages.',
+    laeuft: 'now showing', dreh: 'in production',
+    letzterLauf: 'The last visit ended unexpectedly: ', tafel: 'the image as it is'
   },
   fr: {
-    material: 'Matériau pour le générique', kamera: 'Caméra', datei: 'Photo ou vidéo', beispiel: 'Exemple',
     folgeTitel: 'Phase 1 · huit concepts',
-    kristallAria: 'Cristal à huit facettes ; chacune montre ton matériau à travers un autre concept. La liste ci-dessous mène aux mêmes pages.',
-    laeuft: 'à l’affiche', dreh: 'en tournage', keineKamera: 'La caméra ne s’ouvre pas. Choisis une photo, une vidéo ou l’exemple.',
-    keinBeispiel: 'La vidéo d’exemple ne se charge pas. Choisis une photo, une vidéo ou la caméra.', letzterLauf: 'La dernière visite s’est terminée de façon inattendue : ', tafel: 'ton matériau tel qu’il est'
+    kristallAria: 'Cristal à huit facettes ; chacune montre l’image à travers un autre concept. La liste ci-dessous mène aux mêmes pages.',
+    laeuft: 'à l’affiche', dreh: 'en tournage',
+    letzterLauf: 'La dernière visite s’est terminée de façon inattendue : ', tafel: 'l’image telle qu’elle est'
   }
 };
 
@@ -100,55 +97,13 @@ addEventListener('pagehide', () => spur('Ende'));
 uebersetzen();
 
 // ---------- Material ----------
-// Quelle ist ein Video (Beispiel, Datei, Kamera) oder ein Bild. Alles wird quadratisch ins Gedächtnis geschnitten.
+// Der Kristall der Eingänge läuft mit dem Beispielvideo. Eigenes Material wählt man erst auf der Seite eines Operators
+// (Christian, 19.11.2026: eine eigene Wahl nur für den Vorspann verwirrt).
 const video = document.createElement('video');
 video.muted = true; video.loop = true; video.playsInline = true; video.setAttribute('playsinline', '');
-let bild = null, strom = null, dateiUrl = '', spiegeln = false, fokusY = 0.4;
-
-function wahlZeigen(id) { ['m-kamera', 'm-datei', 'm-beispiel'].forEach((x) => $(x).setAttribute('aria-pressed', String(x === id))); }
-function stromStoppen() { if (strom) { strom.getTracks().forEach((t) => t.stop()); strom = null; } video.srcObject = null; }
-function urlFreigeben() { if (dateiUrl) { URL.revokeObjectURL(dateiUrl); dateiUrl = ''; } }
-
-// Beim Laden läuft das Beispiel nur als Rückfall, gewählt ist noch nichts: die erste Wahl ist das eigene Foto oder Video.
-function beispiel(gewaehlt = true) {
-  spur('Beispiel'); stromStoppen(); urlFreigeben(); bild = null; spiegeln = false; fokusY = 0.36;
-  video.src = '../kristall/beispiel.mp4?v=1';
-  video.play().catch(() => {});
-  wahlZeigen(gewaehlt ? 'm-beispiel' : '');
-}
-video.addEventListener('error', () => { if (video.src.includes('beispiel')) { spur('Beispielvideo fehlt'); melden(TEXTE[sprache].keinBeispiel); } });
-
-$('m-beispiel').addEventListener('click', () => beispiel());
-$('m-kamera').addEventListener('click', async () => {
-  spur('Kamera');
-  try {
-    const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 640 } }, audio: false });
-    stromStoppen(); urlFreigeben(); bild = null; strom = s; spiegeln = true; fokusY = 0.5;
-    video.removeAttribute('src'); video.srcObject = s; await video.play();
-    wahlZeigen('m-kamera'); spur('Kamera an');
-  } catch { spur('Kamera abgelehnt'); melden(TEXTE[sprache].keineKamera); }
-});
-$('datei').addEventListener('change', async (e) => {
-  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
-  spur('Datei ' + f.type);
-  if (f.type.startsWith('image/')) {
-    try {
-      const roh = await createImageBitmap(f);
-      // Telefonregel: verkleinern, bevor etwas anderes geschieht. Für die Facetten genügen 800 Punkte.
-      const s = Math.min(1, 800 / Math.max(roh.width, roh.height));
-      const neu = s < 1 ? await createImageBitmap(f, { resizeWidth: Math.round(roh.width * s), resizeHeight: Math.round(roh.height * s), resizeQuality: 'high' }) : roh;
-      if (neu !== roh) roh.close();
-      stromStoppen(); urlFreigeben(); video.pause(); video.removeAttribute('src');
-      if (bild && bild.close) bild.close();
-      bild = neu; spiegeln = false; fokusY = 0.4;
-      wahlZeigen('m-datei');
-    } catch { spur('Bild unlesbar'); }
-  } else {
-    stromStoppen(); urlFreigeben(); bild = null; spiegeln = false; fokusY = 0.4;
-    dateiUrl = URL.createObjectURL(f); video.src = dateiUrl; video.play().catch(() => {});
-    wahlZeigen('m-datei');
-  }
-});
+const bild = null, spiegeln = false, fokusY = 0.36;
+function beispiel() { spur('Beispiel'); video.src = '../kristall/beispiel.mp4?v=1'; video.play().catch(() => {}); }
+video.addEventListener('error', () => spur('Beispielvideo fehlt'));
 
 // ---------- Gedächtnis: die letzten Bilder, quadratisch und klein ----------
 const SEITE = 220, TIEFE = 48;
@@ -315,5 +270,5 @@ function lauf(ms) {
   if (gefuellt === 30) spur('✓ läuft');
 }
 groesse();
-beispiel(false);
+beispiel();
 requestAnimationFrame(lauf);
