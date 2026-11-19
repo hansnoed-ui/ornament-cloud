@@ -3,6 +3,7 @@
 // WebGL2, ohne Bibliotheken, ohne CDN. Alles bleibt im Browser.
 
 import { SCHLIFFE, schliffEbenen } from './schliffe.js?v=8';
+import { klangStarten, klangBild, klangAn, klangIstAn, klangSpur } from './klang.js?v=1';
 
 const $ = (id) => document.getElementById(id);
 
@@ -13,12 +14,12 @@ const TEXTE = {
     kamera: 'Kamera', video: 'Video oder Fotos', beispiel: 'Beispiel', hinweis: 'Alles bleibt auf deinem Gerät.',
     facetten: 'Facetten', tiefe: 'Zeittiefe', brechung: 'Brechung', verschmelzung: 'Verschmelzung',
     glossen: {
-      keim: { begriff: 'le germe et le milieu', satz: 'Ein Keim lässt ein formloses Milieu kristallisieren. Wo du doppelt tippst, beginnt der Kristall: zuerst ist er nur Gegenwart, die Vergangenheit sammelt er erst im Wachsen.', zitat: '', quelle: 'Deleuze, L’image-temps, Kap. 4' },
-      formen: { begriff: 'le cristal', satz: 'Jeder Schliff fasst die Zeit anders: viele kleine Facetten zerstreuen sie, grosse Flächen zeigen sie ruhig.', zitat: '«Ce que le cristal révèle ou fait voir, c’est le fondement caché du temps.»', quelle: 'Deleuze, L’image-temps, Kap. 4' },
-      zustaende: { begriff: 'les quatre états', satz: 'Deleuze unterscheidet vier Zustände des Kristalls und liest sie an vier Regisseuren ab.', zitat: '«Ophuls, Renoir, Fellini, Visconti»', quelle: 'Deleuze, L’image-temps, Kap. 4' },
-      facetten: { begriff: 'le circuit', satz: 'Jede Facette ist ein kleiner Kreis zwischen dem Aktuellen und seinem Virtuellen. Mehr Facetten, engere Kreise.', zitat: '', quelle: '' },
-      tiefe: { begriff: 'la coexistence', satz: 'Die Vergangenheit folgt nicht auf die Gegenwart, sie besteht neben ihr. Hier bestimmst du, wie weit die Facetten zurückreichen.', zitat: '«Le passé ne succède pas au présent qu’il n’est plus, il coexiste avec le présent qu’il a été.»', quelle: 'Deleuze, L’image-temps, Kap. 4' },
-      brechung: { begriff: 'le virtuel', satz: 'Was der Stein im Inneren bricht, ist nicht erfunden, sondern gewesen. Das Virtuelle ist wirklich, nur nicht aktuell.', zitat: '«Réels sans être actuels, idéaux sans être abstraits.»', quelle: 'Proust, bei Deleuze' },
+      keim: { begriff: 'le germe et le milieu', satz: 'Ein Keim lässt ein formloses Milieu kristallisieren. Wo du doppelt tippst, beginnt der Kristall: zuerst ist er nur Gegenwart, die Vergangenheit sammelt er erst im Wachsen.', zitat: '', quelle: 'Deleuze, L’image-temps, Minuit 1985, Kap. 4, sinngemäss' },
+      formen: { begriff: 'le cristal', satz: 'Jeder Schliff fasst die Zeit anders: viele kleine Facetten zerstreuen sie, grosse Flächen zeigen sie ruhig.', zitat: '«Ce que le cristal révèle ou fait voir, c’est le fondement caché du temps, c’est-à-dire sa différenciation en deux jets, celui des présents qui passent et celui des passés qui se conservent.»', quelle: 'Deleuze, L’image-temps, Minuit 1985, Kap. 4' },
+      zustaende: { begriff: 'les quatre états', satz: 'Deleuze unterscheidet vier Zustände des Kristalls und liest sie an vier Regisseuren ab.', zitat: '', quelle: 'Deleuze, L’image-temps, Minuit 1985, Kap. 4' },
+      facetten: { begriff: 'le circuit', satz: 'Jede Facette ist ein kleiner Kreis zwischen dem Aktuellen und seinem Virtuellen. Mehr Facetten, engere Kreise.', zitat: '«le plus petit circuit»', quelle: 'Deleuze, L’image-temps, Minuit 1985, Kap. 4' },
+      tiefe: { begriff: 'la coexistence', satz: 'Die Vergangenheit folgt nicht auf die Gegenwart, sie besteht neben ihr. Hier bestimmst du, wie weit die Facetten zurückreichen.', zitat: '«Le passé ne succède pas au présent qu’il n’est plus, il coexiste avec le présent qu’il a été.»', quelle: 'Deleuze, Le bergsonisme, PUF 1966, Kap. 3' },
+      brechung: { begriff: 'le virtuel', satz: 'Was der Stein im Inneren bricht, ist nicht erfunden, sondern gewesen. Das Virtuelle ist wirklich, nur nicht aktuell.', zitat: '«Réels sans être actuels, idéaux sans être abstraits.»', quelle: 'Proust, Le Temps retrouvé; aufgenommen bei Deleuze, Le bergsonisme' },
       verschmelzung: { begriff: 'l’indiscernabilité', satz: 'Aktuelles und Virtuelles tauschen sich aus, bis man nicht mehr sagen kann, was was ist. Verschieden bleiben sie trotzdem.', zitat: '', quelle: 'Deleuze, L’image-temps, Kap. 4, sinngemäss' }
     },
     facetteJetzt: 'diese Facette: jetzt', facetteVor: 'diese Facette: vor {s} s', bildJetzt: 'das Bild: jetzt', komma2: ',',
@@ -30,7 +31,7 @@ const TEXTE = {
     ],
     zustand: 'Zustand',
     stein: 'Stein', brillant: 'Brillant', oval: 'Saphir', smaragd: 'Smaragd', bergkristall: 'Bergkristall', formen: 'Schliff',
-    wenden: 'Kamera wenden',
+    wenden: 'Kamera wenden', tonAn: 'Ton an', tonAus: 'Ton aus',
     begriff: 'Begriff', standbild: 'Standbild', aufnahme: 'Aufnahme', stopp: 'Stopp',
     teilen: 'Teilen', sichern: 'Sichern', komma: '.', 'ergebnis-hinweis': 'Gesichert im Ordner «Downloads». «Teilen» legt es direkt in die Galerie oder eine App.',
     keineAufnahme: 'Dieser Browser kann die Leinwand nicht aufnehmen. Das Standbild geht.',
@@ -53,12 +54,12 @@ const TEXTE = {
     kamera: 'Camera', video: 'Video or photos', beispiel: 'Example', hinweis: 'Everything stays on your device.',
     facetten: 'Facets', tiefe: 'Depth of time', brechung: 'Refraction', verschmelzung: 'Coalescence',
     glossen: {
-      keim: { begriff: 'le germe et le milieu', satz: 'A seed makes a formless milieu crystallise. Where you double-tap, the crystal begins: at first it is only present, it gathers the past only as it grows.', zitat: '', quelle: 'Deleuze, The Time-Image, ch. 4' },
-      formen: { begriff: 'le cristal', satz: 'Each cut holds time differently: many small facets scatter it, large planes show it calmly.', zitat: '“What the crystal reveals or makes visible is the hidden ground of time.”', quelle: 'Deleuze, The Time-Image, ch. 4' },
-      zustaende: { begriff: 'les quatre états', satz: 'Deleuze distinguishes four states of the crystal and reads them in four directors.', zitat: '“Ophüls, Renoir, Fellini, Visconti”', quelle: 'Deleuze, The Time-Image, ch. 4' },
-      facetten: { begriff: 'le circuit', satz: 'Each facet is a small circuit between the actual and its virtual. More facets, tighter circuits.', zitat: '', quelle: '' },
-      tiefe: { begriff: 'la coexistence', satz: 'The past does not follow the present, it coexists with it. Here you decide how far back the facets reach.', zitat: '“The past does not follow the present that it is no longer, it coexists with the present it was.”', quelle: 'Deleuze, The Time-Image, ch. 4' },
-      brechung: { begriff: 'le virtuel', satz: 'What the stone refracts inside is not invented but has been. The virtual is real, just not actual.', zitat: '“Real without being actual, ideal without being abstract.”', quelle: 'Proust, in Deleuze' },
+      keim: { begriff: 'le germe et le milieu', satz: 'A seed makes a formless milieu crystallise. Where you double-tap, the crystal begins: at first it is only present, it gathers the past only as it grows.', zitat: '', quelle: 'Deleuze, The Time-Image, ch. 4, paraphrased' },
+      formen: { begriff: 'le cristal', satz: 'Each cut holds time differently: many small facets scatter it, large planes show it calmly.', zitat: '“What the crystal reveals or makes visible is the hidden ground of time, that is, its differentiation into two flows, that of presents which pass and that of pasts which are preserved.”', quelle: 'Deleuze, Cinema 2: The Time-Image, tr. Tomlinson/Galeta, 1989, p. 98' },
+      zustaende: { begriff: 'les quatre états', satz: 'Deleuze distinguishes four states of the crystal and reads them in four directors.', zitat: '', quelle: 'Deleuze, The Time-Image, ch. 4' },
+      facetten: { begriff: 'le circuit', satz: 'Each facet is a small circuit between the actual and its virtual. More facets, tighter circuits.', zitat: '“the smallest circuit”', quelle: 'Deleuze, The Time-Image, ch. 4' },
+      tiefe: { begriff: 'la coexistence', satz: 'The past does not follow the present, it coexists with it. Here you decide how far back the facets reach.', zitat: '« Le passé ne succède pas au présent qu’il n’est plus, il coexiste avec le présent qu’il a été. »', quelle: 'Deleuze, Le bergsonisme, PUF 1966, ch. 3 (original)' },
+      brechung: { begriff: 'le virtuel', satz: 'What the stone refracts inside is not invented but has been. The virtual is real, just not actual.', zitat: '“Real without being actual, ideal without being abstract.”', quelle: 'Proust, Time Regained; taken up by Deleuze in Bergsonism' },
       verschmelzung: { begriff: 'l’indiscernabilité', satz: 'Actual and virtual exchange until you can no longer say which is which. Yet they remain distinct.', zitat: '', quelle: 'Deleuze, The Time-Image, ch. 4, paraphrased' }
     },
     facetteJetzt: 'this facet: now', facetteVor: 'this facet: {s} s ago', bildJetzt: 'the image: now', komma2: '.',
@@ -70,7 +71,7 @@ const TEXTE = {
     ],
     zustand: 'State',
     stein: 'Stone', brillant: 'Brilliant', oval: 'Sapphire', smaragd: 'Emerald', bergkristall: 'Quartz', formen: 'Cut',
-    wenden: 'Flip camera',
+    wenden: 'Flip camera', tonAn: 'Sound on', tonAus: 'Sound off',
     begriff: 'Concept', standbild: 'Still', aufnahme: 'Record', stopp: 'Stop',
     teilen: 'Share', sichern: 'Save', komma: '.', 'ergebnis-hinweis': 'Saved to your “Downloads” folder. “Share” sends it straight to your gallery or an app.',
     keineAufnahme: 'This browser cannot record the canvas. Stills work.',
@@ -93,12 +94,12 @@ const TEXTE = {
     kamera: 'Caméra', video: 'Vidéo ou photos', beispiel: 'Exemple', hinweis: 'Tout reste sur ton appareil.',
     facetten: 'Facettes', tiefe: 'Profondeur du temps', brechung: 'Réfraction', verschmelzung: 'Coalescence',
     glossen: {
-      keim: { begriff: 'le germe et le milieu', satz: 'Un germe fait cristalliser un milieu informe. Là où tu touches deux fois, le cristal commence : d’abord il n’est que présent, il ne recueille le passé qu’en croissant.', zitat: '', quelle: 'Deleuze, L’image-temps, ch. 4' },
-      formen: { begriff: 'le cristal', satz: 'Chaque taille saisit le temps autrement : de nombreuses petites facettes le dispersent, de grands plans le montrent calmement.', zitat: '« Ce que le cristal révèle ou fait voir, c’est le fondement caché du temps. »', quelle: 'Deleuze, L’image-temps, ch. 4' },
-      zustaende: { begriff: 'les quatre états', satz: 'Deleuze distingue quatre états du cristal et les lit chez quatre cinéastes.', zitat: '« Ophuls, Renoir, Fellini, Visconti »', quelle: 'Deleuze, L’image-temps, ch. 4' },
-      facetten: { begriff: 'le circuit', satz: 'Chaque facette est un petit circuit entre l’actuel et son virtuel. Plus de facettes, des circuits plus serrés.', zitat: '', quelle: '' },
-      tiefe: { begriff: 'la coexistence', satz: 'Le passé ne suit pas le présent, il coexiste avec lui. Ici tu décides jusqu’où remontent les facettes.', zitat: '« Le passé ne succède pas au présent qu’il n’est plus, il coexiste avec le présent qu’il a été. »', quelle: 'Deleuze, L’image-temps, ch. 4' },
-      brechung: { begriff: 'le virtuel', satz: 'Ce que la pierre réfracte à l’intérieur n’est pas inventé, mais a été. Le virtuel est réel, seulement pas actuel.', zitat: '« Réels sans être actuels, idéaux sans être abstraits. »', quelle: 'Proust, chez Deleuze' },
+      keim: { begriff: 'le germe et le milieu', satz: 'Un germe fait cristalliser un milieu informe. Là où tu touches deux fois, le cristal commence : d’abord il n’est que présent, il ne recueille le passé qu’en croissant.', zitat: '', quelle: 'Deleuze, L’image-temps, Minuit 1985, ch. 4, en substance' },
+      formen: { begriff: 'le cristal', satz: 'Chaque taille saisit le temps autrement : de nombreuses petites facettes le dispersent, de grands plans le montrent calmement.', zitat: '« Ce que le cristal révèle ou fait voir, c’est le fondement caché du temps, c’est-à-dire sa différenciation en deux jets, celui des présents qui passent et celui des passés qui se conservent. »', quelle: 'Deleuze, L’image-temps, Minuit 1985, ch. 4' },
+      zustaende: { begriff: 'les quatre états', satz: 'Deleuze distingue quatre états du cristal et les lit chez quatre cinéastes.', zitat: '', quelle: 'Deleuze, L’image-temps, Minuit 1985, ch. 4' },
+      facetten: { begriff: 'le circuit', satz: 'Chaque facette est un petit circuit entre l’actuel et son virtuel. Plus de facettes, des circuits plus serrés.', zitat: '« le plus petit circuit »', quelle: 'Deleuze, L’image-temps, Minuit 1985, ch. 4' },
+      tiefe: { begriff: 'la coexistence', satz: 'Le passé ne suit pas le présent, il coexiste avec lui. Ici tu décides jusqu’où remontent les facettes.', zitat: '« Le passé ne succède pas au présent qu’il n’est plus, il coexiste avec le présent qu’il a été. »', quelle: 'Deleuze, Le bergsonisme, PUF 1966, ch. 3' },
+      brechung: { begriff: 'le virtuel', satz: 'Ce que la pierre réfracte à l’intérieur n’est pas inventé, mais a été. Le virtuel est réel, seulement pas actuel.', zitat: '« Réels sans être actuels, idéaux sans être abstraits. »', quelle: 'Proust, Le Temps retrouvé ; repris par Deleuze, Le bergsonisme' },
       verschmelzung: { begriff: 'l’indiscernabilité', satz: 'L’actuel et le virtuel s’échangent jusqu’à ce qu’on ne puisse plus dire lequel est lequel. Ils restent pourtant distincts.', zitat: '', quelle: 'Deleuze, L’image-temps, ch. 4, en substance' }
     },
     facetteJetzt: 'cette facette : maintenant', facetteVor: 'cette facette : il y a {s} s', bildJetzt: 'l’image : maintenant', komma2: ',',
@@ -110,7 +111,7 @@ const TEXTE = {
     ],
     zustand: 'État',
     stein: 'Pierre', brillant: 'Brillant', oval: 'Saphir', smaragd: 'Émeraude', bergkristall: 'Cristal de roche', formen: 'Taille',
-    wenden: 'Retourner',
+    wenden: 'Retourner', tonAn: 'Son activé', tonAus: 'Son coupé',
     begriff: 'Concept', standbild: 'Image', aufnahme: 'Enregistrer', stopp: 'Arrêter',
     teilen: 'Partager', sichern: 'Télécharger', komma: ',', 'ergebnis-hinweis': 'Enregistré dans le dossier « Téléchargements ». « Partager » l’envoie directement dans la galerie ou une app.',
     keineAufnahme: 'Ce navigateur ne peut pas enregistrer le canevas. L’image fixe fonctionne.',
@@ -620,6 +621,8 @@ function beispielStarten() {
     .catch(() => { spur('Beispielvideo fehlt'); quelle = beispiel; spiegelnQuelle = false; starten(); });
 }
 
+// der Klang darf erst nach einer Berührung beginnen
+addEventListener('pointerdown', klangStarten, { capture: true });
 $('kamera').addEventListener('click', kameraStarten);
 $('beispiel').addEventListener('click', beispielStarten);
 $('datei').addEventListener('change', (e) => {
@@ -884,7 +887,51 @@ function zeitSetzen(kopf, intervall, t) {
 
 // ---------- Schleife ----------
 let laeuft = false, kopf = 0, letzterFang = 0, gefuellt = false, standbildWunsch = false;
+// ---------- Geführter Einstieg: zuerst Stein und Bild, dann Schliffe, dann Zustände und Regler, zuletzt die Tasten ----------
+const EINSTIEG = 'kristall.einstieg';
+let einstiegStufe = 3, einstiegUhr = 0, einstiegBegonnen = false;
+function einstiegTeile() {
+  const r = $('regler');
+  return [[r.querySelector('.formen:not(.zustaende)')], [r.querySelector('.zustaende'), r.querySelector('.zt-regler')], [r.querySelector('.zt-tasten')]];
+}
+function einstiegZeigen(stufe) {
+  einstiegStufe = stufe;
+  $('regler').dataset.einstieg = String(stufe);
+  einstiegTeile().forEach((teile, k) => teile.forEach((el) => { if (el) el.inert = k >= stufe; }));
+  if (stufe >= 3) { clearTimeout(einstiegUhr); try { localStorage.setItem(EINSTIEG, 'fertig'); } catch {} }
+}
+// nächste Stufe: nach einer Handlung oder spätestens nach einer Weile
+function einstiegWeiter() {
+  clearTimeout(einstiegUhr);
+  if (einstiegStufe >= 3) return;
+  einstiegZeigen(einstiegStufe + 1); spur('Einstieg ' + einstiegStufe);
+  if (einstiegStufe < 3) einstiegUhr = setTimeout(einstiegWeiter, 9000);
+}
+function einstiegBeginnen() {
+  if (einstiegBegonnen) return; einstiegBegonnen = true;
+  let fertig = false; try { fertig = localStorage.getItem(EINSTIEG) === 'fertig'; } catch {}
+  if (fertig || new URLSearchParams(location.search).has('alles')) { einstiegZeigen(3); return; }
+  formWaehlen('brillant'); einstiegZeigen(0);
+  einstiegUhr = setTimeout(einstiegWeiter, 7000);
+}
+leinwand.addEventListener('pointerup', () => { if (einstiegStufe === 0) { clearTimeout(einstiegUhr); einstiegUhr = setTimeout(einstiegWeiter, 1400); } });
+document.querySelectorAll('[data-form], [data-zustand]').forEach((b) => b.addEventListener('click', () => { if (einstiegStufe === 1) { clearTimeout(einstiegUhr); einstiegUhr = setTimeout(einstiegWeiter, 1800); } }));
+document.querySelectorAll('.zt-regler input').forEach((el) => el.addEventListener('change', () => { if (einstiegStufe === 2) { clearTimeout(einstiegUhr); einstiegUhr = setTimeout(einstiegWeiter, 1500); } }));
+
+// ---------- Ton an und aus ----------
+function tonZeigen() {
+  const b = $('ton'), an = klangIstAn(), k = an ? 'tonAus' : 'tonAn';
+  b.setAttribute('aria-pressed', String(an)); b.dataset.tLabel = k;
+  b.setAttribute('aria-label', TEXTE[sprache][k]); b.title = TEXTE[sprache][k];
+}
+try { if (localStorage.getItem('kristall.ton') === 'aus') klangAn(false); } catch {}
+$('ton').addEventListener('click', () => {
+  klangStarten(); klangAn(!klangIstAn()); tonZeigen();
+  try { localStorage.setItem('kristall.ton', klangIstAn() ? 'an' : 'aus'); } catch {}
+});
+
 function starten() {
+  einstiegBeginnen(); $('ton').hidden = false; tonZeigen();
   $('auftakt').hidden = true; $('kopf').hidden = false; $('regler').hidden = false; $('geste').hidden = false; requestAnimationFrame(() => mitteSetzen(true));
   setTimeout(() => $('geste').classList.add('weg'), 5000);
   groesse();
@@ -940,6 +987,7 @@ function bild(ms) {
   zoom += (zoomZiel - zoom) * (1 - Math.pow(0.82, f));
   for (let i = 0; i < anzahl; i++) abstandZ[i] = abstand[i] * zoom * faktor[i];
   ebenenDrehen();
+  klangBild(ebenenW, anzahl, { tiefe, brech, feuer: SCHLIFFE[form].feuer, zustand, ver: milieu() });
   // erst in die Szene zeichnen, dann Leuchten und glatte Kanten
   const sz = zielBauen('szene', leinwand.width, leinwand.height);
   gl.bindFramebuffer(gl.FRAMEBUFFER, sz.fb);
@@ -977,6 +1025,8 @@ function zeigen(blob, name) {
   const el = document.createElement(film ? 'video' : 'img');
   el.src = url;
   if (film) { el.muted = true; el.loop = true; el.playsInline = true; el.autoplay = true; el.controls = false; }
+  // mit Ton: Tippen auf die Vorschau schaltet ihn ein und aus
+  if (film) el.addEventListener('click', () => { el.muted = !el.muted; if (el.paused) el.play(); });
   else el.alt = '';
   bild.append(el);
   const datei = new File([blob], name, { type: blob.type });
@@ -1007,7 +1057,10 @@ $('aufnahme').addEventListener('click', () => {
   if (!leinwand.captureStream || !window.MediaRecorder) return melden(TEXTE[sprache].keineAufnahme);
   const typ = ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm'].find((m) => MediaRecorder.isTypeSupported(m)) || '';
   const teile = [];
-  aufnehmer = new MediaRecorder(leinwand.captureStream(30), typ ? { mimeType: typ, videoBitsPerSecond: 8e6 } : undefined);
+  const strom = leinwand.captureStream(30), ton = klangSpur();
+  if (ton) strom.addTrack(ton);
+  const typA = ton ? (['video/mp4;codecs=avc1,mp4a.40.2', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus'].find((m) => MediaRecorder.isTypeSupported(m)) || typ) : typ;
+  aufnehmer = new MediaRecorder(strom, typA ? { mimeType: typA, videoBitsPerSecond: 8e6, audioBitsPerSecond: 128e3 } : undefined);
   aufnehmer.ondataavailable = (e) => e.data.size && teile.push(e.data);
   aufnehmer.onstop = () => {
     clearInterval(uhr);

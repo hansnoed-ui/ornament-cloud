@@ -129,9 +129,19 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 }
 
 /* Kamera wenden: übliches Zeichen unten rechts im Bild, über dem unteren Band; feine Linie ohne Fläche */
-.wenden { position: absolute; z-index: 1; right: calc(var(--rand-r) - 7px); bottom: calc(var(--regler-hoehe, 300px) + 6px);
+.wenden, .ton { position: absolute; z-index: 1; right: calc(var(--rand-r) - 7px); bottom: calc(var(--regler-hoehe, 300px) + 6px);
   width: 48px; height: 48px; display: grid; place-items: center; padding: 0; margin: 0; border: 0; background: none;
   color: var(--blanc); cursor: pointer; -webkit-tap-highlight-color: transparent; }
-.wenden .kontur { stroke: var(--noir); stroke-width: 3.2; opacity: 0.55; }   /* dunkle Kontur unter der Linie, damit sie auf hellem Bild lesbar bleibt */
+.wenden .kontur, .ton .kontur { stroke: var(--noir); stroke-width: 3.2; opacity: 0.55; }   /* dunkle Kontur unter der Linie, damit sie auf hellem Bild lesbar bleibt */
+.ton { right: auto; left: calc(var(--rand) - 7px); }
+.ton .strich, .ton[aria-pressed="false"] .wellen { display: none; }
+.ton[aria-pressed="false"] .strich { display: inline; }
 .wenden:active svg { transform: rotate(180deg); transition: transform 0.35s ease; }
 .wenden:focus-visible { outline: 1px solid var(--rouge); outline-offset: 2px; }
+
+/* Geführter Einstieg: zuerst nur Stein und Bild, die Bedienung deckt sich nach und nach auf.
+   Noch Verdecktes ist inert (weder tipp- noch per Tastatur erreichbar); der Platz bleibt, damit der Stein nicht springt. */
+.regler > * { transition: opacity 1.1s ease, transform 1.1s ease; }
+.regler > [inert] { opacity: 0; transform: translateY(8px); }
+.regler { background-repeat: no-repeat; background-position: bottom; background-size: 100% 100%; transition: background-size 1.4s ease; }
+.regler[data-einstieg="0"] { background-size: 100% 28%; }
