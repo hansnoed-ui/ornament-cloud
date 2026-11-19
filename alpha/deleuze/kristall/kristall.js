@@ -431,7 +431,13 @@ function beispielMalen(t) {
   c.fillStyle = 'rgba(236,232,223,0.9)'; c.font = 'italic 46px Georgia, serif'; c.textAlign = 'center';
   c.fillText(Math.floor(t / 3) % 2 ? 'virtuel' : 'actuel', W / 2, 90);
 }
-function beispielStarten() { spur('Beispiel'); quelle = beispiel; spiegelnQuelle = false; starten(); }
+// Beispiel: Christians Porträt «Wan, Pendel» aus dem ORNAMENT LAB; die gemalte Szene bleibt als Rückfall
+function beispielStarten() {
+  spur('Beispiel');
+  videoEl.srcObject = null; videoEl.src = 'beispiel.mp4?v=1';
+  videoEl.play().then(() => { quelle = videoEl; spiegelnQuelle = false; starten(); })
+    .catch(() => { spur('Beispielvideo fehlt'); quelle = beispiel; spiegelnQuelle = false; starten(); });
+}
 
 $('kamera').addEventListener('click', kameraStarten);
 $('beispiel').addEventListener('click', beispielStarten);
