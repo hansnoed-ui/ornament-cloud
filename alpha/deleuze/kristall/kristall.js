@@ -8,10 +8,10 @@ const $ = (id) => document.getElementById(id);
 const TEXTE = {
   de: {
     titel: 'Kristallbild', satz: 'Die Gegenwart spaltet sich in jedem Augenblick.',
-    kamera: 'Kamera', video: 'Video wählen', beispiel: 'Beispiel', hinweis: 'Alles bleibt auf deinem Gerät.',
+    kamera: 'Kamera', video: 'Video oder Fotos', beispiel: 'Beispiel', hinweis: 'Alles bleibt auf deinem Gerät.',
     facetten: 'Facetten', tiefe: 'Zeittiefe', brechung: 'Brechung',
     begriff: 'Begriff', standbild: 'Standbild', aufnahme: 'Aufnahme', stopp: 'Stopp',
-    geste: 'Ziehen dreht den Kristall.',
+    geste: 'Ziehen dreht den Kristall, zwei Finger zoomen.',
     familie: 'Zeit · Das Zeit-Bild, Kapitel 4', 'b-titel': 'Das Kristallbild',
     'b-text': [
       'Für Deleuze ist jede Gegenwart doppelt. In dem Moment, in dem sie da ist, wird sie schon zur Vergangenheit: Sie spaltet sich in eine Gegenwart, die vorübergeht, und eine Vergangenheit, die sich bewahrt.',
@@ -20,17 +20,17 @@ const TEXTE = {
     ],
     'b-frage': 'Entsteht hier ein Nebeneinander verschiedener Zeiten, oder nur eine Verzögerung? Ein Effekt ist noch kein Kristall: Achte darauf, wann du die Gegenwart nicht mehr von ihrem Echo unterscheiden kannst.',
     'b-quelle': 'Gilles Deleuze, L’image-temps (Cinéma 2), Paris: Minuit 1985, Kapitel 4 «Les cristaux de temps». Deutsch: Das Zeit-Bild, Suhrkamp.',
-    keineKamera: 'Die Kamera lässt sich nicht öffnen. Wähle ein Video oder das Beispiel.',
+    keineKamera: 'Die Kamera lässt sich nicht öffnen. Wähle ein Video, Fotos oder das Beispiel.',
     keinGL: 'Dieses Gerät kann WebGL 2 nicht anzeigen. Der Kristall braucht es.',
     kontextWeg: 'Die Grafik ist ausgestiegen. Bitte die Seite neu laden.',
     letzterLauf: 'Der letzte Versuch brach ab nach: '
   },
   en: {
     titel: 'Crystal-image', satz: 'The present splits at every moment.',
-    kamera: 'Camera', video: 'Choose video', beispiel: 'Example', hinweis: 'Everything stays on your device.',
+    kamera: 'Camera', video: 'Video or photos', beispiel: 'Example', hinweis: 'Everything stays on your device.',
     facetten: 'Facets', tiefe: 'Depth of time', brechung: 'Refraction',
     begriff: 'Concept', standbild: 'Still', aufnahme: 'Record', stopp: 'Stop',
-    geste: 'Drag to turn the crystal.',
+    geste: 'Drag to turn the crystal, pinch to zoom.',
     familie: 'Time · The Time-Image, chapter 4', 'b-titel': 'The crystal-image',
     'b-text': [
       'For Deleuze every present is double. The moment it is there, it is already becoming past: it splits into a present that passes and a past that is preserved.',
@@ -39,17 +39,17 @@ const TEXTE = {
     ],
     'b-frage': 'Do different times coexist here, or is it only a delay? An effect is not yet a crystal: notice when you can no longer tell the present from its echo.',
     'b-quelle': 'Gilles Deleuze, L’image-temps (Cinéma 2), Paris: Minuit 1985, chapter 4 “Les cristaux de temps”. English: Cinema 2: The Time-Image, University of Minnesota Press 1989.',
-    keineKamera: 'The camera cannot be opened. Choose a video or the example.',
+    keineKamera: 'The camera cannot be opened. Choose a video, photos or the example.',
     keinGL: 'This device cannot show WebGL 2, which the crystal needs.',
     kontextWeg: 'The graphics stopped. Please reload the page.',
     letzterLauf: 'The last attempt stopped after: '
   },
   fr: {
     titel: 'Image-cristal', satz: 'Le présent se dédouble à chaque instant.',
-    kamera: 'Caméra', video: 'Choisir une vidéo', beispiel: 'Exemple', hinweis: 'Tout reste sur ton appareil.',
+    kamera: 'Caméra', video: 'Vidéo ou photos', beispiel: 'Exemple', hinweis: 'Tout reste sur ton appareil.',
     facetten: 'Facettes', tiefe: 'Profondeur du temps', brechung: 'Réfraction',
     begriff: 'Concept', standbild: 'Image', aufnahme: 'Enregistrer', stopp: 'Arrêter',
-    geste: 'Glisser fait tourner le cristal.',
+    geste: 'Glisser fait tourner le cristal, deux doigts pour zoomer.',
     familie: 'Temps · L’image-temps, chapitre 4', 'b-titel': 'L’image-cristal',
     'b-text': [
       'Pour Deleuze, tout présent est double. Au moment même où il est là, il devient déjà passé : il se dédouble en un présent qui passe et un passé qui se conserve.',
@@ -325,7 +325,56 @@ function beispielStarten() { spur('Beispiel'); quelle = beispiel; spiegelnQuelle
 
 $('kamera').addEventListener('click', kameraStarten);
 $('beispiel').addEventListener('click', beispielStarten);
-$('datei').addEventListener('change', (e) => { const f = e.target.files[0]; if (f) videoStarten(f); });
+$('datei').addEventListener('change', (e) => {
+  const alle = [...e.target.files]; e.target.value = '';
+  const film = alle.find((f) => f.type.startsWith('video/'));
+  if (film) return videoStarten(film);
+  const fotos = alle.filter((f) => f.type.startsWith('image/'));
+  if (fotos.length) fotosStarten(fotos);
+});
+
+// Fotos: ein Foto hat keine Zeit, also bekommt es eine. Eines wandert langsam durch seinen eigenen Ausschnitt,
+// mehrere lösen einander ab. Der Zeitpuffer hält so frühere Ausschnitte und frühere Fotos fest:
+// in den Facetten erscheinen sie als das Virtuelle neben dem aktuellen Bild.
+const fotoBuehne = document.createElement('canvas');
+let fotos = [], fotoStart = 0;
+const FOTO_DAUER = 3.2, FOTO_BLENDE = 1.1;
+async function fotosStarten(dateien) {
+  spur('Fotos gewählt: ' + dateien.length);
+  for (const f of fotos) f.close?.();
+  fotos = [];
+  for (const d of dateien.slice(0, 24)) {
+    try {
+      const roh = await createImageBitmap(d);
+      // Telefonregel: höchstens 2400 Punkte; der Puffer braucht ohnehin weniger
+      const s = Math.min(1, 1600 / Math.max(roh.width, roh.height));
+      fotos.push(s < 1 ? await createImageBitmap(roh, { resizeWidth: Math.round(roh.width * s), resizeHeight: Math.round(roh.height * s), resizeQuality: 'high' }) : roh);
+      if (s < 1) roh.close();
+    } catch { spur('Foto unlesbar'); }
+  }
+  if (!fotos.length) return melden(TEXTE[sprache].keineKamera);
+  fotoBuehne.width = 960; fotoBuehne.height = Math.round(960 * Math.max(innerHeight, 1) / Math.max(innerWidth, 1));
+  quelle = fotoBuehne; spiegelnQuelle = false; fotoStart = performance.now() / 1000; starten();
+}
+function fotoMalen(t) {
+  const c = fotoBuehne.getContext('2d'), W = fotoBuehne.width, H = fotoBuehne.height;
+  const zeit = t - fotoStart, n = fotos.length;
+  const nr = Math.floor(zeit / FOTO_DAUER), innen = zeit - nr * FOTO_DAUER;
+  const zeichne = (k, alpha) => {
+    const f = fotos[((k % n) + n) % n], lauf = (zeit - k * FOTO_DAUER) / (FOTO_DAUER + FOTO_BLENDE);
+    // langsame Kamerafahrt durch das Foto, jede in eine andere Richtung
+    const z = 1.08 + 0.14 * (n === 1 ? 0.5 + 0.5 * Math.sin(zeit * 0.21) : lauf);
+    const w = (n === 1 ? zeit * 0.13 : k * 2.4), rx = Math.cos(w) * 0.5, ry = Math.sin(w * 1.3) * 0.5;
+    const s = Math.max(W / f.width, H / f.height) * z, b = f.width * s, h = f.height * s;
+    c.globalAlpha = alpha;
+    c.drawImage(f, (W - b) / 2 + rx * (b - W), (H - h) / 2 + ry * (h - H), b, h);
+  };
+  c.globalAlpha = 1; c.fillStyle = '#050506'; c.fillRect(0, 0, W, H);
+  if (n === 1) { zeichne(0, 1); return; }
+  zeichne(nr, 1);
+  if (innen > FOTO_DAUER - FOTO_BLENDE) zeichne(nr + 1, (innen - (FOTO_DAUER - FOTO_BLENDE)) / FOTO_BLENDE);
+  c.globalAlpha = 1;
+}
 
 // ---------- Kristall ----------
 let facetten = 18, tiefe = 3, brech = 0.35;
@@ -333,17 +382,44 @@ $('r-facetten').addEventListener('input', (e) => { facetten = +e.target.value; }
 $('r-tiefe').addEventListener('input', (e) => { tiefe = +e.target.value; });
 $('r-brechung').addEventListener('input', (e) => { brech = +e.target.value; });
 
-let gegenwart = { x: 0.5, y: 0.5 }, ziel = { x: 0.5, y: 0.5 }, letzter = null;
-let gedrueckt = false;
-leinwand.addEventListener('pointerdown', (e) => { gedrueckt = true; letzter = [e.clientX, e.clientY]; leinwand.setPointerCapture(e.pointerId); $('geste').classList.add('weg'); });
-leinwand.addEventListener('pointermove', (e) => {
-  if (!gedrueckt) return;
-  const dx = e.clientX - letzter[0], dy = e.clientY - letzter[1]; letzter = [e.clientX, e.clientY];
-  const k = 3.2 / Math.min(innerWidth, innerHeight);
-  gier += dx * k; nick = Math.max(-1.3, Math.min(1.3, nick + dy * k));
-  drehV = dx * k * 0.6; nickV = dy * k * 0.3;          // Schwung beim Loslassen
+let gegenwart = { x: 0.5, y: 0.5 }, ziel = { x: 0.5, y: 0.5 };
+// Gesten: ein Finger dreht frei in jede Richtung (Trackball), zwei Finger zoomen und drehen um die Blickachse
+const finger = new Map();
+let gedrueckt = false, zoom = 1, zoomZiel = 1, zweiAlt = null, zuletztBewegt = 0;
+const zweiMessen = () => { const [a, b] = [...finger.values()]; return { d: Math.hypot(b.x - a.x, b.y - a.y), w: Math.atan2(b.y - a.y, b.x - a.x) }; };
+leinwand.addEventListener('pointerdown', (e) => {
+  finger.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  leinwand.setPointerCapture(e.pointerId); $('geste').classList.add('weg');
+  gedrueckt = true; schwung.fill(0);
+  if (finger.size === 2) zweiAlt = zweiMessen();
 });
-leinwand.addEventListener('pointerup', () => { gedrueckt = false; });
+leinwand.addEventListener('pointermove', (e) => {
+  const f = finger.get(e.pointerId); if (!f) return;
+  const dx = e.clientX - f.x, dy = e.clientY - f.y; f.x = e.clientX; f.y = e.clientY;
+  const jetzt = performance.now(), dt = Math.max(8, Math.min(50, jetzt - zuletztBewegt)); zuletztBewegt = jetzt;
+  if (finger.size === 1) {
+    const k = 3.4 / Math.min(innerWidth, innerHeight);
+    // Bildschirm: x nach rechts, y nach unten; Welt: y nach oben, z zum Auge
+    const ax = dy * k, ay = dx * k;
+    drehen(ax, ay, 0);
+    const g = 16.7 / dt; schwung[0] = ax * g; schwung[1] = ay * g; schwung[2] = 0;
+  } else if (finger.size === 2 && zweiAlt) {
+    const n = zweiMessen();
+    zoomZiel = Math.max(0.55, Math.min(2.4, zoomZiel * n.d / Math.max(1, zweiAlt.d)));
+    let dw = n.w - zweiAlt.w; if (dw > Math.PI) dw -= 2 * Math.PI; if (dw < -Math.PI) dw += 2 * Math.PI;
+    drehen(0, 0, -dw);
+    zweiAlt = n;
+  }
+});
+const loslassen = (e) => {
+  finger.delete(e.pointerId);
+  if (finger.size < 2) zweiAlt = null;
+  if (finger.size === 0) { gedrueckt = false; if (performance.now() - zuletztBewegt > 80) schwung.fill(0); }
+};
+leinwand.addEventListener('pointerup', loslassen);
+leinwand.addEventListener('pointercancel', loslassen);
+leinwand.addEventListener('wheel', (e) => { e.preventDefault(); zoomZiel = Math.max(0.55, Math.min(2.4, zoomZiel * Math.exp(-e.deltaY * 0.0012))); }, { passive: false });
+leinwand.addEventListener('dblclick', () => { zoomZiel = 1; });
 
 const ebenen = new Float32Array(MAX_F * 3), abstand = new Float32Array(MAX_F), schicht = new Float32Array(MAX_F), alter = new Float32Array(MAX_F);
 let gebaut = -1, gebautSeite = 0;
@@ -363,11 +439,42 @@ function kristallBauen(n) {
   }
   gebaut = n;
 }
-let gier = 0.4, nick = -0.25, drehV = 0.0016, nickV = 0;
-function drehung() {
-  const cy = Math.cos(gier), sy = Math.sin(gier), cx = Math.cos(nick), sx = Math.sin(nick);
-  // Spalten (column-major) von Ry * Rx
-  return new Float32Array([cy, 0, -sy,  sy * sx, cx, cy * sx,  sy * cx, -sx, cy * cx]);
+// Drehung als Matrix (column-major), gedreht wird immer um Achsen des Bildschirms:
+// so geht es nach oben, unten und über Kopf gleich gut, ohne Anschlag und ohne Kippen
+const lage = new Float32Array(9);
+const schwung = new Float32Array(3);              // Winkelgeschwindigkeit je Bild (Bildschirmachsen)
+const LEERLAUF = [0.0004, 0.0016, 0];             // ruhiges Eigendrehen
+function achsDrehung(x, y, z) {
+  const w = Math.hypot(x, y, z); if (w < 1e-9) return null;
+  const ux = x / w, uy = y / w, uz = z / w, c = Math.cos(w), s = Math.sin(w), t = 1 - c;
+  return [t * ux * ux + c, t * ux * uy + s * uz, t * ux * uz - s * uy,
+          t * ux * uy - s * uz, t * uy * uy + c, t * uy * uz + s * ux,
+          t * ux * uz + s * uy, t * uy * uz - s * ux, t * uz * uz + c];
+}
+function drehen(x, y, z) {
+  const q = achsDrehung(x, y, z); if (!q) return;
+  const r = lage.slice();
+  for (let j = 0; j < 3; j++) for (let i = 0; i < 3; i++)
+    lage[j * 3 + i] = q[i] * r[j * 3] + q[3 + i] * r[j * 3 + 1] + q[6 + i] * r[j * 3 + 2];
+  ordnen();
+}
+// Rundungsfehler wegnehmen (Gram-Schmidt), sonst verzieht sich der Stein nach vielen Umdrehungen
+function ordnen() {
+  const a = [lage[0], lage[1], lage[2]], b = [lage[3], lage[4], lage[5]];
+  let l = Math.hypot(...a); a.forEach((v, i) => (a[i] = v / l));
+  const d = a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; b.forEach((v, i) => (b[i] = v - d * a[i]));
+  l = Math.hypot(...b); b.forEach((v, i) => (b[i] = v / l));
+  const c = [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+  lage.set([...a, ...b, ...c]);
+}
+// Anfangslage wie bisher: leicht von oben, etwas gedreht
+lage.set([1, 0, 0, 0, 1, 0, 0, 0, 1]); drehen(0, 0.4, 0); drehen(-0.25, 0, 0);
+function schwingen(f) {
+  if (gedrueckt) return;
+  // Schwung klingt weich zum Eigendrehen aus; die Lage bleibt, wo man sie hingedreht hat
+  const a = 1 - Math.pow(0.975, f);
+  for (let i = 0; i < 3; i++) schwung[i] += (LEERLAUF[i] - schwung[i]) * a;
+  drehen(schwung[0] * f, schwung[1] * f, schwung[2] * f);
 }
 function zeitSetzen(kopf, intervall) {
   if (gebaut !== facetten || gebautSeite !== innerWidth / innerHeight) { kristallBauen(facetten); gebautSeite = innerWidth / innerHeight; }
@@ -398,10 +505,12 @@ function fangen() {
   return true;
 }
 
-let ersterLauf = true;
+let ersterLauf = true, letzteMs = 0;
+const abstandZ = new Float32Array(MAX_F);
 function bild(ms) {
   const t = ms / 1000;
   if (quelle === beispiel) beispielMalen(t);
+  else if (quelle === fotoBuehne) fotoMalen(performance.now() / 1000);
   const intervall = Math.max(1 / 60, tiefe / (SCHICHTEN - 1));
   gl.bindTexture(gl.TEXTURE_2D_ARRAY, zeitTex);
   if (t - letzterFang >= intervall || !gefuellt) {
@@ -418,12 +527,15 @@ function bild(ms) {
   }
   gegenwart.x += (ziel.x - gegenwart.x) * 0.12; gegenwart.y += (ziel.y - gegenwart.y) * 0.12;
   zeitSetzen(kopf, intervall);
-  if (!gedrueckt) { gier += drehV; nick += nickV; drehV += (0.0016 - drehV) * 0.02; nickV *= 0.95; nick += (-0.25 - nick) * 0.004; }
+  const f = Math.min(4, Math.max(0.25, (ms - (letzteMs || ms - 16.7)) / 16.7)); letzteMs = ms;
+  schwingen(f);
+  zoom += (zoomZiel - zoom) * (1 - Math.pow(0.82, f));
+  for (let i = 0; i < facetten; i++) abstandZ[i] = abstand[i] * zoom;
   gl.viewport(0, 0, leinwand.width, leinwand.height);
   gl.useProgram(prog);
   gl.uniform1i(ort.uZeit, 0);
-  gl.uniform3fv(ort.uN, ebenen); gl.uniform1fv(ort.uR, abstand); gl.uniform1fv(ort.uSchicht, schicht); gl.uniform1fv(ort.uAlter, alter);
-  gl.uniform1i(ort.uK, facetten); gl.uniformMatrix3fv(ort.uRot, false, drehung()); gl.uniform1f(ort.uSeite, innerWidth / innerHeight);
+  gl.uniform3fv(ort.uN, ebenen); gl.uniform1fv(ort.uR, abstandZ); gl.uniform1fv(ort.uSchicht, schicht); gl.uniform1fv(ort.uAlter, alter);
+  gl.uniform1i(ort.uK, facetten); gl.uniformMatrix3fv(ort.uRot, false, lage); gl.uniform1f(ort.uSeite, innerWidth / innerHeight);
   gl.uniform2f(ort.uLage, (gegenwart.x - 0.5) * 1.2, (gegenwart.y - 0.5) * 0.9); gl.uniform1f(ort.uJetzt, kopf);
   gl.uniform1f(ort.uBrech, brech); gl.uniform1f(ort.uT, t % 100);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
