@@ -60,6 +60,10 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 .begriff h2 { font-family: var(--serif); font-weight: 400; font-size: 2rem; margin: 0; }
 .begriff .fr { font-family: var(--serif); font-style: italic; color: var(--leise); margin: 4px 0 24px; }
 .begriff .text p { font-family: var(--serif); font-size: 1.06rem; line-height: 1.6; margin: 0 0 1em; }
+.begriff .b-zustand { border-top: 1px solid var(--linie); margin-top: 24px; padding-top: 16px; }
+.begriff .b-zustand h3 { font-family: var(--serif); font-weight: 400; font-style: italic; font-size: 1.3rem; margin: 0 0 8px; }
+.begriff .b-zustand p:last-child { font-family: var(--serif); font-size: 1.02rem; line-height: 1.6; margin: 0; }
+.zustaende button { font-family: var(--serif); font-style: italic; }
 .begriff .frage { border-top: 1px solid var(--linie); padding-top: 16px; margin-top: 24px; font-size: 0.92rem; line-height: 1.5; }
 .begriff .frage::before { content: "?"; color: var(--akzent); margin-right: 0.5em; font-family: var(--serif); }
 .begriff .quelle { font-size: 0.78rem; color: var(--leise); line-height: 1.5; }

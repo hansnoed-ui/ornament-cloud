@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#050506">
 <title>Kristallbild · the deleuzian scheme</title>
-<link rel="stylesheet" href="kristall.css?v=9">
+<link rel="stylesheet" href="kristall.css?v=10">
 </head>
 <body>
 <main class="buehne" id="buehne">
@@ -35,6 +35,9 @@
     <nav class="formen" aria-label="Schliff">
       <button data-form="brillant" data-t="brillant">Brillant</button><button data-form="oval" data-t="oval">Oval</button><button data-form="smaragd" data-t="smaragd">Smaragd</button><button data-form="bergkristall" data-t="bergkristall">Bergkristall</button><button data-form="stein" data-t="stein">Stein</button>
     </nav>
+    <nav class="formen zustaende" aria-label="Zustand">
+      <button data-zustand="0">vollkommen</button><button data-zustand="1">gesprungen</button><button data-zustand="2">im Entstehen</button><button data-zustand="3">im Zerfall</button>
+    </nav>
     <label id="zeile-facetten"><span data-t="facetten">Facetten</span><input type="range" id="r-facetten" min="8" max="24" step="1" value="18"></label>
     <label><span data-t="tiefe">Zeittiefe</span><input type="range" id="r-tiefe" min="0.3" max="8" step="0.1" value="3"></label>
     <label><span data-t="brechung">Brechung</span><input type="range" id="r-brechung" min="0" max="1" step="0.01" value="0.35"></label>
@@ -55,6 +58,11 @@
   <h2 id="begriff-titel" data-t="b-titel">Das Kristallbild</h2>
   <p class="fr">l’image-cristal</p>
   <div class="text" data-t="b-text"></div>
+  <section class="b-zustand">
+    <p class="familie" data-t="zustand">Zustand</p>
+    <h3 id="b-zustand-titel"></h3>
+    <p id="b-zustand-text"></p>
+  </section>
   <p class="frage" data-t="b-frage"></p>
   <p class="quelle" data-t="b-quelle"></p>
 </aside>
@@ -71,6 +79,6 @@
 </aside>
 
 <p class="meldung" id="meldung" hidden></p>
-<script type="module" src="kristall.js?v=9"></script>
+<script type="module" src="kristall.js?v=10"></script>
 </body>
 </html>
