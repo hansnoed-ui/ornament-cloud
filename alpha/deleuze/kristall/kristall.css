@@ -83,7 +83,10 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 .begriff .familie { color: var(--rouge); }
 .begriff .zu { background: none; border: 0; color: var(--blanc); font-size: 1.8rem; line-height: 1; padding: 0 4px; cursor: pointer; font-family: var(--schmal); }
 .begriff .zt-tafeln { min-height: 0; }
-.begriff .zt-tafel { display: flex; flex-direction: column; justify-content: center; }
+/* Kurze Tafeln stehen in der Mitte, lange beginnen oben: die beiden Füller schrumpfen auf null, statt den Titel
+   oben aus der Tafel zu schieben (justify-content: center schnitt am Telefon die erste Titelzeile ab). */
+.begriff .zt-tafel { display: flex; flex-direction: column; justify-content: flex-start; padding-top: 12px; }
+.begriff .zt-tafel::before, .begriff .zt-tafel::after { content: ""; flex: 1 0 0; }
 .begriff .zt-tafel > * { width: 100%; max-width: 640px; margin-left: auto; margin-right: auto; }
 .begriff .text p { font-size: 1.02rem; line-height: 1.55; margin: 0 0 0.9em; }
 .begriff #b-zustand-titel { font-style: italic; }
