@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#050506">
 <title>Kristallbild · the deleuzian scheme</title>
-<link rel="stylesheet" href="kristall.css?v=6">
+<link rel="stylesheet" href="kristall.css?v=7">
 </head>
 <body>
 <main class="buehne" id="buehne">
@@ -32,7 +32,10 @@
   </header>
 
   <section class="regler" id="regler" hidden>
-    <label><span data-t="facetten">Facetten</span><input type="range" id="r-facetten" min="8" max="24" step="1" value="18"></label>
+    <nav class="formen" aria-label="Schliff">
+      <button data-form="brillant" data-t="brillant">Brillant</button><button data-form="oval" data-t="oval">Oval</button><button data-form="smaragd" data-t="smaragd">Smaragd</button><button data-form="bergkristall" data-t="bergkristall">Bergkristall</button><button data-form="stein" data-t="stein">Stein</button>
+    </nav>
+    <label id="zeile-facetten"><span data-t="facetten">Facetten</span><input type="range" id="r-facetten" min="8" max="24" step="1" value="18"></label>
     <label><span data-t="tiefe">Zeittiefe</span><input type="range" id="r-tiefe" min="0.3" max="8" step="0.1" value="3"></label>
     <label><span data-t="brechung">Brechung</span><input type="range" id="r-brechung" min="0" max="1" step="0.01" value="0.35"></label>
     <div class="knoepfe">
@@ -56,6 +59,6 @@
 </aside>
 
 <p class="meldung" id="meldung" hidden></p>
-<script type="module" src="kristall.js?v=6"></script>
+<script type="module" src="kristall.js?v=7"></script>
 </body>
 </html>

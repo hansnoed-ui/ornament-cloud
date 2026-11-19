@@ -43,6 +43,11 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 .regler input[type=range] { width: 100%; accent-color: var(--tinte); height: 28px; }
 .knoepfe { grid-column: 1 / -1; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
 .knoepfe button { font-size: 0.85rem; background: rgba(5,5,6,0.5); }
+/* Schliffe: eine ruhige Zeile, wischbar am Telefon */
+.formen { grid-column: 1 / -1; display: flex; gap: 6px; justify-content: center; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.formen::-webkit-scrollbar { display: none; }
+.formen button { flex: none; font-size: 0.8rem; padding: 0.4em 0.9em; background: rgba(5,5,6,0.5); color: var(--leise); }
+.formen button[aria-pressed="true"] { color: var(--tinte); border-color: var(--tinte); }
 #aufnahme.laeuft { border-color: var(--akzent); color: var(--akzent); }
 
 .geste { position: absolute; left: 0; right: 0; top: 52px; text-align: center; font-family: var(--serif); font-style: italic; color: var(--leise); margin: 0; transition: opacity 1.2s; pointer-events: none; z-index: 1; }

@@ -2,6 +2,8 @@
 // Live-Bild und verzögerte Schichten als Facetten eines Kristalls.
 // WebGL2, ohne Bibliotheken, ohne CDN. Alles bleibt im Browser.
 
+import { SCHLIFFE, schliffEbenen } from './schliffe.js?v=7';
+
 const $ = (id) => document.getElementById(id);
 
 // ---------- Sprache ----------
@@ -10,6 +12,7 @@ const TEXTE = {
     titel: 'Kristallbild', satz: 'Die Gegenwart spaltet sich in jedem Augenblick.',
     kamera: 'Kamera', video: 'Video oder Fotos', beispiel: 'Beispiel', hinweis: 'Alles bleibt auf deinem Gerät.',
     facetten: 'Facetten', tiefe: 'Zeittiefe', brechung: 'Brechung',
+    stein: 'Stein', brillant: 'Brillant', oval: 'Oval', smaragd: 'Smaragd', bergkristall: 'Bergkristall', formen: 'Schliff',
     begriff: 'Begriff', standbild: 'Standbild', aufnahme: 'Aufnahme', stopp: 'Stopp',
     geste: 'Ziehen dreht den Kristall, zwei Finger zoomen.',
     familie: 'Zeit · Das Zeit-Bild, Kapitel 4', 'b-titel': 'Das Kristallbild',
@@ -29,6 +32,7 @@ const TEXTE = {
     titel: 'Crystal-image', satz: 'The present splits at every moment.',
     kamera: 'Camera', video: 'Video or photos', beispiel: 'Example', hinweis: 'Everything stays on your device.',
     facetten: 'Facets', tiefe: 'Depth of time', brechung: 'Refraction',
+    stein: 'Stone', brillant: 'Brilliant', oval: 'Oval', smaragd: 'Emerald', bergkristall: 'Quartz', formen: 'Cut',
     begriff: 'Concept', standbild: 'Still', aufnahme: 'Record', stopp: 'Stop',
     geste: 'Drag to turn the crystal, pinch to zoom.',
     familie: 'Time · The Time-Image, chapter 4', 'b-titel': 'The crystal-image',
@@ -48,6 +52,7 @@ const TEXTE = {
     titel: 'Image-cristal', satz: 'Le présent se dédouble à chaque instant.',
     kamera: 'Caméra', video: 'Vidéo ou photos', beispiel: 'Exemple', hinweis: 'Tout reste sur ton appareil.',
     facetten: 'Facettes', tiefe: 'Profondeur du temps', brechung: 'Réfraction',
+    stein: 'Pierre', brillant: 'Brillant', oval: 'Ovale', smaragd: 'Émeraude', bergkristall: 'Cristal de roche', formen: 'Taille',
     begriff: 'Concept', standbild: 'Image', aufnahme: 'Enregistrer', stopp: 'Arrêter',
     geste: 'Glisser fait tourner le cristal, deux doigts pour zoomer.',
     familie: 'Temps · L’image-temps, chapitre 4', 'b-titel': 'L’image-cristal',
@@ -108,7 +113,7 @@ const telefon = matchMedia('(pointer: coarse)').matches || Math.min(screen.width
 const SCHICHTEN = telefon ? 40 : 64;       // Zeitpuffer
 const LANGE_SEITE = telefon ? 480 : 720;   // Aufnahmegrösse im Puffer
 const MAX_DPR = telefon ? 1.25 : 1.5;
-const MAX_F = 24;
+const MAX_F = 60;              // Ebenen: der Brillant braucht 57
 
 const leinwand = $('leinwand');
 const gl = leinwand.getContext('webgl2', { antialias: false, alpha: false, premultipliedAlpha: false, powerPreference: 'high-performance' });
@@ -123,6 +128,7 @@ const FS = `#version 300 es
 precision highp float; precision highp sampler2DArray;
 #define MAX_K ${MAX_F}
 #define WELLEN ${telefon ? 4 : 7}
+#define WEGE ${telefon ? 3 : 5}
 in vec2 v; out vec4 o;
 uniform sampler2DArray uZeit;
 uniform vec3 uN[MAX_K];        // Ebenen des Kristalls (Normalen)
@@ -130,10 +136,14 @@ uniform float uR[MAX_K];       // Abstände
 uniform float uSchicht[MAX_K]; // Zeitschicht je Facette
 uniform float uAlter[MAX_K];   // 0 = jetzt, 1 = tief vergangen
 uniform int uK;
-uniform mat3 uRot;
+uniform float uKante;          // Stärke des Kantenlichts
+uniform vec3 uTon;             // Färbung im Stein (Absorption je Weglänge)
 uniform vec2 uLage;            // Lage des Kristalls im Bild
 uniform float uSeite, uBrech, uT, uJetzt;
 const float AUGE = 3.2, WAND = -2.0, TAN = 0.5;
+// drei Lichter im Raum der Betrachtenden: sie bleiben stehen, wenn der Stein sich dreht
+const vec3 L1 = vec3(0.53, 0.68, 0.5), L2 = vec3(-0.62, 0.55, 0.56), L3 = vec3(0.1, -0.35, 0.93);
+uniform float uFeuer;
 
 float h(float n){ return fract(sin(n*91.345+7.13)*43758.5453); }
 vec3 holen(vec2 u, float s){ vec2 m = 1.0 - abs(mod(u, 2.0) - 1.0); return texture(uZeit, vec3(m.x, 1.0 - m.y, s)).rgb; }
@@ -145,7 +155,7 @@ vec2 wand(vec3 p, vec3 d){
   vec2 q = p.xy + d.xy / max(-d.z, 0.42) * (p.z - WAND) * 0.55;
   return q / vec2(hh * uSeite, hh) * 0.5 + 0.5;
 }
-vec3 ebene(int k){ return uRot * uN[k]; }
+vec3 ebene(int k){ return uN[k]; }   // schon gedreht (auf dem Prozessor, einmal je Bild)
 
 // konvexer Kristall als Schnitt von Halbräumen: Eintritt und Austritt exakt
 bool treffen(vec3 ro, vec3 rd, out float t0, out int i0){
@@ -193,7 +203,7 @@ void main(){
     // Kantenlicht: wie nah liegt der Punkt an einer zweiten Ebene?
     float zweite = -1e9;
     for (int k = 0; k < MAX_K; k++) { if (k >= uK) break; if (k != i0) zweite = max(zweite, dot(p0, ebene(k)) - uR[k]); }
-    float kante = 1.0 - smoothstep(0.0, 0.012 + 0.01 * uBrech, -zweite);
+    float kante = 1.0 - smoothstep(0.0, mix(0.005, 0.012 + 0.01 * uBrech, step(0.5, uKante)), -zweite);
 
     // Spiegelung an der Oberfläche: das Aktuelle
     vec3 rf = reflect(rd, n0);
@@ -208,15 +218,18 @@ void main(){
       float l = mix(410.0, 690.0, (float(w) + 0.5) / float(WELLEN));
       float ior = A + B / pow(l / 1000.0, 2.0);
       vec3 d = refract(rd, n0, 1.0 / ior), p = p0;
-      for (int b = 0; b < 3; b++) {          // bis zu drei innere Wege
+      float weg = 0.0;
+      for (int b = 0; b < WEGE; b++) {       // innere Wege, mit Totalreflexion
         int i1; float t1 = austritt(p + d * 1e-4, d, i1);
-        p = p + d * t1; vec3 n1 = ebene(i1);
+        p = p + d * t1; weg += t1; vec3 n1 = ebene(i1);
         vec3 aus = refract(d, -n1, ior);
         if (dot(aus, aus) > 0.0) { d = aus; break; }
         d = reflect(d, -n1);                 // Totalreflexion: noch einmal durch den Stein
       }
       vec3 gew = spektrum(l);
-      innen += holen(wand(p + vec3(uLage, 0.0), d), sch) * gew;
+      // Feuer: wo ein Strahl den Stein Richtung Licht verlässt, blitzt seine Farbe auf
+      float feuer = pow(max(dot(d, L1), 0.0), 260.0) + pow(max(dot(d, L2), 0.0), 260.0) + pow(max(dot(d, L3), 0.0), 260.0);
+      innen += (holen(wand(p + vec3(uLage, 0.0), d), sch) + feuer * uFeuer) * gew * exp(-uTon * weg * 2.0);
       summe += gew;
     }
     innen /= summe;
@@ -225,10 +238,9 @@ void main(){
     innen = mix(innen, vec3(lum) * vec3(0.9, 0.96, 1.08), alter * 0.4) * (1.0 - alter * 0.22);
     innen *= vec3(1.02, 1.0, 0.98) * 1.08;
 
-    vec3 L = normalize(vec3(0.6, 0.9, 0.7));
-    float glanz = pow(max(dot(rf, L), 0.0), 220.0) * 0.9;
+    float glanz = (pow(max(dot(rf, L1), 0.0), 220.0) + 0.7 * pow(max(dot(rf, L2), 0.0), 300.0) + 0.5 * pow(max(dot(rf, L3), 0.0), 300.0)) * 0.9;
     col = mix(innen, spiegel * 1.15, clamp(fres, 0.0, 1.0)) + glanz;
-    col = mix(col, vec3(1.0, 0.98, 0.94), kante * 0.65);
+    col = mix(col, vec3(1.0, 0.98, 0.94), kante * uKante);
   }
   col += (h(dot(v, vec2(12.9898, 78.233)) * 100.0 + uT) - 0.5) * 0.03;
   o = vec4(col, 1.0);
@@ -248,7 +260,7 @@ if (gl) {
   const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
   const a = gl.getAttribLocation(prog, 'a'); gl.enableVertexAttribArray(a); gl.vertexAttribPointer(a, 2, gl.FLOAT, false, 0, 0);
-  for (const n of ['uZeit', 'uN', 'uR', 'uSchicht', 'uAlter', 'uK', 'uRot', 'uLage', 'uSeite', 'uBrech', 'uT', 'uJetzt']) ort[n] = gl.getUniformLocation(prog, n);
+  for (const n of ['uZeit', 'uN', 'uR', 'uSchicht', 'uAlter', 'uK', 'uKante', 'uTon', 'uFeuer', 'uLage', 'uSeite', 'uBrech', 'uT', 'uJetzt']) ort[n] = gl.getUniformLocation(prog, n);
   spur('Grafik bereit');
 }
 
@@ -377,10 +389,21 @@ function fotoMalen(t) {
 }
 
 // ---------- Kristall ----------
-let facetten = 18, tiefe = 3, brech = 0.35;
+let facetten = 18, tiefe = 3, brech = 0.35, form = 'brillant';
 $('r-facetten').addEventListener('input', (e) => { facetten = +e.target.value; });
 $('r-tiefe').addEventListener('input', (e) => { tiefe = +e.target.value; });
 $('r-brechung').addEventListener('input', (e) => { brech = +e.target.value; });
+// Schliff wählen: Form und Material; die Facettenzahl gilt nur für den freien Stein
+function formWaehlen(name) {
+  form = name;
+  document.querySelectorAll('[data-form]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.form === name)));
+  $('zeile-facetten').hidden = name !== 'stein';
+  brech = SCHLIFFE[name].brechung; $('r-brechung').value = brech;
+  try { localStorage.setItem('kristall.form', name); } catch {}
+  spur('Form ' + name);
+}
+document.querySelectorAll('[data-form]').forEach((b) => b.addEventListener('click', () => formWaehlen(b.dataset.form)));
+try { const f = localStorage.getItem('kristall.form'); formWaehlen(SCHLIFFE[f] ? f : 'brillant'); } catch { formWaehlen('brillant'); }
 
 let gegenwart = { x: 0.5, y: 0.5 }, ziel = { x: 0.5, y: 0.5 };
 // Gesten: ein Finger dreht frei in jede Richtung (Trackball), zwei Finger zoomen und drehen um die Blickachse
@@ -421,23 +444,39 @@ leinwand.addEventListener('pointercancel', loslassen);
 leinwand.addEventListener('wheel', (e) => { e.preventDefault(); zoomZiel = Math.max(0.55, Math.min(2.4, zoomZiel * Math.exp(-e.deltaY * 0.0012))); }, { passive: false });
 leinwand.addEventListener('dblclick', () => { zoomZiel = 1; });
 
-const ebenen = new Float32Array(MAX_F * 3), abstand = new Float32Array(MAX_F), schicht = new Float32Array(MAX_F), alter = new Float32Array(MAX_F);
-let gebaut = -1, gebautSeite = 0;
+const ebenen = new Float32Array(MAX_F * 3), ebenenW = new Float32Array(MAX_F * 3), abstand = new Float32Array(MAX_F), schicht = new Float32Array(MAX_F), alter = new Float32Array(MAX_F);
+let gebaut = '', gebautSeite = 0, anzahl = 0;
 // der Stein passt ins Bild, hochkant wie quer
 const massstab = () => Math.min(1, (innerWidth / innerHeight) * 1.35) * 0.78;
 // ein unregelmässiger Edelstein: Ebenen auf einer Fibonacci-Kugel, gestreckt und leicht verworfen
-function kristallBauen(n) {
-  const gold = Math.PI * (3 - Math.sqrt(5));
-  for (let i = 0; i < n; i++) {
-    const y = 1 - (i + 0.5) / n * 2, r = Math.sqrt(1 - y * y), w = i * gold;
-    let x = Math.cos(w) * r, z = Math.sin(w) * r, yy = y * 0.78;
-    x += (Math.sin(i * 12.9) * 0.5) * 0.12; z += (Math.cos(i * 7.3) * 0.5) * 0.12;
-    const l = Math.hypot(x, yy, z);
-    ebenen[i * 3] = x / l; ebenen[i * 3 + 1] = yy / l; ebenen[i * 3 + 2] = z / l;
-    abstand[i] = (0.82 + 0.1 * Math.abs(Math.sin(i * 3.7))) * massstab();
-    alter[i] = ((i * 0.618034) % 1) * 0.92 + 0.08;   // jede Facette eine andere Zeit
+function kristallBauen() {
+  const ms = massstab();
+  if (form !== 'stein') {
+    const e = schliffEbenen(form, ms);
+    anzahl = e.length;
+    e.forEach(([x, y, z, d], i) => { ebenen.set([x, y, z], i * 3); abstand[i] = d; });
+  } else {
+    // ein unregelmässiger Edelstein: Ebenen auf einer Fibonacci-Kugel, gestreckt und leicht verworfen
+    const n = facetten, gold = Math.PI * (3 - Math.sqrt(5));
+    for (let i = 0; i < n; i++) {
+      const y = 1 - (i + 0.5) / n * 2, r = Math.sqrt(1 - y * y), w = i * gold;
+      let x = Math.cos(w) * r, z = Math.sin(w) * r, yy = y * 0.78;
+      x += (Math.sin(i * 12.9) * 0.5) * 0.12; z += (Math.cos(i * 7.3) * 0.5) * 0.12;
+      const l = Math.hypot(x, yy, z);
+      ebenen[i * 3] = x / l; ebenen[i * 3 + 1] = yy / l; ebenen[i * 3 + 2] = z / l;
+      abstand[i] = (0.82 + 0.1 * Math.abs(Math.sin(i * 3.7))) * ms;
+    }
+    anzahl = n;
   }
-  gebaut = n;
+  for (let i = 0; i < anzahl; i++) alter[i] = ((i * 0.618034) % 1) * 0.92 + 0.08;   // jede Facette eine andere Zeit
+  gebaut = form + facetten;
+}
+// Normalen einmal je Bild drehen statt in jedem Bildpunkt
+function ebenenDrehen() {
+  for (let i = 0; i < anzahl; i++) {
+    const x = ebenen[i * 3], y = ebenen[i * 3 + 1], z = ebenen[i * 3 + 2];
+    for (let r = 0; r < 3; r++) ebenenW[i * 3 + r] = lage[r] * x + lage[3 + r] * y + lage[6 + r] * z;
+  }
 }
 // Drehung als Matrix (column-major), gedreht wird immer um Achsen des Bildschirms:
 // so geht es nach oben, unten und über Kopf gleich gut, ohne Anschlag und ohne Kippen
@@ -468,7 +507,7 @@ function ordnen() {
   lage.set([...a, ...b, ...c]);
 }
 // Anfangslage wie bisher: leicht von oben, etwas gedreht
-lage.set([1, 0, 0, 0, 1, 0, 0, 0, 1]); drehen(0, 0.4, 0); drehen(-0.25, 0, 0);
+lage.set([1, 0, 0, 0, 1, 0, 0, 0, 1]); drehen(0, 0.4, 0); drehen(-0.5, 0, 0);
 function schwingen(f) {
   if (gedrueckt) return;
   // Schwung klingt weich zum Eigendrehen aus; die Lage bleibt, wo man sie hingedreht hat
@@ -477,8 +516,8 @@ function schwingen(f) {
   drehen(schwung[0] * f, schwung[1] * f, schwung[2] * f);
 }
 function zeitSetzen(kopf, intervall) {
-  if (gebaut !== facetten || gebautSeite !== innerWidth / innerHeight) { kristallBauen(facetten); gebautSeite = innerWidth / innerHeight; }
-  for (let i = 0; i < facetten; i++) {
+  if (gebaut !== form + facetten || gebautSeite !== innerWidth / innerHeight) { kristallBauen(); gebautSeite = innerWidth / innerHeight; }
+  for (let i = 0; i < anzahl; i++) {
     const zurueck = Math.min(SCHICHTEN - 1, Math.round(alter[i] * tiefe / intervall));
     schicht[i] = (kopf - zurueck + SCHICHTEN) % SCHICHTEN;
   }
@@ -530,12 +569,13 @@ function bild(ms) {
   const f = Math.min(4, Math.max(0.25, (ms - (letzteMs || ms - 16.7)) / 16.7)); letzteMs = ms;
   schwingen(f);
   zoom += (zoomZiel - zoom) * (1 - Math.pow(0.82, f));
-  for (let i = 0; i < facetten; i++) abstandZ[i] = abstand[i] * zoom;
+  for (let i = 0; i < anzahl; i++) abstandZ[i] = abstand[i] * zoom;
+  ebenenDrehen();
   gl.viewport(0, 0, leinwand.width, leinwand.height);
   gl.useProgram(prog);
   gl.uniform1i(ort.uZeit, 0);
-  gl.uniform3fv(ort.uN, ebenen); gl.uniform1fv(ort.uR, abstandZ); gl.uniform1fv(ort.uSchicht, schicht); gl.uniform1fv(ort.uAlter, alter);
-  gl.uniform1i(ort.uK, facetten); gl.uniformMatrix3fv(ort.uRot, false, lage); gl.uniform1f(ort.uSeite, innerWidth / innerHeight);
+  gl.uniform3fv(ort.uN, ebenenW); gl.uniform1fv(ort.uR, abstandZ); gl.uniform1fv(ort.uSchicht, schicht); gl.uniform1fv(ort.uAlter, alter);
+  gl.uniform1i(ort.uK, anzahl); gl.uniform1f(ort.uKante, SCHLIFFE[form].kante); gl.uniform3fv(ort.uTon, SCHLIFFE[form].ton); gl.uniform1f(ort.uFeuer, SCHLIFFE[form].feuer); gl.uniform1f(ort.uSeite, innerWidth / innerHeight);
   gl.uniform2f(ort.uLage, (gegenwart.x - 0.5) * 1.2, (gegenwart.y - 0.5) * 0.9); gl.uniform1f(ort.uJetzt, kopf);
   gl.uniform1f(ort.uBrech, brech); gl.uniform1f(ort.uT, t % 100);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
