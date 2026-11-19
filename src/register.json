@@ -113,6 +113,15 @@
    "atelier": true
   },
   {
+   "id": "deleuze-kristall",
+   "name": "Kristallbild (the deleuzian scheme)",
+   "tuer": "spielen-denken",
+   "art": "App",
+   "status": "direktlink",
+   "adresse": "alpha/deleuze/kristall/",
+   "kurz": "Prototyp: ein lichtbrechender Kristall über dem Kamerabild, jede Facette eine andere Zeit."
+  },
+  {
    "id": "kunsttheorie",
    "name": "Theorie der Kunst zwischen Luhmann und Deleuze",
    "tuer": "spielen-denken",

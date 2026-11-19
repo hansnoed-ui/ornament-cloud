@@ -37,6 +37,7 @@ const AUSNAHMEN = [
   ["ORNAMENT COMPOSER 0.1, Spuren und Plugins, mit eigener Oberfläche wie das Lab, steht für sich, nur per Direktlink, noindex (9. November 2026)", /^alpha\/composer\//],
   ["ORNAMENT LAB 0.1 mit eigener Oberfläche, steht für sich, nur per Direktlink (23. Oktober 2026; alpha/lab/README.md)", /^alpha\/lab\//],
   ["Die Website für das Maltherapie-Angebot, eigenständig und in sich geschlossen; zieht später auf eine eigene Adresse bei Hostpoint (24. Oktober 2026, maltherapie/DESIGN.md)", /^maltherapie\//],
+  ["«the deleuzian scheme», Prototypen aus hansnoed-ui/the-deleuzian-scheme (Kristallbild), eigene Oberfläche, nur per Direktlink, noindex (19. November 2026)", /^alpha\/deleuze\//],
   ["KONSTELLATION, statische Fassung der App aus hansnoed-ui/konstellation mit eigener nüchterner Kopfzeile, steht für sich, nur per Direktlink, noindex (6. November 2026)", /^alpha\/konstellation\//],
   ["Hörseite der EP «directer» von the i, schlichter Player für Freunde, steht für sich mit eigener dunkler Oberfläche; bis 13. November 2026 nur per Direktlink, seither öffentlich (10. November 2026, docs/ep-directer.md)", /^listen\//],
   ["Die Stimme im Rahmen des Neubaus (14. November 2026), erzeugt von tools/build-b.mjs; nur per Direktlink, mit Passwort; eigene Tests in tests/voice-php.test.mjs", /^alpha\/voice\/index\.html$/],
