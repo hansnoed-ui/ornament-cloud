@@ -13,6 +13,7 @@ const TEXTE = {
     kamera: 'Kamera', video: 'Video oder Fotos', beispiel: 'Beispiel', hinweis: 'Alles bleibt auf deinem Gerät.',
     facetten: 'Facetten', tiefe: 'Zeittiefe', brechung: 'Brechung', verschmelzung: 'Verschmelzung',
     glossen: {
+      keim: { begriff: 'le germe et le milieu', satz: 'Ein Keim lässt ein formloses Milieu kristallisieren. Wo du doppelt tippst, beginnt der Kristall: zuerst ist er nur Gegenwart, die Vergangenheit sammelt er erst im Wachsen.', zitat: '', quelle: 'Deleuze, L’image-temps, Kap. 4' },
       formen: { begriff: 'le cristal', satz: 'Jeder Schliff fasst die Zeit anders: viele kleine Facetten zerstreuen sie, grosse Flächen zeigen sie ruhig.', zitat: '«Ce que le cristal révèle ou fait voir, c’est le fondement caché du temps.»', quelle: 'Deleuze, L’image-temps, Kap. 4' },
       zustaende: { begriff: 'les quatre états', satz: 'Deleuze unterscheidet vier Zustände des Kristalls und liest sie an vier Regisseuren ab.', zitat: '«Ophuls, Renoir, Fellini, Visconti»', quelle: 'Deleuze, L’image-temps, Kap. 4' },
       facetten: { begriff: 'le circuit', satz: 'Jede Facette ist ein kleiner Kreis zwischen dem Aktuellen und seinem Virtuellen. Mehr Facetten, engere Kreise.', zitat: '', quelle: '' },
@@ -32,7 +33,7 @@ const TEXTE = {
     begriff: 'Begriff', standbild: 'Standbild', aufnahme: 'Aufnahme', stopp: 'Stopp',
     teilen: 'Teilen', sichern: 'Sichern', komma: '.', 'ergebnis-hinweis': 'Gesichert im Ordner «Downloads». «Teilen» legt es direkt in die Galerie oder eine App.',
     keineAufnahme: 'Dieser Browser kann die Leinwand nicht aufnehmen. Das Standbild geht.',
-    geste: 'Ziehen dreht den Kristall, zwei Finger zoomen.',
+    geste: 'Ziehen dreht den Kristall, zwei Finger zoomen, Doppeltipp setzt einen Keim.',
     familie: 'Zeit · Das Zeit-Bild, Kapitel 4', 'b-titel': 'Das Kristallbild',
     'b-text': [
       'Für Deleuze ist jede Gegenwart doppelt. In dem Moment, in dem sie da ist, wird sie schon zur Vergangenheit: Sie spaltet sich in eine Gegenwart, die vorübergeht, und eine Vergangenheit, die sich bewahrt.',
@@ -51,6 +52,7 @@ const TEXTE = {
     kamera: 'Camera', video: 'Video or photos', beispiel: 'Example', hinweis: 'Everything stays on your device.',
     facetten: 'Facets', tiefe: 'Depth of time', brechung: 'Refraction', verschmelzung: 'Coalescence',
     glossen: {
+      keim: { begriff: 'le germe et le milieu', satz: 'A seed makes a formless milieu crystallise. Where you double-tap, the crystal begins: at first it is only present, it gathers the past only as it grows.', zitat: '', quelle: 'Deleuze, The Time-Image, ch. 4' },
       formen: { begriff: 'le cristal', satz: 'Each cut holds time differently: many small facets scatter it, large planes show it calmly.', zitat: '“What the crystal reveals or makes visible is the hidden ground of time.”', quelle: 'Deleuze, The Time-Image, ch. 4' },
       zustaende: { begriff: 'les quatre états', satz: 'Deleuze distinguishes four states of the crystal and reads them in four directors.', zitat: '“Ophüls, Renoir, Fellini, Visconti”', quelle: 'Deleuze, The Time-Image, ch. 4' },
       facetten: { begriff: 'le circuit', satz: 'Each facet is a small circuit between the actual and its virtual. More facets, tighter circuits.', zitat: '', quelle: '' },
@@ -70,7 +72,7 @@ const TEXTE = {
     begriff: 'Concept', standbild: 'Still', aufnahme: 'Record', stopp: 'Stop',
     teilen: 'Share', sichern: 'Save', komma: '.', 'ergebnis-hinweis': 'Saved to your “Downloads” folder. “Share” sends it straight to your gallery or an app.',
     keineAufnahme: 'This browser cannot record the canvas. Stills work.',
-    geste: 'Drag to turn the crystal, pinch to zoom.',
+    geste: 'Drag to turn the crystal, pinch to zoom, double-tap to plant a seed.',
     familie: 'Time · The Time-Image, chapter 4', 'b-titel': 'The crystal-image',
     'b-text': [
       'For Deleuze every present is double. The moment it is there, it is already becoming past: it splits into a present that passes and a past that is preserved.',
@@ -89,6 +91,7 @@ const TEXTE = {
     kamera: 'Caméra', video: 'Vidéo ou photos', beispiel: 'Exemple', hinweis: 'Tout reste sur ton appareil.',
     facetten: 'Facettes', tiefe: 'Profondeur du temps', brechung: 'Réfraction', verschmelzung: 'Coalescence',
     glossen: {
+      keim: { begriff: 'le germe et le milieu', satz: 'Un germe fait cristalliser un milieu informe. Là où tu touches deux fois, le cristal commence : d’abord il n’est que présent, il ne recueille le passé qu’en croissant.', zitat: '', quelle: 'Deleuze, L’image-temps, ch. 4' },
       formen: { begriff: 'le cristal', satz: 'Chaque taille saisit le temps autrement : de nombreuses petites facettes le dispersent, de grands plans le montrent calmement.', zitat: '« Ce que le cristal révèle ou fait voir, c’est le fondement caché du temps. »', quelle: 'Deleuze, L’image-temps, ch. 4' },
       zustaende: { begriff: 'les quatre états', satz: 'Deleuze distingue quatre états du cristal et les lit chez quatre cinéastes.', zitat: '« Ophuls, Renoir, Fellini, Visconti »', quelle: 'Deleuze, L’image-temps, ch. 4' },
       facetten: { begriff: 'le circuit', satz: 'Chaque facette est un petit circuit entre l’actuel et son virtuel. Plus de facettes, des circuits plus serrés.', zitat: '', quelle: '' },
@@ -108,7 +111,7 @@ const TEXTE = {
     begriff: 'Concept', standbild: 'Image', aufnahme: 'Enregistrer', stopp: 'Arrêter',
     teilen: 'Partager', sichern: 'Télécharger', komma: ',', 'ergebnis-hinweis': 'Enregistré dans le dossier « Téléchargements ». « Partager » l’envoie directement dans la galerie ou une app.',
     keineAufnahme: 'Ce navigateur ne peut pas enregistrer le canevas. L’image fixe fonctionne.',
-    geste: 'Glisser fait tourner le cristal, deux doigts pour zoomer.',
+    geste: 'Glisser fait tourner le cristal, deux doigts pour zoomer, double toucher pour semer un germe.',
     familie: 'Temps · L’image-temps, chapitre 4', 'b-titel': 'L’image-cristal',
     'b-text': [
       'Pour Deleuze, tout présent est double. Au moment même où il est là, il devient déjà passé : il se dédouble en un présent qui passe et un passé qui se conserve.',
@@ -707,7 +710,6 @@ const loslassen = (e) => {
 leinwand.addEventListener('pointerup', loslassen);
 leinwand.addEventListener('pointercancel', loslassen);
 leinwand.addEventListener('wheel', (e) => { e.preventDefault(); zoomZiel = Math.max(0.55, Math.min(2.4, zoomZiel * Math.exp(-e.deltaY * 0.0012))); }, { passive: false });
-leinwand.addEventListener('dblclick', () => { zoomZiel = 1; });
 
 const ebenen = new Float32Array(MAX_F * 3), ebenenW = new Float32Array(MAX_F * 3), abstand = new Float32Array(MAX_F), schicht = new Float32Array(MAX_F), alter = new Float32Array(MAX_F);
 let gebaut = '', gebautSeite = 0, anzahl = 0, huelle = 1;
@@ -819,6 +821,16 @@ function zustandAnwenden(t) {
       faktor[i] = 1 - 0.16 * Math.pow(0.5 + 0.5 * Math.sin(t * 0.13 + i * 1.7), 4);
     }
   }
+  // Keim: der junge Kristall ist klein und trägt nur Gegenwart; Facette um Facette tritt er hervor
+  const w = keimWachstum(performance.now() / 1000);
+  if (w < 1) {
+    const e = 1 - Math.pow(1 - w, 3);
+    for (let i = 0; i < anzahl; i++) {
+      const rang = ((i * 0.618034) % 1);
+      faktor[i] *= (0.06 + 0.94 * e) * (0.7 + 0.3 * Math.min(1, Math.max(0, w * 1.8 - rang * 0.8)));
+      alterAkt[i] *= e;
+    }
+  } else keimStart = -1;
   for (let k = 0; k < 3; k++) {
     const x = RISS[k * 3], y = RISS[k * 3 + 1], z = RISS[k * 3 + 2];
     for (let r = 0; r < 3; r++) rissW[k * 3 + r] = lage[r] * x + lage[3 + r] * y + lage[6 + r] * z;
@@ -890,7 +902,7 @@ function bild(ms) {
   gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D_ARRAY, zeitTex);
   gl.uniform1i(ort.uZeit, 0);
   gl.uniform3fv(ort.uN, ebenenW); gl.uniform1fv(ort.uR, abstandZ); gl.uniform1fv(ort.uSchicht, schicht); gl.uniform1fv(ort.uAlter, alterAkt);
-  gl.uniform1i(ort.uK, anzahl); gl.uniform1f(ort.uKante, SCHLIFFE[form].kante); gl.uniform3fv(ort.uTon, SCHLIFFE[form].ton); gl.uniform1f(ort.uFeuer, SCHLIFFE[form].feuer); gl.uniform1f(ort.uVer, verschmelzung);
+  gl.uniform1i(ort.uK, anzahl); gl.uniform1f(ort.uKante, SCHLIFFE[form].kante); gl.uniform3fv(ort.uTon, SCHLIFFE[form].ton); gl.uniform1f(ort.uFeuer, SCHLIFFE[form].feuer); gl.uniform1f(ort.uVer, milieu());
   gl.uniform1i(ort.uZustand, zustand); gl.uniform1f(ort.uUnschaerfe, 0.009); gl.uniform1f(ort.uRad, huelle * zoom * 1.03); gl.uniform3fv(ort.uRiss, rissW.subarray(0, 3)); gl.uniform3fv(ort.uRissA, rissW.subarray(3, 6)); gl.uniform3fv(ort.uRissB, rissW.subarray(6, 9)); gl.uniform1f(ort.uSeite, innerWidth / innerHeight);
   gl.uniform2f(ort.uLage, (gegenwart.x - 0.5) * 1.2, (gegenwart.y - 0.5) * 0.9); gl.uniform1f(ort.uJetzt, kopf);
   gl.uniform1f(ort.uBrech, brech); gl.uniform1f(ort.uT, t % 100);
@@ -1004,11 +1016,33 @@ function facetteUnter(x, y) {
   }
   return t0 < t1 && t0 > 0 ? i0 : -1;
 }
-let tippStart = null, zeitUhr = 0;
+let tippStart = null, zeitUhr = 0, letzterTipp = null;
+// ---------- Keim und Milieu: ein Doppeltipp setzt einen Keim, aus dem der Kristall wächst ----------
+let keimStart = -1;
+function keimSetzen(x, y) {
+  const seite = innerWidth / innerHeight, sx = (x / innerWidth) * 2 - 1, sy = 1 - (y / innerHeight) * 2;
+  // Bildpunkt auf die Ebene des Kristalls (z = 0) zurückrechnen
+  const lx = Math.max(-seite * 1.3, Math.min(seite * 1.3, sx * seite * 0.5 * 3.2)), ly = Math.max(-1.25, Math.min(1.25, sy * 1.6));
+  ziel.x = lx / 1.2 + 0.5; ziel.y = ly / 0.9 + 0.5;
+  gegenwart.x = ziel.x; gegenwart.y = ziel.y;     // der Keim sitzt sofort, gewachsen wird an Ort
+  keimStart = performance.now() / 1000;
+  glosse('keim'); spur('Keim');
+}
+const KEIM_DAUER = 3.2;
+// das Milieu kristallisiert mit: die Verschmelzung schwillt beim Wachsen an und legt sich wieder
+function milieu() { const w = keimWachstum(performance.now() / 1000); return w >= 1 ? verschmelzung : verschmelzung + (0.85 - verschmelzung) * Math.sin(Math.PI * w) * Math.max(0, Math.sign(0.85 - verschmelzung)); }
+function keimWachstum(t) { return keimStart < 0 ? 1 : Math.min(1, (t - keimStart) / KEIM_DAUER); }
+// am Rechner auch per Doppelklick
+leinwand.addEventListener('dblclick', (e) => { if (keimWachstum(performance.now() / 1000) >= 1 || keimStart < 0) { letzterTipp = null; $('facettenzeit').classList.add('weg'); keimSetzen(e.clientX, e.clientY); } });
 leinwand.addEventListener('pointerdown', (e) => { tippStart = finger.size <= 1 ? { x: e.clientX, y: e.clientY, t: performance.now() } : null; });
 leinwand.addEventListener('pointerup', (e) => {
   const s0 = tippStart; tippStart = null;
   if (!s0 || performance.now() - s0.t > 350 || Math.hypot(e.clientX - s0.x, e.clientY - s0.y) > 8) return;
+  // zweiter Tipp kurz nach dem ersten und nahe dabei: ein Keim
+  if (letzterTipp && performance.now() - letzterTipp.t < 450 && Math.hypot(e.clientX - letzterTipp.x, e.clientY - letzterTipp.y) < 40) {
+    letzterTipp = null; $('facettenzeit').classList.add('weg'); keimSetzen(e.clientX, e.clientY); return;
+  }
+  letzterTipp = { x: e.clientX, y: e.clientY, t: performance.now() };
   const T = TEXTE[sprache], i = facetteUnter(e.clientX, e.clientY), el = $('facettenzeit');
   if (i < 0) el.textContent = T.bildJetzt;
   else {
