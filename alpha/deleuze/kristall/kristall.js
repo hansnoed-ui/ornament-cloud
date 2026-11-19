@@ -1106,9 +1106,14 @@ function zeitstempel() {
 }
 
 // ---------- Glossen: der Begriff am Rand, während man einstellt ----------
+// Jede Glosse kommt nur einmal je Besuch von selbst; danach bleibt das Bild frei, der Begriff liegt unter «Begriff».
+// Am Handy zeigt sie nur Begriff und Satz, Antippen öffnet die ganze Lektüre (Christian, 19.11.2026).
 let glosseUhr = 0, glosseSchluessel = '';
+const glosseGezeigt = new Set(), glosseDauer = () => (innerWidth <= 560 ? 4500 : 7000);
 function glosse(k) {
   const g = TEXTE[sprache].glossen[k]; if (!g) return;
+  if (glosseGezeigt.has(k)) return;
+  glosseGezeigt.add(k);
   const el = $('glosse');
   glosseSchluessel = k;
   $('glosse-begriff').textContent = g.begriff;
@@ -1116,12 +1121,12 @@ function glosse(k) {
   $('glosse-zitat').textContent = g.zitat; $('glosse-zitat').hidden = !g.zitat;
   $('glosse-quelle').textContent = g.quelle; $('glosse-quelle').hidden = !g.quelle;
   el.hidden = false; requestAnimationFrame(() => el.classList.add('da'));
-  clearTimeout(glosseUhr); glosseUhr = setTimeout(glosseWeg, 7000);
+  clearTimeout(glosseUhr); glosseUhr = setTimeout(glosseWeg, glosseDauer());
 }
 function glosseWeg() { const el = $('glosse'); el.classList.remove('da'); setTimeout(() => { if (!el.classList.contains('da')) el.hidden = true; }, 700); }
 for (const [id, k] of [['r-facetten', 'facetten'], ['r-tiefe', 'tiefe'], ['r-brechung', 'brechung'], ['r-verschmelzung', 'verschmelzung']]) {
   $(id).addEventListener('pointerdown', () => glosse(k));
-  $(id).addEventListener('input', () => { if (glosseSchluessel !== k || $('glosse').hidden) glosse(k); clearTimeout(glosseUhr); glosseUhr = setTimeout(glosseWeg, 7000); });
+  $(id).addEventListener('input', () => { if (glosseSchluessel !== k || $('glosse').hidden) glosse(k); else { clearTimeout(glosseUhr); glosseUhr = setTimeout(glosseWeg, glosseDauer()); } });
 }
 document.querySelectorAll('[data-form]').forEach((b) => b.addEventListener('click', () => glosse('formen')));
 $('glosse').addEventListener('click', () => { glosseWeg(); $('begriff').hidden = false; });
@@ -1199,7 +1204,8 @@ $('begriff-auf').addEventListener('click', () => { $('begriff').hidden = false; 
 $('begriff-zu').addEventListener('click', () => { $('begriff').hidden = true; });
 addEventListener('keydown', (e) => { if (e.key === 'Escape') { $('begriff').hidden = true; schliessen(); } });
 
-try { const z = +localStorage.getItem('kristall.zustand'); zustandWaehlen(z >= 0 && z < 4 ? z : 0, true); } catch { zustandWaehlen(0, true); }
+// jeder Besuch beginnt beim vollkommenen Kristall (Christian, 19.11.2026)
+zustandWaehlen(0, true);
 uebersetzen();
 // Direktstart für Tests und Vorführungen: ?beispiel
 if (new URLSearchParams(location.search).has('beispiel')) beispielStarten();
