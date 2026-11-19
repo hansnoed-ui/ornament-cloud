@@ -68,10 +68,16 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 .glosse.da ~ .geste { transform: translateX(104%); }
 /* Glosse: Tippen öffnet die Lektüre, × oder Wischen nach rechts schliesst sie */
 .glosse { cursor: pointer; touch-action: pan-y; }
-.glosse-zu { position: absolute; top: 2px; right: max(4px, env(safe-area-inset-right)); width: 40px; height: 40px; padding: 0; background: none; border: 0;
-  font-family: var(--schmal); font-size: 1.5rem; line-height: 1; color: var(--gris); cursor: pointer; }
+/* Das × ist gezeichnet, zwei feine Striche statt eines Schriftzeichens: Seine Mitte liegt auf der Höhe der Begriffszeile
+   und gleich weit vom oberen wie vom rechten Rand, so sitzt es in der Ecke (Christian, 19.11.2026). Die Tippfläche bleibt 40 × 40. */
+.glosse-zu { position: absolute; top: 1px; right: calc(max(18px, env(safe-area-inset-right)) - 17px); width: 40px; height: 40px; padding: 0;
+  background: none; border: 0; font-size: 0; color: var(--gris); cursor: pointer; }
+.glosse-zu::before, .glosse-zu::after { content: ""; position: absolute; left: 50%; top: 50%; width: 12px; height: 1.25px;
+  margin: -0.625px 0 0 -6px; background: currentColor; transform: rotate(45deg); }
+.glosse-zu::after { transform: rotate(-45deg); }
 .glosse-zu:hover, .glosse-zu:focus-visible { color: var(--blanc); }
-.glosse-begriff { margin-right: 36px !important; }
+.glosse-zu:focus-visible { outline: 1px solid var(--gris); outline-offset: -8px; }
+.glosse-begriff { margin-right: 26px !important; }
 .glosse.da { transform: none; }
 .glosse p { margin: 0 0 6px; }
 .glosse p:last-child { margin-bottom: 0; }
