@@ -44,7 +44,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 .knoepfe { grid-column: 1 / -1; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
 .knoepfe button { font-size: 0.85rem; background: rgba(5,5,6,0.5); }
 /* Schliffe: eine ruhige Zeile, wischbar am Telefon */
-.formen { grid-column: 1 / -1; display: flex; gap: 6px; justify-content: center; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.formen { grid-column: 1 / -1; display: flex; gap: 6px; justify-content: safe center; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
 .formen::-webkit-scrollbar { display: none; }
 .formen button { flex: none; font-size: 0.8rem; padding: 0.4em 0.9em; background: rgba(5,5,6,0.5); color: var(--leise); }
 .formen button[aria-pressed="true"] { color: var(--tinte); border-color: var(--tinte); }
@@ -64,6 +64,15 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 .begriff .frage::before { content: "?"; color: var(--akzent); margin-right: 0.5em; font-family: var(--serif); }
 .begriff .quelle { font-size: 0.78rem; color: var(--leise); line-height: 1.5; }
 
+/* Ergebnis: Vorschau wie ein Abzug, unten am Daumen */
+.ergebnis { position: fixed; left: 0; right: 0; bottom: 0; z-index: 3; padding: 18px 16px max(18px, env(safe-area-inset-bottom)); background: rgba(5,5,6,0.95); border-top: 1px solid var(--linie); backdrop-filter: blur(6px); display: grid; gap: 12px; justify-items: center; }
+.ergebnis .zu { position: absolute; top: 8px; right: 10px; border: none; font-size: 1.6rem; line-height: 1; padding: 0.2em 0.5em; }
+.ergebnis-bild { width: min(62vw, 300px); max-height: 46vh; display: grid; place-items: center; }
+.ergebnis-bild img, .ergebnis-bild video { max-width: 100%; max-height: 46vh; border: 1px solid var(--linie); background: #000; display: block; }
+.ergebnis-mb { margin: 0; font-size: 0.72rem; letter-spacing: 0.08em; color: var(--leise); }
+.ergebnis-knoepfe { display: flex; gap: 10px; }
+.ergebnis-knoepfe .haupt { background: var(--tinte); color: var(--schwarz); border-color: var(--tinte); }
+.ergebnis-hinweis { margin: 0; font-size: 0.8rem; color: var(--leise); text-align: center; max-width: 30em; }
 .meldung { position: fixed; left: 16px; right: 16px; top: 16px; margin: 0; padding: 12px 14px; background: #1a1210; border: 1px solid var(--akzent); border-radius: 8px; font-size: 0.85rem; z-index: 4; }
 
 @media (max-width: 560px) {

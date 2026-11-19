@@ -14,6 +14,8 @@ const TEXTE = {
     facetten: 'Facetten', tiefe: 'Zeittiefe', brechung: 'Brechung',
     stein: 'Stein', brillant: 'Brillant', oval: 'Oval', smaragd: 'Smaragd', bergkristall: 'Bergkristall', formen: 'Schliff',
     begriff: 'Begriff', standbild: 'Standbild', aufnahme: 'Aufnahme', stopp: 'Stopp',
+    teilen: 'Teilen', sichern: 'Sichern', komma: '.', 'ergebnis-hinweis': 'Gesichert im Ordner «Downloads». «Teilen» legt es direkt in die Galerie oder eine App.',
+    keineAufnahme: 'Dieser Browser kann die Leinwand nicht aufnehmen. Das Standbild geht.',
     geste: 'Ziehen dreht den Kristall, zwei Finger zoomen.',
     familie: 'Zeit · Das Zeit-Bild, Kapitel 4', 'b-titel': 'Das Kristallbild',
     'b-text': [
@@ -34,6 +36,8 @@ const TEXTE = {
     facetten: 'Facets', tiefe: 'Depth of time', brechung: 'Refraction',
     stein: 'Stone', brillant: 'Brilliant', oval: 'Oval', smaragd: 'Emerald', bergkristall: 'Quartz', formen: 'Cut',
     begriff: 'Concept', standbild: 'Still', aufnahme: 'Record', stopp: 'Stop',
+    teilen: 'Share', sichern: 'Save', komma: '.', 'ergebnis-hinweis': 'Saved to your “Downloads” folder. “Share” sends it straight to your gallery or an app.',
+    keineAufnahme: 'This browser cannot record the canvas. Stills work.',
     geste: 'Drag to turn the crystal, pinch to zoom.',
     familie: 'Time · The Time-Image, chapter 4', 'b-titel': 'The crystal-image',
     'b-text': [
@@ -54,6 +58,8 @@ const TEXTE = {
     facetten: 'Facettes', tiefe: 'Profondeur du temps', brechung: 'Réfraction',
     stein: 'Pierre', brillant: 'Brillant', oval: 'Ovale', smaragd: 'Émeraude', bergkristall: 'Cristal de roche', formen: 'Taille',
     begriff: 'Concept', standbild: 'Image', aufnahme: 'Enregistrer', stopp: 'Arrêter',
+    teilen: 'Partager', sichern: 'Télécharger', komma: ',', 'ergebnis-hinweis': 'Enregistré dans le dossier « Téléchargements ». « Partager » l’envoie directement dans la galerie ou une app.',
+    keineAufnahme: 'Ce navigateur ne peut pas enregistrer le canevas. L’image fixe fonctionne.',
     geste: 'Glisser fait tourner le cristal, deux doigts pour zoomer.',
     familie: 'Temps · L’image-temps, chapitre 4', 'b-titel': 'L’image-cristal',
     'b-text': [
@@ -579,39 +585,82 @@ function bild(ms) {
   gl.uniform2f(ort.uLage, (gegenwart.x - 0.5) * 1.2, (gegenwart.y - 0.5) * 0.9); gl.uniform1f(ort.uJetzt, kopf);
   gl.uniform1f(ort.uBrech, brech); gl.uniform1f(ort.uT, t % 100);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-  if (standbildWunsch) { standbildWunsch = false; leinwand.toBlob((b) => b && sichern(b, 'kristallbild.png')); }
+  if (standbildWunsch) { standbildWunsch = false; leinwand.toBlob((b) => b && zeigen(b, 'kristallbild-' + zeitstempel() + '.png')); }
   if (ersterLauf && gefuellt) { ersterLauf = false; spur('✓ läuft'); }
   requestAnimationFrame(bild);
 }
 
 // ---------- Ergebnis ----------
+// Nach Standbild oder Aufnahme: eine Vorschau mit «Teilen» (Android: direkt in Galerie, Messenger, Instagram)
+// und «Sichern» (Download in den Ordner «Downloads»)
+let ergebnis = null;   // { blob, name, url }
 function sichern(blob, name) {
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
   document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
 }
+function zeigen(blob, name) {
+  schliessen();
+  const url = URL.createObjectURL(blob), film = blob.type.startsWith('video');
+  ergebnis = { blob, name, url };
+  const bild = $('ergebnis-bild');
+  bild.replaceChildren();
+  const el = document.createElement(film ? 'video' : 'img');
+  el.src = url;
+  if (film) { el.muted = true; el.loop = true; el.playsInline = true; el.autoplay = true; el.controls = false; }
+  else el.alt = '';
+  bild.append(el);
+  const datei = new File([blob], name, { type: blob.type });
+  $('teilen').hidden = !(navigator.canShare && navigator.canShare({ files: [datei] }));
+  $('ergebnis-mb').textContent = (blob.size / 1e6).toFixed(1).replace('.', TEXTE[sprache].komma) + ' MB · ' + name;
+  $('ergebnis').hidden = false;
+  spur('Ergebnis ' + name);
+}
+function schliessen() {
+  $('ergebnis').hidden = true;
+  if (ergebnis) { URL.revokeObjectURL(ergebnis.url); ergebnis = null; }
+  $('ergebnis-bild').replaceChildren();
+}
+$('teilen').addEventListener('click', async () => {
+  if (!ergebnis) return;
+  try { await navigator.share({ files: [new File([ergebnis.blob], ergebnis.name, { type: ergebnis.blob.type })], title: TEXTE[sprache].titel }); }
+  catch (e) { if (e.name !== 'AbortError') sichern(ergebnis.blob, ergebnis.name); }
+});
+$('sichern').addEventListener('click', () => { if (ergebnis) { sichern(ergebnis.blob, ergebnis.name); $('ergebnis-hinweis').hidden = false; } });
+$('ergebnis-zu').addEventListener('click', schliessen);
 $('standbild').addEventListener('click', () => { standbildWunsch = true; });
 
-let aufnehmer = null;
+let aufnehmer = null, aufnahmeStart = 0, uhr = 0;
+const dauer = (s) => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
 $('aufnahme').addEventListener('click', () => {
   const knopf = $('aufnahme');
   if (aufnehmer) { aufnehmer.stop(); return; }
-  if (!leinwand.captureStream || !window.MediaRecorder) return;
-  const typ = ['video/mp4;codecs=avc1', 'video/webm;codecs=vp9', 'video/webm'].find((m) => MediaRecorder.isTypeSupported(m)) || '';
+  if (!leinwand.captureStream || !window.MediaRecorder) return melden(TEXTE[sprache].keineAufnahme);
+  const typ = ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm'].find((m) => MediaRecorder.isTypeSupported(m)) || '';
   const teile = [];
   aufnehmer = new MediaRecorder(leinwand.captureStream(30), typ ? { mimeType: typ, videoBitsPerSecond: 8e6 } : undefined);
   aufnehmer.ondataavailable = (e) => e.data.size && teile.push(e.data);
   aufnehmer.onstop = () => {
-    const b = new Blob(teile, { type: aufnehmer.mimeType });
-    sichern(b, 'kristallbild.' + (b.type.includes('mp4') ? 'mp4' : 'webm'));
+    clearInterval(uhr);
+    const b = new Blob(teile, { type: (aufnehmer.mimeType || 'video/webm').split(';')[0] });
     aufnehmer = null; knopf.classList.remove('laeuft'); knopf.textContent = TEXTE[sprache].aufnahme;
+    zeigen(b, 'kristallbild-' + zeitstempel() + (b.type.includes('mp4') ? '.mp4' : '.webm'));
   };
-  aufnehmer.start(); knopf.classList.add('laeuft'); knopf.textContent = TEXTE[sprache].stopp;
+  aufnehmer.start(1000); aufnahmeStart = performance.now();
+  knopf.classList.add('laeuft');
+  const zeigeUhr = () => { knopf.textContent = '● ' + dauer((performance.now() - aufnahmeStart) / 1000) + ' · ' + TEXTE[sprache].stopp; };
+  zeigeUhr(); uhr = setInterval(zeigeUhr, 250);
+  spur('Aufnahme');
 });
+// eindeutige Namen, damit Downloads sich nicht überschreiben
+function zeitstempel() {
+  const d = new Date(), z = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}${z(d.getMonth() + 1)}${z(d.getDate())}-${z(d.getHours())}${z(d.getMinutes())}${z(d.getSeconds())}`;
+}
 
 // ---------- Begriffsebene ----------
 $('begriff-auf').addEventListener('click', () => { $('begriff').hidden = false; });
 $('begriff-zu').addEventListener('click', () => { $('begriff').hidden = true; });
-addEventListener('keydown', (e) => { if (e.key === 'Escape') $('begriff').hidden = true; });
+addEventListener('keydown', (e) => { if (e.key === 'Escape') { $('begriff').hidden = true; schliessen(); } });
 
 uebersetzen();
 // Direktstart für Tests und Vorführungen: ?beispiel
