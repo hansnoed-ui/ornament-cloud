@@ -6,10 +6,15 @@
 /* Der Kristall: quadratisch, so breit wie das Telefon erlaubt */
 .kristall-huelle { position: relative; width: min(100%, 440px); margin: 6px auto 0; }
 .kristall { display: block; width: 100%; aspect-ratio: 1; touch-action: manipulation; cursor: pointer; }
-.untertitel { position: absolute; left: 0; right: 0; bottom: 6%; margin: 0; padding: 0 12px; pointer-events: none; opacity: 0; transition: opacity .4s; }
+/* Beschriftung unter dem Kristall, nie auf dem Bild; die Höhe bleibt reserviert, damit nichts springt */
+.untertitel { display: grid; justify-items: center; align-content: start; gap: 2px; min-height: 3.6rem; margin: 10px 0 0; padding: 0 4px;
+  text-align: center; pointer-events: none; opacity: 0; transition: opacity .4s; }
 .untertitel.da { opacity: 1; }
+.untertitel .zt-kennung { margin: 0; }
+.u-name { font-family: var(--didone); font-style: italic; font-size: 1.4rem; line-height: 1.15; color: var(--blanc); text-wrap: balance; }
+.u-name i { color: var(--bleu); margin-left: 0.25em; }
 
-.leitsatz { font-family: var(--didone); font-weight: 400; font-style: italic; font-size: clamp(1.25rem, 1rem + 1.8vw, 1.9rem); line-height: 1.22; margin: 14px 0 18px; text-wrap: balance; }
+.leitsatz { font-family: var(--didone); font-weight: 400; font-style: italic; font-size: clamp(1.25rem, 1rem + 1.8vw, 1.9rem); line-height: 1.22; margin: 6px 0 18px; text-wrap: balance; }
 
 .material { display: grid; gap: 2px; }
 .material .zt-kennung { margin: 0; }
@@ -58,7 +63,7 @@
   body { height: 100vh; display: flex; flex-direction: column; }
   .seite { flex: 1 1 auto; min-height: 0; width: 100%; padding-bottom: 18px; align-items: stretch; }
   .eingang { position: static; align-self: stretch; display: flex; flex-direction: column; justify-content: center; min-height: 0; }
-  .kristall-huelle { width: min(100%, calc(100vh - 230px)); min-width: 0; margin: 0; }
+  .kristall-huelle { width: min(100%, calc(100vh - 300px)); min-width: 0; margin: 0 auto; }
   .leitsatz { margin: 12px 0 14px; }
   .folge-huelle { display: flex; flex-direction: column; justify-content: center; min-height: 0; margin: 0; }
   .folge-titel { margin-bottom: 4px; }
