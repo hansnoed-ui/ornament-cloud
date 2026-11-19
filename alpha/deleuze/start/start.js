@@ -20,21 +20,21 @@ const OPS = [
 const TEXTE = {
   de: {
     leitsatz: 'Begriffe als Verfahren, angewendet auf dein eigenes Material.', material: 'Material', kamera: 'Kamera', datei: 'Foto oder Video', beispiel: 'Beispiel',
-    hinweis: 'Alles bleibt auf deinem Gerät.', folgeTitel: 'Phase 1 · acht Begriffe', fussnote: 'Die Jahreszahl nennt die Quelle, wie die datierten Plateaus in «Mille plateaux».',
+    folgeTitel: 'Phase 1 · acht Begriffe',
     kristallAria: 'Kristall mit acht Facetten; jede zeigt dein Material durch einen anderen Begriff. Die Liste darunter führt zu denselben Seiten.',
     laeuft: 'läuft', dreh: 'in Dreharbeiten', keineKamera: 'Die Kamera lässt sich nicht öffnen. Wähle ein Foto, ein Video oder das Beispiel.',
     keinBeispiel: 'Das Beispielvideo lädt nicht. Wähle ein Foto, ein Video oder die Kamera.', letzterLauf: 'Der letzte Besuch endete unerwartet: ', tafel: 'dein Material, wie es ist'
   },
   en: {
     leitsatz: 'Concepts as procedures, applied to your own material.', material: 'Material', kamera: 'Camera', datei: 'Photo or video', beispiel: 'Example',
-    hinweis: 'Everything stays on your device.', folgeTitel: 'Phase 1 · eight concepts', fussnote: 'The year names the source, like the dated plateaus of “A Thousand Plateaus”.',
+    folgeTitel: 'Phase 1 · eight concepts',
     kristallAria: 'Crystal with eight facets; each shows your material through a different concept. The list below leads to the same pages.',
     laeuft: 'now showing', dreh: 'in production', keineKamera: 'The camera cannot be opened. Choose a photo, a video or the example.',
     keinBeispiel: 'The example video does not load. Choose a photo, a video or the camera.', letzterLauf: 'The last visit ended unexpectedly: ', tafel: 'your material as it is'
   },
   fr: {
     leitsatz: 'Des concepts comme procédés, appliqués à ton propre matériau.', material: 'Matériau', kamera: 'Caméra', datei: 'Photo ou vidéo', beispiel: 'Exemple',
-    hinweis: 'Tout reste sur ton appareil.', folgeTitel: 'Phase 1 · huit concepts', fussnote: 'L’année nomme la source, comme les plateaux datés de «Mille plateaux».',
+    folgeTitel: 'Phase 1 · huit concepts',
     kristallAria: 'Cristal à huit facettes ; chacune montre ton matériau à travers un autre concept. La liste ci-dessous mène aux mêmes pages.',
     laeuft: 'à l’affiche', dreh: 'en tournage', keineKamera: 'La caméra ne s’ouvre pas. Choisis une photo, une vidéo ou l’exemple.',
     keinBeispiel: 'La vidéo d’exemple ne se charge pas. Choisis une photo, une vidéo ou la caméra.', letzterLauf: 'La dernière visite s’est terminée de façon inattendue : ', tafel: 'ton matériau tel qu’il est'

@@ -44,12 +44,26 @@
 .meldung { position: fixed; left: var(--rand); right: var(--rand-r); bottom: max(16px, env(safe-area-inset-bottom)); z-index: 4; cursor: pointer; margin: 0;
   padding: 12px 14px; background: var(--noir); border-left: 3px solid var(--rouge); font-family: var(--schmal); font-size: 0.95rem; line-height: 1.35; box-shadow: 0 0 0 1px var(--linie); }
 
-/* Grosser Bildschirm: Kristall links stehend, Schnittfolge rechts */
+/* Grosser Bildschirm: alles auf einen Blick, genau so hoch wie das Fenster.
+   Links der Kristall, rechts die Schnittfolge; beide richten sich nach der Fensterhöhe. */
 @media (min-width: 900px) {
-  .seite { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; max-width: 1400px; margin: 0 auto; }
+  .seite { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; max-width: 1500px; margin: 0 auto; }
   .eingang { position: sticky; top: 64px; align-self: start; }
   .kristall-huelle { width: min(100%, 580px, calc(100vh - 250px)); min-width: 320px; }
   .folge-huelle { margin-top: 6px; border-top: 0; padding-top: 0; }
   .folge { margin-right: 0; }
   .folge .wort { font-size: clamp(3rem, 6.2vw, 6.4rem); }
+}
+@media (min-width: 900px) and (min-height: 560px) {
+  body { height: 100vh; display: flex; flex-direction: column; }
+  .seite { flex: 1 1 auto; min-height: 0; width: 100%; padding-bottom: 18px; align-items: stretch; }
+  .eingang { position: static; align-self: stretch; display: flex; flex-direction: column; justify-content: center; min-height: 0; }
+  .kristall-huelle { width: min(100%, calc(100vh - 230px)); min-width: 0; margin: 0; }
+  .leitsatz { margin: 12px 0 14px; }
+  .folge-huelle { display: flex; flex-direction: column; justify-content: center; min-height: 0; margin: 0; }
+  .folge-titel { margin-bottom: 4px; }
+  .folge a, .folge .zu { padding: 2px 0 4px; }
+  .folge .name { margin-top: 2px; }
+  /* acht Zeilen teilen sich die Höhe: Wort 0.92 × Schriftgrösse, Name und Abstand rund 28 Punkte */
+  .folge .wort { font-size: min(6.2vw, calc((100vh - 100px) / 7.6 - 31px)); }
 }
