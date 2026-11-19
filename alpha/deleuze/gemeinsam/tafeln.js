@@ -1,6 +1,7 @@
 // Gemeinsame Kleinigkeiten der Gestaltung «Zwischentitel», unabhängig vom Effekt eines Operators.
 // - Tafeln der Lektüre: Zähler «1 / 5», Pfeiltasten, beim Öffnen zurück zur ersten Tafel.
 // - Untertitel (Glosse) sitzen über dem unteren Band: dessen Höhe als CSS-Variable --regler-hoehe.
+// - Die Glosse am rechten Rand lässt sich wegklicken (×) oder nach rechts wegwischen.
 (() => {
   const tafeln = document.querySelector('.zt-tafeln');
   const zaehler = document.getElementById('zaehler');
@@ -27,6 +28,38 @@
     if (!huelle) return;
     new MutationObserver(() => { if (huelle.hidden) { v.pause(); v.removeAttribute('src'); v.load(); } }).observe(huelle, { attributes: true, attributeFilter: ['hidden'] });
   });
+
+  // Glosse wegklicken oder wegwischen, wer nicht warten will (Christian, 19.11.2026).
+  // Die Berührung wird abgefangen, bevor sie die Glosse erreicht; sonst öffnete das Schliessen die Lektüre.
+  const glosse = document.getElementById('glosse');
+  if (glosse) {
+    const zu = document.createElement('button');
+    zu.type = 'button'; zu.className = 'glosse-zu'; zu.textContent = '×';
+    zu.setAttribute('aria-label', ({ de: 'Schliessen', en: 'Close', fr: 'Fermer' })[document.documentElement.lang] || 'Schliessen');
+    glosse.prepend(zu);
+    const weg = () => {
+      glosse.style.transition = ''; glosse.style.transform = ''; glosse.classList.remove('da');
+      setTimeout(() => { if (!glosse.classList.contains('da')) glosse.hidden = true; }, 700);
+    };
+    let x0 = null, dx = 0, gewischt = false;
+    glosse.addEventListener('pointerdown', (e) => { x0 = e.clientX; dx = 0; gewischt = false; });
+    glosse.addEventListener('pointermove', (e) => {
+      if (x0 === null) return;
+      dx = Math.max(0, e.clientX - x0);
+      if (dx > 6) { glosse.style.transition = 'none'; glosse.style.transform = `translateX(${dx}px)`; }
+    });
+    const ende = () => {
+      if (x0 === null) return;
+      x0 = null;
+      if (dx > 60) { gewischt = true; weg(); } else { glosse.style.transition = ''; glosse.style.transform = ''; }
+    };
+    glosse.addEventListener('pointerup', ende);
+    glosse.addEventListener('pointercancel', ende);
+    document.addEventListener('click', (e) => {
+      if (!glosse.contains(e.target) || !(gewischt || e.target.closest('.glosse-zu'))) return;
+      e.stopPropagation(); e.preventDefault(); gewischt = false; weg();
+    }, true);
+  }
 
   const regler = document.getElementById('regler');
   if (regler && 'ResizeObserver' in window) {
