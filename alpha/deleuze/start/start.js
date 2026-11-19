@@ -21,7 +21,7 @@ const TEXTE = {
   de: {
     folgeTitel: 'Phase 1 · acht Begriffe',
     kristallAria: 'Kristall mit acht Facetten; jede zeigt das Bild durch einen anderen Begriff. Die Liste darunter führt zu denselben Seiten.',
-    laeuft: 'läuft', dreh: 'in Dreharbeiten',
+    laeuft: 'läuft', dreh: 'Dreharbeiten',
     letzterLauf: 'Der letzte Besuch endete unerwartet: ', tafel: 'das Bild, wie es ist'
   },
   en: {

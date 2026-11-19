@@ -19,7 +19,8 @@
 
 /* Schnittfolge: grosse Wörter, die am Rand abgeschnitten werden dürfen; der volle Name steht darunter */
 .folge-huelle { margin-top: 34px; border-top: 1px solid var(--linie); padding-top: 18px; }
-.folge-titel { margin: 0 0 10px; }
+/* Die Überschrift der Folge steht frei über dem ersten Wort (Christian, 19.11.2026) */
+.folge-titel { margin: 0 0 16px; }
 .folge { list-style: none; margin: 0 calc(-1 * var(--rand-r)) 0 0; padding: 0; }
 .folge li { overflow: hidden; scroll-margin-top: 70px; }
 .folge a, .folge .zu { display: grid; grid-template-columns: 2.6em 1fr; column-gap: 6px; align-items: baseline; padding: 6px 0 10px; text-decoration: none; color: inherit; }
@@ -57,9 +58,9 @@
   .eingang { position: static; align-self: stretch; display: flex; flex-direction: column; justify-content: center; min-height: 0; }
   .kristall-huelle { width: min(100%, calc(100vh - 175px)); min-width: 0; margin: 0 auto; }
   .folge-huelle { display: flex; flex-direction: column; justify-content: center; min-height: 0; margin: 0; }
-  .folge-titel { margin-bottom: 4px; }
+  .folge-titel { margin-bottom: 18px; }
   .folge a, .folge .zu { padding: 2px 0 4px; }
   .folge .name { margin-top: 2px; }
   /* acht Zeilen teilen sich die Höhe: Wort 0.92 × Schriftgrösse, Name und Abstand rund 28 Punkte */
-  .folge .wort { font-size: min(6.2vw, calc((100vh - 100px) / 7.6 - 31px)); }
+  .folge .wort { font-size: min(6.2vw, calc((100vh - 114px) / 7.6 - 31px)); }
 }
