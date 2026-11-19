@@ -614,9 +614,13 @@ function beispielMalen(t) {
   c.fillText(Math.floor(t / 3) % 2 ? 'virtuel' : 'actuel', W / 2, 90);
 }
 // Beispiel: Christians Porträt «Wan, Pendel» aus dem ORNAMENT LAB; die gemalte Szene bleibt als Rückfall
-function beispielStarten() {
-  spur('Beispiel');
-  videoEl.srcObject = null; $('wenden').hidden = true; videoEl.src = 'beispiel.mp4?v=1';
+// Beispiele: Christians Porträt «Wan, Pendel» und «Infinite Mantra»; jedes Tippen auf «Beispiel» nimmt das nächste
+const BEISPIELE = ['beispiel.mp4?v=1', 'mantra.mp4?v=1'];
+function beispielStarten(e) {
+  let nr = 0;
+  try { nr = e ? (+(localStorage.getItem('kristall.beispiel') || 0)) % BEISPIELE.length : 0; localStorage.setItem('kristall.beispiel', String(nr + 1)); } catch {}
+  spur('Beispiel ' + (nr + 1));
+  videoEl.srcObject = null; $('wenden').hidden = true; videoEl.src = BEISPIELE[nr];
   videoEl.play().then(() => { quelle = videoEl; spiegelnQuelle = false; starten(); })
     .catch(() => { spur('Beispielvideo fehlt'); quelle = beispiel; spiegelnQuelle = false; starten(); });
 }
