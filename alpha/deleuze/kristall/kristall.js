@@ -12,6 +12,15 @@ const TEXTE = {
     titel: 'Kristallbild', satz: 'Die Gegenwart spaltet sich in jedem Augenblick.',
     kamera: 'Kamera', video: 'Video oder Fotos', beispiel: 'Beispiel', hinweis: 'Alles bleibt auf deinem Gerät.',
     facetten: 'Facetten', tiefe: 'Zeittiefe', brechung: 'Brechung', verschmelzung: 'Verschmelzung',
+    glossen: {
+      formen: { begriff: 'le cristal', satz: 'Jeder Schliff fasst die Zeit anders: viele kleine Facetten zerstreuen sie, grosse Flächen zeigen sie ruhig.', zitat: '«Ce que le cristal révèle ou fait voir, c’est le fondement caché du temps.»', quelle: 'Deleuze, L’image-temps, Kap. 4' },
+      zustaende: { begriff: 'les quatre états', satz: 'Deleuze unterscheidet vier Zustände des Kristalls und liest sie an vier Regisseuren ab.', zitat: '«Ophuls, Renoir, Fellini, Visconti»', quelle: 'Deleuze, L’image-temps, Kap. 4' },
+      facetten: { begriff: 'le circuit', satz: 'Jede Facette ist ein kleiner Kreis zwischen dem Aktuellen und seinem Virtuellen. Mehr Facetten, engere Kreise.', zitat: '', quelle: '' },
+      tiefe: { begriff: 'la coexistence', satz: 'Die Vergangenheit folgt nicht auf die Gegenwart, sie besteht neben ihr. Hier bestimmst du, wie weit die Facetten zurückreichen.', zitat: '«Le passé ne succède pas au présent qu’il n’est plus, il coexiste avec le présent qu’il a été.»', quelle: 'Deleuze, L’image-temps, Kap. 4' },
+      brechung: { begriff: 'le virtuel', satz: 'Was der Stein im Inneren bricht, ist nicht erfunden, sondern gewesen. Das Virtuelle ist wirklich, nur nicht aktuell.', zitat: '«Réels sans être actuels, idéaux sans être abstraits.»', quelle: 'Proust, bei Deleuze' },
+      verschmelzung: { begriff: 'l’indiscernabilité', satz: 'Aktuelles und Virtuelles tauschen sich aus, bis man nicht mehr sagen kann, was was ist. Verschieden bleiben sie trotzdem.', zitat: '', quelle: 'Deleuze, L’image-temps, Kap. 4, sinngemäss' }
+    },
+    facetteJetzt: 'diese Facette: jetzt', facetteVor: 'diese Facette: vor {s} s', bildJetzt: 'das Bild: jetzt', komma2: ',',
     zustaende: [
       { kurz: 'vollkommen', titel: 'Der vollkommene Kristall', wer: 'Ophüls', text: 'Bei Max Ophüls ist der Kristall vollkommen: ein geschlossener Kreis, aus dem nichts entkommt. Die Zeiten kreisen um den Stein wie die Manege in «Lola Montès», jede Facette reicht ihre Zeit an die nächste weiter.' },
       { kurz: 'gesprungen', titel: 'Der gesprungene Kristall', wer: 'Renoir', text: 'Bei Jean Renoir hat der Kristall einen Riss. Durch ihn entweicht etwas: das Leben, eine Gegenwart, die noch nicht erstarrt ist und in die Zukunft geht. Das Theater in «Die goldene Karosse», das Spiel in «Die Spielregel». Jenseits des Risses zeigt der Stein nur noch das Jetzt.' },
@@ -41,6 +50,15 @@ const TEXTE = {
     titel: 'Crystal-image', satz: 'The present splits at every moment.',
     kamera: 'Camera', video: 'Video or photos', beispiel: 'Example', hinweis: 'Everything stays on your device.',
     facetten: 'Facets', tiefe: 'Depth of time', brechung: 'Refraction', verschmelzung: 'Coalescence',
+    glossen: {
+      formen: { begriff: 'le cristal', satz: 'Each cut holds time differently: many small facets scatter it, large planes show it calmly.', zitat: '“What the crystal reveals or makes visible is the hidden ground of time.”', quelle: 'Deleuze, The Time-Image, ch. 4' },
+      zustaende: { begriff: 'les quatre états', satz: 'Deleuze distinguishes four states of the crystal and reads them in four directors.', zitat: '“Ophüls, Renoir, Fellini, Visconti”', quelle: 'Deleuze, The Time-Image, ch. 4' },
+      facetten: { begriff: 'le circuit', satz: 'Each facet is a small circuit between the actual and its virtual. More facets, tighter circuits.', zitat: '', quelle: '' },
+      tiefe: { begriff: 'la coexistence', satz: 'The past does not follow the present, it coexists with it. Here you decide how far back the facets reach.', zitat: '“The past does not follow the present that it is no longer, it coexists with the present it was.”', quelle: 'Deleuze, The Time-Image, ch. 4' },
+      brechung: { begriff: 'le virtuel', satz: 'What the stone refracts inside is not invented but has been. The virtual is real, just not actual.', zitat: '“Real without being actual, ideal without being abstract.”', quelle: 'Proust, in Deleuze' },
+      verschmelzung: { begriff: 'l’indiscernabilité', satz: 'Actual and virtual exchange until you can no longer say which is which. Yet they remain distinct.', zitat: '', quelle: 'Deleuze, The Time-Image, ch. 4, paraphrased' }
+    },
+    facetteJetzt: 'this facet: now', facetteVor: 'this facet: {s} s ago', bildJetzt: 'the image: now', komma2: '.',
     zustaende: [
       { kurz: 'perfect', titel: 'The perfect crystal', wer: 'Ophüls', text: 'In Max Ophüls the crystal is perfect: a closed circuit from which nothing escapes. The times circle the stone like the circus ring in “Lola Montès”, each facet passing its time on to the next.' },
       { kurz: 'cracked', titel: 'The cracked crystal', wer: 'Renoir', text: 'In Jean Renoir the crystal has a crack. Through it something escapes: life, a present not yet frozen, moving towards the future. The theatre of “The Golden Coach”, the game of “The Rules of the Game”. Beyond the crack the stone shows only the now.' },
@@ -70,6 +88,15 @@ const TEXTE = {
     titel: 'Image-cristal', satz: 'Le présent se dédouble à chaque instant.',
     kamera: 'Caméra', video: 'Vidéo ou photos', beispiel: 'Exemple', hinweis: 'Tout reste sur ton appareil.',
     facetten: 'Facettes', tiefe: 'Profondeur du temps', brechung: 'Réfraction', verschmelzung: 'Coalescence',
+    glossen: {
+      formen: { begriff: 'le cristal', satz: 'Chaque taille saisit le temps autrement : de nombreuses petites facettes le dispersent, de grands plans le montrent calmement.', zitat: '« Ce que le cristal révèle ou fait voir, c’est le fondement caché du temps. »', quelle: 'Deleuze, L’image-temps, ch. 4' },
+      zustaende: { begriff: 'les quatre états', satz: 'Deleuze distingue quatre états du cristal et les lit chez quatre cinéastes.', zitat: '« Ophuls, Renoir, Fellini, Visconti »', quelle: 'Deleuze, L’image-temps, ch. 4' },
+      facetten: { begriff: 'le circuit', satz: 'Chaque facette est un petit circuit entre l’actuel et son virtuel. Plus de facettes, des circuits plus serrés.', zitat: '', quelle: '' },
+      tiefe: { begriff: 'la coexistence', satz: 'Le passé ne suit pas le présent, il coexiste avec lui. Ici tu décides jusqu’où remontent les facettes.', zitat: '« Le passé ne succède pas au présent qu’il n’est plus, il coexiste avec le présent qu’il a été. »', quelle: 'Deleuze, L’image-temps, ch. 4' },
+      brechung: { begriff: 'le virtuel', satz: 'Ce que la pierre réfracte à l’intérieur n’est pas inventé, mais a été. Le virtuel est réel, seulement pas actuel.', zitat: '« Réels sans être actuels, idéaux sans être abstraits. »', quelle: 'Proust, chez Deleuze' },
+      verschmelzung: { begriff: 'l’indiscernabilité', satz: 'L’actuel et le virtuel s’échangent jusqu’à ce qu’on ne puisse plus dire lequel est lequel. Ils restent pourtant distincts.', zitat: '', quelle: 'Deleuze, L’image-temps, ch. 4, en substance' }
+    },
+    facetteJetzt: 'cette facette : maintenant', facetteVor: 'cette facette : il y a {s} s', bildJetzt: 'l’image : maintenant', komma2: ',',
     zustaende: [
       { kurz: 'parfait', titel: 'Le cristal parfait', wer: 'Ophuls', text: 'Chez Max Ophuls, le cristal est parfait : un circuit fermé dont rien ne s’échappe. Les temps tournent autour de la pierre comme la piste de « Lola Montès », chaque facette passe son temps à la suivante.' },
       { kurz: 'fêlé', titel: 'Le cristal fêlé', wer: 'Renoir', text: 'Chez Jean Renoir, le cristal a une fêlure. Par elle quelque chose s’échappe : la vie, un présent qui ne s’est pas encore figé et file vers l’avenir. Le théâtre du « Carrosse d’or », le jeu de « La Règle du jeu ». Au-delà de la fêlure, la pierre ne montre plus que le maintenant.' },
@@ -130,10 +157,19 @@ function spur(schritt) {
     s.push(schritt); localStorage.setItem(SPUR, JSON.stringify(s.slice(-12)));
   } catch {}
 }
-function melden(text) { const m = $('meldung'); m.textContent = text; m.hidden = false; }
+// Meldungen liegen unter der Kopfzeile, schliessen sich beim Antippen und nach zehn Sekunden
+let meldungUhr = 0;
+function melden(text) {
+  const m = $('meldung'); m.textContent = text; m.hidden = false;
+  clearTimeout(meldungUhr); meldungUhr = setTimeout(() => { m.hidden = true; }, 10000);
+}
+$('meldung').addEventListener('click', () => { $('meldung').hidden = true; });
+// sauberes Ende festhalten, sonst hält die Spur jeden Neuladen für einen Absturz
+addEventListener('pagehide', () => spur('Ende'));
+document.addEventListener('visibilitychange', () => { if (document.hidden) spur('Pause'); });
 try {
   const s = JSON.parse(localStorage.getItem(SPUR) || '[]');
-  if (s.length && s.at(-1) !== '✓ läuft' && s.at(-1) !== 'Start') melden(TEXTE[sprache].letzterLauf + s.slice(-3).join(' → '));
+  if (s.length && !['✓ läuft', 'Start', 'Ende', 'Pause'].includes(s.at(-1))) melden(TEXTE[sprache].letzterLauf + s.slice(-3).join(' → '));
   localStorage.setItem(SPUR, JSON.stringify(['Start']));
 } catch {}
 
@@ -821,6 +857,59 @@ function zeitstempel() {
   const d = new Date(), z = (n) => String(n).padStart(2, '0');
   return `${d.getFullYear()}${z(d.getMonth() + 1)}${z(d.getDate())}-${z(d.getHours())}${z(d.getMinutes())}${z(d.getSeconds())}`;
 }
+
+// ---------- Glossen: der Begriff am Rand, während man einstellt ----------
+let glosseUhr = 0, glosseSchluessel = '';
+function glosse(k) {
+  const g = TEXTE[sprache].glossen[k]; if (!g) return;
+  const el = $('glosse');
+  glosseSchluessel = k;
+  $('glosse-begriff').textContent = g.begriff;
+  $('glosse-satz').textContent = g.satz;
+  $('glosse-zitat').textContent = g.zitat; $('glosse-zitat').hidden = !g.zitat;
+  $('glosse-quelle').textContent = g.quelle; $('glosse-quelle').hidden = !g.quelle;
+  el.hidden = false; requestAnimationFrame(() => el.classList.add('da'));
+  clearTimeout(glosseUhr); glosseUhr = setTimeout(glosseWeg, 7000);
+}
+function glosseWeg() { const el = $('glosse'); el.classList.remove('da'); setTimeout(() => { if (!el.classList.contains('da')) el.hidden = true; }, 700); }
+for (const [id, k] of [['r-facetten', 'facetten'], ['r-tiefe', 'tiefe'], ['r-brechung', 'brechung'], ['r-verschmelzung', 'verschmelzung']]) {
+  $(id).addEventListener('pointerdown', () => glosse(k));
+  $(id).addEventListener('input', () => { if (glosseSchluessel !== k || $('glosse').hidden) glosse(k); clearTimeout(glosseUhr); glosseUhr = setTimeout(glosseWeg, 7000); });
+}
+document.querySelectorAll('[data-form]').forEach((b) => b.addEventListener('click', () => glosse('formen')));
+$('glosse').addEventListener('click', () => { glosseWeg(); $('begriff').hidden = false; });
+
+// ---------- Eine Facette antippen: welche Zeit trägt sie? ----------
+function facetteUnter(x, y) {
+  const sx = (x / innerWidth) * 2 - 1, sy = 1 - (y / innerHeight) * 2, seite = innerWidth / innerHeight;
+  let d = [sx * seite * 0.5, sy * 0.5, -1]; const l = Math.hypot(...d); d = d.map((v) => v / l);
+  const o = [-(gegenwart.x - 0.5) * 1.2, -(gegenwart.y - 0.5) * 0.9, 3.2];
+  let t0 = -1e9, t1 = 1e9, i0 = -1;
+  for (let k = 0; k < anzahl; k++) {
+    const n = [ebenenW[k * 3], ebenenW[k * 3 + 1], ebenenW[k * 3 + 2]];
+    const dn = n[0] * d[0] + n[1] * d[1] + n[2] * d[2], ab = abstandZ[k] - (n[0] * o[0] + n[1] * o[1] + n[2] * o[2]);
+    if (Math.abs(dn) < 1e-6) { if (ab < 0) return -1; continue; }
+    const t = ab / dn;
+    if (dn < 0) { if (t > t0) { t0 = t; i0 = k; } } else t1 = Math.min(t1, t);
+  }
+  return t0 < t1 && t0 > 0 ? i0 : -1;
+}
+let tippStart = null, zeitUhr = 0;
+leinwand.addEventListener('pointerdown', (e) => { tippStart = finger.size <= 1 ? { x: e.clientX, y: e.clientY, t: performance.now() } : null; });
+leinwand.addEventListener('pointerup', (e) => {
+  const s0 = tippStart; tippStart = null;
+  if (!s0 || performance.now() - s0.t > 350 || Math.hypot(e.clientX - s0.x, e.clientY - s0.y) > 8) return;
+  const T = TEXTE[sprache], i = facetteUnter(e.clientX, e.clientY), el = $('facettenzeit');
+  if (i < 0) el.textContent = T.bildJetzt;
+  else {
+    const sek = alterAkt[i] * tiefe;
+    el.textContent = sek < 0.15 ? T.facetteJetzt : T.facetteVor.replace('{s}', sek.toFixed(1).replace('.', T.komma2));
+  }
+  el.style.left = Math.min(innerWidth - 150, Math.max(12, e.clientX - 60)) + 'px';
+  el.style.top = Math.max(70, e.clientY - 48) + 'px';
+  el.hidden = false; el.classList.remove('weg');
+  clearTimeout(zeitUhr); zeitUhr = setTimeout(() => el.classList.add('weg'), 1800);
+});
 
 // ---------- Begriffsebene ----------
 $('begriff-auf').addEventListener('click', () => { $('begriff').hidden = false; });

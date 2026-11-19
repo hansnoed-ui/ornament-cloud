@@ -77,9 +77,23 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 .ergebnis-knoepfe { display: flex; gap: 10px; }
 .ergebnis-knoepfe .haupt { background: var(--tinte); color: var(--schwarz); border-color: var(--tinte); }
 .ergebnis-hinweis { margin: 0; font-size: 0.8rem; color: var(--leise); text-align: center; max-width: 30em; }
-.meldung { position: fixed; left: 16px; right: 16px; top: 16px; margin: 0; padding: 12px 14px; background: #1a1210; border: 1px solid var(--akzent); border-radius: 8px; font-size: 0.85rem; z-index: 4; }
+.meldung { position: fixed; left: 16px; right: 16px; top: calc(max(14px, env(safe-area-inset-top)) + 40px); cursor: pointer; margin: 0; padding: 12px 14px; background: #1a1210; border: 1px solid var(--akzent); border-radius: 8px; font-size: 0.85rem; z-index: 4; }
 
+/* Glosse: Randnotiz neben dem Effekt, nach Lupton; nie über Kopf, Reglern oder Knöpfen */
+.glosse { position: absolute; z-index: 1; right: 24px; top: 84px; width: min(300px, 34vw); margin: 0; padding: 10px 12px 8px 14px; background: linear-gradient(100deg, rgba(5,5,6,0.6), rgba(5,5,6,0.2)); border-radius: 0 10px 10px 0; border-left: 1px solid var(--linie);
+  opacity: 0; transform: translateY(6px); transition: opacity .6s, transform .6s; cursor: pointer; text-shadow: 0 1px 12px rgba(5,5,6,0.9); }
+.glosse.da { opacity: 1; transform: none; }
+.glosse p { margin: 0 0 6px; }
+.glosse-begriff { font-family: var(--serif); font-style: italic; font-size: 1.15rem; color: var(--tinte); }
+.glosse-satz { font-family: var(--serif); font-size: 0.95rem; line-height: 1.45; color: var(--tinte); }
+.glosse-zitat { font-family: var(--serif); font-style: italic; font-size: 0.88rem; line-height: 1.4; color: var(--leise); }
+.glosse-quelle { font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--leise); }
+.facettenzeit { position: absolute; z-index: 1; margin: 0; padding: 4px 10px; font-family: var(--serif); font-style: italic; font-size: 0.9rem; color: var(--tinte);
+  background: rgba(5,5,6,0.55); border: 1px solid var(--linie); border-radius: 999px; pointer-events: none; transition: opacity .8s; white-space: nowrap; }
+.facettenzeit.weg { opacity: 0; }
 @media (max-width: 560px) {
+  .glosse { left: 10px; right: auto; top: calc(max(14px, env(safe-area-inset-top)) + 44px); width: min(82vw, 330px); padding: 10px 12px 8px 14px; background: linear-gradient(100deg, rgba(5,5,6,0.78), rgba(5,5,6,0.45)); border-radius: 0 10px 10px 0; backdrop-filter: blur(3px); }
+  .glosse-satz { font-size: 0.88rem; }
   .regler { grid-template-columns: 1fr; gap: 6px; }
   .regler label { grid-template-columns: 10em 1fr; align-items: center; }
 }
