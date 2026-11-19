@@ -950,15 +950,10 @@ function malenIn(ctx, B, H) {
   ctx.save();
   if (spiegelnQuelle) { ctx.translate(B, 0); ctx.scale(-1, 1); }
   // Weicht das Format der Quelle stark vom Bildschirm ab (Hochformat am Laptop, Querformat am Handy), wird nicht
-  // beschnitten: das ganze Bild steht in der Mitte, daneben dieselbe Quelle gross, weich und abgedunkelt.
+  // beschnitten: das ganze Bild steht in der Mitte, daneben bleibt es dunkel wie der Saal (Christian, 19.11.2026).
   const deck = Math.max(B / qb, H / qh), ganz = Math.min(B / qb, H / qh);
   if (deck / ganz > 1.7) {
-    const kb = 24, kh = Math.max(2, Math.round(24 * H / B));
-    if (klein.width !== kb || klein.height !== kh) { klein.width = kb; klein.height = kh; }
-    kctx.drawImage(q, (kb - qb * deck * kb / B) / 2, (kh - qh * deck * kh / H) / 2, qb * deck * kb / B, qh * deck * kh / H);
-    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(klein, 0, 0, B, H);
-    ctx.fillStyle = 'rgba(10,10,11,0.5)'; ctx.fillRect(0, 0, B, H);
+    ctx.fillStyle = '#0a0a0b'; ctx.fillRect(0, 0, B, H);
     const b = qb * ganz, hh = qh * ganz;
     ctx.drawImage(q, (B - b) / 2, (H - hh) / 2, b, hh);
   } else {
@@ -968,7 +963,6 @@ function malenIn(ctx, B, H) {
   ctx.restore();
   return true;
 }
-const klein = document.createElement('canvas'), kctx = klein.getContext('2d', { alpha: false });
 const fangen = () => malenIn(fctx, pufferB, pufferH);
 // die Gegenwart jedes Bild neu und scharf auf die Grafikkarte
 function scharfFangen() {
