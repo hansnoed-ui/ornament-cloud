@@ -184,6 +184,7 @@ const telefon = matchMedia('(pointer: coarse)').matches || Math.min(screen.width
 const SCHICHTEN = telefon ? 40 : 64;       // Zeitpuffer
 const LANGE_SEITE = telefon ? 480 : 720;   // Aufnahmegrösse im Puffer
 const MAX_DPR = telefon ? 1.25 : 1.5;
+const SCHARF_SEITE = telefon ? 1280 : 1920;  // die Gegenwart: so scharf, wie der Bildschirm sie zeigt
 const MAX_F = 60;              // Ebenen: der Brillant braucht 57
 
 const leinwand = $('leinwand');
@@ -203,6 +204,7 @@ precision highp float; precision highp sampler2DArray;
 #define PWELLEN ${telefon ? 2 : 3}
 in vec2 v; out vec4 o;
 uniform sampler2DArray uZeit;
+uniform sampler2D uScharf;       // die Gegenwart in voller Auflösung (Zeitschichten bleiben klein)
 uniform vec3 uN[MAX_K];        // Ebenen des Kristalls (Normalen)
 uniform float uR[MAX_K];       // Abstände
 uniform float uSchicht[MAX_K]; // Zeitschicht je Facette
@@ -224,6 +226,7 @@ uniform float uVer;             // Verschmelzung: wie weit der Kristall ins Bild
 
 float h(float n){ return fract(sin(n*91.345+7.13)*43758.5453); }
 vec3 holen(vec2 u, float s){ vec2 m = 1.0 - abs(mod(u, 2.0) - 1.0); return texture(uZeit, vec3(m.x, 1.0 - m.y, s)).rgb; }
+vec3 jetztHolen(vec2 u){ vec2 m = 1.0 - abs(mod(u, 2.0) - 1.0); return texture(uScharf, vec2(m.x, 1.0 - m.y)).rgb; }
 
 // Strahl trifft die Bildwand hinter dem Kristall: dort liegt die Zeit
 vec2 wand(vec3 p, vec3 d){
@@ -277,14 +280,14 @@ void main(){
   // Aussen: die aktuelle Gegenwart
   // Tiefenschärfe wie in der Edelsteinfotografie: das Bild hinter dem Stein weich, der Stein scharf.
   // Mit der Verschmelzung wird das Bild wieder scharf: Aktuelles und Virtuelles gleichen sich an.
-  vec3 jetzt = holen(v, uJetzt);
+  vec3 jetzt = jetztHolen(v);
   float unsch = uUnschaerfe * pow(1.0 - uVer, 1.5);
   if (unsch > 0.0005) {
     vec2 r = vec2(unsch / uSeite, unsch);
     vec3 s = jetzt;
     for (int k = 0; k < 8; k++) {
       float w = float(k) * 2.39996 + 0.5, rr = sqrt((float(k) + 0.5) / 8.0);
-      s += holen(v + vec2(cos(w), sin(w)) * rr * r, uJetzt);
+      s += jetztHolen(v + vec2(cos(w), sin(w)) * rr * r);
     }
     jetzt = s / 9.0;
   }
@@ -313,7 +316,7 @@ void main(){
       }
       geist /= summe;
       float fres = 0.04 + 0.96 * pow(1.0 - abs(dot(rd, gn)), 5.0);
-      geist = mix(geist, holen(wand(g0 + vec3(uLage, 0.0), reflect(rd, gn)), uJetzt), clamp(fres, 0.0, 1.0));
+      geist = mix(geist, jetztHolen(wand(g0 + vec3(uLage, 0.0), reflect(rd, gn))), clamp(fres, 0.0, 1.0));
       // feine Facettenkanten im Bild
       float zweite = -1e9;
       for (int k = 0; k < MAX_K; k++) { if (k >= uK) break; if (k != k0) zweite = max(zweite, dot(g0, ebene(k)) - uR[k] * G); }
@@ -332,7 +335,7 @@ void main(){
 
     // Spiegelung an der Oberfläche: das Aktuelle
     vec3 rf = reflect(rd, n0);
-    vec3 spiegel = holen(wand(p0 + vec3(uLage, 0.0), rf), uJetzt);
+    vec3 spiegel = jetztHolen(wand(p0 + vec3(uLage, 0.0), rf));
     float fres = 0.04 + 0.96 * pow(1.0 - abs(dot(rd, n0)), 5.0);
 
     // Brechung ins Innere: das Virtuelle, je Facette eine andere Zeit, spektral zerlegt
@@ -479,7 +482,7 @@ function nachbearbeiten(t) {
   gl.activeTexture(gl.TEXTURE0);
 }
 
-let prog, ort = {}, zeitTex = null, pufferB = 0, pufferH = 0;
+let prog, ort = {}, zeitTex = null, pufferB = 0, pufferH = 0, scharfTex = null, scharfB = 0, scharfH = 0;
 if (gl) {
   prog = programm(VS, FS);
   gl.useProgram(prog);
@@ -492,13 +495,15 @@ if (gl) {
     weichQ: gl.getUniformLocation(progWeich, 'uQ'), weichR: gl.getUniformLocation(progWeich, 'uRichtung'),
     zSzene: gl.getUniformLocation(progZusammen, 'uSzene'), zGlow: gl.getUniformLocation(progZusammen, 'uGlow'), zPx: gl.getUniformLocation(progZusammen, 'uPx'),
     zGlowStaerke: gl.getUniformLocation(progZusammen, 'uGlowStaerke'), zT: gl.getUniformLocation(progZusammen, 'uT') };
-  for (const n of ['uZeit', 'uN', 'uR', 'uSchicht', 'uAlter', 'uK', 'uKante', 'uTon', 'uFeuer', 'uVer', 'uZustand', 'uUnschaerfe', 'uRad', 'uRiss', 'uRissA', 'uRissB', 'uLage', 'uSeite', 'uBrech', 'uT', 'uJetzt']) ort[n] = gl.getUniformLocation(prog, n);
+  for (const n of ['uZeit', 'uN', 'uR', 'uSchicht', 'uAlter', 'uK', 'uKante', 'uTon', 'uFeuer', 'uVer', 'uZustand', 'uUnschaerfe', 'uRad', 'uRiss', 'uRissA', 'uRissB', 'uLage', 'uSeite', 'uBrech', 'uT', 'uJetzt', 'uScharf']) ort[n] = gl.getUniformLocation(prog, n);
   spur('Grafik bereit');
 }
 
 // Aufnahmeleinwand: schneidet die Quelle passend zu (cover) und spiegelt die Selfie-Kamera
 const fang = document.createElement('canvas');
 const fctx = fang.getContext('2d', { alpha: false, willReadFrequently: false });
+const scharf = document.createElement('canvas');
+const sctx = scharf.getContext('2d', { alpha: false, willReadFrequently: false });
 
 // Auflösung passt sich an: ruckelt es, rechnet der Kristall mit weniger Bildpunkten (bis zur Hälfte)
 let aufloesung = 1, messung = [], letzteAnpassung = 0;
@@ -532,6 +537,17 @@ function groesse() {
     gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gefuellt = false;
   }
+  // scharfe Gegenwart: so gross wie die Leinwand, höchstens SCHARF_SEITE, nie grösser als die Quelle
+  const lang = Math.min(SCHARF_SEITE, Math.max(LANGE_SEITE, Math.round(Math.max(innerWidth, innerHeight) * Math.min(devicePixelRatio || 1, 2))));
+  const sb = seite >= 1 ? lang : Math.round(lang * seite), sh = seite >= 1 ? Math.round(lang / seite) : lang;
+  if (gl && (sb !== scharfB || sh !== scharfH)) {
+    scharfB = sb; scharfH = sh; scharf.width = sb; scharf.height = sh;
+    if (!scharfTex) scharfTex = gl.createTexture();
+    gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, scharfTex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, sb, sh, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    for (const [k, w] of [[gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]]) gl.texParameteri(gl.TEXTURE_2D, k, w);
+    gl.activeTexture(gl.TEXTURE0);
+  }
 }
 addEventListener('resize', groesse);
 
@@ -549,7 +565,7 @@ async function kameraStarten() {
   spur('Kamera anfragen');
   const alt = videoEl.srcObject; if (alt) alt.getTracks().forEach((t) => t.stop());
   let strom = null;
-  try { strom = await navigator.mediaDevices.getUserMedia({ video: { facingMode: blick, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false }); }
+  try { strom = await navigator.mediaDevices.getUserMedia({ video: { facingMode: blick, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false }); }
   catch (e) {
     // gewünschte Seite fehlt: die andere versuchen
     blick = blick === 'user' ? 'environment' : 'user';
@@ -873,16 +889,24 @@ function starten() {
   if (!laeuft && gl) { laeuft = true; requestAnimationFrame(bild); }
 }
 
-function fangen() {
+function malenIn(ctx, B, H) {
   const q = quelle; if (!q) return false;
   const qb = q.videoWidth || q.width, qh = q.videoHeight || q.height;
   if (!qb || !qh) return false;
-  const s = Math.max(pufferB / qb, pufferH / qh), b = qb * s, hh = qh * s;
-  fctx.save();
-  if (spiegelnQuelle) { fctx.translate(pufferB, 0); fctx.scale(-1, 1); }
-  fctx.drawImage(q, (pufferB - b) / 2, (pufferH - hh) / 2, b, hh);
-  fctx.restore();
+  const s = Math.max(B / qb, H / qh), b = qb * s, hh = qh * s;
+  ctx.save();
+  if (spiegelnQuelle) { ctx.translate(B, 0); ctx.scale(-1, 1); }
+  ctx.drawImage(q, (B - b) / 2, (H - hh) / 2, b, hh);
+  ctx.restore();
   return true;
+}
+const fangen = () => malenIn(fctx, pufferB, pufferH);
+// die Gegenwart jedes Bild neu und scharf auf die Grafikkarte
+function scharfFangen() {
+  if (!scharfTex || !malenIn(sctx, scharfB, scharfH)) return;
+  gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, scharfTex);
+  gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, scharf);
+  gl.activeTexture(gl.TEXTURE0);
 }
 
 let ersterLauf = true, letzteMs = 0;
@@ -905,6 +929,7 @@ function bild(ms) {
       letzterFang = t;
     }
   }
+  scharfFangen();
   gegenwart.x += (ziel.x - gegenwart.x) * 0.12; gegenwart.y += (ziel.y - gegenwart.y) * 0.12;
   zeitSetzen(kopf, intervall, t);
   const dtMs = ms - (letzteMs || ms - 16.7), f = Math.min(4, Math.max(0.25, dtMs / 16.7)); letzteMs = ms;
@@ -920,9 +945,10 @@ function bild(ms) {
   gl.useProgram(prog);
   gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D_ARRAY, zeitTex);
   gl.uniform1i(ort.uZeit, 0);
+  gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, scharfTex); gl.uniform1i(ort.uScharf, 3); gl.activeTexture(gl.TEXTURE0);
   gl.uniform3fv(ort.uN, ebenenW); gl.uniform1fv(ort.uR, abstandZ); gl.uniform1fv(ort.uSchicht, schicht); gl.uniform1fv(ort.uAlter, alterAkt);
   gl.uniform1i(ort.uK, anzahl); gl.uniform1f(ort.uKante, SCHLIFFE[form].kante); gl.uniform3fv(ort.uTon, SCHLIFFE[form].ton); gl.uniform1f(ort.uFeuer, SCHLIFFE[form].feuer); gl.uniform1f(ort.uVer, milieu());
-  gl.uniform1i(ort.uZustand, zustand); gl.uniform1f(ort.uUnschaerfe, 0.009); gl.uniform1f(ort.uRad, huelle * zoom * 1.03); gl.uniform3fv(ort.uRiss, rissW.subarray(0, 3)); gl.uniform3fv(ort.uRissA, rissW.subarray(3, 6)); gl.uniform3fv(ort.uRissB, rissW.subarray(6, 9)); gl.uniform1f(ort.uSeite, innerWidth / innerHeight);
+  gl.uniform1i(ort.uZustand, zustand); gl.uniform1f(ort.uUnschaerfe, 0.005); gl.uniform1f(ort.uRad, huelle * zoom * 1.03); gl.uniform3fv(ort.uRiss, rissW.subarray(0, 3)); gl.uniform3fv(ort.uRissA, rissW.subarray(3, 6)); gl.uniform3fv(ort.uRissB, rissW.subarray(6, 9)); gl.uniform1f(ort.uSeite, innerWidth / innerHeight);
   gl.uniform2f(ort.uLage, (gegenwart.x - 0.5) * 1.2, (gegenwart.y - 0.5) * 0.9); gl.uniform1f(ort.uJetzt, kopf);
   gl.uniform1f(ort.uBrech, brech); gl.uniform1f(ort.uT, t % 100);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
