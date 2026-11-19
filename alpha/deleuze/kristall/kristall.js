@@ -11,7 +11,7 @@ const TEXTE = {
   de: {
     titel: 'Kristallbild', satz: 'Die Gegenwart spaltet sich in jedem Augenblick.',
     kamera: 'Kamera', video: 'Video oder Fotos', beispiel: 'Beispiel', hinweis: 'Alles bleibt auf deinem Gerät.',
-    facetten: 'Facetten', tiefe: 'Zeittiefe', brechung: 'Brechung',
+    facetten: 'Facetten', tiefe: 'Zeittiefe', brechung: 'Brechung', verschmelzung: 'Verschmelzung',
     stein: 'Stein', brillant: 'Brillant', oval: 'Oval', smaragd: 'Smaragd', bergkristall: 'Bergkristall', formen: 'Schliff',
     begriff: 'Begriff', standbild: 'Standbild', aufnahme: 'Aufnahme', stopp: 'Stopp',
     teilen: 'Teilen', sichern: 'Sichern', komma: '.', 'ergebnis-hinweis': 'Gesichert im Ordner «Downloads». «Teilen» legt es direkt in die Galerie oder eine App.',
@@ -33,7 +33,7 @@ const TEXTE = {
   en: {
     titel: 'Crystal-image', satz: 'The present splits at every moment.',
     kamera: 'Camera', video: 'Video or photos', beispiel: 'Example', hinweis: 'Everything stays on your device.',
-    facetten: 'Facets', tiefe: 'Depth of time', brechung: 'Refraction',
+    facetten: 'Facets', tiefe: 'Depth of time', brechung: 'Refraction', verschmelzung: 'Coalescence',
     stein: 'Stone', brillant: 'Brilliant', oval: 'Oval', smaragd: 'Emerald', bergkristall: 'Quartz', formen: 'Cut',
     begriff: 'Concept', standbild: 'Still', aufnahme: 'Record', stopp: 'Stop',
     teilen: 'Share', sichern: 'Save', komma: '.', 'ergebnis-hinweis': 'Saved to your “Downloads” folder. “Share” sends it straight to your gallery or an app.',
@@ -55,7 +55,7 @@ const TEXTE = {
   fr: {
     titel: 'Image-cristal', satz: 'Le présent se dédouble à chaque instant.',
     kamera: 'Caméra', video: 'Vidéo ou photos', beispiel: 'Exemple', hinweis: 'Tout reste sur ton appareil.',
-    facetten: 'Facettes', tiefe: 'Profondeur du temps', brechung: 'Réfraction',
+    facetten: 'Facettes', tiefe: 'Profondeur du temps', brechung: 'Réfraction', verschmelzung: 'Coalescence',
     stein: 'Pierre', brillant: 'Brillant', oval: 'Ovale', smaragd: 'Émeraude', bergkristall: 'Cristal de roche', formen: 'Taille',
     begriff: 'Concept', standbild: 'Image', aufnahme: 'Enregistrer', stopp: 'Arrêter',
     teilen: 'Partager', sichern: 'Télécharger', komma: ',', 'ergebnis-hinweis': 'Enregistré dans le dossier « Téléchargements ». « Partager » l’envoie directement dans la galerie ou une app.',
@@ -135,6 +135,7 @@ precision highp float; precision highp sampler2DArray;
 #define MAX_K ${MAX_F}
 #define WELLEN ${telefon ? 4 : 7}
 #define WEGE ${telefon ? 3 : 5}
+#define PWELLEN ${telefon ? 2 : 4}
 in vec2 v; out vec4 o;
 uniform sampler2DArray uZeit;
 uniform vec3 uN[MAX_K];        // Ebenen des Kristalls (Normalen)
@@ -150,6 +151,7 @@ const float AUGE = 3.2, WAND = -2.0, TAN = 0.5;
 // drei Lichter im Raum der Betrachtenden: sie bleiben stehen, wenn der Stein sich dreht
 const vec3 L1 = vec3(0.53, 0.68, 0.5), L2 = vec3(-0.62, 0.55, 0.56), L3 = vec3(0.1, -0.35, 0.93);
 uniform float uFeuer;
+uniform float uVer;             // Verschmelzung: wie weit der Kristall ins Bild übergreift
 
 float h(float n){ return fract(sin(n*91.345+7.13)*43758.5453); }
 vec3 holen(vec2 u, float s){ vec2 m = 1.0 - abs(mod(u, 2.0) - 1.0); return texture(uZeit, vec3(m.x, 1.0 - m.y, s)).rgb; }
@@ -164,26 +166,28 @@ vec2 wand(vec3 p, vec3 d){
 vec3 ebene(int k){ return uN[k]; }   // schon gedreht (auf dem Prozessor, einmal je Bild)
 
 // konvexer Kristall als Schnitt von Halbräumen: Eintritt und Austritt exakt
-bool treffen(vec3 ro, vec3 rd, out float t0, out int i0){
+bool treffenS(vec3 ro, vec3 rd, float sk, out float t0, out int i0){
   t0 = -1e9; float t1 = 1e9; i0 = 0;
   for (int k = 0; k < MAX_K; k++) {
     if (k >= uK) break;
-    vec3 n = ebene(k); float dn = dot(rd, n), ab = uR[k] - dot(ro, n);
+    vec3 n = ebene(k); float dn = dot(rd, n), ab = uR[k] * sk - dot(ro, n);
     if (abs(dn) < 1e-6) { if (ab < 0.0) return false; continue; }
     float t = ab / dn;
     if (dn < 0.0) { if (t > t0) { t0 = t; i0 = k; } } else { t1 = min(t1, t); }
   }
   return t0 < t1 && t1 > 0.0;
 }
-float austritt(vec3 p, vec3 d, out int i1){
+bool treffen(vec3 ro, vec3 rd, out float t0, out int i0){ return treffenS(ro, rd, 1.0, t0, i0); }
+float austrittS(vec3 p, vec3 d, float sk, out int i1){
   float t1 = 1e9; i1 = 0;
   for (int k = 0; k < MAX_K; k++) {
     if (k >= uK) break;
     vec3 n = ebene(k); float dn = dot(d, n);
-    if (dn > 1e-6) { float t = (uR[k] - dot(p, n)) / dn; if (t < t1) { t1 = t; i1 = k; } }
+    if (dn > 1e-6) { float t = (uR[k] * sk - dot(p, n)) / dn; if (t < t1) { t1 = t; i1 = k; } }
   }
   return t1;
 }
+float austritt(vec3 p, vec3 d, out int i1){ return austrittS(p, d, 1.0, i1); }
 // Wellenlänge (nm) -> Farbgewicht, weich genug für ein sauberes Spektrum
 vec3 spektrum(float l){
   float r = exp(-pow((l - 610.0) / 55.0, 2.0)) + 0.35 * exp(-pow((l - 420.0) / 30.0, 2.0));
@@ -202,6 +206,37 @@ void main(){
   vec3 jetzt = holen(v, uJetzt);
   float vign = smoothstep(1.6, 0.35, length(sc * vec2(uSeite * 0.75, 1.0)));
   vec3 col = jetzt * mix(0.32, 0.78, vign);
+
+  // Verschmelzung: der Kristall greift ins Bild über. Ein grösserer, unsichtbarer Kristall um den Stein
+  // zerlegt das Bild in Facetten; jede bricht eine andere vergangene Zeit und spiegelt die Gegenwart.
+  // Je stärker, desto weniger lässt sich sagen, wo der Stein endet und das Bild beginnt.
+  if (uVer > 0.001) {
+    float G = 1.0 + 2.6 * uVer, u0; int k0;
+    if (treffenS(rk, rd, G, u0, k0) && u0 > 0.0) {
+      vec3 g0 = rk + rd * u0, gn = ebene(k0);
+      float A = 1.3 + 0.5 * uBrech, B = 0.006 + 0.02 * uBrech;
+      vec3 geist = vec3(0.0), summe = vec3(0.0);
+      for (int w = 0; w < PWELLEN; w++) {
+        float l = mix(420.0, 680.0, (float(w) + 0.5) / float(PWELLEN));
+        float ior = A + B / pow(l / 1000.0, 2.0);
+        vec3 d = refract(rd, gn, 1.0 / ior);
+        int i1; float t1 = austrittS(g0 + d * 1e-4, d, G, i1);
+        vec3 q = g0 + d * t1, aus = refract(d, -ebene(i1), ior);
+        if (dot(aus, aus) == 0.0) aus = reflect(d, -ebene(i1));
+        vec3 gew = spektrum(l);
+        geist += holen(wand(q + vec3(uLage, 0.0), aus), uSchicht[k0]) * gew;
+        summe += gew;
+      }
+      geist /= summe;
+      float fres = 0.04 + 0.96 * pow(1.0 - abs(dot(rd, gn)), 5.0);
+      geist = mix(geist, holen(wand(g0 + vec3(uLage, 0.0), reflect(rd, gn)), uJetzt), clamp(fres, 0.0, 1.0));
+      // feine Facettenkanten im Bild
+      float zweite = -1e9;
+      for (int k = 0; k < MAX_K; k++) { if (k >= uK) break; if (k != k0) zweite = max(zweite, dot(g0, ebene(k)) - uR[k] * G); }
+      float linie = 1.0 - smoothstep(0.0, 0.008 * G, -zweite);
+      col = mix(col, geist * mix(0.42, 0.9, vign), uVer * 0.85) + linie * 0.18 * uVer;
+    }
+  }
 
   float t0; int i0;
   if (treffen(rk, rd, t0, i0) && t0 > 0.0) {
@@ -266,7 +301,7 @@ if (gl) {
   const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
   const a = gl.getAttribLocation(prog, 'a'); gl.enableVertexAttribArray(a); gl.vertexAttribPointer(a, 2, gl.FLOAT, false, 0, 0);
-  for (const n of ['uZeit', 'uN', 'uR', 'uSchicht', 'uAlter', 'uK', 'uKante', 'uTon', 'uFeuer', 'uLage', 'uSeite', 'uBrech', 'uT', 'uJetzt']) ort[n] = gl.getUniformLocation(prog, n);
+  for (const n of ['uZeit', 'uN', 'uR', 'uSchicht', 'uAlter', 'uK', 'uKante', 'uTon', 'uFeuer', 'uVer', 'uLage', 'uSeite', 'uBrech', 'uT', 'uJetzt']) ort[n] = gl.getUniformLocation(prog, n);
   spur('Grafik bereit');
 }
 
@@ -395,10 +430,11 @@ function fotoMalen(t) {
 }
 
 // ---------- Kristall ----------
-let facetten = 18, tiefe = 3, brech = 0.35, form = 'brillant';
+let facetten = 18, tiefe = 3, brech = 0.35, form = 'brillant', verschmelzung = 0.4;
 $('r-facetten').addEventListener('input', (e) => { facetten = +e.target.value; });
 $('r-tiefe').addEventListener('input', (e) => { tiefe = +e.target.value; });
 $('r-brechung').addEventListener('input', (e) => { brech = +e.target.value; });
+$('r-verschmelzung').addEventListener('input', (e) => { verschmelzung = +e.target.value; });
 // Schliff wählen: Form und Material; die Facettenzahl gilt nur für den freien Stein
 function formWaehlen(name) {
   form = name;
@@ -581,7 +617,7 @@ function bild(ms) {
   gl.useProgram(prog);
   gl.uniform1i(ort.uZeit, 0);
   gl.uniform3fv(ort.uN, ebenenW); gl.uniform1fv(ort.uR, abstandZ); gl.uniform1fv(ort.uSchicht, schicht); gl.uniform1fv(ort.uAlter, alter);
-  gl.uniform1i(ort.uK, anzahl); gl.uniform1f(ort.uKante, SCHLIFFE[form].kante); gl.uniform3fv(ort.uTon, SCHLIFFE[form].ton); gl.uniform1f(ort.uFeuer, SCHLIFFE[form].feuer); gl.uniform1f(ort.uSeite, innerWidth / innerHeight);
+  gl.uniform1i(ort.uK, anzahl); gl.uniform1f(ort.uKante, SCHLIFFE[form].kante); gl.uniform3fv(ort.uTon, SCHLIFFE[form].ton); gl.uniform1f(ort.uFeuer, SCHLIFFE[form].feuer); gl.uniform1f(ort.uVer, verschmelzung); gl.uniform1f(ort.uSeite, innerWidth / innerHeight);
   gl.uniform2f(ort.uLage, (gegenwart.x - 0.5) * 1.2, (gegenwart.y - 0.5) * 0.9); gl.uniform1f(ort.uJetzt, kopf);
   gl.uniform1f(ort.uBrech, brech); gl.uniform1f(ort.uT, t % 100);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
