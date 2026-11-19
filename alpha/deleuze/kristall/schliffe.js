@@ -14,8 +14,8 @@ function geneigt(a, t, oben, r, y) {
 const senkrecht = (a, r) => [Math.cos(a * GRAD), 0, Math.sin(a * GRAD), r];
 
 // Runder Brillant nach Tolkowsky: Tafel 57 %, Krone 34.5°, Pavillon 40.75°, dünne Rundiste
-function brillant() {
-  const g = 0.012, krone = 34.5, pav = 40.75;
+function brillant(krone = 34.5, pav = 40.75) {
+  const g = 0.012;
   const tafelY = g + (1 - 0.57) * Math.tan(krone * GRAD);
   const e = [[0, 1, 0, tafelY]];                                                       // Tafel
   for (let k = 0; k < 8; k++) {
@@ -31,14 +31,14 @@ function brillant() {
   return { ebenen: e, mitte: [0, (tafelY - tiefe) / 2, 0], gross: 1.15 };
 }
 
-// Ovalschliff: der Brillant, gestreckt
+// Ovalschliff wie bei Saphiren: deutlich gestreckt (1.6 : 1), flachere Krone, tieferer Pavillon
 function oval() {
-  const b = brillant(), s = [1.38, 1, 0.92];
+  const b = brillant(30, 43), s = [1.6, 1, 0.95];
   const ebenen = b.ebenen.map(([x, y, z, d]) => {
     const n = [x / s[0], y / s[1], z / s[2]], l = Math.hypot(...n);
     return [n[0] / l, n[1] / l, n[2] / l, d / l];
   });
-  return { ebenen, mitte: [0, b.mitte[1], 0], gross: 0.88 };
+  return { ebenen, mitte: [0, b.mitte[1] * 0.98, 0], gross: 0.8 };
 }
 
 // Smaragdschliff (Treppenschliff): Rechteck mit abgeschrägten Ecken, Stufen auf Krone und Pavillon
@@ -80,7 +80,7 @@ function bergkristall() {
 export const SCHLIFFE = {
   stein:        { bau: null,         brechung: 0.35, ton: [0, 0, 0],          kante: 0.65, feuer: 0.6 },
   brillant:     { bau: brillant,     brechung: 0.95, ton: [0, 0, 0],          kante: 0.16, feuer: 1.6 },
-  oval:         { bau: oval,         brechung: 0.9,  ton: [0, 0, 0],          kante: 0.16, feuer: 1.5 },
+  oval:         { bau: oval,         brechung: 0.62, ton: [0.75, 0.38, 0.03], kante: 0.2,  feuer: 0.7 },   // Saphir: tiefblau, Brechzahl 1.77, wenig Feuer
   smaragd:      { bau: smaragd,      brechung: 0.22, ton: [0.45, 0.04, 0.3],  kante: 0.22, feuer: 0.5 },
   bergkristall: { bau: bergkristall, brechung: 0.12, ton: [0.02, 0.02, 0],    kante: 0.3,  feuer: 0.4 },
 };
