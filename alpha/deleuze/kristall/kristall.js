@@ -144,6 +144,7 @@ function uebersetzen() {
     if (Array.isArray(v)) { el.replaceChildren(...v.map((s) => { const p = document.createElement('p'); p.textContent = s; return p; })); }
     else if (v != null) el.textContent = v;
   });
+  document.querySelectorAll('[data-t-label]').forEach((el) => { const v = t[el.dataset.tLabel]; if (v) { el.setAttribute('aria-label', v); el.title = v; } });
   if (aufnehmer) $('aufnahme').textContent = t.stopp;
   if (document.getElementById('b-zustand-titel')) zustandText();
   document.querySelectorAll('[data-zustand]').forEach((b) => { b.textContent = t.zustaende[+b.dataset.zustand].kurz; });

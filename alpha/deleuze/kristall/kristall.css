@@ -114,3 +114,11 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
   .zt-regler label { grid-template-columns: 8em 1fr; }
   .glosse-satz { font-size: 0.98rem; }
 }
+
+/* Kamera wenden: übliches Zeichen unten rechts im Bild, über dem unteren Band; feine Linie ohne Fläche */
+.wenden { position: absolute; z-index: 1; right: calc(var(--rand-r) - 7px); bottom: calc(var(--regler-hoehe, 300px) + 6px);
+  width: 48px; height: 48px; display: grid; place-items: center; padding: 0; margin: 0; border: 0; background: none;
+  color: var(--blanc); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.wenden .kontur { stroke: var(--noir); stroke-width: 3.2; opacity: 0.55; }   /* dunkle Kontur unter der Linie, damit sie auf hellem Bild lesbar bleibt */
+.wenden:active svg { transform: rotate(180deg); transition: transform 0.35s ease; }
+.wenden:focus-visible { outline: 1px solid var(--rouge); outline-offset: 2px; }
