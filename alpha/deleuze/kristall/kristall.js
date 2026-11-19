@@ -12,6 +12,13 @@ const TEXTE = {
     titel: 'Kristallbild', satz: 'Die Gegenwart spaltet sich in jedem Augenblick.',
     kamera: 'Kamera', video: 'Video oder Fotos', beispiel: 'Beispiel', hinweis: 'Alles bleibt auf deinem Gerät.',
     facetten: 'Facetten', tiefe: 'Zeittiefe', brechung: 'Brechung', verschmelzung: 'Verschmelzung',
+    zustaende: [
+      { kurz: 'vollkommen', titel: 'Der vollkommene Kristall', wer: 'Ophüls', text: 'Bei Max Ophüls ist der Kristall vollkommen: ein geschlossener Kreis, aus dem nichts entkommt. Die Zeiten kreisen um den Stein wie die Manege in «Lola Montès», jede Facette reicht ihre Zeit an die nächste weiter.' },
+      { kurz: 'gesprungen', titel: 'Der gesprungene Kristall', wer: 'Renoir', text: 'Bei Jean Renoir hat der Kristall einen Riss. Durch ihn entweicht etwas: das Leben, eine Gegenwart, die noch nicht erstarrt ist und in die Zukunft geht. Das Theater in «Die goldene Karosse», das Spiel in «Die Spielregel». Jenseits des Risses zeigt der Stein nur noch das Jetzt.' },
+      { kurz: 'im Entstehen', titel: 'Der Kristall im Entstehen', wer: 'Fellini', text: 'Bei Federico Fellini ist der Kristall nie fertig, er wächst unablässig. Facetten treten hervor und sinken zurück: Was hervortritt, ist jetzt, was zurücksinkt, wird Vergangenheit.' },
+      { kurz: 'im Zerfall', titel: 'Der Kristall im Zerfall', wer: 'Visconti', text: 'Bei Luchino Visconti zerfällt der Kristall von innen. Eine Welt geht unter, und die Einsicht kommt zu spät. Alles im Stein ist schon tief vergangen, es vergilbt, trübt sich, und die Facetten verlieren ihren Halt. «Der Leopard», «Ludwig».' }
+    ],
+    zustand: 'Zustand',
     stein: 'Stein', brillant: 'Brillant', oval: 'Oval', smaragd: 'Smaragd', bergkristall: 'Bergkristall', formen: 'Schliff',
     begriff: 'Begriff', standbild: 'Standbild', aufnahme: 'Aufnahme', stopp: 'Stopp',
     teilen: 'Teilen', sichern: 'Sichern', komma: '.', 'ergebnis-hinweis': 'Gesichert im Ordner «Downloads». «Teilen» legt es direkt in die Galerie oder eine App.',
@@ -34,6 +41,13 @@ const TEXTE = {
     titel: 'Crystal-image', satz: 'The present splits at every moment.',
     kamera: 'Camera', video: 'Video or photos', beispiel: 'Example', hinweis: 'Everything stays on your device.',
     facetten: 'Facets', tiefe: 'Depth of time', brechung: 'Refraction', verschmelzung: 'Coalescence',
+    zustaende: [
+      { kurz: 'perfect', titel: 'The perfect crystal', wer: 'Ophüls', text: 'In Max Ophüls the crystal is perfect: a closed circuit from which nothing escapes. The times circle the stone like the circus ring in “Lola Montès”, each facet passing its time on to the next.' },
+      { kurz: 'cracked', titel: 'The cracked crystal', wer: 'Renoir', text: 'In Jean Renoir the crystal has a crack. Through it something escapes: life, a present not yet frozen, moving towards the future. The theatre of “The Golden Coach”, the game of “The Rules of the Game”. Beyond the crack the stone shows only the now.' },
+      { kurz: 'forming', titel: 'The crystal in formation', wer: 'Fellini', text: 'In Federico Fellini the crystal is never finished, it keeps growing. Facets push forward and sink back: what emerges is now, what recedes becomes past.' },
+      { kurz: 'decomposing', titel: 'The crystal in decomposition', wer: 'Visconti', text: 'In Luchino Visconti the crystal decays from within. A world goes under, and understanding comes too late. Everything in the stone is already deeply past; it yellows, clouds over, and the facets lose their hold. “The Leopard”, “Ludwig”.' }
+    ],
+    zustand: 'State',
     stein: 'Stone', brillant: 'Brilliant', oval: 'Oval', smaragd: 'Emerald', bergkristall: 'Quartz', formen: 'Cut',
     begriff: 'Concept', standbild: 'Still', aufnahme: 'Record', stopp: 'Stop',
     teilen: 'Share', sichern: 'Save', komma: '.', 'ergebnis-hinweis': 'Saved to your “Downloads” folder. “Share” sends it straight to your gallery or an app.',
@@ -56,6 +70,13 @@ const TEXTE = {
     titel: 'Image-cristal', satz: 'Le présent se dédouble à chaque instant.',
     kamera: 'Caméra', video: 'Vidéo ou photos', beispiel: 'Exemple', hinweis: 'Tout reste sur ton appareil.',
     facetten: 'Facettes', tiefe: 'Profondeur du temps', brechung: 'Réfraction', verschmelzung: 'Coalescence',
+    zustaende: [
+      { kurz: 'parfait', titel: 'Le cristal parfait', wer: 'Ophuls', text: 'Chez Max Ophuls, le cristal est parfait : un circuit fermé dont rien ne s’échappe. Les temps tournent autour de la pierre comme la piste de « Lola Montès », chaque facette passe son temps à la suivante.' },
+      { kurz: 'fêlé', titel: 'Le cristal fêlé', wer: 'Renoir', text: 'Chez Jean Renoir, le cristal a une fêlure. Par elle quelque chose s’échappe : la vie, un présent qui ne s’est pas encore figé et file vers l’avenir. Le théâtre du « Carrosse d’or », le jeu de « La Règle du jeu ». Au-delà de la fêlure, la pierre ne montre plus que le maintenant.' },
+      { kurz: 'en formation', titel: 'Le cristal en formation', wer: 'Fellini', text: 'Chez Federico Fellini, le cristal n’est jamais achevé, il ne cesse de croître. Des facettes avancent et se retirent : ce qui surgit est présent, ce qui recule devient passé.' },
+      { kurz: 'en décomposition', titel: 'Le cristal en décomposition', wer: 'Visconti', text: 'Chez Luchino Visconti, le cristal se décompose de l’intérieur. Un monde s’effondre, et la révélation arrive trop tard. Tout dans la pierre est déjà profondément passé : cela jaunit, se trouble, et les facettes perdent prise. « Le Guépard », « Ludwig ».' }
+    ],
+    zustand: 'État',
     stein: 'Pierre', brillant: 'Brillant', oval: 'Ovale', smaragd: 'Émeraude', bergkristall: 'Cristal de roche', formen: 'Taille',
     begriff: 'Concept', standbild: 'Image', aufnahme: 'Enregistrer', stopp: 'Arrêter',
     teilen: 'Partager', sichern: 'Télécharger', komma: ',', 'ergebnis-hinweis': 'Enregistré dans le dossier « Téléchargements ». « Partager » l’envoie directement dans la galerie ou une app.',
@@ -91,6 +112,8 @@ function uebersetzen() {
     else if (v != null) el.textContent = v;
   });
   if (aufnehmer) $('aufnahme').textContent = t.stopp;
+  if (document.getElementById('b-zustand-titel')) zustandText();
+  document.querySelectorAll('[data-zustand]').forEach((b) => { b.textContent = t.zustaende[+b.dataset.zustand].kurz; });
   document.querySelectorAll('[data-lang]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === sprache)));
 }
 document.querySelectorAll('[data-lang]').forEach((b) => b.addEventListener('click', () => {
@@ -133,9 +156,9 @@ void main(){ v = a*0.5+0.5; gl_Position = vec4(a,0.,1.); }`;
 const FS = `#version 300 es
 precision highp float; precision highp sampler2DArray;
 #define MAX_K ${MAX_F}
-#define WELLEN ${telefon ? 4 : 7}
-#define WEGE ${telefon ? 3 : 5}
-#define PWELLEN ${telefon ? 2 : 4}
+#define WELLEN ${telefon ? 4 : 5}
+#define WEGE ${telefon ? 3 : 4}
+#define PWELLEN ${telefon ? 2 : 3}
 in vec2 v; out vec4 o;
 uniform sampler2DArray uZeit;
 uniform vec3 uN[MAX_K];        // Ebenen des Kristalls (Normalen)
@@ -151,6 +174,9 @@ const float AUGE = 3.2, WAND = -2.0, TAN = 0.5;
 // drei Lichter im Raum der Betrachtenden: sie bleiben stehen, wenn der Stein sich dreht
 const vec3 L1 = vec3(0.53, 0.68, 0.5), L2 = vec3(-0.62, 0.55, 0.56), L3 = vec3(0.1, -0.35, 0.93);
 uniform float uFeuer;
+uniform float uRad;            // Radius der Hüllkugel um den Stein
+uniform int uZustand;          // 0 vollkommen, 1 gesprungen, 2 im Entstehen, 3 im Zerfall
+uniform vec3 uRiss, uRissA, uRissB;   // Rissebene (gedreht mit dem Stein)
 uniform float uVer;             // Verschmelzung: wie weit der Kristall ins Bild übergreift
 
 float h(float n){ return fract(sin(n*91.345+7.13)*43758.5453); }
@@ -168,6 +194,9 @@ vec3 ebene(int k){ return uN[k]; }   // schon gedreht (auf dem Prozessor, einmal
 // konvexer Kristall als Schnitt von Halbräumen: Eintritt und Austritt exakt
 bool treffenS(vec3 ro, vec3 rd, float sk, out float t0, out int i0){
   t0 = -1e9; float t1 = 1e9; i0 = 0;
+  // Hüllkugel zuerst: wer sie verfehlt, verfehlt den Stein, ohne alle Ebenen zu prüfen
+  float rr = uRad * sk, bb = dot(ro, rd), cc = dot(ro, ro) - rr * rr;
+  if (cc > 0.0 && (bb > 0.0 || bb * bb < cc)) return false;
   for (int k = 0; k < MAX_K; k++) {
     if (k >= uK) break;
     vec3 n = ebene(k); float dn = dot(rd, n), ab = uR[k] * sk - dot(ro, n);
@@ -254,6 +283,13 @@ void main(){
     // Brechung ins Innere: das Virtuelle, je Facette eine andere Zeit, spektral zerlegt
     float A = 1.42 + 0.95 * uBrech, B = 0.004 + 0.03 * uBrech;
     float sch = uSchicht[i0];
+    // gesprungener Kristall (Renoir): ein Riss, durch den die Gegenwart entweicht
+    float riss = 0.0;
+    if (uZustand == 1) {
+      float sr = dot(p0, uRiss) + 0.03 * sin(dot(p0, uRissA) * 21.0) + 0.018 * sin(dot(p0, uRissB) * 37.0 + 1.3);
+      riss = 1.0 - smoothstep(0.003, 0.014, abs(sr));
+      if (sr > 0.0) sch = uJetzt;            // jenseits des Risses: nichts Vergangenes mehr, nur das Jetzt
+    }
     vec3 innen = vec3(0.0), summe = vec3(0.0);
     for (int w = 0; w < WELLEN; w++) {
       float l = mix(410.0, 690.0, (float(w) + 0.5) / float(WELLEN));
@@ -278,10 +314,18 @@ void main(){
     float lum = dot(innen, vec3(0.299, 0.587, 0.114));
     innen = mix(innen, vec3(lum) * vec3(0.9, 0.96, 1.08), alter * 0.4) * (1.0 - alter * 0.22);
     innen *= vec3(1.02, 1.0, 0.98) * 1.08;
+    // Kristall im Zerfall (Visconti): die Vergangenheit vergilbt und trübt sich
+    if (uZustand == 3) {
+      float l2 = dot(innen, vec3(0.299, 0.587, 0.114));
+      innen = mix(innen, l2 * vec3(1.06, 0.86, 0.6), 0.78);
+      innen = mix(innen, vec3(0.5, 0.45, 0.38), 0.22 + 0.16 * sin(uT * 0.6 + float(i0) * 1.7));
+      innen *= 0.86;
+    }
 
     float glanz = (pow(max(dot(rf, L1), 0.0), 220.0) + 0.7 * pow(max(dot(rf, L2), 0.0), 300.0) + 0.5 * pow(max(dot(rf, L3), 0.0), 300.0)) * 0.9;
     col = mix(innen, spiegel * 1.15, clamp(fres, 0.0, 1.0)) + glanz;
     col = mix(col, vec3(1.0, 0.98, 0.94), kante * uKante);
+    if (uZustand == 1) col = mix(col, jetzt * 1.5 + vec3(0.28, 0.25, 0.2), riss);
   }
   col += (h(dot(v, vec2(12.9898, 78.233)) * 100.0 + uT) - 0.5) * 0.03;
   o = vec4(col, 1.0);
@@ -301,7 +345,7 @@ if (gl) {
   const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
   const a = gl.getAttribLocation(prog, 'a'); gl.enableVertexAttribArray(a); gl.vertexAttribPointer(a, 2, gl.FLOAT, false, 0, 0);
-  for (const n of ['uZeit', 'uN', 'uR', 'uSchicht', 'uAlter', 'uK', 'uKante', 'uTon', 'uFeuer', 'uVer', 'uLage', 'uSeite', 'uBrech', 'uT', 'uJetzt']) ort[n] = gl.getUniformLocation(prog, n);
+  for (const n of ['uZeit', 'uN', 'uR', 'uSchicht', 'uAlter', 'uK', 'uKante', 'uTon', 'uFeuer', 'uVer', 'uZustand', 'uRad', 'uRiss', 'uRissA', 'uRissB', 'uLage', 'uSeite', 'uBrech', 'uT', 'uJetzt']) ort[n] = gl.getUniformLocation(prog, n);
   spur('Grafik bereit');
 }
 
@@ -309,8 +353,21 @@ if (gl) {
 const fang = document.createElement('canvas');
 const fctx = fang.getContext('2d', { alpha: false, willReadFrequently: false });
 
+// Auflösung passt sich an: ruckelt es, rechnet der Kristall mit weniger Bildpunkten (bis zur Hälfte)
+let aufloesung = 1, messung = [], letzteAnpassung = 0;
+function tempoMessen(ms, dt) {
+  if (aufnehmer || document.hidden) { messung = []; return; }
+  messung.push(dt);
+  if (messung.length < 30 || ms - letzteAnpassung < 1500) return;
+  messung.sort((a, b) => a - b);
+  const mitte = messung[15]; messung = [];
+  let neu = aufloesung;
+  if (mitte > 24) neu = Math.max(0.5, aufloesung * 0.82);
+  else if (mitte < 17.5 && aufloesung < 1) neu = Math.min(1, aufloesung * 1.12);
+  if (neu !== aufloesung) { aufloesung = neu; letzteAnpassung = ms; groesse(); spur('Auflösung ' + aufloesung.toFixed(2)); }
+}
 function groesse() {
-  const dpr = Math.min(devicePixelRatio || 1, MAX_DPR);
+  const dpr = Math.min(devicePixelRatio || 1, MAX_DPR) * aufloesung;
   const b = Math.round(innerWidth * dpr), hh = Math.round(innerHeight * dpr);
   if (leinwand.width !== b || leinwand.height !== hh) { leinwand.width = b; leinwand.height = hh; }
   const seite = innerWidth / innerHeight;
@@ -430,7 +487,7 @@ function fotoMalen(t) {
 }
 
 // ---------- Kristall ----------
-let facetten = 18, tiefe = 3, brech = 0.35, form = 'brillant', verschmelzung = 0.4;
+let facetten = 18, tiefe = 3, brech = 0.35, form = 'brillant', verschmelzung = 0.4, zustand = 0;
 $('r-facetten').addEventListener('input', (e) => { facetten = +e.target.value; });
 $('r-tiefe').addEventListener('input', (e) => { tiefe = +e.target.value; });
 $('r-brechung').addEventListener('input', (e) => { brech = +e.target.value; });
@@ -445,6 +502,25 @@ function formWaehlen(name) {
   spur('Form ' + name);
 }
 document.querySelectorAll('[data-form]').forEach((b) => b.addEventListener('click', () => formWaehlen(b.dataset.form)));
+// Zustand wählen: kurzer Zwischentitel mit Film, in der Begriffsebene der ausführliche Text
+let titelUhr = 0;
+function zustandWaehlen(nr, still) {
+  zustand = nr;
+  document.querySelectorAll('[data-zustand]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.zustand === nr)));
+  zustandText();
+  try { localStorage.setItem('kristall.zustand', String(nr)); } catch {}
+  if (still) return;
+  const z = TEXTE[sprache].zustaende[nr], g = $('geste');
+  g.textContent = z.titel + ' · ' + z.wer; g.hidden = false; g.classList.remove('weg');
+  clearTimeout(titelUhr); titelUhr = setTimeout(() => g.classList.add('weg'), 3200);
+  spur('Zustand ' + ZUSTAENDE[nr]);
+}
+function zustandText() {
+  const z = TEXTE[sprache].zustaende[zustand];
+  $('b-zustand-titel').textContent = z.titel + ' · ' + z.wer;
+  $('b-zustand-text').textContent = z.text;
+}
+document.querySelectorAll('[data-zustand]').forEach((b) => b.addEventListener('click', () => zustandWaehlen(+b.dataset.zustand)));
 try { const f = localStorage.getItem('kristall.form'); formWaehlen(SCHLIFFE[f] ? f : 'brillant'); } catch { formWaehlen('brillant'); }
 
 let gegenwart = { x: 0.5, y: 0.5 }, ziel = { x: 0.5, y: 0.5 };
@@ -487,7 +563,7 @@ leinwand.addEventListener('wheel', (e) => { e.preventDefault(); zoomZiel = Math.
 leinwand.addEventListener('dblclick', () => { zoomZiel = 1; });
 
 const ebenen = new Float32Array(MAX_F * 3), ebenenW = new Float32Array(MAX_F * 3), abstand = new Float32Array(MAX_F), schicht = new Float32Array(MAX_F), alter = new Float32Array(MAX_F);
-let gebaut = '', gebautSeite = 0, anzahl = 0;
+let gebaut = '', gebautSeite = 0, anzahl = 0, huelle = 1;
 // der Stein passt ins Bild, hochkant wie quer
 const massstab = () => Math.min(1, (innerWidth / innerHeight) * 1.35) * 0.78;
 // ein unregelmässiger Edelstein: Ebenen auf einer Fibonacci-Kugel, gestreckt und leicht verworfen
@@ -512,6 +588,18 @@ function kristallBauen() {
   }
   for (let i = 0; i < anzahl; i++) alter[i] = ((i * 0.618034) % 1) * 0.92 + 0.08;   // jede Facette eine andere Zeit
   gebaut = form + facetten;
+  // Hüllradius: in vielen Richtungen den Abstand bis zur Oberfläche messen, das Grösste zählt
+  huelle = 0;
+  for (let j = 0; j < 400; j++) {
+    const y = 1 - (j + 0.5) / 200, r = Math.sqrt(Math.max(0, 1 - y * y)), w = j * 2.39996;
+    const u = [Math.cos(w) * r, y, Math.sin(w) * r];
+    let weit = 1e9;
+    for (let i = 0; i < anzahl; i++) {
+      const dn = u[0] * ebenen[i * 3] + u[1] * ebenen[i * 3 + 1] + u[2] * ebenen[i * 3 + 2];
+      if (dn > 1e-6) weit = Math.min(weit, abstand[i] / dn);
+    }
+    huelle = Math.max(huelle, weit);
+  }
 }
 // Normalen einmal je Bild drehen statt in jedem Bildpunkt
 function ebenenDrehen() {
@@ -557,10 +645,43 @@ function schwingen(f) {
   for (let i = 0; i < 3; i++) schwung[i] += (LEERLAUF[i] - schwung[i]) * a;
   drehen(schwung[0] * f, schwung[1] * f, schwung[2] * f);
 }
-function zeitSetzen(kopf, intervall) {
-  if (gebaut !== form + facetten || gebautSeite !== innerWidth / innerHeight) { kristallBauen(); gebautSeite = innerWidth / innerHeight; }
+// ---------- Die vier Zustände des Kristalls (Cinéma 2, Kapitel 4) ----------
+const ZUSTAENDE = ['vollkommen', 'gesprungen', 'entstehen', 'zerfall'];
+const alterAkt = new Float32Array(MAX_F), faktor = new Float32Array(MAX_F).fill(1);
+const RISS = (() => {   // Rissebene im Stein, mit zwei Richtungen in ihr für den gezackten Verlauf
+  const n = [0.35, 1, 0.25], l = Math.hypot(...n); n.forEach((v, i) => (n[i] = v / l));
+  const a = [0, n[2], -n[1]], la = Math.hypot(...a); a.forEach((v, i) => (a[i] = v / la));
+  const b = [n[1] * a[2] - n[2] * a[1], n[2] * a[0] - n[0] * a[2], n[0] * a[1] - n[1] * a[0]];
+  return [...n, ...a, ...b];
+})();
+const rissW = new Float32Array(9);
+function zustandAnwenden(t) {
   for (let i = 0; i < anzahl; i++) {
-    const zurueck = Math.min(SCHICHTEN - 1, Math.round(alter[i] * tiefe / intervall));
+    faktor[i] = 1; alterAkt[i] = alter[i];
+    if (zustand === 0) {
+      // vollkommen (Ophüls): ein geschlossener Kreis, die Zeiten wandern rings um den Stein wie eine Manege
+      const az = Math.atan2(ebenen[i * 3 + 2], ebenen[i * 3]) / (2 * Math.PI) + 0.5;
+      alterAkt[i] = ((az + ebenen[i * 3 + 1] * 0.15 + t * 0.045) % 1) * 0.92 + 0.08;
+    } else if (zustand === 2) {
+      // im Entstehen (Fellini): Facetten wachsen hervor und sinken zurück; was hervortritt, ist jetzt
+      const w = 0.5 + 0.5 * Math.sin(t * 0.55 + i * 2.399);
+      faktor[i] = 0.72 + 0.28 * w; alterAkt[i] = (1 - w) * 0.92 + 0.08;
+    } else if (zustand === 3) {
+      // im Zerfall (Visconti): alles ist schon tief vergangen, Facetten sinken langsam ein
+      alterAkt[i] = 0.55 + 0.45 * alter[i];
+      faktor[i] = 1 - 0.16 * Math.pow(0.5 + 0.5 * Math.sin(t * 0.13 + i * 1.7), 4);
+    }
+  }
+  for (let k = 0; k < 3; k++) {
+    const x = RISS[k * 3], y = RISS[k * 3 + 1], z = RISS[k * 3 + 2];
+    for (let r = 0; r < 3; r++) rissW[k * 3 + r] = lage[r] * x + lage[3 + r] * y + lage[6 + r] * z;
+  }
+}
+function zeitSetzen(kopf, intervall, t) {
+  if (gebaut !== form + facetten || gebautSeite !== innerWidth / innerHeight) { kristallBauen(); gebautSeite = innerWidth / innerHeight; }
+  zustandAnwenden(t);
+  for (let i = 0; i < anzahl; i++) {
+    const zurueck = Math.min(SCHICHTEN - 1, Math.round(alterAkt[i] * tiefe / intervall));
     schicht[i] = (kopf - zurueck + SCHICHTEN) % SCHICHTEN;
   }
 }
@@ -607,17 +728,19 @@ function bild(ms) {
     }
   }
   gegenwart.x += (ziel.x - gegenwart.x) * 0.12; gegenwart.y += (ziel.y - gegenwart.y) * 0.12;
-  zeitSetzen(kopf, intervall);
-  const f = Math.min(4, Math.max(0.25, (ms - (letzteMs || ms - 16.7)) / 16.7)); letzteMs = ms;
+  zeitSetzen(kopf, intervall, t);
+  const dtMs = ms - (letzteMs || ms - 16.7), f = Math.min(4, Math.max(0.25, dtMs / 16.7)); letzteMs = ms;
+  tempoMessen(ms, dtMs);
   schwingen(f);
   zoom += (zoomZiel - zoom) * (1 - Math.pow(0.82, f));
-  for (let i = 0; i < anzahl; i++) abstandZ[i] = abstand[i] * zoom;
+  for (let i = 0; i < anzahl; i++) abstandZ[i] = abstand[i] * zoom * faktor[i];
   ebenenDrehen();
   gl.viewport(0, 0, leinwand.width, leinwand.height);
   gl.useProgram(prog);
   gl.uniform1i(ort.uZeit, 0);
-  gl.uniform3fv(ort.uN, ebenenW); gl.uniform1fv(ort.uR, abstandZ); gl.uniform1fv(ort.uSchicht, schicht); gl.uniform1fv(ort.uAlter, alter);
-  gl.uniform1i(ort.uK, anzahl); gl.uniform1f(ort.uKante, SCHLIFFE[form].kante); gl.uniform3fv(ort.uTon, SCHLIFFE[form].ton); gl.uniform1f(ort.uFeuer, SCHLIFFE[form].feuer); gl.uniform1f(ort.uVer, verschmelzung); gl.uniform1f(ort.uSeite, innerWidth / innerHeight);
+  gl.uniform3fv(ort.uN, ebenenW); gl.uniform1fv(ort.uR, abstandZ); gl.uniform1fv(ort.uSchicht, schicht); gl.uniform1fv(ort.uAlter, alterAkt);
+  gl.uniform1i(ort.uK, anzahl); gl.uniform1f(ort.uKante, SCHLIFFE[form].kante); gl.uniform3fv(ort.uTon, SCHLIFFE[form].ton); gl.uniform1f(ort.uFeuer, SCHLIFFE[form].feuer); gl.uniform1f(ort.uVer, verschmelzung);
+  gl.uniform1i(ort.uZustand, zustand); gl.uniform1f(ort.uRad, huelle * zoom * 1.03); gl.uniform3fv(ort.uRiss, rissW.subarray(0, 3)); gl.uniform3fv(ort.uRissA, rissW.subarray(3, 6)); gl.uniform3fv(ort.uRissB, rissW.subarray(6, 9)); gl.uniform1f(ort.uSeite, innerWidth / innerHeight);
   gl.uniform2f(ort.uLage, (gegenwart.x - 0.5) * 1.2, (gegenwart.y - 0.5) * 0.9); gl.uniform1f(ort.uJetzt, kopf);
   gl.uniform1f(ort.uBrech, brech); gl.uniform1f(ort.uT, t % 100);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -698,6 +821,7 @@ $('begriff-auf').addEventListener('click', () => { $('begriff').hidden = false; 
 $('begriff-zu').addEventListener('click', () => { $('begriff').hidden = true; });
 addEventListener('keydown', (e) => { if (e.key === 'Escape') { $('begriff').hidden = true; schliessen(); } });
 
+try { const z = +localStorage.getItem('kristall.zustand'); zustandWaehlen(z >= 0 && z < 4 ? z : 0, true); } catch { zustandWaehlen(0, true); }
 uebersetzen();
 // Direktstart für Tests und Vorführungen: ?beispiel
 if (new URLSearchParams(location.search).has('beispiel')) beispielStarten();
