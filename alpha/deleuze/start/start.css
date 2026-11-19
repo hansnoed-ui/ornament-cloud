@@ -24,6 +24,8 @@
 .material-wahl label { cursor: pointer; }
 .material-wahl .zt-taste { color: var(--gris); }
 .material-wahl .zt-taste[aria-pressed="true"] { color: var(--blanc); box-shadow: inset 0 -2px 0 var(--rouge); }
+/* Erste Wahl: das eigene Foto oder Video, rot, solange nichts anderes gewählt ist (Christian, 19.11.2026) */
+.material-wahl #m-datei:not([aria-pressed="true"]) { color: var(--rouge); }
 #m-kamera::before { content: "● "; color: var(--rouge); }
 .hinweis { font-family: var(--schmal); font-size: 0.78rem; letter-spacing: 0.08em; color: var(--gris); margin: 6px 0 0; }
 

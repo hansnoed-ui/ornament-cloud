@@ -11,18 +11,21 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 .auftakt { position: absolute; inset: 0; z-index: 2; background: var(--noir); display: grid; grid-template-rows: auto 1fr; grid-template-columns: minmax(0, 1fr); overflow-y: auto; }
 .schwelle { align-self: end; padding: 0 var(--rand-r) max(28px, env(safe-area-inset-bottom)) var(--rand); max-width: 760px; }
 .schwelle { min-width: 0; }
-/* Vorspann: das Beispielmaterial läuft still im leeren Teil der Schwelle */
-.vorspann { grid-row: 1 / -1; grid-column: 1; width: 100%; height: 72%; object-fit: cover; object-position: 50% 30%; opacity: 0.55; filter: grayscale(0.2) contrast(1.05);
+/* Vorspann: der Effekt selbst als stiller Film (vorspann.mp4, aus dem Porträt-Video gerechnet) im leeren Teil der Schwelle */
+.vorspann { grid-row: 1 / -1; grid-column: 1; width: 100%; height: 72%; object-fit: cover; object-position: 50% 40%; opacity: 0.85;
   -webkit-mask-image: linear-gradient(#000 40%, transparent); mask-image: linear-gradient(#000 40%, transparent); pointer-events: none; }
-.auftakt > .zt-band, .auftakt > .schwelle { grid-column: 1; position: relative; }
-.auftakt > .zt-band { grid-row: 1; background: linear-gradient(var(--noir) 30%, rgba(10,10,11,0)); padding-bottom: 22px; } .auftakt > .schwelle { grid-row: 2; }
+/* z-index nötig: die Maske macht das Video zu einer eigenen Ebene, die sonst über Band und Titel läge */
+.auftakt > .zt-band, .auftakt > .schwelle { grid-column: 1; position: relative; z-index: 1; }
+/* Das Kopfband deckt das Bild, solange Schrift darauf steht, und läuft erst darunter aus */
+.auftakt > .zt-band { grid-row: 1; background: linear-gradient(rgba(10,10,11,0.99) calc(100% - 28px), rgba(10,10,11,0)); padding-bottom: 28px; } .auftakt > .schwelle { grid-row: 2; }
 .schwelle .zt-titel { font-size: clamp(2rem, 9.4vw, 7.5rem); overflow-wrap: anywhere; }
 .schwelle .zt-titel i { font-size: 0.72em; }
 .schwelle .satz { font-family: var(--didone); font-size: clamp(1.1rem, 1rem + 1vw, 1.5rem); line-height: 1.35; margin: 22px 0 30px; max-width: 24em; }
 .wahl { display: flex; flex-wrap: wrap; gap: 4px 26px; align-items: baseline; }
 .wahl label { cursor: pointer; }
 .wahl .zt-taste { font-size: 1.02rem; }
-.wahl #kamera::before { content: "● "; }
+/* Erste Wahl ist das eigene Video oder Foto (Christian, 19.11.2026); die Kamera trägt nur noch den roten Punkt */
+.wahl #kamera::before { content: "● "; color: var(--rouge); }
 .hinweis { font-family: var(--schmal); font-size: 0.78rem; letter-spacing: 0.08em; color: var(--gris); margin: 14px 0 0; }
 
 /* Kopf beim Bedienen: das obere Letterbox-Band */
@@ -63,8 +66,12 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 .geste.weg { transform: translateX(104%); }
 /* Hat die Glosse die Fläche, tritt der Hinweis zurück */
 .glosse.da ~ .geste { transform: translateX(104%); }
-/* Glosse: Tippen öffnet die Lektüre */
-.glosse { cursor: pointer; }
+/* Glosse: Tippen öffnet die Lektüre, × oder Wischen nach rechts schliesst sie */
+.glosse { cursor: pointer; touch-action: pan-y; }
+.glosse-zu { position: absolute; top: 2px; right: max(4px, env(safe-area-inset-right)); width: 40px; height: 40px; padding: 0; background: none; border: 0;
+  font-family: var(--schmal); font-size: 1.5rem; line-height: 1; color: var(--gris); cursor: pointer; }
+.glosse-zu:hover, .glosse-zu:focus-visible { color: var(--blanc); }
+.glosse-begriff { margin-right: 36px !important; }
 .glosse.da { transform: none; }
 .glosse p { margin: 0 0 6px; }
 .glosse p:last-child { margin-bottom: 0; }

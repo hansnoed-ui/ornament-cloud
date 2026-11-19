@@ -109,15 +109,16 @@ function wahlZeigen(id) { ['m-kamera', 'm-datei', 'm-beispiel'].forEach((x) => $
 function stromStoppen() { if (strom) { strom.getTracks().forEach((t) => t.stop()); strom = null; } video.srcObject = null; }
 function urlFreigeben() { if (dateiUrl) { URL.revokeObjectURL(dateiUrl); dateiUrl = ''; } }
 
-function beispiel() {
+// Beim Laden läuft das Beispiel nur als Rückfall, gewählt ist noch nichts: die erste Wahl ist das eigene Foto oder Video.
+function beispiel(gewaehlt = true) {
   spur('Beispiel'); stromStoppen(); urlFreigeben(); bild = null; spiegeln = false; fokusY = 0.36;
   video.src = '../kristall/beispiel.mp4?v=1';
   video.play().catch(() => {});
-  wahlZeigen('m-beispiel');
+  wahlZeigen(gewaehlt ? 'm-beispiel' : '');
 }
 video.addEventListener('error', () => { if (video.src.includes('beispiel')) { spur('Beispielvideo fehlt'); melden(TEXTE[sprache].keinBeispiel); } });
 
-$('m-beispiel').addEventListener('click', beispiel);
+$('m-beispiel').addEventListener('click', () => beispiel());
 $('m-kamera').addEventListener('click', async () => {
   spur('Kamera');
   try {
@@ -314,5 +315,5 @@ function lauf(ms) {
   if (gefuellt === 30) spur('✓ läuft');
 }
 groesse();
-beispiel();
+beispiel(false);
 requestAnimationFrame(lauf);
