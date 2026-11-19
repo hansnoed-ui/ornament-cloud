@@ -12,6 +12,15 @@ const TEXTE = {
     titel: 'Kristallbild', satz: 'Die Gegenwart spaltet sich in jedem Augenblick.',
     kamera: 'Kamera', video: 'Video oder Fotos', beispiel: 'Beispiel', hinweis: 'Alles bleibt auf deinem Gerät.',
     facetten: 'Facetten', tiefe: 'Zeittiefe', brechung: 'Brechung', verschmelzung: 'Verschmelzung',
+    glossen: {
+      formen: { begriff: 'le cristal', satz: 'Jeder Schliff fasst die Zeit anders: viele kleine Facetten zerstreuen sie, grosse Flächen zeigen sie ruhig.', zitat: '«Ce que le cristal révèle ou fait voir, c’est le fondement caché du temps.»', quelle: 'Deleuze, L’image-temps, Kap. 4' },
+      zustaende: { begriff: 'les quatre états', satz: 'Deleuze unterscheidet vier Zustände des Kristalls und liest sie an vier Regisseuren ab.', zitat: '«Ophuls, Renoir, Fellini, Visconti»', quelle: 'Deleuze, L’image-temps, Kap. 4' },
+      facetten: { begriff: 'le circuit', satz: 'Jede Facette ist ein kleiner Kreis zwischen dem Aktuellen und seinem Virtuellen. Mehr Facetten, engere Kreise.', zitat: '', quelle: '' },
+      tiefe: { begriff: 'la coexistence', satz: 'Die Vergangenheit folgt nicht auf die Gegenwart, sie besteht neben ihr. Hier bestimmst du, wie weit die Facetten zurückreichen.', zitat: '«Le passé ne succède pas au présent qu’il n’est plus, il coexiste avec le présent qu’il a été.»', quelle: 'Deleuze, L’image-temps, Kap. 4' },
+      brechung: { begriff: 'le virtuel', satz: 'Was der Stein im Inneren bricht, ist nicht erfunden, sondern gewesen. Das Virtuelle ist wirklich, nur nicht aktuell.', zitat: '«Réels sans être actuels, idéaux sans être abstraits.»', quelle: 'Proust, bei Deleuze' },
+      verschmelzung: { begriff: 'l’indiscernabilité', satz: 'Aktuelles und Virtuelles tauschen sich aus, bis man nicht mehr sagen kann, was was ist. Verschieden bleiben sie trotzdem.', zitat: '', quelle: 'Deleuze, L’image-temps, Kap. 4, sinngemäss' }
+    },
+    facetteJetzt: 'diese Facette: jetzt', facetteVor: 'diese Facette: vor {s} s', bildJetzt: 'das Bild: jetzt', komma2: ',',
     zustaende: [
       { kurz: 'vollkommen', titel: 'Der vollkommene Kristall', wer: 'Ophüls', text: 'Bei Max Ophüls ist der Kristall vollkommen: ein geschlossener Kreis, aus dem nichts entkommt. Die Zeiten kreisen um den Stein wie die Manege in «Lola Montès», jede Facette reicht ihre Zeit an die nächste weiter.' },
       { kurz: 'gesprungen', titel: 'Der gesprungene Kristall', wer: 'Renoir', text: 'Bei Jean Renoir hat der Kristall einen Riss. Durch ihn entweicht etwas: das Leben, eine Gegenwart, die noch nicht erstarrt ist und in die Zukunft geht. Das Theater in «Die goldene Karosse», das Spiel in «Die Spielregel». Jenseits des Risses zeigt der Stein nur noch das Jetzt.' },
@@ -41,6 +50,15 @@ const TEXTE = {
     titel: 'Crystal-image', satz: 'The present splits at every moment.',
     kamera: 'Camera', video: 'Video or photos', beispiel: 'Example', hinweis: 'Everything stays on your device.',
     facetten: 'Facets', tiefe: 'Depth of time', brechung: 'Refraction', verschmelzung: 'Coalescence',
+    glossen: {
+      formen: { begriff: 'le cristal', satz: 'Each cut holds time differently: many small facets scatter it, large planes show it calmly.', zitat: '“What the crystal reveals or makes visible is the hidden ground of time.”', quelle: 'Deleuze, The Time-Image, ch. 4' },
+      zustaende: { begriff: 'les quatre états', satz: 'Deleuze distinguishes four states of the crystal and reads them in four directors.', zitat: '“Ophüls, Renoir, Fellini, Visconti”', quelle: 'Deleuze, The Time-Image, ch. 4' },
+      facetten: { begriff: 'le circuit', satz: 'Each facet is a small circuit between the actual and its virtual. More facets, tighter circuits.', zitat: '', quelle: '' },
+      tiefe: { begriff: 'la coexistence', satz: 'The past does not follow the present, it coexists with it. Here you decide how far back the facets reach.', zitat: '“The past does not follow the present that it is no longer, it coexists with the present it was.”', quelle: 'Deleuze, The Time-Image, ch. 4' },
+      brechung: { begriff: 'le virtuel', satz: 'What the stone refracts inside is not invented but has been. The virtual is real, just not actual.', zitat: '“Real without being actual, ideal without being abstract.”', quelle: 'Proust, in Deleuze' },
+      verschmelzung: { begriff: 'l’indiscernabilité', satz: 'Actual and virtual exchange until you can no longer say which is which. Yet they remain distinct.', zitat: '', quelle: 'Deleuze, The Time-Image, ch. 4, paraphrased' }
+    },
+    facetteJetzt: 'this facet: now', facetteVor: 'this facet: {s} s ago', bildJetzt: 'the image: now', komma2: '.',
     zustaende: [
       { kurz: 'perfect', titel: 'The perfect crystal', wer: 'Ophüls', text: 'In Max Ophüls the crystal is perfect: a closed circuit from which nothing escapes. The times circle the stone like the circus ring in “Lola Montès”, each facet passing its time on to the next.' },
       { kurz: 'cracked', titel: 'The cracked crystal', wer: 'Renoir', text: 'In Jean Renoir the crystal has a crack. Through it something escapes: life, a present not yet frozen, moving towards the future. The theatre of “The Golden Coach”, the game of “The Rules of the Game”. Beyond the crack the stone shows only the now.' },
@@ -70,6 +88,15 @@ const TEXTE = {
     titel: 'Image-cristal', satz: 'Le présent se dédouble à chaque instant.',
     kamera: 'Caméra', video: 'Vidéo ou photos', beispiel: 'Exemple', hinweis: 'Tout reste sur ton appareil.',
     facetten: 'Facettes', tiefe: 'Profondeur du temps', brechung: 'Réfraction', verschmelzung: 'Coalescence',
+    glossen: {
+      formen: { begriff: 'le cristal', satz: 'Chaque taille saisit le temps autrement : de nombreuses petites facettes le dispersent, de grands plans le montrent calmement.', zitat: '« Ce que le cristal révèle ou fait voir, c’est le fondement caché du temps. »', quelle: 'Deleuze, L’image-temps, ch. 4' },
+      zustaende: { begriff: 'les quatre états', satz: 'Deleuze distingue quatre états du cristal et les lit chez quatre cinéastes.', zitat: '« Ophuls, Renoir, Fellini, Visconti »', quelle: 'Deleuze, L’image-temps, ch. 4' },
+      facetten: { begriff: 'le circuit', satz: 'Chaque facette est un petit circuit entre l’actuel et son virtuel. Plus de facettes, des circuits plus serrés.', zitat: '', quelle: '' },
+      tiefe: { begriff: 'la coexistence', satz: 'Le passé ne suit pas le présent, il coexiste avec lui. Ici tu décides jusqu’où remontent les facettes.', zitat: '« Le passé ne succède pas au présent qu’il n’est plus, il coexiste avec le présent qu’il a été. »', quelle: 'Deleuze, L’image-temps, ch. 4' },
+      brechung: { begriff: 'le virtuel', satz: 'Ce que la pierre réfracte à l’intérieur n’est pas inventé, mais a été. Le virtuel est réel, seulement pas actuel.', zitat: '« Réels sans être actuels, idéaux sans être abstraits. »', quelle: 'Proust, chez Deleuze' },
+      verschmelzung: { begriff: 'l’indiscernabilité', satz: 'L’actuel et le virtuel s’échangent jusqu’à ce qu’on ne puisse plus dire lequel est lequel. Ils restent pourtant distincts.', zitat: '', quelle: 'Deleuze, L’image-temps, ch. 4, en substance' }
+    },
+    facetteJetzt: 'cette facette : maintenant', facetteVor: 'cette facette : il y a {s} s', bildJetzt: 'l’image : maintenant', komma2: ',',
     zustaende: [
       { kurz: 'parfait', titel: 'Le cristal parfait', wer: 'Ophuls', text: 'Chez Max Ophuls, le cristal est parfait : un circuit fermé dont rien ne s’échappe. Les temps tournent autour de la pierre comme la piste de « Lola Montès », chaque facette passe son temps à la suivante.' },
       { kurz: 'fêlé', titel: 'Le cristal fêlé', wer: 'Renoir', text: 'Chez Jean Renoir, le cristal a une fêlure. Par elle quelque chose s’échappe : la vie, un présent qui ne s’est pas encore figé et file vers l’avenir. Le théâtre du « Carrosse d’or », le jeu de « La Règle du jeu ». Au-delà de la fêlure, la pierre ne montre plus que le maintenant.' },
@@ -130,10 +157,19 @@ function spur(schritt) {
     s.push(schritt); localStorage.setItem(SPUR, JSON.stringify(s.slice(-12)));
   } catch {}
 }
-function melden(text) { const m = $('meldung'); m.textContent = text; m.hidden = false; }
+// Meldungen liegen unter der Kopfzeile, schliessen sich beim Antippen und nach zehn Sekunden
+let meldungUhr = 0;
+function melden(text) {
+  const m = $('meldung'); m.textContent = text; m.hidden = false;
+  clearTimeout(meldungUhr); meldungUhr = setTimeout(() => { m.hidden = true; }, 10000);
+}
+$('meldung').addEventListener('click', () => { $('meldung').hidden = true; });
+// sauberes Ende festhalten, sonst hält die Spur jeden Neuladen für einen Absturz
+addEventListener('pagehide', () => spur('Ende'));
+document.addEventListener('visibilitychange', () => { if (document.hidden) spur('Pause'); });
 try {
   const s = JSON.parse(localStorage.getItem(SPUR) || '[]');
-  if (s.length && s.at(-1) !== '✓ läuft' && s.at(-1) !== 'Start') melden(TEXTE[sprache].letzterLauf + s.slice(-3).join(' → '));
+  if (s.length && !['✓ läuft', 'Start', 'Ende', 'Pause'].includes(s.at(-1))) melden(TEXTE[sprache].letzterLauf + s.slice(-3).join(' → '));
   localStorage.setItem(SPUR, JSON.stringify(['Start']));
 } catch {}
 
@@ -174,6 +210,7 @@ const float AUGE = 3.2, WAND = -2.0, TAN = 0.5;
 // drei Lichter im Raum der Betrachtenden: sie bleiben stehen, wenn der Stein sich dreht
 const vec3 L1 = vec3(0.53, 0.68, 0.5), L2 = vec3(-0.62, 0.55, 0.56), L3 = vec3(0.1, -0.35, 0.93);
 uniform float uFeuer;
+uniform float uUnschaerfe;     // Radius der Tiefenschärfe im Bild
 uniform float uRad;            // Radius der Hüllkugel um den Stein
 uniform int uZustand;          // 0 vollkommen, 1 gesprungen, 2 im Entstehen, 3 im Zerfall
 uniform vec3 uRiss, uRissA, uRissB;   // Rissebene (gedreht mit dem Stein)
@@ -232,7 +269,19 @@ void main(){
   vec3 rk = ro - vec3(uLage, 0.0);   // Kristall verschoben
 
   // Aussen: die aktuelle Gegenwart
+  // Tiefenschärfe wie in der Edelsteinfotografie: das Bild hinter dem Stein weich, der Stein scharf.
+  // Mit der Verschmelzung wird das Bild wieder scharf: Aktuelles und Virtuelles gleichen sich an.
   vec3 jetzt = holen(v, uJetzt);
+  float unsch = uUnschaerfe * pow(1.0 - uVer, 1.5);
+  if (unsch > 0.0005) {
+    vec2 r = vec2(unsch / uSeite, unsch);
+    vec3 s = jetzt;
+    for (int k = 0; k < 8; k++) {
+      float w = float(k) * 2.39996 + 0.5, rr = sqrt((float(k) + 0.5) / 8.0);
+      s += holen(v + vec2(cos(w), sin(w)) * rr * r, uJetzt);
+    }
+    jetzt = s / 9.0;
+  }
   float vign = smoothstep(1.6, 0.35, length(sc * vec2(uSeite * 0.75, 1.0)));
   vec3 col = jetzt * mix(0.32, 0.78, vign);
 
@@ -327,15 +376,101 @@ void main(){
     col = mix(col, vec3(1.0, 0.98, 0.94), kante * uKante);
     if (uZustand == 1) col = mix(col, jetzt * 1.5 + vec3(0.28, 0.25, 0.2), riss);
   }
-  col += (h(dot(v, vec2(12.9898, 78.233)) * 100.0 + uT) - 0.5) * 0.03;
   o = vec4(col, 1.0);
 }`;
 
 function programm(vs, fs) {
   const mk = (typ, src) => { const s = gl.createShader(typ); gl.shaderSource(s, src); gl.compileShader(s);
     if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
-  const p = gl.createProgram(); gl.attachShader(p, mk(gl.VERTEX_SHADER, vs)); gl.attachShader(p, mk(gl.FRAGMENT_SHADER, fs));
+  const p = gl.createProgram(); gl.attachShader(p, mk(gl.VERTEX_SHADER, vs)); gl.attachShader(p, mk(gl.FRAGMENT_SHADER, fs)); gl.bindAttribLocation(p, 0, 'a');
   gl.linkProgram(p); if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p)); return p;
+}
+
+// ---------- Nachbearbeitung: Leuchten (Bloom) und glatte Kanten (FXAA) ----------
+const NVS = `#version 300 es
+in vec2 a; out vec2 v;
+void main(){ v = a*0.5+0.5; gl_Position = vec4(a,0.,1.); }`;
+// hell: die hellsten Stellen herausziehen und auf ein Viertel verkleinern
+const FS_HELL = `#version 300 es
+precision highp float; in vec2 v; out vec4 o; uniform sampler2D uQ; uniform vec2 uPx;
+void main(){
+  vec3 c = 0.25 * (texture(uQ, v + uPx * vec2(-1, -1)).rgb + texture(uQ, v + uPx * vec2(1, -1)).rgb
+                 + texture(uQ, v + uPx * vec2(-1, 1)).rgb + texture(uQ, v + uPx * vec2(1, 1)).rgb);
+  float l = max(c.r, max(c.g, c.b));
+  o = vec4(c * smoothstep(0.62, 1.15, l), 1.0);
+}`;
+// weich: Gauss in einer Richtung, neun Abgriffe über lineare Filterung
+const FS_WEICH = `#version 300 es
+precision highp float; in vec2 v; out vec4 o; uniform sampler2D uQ; uniform vec2 uRichtung;
+void main(){
+  vec3 c = texture(uQ, v).rgb * 0.2270270270;
+  c += (texture(uQ, v + uRichtung * 1.3846153846).rgb + texture(uQ, v - uRichtung * 1.3846153846).rgb) * 0.3162162162;
+  c += (texture(uQ, v + uRichtung * 3.2307692308).rgb + texture(uQ, v - uRichtung * 3.2307692308).rgb) * 0.0702702703;
+  o = vec4(c, 1.0);
+}`;
+// zusammen: FXAA auf dem Bild, Leuchten dazu, Korn
+const FS_ZUSAMMEN = `#version 300 es
+precision highp float; in vec2 v; out vec4 o;
+uniform sampler2D uSzene, uGlow; uniform vec2 uPx; uniform float uGlowStaerke, uT;
+float lu(vec3 c){ return dot(c, vec3(0.299, 0.587, 0.114)); }
+float h(float n){ return fract(sin(n * 91.345 + 7.13) * 43758.5453); }
+void main(){
+  vec3 nw = texture(uSzene, v + vec2(-1, -1) * uPx).rgb, ne = texture(uSzene, v + vec2(1, -1) * uPx).rgb;
+  vec3 sw = texture(uSzene, v + vec2(-1, 1) * uPx).rgb, se = texture(uSzene, v + vec2(1, 1) * uPx).rgb;
+  vec3 m = texture(uSzene, v).rgb;
+  float lnw = lu(nw), lne = lu(ne), lsw = lu(sw), lse = lu(se), lm = lu(m);
+  float lmin = min(lm, min(min(lnw, lne), min(lsw, lse))), lmax = max(lm, max(max(lnw, lne), max(lsw, lse)));
+  vec2 d = vec2(-((lnw + lne) - (lsw + lse)), (lnw + lsw) - (lne + lse));
+  float red = max((lnw + lne + lsw + lse) * 0.03125, 1.0 / 128.0);
+  d = clamp(d / (min(abs(d.x), abs(d.y)) + red), -8.0, 8.0) * uPx;
+  vec3 A = 0.5 * (texture(uSzene, v + d * (1.0 / 3.0 - 0.5)).rgb + texture(uSzene, v + d * (2.0 / 3.0 - 0.5)).rgb);
+  vec3 B = A * 0.5 + 0.25 * (texture(uSzene, v - d * 0.5).rgb + texture(uSzene, v + d * 0.5).rgb);
+  float lb = lu(B);
+  vec3 c = (lb < lmin || lb > lmax) ? A : B;
+  c += texture(uGlow, v).rgb * uGlowStaerke;
+  c += (h(dot(v, vec2(12.9898, 78.233)) * 100.0 + uT) - 0.5) * 0.03;
+  o = vec4(c, 1.0);
+}`;
+let progHell, progWeich, progZusammen, nachOrt = {}, halbFloat = false;
+const ziele = {};   // szene (volle Grösse), glowA/glowB (ein Viertel)
+function zielBauen(name, b, hh) {
+  const z = ziele[name] || (ziele[name] = { tex: gl.createTexture(), fb: gl.createFramebuffer() });
+  if (z.b === b && z.h === hh) return z;
+  z.b = b; z.h = hh;
+  gl.bindTexture(gl.TEXTURE_2D, z.tex);
+  gl.texImage2D(gl.TEXTURE_2D, 0, halbFloat ? gl.RGBA16F : gl.RGBA8, b, hh, 0, gl.RGBA, halbFloat ? gl.HALF_FLOAT : gl.UNSIGNED_BYTE, null);
+  for (const [k, w] of [[gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]]) gl.texParameteri(gl.TEXTURE_2D, k, w);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, z.fb);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, z.tex, 0);
+  if (halbFloat && gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
+    // Gerät kann nicht in HalfFloat zeichnen: auf 8 Bit zurück
+    halbFloat = false; spur('kein HalfFloat-Ziel'); for (const n in ziele) { ziele[n].b = 0; } gl.bindFramebuffer(gl.FRAMEBUFFER, null); return zielBauen(name, b, hh);
+  }
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  return z;
+}
+function nachbearbeiten(t) {
+  const B = leinwand.width, H = leinwand.height, b4 = Math.max(1, Math.round(B / 4)), h4 = Math.max(1, Math.round(H / 4));
+  const szene = ziele.szene, gA = zielBauen('glowA', b4, h4), gB = zielBauen('glowB', b4, h4);
+  gl.activeTexture(gl.TEXTURE1);
+  // hell herausziehen
+  gl.bindFramebuffer(gl.FRAMEBUFFER, gA.fb); gl.viewport(0, 0, b4, h4);
+  gl.useProgram(progHell); gl.bindTexture(gl.TEXTURE_2D, szene.tex);
+  gl.uniform1i(nachOrt.hellQ, 1); gl.uniform2f(nachOrt.hellPx, 1.5 / B, 1.5 / H);
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  // zweimal weich: waagrecht, senkrecht
+  gl.useProgram(progWeich); gl.uniform1i(nachOrt.weichQ, 1);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, gB.fb); gl.bindTexture(gl.TEXTURE_2D, gA.tex); gl.uniform2f(nachOrt.weichR, 1.6 / b4, 0); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, gA.fb); gl.bindTexture(gl.TEXTURE_2D, gB.tex); gl.uniform2f(nachOrt.weichR, 0, 1.6 / h4); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  // zusammen auf den Bildschirm
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, B, H);
+  gl.useProgram(progZusammen);
+  gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, szene.tex);
+  gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, gA.tex);
+  gl.uniform1i(nachOrt.zSzene, 1); gl.uniform1i(nachOrt.zGlow, 2);
+  gl.uniform2f(nachOrt.zPx, 1 / B, 1 / H); gl.uniform1f(nachOrt.zGlowStaerke, 0.85); gl.uniform1f(nachOrt.zT, t % 100);
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  gl.activeTexture(gl.TEXTURE0);
 }
 
 let prog, ort = {}, zeitTex = null, pufferB = 0, pufferH = 0;
@@ -345,7 +480,13 @@ if (gl) {
   const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
   const a = gl.getAttribLocation(prog, 'a'); gl.enableVertexAttribArray(a); gl.vertexAttribPointer(a, 2, gl.FLOAT, false, 0, 0);
-  for (const n of ['uZeit', 'uN', 'uR', 'uSchicht', 'uAlter', 'uK', 'uKante', 'uTon', 'uFeuer', 'uVer', 'uZustand', 'uRad', 'uRiss', 'uRissA', 'uRissB', 'uLage', 'uSeite', 'uBrech', 'uT', 'uJetzt']) ort[n] = gl.getUniformLocation(prog, n);
+  halbFloat = !!gl.getExtension('EXT_color_buffer_float');
+  progHell = programm(NVS, FS_HELL); progWeich = programm(NVS, FS_WEICH); progZusammen = programm(NVS, FS_ZUSAMMEN);
+  nachOrt = { hellQ: gl.getUniformLocation(progHell, 'uQ'), hellPx: gl.getUniformLocation(progHell, 'uPx'),
+    weichQ: gl.getUniformLocation(progWeich, 'uQ'), weichR: gl.getUniformLocation(progWeich, 'uRichtung'),
+    zSzene: gl.getUniformLocation(progZusammen, 'uSzene'), zGlow: gl.getUniformLocation(progZusammen, 'uGlow'), zPx: gl.getUniformLocation(progZusammen, 'uPx'),
+    zGlowStaerke: gl.getUniformLocation(progZusammen, 'uGlowStaerke'), zT: gl.getUniformLocation(progZusammen, 'uT') };
+  for (const n of ['uZeit', 'uN', 'uR', 'uSchicht', 'uAlter', 'uK', 'uKante', 'uTon', 'uFeuer', 'uVer', 'uZustand', 'uUnschaerfe', 'uRad', 'uRiss', 'uRissA', 'uRissB', 'uLage', 'uSeite', 'uBrech', 'uT', 'uJetzt']) ort[n] = gl.getUniformLocation(prog, n);
   spur('Grafik bereit');
 }
 
@@ -741,15 +882,20 @@ function bild(ms) {
   zoom += (zoomZiel - zoom) * (1 - Math.pow(0.82, f));
   for (let i = 0; i < anzahl; i++) abstandZ[i] = abstand[i] * zoom * faktor[i];
   ebenenDrehen();
+  // erst in die Szene zeichnen, dann Leuchten und glatte Kanten
+  const sz = zielBauen('szene', leinwand.width, leinwand.height);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, sz.fb);
   gl.viewport(0, 0, leinwand.width, leinwand.height);
   gl.useProgram(prog);
+  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D_ARRAY, zeitTex);
   gl.uniform1i(ort.uZeit, 0);
   gl.uniform3fv(ort.uN, ebenenW); gl.uniform1fv(ort.uR, abstandZ); gl.uniform1fv(ort.uSchicht, schicht); gl.uniform1fv(ort.uAlter, alterAkt);
   gl.uniform1i(ort.uK, anzahl); gl.uniform1f(ort.uKante, SCHLIFFE[form].kante); gl.uniform3fv(ort.uTon, SCHLIFFE[form].ton); gl.uniform1f(ort.uFeuer, SCHLIFFE[form].feuer); gl.uniform1f(ort.uVer, verschmelzung);
-  gl.uniform1i(ort.uZustand, zustand); gl.uniform1f(ort.uRad, huelle * zoom * 1.03); gl.uniform3fv(ort.uRiss, rissW.subarray(0, 3)); gl.uniform3fv(ort.uRissA, rissW.subarray(3, 6)); gl.uniform3fv(ort.uRissB, rissW.subarray(6, 9)); gl.uniform1f(ort.uSeite, innerWidth / innerHeight);
+  gl.uniform1i(ort.uZustand, zustand); gl.uniform1f(ort.uUnschaerfe, 0.009); gl.uniform1f(ort.uRad, huelle * zoom * 1.03); gl.uniform3fv(ort.uRiss, rissW.subarray(0, 3)); gl.uniform3fv(ort.uRissA, rissW.subarray(3, 6)); gl.uniform3fv(ort.uRissB, rissW.subarray(6, 9)); gl.uniform1f(ort.uSeite, innerWidth / innerHeight);
   gl.uniform2f(ort.uLage, (gegenwart.x - 0.5) * 1.2, (gegenwart.y - 0.5) * 0.9); gl.uniform1f(ort.uJetzt, kopf);
   gl.uniform1f(ort.uBrech, brech); gl.uniform1f(ort.uT, t % 100);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  nachbearbeiten(t);
   if (standbildWunsch) { standbildWunsch = false; leinwand.toBlob((b) => b && zeigen(b, 'kristallbild-' + zeitstempel() + '.png')); }
   if (ersterLauf && gefuellt) { ersterLauf = false; spur('✓ läuft'); }
   requestAnimationFrame(bild);
@@ -821,6 +967,59 @@ function zeitstempel() {
   const d = new Date(), z = (n) => String(n).padStart(2, '0');
   return `${d.getFullYear()}${z(d.getMonth() + 1)}${z(d.getDate())}-${z(d.getHours())}${z(d.getMinutes())}${z(d.getSeconds())}`;
 }
+
+// ---------- Glossen: der Begriff am Rand, während man einstellt ----------
+let glosseUhr = 0, glosseSchluessel = '';
+function glosse(k) {
+  const g = TEXTE[sprache].glossen[k]; if (!g) return;
+  const el = $('glosse');
+  glosseSchluessel = k;
+  $('glosse-begriff').textContent = g.begriff;
+  $('glosse-satz').textContent = g.satz;
+  $('glosse-zitat').textContent = g.zitat; $('glosse-zitat').hidden = !g.zitat;
+  $('glosse-quelle').textContent = g.quelle; $('glosse-quelle').hidden = !g.quelle;
+  el.hidden = false; requestAnimationFrame(() => el.classList.add('da'));
+  clearTimeout(glosseUhr); glosseUhr = setTimeout(glosseWeg, 7000);
+}
+function glosseWeg() { const el = $('glosse'); el.classList.remove('da'); setTimeout(() => { if (!el.classList.contains('da')) el.hidden = true; }, 700); }
+for (const [id, k] of [['r-facetten', 'facetten'], ['r-tiefe', 'tiefe'], ['r-brechung', 'brechung'], ['r-verschmelzung', 'verschmelzung']]) {
+  $(id).addEventListener('pointerdown', () => glosse(k));
+  $(id).addEventListener('input', () => { if (glosseSchluessel !== k || $('glosse').hidden) glosse(k); clearTimeout(glosseUhr); glosseUhr = setTimeout(glosseWeg, 7000); });
+}
+document.querySelectorAll('[data-form]').forEach((b) => b.addEventListener('click', () => glosse('formen')));
+$('glosse').addEventListener('click', () => { glosseWeg(); $('begriff').hidden = false; });
+
+// ---------- Eine Facette antippen: welche Zeit trägt sie? ----------
+function facetteUnter(x, y) {
+  const sx = (x / innerWidth) * 2 - 1, sy = 1 - (y / innerHeight) * 2, seite = innerWidth / innerHeight;
+  let d = [sx * seite * 0.5, sy * 0.5, -1]; const l = Math.hypot(...d); d = d.map((v) => v / l);
+  const o = [-(gegenwart.x - 0.5) * 1.2, -(gegenwart.y - 0.5) * 0.9, 3.2];
+  let t0 = -1e9, t1 = 1e9, i0 = -1;
+  for (let k = 0; k < anzahl; k++) {
+    const n = [ebenenW[k * 3], ebenenW[k * 3 + 1], ebenenW[k * 3 + 2]];
+    const dn = n[0] * d[0] + n[1] * d[1] + n[2] * d[2], ab = abstandZ[k] - (n[0] * o[0] + n[1] * o[1] + n[2] * o[2]);
+    if (Math.abs(dn) < 1e-6) { if (ab < 0) return -1; continue; }
+    const t = ab / dn;
+    if (dn < 0) { if (t > t0) { t0 = t; i0 = k; } } else t1 = Math.min(t1, t);
+  }
+  return t0 < t1 && t0 > 0 ? i0 : -1;
+}
+let tippStart = null, zeitUhr = 0;
+leinwand.addEventListener('pointerdown', (e) => { tippStart = finger.size <= 1 ? { x: e.clientX, y: e.clientY, t: performance.now() } : null; });
+leinwand.addEventListener('pointerup', (e) => {
+  const s0 = tippStart; tippStart = null;
+  if (!s0 || performance.now() - s0.t > 350 || Math.hypot(e.clientX - s0.x, e.clientY - s0.y) > 8) return;
+  const T = TEXTE[sprache], i = facetteUnter(e.clientX, e.clientY), el = $('facettenzeit');
+  if (i < 0) el.textContent = T.bildJetzt;
+  else {
+    const sek = alterAkt[i] * tiefe;
+    el.textContent = sek < 0.15 ? T.facetteJetzt : T.facetteVor.replace('{s}', sek.toFixed(1).replace('.', T.komma2));
+  }
+  el.style.left = Math.min(innerWidth - 150, Math.max(12, e.clientX - 60)) + 'px';
+  el.style.top = Math.max(70, e.clientY - 48) + 'px';
+  el.hidden = false; el.classList.remove('weg');
+  clearTimeout(zeitUhr); zeitUhr = setTimeout(() => el.classList.add('weg'), 1800);
+});
 
 // ---------- Begriffsebene ----------
 $('begriff-auf').addEventListener('click', () => { $('begriff').hidden = false; });
