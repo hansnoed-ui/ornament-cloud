@@ -18,7 +18,8 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 .auftakt > .zt-band, .auftakt > .schwelle { grid-column: 1; position: relative; z-index: 1; }
 /* Das Kopfband deckt das Bild, solange Schrift darauf steht, und läuft erst darunter aus */
 .auftakt > .zt-band { grid-row: 1; background: linear-gradient(rgba(10,10,11,0.99) calc(100% - 28px), rgba(10,10,11,0)); padding-bottom: 28px; } .auftakt > .schwelle { grid-row: 2; }
-.schwelle .zt-titel { font-size: clamp(2rem, 9.4vw, 7.5rem); overflow-wrap: anywhere; }
+.schwelle .zt-titel { font-size: clamp(2rem, 9.4vw, 7.5rem); overflow-wrap: normal; hyphens: manual; }
+/* Die Schriftgrösse passt tafeln.js dem längsten Wort an: der Titel bricht nie mitten im Wort (Christian, 19.11.2026) */
 .schwelle .zt-titel i { font-size: 0.72em; }
 .schwelle .satz { font-family: var(--didone); font-size: clamp(1.1rem, 1rem + 1vw, 1.5rem); line-height: 1.35; margin: 22px 0 30px; max-width: 24em; }
 .wahl { display: flex; flex-wrap: wrap; gap: 4px 26px; align-items: baseline; }
