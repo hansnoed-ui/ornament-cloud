@@ -212,12 +212,7 @@ function zeichnen(t) {
   facetten.forEach((f, k) => { pfad(f.poly); ctx.strokeStyle = 'rgba(241,238,230,0.7)'; ctx.lineWidth = dpr; ctx.stroke(); });
   pfad(tisch); ctx.lineWidth = 1.4 * dpr; ctx.stroke();
   if (aktiv >= 0) { pfad(facetten[aktiv].poly); ctx.strokeStyle = '#d8261c'; ctx.lineWidth = 3 * dpr; ctx.stroke(); }
-  // Nummern wie Zeitcodes
-  ctx.font = `500 ${Math.round(11 * dpr)}px "Barlow Condensed", sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  facetten.forEach((f, k) => {
-    ctx.lineWidth = 3 * dpr; ctx.strokeStyle = 'rgba(10,10,11,0.85)'; ctx.strokeText(OPS[k].nr, f.mitte[0], f.mitte[1]);
-    ctx.fillStyle = k === aktiv ? '#d8261c' : '#f1eee6'; ctx.fillText(OPS[k].nr, f.mitte[0], f.mitte[1]);
-  });
+  // Keine Nummern in den Facetten (Christian, 19.11.2026: unnötig); die Nummer steht in der Beschriftung darunter.
 }
 
 // Die Beschriftung steht unter dem Kristall, nie auf dem Bild (Christian, 19.11.2026):
