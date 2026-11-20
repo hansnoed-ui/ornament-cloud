@@ -365,7 +365,7 @@ void main(){
       vec3 pc = rk + rd * tc;
       float weg = min(2.0 * uSpalt / max(abs(dn), 0.02), 3.5 * uSpalt);
       float r = length(pc) / uRad;
-      float ab = exp(-max(r - 0.5, 0.0) * 1.5) * (r < 1.0 ? 1.6 : 1.0);
+      float ab = exp(-max(r - 0.5, 0.0) * 1.5) * (1.0 + 0.5 * smoothstep(1.1, 0.6, r));
       float w = atan(dot(pc, uRissB), dot(pc, uRissA));
       float strahl = 0.45 + 0.55 * pow(0.5 + 0.5 * sin(w * 11.0 + 2.0 * sin(w * 3.0 + uT * 0.37) + uT * 0.21), 3.0);
       float hinter = (trifft && t0 < tc) ? 0.3 : 1.0;
