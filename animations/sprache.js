@@ -41,7 +41,11 @@ const T = {
   // Handy: Reiter über dem Pult (20. November 2026)
   "Pult": ["Mixer", "Mezclador"],
   "+ Effekt": ["+ Effect", "+ Efecto"],
-  "Sichern": ["Save", "Guardar"],
+  "Mehr": ["More", "Más"],
+  "Platz": ["Position", "Posición"],
+  "Regler wählen": ["Choose control", "Elegir control"],
+  "Ebene {n} an": ["Layer {n} on", "Capa {n} activa"],
+  "Ebenen darunter": ["Layers below", "Capas inferiores"],
   "Ebene {n}": ["Layer {n}", "Capa {n}"],
   "nach oben": ["move up", "subir"],
   "nach unten": ["move down", "bajar"],

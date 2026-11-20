@@ -76,13 +76,15 @@ geschlossenen Formen, eng in gross). Geprüft gegen Inter (optische Grösse), Sc
   Akzentpunkt, 52 px hoch) und daneben «MP4 laden». Ohne Bild zeigt die Bühne die Aufforderung (gestrichelter Rahmen, Satz mit kursivem Wort,
   «Bild wählen …»). Pult rechts 400 px: Gruppen mit Versalbeschriftung, Schalter als flache Knöpfe mit 6 px Radius, Ebenen als Karten mit Haarlinie, dünne Regler mit
   Wert rechts, leise Tasten (Pause, Standbild, Link), zuunterst «Werk sichern» mit Titel und Name.
-- **Mischpult auf dem Handy** (bis 720 px, 20. November 2026, Wunsch: «dass das live mischen der effekte mühelos gelingt. Es müssen nicht alle
-  effekte gleichzeitig sichtbar sein»): Die Bühne klebt unter dem Kopf (Höhe `--buehne-h` 42svh, niedrige Handys 38svh), mit Uhr und darunter den
-  **Reitern** `01 · 02 · 03` (je Ebene ihr Effekt, Akzentpunkt = Ebene läuft, «+ Effekt» = leer), «Bild» und «Sichern». Darunter steht nur der
-  gewählte Teil (`data-reiter` auf dem Pult, `data-teil` an den Gruppen). Eine Ebene zeigt statt der Auswahlliste die **Effektleiste**: alle Effekte
-  als flache Knöpfe in einer Zeile zum Wischen, antippen wechselt sofort. Regler gestapelt (Name und Wert über der Bahn, Knopf 22 px), Quelle und
-  Mischmodus zuletzt. Das **Dock** am unteren Rand trägt «Neu mischen», «MP4» und «Info»; die Leiste der Ansichten erscheint nur in der Info.
-  Meldungen erscheinen kurz als **Hinweis** über dem Dock (sonst stünden sie im versteckten Teil «Bild»). Laptop und Tablet bleiben wie bisher.
+- **Mischpult auf dem Handy** (bis 720 px, 20. November 2026, Wünsche: «dass das live mischen der effekte mühelos gelingt. Es müssen nicht alle
+  effekte gleichzeitig sichtbar sein», am selben Abend: Regler «über dem bild … oberhalb (und unterhalb). Damit das Bild nicht wegscrollt»,
+  «Regler mit menu auswählen», «quasi ums Bild herum»): Alles zum Mischen passt ohne Rollen auf einen Bildschirm, ums Bild herum. Oben die
+  **Reiter** `01 · 02 · 03` (je Ebene ihr Effekt, Akzentpunkt = läuft, «+ Effekt» = leer) und «Mehr». Die Bühne so gross, wie es geht
+  (`--buehne-h` = Bildschirm minus 250 px). Unten auf ihr halbdurchsichtig der **Regler mit Menü** (`#pult-auflage`): das Menü wählt einen
+  Regler der Ebene, dazu Mischmodus, Platz (Reihenfolge) und Quelle; Wahlen als Knöpfe; daneben «an/aus». Lässt das Format unter der Bühne
+  Platz (1:1, 16:9, 4:5 auf hohen Handys), steht er darunter und deckt nichts ab (`.unter`, `auflageLage()`). Unter der Bühne die
+  **Effektleiste** zum Wischen, antippen wechselt sofort. «Mehr» zeigt darunter Bild, Format, Bewegung, Grund, Teilen und Sichern. Das **Dock**
+  trägt «Neu mischen», «MP4» und «Info»; Meldungen kurz darüber. Laptop und Tablet bleiben wie bisher.
 - **Werke**: unter dem Mischpult, von einer Haarlinie getrennt: grosse Zeile «Werke» mit der Anzahl leicht und im Akzent, daneben ein Satz,
   darunter das gestreute Raster mit drei Kachelgrössen (12 Spalten, Tablet 8, Handy 4). Beschriftung: Nummer, Titel, darunter leise
   «von Name · Datum»; eigene Werke mit «Löschen». Darüberfahren lässt die Animation laufen, Klick lädt sie ins Mischpult.
