@@ -8,24 +8,21 @@ import { schliffEbenen } from '../deleuze/kristall/schliffe.js?v=8';
 const $ = (id) => document.getElementById(id);
 const leinwand = $('leinwand');
 
-// ---------- Inhalt: fünf Anwendungen von ornament.cloud (Christian, 20.11.2026; ersetzt Webdesign, Apps, Vermittlung, Kuration, Editionen) ----------
+// ---------- Inhalt: drei Anwendungen von ornament.cloud (Christian, 20.11.2026; ersetzt Webdesign, Apps, Vermittlung, Kuration, Editionen;
+// Composer und Multiverse wieder heraus, ORNAMENT LAB folgt, wenn es so weit ist) ----------
 // Tippt man im Menü auf den Namen, öffnet sich die Vitrine (unten): Bild oder Film, Name, ein Satz, «Öffnen».
 const BEREICHE = [
-  { name: 'the deleuzian scheme', kopf: 'im Entstehen · Bild, Film, Ton', satz: 'Begriffe von Deleuze als Verfahren: Kristallbild, Schichten der Zeit, Dauer, Wahrnehmung, Diagramm – angewandt auf eigenes Material.',
+  { name: 'the deleuzian scheme', kopf: 'im Entstehen · Bild, Film, Ton', satz: 'Begriffe von Deleuze als Verfahren: Kristallbild, Schichten der Zeit, Dauer, Wahrnehmung, Diagramm, Figur – angewandt auf eigenes Material.',
     href: '/alpha/deleuze/start/', bild: 'vorschau/deleuzian-scheme.jpg', ton: [228, 92, 96] },
-  { name: 'Animations', kopf: 'Bild · Bewegung', satz: 'Ein Bild, 24 Effekte, bis zu drei Ebenen: das Mischpult für eigene Animationen.',
-    href: '/animations/', bild: '/b/bilder/schau/animations.jpg', film: '/b/bilder/schau/animations.mp4', hoch: true, ton: [124, 108, 255] },
   { name: 'Das Dritte Rad', kopf: 'Zeit · Form · Farbe', satz: 'Zeit, Form und Farbe drehen gegeneinander. Jede Drehung zieht einen Zettel, eine Begegnung aus ORNA und eine Übung aus OMNA COLOR.',
-    href: '/beta/drittes-rad/', bild: '/b/bilder/schau/drittes-rad.jpg', film: '/b/bilder/schau/drittes-rad.mp4', zoom: 1.1, ton: [232, 162, 86] },
-  { name: 'Multiverse', kopf: 'vier Anwendungen zugleich', satz: 'Vier Anwendungen gleichzeitig nebeneinander, direkt bedienbar.',
-    href: '/multiverse/', bild: '/b/bilder/schau/multiverse.jpg', ton: [64, 196, 186] },
-  { name: 'Composer', kopf: 'Ton · Alpha', satz: 'Spuren erzeugen, schneiden und mischen: Synthesizer, Perkussion, Naturklänge und eigene Plugins.',
-    href: '/alpha/composer/', spuren: true, ton: [96, 150, 255] }
+    href: '/beta/drittes-rad/', schau: 'rad', ton: [232, 150, 80] },
+  { name: 'Animations', kopf: 'Bild · Bewegung', satz: 'Ein Bild, 24 Effekte, bis zu drei Ebenen: das Mischpult für eigene Animationen.',
+    href: '/animations/', bild: 'vorschau/animations.jpg', film: 'vorschau/animations.mp4', ton: [124, 108, 255] }
 ];
-// Die Farben der Schichten sind das Spektrum des Steins: Rot, Violett, Gold, Türkis, Blau.
+// Die Farben der Schichten: Rot (Godard), Orange (das Rad), Violett.
 let vitrineOffen = false;
-const ZUSTAENDE = BEREICHE.length + 1;          // 0 = Titel, 1–5 = Bereiche
-const SCHRITT = (Math.PI * 2) / ZUSTAENDE;      // eine Sechsteldrehung je Bereich
+const ZUSTAENDE = BEREICHE.length + 1;          // 0 = Titel, 1–3 = Anwendungen
+const SCHRITT = (Math.PI * 2) / ZUSTAENDE;      // eine Vierteldrehung je Anwendung
 
 // ---------- Absturzspur (Lehre aus PHORMA): nur in der Konsole, nie für Gäste ----------
 const SPUR = 'brillant.spur';
@@ -872,13 +869,13 @@ const vKarten = BEREICHE.map((b, i) => {
   k.querySelector('.v-kopf').textContent = b.kopf; k.querySelector('.v-name').textContent = b.name; k.querySelector('.v-satz').textContent = b.satz;
   k.querySelector('.v-oeffnen').setAttribute('aria-label', `${b.name} öffnen`);
   const bild = k.querySelector('.v-bild');
-  if (b.spuren) bild.append(document.createElement('canvas'));
+  if (b.schau) bild.append(document.createElement('canvas'));
   else { const im = new Image(); im.alt = ''; im.decoding = 'async'; im.src = b.bild; bild.append(im); }
   if (b.hoch) bild.classList.add('hoch');
   vRaum.append(k);
   return { el: k, koerper: k.querySelector('.v-koerper'), bild, licht: k.querySelector('.v-licht'), glanz: k.querySelector('.v-glanz'),
     dunkel: k.querySelector('.v-dunkel'), schatten: k.querySelector('.v-schatten'), text: k.querySelector('.v-text'), oeffnen: k.querySelector('.v-oeffnen'),
-    film: null, spurenStopp: null, flug: 0 };
+    film: null, schauStopp: null, flug: 0 };
 });
 const N = BEREICHE.length;
 const vz = { pos: 0, ziel: 0, v: 0, auf: 0, aufZiel: 0, t0: 0, lauf: 0, aktiv: -1,
@@ -901,7 +898,7 @@ function vitrineZu() {
 }
 function vitrineWeiter(s) { vz.ziel = Math.round(vz.ziel) + s; }
 
-// die vordere Karte bekommt ihren Film oder ihre Tonspuren, die übrigen nur ihr Standbild
+// die vordere Karte bekommt ihren Film oder ihr bewegtes Schaubild, die übrigen nur ihr Standbild
 function aktivSetzen(i) {
   vz.aktiv = i; if (vz.aufZiel) hin(i + 1);   // der Stein hinter dem Glas dreht mit
   vKarten.forEach((k, j) => {
@@ -918,11 +915,11 @@ function aktivSetzen(i) {
         k.bild.append(v); k.film = v; v.play().catch(() => {});
       } else if (!vorn && k.film) { const v = k.film; k.film = null; v.classList.remove('laeuft'); setTimeout(() => { v.pause(); v.removeAttribute('src'); v.load(); v.remove(); }, 400); }
     }
-    if (b.spuren) {
-      if (vorn && !k.spurenStopp) k.spurenStopp = spurenZeichnen(k.bild.querySelector('canvas'), b.ton, true);
-      else if (!vorn && k.spurenStopp) { k.spurenStopp(); k.spurenStopp = null; }
-      // hinten steht ein Standbild der Spuren
-      if (!vorn && !k.spurenStopp) { const halt = spurenZeichnen(k.bild.querySelector('canvas'), b.ton); requestAnimationFrame(() => requestAnimationFrame(halt)); }
+    if (b.schau) {
+      if (vorn && !k.schauStopp) k.schauStopp = schauZeichnen(k.bild.querySelector('canvas'), b, true);
+      else if (!vorn && k.schauStopp) { k.schauStopp(); k.schauStopp = null; }
+      // hinten steht ein Standbild
+      if (!vorn && !k.schauStopp) schauZeichnen(k.bild.querySelector('canvas'), b, false);
     }
   });
 }
@@ -957,7 +954,7 @@ function vitrineBild(jetzt) {
   });
   if (!vz.aufZiel && alleZu) {
     vitrineOffen = false; vitrine.hidden = true; kreiselAus();
-    vKarten.forEach((k) => { if (k.film) { k.film.pause(); k.film.remove(); k.film = null; } if (k.spurenStopp) { k.spurenStopp(); k.spurenStopp = null; } });
+    vKarten.forEach((k) => { if (k.film) { k.film.pause(); k.film.remove(); k.film = null; } if (k.schauStopp) { k.schauStopp(); k.schauStopp = null; } });
     vz.aktiv = -1; vz.letzt = 0; return;
   }
   // Blättern: gedämpfte Feder zum Ziel, solange kein Finger zieht
@@ -1083,53 +1080,66 @@ vitrine.addEventListener('wheel', (e) => {
 }, { passive: false });
 flaechen.forEach((el, i) => el.addEventListener('click', (e) => { e.preventDefault(); vitrineAuf(i); }));
 
-// Für den Composer gibt es kein Bild: fünf Spuren als Haarlinien, eine Abspielmarke zieht langsam darüber.
-// Gibt eine Funktion zurück, die das Zeichnen anhält.
-function spurenZeichnen(c, ton) {
+// ---------- Schaubilder, die sich bewegen (0.24) ----------
+// Das Dritte Rad: die drei Ringe der Anwendung (Zeit, Form, Farbe, aus ihrem eigenen SVG abgenommen) drehen gegeneinander,
+// wie in der Anwendung selbst, auf dunklem Grund mit warmem Schein und einem Lichtrand.
+// laufend = false zeichnet ein Standbild, sobald die Bilder da sind.
+const schauBilder = new Map();
+function schauBild(src) {
+  if (!schauBilder.has(src)) { const im = new Image(); im.decoding = 'async'; im.src = src; schauBilder.set(src, im); }
+  return schauBilder.get(src);
+}
+const SCHAU = {
+  rad: { bilder: ['zeit', 'form', 'farbe', 'kern'].map((n) => `vorschau/rad-${n}.png`), malen: radMalen }
+};
+function schauZeichnen(c, b, laufend) {
+  const art = SCHAU[b.schau], bilder = art.bilder.map(schauBild), x = c.getContext('2d');
+  const dpr = Math.min(2, devicePixelRatio || 1), t0 = performance.now() - 4000;
   let lauf = 0, an = true;
-  const x = c.getContext('2d'), dpr = Math.min(2, devicePixelRatio || 1);
-  const farben = [[228, 92, 96], [124, 108, 255], [232, 162, 86], [64, 196, 186], ton];
-  const namen = ['drums', 'bass', 'synth', 'natur', 'stimme'];
-  const t0 = performance.now();
-  // feste Hüllkurven je Spur (aus einem kleinen Zufallsgenerator mit Startwert, damit das Bild jedes Mal gleich ist)
-  let z = 7; const zufall = () => (z = (z * 16807) % 2147483647) / 2147483647;
-  const huelle = namen.map((n, k) => Array.from({ length: 64 }, (_, j) => {
-    const takt = k === 0 ? (j % 4 === 0 ? 1 : j % 2 ? 0.35 : 0.6) : 0.5 + 0.5 * Math.sin(j * (0.3 + k * 0.13) + k);
-    return Math.max(0.08, Math.min(1, takt * (0.55 + zufall() * 0.45)));
-  }));
   const schritt = () => {
+    if (!an) return;
     const w = c.clientWidth, h = c.clientHeight;
-    if (c.width !== Math.round(w * dpr)) { c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); }
-    x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, w, h);
-    const rand = w * 0.12, bahn = (h - rand * 1.2) / namen.length, zeit = (performance.now() - t0) / 1000;
-    const marke = ruhig ? 0.38 : ((zeit / 14) % 1);
-    x.font = `500 ${Math.max(9, Math.round(w / 52))}px ${SCHRIFT}`; x.textBaseline = 'middle';
-    namen.forEach((n, k) => {
-      const mitte = rand * 0.6 + bahn * (k + 0.5), f = farben[k], links = rand + w * 0.08, breit = w - links - rand;
-      x.fillStyle = 'rgba(214, 210, 228, 0.42)'; x.fillText(n, rand, mitte);
-      x.strokeStyle = 'rgba(255,255,255,0.06)'; x.lineWidth = 1; x.beginPath(); x.moveTo(links, mitte); x.lineTo(links + breit, mitte); x.stroke();
-      for (const [seite, alpha] of [[1, 0.9], [-1, 0.55]]) {
-        x.beginPath();
-        for (let p = 0; p <= breit; p += 1) {
-          const u = p / breit, j = u * 63, a = huelle[k][Math.floor(j)] * (1 - (j % 1)) + huelle[k][Math.min(63, Math.floor(j) + 1)] * (j % 1);
-          const welle = Math.abs(Math.sin(p * (0.42 + k * 0.09)) * 0.65 + Math.sin(p * (0.11 + k * 0.03) + k) * 0.35);
-          const yy = mitte - seite * a * welle * bahn * 0.4;
-          p ? x.lineTo(links + p, yy) : x.moveTo(links + p, yy);
-        }
-        const gespielt = x.createLinearGradient(links, 0, links + breit, 0);
-        const m = Math.max(0.0001, Math.min(0.9999, marke));
-        gespielt.addColorStop(0, `rgba(${f.join(',')},${alpha})`); gespielt.addColorStop(m, `rgba(${f.join(',')},${alpha})`);
-        gespielt.addColorStop(Math.min(1, m + 0.0001), `rgba(${f.join(',')},${alpha * 0.32})`); gespielt.addColorStop(1, `rgba(${f.join(',')},${alpha * 0.32})`);
-        x.strokeStyle = gespielt; x.lineWidth = 0.75; x.stroke();
-      }
-    });
-    const mx = rand + w * 0.08 + (w - rand * 2 - w * 0.08) * marke;
-    const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(0.5, 'rgba(255,255,255,0.75)'); g.addColorStop(1, 'rgba(255,255,255,0)');
-    x.strokeStyle = g; x.lineWidth = 1; x.beginPath(); x.moveTo(mx, rand * 0.3); x.lineTo(mx, h - rand * 0.3); x.stroke();
-    if (!ruhig && an) lauf = requestAnimationFrame(schritt);
+    const fertig = w > 0 && bilder.every((im) => im.complete && im.naturalWidth);
+    if (fertig) {
+      if (c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)) { c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); }
+      x.setTransform(dpr, 0, 0, dpr, 0, 0);
+      art.malen(x, w, h, ruhig ? 6 : (performance.now() - t0) / 1000, bilder, b.ton);
+      if (!laufend || ruhig) { an = false; return; }
+    }
+    lauf = requestAnimationFrame(schritt);
   };
   lauf = requestAnimationFrame(schritt);
   return () => { an = false; cancelAnimationFrame(lauf); };
+}
+function grundMalenSchau(x, w, h, ton, mitte) {
+  x.fillStyle = '#0b0a1a'; x.fillRect(0, 0, w, h);
+  const g = x.createRadialGradient(mitte[0], mitte[1], 0, mitte[0], mitte[1], Math.max(w, h) * 0.62);
+  g.addColorStop(0, `rgba(${ton.join(',')},0.24)`); g.addColorStop(0.45, `rgba(${ton.join(',')},0.07)`); g.addColorStop(1, 'rgba(11,10,26,0)');
+  x.fillStyle = g; x.fillRect(0, 0, w, h);
+}
+function radMalen(x, w, h, t, [zeit, form, farbe, kern], ton) {
+  const cx = w / 2, cy = h * 0.5, R = Math.min(h * 0.84, w * 0.52) / 2;
+  grundMalenSchau(x, w, h, ton, [cx, cy]);
+  // Schatten unter dem schwebenden Rad
+  x.save(); x.translate(cx, cy + R * 1.04); x.scale(1, 0.12);
+  const s = x.createRadialGradient(0, 0, 0, 0, 0, R * 0.9); s.addColorStop(0, 'rgba(0,0,0,0.55)'); s.addColorStop(1, 'rgba(0,0,0,0)');
+  x.fillStyle = s; x.beginPath(); x.arc(0, 0, R * 0.9, 0, Math.PI * 2); x.fill(); x.restore();
+  // die drei Ringe drehen gegeneinander (die Bilder sind 720 px, der Rand des Zeitrings liegt bei 0.96 der halben Breite)
+  const k = R / 0.96, ring = (im, w0) => { x.save(); x.translate(cx, cy); x.rotate(w0); x.drawImage(im, -k, -k, k * 2, k * 2); x.restore(); };
+  ring(zeit, t * 0.05); ring(form, -t * 0.08 + 0.3); ring(farbe, t * 0.13 - 0.2); ring(kern, 0);
+  // Lichtrand: ein feiner Bogen, der langsam um das Rad wandert, und ein Glanzfleck oben links
+  x.save(); x.translate(cx, cy);
+  const a0 = t * 0.35;
+  for (const [breite, alpha] of [[3.5, 0.08], [1, 0.55]]) {
+    x.lineWidth = breite; x.strokeStyle = `rgba(255,236,220,${alpha})`;
+    x.beginPath(); x.arc(0, 0, R * 0.995, a0, a0 + 0.9); x.stroke();
+  }
+  x.lineWidth = 0.75; x.strokeStyle = `rgba(${ton.join(',')},0.5)`; x.beginPath(); x.arc(0, 0, R * 0.995, 0, Math.PI * 2); x.stroke();
+  x.globalCompositeOperation = 'screen';
+  const gl = x.createRadialGradient(-R * 0.42, -R * 0.5, 0, -R * 0.42, -R * 0.5, R * 0.9);
+  gl.addColorStop(0, 'rgba(255,255,255,0.13)'); gl.addColorStop(1, 'rgba(255,255,255,0)');
+  x.fillStyle = gl; x.beginPath(); x.arc(0, 0, R, 0, Math.PI * 2); x.fill();
+  x.restore();
 }
 let praes = 0, glasK = 1;
 // Mit Grafikkarte rechnet der Shader Licht und Glas (0.7, Christian: «Licht wird Glas»); die HTML-Flächen bleiben
