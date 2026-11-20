@@ -152,7 +152,7 @@ vec3 umwelt(vec3 d, float m){
   vec2 gemUV = uGem / uAufl;
   vec3 c = seite(gemUV + d.xy * vec2(uAufl.y / uAufl.x, 1.0) * 0.16, m) * 1.25;
   c += vec3(1.0, 0.985, 0.96) * (pow(max(dot(d, L1), 0.0), 22.0) * 2.1 + pow(max(dot(d, L2), 0.0), 34.0) * 1.5 + pow(max(dot(d, L3), 0.0), 10.0) * 0.35);
-  if (uMenu > 0.001) c = mix(c, werkJetzt(0.5 + d.xy * vec2(0.45, 0.5)) * 0.8 + c * 0.12, uMenu * 0.75);
+  if (uMenu > 0.001) c = mix(c, werkJetzt(0.5 + d.xy * vec2(0.45, 0.5)) * 0.85 + c * 0.3, uMenu * 0.55);
   return c + vec3(0.045, 0.04, 0.085);
 }
 
@@ -470,7 +470,7 @@ function satzspiegel(c) {
   const sw = Math.min(W - (hoch ? 28 : 80), 620), pad = hoch ? 34 : 48;
   const scheibe = { x: (W - sw) / 2, y: y - fs * 0.95 - pad, w: sw, h: pad * 2 + fs * 0.95 + satz * 6.2 + 40 };
   // offenes Menü: der Stein gross über der Mitte, die Bereiche darunter
-  const menuGem = { x: W / 2, y: Math.round(H * (hoch ? 0.36 : 0.34)), r: Math.min(W, H) * (hoch ? 0.33 : 0.2) };
+  const menuGem = { x: W / 2, y: Math.round(H * (hoch ? 0.39 : 0.36)), r: Math.min(W, H) * (hoch ? 0.2 : 0.13) };
   return { hoch, fs, gemR, satz, saetze, scheibe, menuGem };
 }
 // eine Glasscheibe ohne Kanten: weich auslaufend, was darunter liegt erscheint verschwommen und getönt
@@ -545,24 +545,41 @@ function texAus(canvas, alt) {
   return t;
 }
 // Werke für das Fenster (vorerst aus ornament.cloud; Christian kann sie tauschen)
-const WERKE = ['/b/bilder/schau/kaiserbuehne.jpg', '/b/bilder/schau/drittes-rad.jpg', '/b/bilder/fotografie/turm-am-bild-800.jpg',
-  '/b/bilder/fotografie/turm-farben-800.jpg', '/b/bilder/fotografie/print-kopf-pink-800.jpg'];
+// 0.11 (Christian: «die Bilder im Innern passen grafisch nicht»): nur Bilder aus Licht und Dunkel, ohne Schrift,
+// und alle tonal angeglichen (siehe tonen), damit sie wie ein Abzug im Glas wirken.
+const WERKE = ['/b/bilder/schau/animations.jpg', '/b/bilder/fotografie/print-linien-800.jpg', '/b/bilder/fotografie/buehne-2-800.jpg',
+  '/b/bilder/fotografie/turm-leer-800.jpg', '/b/bilder/fotografie/hund-und-objektiv-800.jpg'];
+// Duoton von Nachtblau zu warmem Silber, ein Rest Farbe bleibt, Mitten leicht abgesenkt, Rand ins Dunkel
+function tonen(c, x0, S) {
+  const d = c.getImageData(x0, 0, S, S), p = d.data, m = S / 2;
+  for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+    const i = (y * S + x) * 4, r = p[i] / 255, g = p[i + 1] / 255, b = p[i + 2] / 255;
+    let l = Math.pow(0.2126 * r + 0.7152 * g + 0.0722 * b, 1.25);
+    const rx = (x - m) / m, ry = (y - m) / m, v = Math.max(0, 1 - Math.pow(Math.hypot(rx, ry) / 1.25, 3));
+    l *= v;
+    const duo = [0.035 + l * 0.93, 0.031 + l * 0.88, 0.08 + l * 0.80];
+    p[i] = 255 * (duo[0] * 0.82 + r * v * 0.18); p[i + 1] = 255 * (duo[1] * 0.82 + g * v * 0.18); p[i + 2] = 255 * (duo[2] * 0.82 + b * v * 0.18);
+  }
+  c.putImageData(d, x0, 0);
+}
 let werkTex = null;
+let werkAtlas = null, werkS = 0, werkeDa = false;     // dieselben Werke für die flache Fassung
 function werkeLaden() {
-  if (!gl) return;
-  werkTex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, werkTex);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([9, 8, 20, 255])); texParam();
+  if (gl) {
+    werkTex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, werkTex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([9, 8, 20, 255])); texParam();
+  }
   const S = telefon ? 384 : 512, atlas = document.createElement('canvas'); atlas.width = S * 5; atlas.height = S;
   const c = atlas.getContext('2d'); c.fillStyle = '#090814'; c.fillRect(0, 0, atlas.width, S);
   Promise.all(WERKE.map((src, i) => new Promise((ok) => {
     const im = new Image(); im.decoding = 'async';
-    im.onload = () => { const k = Math.min(im.width, im.height); c.drawImage(im, (im.width - k) / 2, (im.height - k) / 2, k, k, i * S, 0, S, S); ok(); };
+    im.onload = () => { const k = Math.min(im.width, im.height); c.drawImage(im, (im.width - k) / 2, (im.height - k) / 2, k, k, i * S, 0, S, S); tonen(c, i * S, S); ok(); };
     im.onerror = () => { spur('Werk fehlt: ' + src); ok(); };
     im.src = src;
-  }))).then(() => { if (gl) werkTex = texAus(atlas, werkTex); });
+  }))).then(() => { werkAtlas = atlas; werkS = S; werkeDa = true; if (gl) werkTex = texAus(atlas, werkTex); });
 }
 werkeLaden();
-if (gl) document.body.classList.add('fenster');
+document.body.classList.add('fenster');
 const mehrOrt = [];
 const seitenBild = [];          // dieselben Seiten als Canvas, für die flache Fassung
 let leerBild = null;
@@ -665,7 +682,8 @@ const loslassen = (e) => {
     if (warGezogen) phi = zugStart;
     const treffer = Math.hypot(e.clientX - gemJetzt.x, e.clientY - gemJetzt.y) < Math.max(30, Math.min(gemJetzt.r * 2.2, gemJetzt.r + 36));
     ziel = Math.round(phi / SCHRITT) * SCHRITT;
-    if (treffer) menuSchalten(!menuAuf); else if (menuAuf) menuSchalten(false);
+    // Christian: im Menü nicht mehr zurückklickbar; Tippen daneben führt zurück zu «Brillante Ideen.»
+    if (treffer) { if (!menuAuf) menuSchalten(true); } else if (menuAuf) menuSchalten(false);
     return;
   }
   if (!warGezogen) return;
@@ -767,7 +785,7 @@ function projizieren(zustand, ruht, f, mu, gx, gy, rr) {
   const soll = ruht && zustand > 0 && mu > 0.6 ? 1 : 0;
   // langsam verdichten, rasch zurück, sobald der Stein sich wieder dreht
   praes += (soll - praes) * (1 - Math.pow(soll ? (gl ? 0.972 : 0.95) : 0.85, f));
-  if (gl) return projizierenGlas(zustand, soll, f, mu, gx, gy, rr);
+  return projizierenGlas(zustand, soll, f, mu, gx, gy, rr);
   const aus = Math.max(0, (mu - 0.25) / 0.75);           // wie weit die Flächen schon aus dem Stein getreten sind
   const pw = vorlage.offsetWidth, ph = vorlage.offsetHeight;
   const ruheY = gy + rr * 1.35 + 30 + ph / 2;
@@ -905,7 +923,7 @@ function bild(ms) {
   // Läuft die volle Fassung zu langsam (Software-Grafik, die sich nicht zu erkennen gab), zur flachen wechseln
   if (gl && !frage.has('gl')) {
     anlauf.push(dtMs);
-    if (anlauf.length === 24) { anlauf.sort((x, y) => x - y); if (anlauf[12] > 70) { spur('zu langsam: flach'); gl = null; document.body.classList.remove('fenster'); gebautFuer = ''; groesse(); } }
+    if (anlauf.length === 24) { anlauf.sort((x, y) => x - y); if (anlauf[12] > 70) { spur('zu langsam: flach'); gl = null; gebautFuer = ''; groesse(); } }
   }
   if (!gl) { flachZeichnen(A, B, fr, zeigen, gx, gy, rr, gier, neig, roll, blitz, sanft(menu)); if (ersterLauf) { ersterLauf = false; spur('✓ läuft'); } return; }
 
@@ -922,7 +940,7 @@ function bild(ms) {
   gl.uniform1f(ort.uZeigen, zeigen); gl.uniform1f(ort.uBlitz, ruhig ? 0 : blitz);
   gl.uniform2f(ort.uGem, gx * D, (H - gy) * D); gl.uniform1f(ort.uGemR, rr * D);
   gl.uniform2f(ort.uFeld, gx * D, (H - gy) * D); gl.uniform1f(ort.uGross, Math.max(W, H) * 0.55 * D); gl.uniform1f(ort.uDimm, sanft(menu));
-  gl.uniform2f(ort.uAufl, Bw, Bh); gl.uniform1f(ort.uRad, huelle * 1.03); gl.uniform1f(ort.uT, t % 100); gl.uniform1f(ort.uFeuer, 2.3);
+  gl.uniform2f(ort.uAufl, Bw, Bh); gl.uniform1f(ort.uRad, huelle * 1.03); gl.uniform1f(ort.uT, t % 100); gl.uniform1f(ort.uFeuer, 2.3 + mu * 1.4);
   const tonG = BEREICHE[glasK - 1].ton;
   gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, schriftTex[glasK - 1]); gl.uniform1i(ort.uSchrift, 3);
   gl.uniform4f(ort.uScheibe, ...glasZ.rect); gl.uniform1f(ort.uPraes, glasZ.praes); gl.uniform1f(ort.uStrahl, ruhig ? glasZ.strahl * 0.6 : glasZ.strahl);
@@ -984,7 +1002,7 @@ const KOERPER = (() => {
   fl.push([...t].reverse());                               // Tafel
   return fl;
 })();
-function flachStein(c, x, y, r, gier, neig, roll, glanz) {
+function flachStein(c, x, y, r, gier, neig, roll, glanz, fenster = null) {
   const cg = Math.cos(gier), sg = Math.sin(gier), cn = Math.cos(neig), sn = Math.sin(neig), cr = Math.cos(roll), sr = Math.sin(roll);
   const dreh = ([px, py, pz]) => {
     const x1 = cg * px + sg * pz, z1 = -sg * px + cg * pz;
@@ -1008,7 +1026,7 @@ function flachStein(c, x, y, r, gier, neig, roll, glanz) {
     let hell = 0.1 + 0.25 * n[2];
     for (const q of L) hell += Math.pow(Math.max(0, rf[0] * q[0] + rf[1] * q[1] + rf[2] * q[2]), 18) * 1.1;
     const funke = Math.pow(Math.max(0, Math.sin(gier * 3 + i * 1.7)), 12);
-    flaechen.push({ p, z, hell: Math.min(1.4, hell), funke, ton: (i * 47 + gier * 180) % 360 });
+    flaechen.push({ p, z, i, tafel: i === KOERPER.length - 1, hell: Math.min(1.4, hell), funke, ton: (i * 47 + gier * 180) % 360 });
   });
   flaechen.sort((a, b) => a.z - b.z);
   c.save(); c.lineJoin = 'round';
@@ -1017,6 +1035,8 @@ function flachStein(c, x, y, r, gier, neig, roll, glanz) {
     const v = Math.round(Math.min(255, 40 + f.hell * 200));
     c.fillStyle = `rgb(${Math.round(v * 0.92)},${Math.round(v * 0.93)},${v})`; c.fill();
     if (f.funke > 0.02) { c.fillStyle = `hsla(${f.ton},90%,70%,${f.funke * 0.55})`; c.fill(); }
+    // Facette als Fenster (0.9, auch flach): die Tafel zeigt das Werk, die übrigen Facetten tragen Splitter davon
+    if (fenster && fenster.mu > 0.01 && werkeDa) flachFenster(c, f, x, y, r, fenster);
     c.strokeStyle = 'rgba(255,255,255,0.28)'; c.lineWidth = Math.max(0.5, r * 0.025); c.stroke();
   }
   // weicher Schein und, beim Ankommen, ein feiner Stern
@@ -1031,6 +1051,32 @@ function flachStein(c, x, y, r, gier, neig, roll, glanz) {
   }
   c.restore();
 }
+function flachFenster(c, f, x, y, r, { A, B, fr, mu }) {
+  const S = werkS;
+  const zeichne = (k, alpha, gross, dx, dy) => {
+    if (k < 1 || alpha < 0.01) return;
+    c.globalAlpha = alpha;
+    c.drawImage(werkAtlas, (k - 1) * S, 0, S, S, x - gross + dx, y - gross + dy, gross * 2, gross * 2);
+  };
+  c.save(); c.clip();
+  if (f.tafel) {
+    const wb = smoothstep01((fr - 0.3) / 0.4);
+    const g = r * FENSTER * 1.02;
+    zeichne(A, mu * 0.96 * (1 - wb), g, 0, 0); zeichne(B, mu * 0.96 * wb, g, 0, 0);
+    // Glanz von links oben
+    c.globalAlpha = mu * 0.5;
+    const gl2 = c.createLinearGradient(x - g, y - g, x + g * 0.4, y + g * 0.4);
+    gl2.addColorStop(0, 'rgba(255,255,255,0.22)'); gl2.addColorStop(0.5, 'rgba(255,255,255,0)'); c.fillStyle = gl2; c.fill();
+  } else {
+    // jede Facette ein anderer Ausschnitt, und sie wechselt zu ihrer eigenen Zeit
+    const th = ((f.i * 0.618) % 1) * 0.55, wb = smoothstep01((fr - th) / 0.45);
+    const m = f.p.reduce((s, q) => [s[0] + q[0] / f.p.length, s[1] + q[1] / f.p.length], [0, 0]);
+    const g = r * 1.7, dx = -m[0] * r * 0.9, dy = m[1] * r * 0.9;
+    zeichne(A, mu * 0.55 * (1 - wb), g, dx, dy); zeichne(B, mu * 0.55 * wb, g, dx, dy);
+  }
+  c.restore();
+}
+const smoothstep01 = (x) => { x = Math.min(1, Math.max(0, x)); return x * x * (3 - 2 * x); };
 function flachZeichnen(A, B, fr, zeigen, gx, gy, rr, gier, neig, roll, blitz, dimm) {
   const c = fctx; if (!c || !seitenBild[A]) return;
   c.setTransform(1, 0, 0, 1, 0, 0);
@@ -1046,7 +1092,7 @@ function flachZeichnen(A, B, fr, zeigen, gx, gy, rr, gier, neig, roll, blitz, di
   }
   if (dimm > 0.002) { c.globalAlpha = dimm; c.drawImage(leerBild, 0, 0, w, h); c.globalAlpha = 1; }
   c.setTransform(D, 0, 0, D, 0, 0);
-  flachStein(c, gx, gy, rr, gier, neig, roll, ruhig ? 0 : blitz);
+  flachStein(c, gx, gy, rr, gier, neig, roll, ruhig ? 0 : blitz, { A, B, fr, mu: dimm });
 }
 
 // Erst die Schrift, dann die Seiten (sonst stünde der Titel in einer Ersatzschrift im Bild)

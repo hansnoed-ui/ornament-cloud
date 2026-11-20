@@ -10,7 +10,8 @@ body { font: 500 15px/1.4 'Brillant Display', system-ui, sans-serif; -webkit-fon
 .unsichtbar { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
 .kopf { position: fixed; top: max(14px, env(safe-area-inset-top)); left: 0; right: 0; text-align: center; pointer-events: none; opacity: 0; transition: opacity 1.2s ease 2.2s; }
-.kopf a { pointer-events: auto; color: rgba(156, 151, 177, 0.6); text-decoration: none; font-size: 13px; letter-spacing: 0.01em; }
+.kopf a { pointer-events: auto; display: inline-block; padding: 8px 14px; color: rgba(238, 235, 248, 0.92); text-decoration: none; font-size: 15px; font-weight: 500; letter-spacing: 0.05em; transition: color 0.3s; }
+.kopf a:hover { color: #fff; }
 .bereit .kopf { opacity: 1; }
 
 /* Der Stein ist der Menüknopf: eine unsichtbare Taste, die ihm folgt (die Leinwand fängt das Tippen ohnehin ab;
@@ -45,3 +46,5 @@ body { font: 500 15px/1.4 'Brillant Display', system-ui, sans-serif; -webkit-fon
 #leinwand[hidden] { display: none; }
 /* 0.9 Facette als Fenster: mit Grafikkarte steht unter dem Stein nur Schrift, ohne Scheibe */
 .fenster .projektion { background: none; -webkit-backdrop-filter: none; backdrop-filter: none; -webkit-mask-image: none; mask-image: none; padding-top: 18px; }
+/* 0.11: nur der Name und der Verweis, keine Zahl, kein Satz (Christian) */
+.fenster .p-nr, .fenster .p-satz { display: none; }
