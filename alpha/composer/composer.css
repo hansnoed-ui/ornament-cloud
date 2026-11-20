@@ -1,16 +1,17 @@
-/* ORNAMENT COMPOSER 0.1 – in der Sprache des Lab: Papier und Tinte, die Blaupause als einziger Akzent, Instrument Sans für die Oberfläche,
-   Haarlinien statt Kisten. Die Spuren stehen auf dunklem Grund (NACHT wie die Bühne des Lab), damit Wellenformen ruhig lesbar sind. */
+/* ORNAMENT COMPOSER 0.1 – Nachtpult (20. November 2026, Christian wählte Richtung A «Nachtpult» aus drei Entwürfen zwischen ornament.cloud
+   und Studio): alles dunkel wie ein Studio bei Nacht, die Teile als Gerätefronten mit kleiner gesperrter Beschriftung, Takt und Lautheit in
+   schwarzen Displays, M und S als Lämpchen, Drehknöpfe für Plugin- und Klangregler (drehknopf.js), Fader für Pegel. Schrift bleibt
+   Instrument Sans wie auf ornament.cloud, die Blaupause bleibt der Akzent. Der Composer hat nur dieses eine, dunkle Aussehen. */
 :root {
-  --bg: #ffffff; --text: #000000; --muted: #6f6f6f; --border: #dadada; --accent: #1d3fd6;
-  --nacht: #151412; --kreide: #f4f1ea; --staub: #8a8784; --fuge: #2e2c2a; --welle: #c9c3b6; --welle-aktiv: #f4f1ea;
-  --warn: #c2410c; --gut: #4b7a3a;
+  --bg: #0d0d0c; --text: #ece8df; --muted: #8d8a83; --border: #2a2926; --accent: #8fb0ff;
+  --modul: #151513; --modul-hoch: #1b1b19; --rand-hell: #3a3935; --display: #050505; --display-text: #c8f0d2; --display-muted: #5f7d68;
+  --nacht: #0a0a09; --kreide: #f4f1ea; --staub: #8a8784; --fuge: #232220; --welle: #c9c3b6; --welle-aktiv: #f4f1ea; --strip: #141412;
+  --led-m: #e0524a; --led-s: #e6b43a; --pegel1: #4f8a5e; --pegel2: #9ccc85;
+  --warn: #f0a070; --gut: #9ccc85;
   --font: "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --serif: "Newsreader", "Iowan Old Style", Georgia, serif;
   --kopfbreite: 300px;
-  color-scheme: light dark;
-}
-@media (prefers-color-scheme: dark) {
-  :root { --bg: #000000; --text: #ffffff; --muted: #9a9a9a; --border: #2e2e2e; --accent: #8fb0ff; --warn: #f0a070; --gut: #9ccc85; }
+  color-scheme: dark;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -53,6 +54,7 @@ kbd { font: inherit; font-size: 0.75em; color: var(--muted); border: 1px solid v
 .umschalter[aria-pressed="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
 .umschalter[aria-pressed="true"] kbd { color: inherit; border-color: currentColor; }
 .umschalter:disabled { opacity: 0.4; cursor: default; }
+.transport .mehr { display: none; align-items: center; justify-content: center; min-width: 40px; }
 .anzeige { display: flex; gap: 14px; margin-left: auto; font-variant-numeric: tabular-nums; font-size: 0.9rem; color: var(--muted); }
 .anzeige b { color: var(--text); font-weight: 500; display: inline-block; min-width: 4.5ch; text-align: right; }
 .anzeige b.warn { color: var(--warn); }
@@ -250,3 +252,181 @@ canvas.lineal, canvas.welle { width: 100%; display: block; cursor: crosshair; to
 select { max-width: min(100%, calc(100vw - 40px)); }
 .feld { max-width: 100%; } .feld select { min-width: 0; }
 .erzeugen, .lucerne { max-width: 100vw; box-sizing: border-box; overflow-x: auto; }
+
+/* ---------- Nachtpult (20. November 2026) ---------- */
+/* Kopf: Marke in einer Zeile, Aktionen als Gerätetasten */
+.kopf { background: var(--bg); padding: 14px 24px; gap: 10px 24px; }
+.heimzeile { flex-basis: auto; margin: 0; }
+.heim { border-color: var(--border); color: var(--muted); }
+.heim:hover { background: var(--modul-hoch); color: var(--text); border-color: var(--rand-hell); }
+.marke { display: flex; align-items: baseline; gap: 14px; }
+.marke h1 { font-size: 1.05rem; letter-spacing: 0.14em; font-weight: 600; }
+.version { font-size: 0.75rem; letter-spacing: 0.04em; }
+.leitsatz { font-family: var(--font); font-size: 0.78rem; letter-spacing: 0.04em; margin: 0; }
+
+/* Tasten: eckig wie an einem Gerät, die Hauptaktion hell */
+.knopf, .umschalter { border-radius: 6px; }
+.knopf { border-color: var(--rand-hell); background: linear-gradient(#1f1e1c, #171715); }
+.knopf:hover { background: var(--modul-hoch); color: var(--text); border-color: var(--muted); }
+.knopf.voll { background: var(--text); color: var(--bg); border-color: var(--text); }
+.knopf.voll:hover { background: #fff; border-color: #fff; color: #000; }
+.knopf.leise { border-color: var(--border); }
+.umschalter[aria-pressed="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
+.erzeugen select, .bass-zeile select, .klang-zeile select, .klang select, .param select, .messung select, .bereich-leiste select,
+.ereignis-kopf select, .ereignis select { border-radius: 6px; background: var(--bg); }
+.variante-k { border-radius: 6px; background: var(--modul-hoch); }
+
+/* Wiedergabe-Leiste: runder Spielknopf, Displays für Stelle und Lautheit */
+.transport { background: #121210; border-bottom-color: #000; box-shadow: 0 1px 0 #262522; }
+.spielen { border-radius: 50%; }
+.stelle, .anzeige { border-radius: 6px; background: var(--display); box-shadow: inset 0 1px 3px rgba(0,0,0,.8), 0 0 0 1px #1f1f1d; }
+.stelle { padding: 4px 12px; color: var(--display-text); min-width: 10ch; }
+.stelle #takt { font-size: 1.25rem; letter-spacing: 0.02em; }
+.stelle #zeit { color: var(--display-muted); font-size: 0.78rem; }
+.anzeige { padding: 6px 12px; color: var(--display-muted); font-size: 0.78rem; letter-spacing: 0.04em; }
+.anzeige b { color: var(--display-text); }
+.anzeige b.warn { color: var(--warn); }
+
+/* Module: jede Abteilung eine Gerätefront, dazwischen eine schwarze Fuge */
+.erzeugen, .lucerne, .plugin, .messung, .urteile { background: var(--modul); }
+.erzeugen, .lucerne { border-bottom: 6px solid var(--bg); }
+.unten { border-top: 6px solid var(--bg); border-bottom: 6px solid var(--bg); }
+.plugin { border-right: 6px solid var(--bg); }
+.urteile { border-bottom: 0; }
+.erzeugen h2, .lucerne h2, .messung h2, .urteile h2, .gruppe h3, .bass-zeile > span.feld:not(.klein):first-child {
+  font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.16em; color: var(--muted);
+}
+.plugin-kopf h2 { font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.14em; }
+.bass-zeile { border-top-color: var(--border); }
+.track-zeile { background: #1b1d22; }
+
+/* Kanalzüge: dunkler Streifen, M und S leuchten */
+.kopfzelle { background: var(--strip); }
+.spur-name b { letter-spacing: 0.02em; }
+.mini { border-radius: 4px; }
+.mini[aria-pressed="true"].m { background: var(--led-m); border-color: var(--led-m); box-shadow: 0 0 8px color-mix(in srgb, var(--led-m) 60%, transparent); }
+.mini[aria-pressed="true"].s { background: var(--led-s); border-color: var(--led-s); box-shadow: 0 0 8px color-mix(in srgb, var(--led-s) 60%, transparent); }
+.mini[aria-pressed="true"].v { box-shadow: 0 0 8px rgba(143,176,255,.6); }
+.pegelbalken { height: 4px; border-radius: 2px; background: #050505; }
+.pegelbalken i { background: linear-gradient(90deg, var(--pegel1), var(--pegel2) 75%, #f0a070); }
+.pegelbalken i.heiss { background: #f0a070; }
+.meldung { background: var(--text); color: var(--bg); border-radius: 8px; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); box-shadow: 0 6px 24px rgba(0,0,0,.6); }
+@media (max-width: 820px) { .meldung { width: calc(100vw - 32px); font-size: 0.85rem; } }
+
+/* Fader: die übrigen Schieberegler (Pegel, Summe) mit schmaler Rille und eckiger Kappe */
+input[type="range"]:not(.dk-regler) { -webkit-appearance: none; appearance: none; background: transparent; height: 22px; cursor: pointer; }
+input[type="range"]:not(.dk-regler)::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: #050505; box-shadow: 0 0 0 1px #262522; }
+input[type="range"]:not(.dk-regler)::-moz-range-track { height: 4px; border-radius: 2px; background: #050505; box-shadow: 0 0 0 1px #262522; }
+input[type="range"]:not(.dk-regler)::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 20px; margin-top: -8px; border-radius: 3px; border: 1px solid #000;
+  background: linear-gradient(90deg, #8d8a83, #d8d4cb 45%, #8d8a83); box-shadow: inset 0 0 0 1px rgba(255,255,255,.15), 0 2px 3px rgba(0,0,0,.6); }
+input[type="range"]:not(.dk-regler)::-moz-range-thumb { width: 12px; height: 20px; border-radius: 3px; border: 1px solid #000;
+  background: linear-gradient(90deg, #8d8a83, #d8d4cb 45%, #8d8a83); box-shadow: 0 2px 3px rgba(0,0,0,.6); }
+input[type="range"]:not(.dk-regler):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+/* Drehknöpfe (drehknopf.js): der Schieberegler bleibt unsichtbar und trägt den Wert, der Knopf zeigt und dreht ihn */
+.dk-regler { position: absolute; left: 0; top: 0; width: 1px; height: 1px; margin: 0; opacity: 0; pointer-events: none; clip-path: inset(50%); }
+.mit-drehknopf { position: relative; }
+.drehknopf { display: inline-block; width: 44px; height: 44px; cursor: ns-resize; touch-action: none; user-select: none; -webkit-user-select: none; flex: none; }
+.drehknopf svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.dk-rille { fill: none; stroke: #050505; stroke-width: 3.5; stroke-linecap: round; }
+.dk-wert { fill: none; stroke: var(--accent); stroke-width: 3.5; stroke-linecap: round; filter: drop-shadow(0 0 2px rgba(143,176,255,.45)); }
+.dk-kappe { fill: #2a2926; stroke: #000; stroke-width: 1; filter: drop-shadow(0 1.5px 1.5px rgba(0,0,0,.7)); }
+.dk-zeiger { stroke: var(--text); stroke-width: 2; stroke-linecap: round; }
+.drehknopf:hover .dk-kappe, .drehknopf.dreht .dk-kappe { fill: #363531; }
+.mit-drehknopf:focus-within .drehknopf { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 50%; }
+
+/* Plugin- und Unterbrechungsregler: Knopf über Name und Wert, mehrere nebeneinander wie auf einer Gerätefront */
+.gruppe { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 12px 6px; align-content: start; }
+.gruppe h3 { grid-column: 1 / -1; margin: 0; }
+.gruppe > :not(h3):not(.mit-drehknopf) { grid-column: 1 / -1; }
+.param.mit-drehknopf { display: grid; grid-template-columns: 1fr; justify-items: center; text-align: center; gap: 2px; margin: 0; position: relative; }
+.param.mit-drehknopf > span { order: 2; font-size: 0.74rem; line-height: 1.2; color: var(--text); }
+.param.mit-drehknopf > .drehknopf { order: 1; }
+.param.mit-drehknopf > output { order: 3; font-size: 0.72rem; }
+.gruppen { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.ereignis .param.mit-drehknopf { display: inline-grid; width: 86px; vertical-align: top; margin: 0 4px 8px 0; }
+
+/* Melodie- und lucerne-Regler: Knopf mit Name daneben */
+.regler-klein.mit-drehknopf { flex-direction: column-reverse; align-items: center; min-width: 76px; text-align: center; }
+.luc-makro.mit-drehknopf { display: inline-grid; grid-template-columns: auto; justify-items: center; gap: 0; min-width: 76px; text-align: center; }
+.luc-makro.mit-drehknopf > span:first-child { order: 2; font-size: 0.74rem; color: var(--text); }
+.luc-makro.mit-drehknopf > .drehknopf { order: 1; }
+.luc-makro.mit-drehknopf > b { order: 3; font-size: 0.72rem; color: var(--muted); font-weight: 400; min-width: 0; }
+.luc-makros { gap: 10px 8px; }
+
+/* Panorama im Kanalzug: kleiner Knopf links, Wert daneben */
+.regler.pan.mit-drehknopf { grid-template-columns: auto 1fr; justify-items: start; }
+.regler.pan.mit-drehknopf > span:first-child { display: none; }
+.regler.pan .drehknopf { width: 30px; height: 30px; }
+
+@media (max-width: 820px) {
+  .kopf { padding: 10px 16px; gap: 8px; }
+  .marke h1 { font-size: 0.95rem; white-space: nowrap; }
+  .leitsatz { display: none; }
+  .aktionen { flex-wrap: nowrap; overflow-x: auto; width: 100%; padding-bottom: 2px; scrollbar-width: none; }
+  .aktionen .knopf { min-height: 32px; padding: 4px 12px; font-size: 0.85rem; }
+  .transport { gap: 8px 10px; padding-top: 8px; padding-bottom: 8px; }
+  .transport > .trenner, #bpmQuelle { display: none; }
+  .transport > .feld { font-size: 0.8rem; }
+  .transport .umschalter { padding: 4px 10px; min-height: 30px; font-size: 0.85rem; }
+  .transport .umschalter kbd { display: none; }
+  .anzeige { gap: 10px; padding: 4px 10px; justify-content: space-between; }
+  .stelle { padding: 3px 10px; }
+  .stelle #takt { font-size: 1.05rem; }
+  .spielen { width: 40px; height: 40px; }
+  .plugin { border-right: 0; }
+  .gruppen { grid-template-columns: 1fr; }
+  .gruppe { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); }
+  .regler.pan.mit-drehknopf { grid-template-columns: auto; }
+  .regler.pan.mit-drehknopf > output { display: none; }
+  input[type="range"]:not(.dk-regler)::-webkit-slider-thumb { width: 14px; height: 24px; margin-top: -10px; }
+}
+
+/* ---------- Handy: reduziert, aber ganz bedienbar (handy.js, 20. November 2026) ---------- */
+@media (max-width: 820px) {
+  :root { --kopfbreite: 140px; }
+  /* Wiedergabe-Leiste schmal: Spielen, Stelle, Schleife, vorher, Referenz; Tempo, erste Eins und Pegelausgleich hinter «mehr» */
+  .transport { gap: 6px 8px; }
+  .transport:not(.offen) > .feld { display: none; }
+  .transport .mehr { display: inline-flex; margin-left: auto; }
+  .transport .anzeige { order: 10; }
+  .transport > .feld { order: 9; }
+  .transport .bereich-leiste { order: 11; }
+  body { font-size: 15px; }
+  /* zuklappbare Teile: die Überschrift ist die Klappe */
+  .erzeugen > h2, .lucerne > h2, .messung-kopf > h2, .urteile > h2 { cursor: pointer; display: flex; align-items: center; gap: 8px; min-height: 36px; }
+  .erzeugen > h2::after, .lucerne > h2::after, .messung-kopf > h2::after, .urteile > h2::after {
+    content: ""; width: 7px; height: 7px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg); margin-top: -4px; transition: transform .15s;
+  }
+  .offen > h2::after, .messung.offen .messung-kopf > h2::after { transform: rotate(-135deg); margin-top: 4px; }
+  .erzeugen > h2 { flex-basis: 100%; }
+  /* Erzeugen zu: nur Stil, Spuren erzeugen und Track erzeugen */
+  .erzeugen:not(.offen) > :not(h2):not(.feld):not(#erzeugen):not(.track-zeile),
+  .erzeugen:not(.offen) > .feld:not(:has(#stil)),
+  .erzeugen:not(.offen) .track-zeile > :not(#trackErzeugen) { display: none; }
+  .erzeugen:not(.offen) .track-zeile { flex-basis: auto; background: none; padding: 0; margin: 0; border: 0; }
+  .erzeugen:not(.offen) { gap: 10px; }
+  .erzeugen #erzeugen { margin-left: 0; }
+  .erzeugen > .feld:has(#stil) { flex: 1 1 100%; }
+  .erzeugen > .feld:has(#stil) select { flex: 1; }
+  /* lucerne, Messung, Urteil zu: nur die Überschrift */
+  .lucerne:not(.offen) > :not(h2) { display: none; }
+  .lucerne:not(.offen) { padding-top: 8px; padding-bottom: 8px; }
+  .messung:not(.offen) > :not(.messung-kopf), .messung:not(.offen) .messung-kopf > :not(h2) { display: none; }
+  .urteile:not(.offen) > :not(h2) { display: none; }
+  /* Fingergrosse Tasten */
+  .mini { min-width: 28px; height: 34px; font-size: 0.85rem; padding: 0 4px; }
+  .spur-knoepfe { flex-wrap: nowrap; }
+  .summe-kopf .spur-knoepfe { flex-wrap: wrap; }
+  .knopf { min-height: 40px; }
+  .knopf.klein { min-height: 36px; }
+  .umschalter { min-height: 36px; }
+  select { min-height: 36px; }
+  .spur-knoepfe { gap: 4px; }
+  .spur-name select, .spur-name .erz { display: none; }
+  .wellen-feld { min-height: 112px; }
+  .kopfzelle { gap: 8px; }
+  /* Tastenkürzel helfen am Handy nicht */
+  kbd, .fuss { display: none; }
+  .leise-text { font-size: 0.82rem; }
+}
