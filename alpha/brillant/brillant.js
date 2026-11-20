@@ -265,7 +265,7 @@ vec4 stein(vec2 gq, float m){
   vec3 p0 = ro + rd * t0, n0 = uN[i0];
   float zweite = -1e9;
   for (int k = 0; k < MAX_K; k++) { if (k >= uK) break; if (k != i0) zweite = max(zweite, dot(p0, uN[k]) - uR[k]); }
-  float kante = 1.0 - smoothstep(0.0, 0.035, -zweite);
+  float kante = 1.0 - smoothstep(0.0, 0.016, -zweite);   // 0.16: feinere Kanten (Christian)
   vec3 rf = reflect(rd, n0);
   float fres = 0.04 + 0.96 * pow(1.0 - abs(dot(rd, n0)), 5.0);
   // jede Facette wechselt das Werk zu ihrer eigenen Zeit
@@ -295,7 +295,7 @@ vec4 stein(vec2 gq, float m){
   innen = pow(innen, vec3(1.35)) * 1.35;
   float glanz = (pow(max(dot(rf, L1), 0.0), 160.0) + 0.7 * pow(max(dot(rf, L2), 0.0), 220.0)) * 1.6;
   vec3 col = mix(innen, umwelt(rf, m), clamp(fres, 0.0, 1.0)) + glanz;
-  col = mix(col, vec3(1.0, 0.99, 0.97), kante * 0.22);
+  col = mix(col, vec3(1.0, 0.99, 0.97), kante * 0.17);
   // im Menü viel Funkeln, aber nicht grell: Lichter weich zusammendrücken statt ausbrennen
   vec3 tief = pow(max(col, 0.0), vec3(1.15));
   col = mix(col, tief * 1.4 / (1.0 + tief * 0.38), uMenu);
@@ -698,7 +698,16 @@ aufZeiger('pointermove', (e) => {
 const loslassen = (e) => {
   if (!finger.delete(e.pointerId)) return;
   if (finger.size) return;
-  if (frei.an) { frei.an = false; frei.los = performance.now(); }
+  if (frei.an) {
+    frei.an = false; frei.los = performance.now();
+    // im Menü wird die waagrechte Drehung zum Blättern: Winkel in phi übernehmen, mit Schwung zum nächsten Bereich
+    if (menuAuf) {
+      phi -= frei.g; frei.g = 0;
+      const vor = Math.abs(frei.vg) > 0.02 ? -Math.sign(frei.vg) * 0.5 : 0;
+      ziel = Math.round(phi / SCHRITT + vor) * SCHRITT; frei.vg = 0;
+      if (zuZustand(ziel) === 0) ziel += (vor < 0 ? -1 : 1) * SCHRITT;   // im Menü nicht auf dem Titel stehen bleiben
+    }
+  }
   const warGezogen = gezogen; gezogen = false; omega = 0;
   // Tippen: auf den Stein öffnet und schliesst das Menü; daneben schliesst es nur
   if (tipp && Math.hypot(e.clientX - tipp.x, e.clientY - tipp.y) < 10 && performance.now() - tipp.t < 400) {
@@ -747,6 +756,8 @@ function menuSchalten(auf) {
   menuAuf = auf; spur(auf ? 'Menü auf' : 'Menü zu');
   // zurück heisst immer: «Brillante Ideen.»
   if (!auf) hin(0);
+  // im Menü steht immer ein Bereich mit Namen da (Christian: «zeigt keine Titel mehr»)
+  else if (zuZustand(phi) === 0) hin(1);
   document.body.classList.toggle('menu-auf', auf);
   nav.inert = !auf; steinKnopf.setAttribute('aria-expanded', String(auf));
 }
