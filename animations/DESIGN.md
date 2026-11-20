@@ -90,7 +90,7 @@ geschlossenen Formen, eng in gross). Geprüft gegen Inter (optische Grösse), Sc
   «von Name · Datum»; eigene Werke mit «Löschen». Darüberfahren lässt die Animation laufen, Klick lädt sie ins Mischpult.
 - **Info**: grosse Zeile, Kolophon (Technik, Schlaufe, Werke, Schrift), drei nummerierte Listen (So geht es, Effekte, Ebenen) mit Haarlinien.
 - **Fuss**: Haarlinie, eine Zeile: zurück zur Website, Hinweis auf die Namen der Werke, alles im Browser gerechnet.
-- **Vorschaukarte** (`og-de.jpg`, `og-en.jpg`, `og-es.jpg`, 1200 × 630, `tools/animations-og.mjs`): links nur Marke, «Animationen.» und darunter «Mischpult» im Akzent, kein Satz; das untere linke Viertel bleibt frei (X legt dort den Titel darüber); rechts sechs Effekte auf Werken
+- **Vorschaukarte** (`og-mix-de.jpg`, `og-mix-en.jpg`, `og-mix-es.jpg`, 1200 × 630, `tools/animations-og.mjs`): links Marke, «Animationen.», darunter «Mischpult» im Akzent und «1 Bild · 3 Ebenen» in Mono; das untere linke Viertel bleibt frei (X legt dort den Titel darüber); rechts seit 20. November 2026 eine einzige Grafik statt sechs Kacheln: ein Werk, links vom Schieber das Original, rechts drei gemischte Ebenen mit den Reitern 01–03 wie im Handy-Mischpult (Wunsch: «nicht 6 bilder, die anwendung auf den punkt, eine grafik»).
   (Christians Werke, bunt und schwarzweiss im Wechsel) als Kacheln.
 - **Zustände**: Hover unterstreicht oder kehrt um, Fokus ist ein 2-px-Ring im Akzent, Gedrücktes ist gefüllt (`aria-pressed`), Abgeschaltetes hat 35 % Deckkraft.
   Meldungen beim Sichern stehen unter der Taste (Erfolg im Akzent). Ansichten blenden in 240 ms ein; mit `prefers-reduced-motion` sofort. Touch-Ziele mindestens 44 px hoch.

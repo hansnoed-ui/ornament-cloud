@@ -334,10 +334,10 @@ export const SEITE = [
     "Your image, twenty-three effects, three layers: mix animations, download them as MP4 and save them as a work under your name.",
     "Tu imagen, veintitrés efectos, tres capas: mezcla animaciones, descárgalas como MP4 y guárdalas como obra con tu nombre."],
   ['content="Animationen">', 'content="Animations">', 'content="Animaciones">'],
-  ["Animationen auf ornament.cloud: links «Animationen.» und «Mischpult» im Säuregrün, rechts sechs Effekte auf Werken: Strömung, Druckraster, Pixel Sorting, Zebra, Strom und Relief.",
-    "Animations on ornament.cloud: on the left “Animations.” and “Mixer” in acid green, on the right six effects on artworks: flow, halftone, pixel sorting, zebra, current and relief.",
-    "Animaciones en ornament.cloud: a la izquierda «Animaciones.» y «Mezclador» en verde ácido, a la derecha seis efectos sobre obras: corriente, trama de impresión, pixel sorting, cebra, flujo y relieve."],
-  ["https://ornament.cloud/animations/og-de.jpg", "https://ornament.cloud/animations/og-en.jpg", "https://ornament.cloud/animations/og-es.jpg"],   // je Sprache eine Karte (tools/animations-og.mjs)
+  ["Animationen auf ornament.cloud: links «Animationen.», «Mischpult» und «1 Bild · 3 Ebenen», rechts ein Porträt, links vom Schieber das Original, rechts gemischt aus Montage, Druckraster und Lichtformen.",
+    "Animations on ornament.cloud: on the left “Animations.”, “Mixer” and “1 image · 3 layers”, on the right a portrait, the original left of the slider, mixed from montage, halftone and light forms on the right.",
+    "Animaciones en ornament.cloud: a la izquierda «Animaciones.», «Mezclador» y «1 imagen · 3 capas», a la derecha un retrato, el original a la izquierda del deslizador, mezclado con montaje, trama y formas de luz a la derecha."],
+  ["https://ornament.cloud/animations/og-mix-de.jpg", "https://ornament.cloud/animations/og-mix-en.jpg", "https://ornament.cloud/animations/og-mix-es.jpg"],   // je Sprache eine Karte (tools/animations-og.mjs)
   ['Animationen <span class="leise">— dein Bild, dreiundzwanzig Effekte, drei Ebenen</span>', 'Animations <span class="leise">— your image, twenty-three effects, three layers</span>', 'Animaciones <span class="leise">— tu imagen, veintitrés efectos, tres capas</span>'],
   ['<p class="kurz">Animationen</p>', '<p class="kurz">Animations</p>', '<p class="kurz">Animaciones</p>'],
   ['aria-label="Ansicht"', 'aria-label="View"', 'aria-label="Vista"'],
