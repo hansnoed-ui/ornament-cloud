@@ -5,6 +5,8 @@
 // die Zahl der Effekte veraltete). Das untere linke Viertel bleibt leer: dort legt X den Titel der Seite über das Bild.
 // Je Sprache eine Karte, neue Dateinamen, damit X und Mastodon die alte Karte nicht aus dem Zwischenspeicher zeigen:
 //   animations/og-mix-de.jpg, og-mix-en.jpg, og-mix-es.jpg   je 1200 × 630, JPEG unter 300 KB (WhatsApp)
+// Die alten Namen og-de/en/es.jpg bleiben als Kopie der neuen Karte liegen: X und andere halten die Seite mit der alten Bildadresse
+// im Zwischenspeicher und zeigten sonst gar keine Karte (20. November 2026).
 //
 // Die Werke liegen im Projekt «Animations» unter kunst-clip/bilder/ (wie für tools/gamma/kunst_clip.mjs); der Ordner muss unter dem
 // Wurzelordner liegen, damit der Server sie liefert (danach wieder löschen, sie gehören nicht ins Repo):
@@ -98,7 +100,7 @@ h1 i { display: block; font-style: normal; font-weight: 300; font-size: 46px; le
   const name = `og-mix-${sprache}.jpg`;
   let quality = 88, bild;
   do { bild = await karte.screenshot({ type: "jpeg", quality }); quality -= 4; } while (bild.length > 290_000 && quality > 40);
-  writeFileSync(fileURLToPath(new URL(`../animations/${name}`, import.meta.url)), bild);
+  for (const n of [name, `og-${sprache}.jpg`]) writeFileSync(fileURLToPath(new URL(`../animations/${n}`, import.meta.url)), bild);
   console.log(`animations/${name} · ${bild.length} Bytes · Qualität ${quality + 4}`);
 }
 await browser.close();

@@ -17,6 +17,8 @@ AddDefaultCharset UTF-8
   RewriteRule ^a/([0-9A-Za-z]{6,10})/?$ /animations/#a=$1 [R=302,NE,L]
   # dasselbe auf Englisch und Spanisch (5. November 2026): /a/KURZ/en → /animations/en/#a=KURZ
   RewriteRule ^a/([0-9A-Za-z]{6,10})/(en|es)/?$ /animations/$2/#a=$1 [R=302,NE,L]
+  # Die Animationen heissen /animations/, geteilt wurde aber auch /alpha/animations (20. November 2026: X zeigte dafür keine Karte, die Adresse gab 404)
+  RewriteRule ^alpha/animations(?:/(en|es))?/?$ /animations/$1 [R=301,L]
 
   # ---- Der Neubau an der Wurzel (seit 16. November 2026, SEO; vorher leitete / per 302 auf /b/ weiter) ----
   # Die Dateien liegen weiter unter b/ (tools/build-b.mjs); die Seiten heissen aber /, /en/, /angebot/…, /zettel/… ohne /b/.
