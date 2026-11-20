@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#0a0a0b">
 <title>Schichten der Zeit · the deleuzian scheme</title>
 <link rel="stylesheet" href="../gemeinsam/zwischentitel.css?v=1">
-<link rel="stylesheet" href="schichten.css?v=2">
+<link rel="stylesheet" href="schichten.css?v=3">
 </head>
 <body>
 <!-- Gestaltung «Zwischentitel» (docs/GESTALTUNG.md), Aufbau wie das Kristallbild. -->
@@ -47,6 +47,7 @@
       <label><span data-t="schichten">Schichten</span><input type="range" id="r-schichten" min="3" max="14" step="1" value="7"></label>
       <label><span data-t="fluss">Fluss</span><input type="range" id="r-fluss" min="0" max="1" step="0.01" value="0.35"></label>
       <div class="raender" role="group" data-t-label="rand"><span data-t="rand">Rand</span><span class="wahl"><button data-rand="4" data-t="rand4">Ornament</button><button data-rand="1" data-t="rand1">Relief</button><button data-rand="2" data-t="rand2">Kintsugi</button><button data-rand="3" data-t="rand3">Saum</button></span></div>
+      <div class="raender stoffe" role="group" data-t-label="stoff" hidden><span data-t="stoff">Stoff</span><span class="wahl"><button data-stoff="3" data-t="stoff3">Achat</button><button data-stoff="1" data-t="stoff1">Lasur</button></span></div>
     </div>
     <div class="knoepfe zt-tasten">
       <button class="zt-taste" id="begriff-auf" data-t="begriff">Begriff</button>
@@ -139,7 +140,7 @@
 </aside>
 
 <p class="meldung" id="meldung" hidden></p>
-<script type="module" src="schichten.js?v=4"></script>
+<script type="module" src="schichten.js?v=5"></script>
 <script src="../gemeinsam/tafeln.js?v=3"></script>
 </body>
 </html>
