@@ -674,8 +674,21 @@ void main(){
   amp /= 1.0 + length(amp) / 0.16;
   vec3 mitte = s * 0.94 + amp + schwingung * 0.16;
   // gespannt: alles Vergangene als Licht, wie in Sugimotos Kinos ein ganzer Film in einer Belichtung
-  vec3 licht = 1.0 - exp(-(e4 * 1.25 + e3 * 0.55) * (1.2 + 0.8 * uGlut));
-  vec3 gespannt = max(licht * vec3(1.02, 0.99, 0.94), s * 0.22) + rot * at * 0.12;
+  // Die Glut: das gesammelte Licht wird nicht einfach weiss, es erhitzt sich wie Metall im Feuer,
+  // von tiefem Rot über Orange und Gold zu einem warmen Weiss nur in den hellsten Stellen.
+  // Die Gegenwart bleibt als Zeichnung darin, und wo sich etwas schnell bewegt, flackert die Glut.
+  float energie = lu(e4) * 1.05 + lu(e3) * 0.45;
+  float hitze = energie * (0.55 + 0.7 * uGlut) * (0.5 + 0.75 * lu(s)) * mix(0.75, 1.25, Tw) + ah * 0.18;
+  hitze = hitze / (1.0 + 0.35 * hitze);                       // Schulter: hohe Hitze läuft weich aus
+  vec3 glut = mix(vec3(0.0), vec3(0.42, 0.04, 0.02), smoothstep(0.02, 0.22, hitze));
+  glut = mix(glut, vec3(0.86, 0.22, 0.05), smoothstep(0.18, 0.42, hitze));
+  glut = mix(glut, vec3(1.0, 0.62, 0.2), smoothstep(0.38, 0.62, hitze));
+  glut = mix(glut, vec3(1.0, 0.86, 0.6), smoothstep(0.58, 0.8, hitze));
+  glut = mix(glut, vec3(1.0, 0.97, 0.9), smoothstep(0.78, 0.98, hitze));
+  // die Zeichnung der Gegenwart: feine Kanten als dunkles Gold in der Glut, die Form bleibt lesbar
+  glut = mix(glut, glut * 0.55 + vec3(0.5, 0.32, 0.12) * kante, kante * 0.5);
+  // wo es kühl bleibt, schimmert die Gegenwart silbern durch: nicht alles wird Feuer
+  vec3 gespannt = glut + vec3(lu(s)) * (0.05 + 0.14 * (1.0 - smoothstep(0.15, 0.55, hitze))) + rot * at * 0.08;
   vec3 c = T < 0.5 ? mix(entspannt, mitte, smoothstep(0.0, 1.0, T * 2.0)) : mix(mitte, gespannt, smoothstep(0.0, 1.0, T * 2.0 - 1.0));
   c = mix(c, gespannt, Tw);
   vec2 r = step(uRahmen.xy, v) * step(v, uRahmen.zw);
@@ -697,7 +710,7 @@ void main(){
   c += (texture(uQ, v + uRichtung * 3.2307692308).rgb + texture(uQ, v - uRichtung * 3.2307692308).rgb) * 0.0702702703;
   o = vec4(c, 1.0);
 }`;
-const FS_ZUSAMMEN = KOPF + `uniform sampler2D uSzene, uGlow; uniform vec2 uPx; uniform float uGlowStaerke, uT, uKorn;
+const FS_ZUSAMMEN = KOPF + `uniform sampler2D uSzene, uGlow; uniform vec2 uPx; uniform float uGlowStaerke, uT, uKorn; uniform vec3 uGlowFarbe;
 float h(float n){ return fract(sin(n * 91.345 + 7.13) * 43758.5453); }
 void main(){
   vec3 nw = texture(uSzene, v + vec2(-1, -1) * uPx).rgb, ne = texture(uSzene, v + vec2(1, -1) * uPx).rgb;
@@ -712,7 +725,8 @@ void main(){
   vec3 B = A * 0.5 + 0.25 * (texture(uSzene, v - d * 0.5).rgb + texture(uSzene, v + d * 0.5).rgb);
   float lb = lu(B);
   vec3 c = (lb < lmin || lb > lmax) ? A : B;
-  c += texture(uGlow, v).rgb * uGlowStaerke;
+  // Leuchten; in der Spannung warm getönt wie die Halation auf Film (das Licht blutet rötlich aus)
+  c += texture(uGlow, v).rgb * uGlowFarbe * uGlowStaerke;
   // Korn wie auf Film: in den Mitteltönen am stärksten
   float l = lu(c);
   c += (h(dot(v, vec2(12.9898, 78.233)) * 100.0 + uT) - 0.5) * uKorn * (0.35 + 1.3 * l * (1.0 - l));
@@ -1406,7 +1420,7 @@ function nachbearbeiten(t) {
   rechne(P.weich, gB, { uQ: gA }, (u) => gl.uniform2f(u.uRichtung, 1.6 / b4, 0));
   rechne(P.weich, gA, { uQ: gB }, (u) => gl.uniform2f(u.uRichtung, 0, 1.6 / h4));
   rechne(P.zusammen, null, { uSzene: sz, uGlow: gA }, (u) => {
-    gl.uniform2f(u.uPx, 1 / B, 1 / H); gl.uniform1f(u.uGlowStaerke, lesart === 2 ? 0.6 : 0.4); gl.uniform1f(u.uT, t % 100);
+    gl.uniform2f(u.uPx, 1 / B, 1 / H); gl.uniform1f(u.uGlowStaerke, lesart === 2 ? 0.45 : 0.4); gl.uniform3f(u.uGlowFarbe, ...(lesart === 2 ? [1.0, 0.62, 0.42] : [1, 1, 1])); gl.uniform1f(u.uT, t % 100);
     gl.uniform1f(u.uKorn, lesart === 0 ? 0.05 : 0.03);
   });
 }
