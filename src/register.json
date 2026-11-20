@@ -448,6 +448,15 @@
    "kurz": "Die Anwendung selbst."
   },
   {
+   "id": "lab-handy",
+   "name": "ornament.lab · Handy",
+   "tuer": "atelier",
+   "art": "Werkzeug",
+   "status": "direktlink",
+   "adresse": "alpha/lab/handy/",
+   "kurz": "Das Lab am Handy: sechs Bildschirme mit Pixel-Schaltern, dieselben Module wie das Lab."
+  },
+  {
    "id": "composer",
    "name": "ORNAMENT COMPOSER",
    "tuer": "atelier",
