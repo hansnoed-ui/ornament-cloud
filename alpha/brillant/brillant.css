@@ -18,18 +18,25 @@ body { font: 500 15px/1.4 'Brillant Display', system-ui, sans-serif; -webkit-fon
 .stein { position: fixed; left: 0; top: 0; width: 56px; height: 56px; border: 0; background: none; padding: 0; opacity: 0; pointer-events: none; }
 .stein:focus-visible { opacity: 1; outline: 1px solid var(--text); border-radius: 50%; }
 
-/* Menü: eine Glasscheibe ohne Kanten, weich auslaufend */
-.bereiche { position: fixed; left: 50%; top: 40%; transform: translate(-50%, 10px); width: min(86vw, 420px); padding: 34px 0 38px;
-  display: flex; flex-direction: column; align-items: center; gap: 2px;
-  background: radial-gradient(ellipse at 50% 40%, rgba(60, 52, 120, 0.32), rgba(20, 18, 48, 0.18) 70%);
-  -webkit-backdrop-filter: blur(18px) saturate(1.2); backdrop-filter: blur(18px) saturate(1.2);
-  -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 62%, transparent 100%); mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 62%, transparent 100%);
-  opacity: 0; pointer-events: none; transition: opacity 0.7s ease, transform 0.9s cubic-bezier(.2,.7,.2,1); }
-.menu-auf .bereiche { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); transition-delay: 0.25s; }
-.bereiche button { appearance: none; border: 0; background: none; font: 600 26px/1.15 'Brillant Display', system-ui, sans-serif; letter-spacing: -0.02em;
-  color: rgba(243, 241, 248, 0.82); padding: 9px 20px; cursor: pointer; transition: color 0.4s; }
-.bereiche button.start { font-size: 14px; font-weight: 500; letter-spacing: 0.01em; color: var(--leise); padding-bottom: 14px; }
-.bereiche button:hover, .bereiche button[aria-current="true"] { color: #fff; }
+/* Die Liste der Bereiche bleibt für Tastatur und Vorleser da, sichtbar ist nur der Stein (Christian, 20.11.2026: «freistehend mittig») */
+.bereiche { position: fixed; left: 0; bottom: 0; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.bereiche button { font: inherit; }
+
+/* Die Glasfläche, die der Stein hinauswirft: ohne Kanten, weich auslaufend */
+.projektion { position: fixed; left: 0; top: 0; width: min(80vw, 380px); box-sizing: border-box; padding: 34px 30px 36px; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 10px; color: var(--text); text-decoration: none; opacity: 0; pointer-events: none;
+  transform-origin: 50% 0; will-change: transform, opacity;
+  background: linear-gradient(170deg, rgba(var(--ton, 124,108,255), 0.26), rgba(var(--ton, 124,108,255), 0.08) 60%, rgba(255,255,255,0.03));
+  -webkit-backdrop-filter: blur(16px) saturate(1.25); backdrop-filter: blur(16px) saturate(1.25);
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 13%, #000 87%, transparent), linear-gradient(to bottom, transparent, #000 15%, #000 85%, transparent);
+  -webkit-mask-composite: source-in; mask-image: linear-gradient(to right, transparent, #000 13%, #000 87%, transparent), linear-gradient(to bottom, transparent, #000 15%, #000 85%, transparent); mask-composite: intersect; }
+.p-nr { font-size: 12px; letter-spacing: 0.14em; color: var(--hell, #b7b0ff); }
+.p-name { font-weight: 600; font-size: 36px; line-height: 1.05; letter-spacing: -0.022em; }
+.p-satz { font-size: 15px; line-height: 1.45; color: rgba(214, 210, 228, 0.8); max-width: 26ch; }
+.p-mehr { margin-top: 6px; font-size: 15px; color: var(--hell, #b7b0ff); }
+/* der Lichtkegel vom Stein zur Fläche: weichgezeichnet, damit er keine Kanten hat */
+.strahl { position: fixed; inset: 0; pointer-events: none; opacity: 0; filter: blur(16px); }
+.strahl > div { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(225, 220, 255, 0.0) 22%, rgba(225, 220, 255, 0.075) 42%, rgba(225, 220, 255, 0.025) 70%, rgba(225, 220, 255, 0)); }
 .bereiche button:focus-visible, .mehr:focus-visible, .kopf a:focus-visible { outline: 1px solid var(--text); outline-offset: 2px; border-radius: 6px; }
 .menu-auf .mehr { opacity: 0 !important; pointer-events: none !important; }
 
