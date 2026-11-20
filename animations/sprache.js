@@ -38,6 +38,10 @@ const T = {
   "Aus": ["Off", "No"],
   "Schwarz": ["Black", "Negro"],
   "Weiss": ["White", "Blanco"],
+  // Handy: Reiter über dem Pult (20. November 2026)
+  "Pult": ["Mixer", "Mezclador"],
+  "+ Effekt": ["+ Effect", "+ Efecto"],
+  "Sichern": ["Save", "Guardar"],
   "Ebene {n}": ["Layer {n}", "Capa {n}"],
   "nach oben": ["move up", "subir"],
   "nach unten": ["move down", "bajar"],

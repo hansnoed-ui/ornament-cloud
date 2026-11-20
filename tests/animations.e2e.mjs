@@ -258,14 +258,38 @@ await check("Grafik setzt aus (5. November 2026, Handy: «Diese Seite braucht We
   await ctx.close();
 });
 
-await check("Handy: kein seitliches Scrollen in beiden Ansichten, die Ansichten als Leiste unten", async () => {
+await check("Handy (20. November 2026, live mischen): Bühne klebt oben, Reiter je Ebene, Effektleiste wechselt sofort, Dock unten, kein seitliches Scrollen", async () => {
   const { ctx, page } = await oeffne({ width: 360, height: 760 });
-  for (const a of ["mischpult", "info"]) {
-    await page.click(`[data-ansicht="${a}"]`);
-    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth), 0, a);
-  }
-  const lage = await page.evaluate(() => getComputedStyle(document.querySelector(".ansichten")).position);
-  assert.equal(lage, "fixed");
+  await page.setInputFiles("#pult-datei", BILD);
+  await page.waitForFunction(() => window.animationen.S.mix.bild === "eigen" && !document.querySelector("#buehne").classList.contains("ohne"));
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth), 0, "mischpult");
+  // das Dock unten: Neu mischen ändert die Mischung, die Ansichten-Leiste ist im Mischpult versteckt
+  assert.ok(await page.locator("#dock-zufall").isVisible()); assert.ok(!(await page.locator("#pult-zufall").isVisible()));
+  const vorher = await page.evaluate(() => JSON.stringify(window.animationen.S.mix));
+  await page.click("#dock-zufall");
+  assert.notEqual(await page.evaluate(() => JSON.stringify(window.animationen.S.mix)), vorher);
+  // Reiter: Ebene 2 zeigt nur ihre Regler; ein Effekt aus der Leiste landet sofort in der Ebene und im Reiter
+  await page.locator("#pult-reiter button").nth(1).click();
+  assert.equal(await page.locator(".ebene:visible").count(), 1);
+  const name = await page.locator(".ebene.aktiv .effekte button").nth(3).textContent();
+  await page.locator(".ebene.aktiv .effekte button").nth(3).click();
+  assert.ok(await page.evaluate(() => !!window.animationen.S.mix.ebenen[1].effekt));
+  assert.equal((await page.locator("#pult-reiter button").nth(1).locator("span").textContent()).trim(), name.trim());
+  // die Bühne bleibt beim Rollen oben sichtbar
+  await page.evaluate(() => scrollTo(0, 300));
+  const oben = await page.evaluate(() => document.querySelector("#buehne").getBoundingClientRect().top);
+  assert.ok(oben > 0 && oben < 120, `Bühne oben: ${oben}`);
+  // Bild und Sichern sind eigene Reiter
+  await page.locator("#pult-reiter button").nth(3).click(); assert.ok(await page.locator("#pult-bilder").isVisible()); assert.ok(!(await page.locator(".ebene.aktiv").isVisible()));
+  await page.locator("#pult-reiter button").nth(4).click(); assert.ok(await page.locator("#pult-sichern").isVisible());
+  // Info über das Dock, zurück über die Leiste unten
+  await page.click("#dock .dock-info");
+  assert.equal(await page.evaluate(() => window.animationen.S.ansicht), "info");
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth), 0, "info");
+  assert.equal(await page.evaluate(() => getComputedStyle(document.querySelector(".ansichten")).position), "fixed");
+  assert.ok(!(await page.locator("#dock").isVisible()));
+  await page.click('.ansichten [data-ansicht="mischpult"]');
+  assert.ok(await page.locator("#dock").isVisible());
   await ctx.close();
 });
 

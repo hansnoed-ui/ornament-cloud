@@ -61,7 +61,7 @@ test("Seite: noindex, nicht in der Sitemap, nichts von aussen, zwei Ansichten, k
   assert.match(html, /<meta name="robots" content="noindex">/);
   assert.ok(!lies("sitemap.xml").includes("/animations/"));
   for (const f of ["index.html", "en/index.html", "es/index.html", "seite.js", "motor.js", "effekte.js", "rezepte.js", "sprache.js", "video.js"]) assert.doesNotMatch(lies(`animations/${f}`).replace(/<link rel="alternate" hreflang="[a-z-]+" href="https:\/\/ornament\.cloud\/animations\/[a-z/]*">/g, ""), /(src|href)=["']https?:|import\(["']https?:|from ["']https?:/, f);   // ausser den Verweisen auf die Sprachen
-  const ansichten = [...html.matchAll(/data-ansicht="([a-z]+)"/g)].map((m) => m[1]);
+  const ansichten = [...new Set([...html.matchAll(/<button[^>]*data-ansicht="([a-z]+)"/g)].map((m) => m[1]))];   // Handy: «Info» steht auch im Dock (20. November 2026)
   assert.deepEqual(ansichten, ["mischpult", "info"], "nur Mischpult und Info (4. November 2026)");
   assert.ok(!html.includes("Christian Strickler"), "kein Name des Betreibers auf der Seite (4. November 2026)");
   assert.ok(!existsSync(new URL("animations/bilder", root)) || readdirSync(new URL("animations/bilder", root)).length === 0, "keine Beispielbilder (4. November 2026)");
