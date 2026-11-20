@@ -402,7 +402,7 @@ input[type="range"]:not(.dk-regler):focus-visible { outline: 2px solid var(--acc
   .erzeugen > h2 { flex-basis: 100%; }
   /* Erzeugen zu: nur Stil, Spuren erzeugen und Track erzeugen */
   .erzeugen:not(.offen) > :not(h2):not(.feld):not(#erzeugen):not(.track-zeile),
-  .erzeugen:not(.offen) > .feld:not(:has(#stil)):not(.bpm-knopf),
+  .erzeugen:not(.offen) > .feld:not(:has(#stil)):not(.bpm-knopf):not(.tonart-wahl),
   .erzeugen:not(.offen) .track-zeile > :not(#trackErzeugen) { display: none; }
   .erzeugen:not(.offen) .track-zeile { flex-basis: auto; background: none; padding: 0; margin: 0; border: 0; }
   .erzeugen:not(.offen) { gap: 10px; }
@@ -439,4 +439,13 @@ input[type="range"]:not(.dk-regler):focus-visible { outline: 2px solid var(--acc
 @media (max-width: 820px) {
   .erzeugen:not(.offen) > .feld.bpm-knopf { display: inline-grid; }
   .erzeugen .bpm-knopf { margin-right: 6px; }
+}
+/* Tonart bei Erzeugen (20. November 2026, Christian: «Mach Tonart»): Grundton und Tonleiter neben dem BPM-Knopf */
+.erzeugen .tonart-wahl { gap: 6px; }
+.erzeugen .tonart-wahl select { font-size: 1rem; }
+.erzeugen .tonart-wahl #leiter { max-width: 14ch; }
+@media (max-width: 820px) {
+  .erzeugen:not(.offen) > .feld.tonart-wahl { display: inline-flex; }
+  .erzeugen .tonart-wahl { flex: 1 1 auto; min-width: 0; }
+  .erzeugen .tonart-wahl #leiter { flex: 1; min-width: 0; max-width: none; }
 }
