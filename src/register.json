@@ -436,8 +436,8 @@
    "art": "Werkzeug",
    "status": "verlinkt",
    "adresse": "alpha/composer/",
-   "kurz": "Spuren, Plugins und Stile (lucerne, bienne, Grooves).",
-   "kurzEn": "Tracks, plugins and styles (lucerne, bienne, grooves).",
+   "kurz": "Spuren erzeugen, schneiden und mischen: Synthesizer, Perkussion, Naturklänge und eigene Plugins.",
+   "kurzEn": "Generate, cut and mix tracks: synthesizers, percussion, nature sounds and custom plugins.",
    "atelier": true
   },
   {
