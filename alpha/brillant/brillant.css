@@ -10,15 +10,16 @@ body { font: 500 15px/1.4 'Brillant Display', system-ui, sans-serif; -webkit-fon
 .unsichtbar { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
 .kopf { position: fixed; top: max(14px, env(safe-area-inset-top)); left: 0; right: 0; text-align: center; pointer-events: none; opacity: 0; transition: opacity 1.2s ease 2.2s; }
-.kopf a { pointer-events: auto; color: var(--leise); text-decoration: none; font-size: 13px; letter-spacing: 0.01em; }
+.kopf a { pointer-events: auto; color: rgba(156, 151, 177, 0.6); text-decoration: none; font-size: 13px; letter-spacing: 0.01em; }
 .bereit .kopf { opacity: 1; }
 
-.bereiche { position: fixed; left: 0; right: 0; bottom: max(14px, env(safe-area-inset-bottom)); display: flex; justify-content: center; flex-wrap: wrap; gap: 2px 4px; padding: 0 10px; opacity: 0; transition: opacity 1.2s ease 2.4s; }
+/* Die Bereiche als stille Punkte: der aktuelle wird zum kurzen Strich */
+.bereiche { position: fixed; left: 0; right: 0; bottom: max(18px, env(safe-area-inset-bottom)); display: flex; justify-content: center; gap: 2px; opacity: 0; transition: opacity 1.2s ease 2.4s; }
 .bereit .bereiche { opacity: 1; }
-.bereiche button { appearance: none; border: 0; background: none; font: inherit; font-size: 12.5px; letter-spacing: 0.01em; color: var(--leise); padding: 10px 7px; cursor: pointer; transition: color 0.4s; }
-.bereiche button[aria-current="true"] { color: var(--text); }
+.bereiche button { appearance: none; border: 0; background: none; padding: 14px 7px; cursor: pointer; display: grid; place-items: center; }
+.bereiche button::before { content: ''; display: block; width: 5px; height: 5px; border-radius: 3px; background: rgba(243, 241, 248, 0.28); transition: width 0.5s cubic-bezier(.2,.7,.2,1), background 0.5s; }
+.bereiche button[aria-current="true"]::before { width: 18px; background: rgba(243, 241, 248, 0.85); }
 .bereiche button:focus-visible, .mehr:focus-visible, .kopf a:focus-visible { outline: 1px solid var(--text); outline-offset: 2px; border-radius: 6px; }
 
-.mehr { position: fixed; color: var(--ton, #b7b0ff); text-decoration: none; font-size: 16px; opacity: 0; pointer-events: none; transform: translateY(6px); transition: opacity 0.5s, transform 0.5s; white-space: nowrap; }
+.mehr { position: fixed; color: var(--ton, #b7b0ff); text-decoration: none; font-size: 15px; opacity: 0; pointer-events: none; transform: translateY(4px); transition: opacity 0.6s, transform 0.6s; white-space: nowrap; }
 .mehr.da { opacity: 1; pointer-events: auto; transform: none; }
-@media (max-width: 380px) { .bereiche button { font-size: 12px; padding: 10px 5px; } }

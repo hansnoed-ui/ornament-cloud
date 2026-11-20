@@ -177,11 +177,13 @@ void main(){
     vec3 n = uN[bi];
     float th = h(float(bi) + 3.0) * 0.72;
     m = smoothstep(th, th + 0.28, uF);
-    vec2 off = n.xy * uWirbel * 0.032 * vec2(uAufl.y / uAufl.x, 1.0);
-    col = vec3(seite(uv + off * 0.88, m).r, seite(uv + off, m).g, seite(uv + off * 1.12, m).b);
-    col *= 1.0 + uWirbel * 0.22 * (dot(n, normalize(vec3(0.35, 0.6, 0.72))) - 0.62);
+    vec2 off = n.xy * uWirbel * 0.013 * vec2(uAufl.y / uAufl.x, 1.0);
+    col = vec3(seite(uv + off * 0.94, m).r, seite(uv + off, m).g, seite(uv + off * 1.06, m).b);
+    col *= 1.0 + uWirbel * 0.07 * (dot(n, normalize(vec3(0.35, 0.6, 0.72))) - 0.62);
     float kante = 1.0 - smoothstep(0.0, 2.5 / uGross, zweit - best);
-    col += kante * uWirbel * vec3(0.32, 0.31, 0.36);
+    col += kante * uWirbel * vec3(0.09, 0.088, 0.1);
+    // in der Mitte der Drehung löst sich die Schrift ins Leere: das alte Wort geht, bevor das neue kommt
+    col = mix(col, texture(uLeer, uv).rgb, pow(sin(3.14159 * uF), 1.6) * 0.88);
   } else {
     m = uF >= 0.9995 ? 1.0 : 0.0;
     col = seite(uv, m);
@@ -202,8 +204,8 @@ void main(){
   }
   // Blitz: ein vierstrahliger Stern, wenn der Stein seinen Platz findet
   if (uBlitz > 0.001) {
-    vec2 d = abs(p - uGem) / (uGemR * 7.0);
-    float stern = (exp(-d.x * 2.2) * exp(-d.y * 60.0) + exp(-d.y * 2.2) * exp(-d.x * 60.0)) * 0.9 + exp(-dot(d, d) * 40.0) * 0.6;
+    vec2 d = abs(p - uGem) / (uGemR * 4.5);
+    float stern = (exp(-d.x * 2.2) * exp(-d.y * 60.0) + exp(-d.y * 2.2) * exp(-d.x * 60.0)) * 0.55 + exp(-dot(d, d) * 40.0) * 0.4;
     col += vec3(1.0, 0.97, 0.94) * stern * uBlitz;
     glow = max(glow, stern * uBlitz);
   }
@@ -283,49 +285,52 @@ let lay = null;               // Satzspiegel in CSS-Pixeln
 const seitenTex = [];          // 0 = Titel, 1–5 = Bereiche
 let leerTex = null;
 
-function grundMalen(c) {
+function grundMalen(c, ton) {
   c.fillStyle = GRUND; c.fillRect(0, 0, W, H);
-  // ein Hauch Licht in der Mitte, die Ränder ins Schwarz: Uni, aber nicht flach
-  const r = c.createRadialGradient(W / 2, H * 0.46, 0, W / 2, H * 0.46, Math.hypot(W, H) * 0.62);
-  r.addColorStop(0, 'rgba(46, 36, 92, 0.42)'); r.addColorStop(0.55, 'rgba(18, 16, 48, 0.25)'); r.addColorStop(1, 'rgba(2, 2, 8, 0.55)');
+  // Uni, aber nicht flach: ein Hauch Licht in der Mitte, die Ränder ins Schwarz.
+  // Jeder Bereich legt eine eigene, kaum merkliche Tönung darüber: die Schicht.
+  const t = ton || [46, 36, 92];
+  const r = c.createRadialGradient(W / 2, H * 0.46, 0, W / 2, H * 0.46, Math.hypot(W, H) * 0.6);
+  r.addColorStop(0, rgba(t.map((v) => Math.round(v * 0.38)), ton ? 0.42 : 0.42)); r.addColorStop(0.6, 'rgba(16, 14, 40, 0.2)'); r.addColorStop(1, 'rgba(2, 2, 8, 0.6)');
   c.fillStyle = r; c.fillRect(0, 0, W, H);
 }
+const SPERREN = (fs) => `${-0.022 * fs}px`;
+// Satzspiegel: jeder Zustand ist ein kurzer Satz, und sein Punkt ist der Brillant.
+// Viel Leere, eine Zeile, die Schrift nicht grösser als nötig.
 function satzspiegel(c) {
   const hoch = W / H < 0.9 || W < 640;
-  const zeilen = hoch ? ['Brillante', 'Ideen'] : ['Brillante Ideen'];
-  c.font = `600 100px ${SCHRIFT}`;
-  if ('letterSpacing' in c) c.letterSpacing = '-2.6px';
-  const breit = Math.max(...zeilen.map((z, i) => c.measureText(z).width + (i === zeilen.length - 1 ? 42 : 0)));
-  const fs = Math.min(hoch ? 140 : 176, (W * (hoch ? 0.82 : 0.74)) / breit * 100, H * (hoch ? 0.13 : 0.2));
-  const zh = fs * 1.02;
-  const oben = H * (hoch ? 0.42 : 0.4) - (zeilen.length * zh) / 2;
-  c.font = `600 ${fs}px ${SCHRIFT}`;
-  if ('letterSpacing' in c) c.letterSpacing = `${-0.026 * fs}px`;
-  const gemR = fs * 0.19, luecke = fs * 0.06;
-  const z = zeilen.map((t, i) => {
-    const b = c.measureText(t).width, letzte = i === zeilen.length - 1;
-    const ganz = b + (letzte ? luecke + gemR * 2 : 0);
-    return { t, x: (W - ganz) / 2, y: oben + zh * (i + 0.8), b };
+  c.font = `600 100px ${SCHRIFT}`; if ('letterSpacing' in c) c.letterSpacing = SPERREN(100);
+  const ref = c.measureText('Brillante Ideen').width + 30;
+  const fs = Math.round(Math.min(hoch ? 46 : 84, (W * (hoch ? 0.76 : 0.6)) / ref * 100));
+  c.font = `600 ${fs}px ${SCHRIFT}`; if ('letterSpacing' in c) c.letterSpacing = SPERREN(fs);
+  const gemR = fs * 0.27, luecke = fs * 0.06, y = Math.round(H * 0.47 + fs * 0.35);
+  const satz = Math.round(hoch ? 16 : 19);
+  const saetze = ['Brillante Ideen', ...BEREICHE.map((b) => b.name)].map((t, k) => {
+    const b = c.measureText(t).width, x = (W - (b + luecke + gemR * 2)) / 2;
+    return { t, x, y, gem: { x: x + b + luecke + gemR, y: y - gemR * 0.62 } };
   });
-  const l = z.at(-1);
-  // Platte (Glasschicht): die untere Bildhälfte, mit Luft zum Rand und zum Menü
-  const rand = hoch ? 10 : Math.max(24, (W - 980) / 2);
-  const unterTitel = z.at(-1).y + fs * 0.42;
-  const platte = { x: rand, y: unterTitel, w: W - 2 * rand, h: H - unterTitel - 58, r: hoch ? 26 : 32 };
-  return { hoch, fs, zeilen: z, gem: { x: l.x + l.b + luecke + gemR, y: l.y - gemR * 0.8, r: gemR }, platte };
+  return { hoch, fs, gemR, satz, saetze };
 }
-function titelMalen(c, alpha = 1) {
-  c.save(); c.globalAlpha = alpha;
-  c.font = `600 ${lay.fs}px ${SCHRIFT}`; if ('letterSpacing' in c) c.letterSpacing = `${-0.026 * lay.fs}px`;
+function satzMalen(c, k) {
+  const z = lay.saetze[k];
+  c.save();
+  c.font = `600 ${lay.fs}px ${SCHRIFT}`; if ('letterSpacing' in c) c.letterSpacing = SPERREN(lay.fs);
   c.textBaseline = 'alphabetic';
-  for (const z of lay.zeilen) {
-    const g = c.createLinearGradient(0, z.y - lay.fs * 0.75, 0, z.y + lay.fs * 0.05);
-    g.addColorStop(0, '#fbfaff'); g.addColorStop(0.6, '#e4e0ef'); g.addColorStop(1, '#b8b2cc');
-    c.fillStyle = g; c.fillText(z.t, z.x, z.y);
-  }
+  const g = c.createLinearGradient(0, z.y - lay.fs * 0.75, 0, z.y + lay.fs * 0.05);
+  g.addColorStop(0, '#fbfaff'); g.addColorStop(0.65, '#e6e2f0'); g.addColorStop(1, '#bdb7cf');
+  c.fillStyle = g; c.fillText(z.t, z.x, z.y);
   c.restore();
+  if (!k) return null;
+  // darunter, klein und leise: ein Satz zum Bereich
+  const b = BEREICHE[k - 1], ss = lay.satz;
+  c.save();
+  c.textAlign = 'center'; c.font = `500 ${ss}px ${SCHRIFT}`; if ('letterSpacing' in c) c.letterSpacing = '0px';
+  c.fillStyle = 'rgba(200, 196, 216, 0.72)';
+  let y = z.y + lay.fs * 0.55 + ss * 1.6;
+  for (const zeile of zeilenUmbruch(c, b.satz, Math.min(W - 72, lay.hoch ? 300 : 420))) { c.fillText(zeile, W / 2, y); y += ss * 1.45; }
+  c.restore();
+  return { y: y + ss * 0.9, ton: b.ton.map((v) => Math.min(255, Math.round(v * 0.5 + 125))) };
 }
-function rundeck(c, x, y, w, h, r) { c.beginPath(); c.roundRect ? c.roundRect(x, y, w, h, r) : c.rect(x, y, w, h); }
 const rgba = (t, a) => `rgba(${t[0]},${t[1]},${t[2]},${a})`;
 function zeilenUmbruch(c, text, breite) {
   const w = text.split(' '), z = []; let akt = '';
@@ -336,46 +341,6 @@ function zeilenUmbruch(c, text, breite) {
   let b = breite;
   while (b > 120) { const n = zeilenUmbruch(c, text, b - 10); if (n.length !== z.length) break; b -= 10; }
   return b === breite ? z : zeilenUmbruch(c, text, b);
-}
-// eine Glasschicht: was darunter liegt, erscheint weich und getönt; frühere Schichten schauen oben noch hervor
-function schichtMalen(c, k, unscharf) {
-  const P = lay.platte;
-  for (let j = 1; j <= k; j++) {
-    const tiefe = k - j, b = BEREICHE[j - 1];
-    const x = P.x + tiefe * 7, y = P.y - tiefe * 9, w = P.w - tiefe * 14, h = P.h + tiefe * 9;
-    c.save(); rundeck(c, x, y, w, h, P.r); c.clip();
-    c.drawImage(unscharf, 0, 0, W, H);
-    const g = c.createLinearGradient(0, y, 0, y + h);
-    g.addColorStop(0, rgba(b.ton, 0.2)); g.addColorStop(0.5, rgba(b.ton, 0.12)); g.addColorStop(1, 'rgba(8,7,20,0.5)');
-    c.fillStyle = 'rgba(14,12,32,0.42)'; c.fillRect(x, y, w, h);
-    c.fillStyle = g; c.fillRect(x, y, w, h);
-    // Glanz quer über das Glas
-    const s = c.createLinearGradient(x, y, x + w * 0.7, y + h * 0.5);
-    s.addColorStop(0, 'rgba(255,255,255,0.07)'); s.addColorStop(0.35, 'rgba(255,255,255,0.0)');
-    c.fillStyle = s; c.fillRect(x, y, w, h);
-    if (tiefe) { c.fillStyle = `rgba(6,5,16,${0.35 + 0.1 * tiefe})`; c.fillRect(x, y, w, h); }
-    c.restore();
-    rundeck(c, x + 0.5, y + 0.5, w - 1, h - 1, P.r);
-    c.strokeStyle = tiefe ? 'rgba(255,255,255,0.07)' : rgba(b.ton.map((v) => Math.min(255, v + 60)), 0.32); c.lineWidth = 1; c.stroke();
-  }
-  // Inhalt der obersten Schicht
-  const b = BEREICHE[k - 1], hell = b.ton.map((v) => Math.min(255, Math.round(v * 0.55 + 120)));
-  const innen = Math.min(P.w - 48, 560), x0 = W / 2;
-  let y = P.y + Math.max(40, P.h * 0.2);
-  c.textAlign = 'center'; c.textBaseline = 'alphabetic';
-  c.font = `500 13px ${SCHRIFT}`; if ('letterSpacing' in c) c.letterSpacing = '1.2px';
-  c.fillStyle = rgba(hell, 1); c.fillText(`0${k}  /  0${BEREICHE.length}`, x0, y);
-  const hs = Math.min(lay.hoch ? 64 : 96, (P.w - 40) / Math.max(4, b.name.length) * 1.75);
-  y += hs * 1.08;
-  c.font = `600 ${hs}px ${SCHRIFT}`; if ('letterSpacing' in c) c.letterSpacing = `${-0.025 * hs}px`;
-  c.fillStyle = '#f6f4fb'; c.fillText(b.name, x0, y);
-  const ss = lay.hoch ? 17 : 21;
-  c.font = `500 ${ss}px ${SCHRIFT}`; if ('letterSpacing' in c) c.letterSpacing = '0px';
-  c.fillStyle = 'rgba(214,210,228,0.82)';
-  y += ss * 1.9;
-  for (const zeile of zeilenUmbruch(c, b.satz, innen)) { c.fillText(zeile, x0, y); y += ss * 1.4; }
-  c.textAlign = 'start';
-  return { y: y + ss * 0.6, ton: hell };
 }
 
 function texAus(canvas, alt) {
@@ -394,19 +359,11 @@ function seitenBauen() {
   const c = s.getContext('2d');
   c.setTransform(D, 0, 0, D, 0, 0);
   lay = satzspiegel(c);
-  // leerer Grund (für den Auftakt)
-  grundMalen(c); leerTex = texAus(s, leerTex);
-  // Titel
-  titelMalen(c); seitenTex[0] = texAus(s, seitenTex[0]);
-  // weiche Fassung für das, was unter dem Glas liegt: kleiner rechnen und wieder vergrössern
-  const klein = document.createElement('canvas'); klein.width = Math.max(8, Math.round(W / 14)); klein.height = Math.max(8, Math.round(H / 14));
-  const kc = klein.getContext('2d'); kc.imageSmoothingQuality = 'high'; kc.drawImage(s, 0, 0, klein.width, klein.height);
-  const mittel = document.createElement('canvas'); mittel.width = Math.round(W / 4); mittel.height = Math.round(H / 4);
-  const mc = mittel.getContext('2d'); mc.imageSmoothingQuality = 'high'; mc.drawImage(klein, 0, 0, mittel.width, mittel.height);
-  for (let k = 1; k <= BEREICHE.length; k++) {
+  grundMalen(c); leerTex = texAus(s, leerTex);            // leerer Grund für den Auftakt
+  for (let k = 0; k <= BEREICHE.length; k++) {
     c.setTransform(D, 0, 0, D, 0, 0);
-    grundMalen(c); titelMalen(c, 0.62);
-    mehrOrt[k] = schichtMalen(c, k, mittel);
+    grundMalen(c, k ? BEREICHE[k - 1].ton : null);
+    mehrOrt[k] = satzMalen(c, k);
     seitenTex[k] = texAus(s, seitenTex[k]);
   }
 }
@@ -489,7 +446,7 @@ addEventListener('keydown', (e) => {
 // Menü unten: die fünf Bereiche
 const nav = $('bereiche');
 BEREICHE.forEach((b, i) => {
-  const t = document.createElement('button'); t.type = 'button'; t.textContent = b.name;
+  const t = document.createElement('button'); t.type = 'button'; t.setAttribute('aria-label', b.name); t.title = b.name;
   t.addEventListener('click', () => hin(i + 1));
   nav.append(t);
 });
@@ -555,8 +512,10 @@ function bild(ms) {
   if (!gelandet && flug >= 1) { gelandet = true; blitz = 1; document.body.classList.add('bereit'); }
   blitz *= Math.pow(0.93, f);
 
-  const gr = lay.gem, grossR = Math.min(W, H) * 0.17;
-  const gx = W / 2 + (gr.x - W / 2) * flug, gy = H * 0.47 + (gr.y - H * 0.47) * flug - Math.sin(Math.PI * flug) * H * 0.04;
+  const ease = (x) => x * x * (3 - 2 * x), e = ease(fr);
+  const gA = lay.saetze[A].gem, gB = lay.saetze[B].gem;
+  const gr = { x: gA.x + (gB.x - gA.x) * e, y: gA.y, r: lay.gemR }, grossR = Math.min(W, H) * 0.11;
+  const gx = W / 2 + (gr.x - W / 2) * flug, gy = H * 0.47 + (gr.y - H * 0.47) * flug - Math.sin(Math.PI * flug) * H * 0.03 - Math.sin(Math.PI * fr) * lay.fs * 0.35;
   const rr = grossR + (gr.r - grossR) * flug;
   // Drehung: die Drehung um die Achse zeigt die Bereiche; im Auftakt dreht er sich frei aus
   const auftaktDreh = AUFTAKT ? (1 - ausrollen(ta)) * 5.5 : 0;
@@ -577,7 +536,7 @@ function bild(ms) {
   const zeigeMehr = zustand > 0 && ruht;
   if (zeigeMehr !== mehr.classList.contains('da')) {
     mehr.classList.toggle('da', zeigeMehr); mehr.tabIndex = zeigeMehr ? 0 : -1;
-    if (zeigeMehr) { const o = mehrOrt[zustand]; mehr.style.setProperty('--ton', `rgb(${o.ton.join(',')})`); mehr.style.left = '50%'; mehr.style.top = o.y + 'px'; mehr.style.translate = '-50% 0'; }
+    if (zeigeMehr) { const o = mehrOrt[zustand]; mehr.style.setProperty('--ton', `rgb(${o.ton.join(',')})`); mehr.style.left = '50%'; mehr.style.top = (o.y - 14) + 'px'; mehr.style.translate = '-50% 0'; }
   }
 
   // Zeichnen
@@ -592,7 +551,7 @@ function bild(ms) {
   gl.uniform1f(ort.uF, fr); gl.uniform1f(ort.uWirbel, ruhig ? Math.min(wirbel, 0.4) : wirbel);
   gl.uniform1f(ort.uZeigen, zeigen); gl.uniform1f(ort.uBlitz, ruhig ? 0 : blitz);
   gl.uniform2f(ort.uGem, gx * D, (H - gy) * D); gl.uniform1f(ort.uGemR, rr * D);
-  gl.uniform2f(ort.uFeld, gx * D, (H - gy) * D); gl.uniform1f(ort.uGross, Math.max(W, H) * 0.55 * D);
+  gl.uniform2f(ort.uFeld, gx * D, (H - gy) * D); gl.uniform1f(ort.uGross, Math.max(W, H) * 0.85 * D);
   gl.uniform2f(ort.uAufl, Bw, Bh); gl.uniform1f(ort.uRad, huelle * 1.03); gl.uniform1f(ort.uT, t % 100); gl.uniform1f(ort.uFeuer, 1.4);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   nachbearbeiten(t, sz);
