@@ -342,8 +342,12 @@ void main(){
     col += iris * uWirbel * 0.07 * (0.25 + dot(col, vec3(0.33)));
     col *= 1.0 + uWirbel * 0.2 * (dot(n, normalize(vec3(0.35, 0.6, 0.72))) - 0.62);
     // keine Kanten: an den Facettengrenzen nur ein Hauch Licht, weich über viele Bildpunkte
-    float naht = 1.0 - smoothstep(0.0, 9.0 / uGross, zweit - best);
-    col += naht * uWirbel * (0.03 + iris * 0.05);
+    // 0.21 (Christian: «noch präziser, etwas schimmernder»): Nähte haarfein und scharf, ein Lichtschimmer läuft an ihnen entlang
+    float nb = (zweit - best) * uGross / uPx;                             // Abstand zur Naht in CSS-Bildpunkten
+    float naht = exp(-nb * nb / 0.9) + 0.25 * exp(-nb / 3.0);
+    float lauf = 0.55 + 0.45 * sin(uZeit * 1.6 + length(q) * 22.0 + float(bi) * 1.3);
+    vec3 schimmer = mix(vec3(1.0, 0.98, 0.95), 0.5 + 0.5 * cos(6.2832 * (length(q) * 1.4 - uZeit * 0.12 + vec3(0.0, 0.33, 0.67))), 0.65);
+    col += naht * uWirbel * schimmer * (0.05 + 0.13 * lauf);
     // in der Mitte der Drehung löst sich die Schrift ins Leere: das alte Wort geht, bevor das neue kommt
     col = mix(col, texture(uLeer, uv).rgb, pow(sin(3.14159 * uF), 2.0) * 0.4);
   } else {
