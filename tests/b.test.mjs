@@ -421,16 +421,8 @@ test("Schaubilder: auf der Startseite Das Dritte Rad und OMNA COLOR vor der Musi
   }
   assert.ok(statSync(new URL("b/bilder/schau/animations.mp4", root)).size < 2_500_000, "der Film bleibt unter 2,5 MB");
   assert.ok(!/animations\.mp4|Beispiel/.test(lies("animations/index.html")), "die Seite Animations selbst bleibt ohne Beispiele");
-  // Produkte seit 20. November 2026 mit Principesse (Bilder zum Bestellen), Vermittlung bleibt leer, bis Christian Referenzen liefert
-  for (const datei of ["b/angebot/produkte/index.html", "b/en/angebot/produkte/index.html"]) {
-    const html = lies(datei), schau = html.match(/<section class="referenzen schau-abschnitt"[\s\S]*?<\/section>/)?.[0];
-    assert.ok(schau && html.indexOf("schau-abschnitt") < html.indexOf('class="briefing'), `${datei}: Abschnitt zum Anschauen vor dem Briefing`);
-    assert.deepEqual([...schau.matchAll(/<a class="schau-stueck" href="([^"]+)" target="_blank" rel="noopener"/g)].map((m) => m[1]), ["https://principesse.ch/"], `${datei}: Principesse in neuem Fenster`);
-    assert.match(schau, /principesse\.mp4\?v=/, `${datei}: mit Film wie bei Webdesign`);
-    assert.ok(schau.includes("Katharina Strickler") && /Bestellkarte|order card/.test(schau), `${datei}: für wen und wozu`);
-  }
-  assert.ok(lies("b/en/angebot/produkte/index.html").includes("In German."), "englisch mit Hinweis auf die Sprache");
-  for (const s of ["vermittlung"]) assert.ok(!lies(`b/angebot/${s}/index.html`).includes("schau-abschnitt"), `${s}: kein leerer Abschnitt`);
+  // Principesse ist eine Website von Christian, kein Produkt: nur bei Webdesign (20. November 2026, Christian, nachdem sie kurz auf Produkte stand)
+  for (const s of ["vermittlung", "produkte"]) assert.ok(!lies(`b/angebot/${s}/index.html`).includes("schau-abschnitt"), `${s}: kein leerer Abschnitt`);
 });
 
 test("Kuration: Ansichten aus «Supervisionen» stehen nur auf der Leistung, mit Beschreibung und zwei Grössen", async () => {

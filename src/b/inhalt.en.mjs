@@ -214,9 +214,6 @@ export const ANGEBOTE = [
     text: "Works on paper and canvas, prints in small editions, installations with image, motion and sound, works for rooms and screens. Plus editions from the Zettelkasten: the book, the card set, the poster and the notebooks, printed on demand. Orders by email, payment by QR invoice or TWINT; shipping within Switzerland included. Commissions for institutions, companies and private clients after a conversation.",
     fuer: "For collectors, architects, companies, municipalities, institutions and for everyone looking for a work or a book for a particular place.",
     ablauf: ["Choose on the «Works» page, or a conversation about the place and what it needs.", "Order by email, confirmation with invoice; for commissions a draft as a sketch or a moving preview.", "Insured shipping, or work, installation and handover with certificate."],
-    schau: [{ name: "Principesse", von: "for Katharina Strickler", jahr: "2026", url: "https://principesse.ch/", adresse: "principesse.ch", bild: "b/bilder/schau/principesse.jpg", film: "b/bilder/schau/principesse.mp4",
-      bildAlt: "Principesse on film: three drawn princesses with crowns and a dog with a crown float as figures in space before a night sky with moon and stars",
-      text: "Drawn princesses as pictures to order: choose, look at the preview, ask with the order card. In German." }],
     dialog: [
       { frage: "What?", wahlen: ["a print or an original", "a book, cards, a poster", "a commission", "something for a screen"] },
       { frage: "For which place?", wahlen: ["a home", "an office or reception", "a public space", "a gift"] },
