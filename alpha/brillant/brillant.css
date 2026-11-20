@@ -71,7 +71,7 @@ body { font: 500 15px/1.4 'Brillant Display', system-ui, sans-serif; -webkit-fon
 .v-buehne { position: relative; aspect-ratio: 16 / 10; border-radius: 22px 22px 6px 6px; overflow: hidden; background: #07060f; }
 .v-bild { position: absolute; inset: -2%; }
 .v-bild > img, .v-bild > video, .v-bild > canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
-.v-bild > video { opacity: 0; transition: opacity 0.6s ease; }
+.v-bild > video { opacity: 0; transition: opacity 1.4s ease; }
 .v-bild > video.laeuft { opacity: 1; }
 .v-bild.hoch > img, .v-bild.hoch > video { object-position: 50% 42%; }
 .v-buehne::after { content: ''; position: absolute; inset: 0; pointer-events: none;
@@ -83,7 +83,7 @@ body { font: 500 15px/1.4 'Brillant Display', system-ui, sans-serif; -webkit-fon
 .v-buehne::before { content: ''; position: absolute; inset: -20% -60%; z-index: 2; pointer-events: none; opacity: 0;
   background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.24) 48.5%, rgba(190, 225, 255, 0.17) 50%, rgba(255, 220, 190, 0.08) 51.5%, transparent 56%);
   transform: translateX(-60%); mix-blend-mode: screen; }
-.v-karte.glanzlauf .v-buehne::before { animation: v-glanz 1.7s cubic-bezier(.3,.1,.2,1) 0.25s 1 both; }
+.v-karte.glanzlauf .v-buehne::before { animation: v-glanz 1.9s cubic-bezier(.3,.1,.2,1) var(--glanz-verz, 0.25s) 1 both; }
 @keyframes v-glanz { 0% { transform: translateX(-60%); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateX(60%); opacity: 0; } }
 /* holografischer Schimmer über der ganzen Karte, folgt der Neigung (Lage in brillant.js) */
 .v-glanz { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 3; mix-blend-mode: soft-light; overflow: hidden; }
@@ -97,9 +97,17 @@ body { font: 500 15px/1.4 'Brillant Display', system-ui, sans-serif; -webkit-fon
   text-shadow: 0 12px 30px rgba(0, 0, 0, 0.45); }
 .v-satz { margin: 2px 0 0; font-size: 15px; line-height: 1.5; color: rgba(214, 210, 228, 0.82); text-wrap: pretty; }
 .v-zeile { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; }
-.v-sprachen { display: flex; gap: 9px; font-size: 11px; letter-spacing: 0.14em; color: rgba(214, 210, 228, 0.42); }
-.v-sprachen .jetzt { color: rgba(246, 244, 252, 0.9); }
-.v-sprachen em { font-style: normal; letter-spacing: 0.02em; font-size: 13px; color: rgba(214, 210, 228, 0.6); }
+.v-sprachen { display: flex; gap: 0; margin-right: -7px; }
+/* 0.31: wählbar; grosse Tippfläche, kleine Schrift, die gewählte mit einer Haarlinie darunter */
+.v-sprachen button { position: relative; font: inherit; font-size: 11px; letter-spacing: 0.14em; color: rgba(214, 210, 228, 0.42); background: none; border: 0;
+  padding: 14px 7px 14px 8px; min-width: 34px; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: color 0.35s; }
+.v-sprachen button::after { content: ''; position: absolute; left: 8px; right: 7px; bottom: 9px; height: 1px; background: currentColor; opacity: 0; transform: scaleX(0.4); transition: opacity 0.35s, transform 0.35s; }
+.v-sprachen button.jetzt { color: rgba(246, 244, 252, 0.92); }
+.v-sprachen button.jetzt::after { opacity: 0.55; transform: none; }
+.v-sprachen button:focus-visible { outline: 1px solid var(--text); outline-offset: -4px; }
+.v-karte:not(.vorn) .v-sprachen { pointer-events: none; }
+/* 0.31: solange die Vitrine offen ist, tritt der Name unter dem Stein zurück (er schien sonst durch die erscheinende Karte) */
+.vitrine-auf .projektion { opacity: 0 !important; transition: opacity 0.35s; }
 .v-oeffnen { display: inline-flex; align-items: center; gap: 8px; padding: 11px 20px 11px 22px; border-radius: 999px; color: #fbfaff; text-decoration: none; font-size: 15px; letter-spacing: 0.02em;
   background: linear-gradient(180deg, rgba(var(--ton), 0.36), rgba(var(--ton), 0.16)); box-shadow: 0 0 0 1px rgba(var(--ton), 0.6) inset, 0 12px 30px -12px rgba(var(--ton), 0.9);
   transition: background 0.3s, box-shadow 0.3s; }
@@ -150,4 +158,4 @@ body { font: 500 15px/1.4 'Brillant Display', system-ui, sans-serif; -webkit-fon
 .vitrine.bewegt .v-dunkel, .vitrine.bewegt .v-glanz { will-change: opacity; }
 .vitrine-auf .kopf { opacity: 0 !important; pointer-events: none; transition: opacity 0.4s; }
 .vitrine-auf .kopf a { pointer-events: none; }
-.vitrine-auf .sprachen { opacity: 0 !important; pointer-events: none; transition-delay: 0s; }
+.vitrine-auf .sprachen { opacity: 0 !important; pointer-events: none; transition: opacity 0.3s; }
