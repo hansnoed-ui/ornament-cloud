@@ -1,8 +1,8 @@
 // Handy-Ansicht (20. November 2026, Christian: «etwas reduzierter, aber perfekt bedienbar»). Bis 820 px Breite sind Erzeugen,
-// ornament.lucerne, Messung und Urteil zugeklappt: sichtbar bleiben die Hauptaktionen (Stil, Spuren erzeugen, Track erzeugen),
+// Messung und Urteil zugeklappt: sichtbar bleiben die Hauptaktionen (Stil, Spuren erzeugen, Track erzeugen),
 // alles andere erscheint nach Antippen der Überschrift. Nichts fällt weg; am Computer ist immer alles offen.
-const TEILE = ".erzeugen, .lucerne, .messung, .urteile";
-const KOPF = ".erzeugen > h2, .lucerne > h2, .messung-kopf > h2, .urteile > h2";
+const TEILE = ".erzeugen, .messung, .urteile";
+const KOPF = ".erzeugen > h2, .messung-kopf > h2, .urteile > h2";
 
 function markieren() {
   document.querySelectorAll(KOPF).forEach((h) => {

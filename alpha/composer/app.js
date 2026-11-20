@@ -27,7 +27,6 @@ import { LINIEN, LEITERN, NOTEN, linieErzeugen, kickSchritte, grundFrequenz, ton
 import { wavSpuren, abtastrateLesen, mono, tempoSchaetzen, einsaetzeFinden, wavSchreiben, rateWandeln, dehnen } from "../lab/kern/klangwerk.js";
 import * as BE from "./kern/bereiche.js";
 import * as FA from "./kern/fassungen.js";
-import { lucerneEinbauen, klangPanel, istSampler, samplerRechnen } from "./lucerne-ui.js";
 import { drehknoepfe } from "./drehknopf.js?v=2";
 import { handyAnsicht, bpmKnopf } from "./handy.js?v=2";
 import { VORLAGEN, STIL_ZYKLEN, zyklusTakte, matraAuto } from "./kern/zyklen.js";
@@ -381,7 +380,7 @@ function varianteWaehlen(i) {
 function stileAufbauen() {
   const sel = $("stil"), gruppen = {}, NAMEN = { ornament: "Ornament", elektronisch: "Drums, elektronisch", organisch: "Perkussion, organisch" };
   for (const s of STILE.filter((x) => !x.versteckt)) (gruppen[s.gruppe] ??= []).push(s);
-  for (const [g, liste] of Object.entries(gruppen)) sel.append(el("optgroup", { label: NAMEN[g] ?? g }, ...(g === "ornament" ? [el("option", { value: "lucerne", textContent: "ornament.lucerne · Erinnerung · 88 (eigene Aufnahmen)" })] : []), ...liste.map((s) => el("option", { value: s.key, textContent: `${s.name} · ${s.bpm}` }))));
+  for (const [g, liste] of Object.entries(gruppen)) sel.append(el("optgroup", { label: NAMEN[g] ?? g }, ...liste.map((s) => el("option", { value: s.key, textContent: `${s.name} · ${s.bpm}` }))));
   const bass = ERZEUGER["bass@0.1.0"].stimmen;
   $("bassStimme").append(...Object.values(bass).map((b) => el("option", { value: b.key, textContent: b.name })));
   $("bassLinie").append(...LINIEN.map((l) => el("option", { value: l.key, textContent: l.name, title: l.hilfe })));
@@ -391,7 +390,6 @@ function stileAufbauen() {
   $("perkZyklus").append(...vorlagenOptionen());
   $("leiter").append(...Object.entries(LEITERN).map(([k, l]) => el("option", { value: k, textContent: l.name })));
   sel.onchange = () => {
-    if (sel.value === "lucerne") { $("erzBpm").value = 88; $("lucerne")?.scrollIntoView({ behavior: "smooth", block: "nearest" }); return; }
     const st = stilVon(sel.value); $("erzBpm").value = st.bpm;
     if (st.bass) { $("bassStimme").value = st.bass.stimme; $("bassLinie").value = st.bass.linie; $("leiter").value = st.bass.leiter; }
   };
@@ -451,7 +449,6 @@ function imWorkerRoh(nachricht) {
   return new Promise((ja, nein) => { offen.set(id, { ja, nein }); w.postMessage({ ...nachricht, id }); });
 }
 function spurNeuRechnen(sp) {
-  if (istSampler(sp)) return samplerRechnen(sp);
   if (sp.quelle.flaeche || istSynth(sp)) {
     // je Spur höchstens ein Auftrag unterwegs; Änderungen während der Rechnung werden danach in einem Durchgang nachgeholt
     const st = stand.get(sp.id) ?? { laeuft: null, nochmal: false };
@@ -633,7 +630,6 @@ function spurBald(sp) {
 }
 
 async function erzeugen({ anzahlVorgabe = null, still = false } = {}) {
-  if ($("stil").value === "lucerne") return LUI.erzeugen({ studie: true });
   const stil = stilVon($("stil").value), bpm = Number($("erzBpm").value) || stil.bpm, anzahl = anzahlVorgabe ?? Number($("takte").value), seed = Math.max(1, Math.round(Number($("seed").value) || 1));
   await kontext(48000);
   if (z.laeuft) await spielen();
@@ -673,7 +669,6 @@ async function erzeugen({ anzahlVorgabe = null, still = false } = {}) {
  * Ereignis, jeder Regler lässt sich ändern. Geladene Dateien bleiben, erzeugte Spuren werden ersetzt.
  */
 async function trackErzeugen() {
-  if ($("stil").value === "lucerne") return LUI.erzeugen({ studie: false });
   const stil = stilVon($("stil").value), bpm = Number($("erzBpm").value) || stil.bpm, sek = Number($("trackDauer").value), seed = Math.max(1, Math.round(Number($("seed").value) || 1));
   await kontext(48000);
   if (z.laeuft) await spielen();
@@ -878,7 +873,6 @@ async function schlagHoeren(sp, art) {
 }
 
 function klangAufbauen(box, sp, wahl) {
-  if (istSampler(sp)) { klangPanel(box, sp, wahl); return; }
   const q = sp.quelle, st = stimmeVon(q.erzeuger, q.stimme), e = ERZEUGER[q.erzeuger];
   box.append(el("div", { className: "plugin-kopf" }, el("h2", { textContent: `${sp.name}: ${e.name} ${e.version}` }), wahl,
     el("span", { className: "leise-text", textContent: `Eigene Synthese, Startwert ${q.seed}. Jede Änderung rechnet die Spur neu; jeder Schlag und jeder Ton ist auf dieselbe Spitze gebracht, damit Klangfarbe nicht als Lautstärke gehört wird.` })));
@@ -1657,7 +1651,7 @@ async function projektOeffnen(f) {
     for (const id of z.daten.keys()) post({ art: "weg", id });
     z.projekt = p; z.daten.clear(); z.fassungRoh.clear(); z.original.clear(); z.auswahl = false; z.gewaehlt = p.spuren[0]?.id ?? null; z.schleife = p.schleife; z.schleifeAn = false; z.messungen = null;
     if (p.spuren.some((s) => s.quelle)) { await kontext(p.rate); for (const s of p.spuren) if (s.quelle) spurNeuRechnen(s); senden(); }
-    allesAufbauen(); LUI.aufbauen();
+    allesAufbauen();
     const fehlen = p.spuren.filter((s) => s.datei).map((s) => s.datei.name);
     melde(fehlen.length ? `«${p.titel}» geöffnet. Jetzt die Tondateien laden (${fehlen.join(", ")}).` : `«${p.titel}» geöffnet, alle Spuren neu gerechnet.`, 9000);
   } catch (e) { melde(String(e.message ?? e), 8000); }
@@ -1778,11 +1772,10 @@ $("ersatzDatei").onchange = (e) => { const f = e.target.files[0], sp = spurVon(z
 zeigerAuf($("lineal"));
 stileAufbauen();
 allesAufbauen();
-// ornament.lucerne: Klangsammlung und Steuerung (eigenes Modul, bekommt nur, was es braucht)
-const LUI = await lucerneEinbauen({ z, $, el, melde, atmen, PR, post, senden, allesAufbauen, spurSenden, spurNeuRechnen, kontext, spielen, bisFertig, schnellEinpegeln, schleifeSenden, zeichnen, zeigeRechnen, herunterladen, sha256, imWorker, imWorkerRoh, tonWecken, NOTEN });
+// ornament.lucerne ist seit 20. November 2026 nicht mehr im Composer (Christian: «Nimm ornament Lucerne aus dem Composer»); Motor in kern/lucerne.js bleibt.
 requestAnimationFrame(anzeigen);
 
-// Drehknöpfe statt Schieberegler für Plugin-, Melodie- und lucerne-Regler und das Panorama (Nachtpult, 20. November 2026)
+// Drehknöpfe statt Schieberegler für Plugin- und Melodie-Regler und das Panorama (Nachtpult, 20. November 2026)
 drehknoepfe();
 handyAnsicht();
 bpmKnopf();

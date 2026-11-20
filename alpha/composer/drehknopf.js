@@ -1,9 +1,9 @@
 // Drehknöpfe (Nachtpult, 20. November 2026): ausgewählte Schieberegler werden als Drehknopf gezeigt, wie an einem Gerät.
-// Der Schieberegler bleibt unsichtbar im Seitenbaum und trägt weiter den Wert: app.js und lucerne-ui.js hören wie bisher auf
+// Der Schieberegler bleibt unsichtbar im Seitenbaum und trägt weiter den Wert: app.js hört wie bisher auf
 // input, change und dblclick und setzen inp.value; der Knopf zeichnet sich bei jedem Setzen neu. Ziehen nach oben oder rechts
 // dreht auf, nach unten oder links zu; Umschalt dreht fein. Doppelklick oder doppeltes Antippen setzt zurück wie bisher.
 
-const WAHL = ".bpm-knopf input[type=range], .param input[type=range], .luc-makro input[type=range], .regler-klein input[type=range], .regler.pan input[type=range]";
+const WAHL = ".bpm-knopf input[type=range], .param input[type=range], .regler-klein input[type=range], .regler.pan input[type=range]";
 const BOGEN = 270, START = -135;   // Grad: von unten links (−135°) bis unten rechts (+135°)
 const WEG = 180;                    // Pixel Ziehweg für den ganzen Bereich
 const NS = "http://www.w3.org/2000/svg";
