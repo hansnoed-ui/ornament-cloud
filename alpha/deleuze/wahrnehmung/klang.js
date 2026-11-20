@@ -97,6 +97,14 @@ export function klangBild({ lesart, menge, finger, werte, dt }) {
     lichtFilter.frequency.setTargetAtTime(5200 * Math.pow(146.83 / 5200, m), t, z);
     lichtFilter.Q.setTargetAtTime(0.25 + 24 * m * m, t, z);
     tonGain.gain.setTargetAtTime(0.11 * m * (0.6 + 0.4 * werte[1]), t, z);
+    ton.frequency.setTargetAtTime(146.83, t, z); ton2.frequency.setTargetAtTime(220.4, t, z);
+  } else if (lesart === 3) {
+    // Krümmung: ein tiefer Ton, der unter der Schwere sinkt; die Quinte darüber bleibt und schwebt dagegen
+    const k = Math.max(0, menge);
+    lichtGain.gain.setTargetAtTime(0, t, z);
+    tonGain.gain.setTargetAtTime(0.1 * k, t, 0.06);
+    ton.frequency.setTargetAtTime(146.83 * Math.pow(2, -k * (0.25 + 0.5 * werte[0]) / 1.0), t, 0.05);
+    ton2.frequency.setTargetAtTime(220.4, t, z);
   } else {
     lichtGain.gain.setTargetAtTime(0, t, z); tonGain.gain.setTargetAtTime(0, t, z);
   }
