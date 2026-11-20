@@ -448,9 +448,29 @@ float matte(vec3 c, vec3 g){ float d = max(abs(c.r - g.r), max(abs(c.g - g.g), a
 // als feiner Linie (Mareys «chronophotographie géométrique»). Wo das Warten liegt, schmilzt das Gezählte zur Dauer in Farbe.
 const FS_UHR = KOPF + SILBER + `
 uniform sampler2D uScharf, uJetzt, uGrund, uD, uSp, uW; uniform sampler2DArray uRing;
-uniform float uKopf, uN, uM, uLinie, uT, uSeite, uBruch, uBruchT, uPlatte; uniform vec4 uRahmen;
+uniform float uKopf, uN, uM, uLinie, uT, uSeite, uBruch, uBruchT, uPlatte; uniform vec4 uRahmen; uniform vec2 uBM;
 float h21(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 vec2 h22(vec2 p){ return fract(sin(vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)))) * 43758.5453); }
+// Bruchbild: Zellen um den Aufprall uBM, rundum NW Scherben, nach aussen länglich und grösser
+const float NW = 15.0, RADIAL = 0.6;
+vec2 lp(vec2 p){ vec2 rel = p - uBM; float a = atan(rel.y, rel.x); if (a < 0.0) a += 6.2831853;
+  return vec2(log(length(rel) + 0.012) * NW / 6.2831853 * RADIAL, a * NW / 6.2831853); }
+vec2 lpZurueck(vec2 z){ float r = exp(z.x * 6.2831853 / (NW * RADIAL)) - 0.012, a = z.y * 6.2831853 / NW; return uBM + r * vec2(cos(a), sin(a)); }
+void zelle(vec2 z, out vec2 id, out vec2 mz, out float d1, out float d2){
+  vec2 zi = floor(z); d1 = 9.0; d2 = 9.0; id = vec2(0); mz = vec2(0);
+  for (int y = -1; y <= 1; y++) for (int x = -1; x <= 1; x++) {
+    vec2 n = zi + vec2(x, y), nh = vec2(n.x, mod(n.y, NW)), pz = n + 0.12 + 0.76 * h22(nh);
+    float dd = length(z - pz);
+    if (dd < d1) { d2 = d1; d1 = dd; id = nh; mz = pz; } else if (dd < d2) d2 = dd;
+  }
+}
+// manche Scherbe ist ein zweites Mal gebrochen: Seite (0/1) und Abstand zum zweiten Riss
+vec2 gebrochen(vec2 z, vec2 id, vec2 mz){
+  if (h21(id + 17.0) > 0.55) return vec2(0.0, 9.0);
+  float w = h21(id + 23.0) * 3.14159; vec2 r = vec2(cos(w), sin(w));
+  float d = dot(z - mz - (h22(id + 29.0) - 0.5) * 0.3, r);
+  return vec2(step(0.0, d), abs(d) * 2.0);
+}
 void main(){
   vec3 s = texture(uScharf, v).rgb, g = texture(uGrund, v).rgb, j = texture(uJetzt, v).rgb;
   float m0 = matte(j, g);
@@ -486,38 +506,55 @@ void main(){
   vec3 c = mix(uhr, dauer, sch);
   // am Saum der Schmelze ein Hauch Wärme, wie Glas, das weich wird
   c += vec3(0.9, 0.3, 0.16) * pow(sch * (1.0 - sch) * 4.0, 2.0) * 0.05;
-  // Loslassen: die Dauer zerspringt in Scherben, jede zeigt wieder einen einzelnen, grauen Moment;
-  // dann erlischt eine Scherbe nach der anderen, und die Uhr zählt weiter
+  // Loslassen: die Dauer zerspringt wie Glas unter einem Schlag. Um den Punkt, wo der Finger ging, liegen feine
+  // Splitter, nach aussen lange Scherben (Zellen in logarithmisch-polaren Koordinaten), manche noch einmal gebrochen.
+  // Jede zeigt einen grauen Moment aus dem Ring. Dann lösen sie sich in einer Welle von innen nach aussen,
+  // kippen, fallen und lassen dunkle Fugen zurück, bis die Uhr wieder zählt.
   if (uBruch > 0.0) {
-    const float DICHTE = 24.0;
-    vec2 z = vec2(v.x * uSeite, v.y) * DICHTE, zi = floor(z);
-    float d1 = 9.0, d2 = 9.0; vec2 id = vec2(0), mz = vec2(0);
-    for (int y = -1; y <= 1; y++) for (int x = -1; x <= 1; x++) {
-      vec2 n = zi + vec2(x, y), pz = n + 0.15 + 0.7 * h22(n);
-      float dd = length(z - pz);
-      if (dd < d1) { d2 = d1; d1 = dd; id = n; mz = pz; } else if (dd < d2) d2 = dd;
-    }
-    vec2 mitte = vec2(mz.x / DICHTE / uSeite, mz.y / DICHTE);
-    float wz = texture(uW, mitte).r;
-    float r = h21(id);
-    // jede Scherbe erlischt für sich, weich in einem Augenblick
-    float ende = 0.3 + 0.65 * r;
-    float da = smoothstep(0.02, 0.12, wz) * (1.0 - smoothstep(ende - 0.06, ende, uBruchT));
-    float rand = d2 - d1, rb = fwidth(rand);
-    if (da > 0.0) {
-      // die Scherbe rückt kaum merklich ab, bricht das Licht ein wenig und zeigt einen Moment aus dem Ring
-      vec2 weg = (h22(id + 7.0) - 0.5) * 0.005 * (0.5 + uBruchT);
-      float lage = mod(uKopf - floor(r * uM) + uN, uN);
-      vec2 fa = (h22(id + 11.0) - 0.5) * 0.0025;
-      vec3 mc = vec3(textureLod(uRing, vec3(v + weg - fa, lage), 0.0).r, textureLod(uRing, vec3(v + weg, lage), 0.0).g, textureLod(uRing, vec3(v + weg + fa, lage), 0.0).b);
-      vec3 scherbe = silber(mc) * (0.86 + 0.14 * h21(id + 3.0));
-      // ein Schimmer über die Fläche, je Scherbe anders geneigt, wie Licht auf Glas
-      vec2 neig = normalize(h22(id + 5.0) - 0.5);
-      scherbe += vec3(0.95, 0.93, 0.9) * 0.07 * smoothstep(-0.4, 0.6, dot(z - mz, neig));
-      // die Bruchkante: eine Haarlinie
-      float kante = 1.0 - smoothstep(0.0, rb * 1.2, rand);
-      scherbe = mix(scherbe, vec3(1.0, 0.98, 0.94), kante * 0.6);
-      c = mix(c, scherbe, da * uBruch * 0.9);
+    vec2 p = vec2(v.x * uSeite, v.y);
+    vec2 id1, mz1; float a1, b1;
+    zelle(lp(p), id1, mz1, a1, b1);
+    vec2 g1 = gebrochen(lp(p), id1, mz1);
+    vec2 sid = id1 + g1.x * vec2(31.7, 47.3);
+    vec2 mitte1 = lpZurueck(mz1);
+    float wz = texture(uW, vec2(mitte1.x / uSeite, mitte1.y)).r;
+    float feld = smoothstep(0.02, 0.12, wz);
+    // die Welle: innen löst es sich zuerst, aussen später, mit Zufall
+    float rn = clamp(length(mitte1 - uBM) / 0.45, 0.0, 1.0);
+    float beginn = 0.12 + 0.42 * rn + 0.22 * h21(sid + 9.0);
+    float fall = max(0.0, uBruchT - beginn);
+    float tiefe = h21(sid + 5.0);
+    vec2 aus = normalize(mitte1 - uBM + 1e-4);
+    vec2 weg = aus * (0.004 + 0.03 * fall) * (0.4 + tiefe) + vec2(0.0, -1.0) * fall * fall * (0.1 + 0.25 * tiefe);
+    // zweiter Blick: wo liegt der Punkt in der Scherbe, nachdem sie sich bewegt hat? Passt es nicht, liegt hier eine Fuge
+    vec2 p2 = p - weg * feld;
+    vec2 id2, mz2; float a2, b2;
+    zelle(lp(p2), id2, mz2, a2, b2);
+    vec2 g2 = gebrochen(lp(p2), id2, mz2);
+    vec2 sid2 = id2 + g2.x * vec2(31.7, 47.3);
+    float gleich = step(length(sid2 - sid), 0.01);
+    float huelle = 1.0 - smoothstep(0.75, 1.0, uBruchT);
+    // dahinter: Dunkel, wie ein Blick in die Tiefe hinter dem Glas
+    c = mix(c, c * 0.28, feld * uBruch * huelle);
+    float sicht = feld * gleich * (1.0 - smoothstep(0.0, 0.32, fall));
+    if (sicht > 0.0) {
+      float lage = mod(uKopf - floor(h21(sid) * uM) + uN, uN);
+      vec2 q = vec2(p2.x / uSeite, p2.y);
+      vec2 fa = (h22(sid + 11.0) - 0.5) * 0.002;
+      vec3 mc = vec3(textureLod(uRing, vec3(q - fa, lage), 0.0).r, textureLod(uRing, vec3(q, lage), 0.0).g, textureLod(uRing, vec3(q + fa, lage), 0.0).b);
+      // Neigung: anfangs kaum, im Fallen stärker; jede Scherbe fängt das Licht anders
+      vec2 kipp = (h22(sid + 13.0) - 0.5) * (0.35 + 2.4 * fall);
+      float licht = 0.84 + dot(kipp, vec2(-0.45, 0.6)) * 0.5;
+      vec3 scherbe = silber(mc) * licht;
+      float groesse = max(length(mitte1 - uBM), 0.02) * 6.2832 / NW;
+      vec2 lokal = (p2 - lpZurueck(mz2)) / groesse;
+      scherbe += vec3(0.96, 0.94, 0.9) * 0.16 * smoothstep(0.2, 0.9, dot(lokal, normalize(kipp + 1e-4)));
+      // Fase an der Kante: zum Licht hin hell, abgewandt dunkel, so bekommt die Scherbe Dicke
+      float rand = min(b2 - a2, g2.y), rb = fwidth(rand);
+      float kante = 1.0 - smoothstep(0.0, rb * 1.8, rand);
+      vec2 gr = vec2(dFdx(rand), dFdy(rand)); float bl = dot(normalize(gr + 1e-6), normalize(vec2(-0.5, 0.75)));
+      scherbe = scherbe * (1.0 - kante * 0.45 * max(0.0, -bl)) + vec3(1.0, 0.98, 0.94) * kante * (0.25 + 0.5 * max(0.0, bl));
+      c = mix(c, scherbe, sicht * uBruch * 0.95);
     }
   }
   // ausserhalb des Bildes (Saalschwarz) bleibt es schwarz
@@ -804,7 +841,7 @@ function rechne(prog, ziel, tex, setze) {
   zeichneFlaeche();
 }
 
-let linienAn = false, punkteNeu = true, bruchStart = -9, bruchMenge = 0;
+let linienAn = false, punkteNeu = true, bruchStart = -9, bruchMenge = 0, bruchOrt = { x: 0.5, y: 0.5 };
 let flussB = 0, scharfTex = null, scharfB = 0, scharfH = 0, ringTex = null, arbeitB = 0, arbeitH = 0, stromB = 0, stromH = 0;
 if (gl) {
   halbFloat = !!gl.getExtension('EXT_color_buffer_float');
@@ -1084,7 +1121,7 @@ let geisterStart = -1, geisterZug = 0;
 function geisterWarten(t, dt) {
   if (geisterStart < 0 || t < geisterStart) return;
   const u = (t - geisterStart) / 4.2;
-  if (u > 1) { geisterStart = t + 2.2; geisterZug++; if (lesart === 0 && wartenMenge > 0.06) bruchAusloesen(); return; }
+  if (u > 1) { geisterStart = t + 2.2; geisterZug++; if (lesart === 0 && wartenMenge > 0.06) bruchAusloesen({ x: 0.5 + ((geisterZug - 1) % 2 ? -0.08 : 0.1), y: 0.6 }); return; }
   const z = geisterZug, x = 0.5 + (z % 2 ? -0.08 : 0.1) + 0.06 * Math.sin(u * 3.1 + z), y = 0.6 + 0.05 * Math.cos(u * 2.3 + z * 1.7);
   stempeln(x, y, 1.1 * dt);
   if (lesart === 1) ruehren(x, y, Math.cos(u * 6.0 + z) * 260, Math.sin(u * 5.0 + z) * 260);
@@ -1147,10 +1184,10 @@ const loslassen = (e) => {
   finger.delete(e.pointerId);
   if (finger.size === 0) $('halt').classList.remove('da');
   // in der Uhr zerspringt die Dauer, wenn der letzte Finger geht
-  if (lesart === 0 && finger.size === 0 && wartenMenge > 0.06) bruchAusloesen();
+  if (lesart === 0 && finger.size === 0 && wartenMenge > 0.06) bruchAusloesen(f ? aufLeinwand(f.x, f.y) : null);
 };
-function bruchAusloesen() {
-  bruchStart = performance.now() / 1000; bruchMenge = wartenMenge;
+function bruchAusloesen(ort) {
+  bruchStart = performance.now() / 1000; bruchMenge = wartenMenge; if (ort) bruchOrt = ort;
   klangBruch(wartenMenge); glosse('bruch');
 }
 leinwand.addEventListener('pointerup', loslassen);
@@ -1289,7 +1326,7 @@ function bild(ms) {
   if (geisterStart > 0) geisterWarten(t, dt);
   const Wp = ziele.w, wb = Wp.lesen().b, wh = Wp.lesen().h;
   // wie lange die Dauer bleibt, wenn der Finger geht: Uhr nach «Schmelze», Zucker nach «Warten», Spannung mittel
-  const bruchT = (t - bruchStart) / 1.3, bruch = lesart === 0 && bruchT >= 0 && bruchT < 1 ? 1 : 0;
+  const bruchT = (t - bruchStart) / 1.7, bruch = lesart === 0 && bruchT >= 0 && bruchT < 1 ? 1 : 0;
   const halten = bruch ? 1.0 : lesart === 0 ? 0.6 + 6 * WERTE[0][2] : lesart === 1 ? 1.5 + 14 * WERTE[1][0] : 3;
   rechne(P.warten, Wp.schreiben(), { uAlt: Wp.lesen() }, (u) => {
     gl.uniform2f(u.uPx, 1 / wb, 1 / wh); gl.uniform4fv(u.uStempel, stempel); gl.uniform4fv(u.uStempelR, stempelR);
@@ -1374,7 +1411,7 @@ function bild(ms) {
       gl.uniform1f(u.uKopf, kopf); gl.uniform1f(u.uN, MOMENTE_MAX); gl.uniform1f(u.uM, momentZahl());
       gl.uniform1f(u.uLinie, 1.1 * Math.max(1, leinwand.height / 1400)); gl.uniform1f(u.uT, t % 100); gl.uniform1f(u.uSeite, innerWidth / innerHeight);
       gl.uniform4f(u.uRahmen, ...rahmenGL);
-      gl.uniform1f(u.uBruch, bruch ? Math.min(1, bruchT * 12) * Math.min(1, bruchMenge * 3) : 0); gl.uniform1f(u.uBruchT, Math.max(0, bruchT));
+      gl.uniform1f(u.uBruch, bruch ? Math.min(1, bruchT * 12) * Math.min(1, bruchMenge * 3) : 0); gl.uniform1f(u.uBruchT, Math.max(0, bruchT)); gl.uniform2f(u.uBM, bruchOrt.x * innerWidth / innerHeight, bruchOrt.y);
       gl.uniform1f(u.uPlatte, linienAn ? 0.78 : 1);
     });
     if (linienAn) linienZeichnen(sz, W);
