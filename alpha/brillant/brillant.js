@@ -1,5 +1,5 @@
 // Brillante Ideen: eine Titelsequenz mit dem Brillanten aus dem Kristallbild (alpha/deleuze/kristall/).
-// Der Punkt hinter «Ideen» ist ein echter, lichtbrechender Brillant (derselbe Schliff, derselbe Strahlengang).
+// Der i-Punkt in «Brillante» (bis 0.16: der Punkt hinter «Ideen») ist ein echter, lichtbrechender Brillant (derselbe Schliff, derselbe Strahlengang).
 // Dreht man ihn, legen sich die Bereiche als Glasschichten über die Seite; der Übergang geschieht Facette um Facette,
 // jede Facette des Steins bricht das Bild auf ihre Weise. Alles rechnet im Browser (WebGL 2), nichts wird geladen ausser Schrift.
 
@@ -8,17 +8,21 @@ import { schliffEbenen } from '../deleuze/kristall/schliffe.js?v=8';
 const $ = (id) => document.getElementById(id);
 const leinwand = $('leinwand');
 
-// ---------- Inhalt (Beispiele aus ornament.cloud) ----------
+// ---------- Inhalt: drei Anwendungen von ornament.cloud (Christian, 20.11.2026; ersetzt Webdesign, Apps, Vermittlung, Kuration, Editionen;
+// Composer und Multiverse wieder heraus, ORNAMENT LAB folgt, wenn es so weit ist) ----------
+// Tippt man im Menü auf den Namen, öffnet sich die Vitrine (unten): Bild oder Film, Name, ein Satz, «Öffnen».
 const BEREICHE = [
-  { name: 'Webdesign', satz: 'Websites, die schnell sind, eigen und ohne Dienste von aussen.', href: '/angebot/webdesign/', ton: [124, 108, 255] },
-  { name: 'Apps', satz: 'Denkspiele, Farbräder und Bildmaschinen, die im Browser laufen.', href: '/apps/', ton: [84, 146, 255] },
-  { name: 'Vermittlung', satz: 'Seminare, Workshops und Beratung für Schulen, Teams und Institutionen.', href: '/angebot/vermittlung/', ton: [64, 196, 186] },
-  { name: 'Kuration', satz: 'Ausstellungen denken, ordnen, hängen.', href: '/angebot/kuration/', ton: [232, 182, 98] },
-  { name: 'Editionen', satz: 'Originale und Prints in kleinen Auflagen.', href: '/werke/', ton: [236, 112, 140] }
+  { name: 'the deleuzian scheme', kopf: 'im Entstehen · Bild, Film, Ton', satz: 'Begriffe von Deleuze als Verfahren: Kristallbild, Schichten der Zeit, Dauer, Wahrnehmung, Diagramm, Figur – angewandt auf eigenes Material.',
+    href: '/alpha/deleuze/start/', bild: 'vorschau/deleuzian-scheme.jpg', ton: [228, 92, 96] },
+  { name: 'Das Dritte Rad', kopf: 'Zeit · Form · Farbe', satz: 'Zeit, Form und Farbe drehen gegeneinander. Jede Drehung zieht einen Zettel, eine Begegnung aus ORNA und eine Übung aus OMNA COLOR.',
+    href: '/beta/drittes-rad/', schau: 'rad', ton: [232, 150, 80] },
+  { name: 'Animations', kopf: 'Bild · Bewegung', satz: 'Ein Bild, 24 Effekte, bis zu drei Ebenen: das Mischpult für eigene Animationen.',
+    href: '/animations/', bild: 'vorschau/animations.jpg', film: 'vorschau/animations.mp4', ton: [124, 108, 255] }
 ];
-// Die Farben der Schichten sind das Spektrum des Steins: Violett, Blau, Türkis, Gold, Rosa.
-const ZUSTAENDE = BEREICHE.length + 1;          // 0 = Titel, 1–5 = Bereiche
-const SCHRITT = (Math.PI * 2) / ZUSTAENDE;      // eine Sechsteldrehung je Bereich
+// Die Farben der Schichten: Rot (Godard), Orange (das Rad), Violett.
+let vitrineOffen = false;
+const ZUSTAENDE = BEREICHE.length + 1;          // 0 = Titel, 1–3 = Anwendungen
+const SCHRITT = (Math.PI * 2) / ZUSTAENDE;      // eine Vierteldrehung je Anwendung
 
 // ---------- Absturzspur (Lehre aus PHORMA): nur in der Konsole, nie für Gäste ----------
 const SPUR = 'brillant.spur';
@@ -71,6 +75,7 @@ uniform float uF;                  // Übergang von A nach B, 0 … 1
 uniform float uWirbel;             // wie stark die Facetten das Bild gerade brechen
 uniform float uZeigen;             // Auftakt: wie weit die Schrift schon steht, 0 … 1
 uniform float uBlitz;
+uniform float uStern, uZeit, uKreisel;              // 0.19: feine, irisierende Strahlen um den ruhenden i-Punkt
 uniform float uDimm;               // offenes Menü: die Seite tritt zurück              // kurzes Aufblitzen, wenn der Stein seinen Platz findet
 uniform vec2 uGem;                 // Mitte des Steins (Bildpunkte der Leinwand, unten links = 0)
 uniform float uGemR;               // Radius des Steins in Bildpunkten
@@ -151,7 +156,15 @@ vec3 spektrum(float l){
 vec3 umwelt(vec3 d, float m){
   vec2 gemUV = uGem / uAufl;
   vec3 c = seite(gemUV + d.xy * vec2(uAufl.y / uAufl.x, 1.0) * 0.16, m) * 1.25;
-  c += vec3(1.0, 0.985, 0.96) * (pow(max(dot(d, L1), 0.0), 22.0) * 2.1 + pow(max(dot(d, L2), 0.0), 34.0) * 1.5 + pow(max(dot(d, L3), 0.0), 10.0) * 0.35);
+  c += vec3(1.0, 0.985, 0.96) * (pow(max(dot(d, L1), 0.0), 22.0) * 2.1 + pow(max(dot(d, L2), 0.0), 34.0) * 1.5 + pow(max(dot(d, L3), 0.0), 10.0) * 0.35) * (1.0 - uMenu * 0.12);
+  // 0.14 (Christian: «echter»): Kupfer aus, der Stein bleibt klar; 0.7 gäbe den Kupfer-Look von 0.13
+  const float KUPFER = 0.0;
+  // im Menü ein warmes Atelier statt Fotos: Kupfer zu Violett, unten dunkel (Christian: so «sehr schön», ohne Foto)
+  if (uMenu > 0.001) {
+    vec3 kupfer = mix(vec3(0.98, 0.56, 0.27), vec3(0.50, 0.36, 0.92), smoothstep(-0.1, 1.1, d.x * 0.8 + d.y * 0.6));
+    kupfer *= 0.35 + 0.65 * smoothstep(-0.9, 0.6, d.y);
+    c = mix(c, kupfer * 0.9 + c * 0.3, uMenu * KUPFER);
+  }
   return c + vec3(0.045, 0.04, 0.085);
 }
 
@@ -257,7 +270,7 @@ vec4 stein(vec2 gq, float m){
   vec3 p0 = ro + rd * t0, n0 = uN[i0];
   float zweite = -1e9;
   for (int k = 0; k < MAX_K; k++) { if (k >= uK) break; if (k != i0) zweite = max(zweite, dot(p0, uN[k]) - uR[k]); }
-  float kante = 1.0 - smoothstep(0.0, 0.035, -zweite);
+  float kante = 1.0 - smoothstep(0.0, 0.016, -zweite);   // 0.16: feinere Kanten (Christian)
   vec3 rf = reflect(rd, n0);
   float fres = 0.04 + 0.96 * pow(1.0 - abs(dot(rd, n0)), 5.0);
   // jede Facette wechselt das Werk zu ihrer eigenen Zeit
@@ -287,7 +300,10 @@ vec4 stein(vec2 gq, float m){
   innen = pow(innen, vec3(1.35)) * 1.35;
   float glanz = (pow(max(dot(rf, L1), 0.0), 160.0) + 0.7 * pow(max(dot(rf, L2), 0.0), 220.0)) * 1.6;
   vec3 col = mix(innen, umwelt(rf, m), clamp(fres, 0.0, 1.0)) + glanz;
-  col = mix(col, vec3(1.0, 0.99, 0.97), kante * 0.22);
+  col = mix(col, vec3(1.0, 0.99, 0.97), kante * 0.17);
+  // im Menü viel Funkeln, aber nicht grell: Lichter weich zusammendrücken statt ausbrennen
+  vec3 tief = pow(max(col, 0.0), vec3(1.15));
+  col = mix(col, tief * 1.4 / (1.0 + tief * 0.38), uMenu);
   // die Tafel als Fenster: man sieht durch sie das Werk, leicht gebrochen und mit Farbsaum zum Rand
   if (uMenu > 0.001 && i0 == uTafel) {
     gWm = smoothstep(0.3, 0.7, uWerkF);
@@ -322,12 +338,20 @@ void main(){
     vec3 n = uN[bi];
     float th = h(float(bi) + 3.0) * 0.72;
     m = smoothstep(th, th + 0.28, uF);
-    vec2 off = n.xy * uWirbel * 0.03 * vec2(uAufl.y / uAufl.x, 1.0);
-    col = vec3(seite(uv + off * 0.9, m).r, seite(uv + off, m).g, seite(uv + off * 1.1, m).b);
+    // 0.18 (Christian: «feiner, leicht irisierend»): kleinere Facetten, sanfterer Versatz, breiterer Farbsaum
+    vec2 off = n.xy * uWirbel * 0.017 * vec2(uAufl.y / uAufl.x, 1.0);
+    col = vec3(seite(uv + off * 0.7, m).r, seite(uv + off, m).g, seite(uv + off * 1.35, m).b);
+    // Dünnschicht: jede Facette schimmert in ihrer eigenen, leisen Spektralfarbe, dort wo Licht ist
+    vec3 iris = 0.5 + 0.5 * cos(6.2832 * (h(float(bi) * 1.7) + length(q) * 0.8 + vec3(0.0, 0.33, 0.67)));
+    col += iris * uWirbel * 0.07 * (0.25 + dot(col, vec3(0.33)));
     col *= 1.0 + uWirbel * 0.2 * (dot(n, normalize(vec3(0.35, 0.6, 0.72))) - 0.62);
     // keine Kanten: an den Facettengrenzen nur ein Hauch Licht, weich über viele Bildpunkte
-    float naht = 1.0 - smoothstep(0.0, 28.0 / uGross, zweit - best);
-    col += naht * uWirbel * vec3(0.035, 0.034, 0.045);
+    // 0.21 (Christian: «noch präziser, etwas schimmernder»): Nähte haarfein und scharf, ein Lichtschimmer läuft an ihnen entlang
+    float nb = (zweit - best) * uGross / uPx;                             // Abstand zur Naht in CSS-Bildpunkten
+    float naht = exp(-nb * nb / 0.9) + 0.25 * exp(-nb / 3.0);
+    float lauf = 0.55 + 0.45 * sin(uZeit * 1.6 + length(q) * 22.0 + float(bi) * 1.3);
+    vec3 schimmer = mix(vec3(1.0, 0.98, 0.95), 0.5 + 0.5 * cos(6.2832 * (length(q) * 1.4 - uZeit * 0.12 + vec3(0.0, 0.33, 0.67))), 0.65);
+    col += naht * uWirbel * schimmer * (0.05 + 0.13 * lauf);
     // in der Mitte der Drehung löst sich die Schrift ins Leere: das alte Wort geht, bevor das neue kommt
     col = mix(col, texture(uLeer, uv).rgb, pow(sin(3.14159 * uF), 2.0) * 0.4);
   } else {
@@ -364,6 +388,30 @@ void main(){
     float stern = (exp(-d.x * 2.2) * exp(-d.y * 60.0) + exp(-d.y * 2.2) * exp(-d.x * 60.0)) * 0.55 + exp(-dot(d, d) * 40.0) * 0.4;
     col += vec3(1.0, 0.97, 0.94) * stern * uBlitz;
     glow = max(glow, stern * uBlitz);
+  }
+  // 0.19 (Christian: «ruhig und langsam drehen, feine Lichtbrechungen ausstrahlen», erster Eindruck):
+  // haarfeine Strahlen in Spektralfarben, jeder mit eigener Länge, langsam kreisend und einzeln aufglimmend
+  if (uStern > 0.001) {
+    vec2 d = p - uGem; float r = length(d) / uGemR;
+    if (r > 0.75 && r < 9.0) {
+      float an = atan(d.y, d.x), s = 0.0; vec3 farbe = vec3(0.0);
+      for (int k = 0; k < 9; k++) {
+        float fk = float(k);
+        float a0 = fk * 2.39996 + uKreisel * 0.35 * (mod(fk, 2.0) * 2.0 - 1.0) + h(fk * 3.1) * 0.6;
+        float da = abs(mod(an - a0 + 3.14159, 6.28318) - 3.14159);
+        float quer = da * length(d);                                  // Abstand quer zum Strahl in Bildpunkten
+        float breite = uPx * (0.55 + 0.35 * h(fk + 9.0));
+        float lang = 2.2 + 4.5 * h(fk * 7.3);
+        float glimm = pow(0.5 + 0.5 * sin(uZeit * (0.35 + 0.25 * h(fk * 5.0)) + fk * 1.9), 3.0);
+        float w = exp(-quer * quer / (breite * breite)) * exp(-(r - 0.75) / lang) * smoothstep(0.75, 1.15, r) * glimm;
+        vec3 iris = 0.5 + 0.5 * cos(6.2832 * (r * 0.09 + h(fk * 2.3) + vec3(0.0, 0.33, 0.67)));
+        farbe += mix(vec3(1.0, 0.98, 0.95), iris, 0.6) * w; s += w;
+      }
+      float oben = 0.3 + 0.7 * smoothstep(-0.55, 0.15, d.y / length(d));   // über der Schrift voll, nach unten leise
+      farbe *= oben; s *= oben;
+      col += farbe * uStern * 0.55;
+      glow = max(glow, min(1.0, s * uStern * 0.35));
+    }
   }
   o = vec4(col, max(glow, lichtGlow));
 }`;
@@ -461,15 +509,24 @@ function satzspiegel(c) {
   c.font = `600 ${fs}px ${SCHRIFT}`; if ('letterSpacing' in c) c.letterSpacing = SPERREN(fs);
   const gemR = fs * 0.27, luecke = fs * 0.06, y = Math.round(H * 0.47 + fs * 0.35);
   const satz = Math.round(hoch ? 16 : 19);
-  const saetze = ['Brillante Ideen', ...BEREICHE.map((b) => b.name)].map((t, k) => {
-    const b = c.measureText(t).width, x = (W - (b + luecke + gemR * 2)) / 2;
-    return { t, x, y, gem: { x: x + b + luecke + gemR, y: y - gemR * 0.62 } };
+  const saetze = ['Brillante Ideen.', ...BEREICHE.map((b) => b.name)].map((t, k) => {
+    const b = c.measureText(t).width;
+    if (!k) {
+      // 0.17 (Christian): der Brillant ist der i-Punkt in «Brillante», der Satz endet mit einem gewöhnlichen Punkt
+      const x = (W - b) / 2, i0 = c.measureText('Br').width, iw = c.measureText('Bri').width - i0;
+      return { t, x, y, iPunkt: { x: x + i0, w: iw }, gem: { x: x + i0 + iw / 2, y: y - fs * 0.86, r: fs * 0.21 } };
+    }
+    // lange Namen («the deleuzian scheme») verkleinern, bis sie mit dem Stein in die Breite passen
+    const platz = W * 0.88, eng = b + luecke + gemR * 2 > platz ? platz / (b + luecke + gemR * 2) : 1;
+    const fk = Math.floor(fs * eng), bk = b * fk / fs, rk = gemR * fk / fs;
+    const x = (W - (bk + luecke + rk * 2)) / 2;
+    return { t, x, y, fs: eng < 1 ? fk : undefined, gem: { x: x + bk + luecke + rk, y: y - rk * 0.62, r: rk } };
   });
   // Glasscheibe der Bereiche: das Wort steht, wo der Titel stand; der Titel liegt verschwommen darunter
   const sw = Math.min(W - (hoch ? 28 : 80), 620), pad = hoch ? 34 : 48;
   const scheibe = { x: (W - sw) / 2, y: y - fs * 0.95 - pad, w: sw, h: pad * 2 + fs * 0.95 + satz * 6.2 + 40 };
   // offenes Menü: der Stein gross über der Mitte, die Bereiche darunter
-  const menuGem = { x: W / 2, y: Math.round(H * (hoch ? 0.39 : 0.36)), r: Math.min(W, H) * (hoch ? 0.2 : 0.13) };
+  const menuGem = { x: W / 2, y: Math.round(H * 0.382), r: Math.min(W, H) * (hoch ? 0.2 : 0.13) };
   return { hoch, fs, gemR, satz, saetze, scheibe, menuGem };
 }
 // eine Glasscheibe ohne Kanten: weich auslaufend, was darunter liegt erscheint verschwommen und getönt
@@ -498,13 +555,24 @@ function scheibeMalen(c, unscharf, ton) {
   c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(t, 0, 0); c.restore();
 }
 function satzMalen(c, k) {
-  const z = lay.saetze[k];
+  const z = lay.saetze[k], fs = z.fs || lay.fs;
   c.save();
-  c.font = `600 ${lay.fs}px ${SCHRIFT}`; if ('letterSpacing' in c) c.letterSpacing = SPERREN(lay.fs);
+  c.font = `600 ${fs}px ${SCHRIFT}`; if ('letterSpacing' in c) c.letterSpacing = SPERREN(fs);
   c.textBaseline = 'alphabetic';
-  const g = c.createLinearGradient(0, z.y - lay.fs * 0.75, 0, z.y + lay.fs * 0.05);
+  const g = c.createLinearGradient(0, z.y - fs * 0.75, 0, z.y + fs * 0.05);
   g.addColorStop(0, '#fbfaff'); g.addColorStop(0.65, '#e6e2f0'); g.addColorStop(1, '#bdb7cf');
-  c.fillStyle = g; c.fillText(z.t, z.x, z.y);
+  if (z.iPunkt) {
+    // Text ohne den Punkt des i: auf eigener Ebene zeichnen und den Punkt wegnehmen, der Brillant sitzt dort
+    const t = document.createElement('canvas'); t.width = Math.round(W * D); t.height = Math.round(H * D);
+    const tc = t.getContext('2d'); tc.setTransform(D, 0, 0, D, 0, 0);
+    tc.font = c.font; if ('letterSpacing' in tc) tc.letterSpacing = SPERREN(lay.fs); tc.textBaseline = 'alphabetic';
+    const g2 = tc.createLinearGradient(0, z.y - lay.fs * 0.75, 0, z.y + lay.fs * 0.05);
+    g2.addColorStop(0, '#fbfaff'); g2.addColorStop(0.65, '#e6e2f0'); g2.addColorStop(1, '#bdb7cf');
+    tc.fillStyle = g2; tc.fillText(z.t, z.x, z.y);
+    tc.globalCompositeOperation = 'destination-out';
+    tc.fillRect(z.iPunkt.x - lay.fs * 0.02, z.y - lay.fs * 1.05, z.iPunkt.w + lay.fs * 0.04, lay.fs * 0.47);
+    c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(t, 0, 0);
+  } else { c.fillStyle = g; c.fillText(z.t, z.x, z.y); }
   c.restore();
   if (!k) return null;
   // darunter, klein und leise: ein Satz zum Bereich
@@ -658,16 +726,26 @@ const zeiger = [];
 function aufZeiger(typ, fn) { zeiger.push([typ, fn]); leinwand.addEventListener(typ, fn); if (flach) flach.addEventListener(typ, fn); }
 const finger = new Map();
 let tipp = null;
+// 0.15 (Christian: «den Brillanten frei drehen»): wer auf dem Stein ansetzt, dreht ihn in alle Richtungen, mit Schwung;
+// daneben wischen blättert wie bisher. Steht er still, findet er langsam in seine Lage zurück.
+const frei = { an: false, g: 0, n: 0, vg: 0, vn: 0, los: 0 };
+const trifftStein = (x, y) => Math.hypot(x - gemJetzt.x, y - gemJetzt.y) < Math.max(30, Math.min(gemJetzt.r * 2.2, gemJetzt.r + 36));
 aufZeiger('pointerdown', (e) => {
   finger.set(e.pointerId, { x: e.clientX, y: e.clientY });
   try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
   tipp = { x: e.clientX, y: e.clientY, t: performance.now() };
+  if (finger.size === 1 && trifftStein(e.clientX, e.clientY)) { frei.an = true; frei.vg = frei.vn = 0; gezogen = false; return; }
   gezogen = true; ziel = null; omega = 0; letzteZug = performance.now();
   zugStart = Math.round(phi / SCHRITT) * SCHRITT; phi = zugStart;
 });
 aufZeiger('pointermove', (e) => {
-  const f = finger.get(e.pointerId); if (!f || !gezogen) return;
+  const f = finger.get(e.pointerId); if (!f || !(gezogen || frei.an)) return;
   const dx = e.clientX - f.x, dy = e.clientY - f.y; f.x = e.clientX; f.y = e.clientY;
+  if (frei.an) {
+    const k = 3.2 / Math.max(80, gemJetzt.r * 2.4);
+    frei.g += dx * k; frei.n += dy * k; frei.vg = frei.vg * 0.5 + dx * k * 0.5; frei.vn = frei.vn * 0.5 + dy * k * 0.5;
+    return;
+  }
   letzteZug = performance.now();
   // waagrecht und senkrecht drehen beide: nach links oder oben wischen führt weiter.
   // Der Finger zieht nur zäh, und nie weiter als knapp einen Bereich.
@@ -677,11 +755,21 @@ aufZeiger('pointermove', (e) => {
 const loslassen = (e) => {
   if (!finger.delete(e.pointerId)) return;
   if (finger.size) return;
+  if (frei.an) {
+    frei.an = false; frei.los = performance.now();
+    // im Menü wird die waagrechte Drehung zum Blättern: Winkel in phi übernehmen, mit Schwung zum nächsten Bereich
+    if (menuAuf) {
+      phi -= frei.g; frei.g = 0;
+      const vor = Math.abs(frei.vg) > 0.02 ? -Math.sign(frei.vg) * 0.5 : 0;
+      ziel = Math.round(phi / SCHRITT + vor) * SCHRITT; frei.vg = 0;
+      if (zuZustand(ziel) === 0) ziel += (vor < 0 ? -1 : 1) * SCHRITT;   // im Menü nicht auf dem Titel stehen bleiben
+    }
+  }
   const warGezogen = gezogen; gezogen = false; omega = 0;
   // Tippen: auf den Stein öffnet und schliesst das Menü; daneben schliesst es nur
   if (tipp && Math.hypot(e.clientX - tipp.x, e.clientY - tipp.y) < 10 && performance.now() - tipp.t < 400) {
     if (warGezogen) phi = zugStart;
-    const treffer = Math.hypot(e.clientX - gemJetzt.x, e.clientY - gemJetzt.y) < Math.max(30, Math.min(gemJetzt.r * 2.2, gemJetzt.r + 36));
+    const treffer = trifftStein(e.clientX, e.clientY);
     ziel = Math.round(phi / SCHRITT) * SCHRITT;
     // Christian: im Menü nicht mehr zurückklickbar; Tippen daneben führt zurück zu «Brillante Ideen.»
     if (treffer) { if (!menuAuf) menuSchalten(true); } else if (menuAuf) menuSchalten(false);
@@ -697,6 +785,7 @@ aufZeiger('pointercancel', loslassen);
 // Mausrad und Touchpad: ein Bereich je Bewegung, dann Ruhe, bis der Stein steht
 let radSumme = 0, radSperre = 0;
 addEventListener('wheel', (e) => {
+  if (vitrineOffen) return;
   e.preventDefault();
   const jetzt = performance.now();
   if (jetzt < radSperre) { radSperre = Math.max(radSperre, jetzt + 260); return; }
@@ -704,6 +793,7 @@ addEventListener('wheel', (e) => {
   if (Math.abs(radSumme) > 60) { weiter(Math.sign(radSumme)); radSumme = 0; radSperre = jetzt + 1500; }
 }, { passive: false });
 addEventListener('keydown', (e) => {
+  if (vitrineOffen) return;
   if (['ArrowRight', 'ArrowDown', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); weiter(1); }
   else if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); weiter(-1); }
   else if (e.key === 'Escape' && menuAuf) menuSchalten(false);
@@ -725,11 +815,14 @@ function menuSchalten(auf) {
   menuAuf = auf; spur(auf ? 'Menü auf' : 'Menü zu');
   // zurück heisst immer: «Brillante Ideen.»
   if (!auf) hin(0);
+  // im Menü steht immer ein Bereich mit Namen da (Christian: «zeigt keine Titel mehr»)
+  else if (zuZustand(phi) === 0) hin(1);
   document.body.classList.toggle('menu-auf', auf);
   nav.inert = !auf; steinKnopf.setAttribute('aria-expanded', String(auf));
 }
 nav.inert = true;
 const mehr = $('mehr');
+mehr.addEventListener('click', (e) => { const k = zuZustand(phi); if (k) { e.preventDefault(); vitrineAuf(k - 1); } });
 
 // ---------- Projektion (Christian, 20.11.2026: «3d aus dem Brillanten projiziert, nach einer Drehung präsentieren») ----------
 // Im offenen Menü wirft der Stein alle Bereiche als Glasflächen hinaus: sie stehen im Raum rund um seine Achse, jede
@@ -747,12 +840,314 @@ const flaechen = BEREICHE.map((b, i) => {
   el.setAttribute('aria-hidden', 'true');
   return el;
 });
+// lange Namen («the deleuzian scheme») passen am Telefon nicht in eine Zeile: Schrift sanft verkleinern
+function namenEinpassen() {
+  flaechen.forEach((el) => {
+    const n = el.querySelector('.p-name'); n.style.fontSize = '';
+    const verfuegbar = el.clientWidth - 24, ist = n.scrollWidth;
+    if (ist > verfuegbar) n.style.fontSize = Math.floor(parseFloat(getComputedStyle(n).fontSize) * verfuegbar / ist) + 'px';
+  });
+}
+addEventListener('resize', namenEinpassen);
+document.fonts.ready.then(namenEinpassen);
+
+// ---------- Vitrine im Raum (0.23, Christian, 20.11.2026: «dynamischer, schwebender, dreidimensionaler») ----------
+// Die fünf Anwendungen stehen als Karten im Raum, im Halbkreis um die Betrachterin: die vordere ganz zugewandt,
+// die Nachbarn seitlich nach hinten gedreht und gedämpft. Beim Öffnen fliegen sie aus dem Stein, beim Schliessen
+// kehren sie in ihn zurück. Die vordere Karte schwebt, neigt sich zum Finger (am Telefon zur Haltung des Geräts),
+// ein Licht gleitet über ihr Glas, das Bild liegt eine Ebene tiefer als die Schrift (Parallaxe).
+// Blättern: ziehen (die Karten folgen dem Finger mit Schwung), ‹ ›, Pfeiltasten oder eine Nachbarkarte antippen.
+const vitrine = $('vitrine'), vRaum = vitrine.querySelector('.v-raum');
+const vKarten = BEREICHE.map((b, i) => {
+  const hell = b.ton.map((v) => Math.min(255, Math.round(v * 0.5 + 125)));
+  const k = document.createElement('article'); k.className = 'v-karte'; k.setAttribute('aria-roledescription', 'Karte');
+  k.style.setProperty('--ton', b.ton.join(',')); k.style.setProperty('--hell', `rgb(${hell.join(',')})`);
+  k.innerHTML = `<div class="v-schatten" aria-hidden="true"></div><div class="v-koerper"><div class="v-buehne"><div class="v-bild"></div><div class="v-licht" aria-hidden="true"></div></div>
+    <div class="v-text"><p class="v-kopf"></p><h2 class="v-name" id="v-name-${i}"></h2><p class="v-satz"></p>
+    <div class="v-zeile"><a class="v-oeffnen" href="${b.href}">Öffnen <span aria-hidden="true">›</span></a></div></div>
+    <div class="v-glanz" aria-hidden="true"></div><div class="v-dunkel" aria-hidden="true"></div></div>`;
+  k.querySelector('.v-kopf').textContent = b.kopf; k.querySelector('.v-name').textContent = b.name; k.querySelector('.v-satz').textContent = b.satz;
+  k.querySelector('.v-oeffnen').setAttribute('aria-label', `${b.name} öffnen`);
+  const bild = k.querySelector('.v-bild');
+  if (b.schau) bild.append(document.createElement('canvas'));
+  else { const im = new Image(); im.alt = ''; im.decoding = 'async'; im.src = b.bild; bild.append(im); }
+  if (b.hoch) bild.classList.add('hoch');
+  vRaum.append(k);
+  return { el: k, koerper: k.querySelector('.v-koerper'), bild, licht: k.querySelector('.v-licht'), glanz: k.querySelector('.v-glanz'),
+    dunkel: k.querySelector('.v-dunkel'), schatten: k.querySelector('.v-schatten'), text: k.querySelector('.v-text'), oeffnen: k.querySelector('.v-oeffnen'),
+    film: null, schauStopp: null, flug: 0 };
+});
+const N = BEREICHE.length;
+const vz = { pos: 0, ziel: 0, v: 0, auf: 0, aufZiel: 0, t0: 0, lauf: 0, aktiv: -1,
+  zug: null, neig: { x: 0, y: 0 }, neigZiel: { x: 0, y: 0 }, kreisel: null, kreiselNull: null };
+let vZuletzt = null;
+const umlauf = (d) => ((d % N) + N + N / 2) % N - N / 2;   // kürzester Weg im Kreis, -2.5 … 2.5
+
+function vitrineAuf(i) {
+  vZuletzt = document.activeElement;
+  vz.pos = vz.ziel = i; vz.v = 0; vz.aufZiel = 1; vz.t0 = performance.now(); vz.aktiv = -1;
+  vKarten.forEach((k) => { k.flug = 0; });
+  vitrineOffen = true; vitrine.hidden = false; vitrine.classList.add('auf'); spur('Vitrine ' + BEREICHE[i].name);
+  kreiselAn();
+  cancelAnimationFrame(vz.lauf); vz.lauf = requestAnimationFrame(vitrineBild);
+}
+function vitrineZu() {
+  if (!vitrineOffen || !vz.aufZiel) return;
+  vz.aufZiel = 0; vz.t0 = performance.now(); vitrine.classList.remove('auf');
+  if (vZuletzt && vZuletzt.focus) vZuletzt.focus({ preventScroll: true });
+}
+function vitrineWeiter(s) { vz.ziel = Math.round(vz.ziel) + s; }
+
+// die vordere Karte bekommt ihren Film oder ihr bewegtes Schaubild, die übrigen nur ihr Standbild
+function aktivSetzen(i) {
+  vz.aktiv = i; if (vz.aufZiel) hin(i + 1);   // der Stein hinter dem Glas dreht mit
+  vKarten.forEach((k, j) => {
+    const b = BEREICHE[j], vorn = j === i;
+    k.el.classList.toggle('vorn', vorn); k.el.setAttribute('aria-hidden', String(!vorn)); k.oeffnen.tabIndex = vorn ? 0 : -1;
+    if (vorn) { vitrine.setAttribute('aria-labelledby', `v-name-${j}`); k.el.classList.remove('glanzlauf'); void k.el.offsetWidth; k.el.classList.add('glanzlauf'); }
+    if (b.film && !ruhig) {
+      if (vorn && !k.film) {
+        const v = document.createElement('video');
+        Object.assign(v, { muted: true, loop: true, playsInline: true, autoplay: true, poster: b.bild, preload: 'auto' });
+        v.setAttribute('muted', ''); v.setAttribute('playsinline', ''); v.src = b.film;
+        if (b.zoom) { v.style.transform = `scale(${b.zoom})`; v.style.transformOrigin = '50% 12%'; }   // die Bedienknöpfe am unteren Rand des Films bleiben ausserhalb
+        v.addEventListener('playing', () => v.classList.add('laeuft'), { once: true });
+        k.bild.append(v); k.film = v; v.play().catch(() => {});
+      } else if (!vorn && k.film) { const v = k.film; k.film = null; v.classList.remove('laeuft'); setTimeout(() => { v.pause(); v.removeAttribute('src'); v.load(); v.remove(); }, 400); }
+    }
+    if (b.schau) {
+      if (vorn && !k.schauStopp) k.schauStopp = schauZeichnen(k.bild.querySelector('canvas'), b, true);
+      else if (!vorn && k.schauStopp) { k.schauStopp(); k.schauStopp = null; }
+      // hinten steht ein Standbild
+      if (!vorn && !k.schauStopp) schauZeichnen(k.bild.querySelector('canvas'), b, false);
+    }
+  });
+}
+
+// Neigung: am Telefon folgt die Karte der Haltung des Geräts (relativ zur Haltung beim Öffnen), sonst dem Zeiger
+function kreiselAn() {
+  vz.kreiselNull = null;
+  if (vz.kreisel || ruhig || !('DeviceOrientationEvent' in window)) return;
+  vz.kreisel = (e) => {
+    if (e.beta == null || e.gamma == null) return;
+    if (!vz.kreiselNull) vz.kreiselNull = { b: e.beta, g: e.gamma };
+    // die Ausgangslage wandert langsam mit, damit die Karte nach einer Weile wieder gerade steht
+    vz.kreiselNull.b += (e.beta - vz.kreiselNull.b) * 0.004; vz.kreiselNull.g += (e.gamma - vz.kreiselNull.g) * 0.004;
+    const dx = Math.max(-1, Math.min(1, (e.gamma - vz.kreiselNull.g) / 18)), dy = Math.max(-1, Math.min(1, (e.beta - vz.kreiselNull.b) / 18));
+    vz.neigZiel.x = dx; vz.neigZiel.y = dy;
+  };
+  addEventListener('deviceorientation', vz.kreisel);
+}
+function kreiselAus() { if (vz.kreisel) removeEventListener('deviceorientation', vz.kreisel); vz.kreisel = null; }
+
+const daempf = (x, k, f) => x * Math.pow(k, f);
+function vitrineBild(jetzt) {
+  const f = Math.min(3, (jetzt - (vz.letzt || jetzt)) / 16.67 || 1); vz.letzt = jetzt;
+  const t = jetzt / 1000, Wv = innerWidth, Hv = innerHeight;
+  // Öffnen und Schliessen: jede Karte fliegt mit kleinem Versatz, die vordere zuerst
+  const seit = (jetzt - vz.t0) / 1000;
+  let alleZu = true;
+  vKarten.forEach((k, i) => {
+    const d = Math.abs(umlauf(i - vz.pos));
+    if (vz.aufZiel) { const u = Math.max(0, Math.min(1, (seit - d * 0.07) / (ruhig ? 0.25 : 0.95))); k.flug = 1 - Math.pow(1 - u, 4); alleZu = false; }
+    else { const u = Math.max(0, Math.min(1, (seit - (2.5 - d) * 0.035) / (ruhig ? 0.2 : 0.5))); k.flug = Math.min(k.flug, 1 - u * u * (3 - 2 * u)); if (k.flug > 0.001) alleZu = false; }
+  });
+  if (!vz.aufZiel && alleZu) {
+    vitrineOffen = false; vitrine.hidden = true; kreiselAus();
+    vKarten.forEach((k) => { if (k.film) { k.film.pause(); k.film.remove(); k.film = null; } if (k.schauStopp) { k.schauStopp(); k.schauStopp = null; } });
+    vz.aktiv = -1; vz.letzt = 0; return;
+  }
+  // Blättern: gedämpfte Feder zum Ziel, solange kein Finger zieht
+  if (!vz.zug) {
+    const a = (vz.ziel - vz.pos) * 0.012 - vz.v * 0.16;
+    vz.v += a * f * (ruhig ? 3 : 1); vz.pos += vz.v * f;
+    if (Math.abs(vz.ziel - vz.pos) < 0.0005 && Math.abs(vz.v) < 0.0005) { vz.pos = vz.ziel; vz.v = 0; }
+  }
+  const vorn = ((Math.round(vz.pos) % N) + N) % N;
+  if (vorn !== vz.aktiv && vz.aufZiel) aktivSetzen(vorn);
+
+  // Neigung zum Zeiger: weich nachgeführt; ohne Zeiger und Kreisel ein ruhiges Atmen
+  const atmen = ruhig ? 0 : 1;
+  vz.neig.x += (vz.neigZiel.x - vz.neig.x) * (1 - Math.pow(0.9, f));
+  vz.neig.y += (vz.neigZiel.y - vz.neig.y) * (1 - Math.pow(0.9, f));
+  const telefonHoch = Wv < 820;
+  const breite = vKarten[0].el.offsetWidth || 320;
+  const abstand = breite * (telefonHoch ? 0.82 : 0.74);
+  // Ursprung des Flugs: der Stein, relativ zur Mitte der Bühne
+  const r = vRaum.getBoundingClientRect(), mx = r.left + r.width / 2, my = r.top + r.height / 2;
+  const sx = gemJetzt.x - mx, sy = gemJetzt.y - my;
+  vKarten.forEach((k, i) => {
+    const d = umlauf(i - vz.pos), ad = Math.abs(d), sg = Math.sign(d);
+    // im Halbkreis: seitlich versetzt, nach hinten, zur Mitte gedreht
+    let x = sg * abstand * Math.pow(ad, 0.82), z = -ad * breite * 0.62 - ad * ad * breite * 0.08;
+    let ry = -Math.max(-1.6, Math.min(1.6, d)) * 34, rx = 0, y = ad * 10;
+    let sch = 1;
+    const vornGrad = Math.max(0, 1 - ad);      // 1 = ganz vorn
+    // schweben: jede Karte in eigenem Takt, die vordere am deutlichsten
+    const ph = i * 1.7;
+    y += atmen * (Math.sin(t * 0.9 + ph) * (5 + 3 * vornGrad));
+    rx += atmen * Math.sin(t * 0.63 + ph) * 1.6; ry += atmen * Math.cos(t * 0.51 + ph) * 2.2;
+    // Neigung zum Finger nur für die vordere Karte
+    rx += -vz.neig.y * 9 * vornGrad; ry += vz.neig.x * 11 * vornGrad;
+    // Flug aus dem Stein: von dessen Ort, winzig, gedreht
+    const fl = k.flug, gegen = 1 - fl;
+    x = x * fl + sx * gegen; y = y * fl + sy * gegen; z = z * fl - 380 * gegen * (1 - fl * 0.4);
+    ry += gegen * (sg || 1) * -120 * (1 - fl); rx += gegen * 40; sch = 0.06 + 0.94 * fl;
+    const sichtbar = ad < 2.2 ? 1 : Math.max(0, 1 - (ad - 2.2) / 0.3);
+    k.el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, ${z.toFixed(1)}px) rotateY(${ry.toFixed(2)}deg) rotateX(${rx.toFixed(2)}deg) scale(${sch.toFixed(3)})`;
+    k.el.style.opacity = (Math.min(1, fl * 1.6) * sichtbar).toFixed(3);
+    k.el.style.zIndex = String(100 - Math.round(ad * 10));
+    k.el.style.pointerEvents = fl > 0.9 && sichtbar > 0.5 ? 'auto' : 'none';
+    k.dunkel.style.opacity = Math.min(0.72, ad * 0.5).toFixed(3);
+    // Licht: ein weicher Fleck, der gegen die Neigung über das Glas gleitet; dazu ein irisierendes Band
+    const lx = 50 + (ry / 34) * -40 + vz.neig.x * 22, ly = 30 - rx * 3 - vz.neig.y * 18;
+    k.licht.style.background = `radial-gradient(120% 90% at ${lx.toFixed(1)}% ${ly.toFixed(1)}%, rgba(255,255,255,0.17), rgba(255,255,255,0) 52%)`;
+    k.glanz.style.backgroundPosition = `${(50 + ry * 1.6 + vz.neig.x * 30).toFixed(1)}% ${(50 + rx * 3).toFixed(1)}%`;
+    k.glanz.style.opacity = (0.35 + Math.min(0.65, Math.abs(ry) / 30 + Math.hypot(vz.neig.x, vz.neig.y) * 0.4)).toFixed(3);
+    // Parallaxe: das Bild liegt hinter dem Glas und verschiebt sich gegen die Drehung
+    k.bild.style.transform = `translate3d(${(-ry * 0.45).toFixed(1)}px, ${(rx * 0.6).toFixed(1)}px, 0) scale(1.09)`;
+    // Schatten auf dem Boden: je höher die Karte schwebt, desto weicher und leiser
+    const hoehe = Math.sin(t * 0.9 + ph) * atmen;
+    k.schatten.style.transform = `translateY(${(26 + hoehe * 4).toFixed(1)}px) scale(${(0.86 - hoehe * 0.04).toFixed(3)}, 1)`;
+    k.schatten.style.opacity = ((0.55 - hoehe * 0.12) * fl * Math.max(0, 1 - ad * 0.5)).toFixed(3);
+  });
+  vitrine.style.setProperty('--auf', (vKarten.reduce((m, k) => Math.max(m, k.flug), 0)).toFixed(3));
+  vz.lauf = requestAnimationFrame(vitrineBild);
+}
+
+// Ziehen: die Karten folgen dem Finger; loslassen mit Schwung zur nächsten Karte. Kurzes Tippen auf eine Nachbarkarte holt sie nach vorn.
+vRaum.addEventListener('pointerdown', (e) => {
+  if (e.button > 0) return;
+  vz.zug = { x: e.clientX, y: e.clientY, pos: vz.pos, t: performance.now(), lx: e.clientX, lt: performance.now(), v: 0, bewegt: false, id: e.pointerId };
+});
+addEventListener('pointermove', (e) => {
+  if (vitrineOffen && e.pointerType === 'mouse' && !vz.zug) {
+    // Maus über der vorderen Karte: Neigung zum Zeiger
+    const k = vKarten[vz.aktiv]; if (!k) return;
+    const r = k.koerper.getBoundingClientRect();
+    const nx = (e.clientX - (r.left + r.width / 2)) / (r.width / 2), ny = (e.clientY - (r.top + r.height / 2)) / (r.height / 2);
+    const drin = Math.abs(nx) < 1.25 && Math.abs(ny) < 1.25;
+    vz.neigZiel.x = drin ? Math.max(-1, Math.min(1, nx)) : 0; vz.neigZiel.y = drin ? Math.max(-1, Math.min(1, ny)) : 0;
+  }
+  const z = vz.zug; if (!z || z.id !== e.pointerId) return;
+  const dx = e.clientX - z.x;
+  if (!z.bewegt && Math.abs(dx) > 8) { z.bewegt = true; try { vRaum.setPointerCapture(e.pointerId); } catch {} }
+  if (!z.bewegt) return;
+  const breite = vKarten[0].el.offsetWidth || 320;
+  vz.pos = z.pos - dx / (breite * 0.9);
+  const jetzt = performance.now(), dt = Math.max(1, jetzt - z.lt);
+  z.v = z.v * 0.6 + (-(e.clientX - z.lx) / (breite * 0.9) / dt * 16.67) * 0.4; z.lx = e.clientX; z.lt = jetzt;
+  // beim Ziehen neigt sich die vordere Karte mit
+  vz.neigZiel.x = Math.max(-1, Math.min(1, -z.v * 6));
+});
+const vLos = (e) => {
+  const z = vz.zug; if (!z || z.id !== e.pointerId) return;
+  vz.zug = null; if (!vz.kreisel || e.pointerType !== 'touch') vz.neigZiel.x = 0;
+  if (z.bewegt) {
+    vz.v = z.v; vz.ziel = Math.round(vz.pos + z.v * 9);
+    vz.ziel = Math.max(Math.round(z.pos) - 2, Math.min(Math.round(z.pos) + 2, vz.ziel));
+    return;
+  }
+  // Tippen: auf eine Nachbarkarte → nach vorn; neben die Karten → schliessen
+  const karte = e.target.closest && e.target.closest('.v-karte');
+  if (!karte) { vitrineZu(); return; }
+  const i = vKarten.findIndex((k) => k.el === karte);
+  if (i !== vz.aktiv) { vz.ziel = Math.round(vz.pos) + Math.round(umlauf(i - vz.pos)); e.preventDefault(); }
+};
+addEventListener('pointerup', vLos);
+addEventListener('pointercancel', (e) => { if (vz.zug && vz.zug.id === e.pointerId) { vz.zug = null; vz.ziel = Math.round(vz.pos); } });
+// ein Klick, der aus einem Zug entstand, öffnet nichts
+vRaum.addEventListener('click', (e) => {
+  const karte = e.target.closest('.v-karte'), i = vKarten.findIndex((k) => k.el === karte);
+  if (i >= 0 && i !== vz.aktiv) e.preventDefault();
+}, true);
+vRaum.addEventListener('mouseleave', () => { vz.neigZiel.x = 0; vz.neigZiel.y = 0; });
+vitrine.querySelector('.v-zu').addEventListener('click', vitrineZu);
+vitrine.querySelector('.v-vor').addEventListener('click', () => vitrineWeiter(-1));
+vitrine.querySelector('.v-nach').addEventListener('click', () => vitrineWeiter(1));
+addEventListener('keydown', (e) => {
+  if (!vitrineOffen) return;
+  if (e.key === 'Escape') { e.preventDefault(); vitrineZu(); }
+  else if (e.key === 'ArrowRight') { e.preventDefault(); vitrineWeiter(1); }
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); vitrineWeiter(-1); }
+});
+// Mausrad und Touchpad blättern seitlich
+let vRad = 0, vRadSperre = 0;
+vitrine.addEventListener('wheel', (e) => {
+  e.preventDefault(); const jetzt = performance.now(); if (jetzt < vRadSperre) return;
+  vRad += Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+  if (Math.abs(vRad) > 50) { vitrineWeiter(Math.sign(vRad)); vRad = 0; vRadSperre = jetzt + 450; }
+}, { passive: false });
+flaechen.forEach((el, i) => el.addEventListener('click', (e) => { e.preventDefault(); vitrineAuf(i); }));
+
+// ---------- Schaubilder, die sich bewegen (0.24) ----------
+// Das Dritte Rad: die drei Ringe der Anwendung (Zeit, Form, Farbe, aus ihrem eigenen SVG abgenommen) drehen gegeneinander,
+// wie in der Anwendung selbst, auf dunklem Grund mit warmem Schein und einem Lichtrand.
+// laufend = false zeichnet ein Standbild, sobald die Bilder da sind.
+const schauBilder = new Map();
+function schauBild(src) {
+  if (!schauBilder.has(src)) { const im = new Image(); im.decoding = 'async'; im.src = src; schauBilder.set(src, im); }
+  return schauBilder.get(src);
+}
+const SCHAU = {
+  rad: { bilder: ['zeit', 'form', 'farbe', 'kern'].map((n) => `vorschau/rad-${n}.png`), malen: radMalen }
+};
+function schauZeichnen(c, b, laufend) {
+  const art = SCHAU[b.schau], bilder = art.bilder.map(schauBild), x = c.getContext('2d');
+  const dpr = Math.min(2, devicePixelRatio || 1), t0 = performance.now() - 4000;
+  let lauf = 0, an = true;
+  const schritt = () => {
+    if (!an) return;
+    const w = c.clientWidth, h = c.clientHeight;
+    const fertig = w > 0 && bilder.every((im) => im.complete && im.naturalWidth);
+    if (fertig) {
+      if (c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)) { c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); }
+      x.setTransform(dpr, 0, 0, dpr, 0, 0);
+      art.malen(x, w, h, ruhig ? 6 : (performance.now() - t0) / 1000, bilder, b.ton);
+      if (!laufend || ruhig) { an = false; return; }
+    }
+    lauf = requestAnimationFrame(schritt);
+  };
+  lauf = requestAnimationFrame(schritt);
+  return () => { an = false; cancelAnimationFrame(lauf); };
+}
+function grundMalenSchau(x, w, h, ton, mitte) {
+  x.fillStyle = '#0b0a1a'; x.fillRect(0, 0, w, h);
+  const g = x.createRadialGradient(mitte[0], mitte[1], 0, mitte[0], mitte[1], Math.max(w, h) * 0.62);
+  g.addColorStop(0, `rgba(${ton.join(',')},0.24)`); g.addColorStop(0.45, `rgba(${ton.join(',')},0.07)`); g.addColorStop(1, 'rgba(11,10,26,0)');
+  x.fillStyle = g; x.fillRect(0, 0, w, h);
+}
+function radMalen(x, w, h, t, [zeit, form, farbe, kern], ton) {
+  const cx = w / 2, cy = h * 0.5, R = Math.min(h * 0.84, w * 0.52) / 2;
+  grundMalenSchau(x, w, h, ton, [cx, cy]);
+  // Schatten unter dem schwebenden Rad
+  x.save(); x.translate(cx, cy + R * 1.04); x.scale(1, 0.12);
+  const s = x.createRadialGradient(0, 0, 0, 0, 0, R * 0.9); s.addColorStop(0, 'rgba(0,0,0,0.55)'); s.addColorStop(1, 'rgba(0,0,0,0)');
+  x.fillStyle = s; x.beginPath(); x.arc(0, 0, R * 0.9, 0, Math.PI * 2); x.fill(); x.restore();
+  // die drei Ringe drehen gegeneinander (die Bilder sind 720 px, der Rand des Zeitrings liegt bei 0.96 der halben Breite)
+  const k = R / 0.96, ring = (im, w0) => { x.save(); x.translate(cx, cy); x.rotate(w0); x.drawImage(im, -k, -k, k * 2, k * 2); x.restore(); };
+  ring(zeit, t * 0.05); ring(form, -t * 0.08 + 0.3); ring(farbe, t * 0.13 - 0.2); ring(kern, 0);
+  // Lichtrand: ein feiner Bogen, der langsam um das Rad wandert, und ein Glanzfleck oben links
+  x.save(); x.translate(cx, cy);
+  const a0 = t * 0.35;
+  for (const [breite, alpha] of [[3.5, 0.08], [1, 0.55]]) {
+    x.lineWidth = breite; x.strokeStyle = `rgba(255,236,220,${alpha})`;
+    x.beginPath(); x.arc(0, 0, R * 0.995, a0, a0 + 0.9); x.stroke();
+  }
+  x.lineWidth = 0.75; x.strokeStyle = `rgba(${ton.join(',')},0.5)`; x.beginPath(); x.arc(0, 0, R * 0.995, 0, Math.PI * 2); x.stroke();
+  x.globalCompositeOperation = 'screen';
+  const gl = x.createRadialGradient(-R * 0.42, -R * 0.5, 0, -R * 0.42, -R * 0.5, R * 0.9);
+  gl.addColorStop(0, 'rgba(255,255,255,0.13)'); gl.addColorStop(1, 'rgba(255,255,255,0)');
+  x.fillStyle = gl; x.beginPath(); x.arc(0, 0, R, 0, Math.PI * 2); x.fill();
+  x.restore();
+}
 let praes = 0, glasK = 1;
 // Mit Grafikkarte rechnet der Shader Licht und Glas (0.7, Christian: «Licht wird Glas»); die HTML-Flächen bleiben
 // unsichtbar darüber liegen, damit man tippen und mit der Tastatur hinkommt.
 const glasZ = { praes: 0, strahl: 0, ziel: [0, 0, 0], rect: [0, 0, 0, 0], funkel: 0 };
 const schriftTex = [];
 function schriftBauen() {
+  namenEinpassen();
   flaechen.forEach((el, i) => {
     const pw = el.offsetWidth, ph = el.offsetHeight;
     const c = document.createElement('canvas'); c.width = Math.round(pw * D); c.height = Math.round(ph * D);
@@ -773,7 +1168,7 @@ function projizierenGlas(zustand, soll, f, mu, gx, gy, rr) {
   // 0.9: keine Strahlen, keine Scheibe. Das Werk zeigt sich im Stein; darunter stehen nur Name, Satz und Verweis.
   if (soll) glasK = zustand;
   const ps = sanft(praes), el = flaechen[glasK - 1];
-  const pw = el.offsetWidth, ph = el.offsetHeight, ruheY = gy + rr * 1.18 + ph / 2 - 10;
+  const pw = el.offsetWidth, ph = el.offsetHeight, ruheY = Math.max(gy + rr * 1.3 + ph / 2, H * 0.618);   // goldener Schnitt: Stein auf 0.382, Name auf 0.618
   glasZ.strahl = 0; glasZ.praes = 0;
   flaechen.forEach((e, i) => {
     const da = i + 1 === glasK ? ps * Math.max(0, (mu - 0.5) / 0.5) : 0, aktiv = da > 0.95;
@@ -855,7 +1250,7 @@ function tempoMessen(ms, dt) {
 
 // ---------- Lauf ----------
 let anlauf = [];
-let letzteMs = 0, ersterLauf = true, zustandGezeigt = -1, blitz = 0, gelandet = false;
+let letzteMs = 0, ersterLauf = true, zustandGezeigt = -1, blitz = 0, gelandet = false, kreisel = 0, stern = 0;
 function bild(ms) {
   requestAnimationFrame(bild);
   if (document.hidden || !lay) return;
@@ -883,10 +1278,14 @@ function bild(ms) {
   const flug = AUFTAKT ? ausrollen((t - 0.9) / 1.5) : 1;
   if (!gelandet && flug >= 1) { gelandet = true; blitz = 1; document.body.classList.add('bereit'); }
   blitz *= Math.pow(0.93, f);
+  // 0.19: auf dem i ruhend dreht der Stein langsam um sich (eine Umdrehung in rund 22 s, Christian: «ein wenig schneller») und strahlt fein aus
+  const amI = A === 0 && fr < 0.02 && !gezogen && !frei.an && menu < 0.02 && gelandet;
+  stern += ((amI && !ruhig ? 1 : 0) - stern) * (1 - Math.pow(amI ? 0.985 : 0.9, f));
+  kreisel += (f / 60) * 0.28 * (ruhig ? 0 : Math.max(stern, 1 - sanft(menu)));
 
   const ease = (x) => x * x * (3 - 2 * x), e = ease(fr);
   const gA = lay.saetze[A].gem, gB = lay.saetze[B].gem;
-  const gr = { x: gA.x + (gB.x - gA.x) * e, y: gA.y, r: lay.gemR }, grossR = Math.min(W, H) * 0.11;
+  const gr = { x: gA.x + (gB.x - gA.x) * e, y: gA.y + (gB.y - gA.y) * e, r: gA.r + (gB.r - gA.r) * e }, grossR = Math.min(W, H) * 0.11;
   // Menü: der Stein steigt gross über die Mitte und kehrt beim zweiten Tippen an seinen Platz zurück
   // langsam gleiten (Christian: «langsamer in seine Position»)
   menu += ((menuAuf ? 1 : 0) - menu) * (1 - Math.pow(0.965, f));
@@ -900,9 +1299,18 @@ function bild(ms) {
   const auftaktDreh = AUFTAKT ? (1 - ausrollen(ta)) * 5.5 : 0;
   // im offenen Menü dreht der Stein nicht von selbst: die Flächen um ihn stehen still, bis man ihn dreht
   const atem = ruhig ? 0 : 1 - mu * 0.7;
-  const gier = -phi + auftaktDreh + atem * 0.18 * Math.sin(t * 0.45);
+  // frei gedreht: Schwung klingt aus; nach einer Weile Ruhe kehrt er in die nächste gleichwertige Lage zurück (achtzählig)
+  if (!frei.an) {
+    frei.g += frei.vg * f; frei.n += frei.vn * f;
+    const daempf = Math.pow(0.955, f); frei.vg *= daempf; frei.vn *= daempf;
+    if (performance.now() - frei.los > 2600 && Math.abs(frei.vg) + Math.abs(frei.vn) < 0.004) {
+      const z = (1 - Math.pow(0.975, f)), A8 = Math.PI / 4, V = Math.PI * 2;
+      frei.g += (Math.round(frei.g / A8) * A8 - frei.g) * z; frei.n += (Math.round(frei.n / V) * V - frei.n) * z;
+    }
+  }
+  const gier = -phi + auftaktDreh + atem * 0.18 * Math.sin(t * 0.45) + frei.g + kreisel;
   // im Menü kippt der Stein zur Betrachterin: man schaut von oben durch seine Tafel
-  const neig = 0.3 + atem * 0.08 * Math.sin(t * 0.31 + 1.0) + (1 - flug) * 0.35 + mu * 0.95;
+  const neig = 0.3 + atem * 0.08 * Math.sin(t * 0.31 + 1.0) + (1 - flug) * 0.35 + mu * 0.95 + frei.n;
   const roll = atem * 0.05 * Math.sin(t * 0.23);
   ebenenDrehen(gier, neig, roll);
 
@@ -938,10 +1346,10 @@ function bild(ms) {
   gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, leerTex); gl.uniform1i(ort.uLeer, 2);
   gl.uniform3fv(ort.uN, ebenenW); gl.uniform1fv(ort.uR, abstandW); gl.uniform1i(ort.uK, K);
   gl.uniform1f(ort.uF, fr); gl.uniform1f(ort.uWirbel, ruhig ? Math.min(wirbel, 0.4) : wirbel);
-  gl.uniform1f(ort.uZeigen, zeigen); gl.uniform1f(ort.uBlitz, ruhig ? 0 : blitz);
+  gl.uniform1f(ort.uZeigen, zeigen); gl.uniform1f(ort.uBlitz, ruhig ? 0 : blitz); gl.uniform1f(ort.uStern, stern); gl.uniform1f(ort.uZeit, t); gl.uniform1f(ort.uKreisel, kreisel);
   gl.uniform2f(ort.uGem, gx * D, (H - gy) * D); gl.uniform1f(ort.uGemR, rr * D);
-  gl.uniform2f(ort.uFeld, gx * D, (H - gy) * D); gl.uniform1f(ort.uGross, Math.max(W, H) * 0.55 * D); gl.uniform1f(ort.uDimm, sanft(menu));
-  gl.uniform2f(ort.uAufl, Bw, Bh); gl.uniform1f(ort.uRad, huelle * 1.03); gl.uniform1f(ort.uT, t % 100); gl.uniform1f(ort.uFeuer, 2.3 + mu * 1.4);
+  gl.uniform2f(ort.uFeld, gx * D, (H - gy) * D); gl.uniform1f(ort.uGross, Math.max(W, H) * 0.34 * D); gl.uniform1f(ort.uDimm, sanft(menu));
+  gl.uniform2f(ort.uAufl, Bw, Bh); gl.uniform1f(ort.uRad, huelle * 1.03); gl.uniform1f(ort.uT, t % 100); gl.uniform1f(ort.uFeuer, 2.3);
   const tonG = BEREICHE[glasK - 1].ton;
   gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, schriftTex[glasK - 1]); gl.uniform1i(ort.uSchrift, 3);
   gl.uniform4f(ort.uScheibe, ...glasZ.rect); gl.uniform1f(ort.uPraes, glasZ.praes); gl.uniform1f(ort.uStrahl, ruhig ? glasZ.strahl * 0.6 : glasZ.strahl);
@@ -971,7 +1379,7 @@ function nachbearbeiten(t, sz) {
   gl.useProgram(zusammen.p);
   gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, sz.tex); gl.uniform1i(zusammen.ort.uSzene, 0);
   gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, gA.tex); gl.uniform1i(zusammen.ort.uGlow, 1);
-  gl.uniform1f(zusammen.ort.uGlowStaerke, 1.35); gl.uniform1f(zusammen.ort.uT, t % 100);
+  gl.uniform1f(zusammen.ort.uGlowStaerke, 1.35 - sanft(menu) * 0.4); gl.uniform1f(zusammen.ort.uT, t % 100);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   gl.activeTexture(gl.TEXTURE0);
 }

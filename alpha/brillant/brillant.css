@@ -46,5 +46,78 @@ body { font: 500 15px/1.4 'Brillant Display', system-ui, sans-serif; -webkit-fon
 #leinwand[hidden] { display: none; }
 /* 0.9 Facette als Fenster: mit Grafikkarte steht unter dem Stein nur Schrift, ohne Scheibe */
 .fenster .projektion { background: none; -webkit-backdrop-filter: none; backdrop-filter: none; -webkit-mask-image: none; mask-image: none; padding-top: 18px; }
-/* 0.12: Name, Satz und Verweis, keine Zahl (Christian) */
-.fenster .p-nr { display: none; }
+/* 0.13: nur der Name, er selbst ist der Verweis (Christian) */
+.fenster .p-nr, .fenster .p-satz, .fenster .p-mehr { display: none; }
+
+/* 0.23 Vitrine im Raum (Christian, 20.11.2026: «dynamischer, schwebender, dreidimensionaler»). Die Karten stehen im
+   Halbkreis im Raum; Lage, Schweben, Neigung, Licht und Parallaxe setzt brillant.js je Bild. */
+.vitrine { position: fixed; inset: 0; z-index: 50; overflow: hidden; touch-action: none; --auf: 0;
+  background: radial-gradient(90% 70% at 50% 46%, rgba(30, 26, 60, 0.35), rgba(6, 5, 16, 0.0) 70%), rgba(7, 6, 18, calc(var(--auf) * 0.66));
+  -webkit-backdrop-filter: blur(calc(var(--auf) * 20px)) saturate(1.1); backdrop-filter: blur(calc(var(--auf) * 20px)) saturate(1.1); }
+.vitrine[hidden] { display: none; }
+.v-raum { position: absolute; inset: 0; perspective: 1100px; perspective-origin: 50% 42%; transform-style: preserve-3d; cursor: grab; }
+.v-raum:active { cursor: grabbing; }
+.v-karte { position: absolute; left: 50%; top: 47%; width: min(84vw, 380px); margin-left: calc(min(84vw, 380px) / -2); translate: 0 -50%;
+  transform-style: preserve-3d; will-change: transform, opacity; opacity: 0; -webkit-user-select: none; user-select: none; }
+.v-koerper { position: relative; border-radius: 22px; transform-style: preserve-3d;
+  background: linear-gradient(165deg, rgba(var(--ton), 0.2), rgba(var(--ton), 0.05) 42%, rgba(255,255,255,0.0) 70%), linear-gradient(#141230, #0d0b20);
+  box-shadow: 0 50px 90px -40px rgba(0, 0, 0, 0.9), 0 30px 120px -50px rgba(var(--ton), 0.55), 0 1px 0 rgba(255,255,255,0.08) inset; }
+/* die Fassung: eine irisierende Haarlinie, die langsam umläuft */
+@property --v-winkel { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+.v-koerper::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none; z-index: 4;
+  background: conic-gradient(from var(--v-winkel), rgba(255,255,255,0.12), rgba(var(--ton), 0.8), rgba(150, 220, 255, 0.4), rgba(255, 210, 240, 0.55), rgba(255,255,255,0.12) 60%, rgba(var(--ton), 0.55), rgba(255,255,255,0.12));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude;
+  animation: v-fassung 14s linear infinite; }
+@keyframes v-fassung { to { --v-winkel: 360deg; } }
+.v-buehne { position: relative; aspect-ratio: 16 / 10; border-radius: 22px 22px 6px 6px; overflow: hidden; background: #07060f; }
+.v-bild { position: absolute; inset: -5%; will-change: transform; }
+.v-bild > img, .v-bild > video, .v-bild > canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.v-bild > video { opacity: 0; transition: opacity 0.6s ease; }
+.v-bild > video.laeuft { opacity: 1; }
+.v-bild.hoch > img, .v-bild.hoch > video { object-position: 50% 42%; }
+.v-buehne::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(to bottom, rgba(0,0,0,0) 58%, rgba(10, 9, 24, 0.6)), radial-gradient(130% 90% at 50% 40%, rgba(0,0,0,0) 60%, rgba(5, 4, 14, 0.42)); }
+.v-licht { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen; z-index: 1; }
+/* einmal beim Nach-vorn-Kommen: ein schmales, irisierendes Licht zieht schräg über das Bild */
+.v-buehne::before { content: ''; position: absolute; inset: -20% -60%; z-index: 2; pointer-events: none; opacity: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.24) 48.5%, rgba(190, 225, 255, 0.17) 50%, rgba(255, 220, 190, 0.08) 51.5%, transparent 56%);
+  transform: translateX(-60%); mix-blend-mode: screen; }
+.v-karte.glanzlauf .v-buehne::before { animation: v-glanz 1.7s cubic-bezier(.3,.1,.2,1) 0.25s 1 both; }
+@keyframes v-glanz { 0% { transform: translateX(-60%); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateX(60%); opacity: 0; } }
+/* holografischer Schimmer über der ganzen Karte, folgt der Neigung (Lage in brillant.js) */
+.v-glanz { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 3; mix-blend-mode: soft-light; background-size: 260% 260%;
+  background-image: linear-gradient(115deg, transparent 30%, rgba(255, 170, 210, 0.5) 42%, rgba(170, 230, 255, 0.55) 50%, rgba(255, 240, 180, 0.45) 58%, transparent 70%); }
+.v-dunkel { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 5; transform: translateZ(40px); background: rgba(7, 6, 18, 1); opacity: 0; }
+/* Schrift eine Ebene vor dem Glas */
+.v-text { padding: 20px 22px 22px; display: flex; flex-direction: column; gap: 8px; transform: translateZ(28px); }
+.v-kopf { margin: 0; font-size: 11.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--hell); }
+.v-name { margin: 0; font-weight: 600; font-size: clamp(28px, 8vw, 40px); line-height: 1.02; letter-spacing: -0.024em; color: #f7f5fc; text-wrap: balance;
+  text-shadow: 0 12px 30px rgba(0, 0, 0, 0.45); }
+.v-satz { margin: 2px 0 0; font-size: 15px; line-height: 1.5; color: rgba(214, 210, 228, 0.82); text-wrap: pretty; }
+.v-zeile { display: flex; margin-top: 12px; }
+.v-oeffnen { display: inline-flex; align-items: center; gap: 8px; padding: 11px 20px 11px 22px; border-radius: 999px; color: #fbfaff; text-decoration: none; font-size: 15px; letter-spacing: 0.02em;
+  background: linear-gradient(180deg, rgba(var(--ton), 0.36), rgba(var(--ton), 0.16)); box-shadow: 0 0 0 1px rgba(var(--ton), 0.6) inset, 0 12px 30px -12px rgba(var(--ton), 0.9);
+  transform: translateZ(12px); transition: background 0.3s, box-shadow 0.3s; }
+.v-oeffnen:hover { background: linear-gradient(180deg, rgba(var(--ton), 0.52), rgba(var(--ton), 0.24)); box-shadow: 0 0 0 1px rgba(var(--ton), 0.85) inset, 0 14px 36px -12px rgba(var(--ton), 1); }
+.v-karte:not(.vorn) .v-oeffnen { pointer-events: none; }
+.v-karte:not(.vorn) { cursor: pointer; }
+/* Schatten auf dem Boden unter der Karte */
+.v-schatten { position: absolute; left: 8%; right: 8%; top: 100%; height: 34px; border-radius: 50%; pointer-events: none; transform-origin: 50% 0;
+  background: radial-gradient(closest-side, rgba(var(--ton), 0.32), rgba(0, 0, 0, 0.5) 45%, rgba(0, 0, 0, 0)); filter: blur(10px); }
+.v-steuer { position: absolute; left: 0; right: 0; bottom: max(18px, env(safe-area-inset-bottom)); display: flex; justify-content: center; gap: 28px; opacity: var(--auf); }
+.v-steuer button, .v-zu { font: inherit; color: rgba(238, 235, 248, 0.78); background: none; border: 0; width: 48px; height: 48px; border-radius: 50%; font-size: 24px; line-height: 1; cursor: pointer; transition: color 0.3s, background 0.3s; }
+.v-steuer button { box-shadow: 0 0 0 1px rgba(255,255,255,0.12) inset; }
+.v-steuer button:hover, .v-zu:hover { color: #fff; background: rgba(255,255,255,0.06); }
+.v-zu { position: absolute; top: max(8px, env(safe-area-inset-top)); right: max(8px, env(safe-area-inset-right)); font-size: 30px; font-weight: 400; opacity: var(--auf); z-index: 200; }
+.v-oeffnen:focus-visible, .v-steuer button:focus-visible, .v-zu:focus-visible { outline: 1px solid var(--text); outline-offset: 3px; }
+/* grosse Bildschirme: breite Karte, Bild links, Text rechts */
+@media (min-width: 820px) {
+  .v-karte { width: min(68vw, 860px); margin-left: calc(min(68vw, 860px) / -2); top: 46%; }
+  .v-koerper { display: grid; grid-template-columns: 1.45fr 1fr; align-items: stretch; }
+  .v-buehne { border-radius: 22px 6px 6px 22px; }
+  .v-buehne::after { background: linear-gradient(to right, rgba(0,0,0,0) 70%, rgba(10, 9, 24, 0.5)), radial-gradient(130% 90% at 50% 50%, rgba(0,0,0,0) 60%, rgba(5, 4, 14, 0.4)); }
+  .v-text { padding: 36px 36px 30px 46px; justify-content: center; }
+  .v-name { font-size: clamp(32px, 3.4vw, 48px); }
+  .v-raum { perspective: 1600px; }
+}
+@media (prefers-reduced-motion: reduce) { .v-koerper::before { animation: none; } }

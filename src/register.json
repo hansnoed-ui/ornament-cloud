@@ -149,6 +149,24 @@
    "kurz": "Prototyp: das Bild zuerst durchscheinend im Licht; wo der Daumen hält, bleibt nur, was interessiert. Dazu Wasser und Körner."
   },
   {
+   "id": "deleuze-diagramm",
+   "name": "Diagramm (the deleuzian scheme)",
+   "tuer": "spielen-denken",
+   "art": "App",
+   "status": "direktlink",
+   "adresse": "alpha/deleuze/diagramm/",
+   "kurz": "Prototyp: mit dem Daumen durch das eigene Bild wischen wie Bacon, Farbfäden fliessen lassen wie Pollock oder Kräfte setzen wie in Foucaults Karte."
+  },
+  {
+   "id": "deleuze-figur",
+   "name": "Figur und Fläche (the deleuzian scheme)",
+   "tuer": "spielen-denken",
+   "art": "App",
+   "status": "direktlink",
+   "adresse": "alpha/deleuze/figur/",
+   "kurz": "Prototyp: mit dem Daumen ein Rund um die Figur ziehen, ringsum wird das Bild zu Bacons flacher Farbe; der Körper schreit, verformt sich oder wird zu Fleisch."
+  },
+  {
    "id": "deleuze-start",
    "name": "the deleuzian scheme (Masterseite)",
    "tuer": "spielen-denken",
@@ -164,7 +182,7 @@
    "art": "App",
    "status": "direktlink",
    "adresse": "alpha/brillant/",
-   "kurz": "Beispiel-Website: der Punkt hinter «Brillante Ideen» ist ein Brillant; dreht man ihn, legen sich die Bereiche als Glasschichten über die Seite."
+   "kurz": "Beispiel-Website: der i-Punkt in «Brillante Ideen» ist ein Brillant; im Menü zeigt er drei Anwendungen (the deleuzian scheme, Das Dritte Rad, Animations) als Karten im Raum."
   },
   {
    "id": "kunsttheorie",
@@ -430,14 +448,23 @@
    "kurz": "Die Anwendung selbst."
   },
   {
+   "id": "lab-handy",
+   "name": "ornament.lab · Handy",
+   "tuer": "atelier",
+   "art": "Werkzeug",
+   "status": "direktlink",
+   "adresse": "alpha/lab/handy/",
+   "kurz": "Das Lab am Handy: sechs Bildschirme mit Pixel-Schaltern, dieselben Module wie das Lab."
+  },
+  {
    "id": "composer",
    "name": "ORNAMENT COMPOSER",
    "tuer": "atelier",
    "art": "Werkzeug",
    "status": "verlinkt",
    "adresse": "alpha/composer/",
-   "kurz": "Spuren, Plugins und Stile (lucerne, bienne, Grooves).",
-   "kurzEn": "Tracks, plugins and styles (lucerne, bienne, grooves).",
+   "kurz": "Spuren erzeugen, schneiden und mischen: Synthesizer, Perkussion, Naturklänge und eigene Plugins.",
+   "kurzEn": "Generate, cut and mix tracks: synthesizers, percussion, nature sounds and custom plugins.",
    "atelier": true
   },
   {

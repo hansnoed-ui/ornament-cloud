@@ -265,6 +265,10 @@ input[type="range"]:focus-visible { outline: none; }
 .export button { text-decoration: underline; text-underline-offset: 3px; color: inherit; }
 .ohne-webgl { padding: 48px var(--rand); max-width: 60ch; }
 
+/* ---------- Handy-Teile (Reiter, Effektleiste, Dock, Meldung): nur bis 720 px, sonst unsichtbar ---------- */
+.reiter, .dock, .toast, .effekte-platz, .auflage, .mass { display: none; }
+.buehne-platz { display: contents; }
+
 /* ---------- Laptop schmal und Tablet ---------- */
 @media (max-width: 1180px) {
   .zeile { display: none; }
@@ -311,6 +315,105 @@ input[type="range"]:focus-visible { outline: none; }
   .kolophon { grid-template-columns: 1fr; gap: 16px; }
   .export { left: var(--rand); right: var(--rand); width: auto; bottom: calc(68px + env(safe-area-inset-bottom, 0px)); }
 }
+/* ---------- Handy: Mischpult zum Live-Mischen (Wunsch vom 20. November 2026: «dass das live mischen der effekte mühelos gelingt.
+   Es müssen nicht alle effekte gleichzeitig sichtbar sein»; Runde 2 am selben Abend: «über dem bild … oberhalb (und unterhalb). Damit das
+   Bild nicht wegscrollt bei der Bedienung. Darüber zusätzlich auch möglich», «Regler mit menu auswählen») ----------
+   Alles zum Mischen passt auf einen Bildschirm, ohne zu rollen: oben die Reiter (Ebene 1 · 2 · 3, Mehr), dann die Bühne so gross, wie
+   es geht, unten auf ihr halbdurchsichtig ein Regler mit Menü, unter ihr die Effekte der Ebene zum Wischen, zuunterst das Dock. Was
+   seltener gebraucht wird (Reihenfolge, Bild, Format, Sichern), steht darunter. */
+@media (max-width: 720px) {
+  .ansichten { display: none; }
+  :root[data-ansicht="info"] .ansichten { display: grid; }
+  :root[data-ansicht="info"] .dock { display: none; }
+  .pult-haupt { display: none; }
+  body { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
+  /* Platz der Bühne: Bildschirm ohne Kopf, Reiter, Effekte, Dock und Abstände (zusammen 250 px) */
+  :root { --buehne-h: max(240px, calc(100svh - 250px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px))); }
+  .pult-raster { padding-top: 0; gap: 0; }
+  .pult-raster { grid-template-columns: minmax(0, 1fr); }
+  .pult-buehne { gap: 6px; width: 100%; min-width: 0; padding-top: 0; grid-template-columns: minmax(0, 1fr); }
+  .pult-buehne .rahmen { width: min(100%, calc(var(--buehne-h) * (var(--ar)))); }
+  .pult-leiste { grid-template-columns: 1fr; }
+  .pult-leiste .uhr, .pult-leiste .stand { display: none; }
+  /* Reiter über der Bühne: drei Ebenen mit ihrem Effekt, dann Mehr; der gewählte trägt eine Linie, eine laufende Ebene den Akzentpunkt */
+  .reiter { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) auto; width: 100%; margin-bottom: 4px; }
+  .reiter button { position: relative; display: grid; align-content: center; gap: 1px; min-height: 44px; padding: 4px 6px 6px; min-width: 0; color: var(--leise);
+    font-family: var(--mono); font-size: 12px; font-weight: 500; line-height: 1.2; -webkit-tap-highlight-color: transparent; }
+  .reiter button small { display: flex; align-items: center; gap: 6px; font-size: 10px; letter-spacing: .08em; }
+  .reiter button small::after { content: ""; width: 5px; height: 5px; border-radius: 50%; border: 1px solid currentColor; opacity: .7; }
+  .reiter button.laeuft small::after { background: var(--akzent); border-color: var(--akzent); opacity: 1; }
+  .reiter button.leer-ebene small::after { display: none; }
+  .reiter button span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .reiter button.leer-ebene span { opacity: .6; }
+  .reiter button.extra { padding: 4px 12px 6px; align-content: end; }
+  .reiter button[aria-pressed="true"] { color: var(--tinte); }
+  .reiter button[aria-pressed="true"]::after { content: ""; position: absolute; left: 6px; right: 6px; bottom: 0; height: 2px; background: var(--tinte); }
+  /* Regler auf der Bühne: halbdurchsichtig unten, das Menü wählt, welcher; Wahlen mit Stufen als Knöpfe */
+  .buehne-platz { display: grid; justify-items: center; width: 100%; position: relative; }
+  .buehne-platz > .rahmen, .buehne-platz > .auflage { grid-area: 1 / 1; }
+  .mass { display: block; position: absolute; top: 0; left: 0; width: 0; height: var(--buehne-h); visibility: hidden; pointer-events: none; }
+  .auflage { position: relative; z-index: 1; align-self: end; width: min(100%, calc(var(--buehne-h) * (var(--ar)))); display: grid; gap: 2px; padding: 8px 12px 6px;
+    background: rgba(8, 9, 12, .58); color: #e9ecf2; font-family: var(--mono); font-size: 12px; }
+  /* breite Formate (1:1, 16:9, oder 4:5 auf hohen Handys): unter der Bühne ist Platz, der Regler steht dort und deckt nichts ab */
+  .buehne-platz.unter > .auflage { grid-area: 2 / 1; width: 100%; padding: 6px 0 0; background: none; color: var(--tinte); }
+  .buehne-platz.unter .auflage select { background-color: var(--flaeche); color: var(--tinte); border-color: var(--linie); }
+  .buehne-platz.unter .auflage output { color: var(--leise); }
+  .buehne-platz.unter .auflage-an { border-color: var(--linie); color: var(--leise); }
+  .buehne-platz.unter .auflage-an[aria-pressed="true"] { color: var(--akzent); border-color: var(--tinte); }
+  .buehne-platz.unter .auflage input[type="range"]::-webkit-slider-runnable-track { background: var(--linie); }
+  .buehne-platz.unter .auflage input[type="range"]::-moz-range-track { background: var(--linie); }
+  .buehne-platz.unter .auflage input[type="range"]::-webkit-slider-thumb { background: var(--tinte); }
+  .buehne-platz.unter .auflage input[type="range"]::-moz-range-thumb { background: var(--tinte); }
+  .buehne-platz.unter .auflage-stufen button { border-color: var(--linie); color: var(--leise); }
+  .buehne-platz.unter .auflage-stufen button[aria-pressed="true"] { color: var(--tinte); border-color: var(--tinte); }
+  .auflage[hidden] { display: none; }
+  .auflage-kopf { display: flex; align-items: center; gap: 10px; }
+  .auflage-menue { flex: 1; min-width: 0; }
+  .auflage select { width: auto; max-width: 100%; min-height: 36px; padding: 6px 30px 6px 10px; background-color: rgba(8, 9, 12, .5); color: #e9ecf2;
+    border-color: rgba(233, 236, 242, .3); font-size: 13px; }
+  .auflage output { color: rgba(233, 236, 242, .8); font-size: 13px; }
+  .auflage-an { min-width: 48px; min-height: 36px; border: 1px solid rgba(233, 236, 242, .3); border-radius: var(--radius); text-align: center; color: rgba(233, 236, 242, .7); }
+  .auflage-an[aria-pressed="true"] { color: #c9ff3d; border-color: #e9ecf2; }
+  .auflage input[type="range"] { height: 40px; touch-action: none; }
+  .auflage input[type="range"]::-webkit-slider-runnable-track { height: 2px; background: rgba(233, 236, 242, .35); }
+  .auflage input[type="range"]::-moz-range-track { height: 2px; background: rgba(233, 236, 242, .35); }
+  .auflage input[type="range"]::-webkit-slider-thumb { width: 24px; height: 24px; margin-top: -11px; background: #e9ecf2; }
+  .auflage input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; background: #e9ecf2; }
+  .auflage input[type="range"]:active::-webkit-slider-thumb { background: #c9ff3d; }
+  .auflage-stufen { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 4px 0 2px; }
+  .auflage-stufen::-webkit-scrollbar { display: none; }
+  .auflage-stufen button { flex: none; min-height: 36px; padding: 6px 12px; border: 1px solid rgba(233, 236, 242, .3); border-radius: var(--radius); color: rgba(233, 236, 242, .75); white-space: nowrap; }
+  .auflage-stufen button[aria-pressed="true"] { color: #e9ecf2; border-color: #e9ecf2; }
+  .auflage-stufen button[aria-pressed="true"]::before { content: ""; display: inline-block; width: 6px; height: 6px; margin-right: 8px; border-radius: 50%; background: #c9ff3d; vertical-align: middle; }
+  /* Effektleiste unter der Bühne: alle Effekte in einer Zeile zum Wischen, antippen wechselt sofort */
+  .effekte-platz { display: block; width: 100%; min-width: 0; min-height: 0; }
+  .effekte { position: relative; display: flex; flex-wrap: nowrap; gap: 6px; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; scrollbar-width: none;
+    margin: 0 calc(var(--rand) * -1); padding: 2px var(--rand) 2px; scroll-padding: 0 var(--rand);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 var(--rand), #000 calc(100% - 28px), transparent 100%);
+            mask-image: linear-gradient(90deg, transparent 0, #000 var(--rand), #000 calc(100% - 28px), transparent 100%); }
+  .effekte::-webkit-scrollbar { display: none; }
+  .effekte button { flex: none; scroll-snap-align: start; min-height: 44px; white-space: nowrap; }
+  .effekte button.keiner { border-style: dashed; }
+  /* darunter: bei einer Ebene nur ihre Reihenfolge, bei «Mehr» Bild, Format, Bewegung, Grund, Teilen und Sichern */
+  .pult { gap: 22px; padding: 20px 0 8px; max-width: none; }
+  .pult[data-reiter^="e"] { display: none; }   /* eine Ebene: alles steht an der Bühne (Effekt, Regler, an/aus, Platz im Menü) */
+  .pult [data-teil="ebenen"] { display: none; }
+  .wahl button { min-height: 40px; }
+  .tasten .knopf.leise { border-color: var(--linie); min-height: 44px; flex: 1 1 auto; }
+  .zeile2 { grid-template-columns: 1fr; }
+  /* Dock: Neu mischen und MP4 in Daumenweite, rechts der Weg zur Info */
+  .dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 8; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; align-items: center;
+    padding: 10px var(--rand) calc(10px + env(safe-area-inset-bottom, 0px)); background: var(--grund); border-top: 1px solid var(--linie); }
+  .dock .knopf.gross { min-height: 52px; padding: 8px 18px; white-space: nowrap; }
+  .dock .knopf.voll { justify-content: center; }
+  .dock .knopf.voll:active { background: var(--akzent); border-color: var(--akzent); color: var(--dunkel); }
+  .dock-info { display: grid; place-items: center; min-width: 52px; min-height: 52px; padding: 6px 4px; font-family: var(--mono); font-size: 12px; font-weight: 500; color: var(--leise); text-align: center; }
+  .toast { position: fixed; left: var(--rand); right: var(--rand); bottom: calc(84px + env(safe-area-inset-bottom, 0px)); z-index: 9; display: block; margin: 0;
+    padding: 10px 14px; border-radius: 8px; background: var(--tinte); color: var(--grund); font-size: 13px; line-height: 1.4;
+    opacity: 1; transform: none; transition: opacity .3s, transform .3s; overflow-wrap: anywhere; }
+  .toast[hidden] { display: block; opacity: 0; transform: translateY(8px); pointer-events: none; }
+  .export { bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+}
 /* schmale Handys: der Schalter braucht den Platz des Seitennamens (die Marke bleibt) */
 @media (max-width: 420px) { .kurz { display: none; } }
 </style>
@@ -339,6 +442,8 @@ input[type="range"]:focus-visible { outline: none; }
   <section id="mischpult" class="ansicht" aria-label="Mezclador">
     <div class="pult-raster">
       <div class="pult-buehne">
+                <nav class="reiter" id="pult-reiter"></nav>
+        <div class="buehne-platz" id="buehne-platz">
         <div class="rahmen ohne" id="buehne">
           <canvas id="pult-bild" role="img" aria-label="Animación mezclada" title="Clic: pausar"></canvas>
           <div class="leer" id="pult-leer">
@@ -348,31 +453,35 @@ input[type="range"]:focus-visible { outline: none; }
             <p class="hinweis">JPEG, PNG o WebP. Se queda en tu dispositivo hasta que guardes tu obra.</p>
           </div>
         </div>
+                <div class="auflage" id="pult-auflage" hidden></div>
+        <i class="mass" aria-hidden="true"></i>
+        </div>
         <div class="pult-leiste"><p class="uhr leise" id="pult-uhr">00:00,0 / 00:12</p><div class="fortschritt" aria-hidden="true"><i></i></div><p class="stand" id="pult-stand">Bucle</p></div>
+                <div class="effekte-platz" id="pult-effekte"></div>
         <div class="pult-haupt">
           <button type="button" class="knopf voll gross" id="pult-zufall"><span class="kreis" aria-hidden="true"></span>Mezclar de nuevo</button>
           <button type="button" class="knopf gross" id="pult-mp4">Descargar MP4</button>
         </div>
       </div>
-      <form class="pult" id="pult" onsubmit="return false">
-        <div class="gruppe"><h2>Imagen</h2><div class="wahl" id="pult-bilder"></div>
+      <form class="pult" id="pult" data-reiter="e0" onsubmit="return false">
+        <div class="gruppe" data-teil="bild"><h2>Imagen</h2><div class="wahl" id="pult-bilder"></div>
           <input type="file" id="pult-datei" accept="image/*" hidden>
           <p class="hinweis leise" id="pult-meldung">Tu imagen se queda en tu navegador. Solo «Guardar obra» la deposita con la mezcla en ornament.cloud.</p></div>
-        <div class="gruppe"><h2>Mostrar imagen</h2><div class="wahl" id="pult-zeigen"></div>
+        <div class="gruppe" data-teil="bild"><h2>Mostrar imagen</h2><div class="wahl" id="pult-zeigen"></div>
           <p class="hinweis leise">No: la imagen solo controla los efectos, se ve únicamente el efecto.</p></div>
-        <div class="gruppe"><h2>Formato</h2><div class="wahl" id="pult-format"></div>
+        <div class="gruppe" data-teil="bild"><h2>Formato</h2><div class="wahl" id="pult-format"></div>
           <p class="hinweis leise">La imagen llena siempre todo el formato. También vale para la imagen fija y el MP4 (1080 × 1350, 1080 × 1080, 1920 × 1080).</p></div>
-        <div class="gruppe"><h2>Movimiento</h2><div class="wahl" id="pult-lauf"></div>
+        <div class="gruppe" data-teil="bild"><h2>Movimiento</h2><div class="wahl" id="pult-lauf"></div>
           <div class="wahl" id="pult-laenge"></div>
           <p class="hinweis leise">Continuo: el efecto sigue avanzando en vez de ir y volver. La duración también vale para el MP4.</p></div>
-        <div class="gruppe"><h2>Fondo</h2><div class="wahl" id="pult-grund"></div></div>
-        <div id="pult-ebenen"></div>
-        <div class="tasten">
+        <div class="gruppe" data-teil="bild"><h2>Fondo</h2><div class="wahl" id="pult-grund"></div></div>
+        <div id="pult-ebenen" data-teil="ebenen"></div>
+        <div class="tasten" data-teil="sichern">
           <button type="button" class="knopf leise" id="pult-pause">Pausa</button>
           <button type="button" class="knopf leise" id="pult-bildpng">Imagen fija</button>
           <button type="button" class="knopf leise" id="pult-link">Copiar enlace</button>
         </div>
-        <div class="gruppe sichern"><h2>Guardar obra</h2>
+        <div class="gruppe sichern" data-teil="sichern"><h2>Guardar obra</h2>
           <div class="zeile2">
             <label class="feld"><span>Título (opcional)</span><input type="text" id="sichern-titel" maxlength="60" placeholder="Sin título" autocomplete="off"></label>
             <label class="feld"><span>Tu nombre</span><input type="text" id="sichern-name" maxlength="40" placeholder="¿Quién lo ha mezclado?" autocomplete="nickname"></label>
@@ -433,6 +542,12 @@ input[type="range"]:focus-visible { outline: none; }
   <span>Todo se calcula en el navegador. Solo las obras guardadas están en ornament.cloud.</span>
 </div></footer>
 
+<div class="dock" id="dock">
+  <button type="button" class="knopf voll gross" id="dock-zufall"><span class="kreis" aria-hidden="true"></span>Mezclar de nuevo</button>
+  <button type="button" class="knopf gross" id="dock-mp4">MP4</button>
+  <button type="button" class="dock-info" data-ansicht="info">Info</button>
+</div>
+<p class="toast" id="pult-toast" role="status" hidden></p>
 <div class="export" id="export" hidden role="status"><div class="export-zeile"><span id="export-text">MP4 · 0 %</span><button type="button" id="export-stop">Cancelar</button></div><div class="fortschritt" aria-hidden="true"><i></i></div></div>
-<script type="module" src="../seite.js?v=36"></script>   </body>
+<script type="module" src="../seite.js?v=38"></script>   </body>
 </html>

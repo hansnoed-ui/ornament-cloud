@@ -258,14 +258,57 @@ await check("Grafik setzt aus (5. November 2026, Handy: «Diese Seite braucht We
   await ctx.close();
 });
 
-await check("Handy: kein seitliches Scrollen in beiden Ansichten, die Ansichten als Leiste unten", async () => {
-  const { ctx, page } = await oeffne({ width: 360, height: 760 });
-  for (const a of ["mischpult", "info"]) {
-    await page.click(`[data-ansicht="${a}"]`);
-    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth), 0, a);
-  }
-  const lage = await page.evaluate(() => getComputedStyle(document.querySelector(".ansichten")).position);
-  assert.equal(lage, "fixed");
+await check("Handy (20. November 2026, live mischen): alles ums Bild auf einem Bildschirm (Reiter oben, Regler mit Menü auf oder unter der Bühne, Effekte darunter, Dock), kein seitliches Scrollen", async () => {
+  const { ctx, page } = await oeffne({ width: 360, height: 700 });
+  await page.setInputFiles("#pult-datei", BILD);
+  await page.waitForFunction(() => window.animationen.S.mix.bild === "eigen" && !document.querySelector("#buehne").classList.contains("ohne"));
+  await page.evaluate(() => { const a = window.animationen; a.S.mix = a.zufall(() => .37, a.S.mix.bild); document.querySelector("#pult-zufall").click(); });
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth), 0, "mischpult");
+  // ohne zu rollen sichtbar: Reiter, ganze Bühne, Regler, Effektleiste über dem Dock
+  const lage = await page.evaluate(() => {
+    const r = (s) => document.querySelector(s).getBoundingClientRect();
+    return { reiter: r("#pult-reiter").top, buehne: r("#buehne").bottom, effekte: r("#pult-effekte").bottom, dock: r("#dock").top, auflage: r("#pult-auflage").height };
+  });
+  assert.ok(lage.reiter > 0 && lage.effekte <= lage.dock + 1 && lage.buehne < lage.dock && lage.auflage > 0, JSON.stringify(lage));
+  // das Dock: Neu mischen ändert die Mischung
+  assert.ok(await page.locator("#dock-zufall").isVisible()); assert.ok(!(await page.locator("#pult-zufall").isVisible()));
+  const vorher = await page.evaluate(() => JSON.stringify(window.animationen.S.mix));
+  await page.click("#dock-zufall");
+  assert.notEqual(await page.evaluate(() => JSON.stringify(window.animationen.S.mix)), vorher);
+  // Reiter 2, Effekt aus der Leiste: landet sofort in der Ebene und im Reiter
+  await page.locator("#pult-reiter button").nth(1).click();
+  const name = await page.locator("#pult-effekte button").nth(3).textContent();
+  await page.locator("#pult-effekte button").nth(3).click();
+  assert.equal((await page.locator("#pult-reiter button").nth(1).locator("span").textContent()).trim(), name.trim());
+  // das Menü wählt den Regler; Mischmodus als Knöpfe; Platz schiebt die Ebene
+  const menue = page.locator("#pult-auflage select");
+  const namen = await menue.locator("option").allTextContents();
+  assert.ok(namen.includes("Deckkraft") && namen.includes("Mischmodus") && namen.includes("Platz"), namen.join(","));
+  await menue.selectOption({ label: "Deckkraft" });
+  await page.locator("#pult-auflage input[type=range]").fill("0.4");
+  assert.equal(await page.evaluate(() => window.animationen.S.mix.ebenen[1].deckkraft), 0.4);
+  await menue.selectOption({ label: "Mischmodus" });
+  await page.locator("#pult-auflage .auflage-stufen button", { hasText: "Differenz" }).click();
+  assert.equal(await page.evaluate(() => window.animationen.S.mix.ebenen[1].modus), "differenz");
+  await menue.selectOption({ label: "Platz" });
+  const effekt = await page.evaluate(() => window.animationen.S.mix.ebenen[1].effekt);
+  await page.locator("#pult-auflage .auflage-stufen button", { hasText: "Ebene 1" }).click();
+  assert.equal(await page.evaluate(() => window.animationen.S.mix.ebenen[0].effekt), effekt);
+  assert.equal(await page.evaluate(() => window.animationen.S.reiter), "e0");
+  // 1:1 lässt unter der Bühne Platz: der Regler steht dort statt darauf
+  await page.locator("#pult-reiter button").nth(3).click();
+  assert.ok(await page.locator("#pult-bilder").isVisible()); assert.ok(await page.locator("#pult-sichern").isVisible());
+  await page.locator("#pult-format button", { hasText: "1:1" }).click();
+  await page.locator("#pult-reiter button").nth(0).click();
+  assert.ok(await page.evaluate(() => document.querySelector("#buehne-platz").classList.contains("unter")));
+  // Info über das Dock, zurück über die Leiste unten
+  await page.click("#dock .dock-info");
+  assert.equal(await page.evaluate(() => window.animationen.S.ansicht), "info");
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth), 0, "info");
+  assert.equal(await page.evaluate(() => getComputedStyle(document.querySelector(".ansichten")).position), "fixed");
+  assert.ok(!(await page.locator("#dock").isVisible()));
+  await page.click('.ansichten [data-ansicht="mischpult"]');
+  assert.ok(await page.locator("#dock").isVisible());
   await ctx.close();
 });
 

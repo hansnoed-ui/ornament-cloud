@@ -71,11 +71,20 @@ geschlossenen Formen, eng in gross). Geprüft gegen Inter (optische Grösse), Sc
   Unter 420 px Breite weicht dafür der Seitenname neben der Marke.
 
 - **Kopf**: Marke links («ornament.cloud», Punkt im Akzent), Zeile in der Mitte, rechts die zwei Ansichten mit Nummer; die aktive trägt den Akzentpunkt.
-  Auf dem Handy wandern die Ansichten in eine feste Leiste am unteren Rand (Daumenweite), der Kopf behält nur die Marke.
+  Auf dem Handy wandern die Ansichten in eine feste Leiste am unteren Rand (Daumenweite), der Kopf behält nur die Marke; im Mischpult ersetzt sie das Dock (siehe unten).
 - **Mischpult**: Bühne links (klebt beim Rollen), darunter Uhr, Fortschrittslinie und Schlaufe, dann die Haupttaste **«Neu mischen»** (gefüllt, mit
   Akzentpunkt, 52 px hoch) und daneben «MP4 laden». Ohne Bild zeigt die Bühne die Aufforderung (gestrichelter Rahmen, Satz mit kursivem Wort,
   «Bild wählen …»). Pult rechts 400 px: Gruppen mit Versalbeschriftung, Schalter als flache Knöpfe mit 6 px Radius, Ebenen als Karten mit Haarlinie, dünne Regler mit
   Wert rechts, leise Tasten (Pause, Standbild, Link), zuunterst «Werk sichern» mit Titel und Name.
+- **Mischpult auf dem Handy** (bis 720 px, 20. November 2026, Wünsche: «dass das live mischen der effekte mühelos gelingt. Es müssen nicht alle
+  effekte gleichzeitig sichtbar sein», am selben Abend: Regler «über dem bild … oberhalb (und unterhalb). Damit das Bild nicht wegscrollt»,
+  «Regler mit menu auswählen», «quasi ums Bild herum»): Alles zum Mischen passt ohne Rollen auf einen Bildschirm, ums Bild herum. Oben die
+  **Reiter** `01 · 02 · 03` (je Ebene ihr Effekt, Akzentpunkt = läuft, «+ Effekt» = leer) und «Mehr». Die Bühne so gross, wie es geht
+  (`--buehne-h` = Bildschirm minus 250 px). Unten auf ihr halbdurchsichtig der **Regler mit Menü** (`#pult-auflage`): das Menü wählt einen
+  Regler der Ebene, dazu Mischmodus, Platz (Reihenfolge) und Quelle; Wahlen als Knöpfe; daneben «an/aus». Lässt das Format unter der Bühne
+  Platz (1:1, 16:9, 4:5 auf hohen Handys), steht er darunter und deckt nichts ab (`.unter`, `auflageLage()`). Unter der Bühne die
+  **Effektleiste** zum Wischen, antippen wechselt sofort. «Mehr» zeigt darunter Bild, Format, Bewegung, Grund, Teilen und Sichern. Das **Dock**
+  trägt «Neu mischen», «MP4» und «Info»; Meldungen kurz darüber. Laptop und Tablet bleiben wie bisher.
 - **Werke**: unter dem Mischpult, von einer Haarlinie getrennt: grosse Zeile «Werke» mit der Anzahl leicht und im Akzent, daneben ein Satz,
   darunter das gestreute Raster mit drei Kachelgrössen (12 Spalten, Tablet 8, Handy 4). Beschriftung: Nummer, Titel, darunter leise
   «von Name · Datum»; eigene Werke mit «Löschen». Darüberfahren lässt die Animation laufen, Klick lädt sie ins Mischpult.

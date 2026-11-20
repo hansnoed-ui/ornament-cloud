@@ -1,0 +1,227 @@
+/* Figur und Fläche in der Gestaltung «Zwischentitel». Aufbau wie Diagramm; Grundlagen: ../gemeinsam/zwischentitel.css */
+
+html, body { height: 100%; }
+body { overflow: hidden; }
+
+.buehne { position: fixed; inset: 0; }
+canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+.unsichtbar { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Schwelle: eine Zwischentitel-Tafel, unten links gesetzt wie ein Vorspann */
+.auftakt { position: absolute; inset: 0; z-index: 2; background: var(--noir); display: grid; grid-template-rows: auto 1fr; grid-template-columns: minmax(0, 1fr); overflow-y: auto; }
+.schwelle { align-self: end; padding: 0 var(--rand-r) max(28px, env(safe-area-inset-bottom)) var(--rand); max-width: 760px; }
+.schwelle { min-width: 0; }
+/* Vorspann: der Effekt selbst als stiller Film (vorspann.mp4, aus dem Porträt-Video gerechnet) im leeren Teil der Schwelle */
+.vorspann { grid-row: 1 / -1; grid-column: 1; width: 100%; height: 72%; object-fit: cover; object-position: 50% 40%; opacity: 0.85;
+  -webkit-mask-image: linear-gradient(#000 40%, transparent); mask-image: linear-gradient(#000 40%, transparent); pointer-events: none; }
+/* z-index nötig: die Maske macht das Video zu einer eigenen Ebene, die sonst über Band und Titel läge */
+.auftakt > .zt-band, .auftakt > .schwelle { grid-column: 1; position: relative; z-index: 1; }
+/* Das Kopfband deckt das Bild, solange Schrift darauf steht, und läuft erst darunter aus */
+.auftakt > .zt-band { grid-row: 1; background: linear-gradient(rgba(10,10,11,0.99) calc(100% - 28px), rgba(10,10,11,0)); padding-bottom: 28px; } .auftakt > .schwelle { grid-row: 2; }
+.schwelle .zt-titel { font-size: clamp(2rem, 9.4vw, 7.5rem); overflow-wrap: normal; hyphens: manual; }
+/* Die Schriftgrösse passt tafeln.js dem längsten Wort an: der Titel bricht nie mitten im Wort (Christian, 19.11.2026) */
+.schwelle .zt-titel i { font-size: 0.72em; }
+.schwelle .satz { font-family: var(--didone); font-size: clamp(1.1rem, 1rem + 1vw, 1.5rem); line-height: 1.35; margin: 22px 0 30px; max-width: 24em; }
+.wahl { display: flex; flex-wrap: wrap; gap: 4px 26px; align-items: baseline; }
+.wahl label { cursor: pointer; }
+.wahl .zt-taste { font-size: 1.02rem; }
+/* Erste Wahl ist das eigene Video oder Foto (Christian, 19.11.2026); die Kamera trägt nur noch den roten Punkt */
+.wahl #kamera::before { content: "● "; color: var(--rouge); }
+.hinweis { font-family: var(--schmal); font-size: 0.78rem; letter-spacing: 0.08em; color: var(--gris); margin: 14px 0 0; }
+
+/* Kopf beim Bedienen: das obere Letterbox-Band */
+.kopf { position: absolute; top: 0; left: 0; right: 0; z-index: 1; background: linear-gradient(var(--noir) 40%, rgba(10,10,11,0)); padding-bottom: 22px; }
+.kopf .marke { color: var(--gris); }
+
+/* Regler: das untere Band, wie eine Schnittspur */
+.regler { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; display: grid; gap: 2px;
+  padding: 26px var(--rand-r) max(10px, env(safe-area-inset-bottom)) var(--rand);
+  background: linear-gradient(to top, var(--noir) 62%, rgba(10,10,11,0)); }
+.knoepfe { margin-top: 2px; }
+#aufnahme.laeuft { animation: blinken 1s steps(2, start) infinite; }
+#aufnahme.laeuft::before { content: "● "; }
+@keyframes blinken { to { opacity: 0.35; } }
+@media (min-width: 760px) {
+  .regler { grid-template-columns: 1fr 1fr; column-gap: 40px; }
+  .regler .formen { grid-column: 1; }
+  .regler .zustaende { grid-column: 2; grid-row: 1; align-self: end; }
+  .regler .zt-wahl { flex-wrap: wrap; overflow: visible; }
+  .regler .zt-regler { grid-column: 1 / -1; grid-template-columns: repeat(2, 1fr); column-gap: 40px; }
+  .regler .knoepfe { grid-column: 1 / -1; justify-content: flex-start; gap: 36px; }
+}
+
+/* Randfläche: Glossen und Hinweise liegen nie als Schrift auf dem Bild, sondern fahren vom rechten Rand
+   auf einer halbtransparenten Fläche herein und wieder hinaus (Wunsch Christian, 19.11.2026).
+   Die Fläche ist Saalschwarz mit Weichzeichner: das Bild darunter gibt ihr die Farbe. */
+.geste, .glosse { position: absolute; z-index: 1; right: 0; left: auto; margin: 0;
+  top: calc(max(16px, env(safe-area-inset-top)) + 46px); width: min(380px, 84vw);
+  max-height: calc(100% - var(--regler-hoehe, 300px) - 70px); overflow-y: auto; overscroll-behavior: contain;
+  padding: 14px max(18px, env(safe-area-inset-right)) 12px 18px;
+  background: rgba(10, 10, 11, 0.62); -webkit-backdrop-filter: blur(14px) saturate(1.15); backdrop-filter: blur(14px) saturate(1.15);
+  border-left: 2px solid var(--rouge); text-align: left;
+  transform: translateX(104%); transition: transform .6s cubic-bezier(.2, .75, .2, 1); }
+/* Geste und Zustand: kurzer Zwischentitel auf der Randfläche */
+.geste { font-family: var(--didone); font-style: italic; font-size: clamp(1.02rem, 0.9rem + 0.6vw, 1.3rem); line-height: 1.3; color: var(--blanc);
+  pointer-events: none; transform: none; }
+.geste.weg { transform: translateX(104%); }
+/* Hat die Glosse die Fläche, tritt der Hinweis zurück */
+.glosse.da ~ .geste { transform: translateX(104%); }
+/* Glosse: Tippen öffnet die Lektüre, × oder Wischen nach rechts schliesst sie */
+.glosse { cursor: pointer; touch-action: pan-y; }
+/* Das × ist gezeichnet, zwei feine Striche statt eines Schriftzeichens: Seine Mitte liegt auf der Höhe der Begriffszeile
+   und gleich weit vom oberen wie vom rechten Rand, so sitzt es in der Ecke (Christian, 19.11.2026). Die Tippfläche bleibt 40 × 40. */
+.glosse-zu { position: absolute; top: 1px; right: calc(max(18px, env(safe-area-inset-right)) - 17px); width: 40px; height: 40px; padding: 0;
+  background: none; border: 0; font-size: 0; color: var(--gris); cursor: pointer; }
+.glosse-zu::before, .glosse-zu::after { content: ""; position: absolute; left: 50%; top: 50%; width: 12px; height: 1.25px;
+  margin: -0.625px 0 0 -6px; background: currentColor; transform: rotate(45deg); }
+.glosse-zu::after { transform: rotate(-45deg); }
+.glosse-zu:hover, .glosse-zu:focus-visible { color: var(--blanc); }
+.glosse-zu:focus-visible { outline: 1px solid var(--gris); outline-offset: -8px; }
+.glosse-begriff { margin-right: 26px !important; }
+.glosse.da { transform: none; }
+.glosse p { margin: 0 0 6px; }
+.glosse p:last-child { margin-bottom: 0; }
+.glosse-begriff { font-family: var(--schmal); font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--rouge); }
+.glosse-satz { font-family: var(--schmal); font-size: 1.04rem; line-height: 1.35; color: var(--blanc); }
+.glosse-zitat { font-family: var(--didone); font-style: italic; font-size: 0.95rem; line-height: 1.3; color: var(--jaune); }
+.glosse-quelle { font-family: var(--schmal); font-size: 0.66rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gris); }
+
+.facettenzeit { position: absolute; z-index: 1; margin: 0; padding: 3px 8px; font-family: var(--schmal); font-size: 0.82rem; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--blanc); background: var(--noir); border-left: 3px solid var(--rouge); pointer-events: none; transition: opacity .8s; white-space: nowrap; }
+.facettenzeit.weg { opacity: 0; }
+
+/* Lektüre: schwarze Tafeln über allem */
+.begriff { position: fixed; inset: 0; z-index: 3; background: var(--noir); display: grid; grid-template-rows: auto 1fr auto; }
+.lek-band { align-items: center; }
+.begriff .familie { color: var(--rouge); }
+.begriff .zu { background: none; border: 0; color: var(--blanc); font-size: 1.8rem; line-height: 1; padding: 0 4px; cursor: pointer; font-family: var(--schmal); }
+.begriff .zt-tafeln { min-height: 0; }
+/* Kurze Tafeln stehen in der Mitte, lange beginnen oben: die beiden Füller schrumpfen auf null, statt den Titel
+   oben aus der Tafel zu schieben (justify-content: center schnitt am Telefon die erste Titelzeile ab). */
+.begriff .zt-tafel { display: flex; flex-direction: column; justify-content: flex-start; padding-top: 12px; }
+.begriff .zt-tafel::before, .begriff .zt-tafel::after { content: ""; flex: 1 0 0; }
+.begriff .zt-tafel > * { width: 100%; max-width: 640px; margin-left: auto; margin-right: auto; }
+.begriff .text p { font-size: 1.02rem; line-height: 1.55; margin: 0 0 0.9em; }
+.begriff #b-zustand-titel { font-style: italic; }
+.begriff .frage { font-size: 1.2rem; line-height: 1.45; }
+.begriff .werke, .begriff .verweise { font-size: 1rem; line-height: 1.6; }
+.begriff .verweise a { color: var(--bleu); text-decoration: none; }
+.begriff .verweise a:hover { box-shadow: inset 0 -1px 0 var(--bleu); }
+.begriff .zt-kennung { margin-top: 10px; }
+.lek-fuss { padding-top: 10px; padding-bottom: max(14px, env(safe-area-inset-bottom)); }
+
+/* Abzug: unten am Daumen */
+.ergebnis { position: fixed; left: 0; right: 0; bottom: 0; z-index: 3; padding: 20px var(--rand-r) max(18px, env(safe-area-inset-bottom)) var(--rand);
+  background: var(--noir); border-top: 2px solid var(--rouge); display: grid; gap: 10px; justify-items: center; }
+.ergebnis .zu { position: absolute; top: 8px; right: 12px; background: none; border: 0; color: var(--blanc); font-size: 1.8rem; line-height: 1; cursor: pointer; }
+.ergebnis-bild { width: min(62vw, 300px); max-height: 46vh; display: grid; place-items: center; }
+.ergebnis-bild img, .ergebnis-bild video { max-width: 100%; max-height: 46vh; background: #000; display: block; }
+.ergebnis-mb { margin: 0; font-family: var(--schmal); font-size: 0.74rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gris); }
+.ergebnis-knoepfe { gap: 34px; justify-content: center; }
+.ergebnis-hinweis { margin: 0; font-family: var(--schmal); font-size: 0.84rem; color: var(--gris); text-align: center; max-width: 30em; }
+
+.meldung { position: fixed; left: var(--rand); right: var(--rand-r); top: calc(max(16px, env(safe-area-inset-top)) + 40px); z-index: 4; cursor: pointer; margin: 0;
+  padding: 12px 14px; background: var(--noir); border-left: 3px solid var(--rouge); font-family: var(--schmal); font-size: 0.95rem; line-height: 1.35; }
+
+@media (max-width: 560px) {
+  .zt-regler label, .zt-regler .raender { grid-template-columns: 8em 1fr; }
+  /* Am Handy ist die Glosse eine schmale Randnotiz: kleinere Schrift, deckt höchstens ein Drittel der Höhe,
+     der Stein bleibt sichtbar (Christian, 19.11.2026) */
+  .glosse { width: min(270px, 70vw); max-height: min(24vh, calc(100% - var(--regler-hoehe, 300px) - 70px));
+    padding: 10px max(14px, env(safe-area-inset-right)) 10px 14px; background: rgba(10, 10, 11, 0.7); }
+  .glosse p { margin-bottom: 4px; }
+  .glosse-begriff { font-size: 0.62rem; letter-spacing: 0.2em; }
+  .glosse-satz { font-size: 0.86rem; line-height: 1.32; }
+  .glosse-zitat { font-size: 0.84rem; line-height: 1.28; }
+  .glosse-quelle { font-size: 0.56rem; letter-spacing: 0.14em; }
+  .glosse-zu { top: -3px; right: calc(max(14px, env(safe-area-inset-right)) - 17px); }
+  .glosse .glosse-zitat, .glosse .glosse-quelle { display: none; }
+}
+
+/* Kamera wenden: übliches Zeichen unten rechts im Bild, über dem unteren Band; feine Linie ohne Fläche */
+.wenden, .ton, .loesen { position: absolute; z-index: 1; right: calc(var(--rand-r) - 7px); bottom: calc(var(--regler-hoehe, 300px) + 6px);
+  width: 48px; height: 48px; display: grid; place-items: center; padding: 0; margin: 0; border: 0; background: none;
+  color: var(--blanc); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.wenden .kontur, .ton .kontur, .loesen .kontur { stroke: var(--noir); stroke-width: 3.2; opacity: 0.55; }   /* dunkle Kontur unter der Linie, damit sie auf hellem Bild lesbar bleibt */
+.ton { right: auto; left: calc(var(--rand) - 7px); }
+.loesen { right: auto; left: calc(var(--rand) + 41px); }
+.loesen:not([hidden]) { animation: loesenDa 0.7s ease both; }
+@keyframes loesenDa { from { opacity: 0; } to { opacity: 1; } }
+.loesen:active svg { transform: rotate(-120deg); transition: transform 0.4s ease; }
+.loesen:focus-visible, .ton:focus-visible { outline: 1px solid var(--rouge); outline-offset: 2px; }
+.ton .strich, .ton[aria-pressed="false"] .wellen { display: none; }
+.ton[aria-pressed="false"] .strich { display: inline; }
+.wenden:active svg { transform: rotate(180deg); transition: transform 0.35s ease; }
+.wenden:focus-visible { outline: 1px solid var(--rouge); outline-offset: 2px; }
+
+/* Geführter Einstieg: zuerst nur Stein und Bild, die Bedienung deckt sich nach und nach auf.
+   Noch Verdecktes ist inert (weder tipp- noch per Tastatur erreichbar); der Platz bleibt, damit der Stein nicht springt. */
+.regler > * { transition: opacity 1.1s ease, transform 1.1s ease; }
+.regler > [inert] { opacity: 0; transform: translateY(8px); }
+.regler { background-repeat: no-repeat; background-position: bottom; background-size: 100% 100%; transition: background-size 1.4s ease; }
+.regler[data-einstieg="0"] { background-size: 100% 28%; }
+
+/* Lesarten als gerasterte Spur: ein Regler mit drei Rasten, dieselbe Haarlinie und derselbe rote Knopf wie bei den
+   anderen Reglern; ziehen, auf die Linie oder auf ein Wort tippen. Reihenfolge der Quellen: Bergson, Welles, Resnais. */
+.regler .zustaende { position: relative; display: block; height: 52px; overflow: visible; padding: 0; margin: 2px 0 6px; }
+.regler .zustaende::before { content: ""; position: absolute; left: 0; right: 0; top: 11px; height: 8px; pointer-events: none;
+  background-image: linear-gradient(rgba(241,238,230,.5), rgba(241,238,230,.5)), linear-gradient(rgba(241,238,230,.5), rgba(241,238,230,.5)),
+    linear-gradient(rgba(241,238,230,.5), rgba(241,238,230,.5));
+  background-size: 1px 8px; background-repeat: no-repeat; background-position: 1px 0, 50% 0, calc(100% - 1px) 0; }
+.regler .zustaende input[type=range] { position: absolute; left: 0; right: 0; top: 0; width: 100%; height: 30px; margin: 0; cursor: pointer; }
+.regler .zustaende input[type=range]::-webkit-slider-runnable-track { height: 2px; background: rgba(241,238,230,.28); }
+.regler .zustaende input[type=range]::-moz-range-track { height: 2px; background: rgba(241,238,230,.28); }
+.regler .zustaende input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 4px; height: 18px; margin-top: -8px; background: var(--rouge); border: 0; border-radius: 0; }
+.regler .zustaende input[type=range]::-moz-range-thumb { width: 4px; height: 18px; background: var(--rouge); border: 0; border-radius: 0; }
+.regler .zustaende button { position: absolute; top: 24px; padding: 6px 0; font-family: var(--schmal); font-style: normal; text-transform: uppercase;
+  letter-spacing: 0.13em; font-size: 0.72rem; color: var(--gris); box-shadow: none; white-space: nowrap; }
+.regler .zustaende button[data-stelle="0"] { left: 0; }
+/* drei Lesarten: Isolieren, Schrei, Fleisch */
+.regler .zustaende button[data-stelle="1"] { left: 50%; transform: translateX(-50%); }
+.regler .zustaende button[data-stelle="2"] { right: 0; }
+.regler .zustaende button[aria-pressed="true"] { color: var(--blanc); box-shadow: none; }
+
+/* Grosser Bildschirm: Lesarten links, die drei Regler daneben, Tasten darunter */
+@media (min-width: 760px) {
+  .regler .zustaende { grid-column: 1; grid-row: 1; align-self: center; }
+  .regler .zt-regler { grid-column: 2; grid-row: 1; grid-template-columns: 1fr; }
+  .regler .knoepfe { grid-column: 1 / -1; grid-row: 2; }
+}
+
+/* Daumen: wo man ihn auflegt, und wie lange schon gewartet wird (Christian, 20.11.2026: deutlicher zeigen) */
+.daumen { position: absolute; z-index: 1; left: 50%; top: 40%; transform: translate(-50%, -50%); pointer-events: none;
+  display: flex; flex-direction: column; align-items: center; gap: 16px; opacity: 1; transition: opacity .7s ease; }
+.daumen.weg { opacity: 0; }
+.daumen-punkt { position: relative; width: 64px; height: 64px; border-radius: 50%; border: 1px solid rgba(244, 240, 232, 0.75);
+  background: radial-gradient(circle, rgba(244, 240, 232, 0.16), rgba(244, 240, 232, 0) 70%); animation: daumenAtmen 2.6s ease-in-out infinite; }
+.daumen-punkt::after { content: ''; position: absolute; inset: -1px; border-radius: 50%; border: 1px solid rgba(244, 240, 232, 0.6); animation: daumenWelle 2.6s ease-out infinite; }
+.daumen-text { font-family: var(--didone); font-style: italic; font-size: 1.08rem; color: var(--blanc); white-space: nowrap;
+  padding: 5px 14px 6px; background: rgba(10, 10, 11, 0.55); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+@keyframes daumenAtmen { 0%, 100% { transform: scale(0.92); } 50% { transform: scale(1.04); } }
+@keyframes daumenWelle { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(2.1); opacity: 0; } }
+.halt { position: absolute; z-index: 1; left: 0; top: 0; width: 92px; height: 92px; margin: -46px 0 0 -46px; pointer-events: none;
+  opacity: 0; transition: opacity .35s ease; transform: rotate(-90deg); }
+.halt.da { opacity: 1; }
+.halt circle { fill: none; stroke-width: 1.4; vector-effect: non-scaling-stroke; }
+.halt-grund { stroke: rgba(244, 240, 232, 0.22); }
+.halt-voll { stroke: var(--rouge); stroke-dasharray: 1; stroke-dashoffset: 1; stroke-linecap: round; }
+@media (prefers-reduced-motion: reduce) { .daumen-punkt, .daumen-punkt::after { animation: none; } }
+
+/* Daumenführung: ein Strich zeigt die Richtung, in die man zieht (Wischen und Fäden) */
+.daumen-zug { position: absolute; left: 50%; top: 32px; width: 150px; height: 1px; margin-left: -75px; pointer-events: none; overflow: visible; }
+.daumen-zug::before { content: ""; position: absolute; left: 0; top: 0; width: 100%; height: 1px;
+  background: linear-gradient(90deg, rgba(244, 240, 232, 0), rgba(244, 240, 232, 0.7) 40%, rgba(244, 240, 232, 0)); }
+.daumen-punkt { animation: daumenZiehen 3.2s cubic-bezier(.45, 0, .3, 1) infinite; }
+@keyframes daumenZiehen { 0%, 12% { transform: translateX(-62px) scale(0.92); } 55%, 66% { transform: translateX(62px) scale(1); } 100% { transform: translateX(-62px) scale(0.92); } }
+/* Isolieren: der Daumen zieht einen Kreis um die Figur; eine feine Ellipse zeigt die Bahn, der Punkt läuft sie ab */
+.buehne[data-art="0"] .daumen-zug { left: 50%; top: 32px; width: 0; height: 0; margin: 0; }
+.buehne[data-art="0"] .daumen-zug::before { left: -96px; top: -118px; width: 192px; height: 236px; border-radius: 50%; background: none;
+  border: 1px solid rgba(244, 240, 232, 0.42); }
+.buehne[data-art="0"] .daumen-punkt { animation: daumenKreis 3.6s linear infinite; }
+@keyframes daumenKreis {
+  0% { transform: translate(0, -118px) scale(0.9); } 12.5% { transform: translate(68px, -83px); } 25% { transform: translate(96px, 0); }
+  37.5% { transform: translate(68px, 83px); } 50% { transform: translate(0, 118px); } 62.5% { transform: translate(-68px, 83px); }
+  75% { transform: translate(-96px, 0); } 87.5% { transform: translate(-68px, -83px); } 100% { transform: translate(0, -118px) scale(0.9); } }
+.buehne[data-art="0"] .daumen { top: 44%; }
+.buehne[data-art="0"] .daumen-text { margin-top: 140px; }
+@media (prefers-reduced-motion: reduce) { .daumen-punkt { animation: none !important; } }

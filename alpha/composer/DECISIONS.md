@@ -184,3 +184,31 @@ Christian: Stopp funktioniert nicht, der Ton «überschlägt» sich bzw. verdopp
 ## Export am Handy: Knopf «Speichern» (10. November 2026)
 
 Christian (Samsung S23, Chrome): Nach «rechne … %» kam beim Export nichts. Chrome lässt einen Download nur kurz nach einem Tippen zu; nach längerem Rechnen wird er still verworfen. Liegt die letzte Geste länger als 4 s zurück, startet der Download darum nicht mehr selbst: Unter den Export-Knöpfen erscheint «Fertig: Datei (MB) · Speichern», das Tippen darauf lädt herunter. Die Leiste steht im Fluss der Seite, nicht fest am Rand (feste Elemente liegen am Handy bei breiter Seite ausserhalb des sichtbaren Bereichs). Gilt für Track (WAV), Export (ZIP), Bereich als WAV und alle anderen Downloads.
+
+## Design «Nachtpult» und Handy-Ansicht (20. November 2026)
+
+Christian wollte den Composer «zwischen ornament.cloud und Studio-Look». Drei Entwürfe (A Nachtpult, B Waldgrün, C Papier und Gerät) am echten Composer; er wählte A, dazu «fancy Knöpfe statt Schieberegler» und eine Handy-Version, «etwas reduzierter, aber perfekt bedienbar».
+
+- Nur ein Aussehen, dunkel (`color-scheme: dark`); Instrument Sans und die Blaupause bleiben wie auf ornament.cloud. Teile als Gerätefronten mit schwarzer Fuge, Takt und Lautheit in Displays, M und S als Lämpchen, Pegel als Fader.
+- Drehknöpfe (`drehknopf.js`) für Plugin-, Unterbrechungs-, Melodie- und lucerne-Regler und das Panorama. Der Schieberegler bleibt unsichtbar im Seitenbaum und trägt den Wert; app.js und lucerne-ui.js sind unverändert (input, change, dblclick, `inp.value`). Ziehen hoch/rechts = auf, Umschalt = fein, Doppelklick oder doppeltes Antippen = zurück, Pfeiltasten über den Fokus.
+- Handy (bis 820 px, `handy.js`): Erzeugen, ornament.lucerne, Messung und Urteil zugeklappt, sichtbar bleiben Stil, «Spuren erzeugen», «Track erzeugen»; Tippen auf die Überschrift klappt auf. Tempo, erste Eins und Pegelausgleich hinter «mehr» in der Wiedergabe-Leiste. Aktionen oben als Wischzeile, Tasten mindestens 34 px hoch, Tastenkürzel und Fusszeile ausgeblendet. Nichts fällt weg.
+
+## 20. November 2026: höchstens zwei Naturklänge, weniger Dropouts (Arrangement 0.2.1)
+
+Christian: «Wähle max 2 Naturgeräusche beim ersten Errechnen eines Beats, weniger Dropouts.»
+
+- «Track erzeugen» nimmt aus der Natur-Besetzung des Stils höchstens zwei Klänge, aus dem Startwert gewählt (`naturWahl`); ein anderer Startwert bringt eine andere Paarung. Ornament hatte fünf, Drum and Bass vier. «Spuren erzeugen» setzte schon vorher keine Natur.
+- Weniger Dropouts, im Schnitt rund ein Drittel weniger je Track (Ornament etwa 69 → 46, Drum and Bass etwa 49 → 35):
+  - Stocken: ein kurzes Loch je vier Takte statt zwei; die Naturklänge stocken nicht mehr mit.
+  - Sich verlieren: im letzten Takt fallen nur noch Drums und Bass weg, Flächen, Melodie und Natur tragen durch.
+  - Mischperkussion: setzt jeden vierten statt jeden zweiten Viertakt aus.
+  - Wechselnde Perkussion (Ornament): zwei statt einer Stimme je Abschnitt, in «Gas geben» und «Wiederfinden» drei statt zwei; kein doppeltes Dropout im Intro, aufeinanderfolgende Pausen einer Stimme sind ein Dropout.
+- Die Stille in Abschnitten, in denen eine Spur nicht spielt (Intro, Atmen, Outro …), bleibt: Sie ist der Aufbau des Tracks.
+
+## BPM-Knopf und Tonart bei Erzeugen (20. November 2026)
+
+Christian: «Ein Knopf "bpm" und noch eine Auswahl bitte prominent bei Erzeugen», die Auswahl: «Mach Tonart». Neben dem Stil steht ein grosser BPM-Drehknopf (40–240, fein: 600 px Ziehweg für den ganzen Bereich), verbunden mit dem Zahlenfeld «Tempo»; ein neuer Stil dreht ihn mit, doppelt antippen setzt auf das Tempo des Stils. Grundton und Tonleiter sind aus der Bass-Zeile neben den Knopf gezogen (gleiche IDs, wirken wie bisher). Beides bleibt am Handy auch zugeklappt sichtbar.
+
+## ornament.lucerne entfernt (20. November 2026)
+
+Christian: «Nimm ornament Lucerne aus dem Composer». Entfernt sind der Bereich ornament.lucerne mit Klangsammlung, Makros und Groove-Editor, der Stil «ornament.lucerne» in der Stilwahl und die Sampler-Spuren (`lucerne-ui.js` gelöscht). Alte Projekte mit Sampler-Spuren brauchen nicht mehr zu laufen (Rückwärtskompatibilität nicht nötig). Der Motor in `kern/` und seine Tests bleiben im Repo.

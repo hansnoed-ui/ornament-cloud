@@ -4,7 +4,7 @@
 // flüssig (die französische Schule, Epstein, Vigo: das Bild unter Wasser), gasförmig (Vertovs Kino-Auge: Körner ohne Zentrum).
 // WebGL2, ohne Bibliotheken, ohne CDN. Aufbau, Quellen, Aufnahme, Glossen und Einstieg wie Dauer.
 
-import { klangStarten, klangBild, klangAn, klangIstAn, klangSpur, klangTropfen } from './klang.js?v=1';
+import { klangStarten, klangBild, klangAn, klangIstAn, klangSpur, klangTropfen } from './klang.js?v=2';
 import { aufnahmeDatei } from '../gemeinsam/aufnahme.js?v=1';
 
 const $ = (id) => document.getElementById(id);
@@ -19,7 +19,7 @@ const TEXTE = {
       ecran: { begriff: 'l’écran noir', satz: 'Die Photographie ist in den Dingen schon genommen, aber durchscheinend. Dein Daumen ist der schwarze Schirm, auf dem sich das Bild abhebt.', zitat: '«… il manque, derrière la plaque, l’écran noir sur lequel se détacherait l’image.»', quelle: 'Bergson, Matière et mémoire, 1896, Kap. I' },
       eau: { begriff: 'la perception liquide', satz: 'Die französische Schule des Kinos liebte das Wasser. Dort gleitet die Wahrnehmung, und die Umrisse der Dinge werden flüssig.', zitat: '', quelle: 'Deleuze, L’image-mouvement, 1983, Kap. 5, sinngemäss' },
       gaz: { begriff: 'la perception gazeuse', satz: 'Vertovs Kino-Auge sieht ohne Mittelpunkt. Die Wahrnehmung kehrt in die Materie zurück, in die Bewegung jedes Korns.', zitat: '«Я — киноглаз. Я — глаз механический.»', quelle: 'Vertov, Kinoki. Perevorot, 1923' },
-      lesarten: { begriff: 'trois états', satz: 'Drei Zustände der Wahrnehmung: fest, flüssig, gasförmig.', zitat: '', quelle: 'Deleuze, L’image-mouvement, 1983, Kap. 5' },
+      lesarten: { begriff: 'trois états', satz: 'Drei Zustände der Wahrnehmung, fest, flüssig, gasförmig, und die Krümmung der Welt um ein Zentrum.', zitat: '', quelle: 'Deleuze, L’image-mouvement, 1983, Kap. 4 und 5' },
       licht: { begriff: 'la lumière', satz: 'Die Bilder sind Licht, bevor jemand sie sieht. Das Bewusstsein kommt nicht als Lampe hinzu, es hält das Licht nur an.', zitat: '', quelle: 'Deleuze, L’image-mouvement, 1983, Kap. 4, sinngemäss' },
       interesse: { begriff: 'la soustraction', satz: 'Wir nehmen das Ding wahr, abzüglich dessen, was uns nicht angeht. Je stärker das Interesse, desto weniger bleibt.', zitat: '', quelle: 'Bergson, Matière et mémoire, 1896, Kap. I, sinngemäss' },
       schirm: { begriff: 'le centre d’indétermination', satz: 'Ein lebender Körper lässt durch, was ihn nicht angeht, und hält an, was ihn betrifft. Hier bestimmst du, wie weit der Schirm wächst und wie lange er bleibt.', zitat: '', quelle: 'Bergson, Matière et mémoire, 1896, Kap. I, sinngemäss' },
@@ -28,14 +28,19 @@ const TEXTE = {
       funkeln: { begriff: 'la lumière de l’eau', satz: 'Die Wellen bündeln das Licht zu Netzen am Grund. Das Auge ist im Wasser, nicht davor.', zitat: '', quelle: 'Deleuze, L’image-mouvement, 1983, Kap. 5, sinngemäss' },
       wind: { begriff: 'l’intervalle', satz: 'Vertov verbindet jeden Punkt des Universums mit jedem anderen. Zwischen zwei Bewegungen liegt das Intervall, und dort sitzt das Auge.', zitat: '', quelle: 'Deleuze, L’image-mouvement, 1983, Kap. 5, sinngemäss' },
       freiheit: { begriff: 'l’œil dans la matière', satz: 'Ohne Mittelpunkt kehrt die Wahrnehmung in die Dinge zurück. Hier bestimmst du, wie lange die Körner frei bleiben.', zitat: '', quelle: 'Deleuze, L’image-mouvement, 1983, Kap. 5, sinngemäss' },
-      koerner: { begriff: 'la perception moléculaire', satz: 'Je feiner die Körner, desto mehr Schwarz zwischen ihnen: das Bild als Menge von Molekülen.', zitat: '', quelle: 'Deleuze, L’image-mouvement, 1983, Kap. 5, sinngemäss' }
+      koerner: { begriff: 'la perception moléculaire', satz: 'Je feiner die Körner, desto mehr Schwarz zwischen ihnen: das Bild als Menge von Molekülen.', zitat: '', quelle: 'Deleuze, L’image-mouvement, 1983, Kap. 5, sinngemäss' },
+      courbure: { begriff: 'la courbure de l’univers', satz: 'Um ein lebendes Zentrum krümmt sich die Welt. Die Dinge wenden ihm die Seite zu, auf die es wirken kann.', zitat: '', quelle: 'Deleuze, L’image-mouvement, 1983, Kap. 4, sinngemäss' },
+      schwere: { begriff: 'l’action possible', satz: 'Je näher ein Ding, desto mehr ist es Handlung, die bevorsteht. Darum wächst es.', zitat: '', quelle: 'Bergson, Matière et mémoire, 1896, Kap. I, sinngemäss' },
+      reichweite: { begriff: 'l’horizon', satz: 'Wie weit die Krümmung reicht: der Umkreis dessen, worauf ein Körper wirken kann.', zitat: '', quelle: 'Deleuze, L’image-mouvement, 1983, Kap. 4, sinngemäss' },
+      zeit: { begriff: 'la distance comme temps', satz: 'Je ferner ein Ding, desto später erreicht es mich. Hier wird die Entfernung zur Vergangenheit.', zitat: '«La perception dispose de l’espace dans l’exacte proportion où l’action dispose du temps.»', quelle: 'Bergson, Matière et mémoire, 1896, Kap. I' }
     },
-    regler: [['Licht', 'Interesse', 'Schirm'], ['Tiefe', 'Wellen', 'Funkeln'], ['Wind', 'Freiheit', 'Körner']],
-    reglerGlosse: [['licht', 'interesse', 'schirm'], ['tiefe', 'wellen', 'funkeln'], ['wind', 'freiheit', 'koerner']],
+    regler: [['Licht', 'Interesse', 'Schirm'], ['Tiefe', 'Wellen', 'Funkeln'], ['Wind', 'Freiheit', 'Körner'], ['Schwere', 'Reichweite', 'Zeit']],
+    reglerGlosse: [['licht', 'interesse', 'schirm'], ['tiefe', 'wellen', 'funkeln'], ['wind', 'freiheit', 'koerner'], ['schwere', 'reichweite', 'zeit']],
     lesarten: [
       { kurz: 'Fest', titel: 'Der schwarze Schirm', wer: 'Bergson', geste: 'Daumen auflegen: dort hebt sich das Bild ab.', text: 'Für Bergson ist die Welt eine Menge von Bildern, die alle aufeinander wirken. Die Photographie ist in den Dingen schon genommen, aber durchscheinend: Hinter der Platte fehlt der schwarze Schirm. Ein lebender Körper ist ein solcher Schirm. Er lässt durch, was ihn nicht angeht, und hält an, was ihn betrifft. Wahrnehmen heisst darum nicht hinzufügen, sondern abziehen. Deleuze nennt das den festen Zustand der Wahrnehmung, den menschlichen, mit einem Zentrum. Hier ist dein Daumen das Zentrum: Wo du hältst, wird es schwarz, und übrig bleibt, was sich bewegt und abhebt.' },
       { kurz: 'Flüssig', titel: 'Die flüssige Wahrnehmung', wer: 'Epstein, Vigo', geste: 'Tippen und halten: Wellen tragen das Bild.', text: 'Die französische Schule der Zwanzigerjahre, Epstein, L’Herbier, Grémillon, Vigo, filmte immer wieder Wasser. Deleuze sieht darin einen zweiten Zustand der Wahrnehmung: Sie ist nicht mehr an einen festen Punkt gebunden, sie gleitet, die Umrisse werden flüssig, Bewegung geht in Bewegung über. Hier liegt das Bild unter einer Wasserfläche. Dein Finger setzt Wellen, die Wellen bündeln das Licht, und was sich im Bild bewegt, setzt selbst Wellen.' },
-      { kurz: 'Gas', titel: 'Das Kino-Auge', wer: 'Vertov', geste: 'Halten oder wischen: die Körner werden frei.', text: 'Dziga Vertov wollte ein Auge, das nicht menschlich ist: die Kamera als Kino-Auge, das jeden Punkt des Universums mit jedem anderen verbindet. Für Deleuze ist das der gasförmige Zustand der Wahrnehmung: ohne Mittelpunkt, molekular, in der Materie selbst. Hier besteht das Bild aus Zehntausenden Körnern. Wo du hältst oder wischst, lösen sie sich und treiben mit der Bewegung des Bildes weiter, dann finden sie langsam zurück.' }
+      { kurz: 'Gas', titel: 'Das Kino-Auge', wer: 'Vertov', geste: 'Halten oder wischen: die Körner werden frei.', text: 'Dziga Vertov wollte ein Auge, das nicht menschlich ist: die Kamera als Kino-Auge, das jeden Punkt des Universums mit jedem anderen verbindet. Für Deleuze ist das der gasförmige Zustand der Wahrnehmung: ohne Mittelpunkt, molekular, in der Materie selbst. Hier besteht das Bild aus Zehntausenden Körnern. Wo du hältst oder wischst, lösen sie sich und treiben mit der Bewegung des Bildes weiter, dann finden sie langsam zurück.' },
+      { kurz: 'Krümmung', titel: 'Die Krümmung', wer: 'Bergson, Deleuze', geste: 'Daumen auflegen: die Welt biegt sich zu dir.', text: 'Sobald es ein Zentrum gibt, ordnet sich die Welt um es herum. Die Dinge wenden dem lebenden Körper die Seite zu, auf die er wirken kann: Was nahe ist, ist Handlung, die bevorsteht, was fern ist, eine Handlung, die noch Zeit hat. Deleuze nennt das die Krümmung des Universums, um das Zentrum bildet sich ein Horizont. Hier biegt sich das Bild um deinen Daumen wie der Raum um eine Masse. Was nahe ist, wächst und ist ganz Gegenwart, was fern ist, weicht zurück und wird Vergangenheit.' }
     ],
     wenden: 'Kamera wenden', tonAn: 'Ton an', tonAus: 'Ton aus',
     begriff: 'Begriff', standbild: 'Standbild', aufnahme: 'Aufnahme', stopp: 'Stopp',
@@ -61,7 +66,7 @@ const TEXTE = {
       ecran: { begriff: 'l’écran noir', satz: 'The photograph is already taken inside things, but it is translucent. Your thumb is the black screen against which the image stands out.', zitat: '« … il manque, derrière la plaque, l’écran noir sur lequel se détacherait l’image. »', quelle: 'Bergson, Matter and Memory, 1896, ch. I (original)' },
       eau: { begriff: 'la perception liquide', satz: 'The French school of cinema loved water. There perception glides, and the outlines of things become fluid.', zitat: '', quelle: 'Deleuze, The Movement-Image, 1983, ch. 5, paraphrased' },
       gaz: { begriff: 'la perception gazeuse', satz: 'Vertov’s kino-eye sees without a centre. Perception returns into matter, into the movement of every grain.', zitat: '« Я — киноглаз. Я — глаз механический. »', quelle: 'Vertov, Kinoks: A Revolution, 1923 (original)' },
-      lesarten: { begriff: 'trois états', satz: 'Three states of perception: solid, liquid, gaseous.', zitat: '', quelle: 'Deleuze, The Movement-Image, 1983, ch. 5' },
+      lesarten: { begriff: 'trois états', satz: 'Three states of perception, solid, liquid, gaseous, and the curvature of the world around a centre.', zitat: '', quelle: 'Deleuze, The Movement-Image, 1983, ch. 4 and 5' },
       licht: { begriff: 'la lumière', satz: 'Images are light before anyone sees them. Consciousness does not arrive like a lamp; it only stops the light.', zitat: '', quelle: 'Deleuze, The Movement-Image, 1983, ch. 4, paraphrased' },
       interesse: { begriff: 'la soustraction', satz: 'We perceive the thing minus what does not concern us. The stronger the interest, the less remains.', zitat: '', quelle: 'Bergson, Matter and Memory, 1896, ch. I, paraphrased' },
       schirm: { begriff: 'le centre d’indétermination', satz: 'A living body lets through what does not concern it and stops what affects it. Here you decide how far the screen grows and how long it stays.', zitat: '', quelle: 'Bergson, Matter and Memory, 1896, ch. I, paraphrased' },
@@ -70,14 +75,19 @@ const TEXTE = {
       funkeln: { begriff: 'la lumière de l’eau', satz: 'The waves gather light into nets on the bottom. The eye is in the water, not in front of it.', zitat: '', quelle: 'Deleuze, The Movement-Image, 1983, ch. 5, paraphrased' },
       wind: { begriff: 'l’intervalle', satz: 'Vertov links any point of the universe to any other. Between two movements lies the interval, and that is where the eye sits.', zitat: '', quelle: 'Deleuze, The Movement-Image, 1983, ch. 5, paraphrased' },
       freiheit: { begriff: 'l’œil dans la matière', satz: 'Without a centre, perception returns into things. Here you decide how long the grains stay free.', zitat: '', quelle: 'Deleuze, The Movement-Image, 1983, ch. 5, paraphrased' },
-      koerner: { begriff: 'la perception moléculaire', satz: 'The finer the grains, the more black between them: the image as a crowd of molecules.', zitat: '', quelle: 'Deleuze, The Movement-Image, 1983, ch. 5, paraphrased' }
+      koerner: { begriff: 'la perception moléculaire', satz: 'The finer the grains, the more black between them: the image as a crowd of molecules.', zitat: '', quelle: 'Deleuze, The Movement-Image, 1983, ch. 5, paraphrased' },
+      courbure: { begriff: 'la courbure de l’univers', satz: 'Around a living centre the world curves. Things turn towards it the side on which it can act.', zitat: '', quelle: 'Deleuze, The Movement-Image, 1983, ch. 4, paraphrased' },
+      schwere: { begriff: 'l’action possible', satz: 'The nearer a thing, the more it is action about to happen. That is why it grows.', zitat: '', quelle: 'Bergson, Matter and Memory, 1896, ch. I, paraphrased' },
+      reichweite: { begriff: 'l’horizon', satz: 'How far the curvature reaches: the circle of what a body can act upon.', zitat: '', quelle: 'Deleuze, The Movement-Image, 1983, ch. 4, paraphrased' },
+      zeit: { begriff: 'la distance comme temps', satz: 'The farther a thing, the later it reaches me. Here distance becomes the past.', zitat: '« La perception dispose de l’espace dans l’exacte proportion où l’action dispose du temps. »', quelle: 'Bergson, Matter and Memory, 1896, ch. I (original)' }
     },
-    regler: [['Light', 'Interest', 'Screen'], ['Depth', 'Waves', 'Glitter'], ['Wind', 'Freedom', 'Grain']],
-    reglerGlosse: [['licht', 'interesse', 'schirm'], ['tiefe', 'wellen', 'funkeln'], ['wind', 'freiheit', 'koerner']],
+    regler: [['Light', 'Interest', 'Screen'], ['Depth', 'Waves', 'Glitter'], ['Wind', 'Freedom', 'Grain'], ['Gravity', 'Reach', 'Time']],
+    reglerGlosse: [['licht', 'interesse', 'schirm'], ['tiefe', 'wellen', 'funkeln'], ['wind', 'freiheit', 'koerner'], ['schwere', 'reichweite', 'zeit']],
     lesarten: [
       { kurz: 'Solid', titel: 'The black screen', wer: 'Bergson', geste: 'Rest your thumb: there the image stands out.', text: 'For Bergson the world is a set of images that all act on one another. The photograph is already taken inside things, but it is translucent: behind the plate the black screen is missing. A living body is such a screen. It lets through what does not concern it and stops what affects it. To perceive is therefore not to add but to subtract. Deleuze calls this the solid state of perception, the human one, with a centre. Here your thumb is the centre: where you hold, it turns black, and what remains is what moves and stands out.' },
       { kurz: 'Liquid', titel: 'Liquid perception', wer: 'Epstein, Vigo', geste: 'Tap and hold: waves carry the image.', text: 'The French school of the 1920s, Epstein, L’Herbier, Grémillon, Vigo, filmed water again and again. Deleuze sees in it a second state of perception: no longer bound to a fixed point, it glides, outlines become fluid, movement passes into movement. Here the image lies beneath a surface of water. Your finger makes waves, the waves gather the light, and whatever moves in the image makes waves of its own.' },
-      { kurz: 'Gas', titel: 'The kino-eye', wer: 'Vertov', geste: 'Hold or swipe: the grains break free.', text: 'Dziga Vertov wanted an eye that is not human: the camera as kino-eye, linking any point of the universe to any other. For Deleuze this is the gaseous state of perception: without a centre, molecular, in matter itself. Here the image consists of tens of thousands of grains. Where you hold or swipe, they come loose and drift on with the movement of the image, then slowly find their way back.' }
+      { kurz: 'Gas', titel: 'The kino-eye', wer: 'Vertov', geste: 'Hold or swipe: the grains break free.', text: 'Dziga Vertov wanted an eye that is not human: the camera as kino-eye, linking any point of the universe to any other. For Deleuze this is the gaseous state of perception: without a centre, molecular, in matter itself. Here the image consists of tens of thousands of grains. Where you hold or swipe, they come loose and drift on with the movement of the image, then slowly find their way back.' },
+      { kurz: 'Curvature', titel: 'The curvature', wer: 'Bergson, Deleuze', geste: 'Rest your thumb: the world bends towards you.', text: 'As soon as there is a centre, the world arranges itself around it. Things turn towards the living body the side on which it can act: what is near is action about to happen, what is far is action that still has time. Deleuze calls this the curvature of the universe; around the centre a horizon forms. Here the image bends around your thumb like space around a mass. What is near grows and is wholly present; what is far recedes and becomes the past.' }
     ],
     wenden: 'Flip camera', tonAn: 'Sound on', tonAus: 'Sound off',
     begriff: 'Concept', standbild: 'Still', aufnahme: 'Record', stopp: 'Stop',
@@ -103,7 +113,7 @@ const TEXTE = {
       ecran: { begriff: 'l’écran noir', satz: 'La photographie est déjà prise dans les choses, mais elle est translucide. Ton pouce est l’écran noir sur lequel l’image se détache.', zitat: '« … il manque, derrière la plaque, l’écran noir sur lequel se détacherait l’image. »', quelle: 'Bergson, Matière et mémoire, 1896, ch. I' },
       eau: { begriff: 'la perception liquide', satz: 'L’école française aimait l’eau. La perception y glisse, et les contours des choses deviennent fluides.', zitat: '', quelle: 'Deleuze, L’image-mouvement, 1983, ch. 5, en substance' },
       gaz: { begriff: 'la perception gazeuse', satz: 'Le ciné-œil de Vertov voit sans centre. La perception retourne dans la matière, dans le mouvement de chaque grain.', zitat: '« Я — киноглаз. Я — глаз механический. »', quelle: 'Vertov, Kinoki. Perevorot, 1923' },
-      lesarten: { begriff: 'trois états', satz: 'Trois états de la perception : solide, liquide, gazeux.', zitat: '', quelle: 'Deleuze, L’image-mouvement, 1983, ch. 5' },
+      lesarten: { begriff: 'trois états', satz: 'Trois états de la perception, solide, liquide, gazeux, et la courbure du monde autour d’un centre.', zitat: '', quelle: 'Deleuze, L’image-mouvement, 1983, ch. 4 et 5' },
       licht: { begriff: 'la lumière', satz: 'Les images sont lumière avant que personne ne les voie. La conscience ne vient pas comme une lampe, elle ne fait qu’arrêter la lumière.', zitat: '', quelle: 'Deleuze, L’image-mouvement, 1983, ch. 4, en substance' },
       interesse: { begriff: 'la soustraction', satz: 'Nous percevons la chose, moins ce qui ne nous intéresse pas. Plus l’intérêt est fort, moins il en reste.', zitat: '', quelle: 'Bergson, Matière et mémoire, 1896, ch. I, en substance' },
       schirm: { begriff: 'le centre d’indétermination', satz: 'Un corps vivant laisse passer ce qui lui est indifférent et arrête ce qui l’intéresse. Ici tu décides jusqu’où l’écran grandit et combien de temps il reste.', zitat: '', quelle: 'Bergson, Matière et mémoire, 1896, ch. I, en substance' },
@@ -112,14 +122,19 @@ const TEXTE = {
       funkeln: { begriff: 'la lumière de l’eau', satz: 'Les vagues rassemblent la lumière en réseaux sur le fond. L’œil est dans l’eau, non devant elle.', zitat: '', quelle: 'Deleuze, L’image-mouvement, 1983, ch. 5, en substance' },
       wind: { begriff: 'l’intervalle', satz: 'Vertov met n’importe quel point de l’univers en rapport avec n’importe quel autre. Entre deux mouvements il y a l’intervalle, et c’est là que se tient l’œil.', zitat: '', quelle: 'Deleuze, L’image-mouvement, 1983, ch. 5, en substance' },
       freiheit: { begriff: 'l’œil dans la matière', satz: 'Sans centre, la perception retourne dans les choses. Ici tu décides combien de temps les grains restent libres.', zitat: '', quelle: 'Deleuze, L’image-mouvement, 1983, ch. 5, en substance' },
-      koerner: { begriff: 'la perception moléculaire', satz: 'Plus les grains sont fins, plus il y a de noir entre eux : l’image comme foule de molécules.', zitat: '', quelle: 'Deleuze, L’image-mouvement, 1983, ch. 5, en substance' }
+      koerner: { begriff: 'la perception moléculaire', satz: 'Plus les grains sont fins, plus il y a de noir entre eux : l’image comme foule de molécules.', zitat: '', quelle: 'Deleuze, L’image-mouvement, 1983, ch. 5, en substance' },
+      courbure: { begriff: 'la courbure de l’univers', satz: 'Autour d’un centre vivant, le monde se courbe. Les choses lui tournent la face sur laquelle il peut agir.', zitat: '', quelle: 'Deleuze, L’image-mouvement, 1983, ch. 4, en substance' },
+      schwere: { begriff: 'l’action possible', satz: 'Plus une chose est proche, plus elle est action imminente. C’est pourquoi elle grandit.', zitat: '', quelle: 'Bergson, Matière et mémoire, 1896, ch. I, en substance' },
+      reichweite: { begriff: 'l’horizon', satz: 'Jusqu’où va la courbure : le cercle de ce sur quoi un corps peut agir.', zitat: '', quelle: 'Deleuze, L’image-mouvement, 1983, ch. 4, en substance' },
+      zeit: { begriff: 'la distance comme temps', satz: 'Plus une chose est lointaine, plus elle m’atteint tard. Ici la distance devient passé.', zitat: '« La perception dispose de l’espace dans l’exacte proportion où l’action dispose du temps. »', quelle: 'Bergson, Matière et mémoire, 1896, ch. I' }
     },
-    regler: [['Lumière', 'Intérêt', 'Écran'], ['Profondeur', 'Vagues', 'Reflets'], ['Vent', 'Liberté', 'Grain']],
-    reglerGlosse: [['licht', 'interesse', 'schirm'], ['tiefe', 'wellen', 'funkeln'], ['wind', 'freiheit', 'koerner']],
+    regler: [['Lumière', 'Intérêt', 'Écran'], ['Profondeur', 'Vagues', 'Reflets'], ['Vent', 'Liberté', 'Grain'], ['Gravité', 'Portée', 'Temps']],
+    reglerGlosse: [['licht', 'interesse', 'schirm'], ['tiefe', 'wellen', 'funkeln'], ['wind', 'freiheit', 'koerner'], ['schwere', 'reichweite', 'zeit']],
     lesarten: [
       { kurz: 'Solide', titel: 'L’écran noir', wer: 'Bergson', geste: 'Pose le pouce : là, l’image se détache.', text: 'Pour Bergson, le monde est un ensemble d’images qui agissent toutes les unes sur les autres. La photographie est déjà prise dans les choses, mais elle est translucide : derrière la plaque, il manque l’écran noir. Un corps vivant est un tel écran. Il laisse passer ce qui lui est indifférent et arrête ce qui l’intéresse. Percevoir, ce n’est donc pas ajouter, c’est soustraire. Deleuze appelle cela l’état solide de la perception, l’état humain, avec un centre. Ici ton pouce est le centre : là où tu tiens, tout devient noir, et il reste ce qui bouge et se détache.' },
       { kurz: 'Liquide', titel: 'La perception liquide', wer: 'Epstein, Vigo', geste: 'Toucher et tenir : les vagues portent l’image.', text: 'L’école française des années vingt, Epstein, L’Herbier, Grémillon, Vigo, n’a cessé de filmer l’eau. Deleuze y voit un deuxième état de la perception : elle n’est plus liée à un point fixe, elle glisse, les contours deviennent fluides, le mouvement passe dans le mouvement. Ici l’image repose sous une surface d’eau. Ton doigt fait des vagues, les vagues rassemblent la lumière, et ce qui bouge dans l’image fait lui-même des vagues.' },
-      { kurz: 'Gazeux', titel: 'Le ciné-œil', wer: 'Vertov', geste: 'Tenir ou glisser : les grains se libèrent.', text: 'Dziga Vertov voulait un œil qui ne soit pas humain : la caméra comme ciné-œil, qui met n’importe quel point de l’univers en rapport avec n’importe quel autre. Pour Deleuze, c’est l’état gazeux de la perception : sans centre, moléculaire, dans la matière même. Ici l’image est faite de dizaines de milliers de grains. Là où tu tiens ou glisses, ils se détachent et dérivent avec le mouvement de l’image, puis retrouvent lentement leur place.' }
+      { kurz: 'Gazeux', titel: 'Le ciné-œil', wer: 'Vertov', geste: 'Tenir ou glisser : les grains se libèrent.', text: 'Dziga Vertov voulait un œil qui ne soit pas humain : la caméra comme ciné-œil, qui met n’importe quel point de l’univers en rapport avec n’importe quel autre. Pour Deleuze, c’est l’état gazeux de la perception : sans centre, moléculaire, dans la matière même. Ici l’image est faite de dizaines de milliers de grains. Là où tu tiens ou glisses, ils se détachent et dérivent avec le mouvement de l’image, puis retrouvent lentement leur place.' },
+      { kurz: 'Courbure', titel: 'La courbure', wer: 'Bergson, Deleuze', geste: 'Pose le pouce : le monde se courbe vers toi.', text: 'Dès qu’il y a un centre, le monde s’ordonne autour de lui. Les choses tournent vers le corps vivant la face sur laquelle il peut agir : ce qui est proche est une action imminente, ce qui est lointain une action qui a encore le temps. Deleuze appelle cela la courbure de l’univers ; autour du centre se forme un horizon. Ici l’image se courbe autour de ton pouce comme l’espace autour d’une masse. Ce qui est proche grandit et n’est que présent ; ce qui est lointain recule et devient passé.' }
     ],
     wenden: 'Retourner', tonAn: 'Son activé', tonAus: 'Son coupé',
     begriff: 'Concept', standbild: 'Image', aufnahme: 'Enregistrer', stopp: 'Arrêter',
@@ -206,7 +221,7 @@ const ARBEIT = leicht ? 480 : telefon ? 720 : 1024;        // Arbeitsbilder (Geg
 const SCHARF_SEITE = leicht ? 960 : telefon ? 1280 : 1920; // die Gegenwart: so scharf, wie der Bildschirm sie zeigt
 const MAX_DPR = leicht ? 0.6 : 2;                          // fein wie der Bildschirm; ruckelt es, senkt tempoMessen die Auflösung
 const FLUSS_SEITE = leicht ? 110 : telefon ? 180 : 240;    // feinste Stufe des optischen Flusses, zugleich das Feld des Interesses
-const FELD_SEITE = leicht ? 192 : 384;                     // Feld des Daumens (Schirm, Freiheit)
+const FELD_SEITE = leicht ? 192 : 512;                     // Feld des Daumens (Schirm, Freiheit)
 const WELLE_SEITE = leicht ? 200 : telefon ? 380 : 520;    // Wasserfläche
 // Körner: so viele, dass sie am Telefon einen feinen Raster bilden; bei weniger Leistung weniger
 const KOERNER = Q.has('koerner') ? +Q.get('koerner') : leicht ? 14000 : telefon ? 90000 : 180000;   // ?koerner=… nur für Prüfungen
@@ -340,11 +355,13 @@ void main(){
   // Licht, das durch alles hindurchgeht: feine, wandernde Bahnen (die Wirkung aller Bilder auf alle)
   float bahn = sin((q.x * 0.6 + q.y) * 140.0 + drift * 18.0 - uT * 1.3);
   durch += pow(0.5 + 0.5 * bahn, 14.0) * 0.035 * uLicht * (0.4 + drift);
-  // der Schirm: sein Rand ist kein Kreis, sondern ein Fleck mit feinem Saum, wie Entwickler auf Papier
+  // der Schirm: kein Kreis, sondern ein Fleck wie Tusche in feuchtem Papier. Der Rand ist haarscharf
+  // (so breit wie ein Bildpunkt, über fwidth), davor ziehen feine Kapillaren ins Licht (Christian, 20.11.2026: feiner)
   float a = texture(uA, v).r;
-  float faser = fbm(q * 42.0) * 0.16 + fbm(q * 7.0 + 3.1) * 0.14;
-  float s = a + faser - 0.15;
-  float schirm = smoothstep(0.30, 0.42, s);
+  float faser = (fbm(q * 95.0) - 0.5) * 0.07 + (fbm(q * 21.0 + 3.1) - 0.5) * 0.09;
+  float s = a + faser;
+  float d = s - 0.3, w = max(fwidth(s), 1e-4);
+  float schirm = smoothstep(-w, w, d);
   // wahrgenommen: abgezogen, was nicht interessiert
   float i = texture(uI, v).r;
   float schwelle = mix(0.08, 0.8, uInteresse);
@@ -353,11 +370,16 @@ void main(){
   // was bleibt, glänzt am Rand ein wenig: dort wird das Licht zurückgeworfen
   wahr *= 1.0 + 0.35 * bleibt * (1.0 - bleibt) * 4.0;
   vec3 c = mix(durch, wahr, schirm);
-  // feine dunkle Linie, wo der Schirm beginnt (Entwicklungskante), und ein heller Hof davor
-  float kante = smoothstep(0.27, 0.30, s) * (1.0 - smoothstep(0.30, 0.33, s));
-  c *= 1.0 - 0.5 * kante;
-  float hof = smoothstep(0.05, 0.28, s) * (1.0 - schirm);
-  c += hof * 0.035;
+  // eine Haarlinie genau am Rand, innen ein Hauch Tiefe, aussen ein schmaler heller Hof
+  float linie = 1.0 - smoothstep(0.0, 1.4 * w, abs(d));
+  c *= 1.0 - 0.6 * linie;
+  c *= 1.0 - 0.35 * schirm * (1.0 - smoothstep(0.0, 0.07, d));
+  float vor = (1.0 - schirm) * (1.0 - smoothstep(0.0, 0.11, -d));
+  c += vor * 0.03;
+  // Kapillaren: haarfeine dunkle Adern, die vom Rand ins Licht laufen und ausdünnen
+  float ader = 1.0 - abs(2.0 * fbm(q * 48.0 + 7.3) - 1.0);
+  float kap = pow(ader, 26.0) * vor * smoothstep(-0.11, -0.01, d);
+  c = mix(c, c * 0.3, clamp(kap * 1.3, 0.0, 0.85));
   if (uZeige > 0.5) c = vec3(i, bleibt, texture(uA, v).r);   // ?zeige: Interesse, was bleibt, Schirm
   o = vec4(mix(vec3(0.039, 0.039, 0.043), c, innen(uRahmen)), 1.0);
 }`;
@@ -422,7 +444,7 @@ void main(){
 // Frei wird es, wo der Daumen gehalten hat: dann treibt es mit der Bewegung des Bildes und einem leisen Wirbelwind;
 // gebunden zieht es eine Feder zurück an seinen Platz.
 const FS_KOERNER = KOPF + `uniform highp sampler2D uS; uniform sampler2D uFl, uA; uniform vec2 uGitter; uniform float uDt, uT, uWind, uSeite, uStart, uFps;
-uniform vec4 uFinger[4]; uniform int uFN; uniform float uFingerR;
+uniform vec4 uFinger[4]; uniform int uFN; uniform float uFingerR, uDiff;
 vec2 wirbel(vec2 p){
   float e = 0.01;
   float a = fbm(p + vec2(0, e)), b = fbm(p - vec2(0, e)), c = fbm(p + vec2(e, 0)), d = fbm(p - vec2(e, 0));
@@ -438,11 +460,17 @@ void main(){
   // Fluss am Ort des Korns: Bildanteile je Videobild → je Sekunde
   vec2 fl = texture(uFl, clamp(p, 0.0, 1.0)).xy * uFps;
   vec2 w = wirbel(vec2(p.x * uSeite, p.y) * 2.6 + vec2(uT * 0.05, uT * 0.03)) * vec2(1.0 / uSeite, 1.0);
-  vec2 gas = fl * (1.2 + 5.0 * uWind) + w * (0.015 + 0.1 * uWind);
+  vec2 w2 = wirbel(vec2(p.x * uSeite, p.y) * 7.5 - vec2(uT * 0.11, uT * 0.07)) * vec2(1.0 / uSeite, 1.0);
+  vec2 gas = fl * (1.2 + 5.0 * uWind) + w * (0.06 + 0.22 * uWind) + w2 * 0.025;
   // gebunden: gedämpfte Feder; frei: die Geschwindigkeit folgt sanft dem Gas
   float k = 70.0 * pow(1.0 - frei, 2.0) + 0.15;
   vec2 feder = (heim - p) * k - vel * 2.0 * sqrt(k);
   vec2 acc = mix(feder, (gas - vel) * 1.6, frei);
+  // Diffusion: frei geworden stösst jedes Korn zufällig an (Brownsche Bewegung), dazu ein leichter Auftrieb wie warme Luft
+  float id = float(ij.x) + float(ij.y) * uGitter.x;
+  float takt = floor(uT * 30.0);
+  vec2 stoss = vec2(h21(vec2(id * 0.0137, takt)), h21(vec2(id * 0.0291 + 5.1, takt + 0.5))) - 0.5;
+  acc += (stoss * uDiff * vec2(1.0 / uSeite, 1.0) + vec2(0.0, 0.1 + 0.15 * uWind)) * frei;
   // der Daumen stösst die Körner beiseite und nimmt sie im Wischen mit
   vec2 qp = vec2(p.x * uSeite, p.y);
   for (int i = 0; i < 4; i++) {
@@ -459,10 +487,36 @@ void main(){
   o = vec4(p, vel);
 }`;
 // Jedes Korn ein kleiner, weicher Fleck; in Bewegung zieht es sich zu einem Strich (wie eine lange belichtete Spur).
+// Grund unter den Körnern: Solange sie gebunden sind, ist das Bild ganz (kein Raster zwischen den Körnern,
+// Christian 20.11.2026). Wo sie frei werden, bleibt Dunkel zurück.
+const FS_GASGRUND = KOPF + `uniform sampler2D uQ, uA; uniform vec4 uRahmen;
+void main(){
+  float frei = smoothstep(0.02, 0.4, texture(uA, v).r);
+  vec3 c = texture(uQ, v).rgb * pow(1.0 - frei, 1.5);
+  o = vec4(mix(vec3(0.02, 0.02, 0.024), c, innen(uRahmen)), 1.0);
+}`;
+// Rauch: Was die freien Körner hinterlassen, steigt auf, wirbelt und verweht (Rückkopplung im Bild)
+const FS_RAUCH = KOPF + `uniform sampler2D uAlt, uNeu; uniform vec2 uPx; uniform float uDt, uT, uSeite, uWind, uHalt, uLeeren;
+vec2 wirbel(vec2 p){
+  float e = 0.01;
+  float a = fbm(p + vec2(0, e)), b = fbm(p - vec2(0, e)), c = fbm(p + vec2(e, 0)), d = fbm(p - vec2(e, 0));
+  return vec2(a - b, -(c - d)) / (2.0 * e);
+}
+void main(){
+  vec2 q = vec2(v.x * uSeite, v.y);
+  vec2 w = wirbel(q * 2.4 + vec2(uT * 0.03, -uT * 0.07)) * (0.05 + 0.13 * uWind) + wirbel(q * 8.0 - uT * 0.13) * 0.018;
+  vec2 vel = w * vec2(1.0 / uSeite, 1.0) + vec2(0.0, 0.05 + 0.08 * uWind);
+  vec2 s = v - vel * uDt;
+  vec4 a = texture(uAlt, s) * 0.6 + 0.1 * (texture(uAlt, s + vec2(uPx.x, 0)) + texture(uAlt, s - vec2(uPx.x, 0)) + texture(uAlt, s + vec2(0, uPx.y)) + texture(uAlt, s - vec2(0, uPx.y)));
+  a *= exp(-uDt / uHalt) * (1.0 - uLeeren);
+  o = a + texture(uNeu, v) * 0.007;
+}`;
+const FS_RAUCHZEIGEN = KOPF + `uniform sampler2D uR;
+void main(){ vec3 c = texture(uR, v).rgb; o = vec4(1.0 - exp(-c * 1.0), 0.0); }`;
 const VS_KORN = `#version 300 es
 precision highp float; precision highp int;
 in vec2 a; out vec2 vq; out vec3 vc; out float vf;
-uniform highp sampler2D uS; uniform sampler2D uBild, uA; uniform ivec2 uGitter; uniform float uSeite, uGroesse, uStreck;
+uniform highp sampler2D uS; uniform sampler2D uBild, uA; uniform ivec2 uGitter; uniform float uSeite, uGroesse, uStreck, uNurFrei;
 float lu(vec3 c){ return dot(c, vec3(0.2126, 0.7152, 0.0722)); }
 void main(){
   ivec2 ij = ivec2(gl_InstanceID % uGitter.x, gl_InstanceID / uGitter.x);
@@ -476,20 +530,64 @@ void main(){
   // die Grösse folgt der Helligkeit: dunkle Stellen bleiben fein, helle schliessen sich
   float l = lu(farbe);
   float r = (1.0 / float(uGitter.y)) * mix(0.42 + 0.75 * sqrt(l), 1.15, uGroesse);
-  float zieh = 1.0 + min(sp * uStreck, 5.0);
+  float weit = smoothstep(0.0, 0.22, length((s.xy - heim) * vec2(uSeite, 1.0)));
+  r *= 1.0 + 1.8 * weit + 1.5 * uNurFrei;
+  float zieh = 1.0 + min(sp * uStreck, 5.0) * (1.0 - 0.6 * weit);
   vec2 off = (dir * a.x * zieh + nrm * a.y) * r;
   off.x /= uSeite;
   gl_Position = vec4((s.xy + off) * 2.0 - 1.0, 0.0, 1.0);
-  vq = vec2(a.x, a.y); vf = frei;
+  vq = vec2(a.x, a.y); vf = mix(mix(1.0, 0.16, weit) * smoothstep(0.0, 0.12, frei + weit), frei * 0.5, uNurFrei);
   // frei geworden leuchtet das Korn auf und wird ein wenig kühler, wie Staub im Projektorlicht
-  vc = farbe * (1.0 + 0.55 * frei) + vec3(0.02, 0.03, 0.05) * frei;
+  vc = farbe * (1.0 + 0.55 * frei * (1.0 - weit)) + vec3(0.02, 0.03, 0.05) * frei;
 }`;
 const FS_KORN = `#version 300 es
 precision highp float; in vec2 vq; in vec3 vc; in float vf; out vec4 o;
 void main(){
   float r2 = dot(vq, vq);
-  float al = exp(-r2 * 2.6) * (1.0 - smoothstep(0.85, 1.0, r2));
+  float al = exp(-r2 * 2.6) * (1.0 - smoothstep(0.85, 1.0, r2)) * vf;
   o = vec4(vc * al, al);
+}`;
+
+// ---------- Lesart IV: Krümmung. Die Welt biegt sich um das Zentrum (Cinéma 1, Kap. 4) ----------
+// Das lebendige Bild ist ein Zentrum der Unbestimmtheit: Um den Daumen krümmt sich das Universum.
+// Nahes wächst (es ist schon Handlung), Fernes flieht und kommt aus der Vergangenheit (es lässt Zeit).
+const FS_KRUEMMUNG = KOPF + `uniform sampler2D uScharf, uE; uniform vec2 uZ; uniform float uK, uR, uZeit, uSeite, uT; uniform vec4 uRahmen;
+float drin(vec2 w){ return step(uRahmen.x, w.x) * step(w.x, uRahmen.z) * step(uRahmen.y, w.y) * step(w.y, uRahmen.w); }
+float rad(float r, float k){
+  // radiale Abbildung, streng steigend: innen vergrössert (Lupe), aussen gestaucht (die Ferne weicht zurück)
+  float x = r / uR;
+  return r * (1.0 - 0.62 * k * exp(-x * x)) + 0.6 * k * uR * x * x * smoothstep(0.5, 2.0, x);
+}
+vec3 hole(vec2 q, float k, out float im){
+  vec2 c = vec2(uZ.x * uSeite, uZ.y), d = q - c; float r = length(d);
+  vec2 w = c + d * (rad(r, k) / max(r, 1e-5));
+  vec2 t = vec2(w.x / uSeite, w.y);
+  im = drin(t);
+  float fern = smoothstep(0.15 * uR, 1.6 * uR, r) * min(1.0, k * 1.6);
+  vec3 jetzt = texture(uScharf, t).rgb, war = texture(uE, t).rgb;
+  return mix(jetzt, war, fern * uZeit);
+}
+void main(){
+  vec2 q = vec2(v.x * uSeite, v.y), c = vec2(uZ.x * uSeite, uZ.y);
+  float r = length(q - c), k = uK;
+  // je weiter weg, desto stärker zerfällt das Licht in seine Farben (die Krümmung trennt sie)
+  float sp = 0.035 * k * smoothstep(0.2 * uR, 1.8 * uR, r);
+  float m0, m1, m2;
+  vec3 c0 = hole(q, k * (1.0 + sp), m0), c1 = hole(q, k, m1), c2 = hole(q, k * (1.0 - sp), m2);
+  vec3 col = vec3(c0.r, c1.g, c2.b) * vec3(m0, m1, m2);
+  // die Ferne verliert Licht und Sättigung; nahe am Zentrum ist die Welt dicht und warm
+  float x = r / uR, nah = exp(-x * x), ka = max(k, 0.0);
+  float l = lu(col);
+  col = mix(col, vec3(l), 0.45 * ka * (1.0 - nah));
+  col *= 1.0 - 0.55 * ka * smoothstep(0.6, 2.4, x);
+  col *= 1.0 + 0.08 * ka * nah;
+  // Isochronen: haarfeine Linien gleicher Wartezeit, so fein wie ein Bildpunkt, nur wo die Welt sich biegt
+  float g = rad(r, k) / uR * 7.0;
+  float fw = max(fwidth(g), 1e-4);
+  float iso = 1.0 - smoothstep(0.0, 1.2 * fw, 0.5 - abs(fract(g) - 0.5));
+  iso *= ka * smoothstep(0.25, 0.9, x) * (1.0 - smoothstep(1.2, 3.0, x));
+  col = mix(col, col * 0.4 + 0.03, 0.4 * iso);
+  o = vec4(mix(vec3(0.039, 0.039, 0.043), col, m1), 1.0);
 }`;
 
 // ---------- Nachbearbeitung: Leuchten, glatte Kanten, Filmkorn (wie in den anderen Operatoren) ----------
@@ -600,13 +698,13 @@ function rechne(prog, ziel, tex, setze) {
 }
 
 let flussB = 0, scharfTex = null, scharfB = 0, scharfH = 0, arbeitB = 0, arbeitH = 0, welleB = 0, welleH = 0, feldB = 0, feldH = 0;
-let kornGx = 0, kornGy = 0, koernerAn = false, koernerNeu = true;
+let rauchLeeren = true, kornGx = 0, kornGy = 0, koernerAn = false, koernerNeu = true;
 if (gl) {
   halbFloat = !!gl.getExtension('EXT_color_buffer_float');
   gl.getExtension('OES_texture_half_float_linear');
   try {
     for (const [n, fs] of Object.entries({ kopie: FS_KOPIE, ema: FS_EMA, lum: FS_LUM, lk: FS_LK, fglatt: FS_FGLATT, grund: FS_GRUND, interesse: FS_INTERESSE,
-      feld: FS_FELD, fest: FS_FEST, welle: FS_WELLE, fluessig: FS_FLUESSIG, koerner: FS_KOERNER, hell: FS_HELL, weich: FS_WEICH, zusammen: FS_ZUSAMMEN })) P[n] = programm(fs);
+      feld: FS_FELD, fest: FS_FEST, welle: FS_WELLE, fluessig: FS_FLUESSIG, kruemmung: FS_KRUEMMUNG, koerner: FS_KOERNER, gasgrund: FS_GASGRUND, rauch: FS_RAUCH, rauchzeigen: FS_RAUCHZEIGEN, hell: FS_HELL, weich: FS_WEICH, zusammen: FS_ZUSAMMEN })) P[n] = programm(fs);
     P.korn = programm(FS_KORN, VS_KORN);
   } catch (e) { spur('Shader: ' + String(e.message).slice(0, 140)); console.error(e); melden(TEXTE[sprache].keinGL); }
   const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
@@ -650,7 +748,7 @@ function groesse() {
   const [ab, ah] = seitenMass(ARBEIT);
   if (ab !== arbeitB || ah !== arbeitH) {
     arbeitB = ab; arbeitH = ah;
-    paar('jetzt', ab, ah, false); paar('alle', ab, ah); paar('grund', ab, ah);
+    paar('jetzt', ab, ah, false); paar('alle', ab, ah); paar('grund', ab, ah); paar('rauch', ab, ah); zielBauen('kornfrei', ab, ah);
     grundNeu = true;
   }
   const [fb, fh] = seitenMass(FLUSS_SEITE);
@@ -814,7 +912,7 @@ function scharfFangen() {
 
 // ---------- Regler und Lesarten ----------
 // Je Lesart drei Regler mit eigenem Sinn; die Werte bleiben je Lesart erhalten.
-const WERTE = [[0.6, 0.5, 0.5], [0.5, 0.5, 0.6], [0.5, 0.5, 0.45]];
+const WERTE = [[0.6, 0.5, 0.5], [0.5, 0.5, 0.6], [0.5, 0.5, 0.45], [0.6, 0.5, 0.5]];
 let lesart = 0;
 const regler = ['r-a', 'r-b', 'r-c'];
 function reglerBeschriften() {
@@ -833,7 +931,7 @@ function lesartWaehlen(nr, still) {
   reglerBeschriften();
   lesartText();
   // jede Lesart beginnt unberührt: kein Schirm, keine Wellen, alle Körner an ihrem Platz
-  if (war !== nr) { feldLeeren = true; welleLeeren = true; koernerNeu = true; menge = 0; }
+  if (war !== nr) { feldLeeren = true; welleLeeren = true; koernerNeu = true; menge = 0; kraft = 0; kraftV = 0; }
   if (still) return;
   const z = TEXTE[sprache].lesarten[nr], g = $('geste');
   g.textContent = z.titel + ' · ' + z.wer; g.hidden = false; g.classList.remove('weg');
@@ -859,6 +957,21 @@ function stempeln(x, y, menge, x0 = x, y0 = y, r = pinselRadius(), r0 = r) {
 }
 // grobes Abbild für Klang, Ring und Glossen: wie viel ist ausgewählt, wie stark bewegt sich das Wasser?
 let menge = 0, feldLeeren = true, welleLeeren = true;
+
+// Krümmung: Zentrum kz (Leinwand 0 bis 1), Kraft mit Feder
+const kz = [0.5, 0.5]; let kraft = 0, kraftV = 0;
+function kruemmen(t, dt) {
+  let ziel = null;
+  for (const f of finger.values()) { ziel = aufLeinwand(f.x, f.y); break; }
+  if (!ziel && geisterStart > 0 && t >= geisterStart && geisterVor) ziel = { x: geisterVor[0], y: geisterVor[1] };
+  if (ziel) { const a = 1 - Math.exp(-dt / 0.12); kz[0] += (ziel.x - kz[0]) * a; kz[1] += (ziel.y - kz[1]) * a; }
+  const soll = ziel ? 0.25 + 0.75 * WERTE[3][0] : 0;
+  // gedämpfte Feder: halten zieht langsam hinein (Schwere), loslassen lässt die Welt nachschwingen
+  const steif = ziel ? 10 : 26, daempf = ziel ? 6.5 : 4.2;
+  kraftV += ((soll - kraft) * steif - kraftV * daempf) * dt;
+  kraft = Math.max(-0.12, Math.min(1, kraft + kraftV * dt));
+  menge = Math.max(0, kraft);
+}
 
 // Nur im Vorspann führt eine unsichtbare Hand; sonst beginnt alles erst mit der Berührung (Christian, 19.11.2026)
 const VORSPANN = Q.has('vorspann'), ZEIGE = Q.has('zeige');
@@ -905,7 +1018,8 @@ leinwand.addEventListener('pointerdown', (e) => {
   haltZeigen(e.clientX, e.clientY);
   geisterStart = -1;
   if (lesart === 1) { const p = aufLeinwand(e.clientX, e.clientY); tropfen(p.x, p.y, 1.0); }
-  glosse(['ecran', 'eau', 'gaz'][lesart]);
+  glosse(['ecran', 'eau', 'gaz', 'courbure'][lesart]);
+  if (lesart === 3 && finger.size === 1) { const p = aufLeinwand(e.clientX, e.clientY); if (kraft < 0.05) { kz[0] = p.x; kz[1] = p.y; } }
 });
 leinwand.addEventListener('pointermove', (e) => {
   const f = finger.get(e.pointerId); if (!f) return;
@@ -1008,7 +1122,10 @@ function bild(ms) {
   rechne(P.grund, G.schreiben(), { uAlt: G.lesen(), uJetzt: jetzt }, (u) => gl.uniform1f(u.uRate, grundNeu ? 1 : 1 - Math.exp(-dt / (t - grundStart < 1 ? 0.2 : 5))));
   G.tauschen(); if (grundNeu) grundStart = t; grundNeu = false;
   const E = ziele.alle;
-  if (lesart === 0) { rechne(P.ema, E.schreiben(), { uAlt: E.lesen(), uJetzt: jetzt }, (u) => gl.uniform1f(u.uRate, alleNeu ? 1 : 1 - Math.exp(-dt / 1.6))); E.tauschen(); alleNeu = false; }
+  if (lesart === 0 || lesart === 3) {
+    const tau = lesart === 0 ? 1.6 : 0.4 + 3.2 * WERTE[3][2];
+    rechne(P.ema, E.schreiben(), { uAlt: E.lesen(), uJetzt: jetzt }, (u) => gl.uniform1f(u.uRate, alleNeu ? 1 : 1 - Math.exp(-dt / tau))); E.tauschen(); alleNeu = false;
+  }
   else alleNeu = true;
 
   // 3. der optische Fluss zwischen dem vorigen und diesem Bild (nur wenn ein neues kam)
@@ -1043,7 +1160,7 @@ function bild(ms) {
     if (lesart === 1) {
       // gehalten: ein Tropfen im Takt, wie ein Herzschlag auf dem Wasser
       if (t - f.tropfen > 0.5) { f.tropfen = t; tropfen(p.x, p.y, 0.55 + 0.25 * ruhig); }
-    } else stempeln(p.x, p.y, (0.3 + 0.9 * ruhig) * dt);
+    } else if (lesart !== 3) stempeln(p.x, p.y, (0.3 + 0.9 * ruhig) * dt);
     if (lesart === 2) fingerFeld.push([p.x, p.y, f.vx / innerHeight * 0.35, -f.vy / innerHeight * 0.35]);
     f.vx *= Math.pow(0.02, dt); f.vy *= Math.pow(0.02, dt);
   }
@@ -1051,10 +1168,10 @@ function bild(ms) {
 
   // 6a. fest und gasförmig: das Feld des Daumens
   const A = ziele.a;
-  if (lesart !== 1) {
+  if (lesart === 0 || lesart === 2) {
     if (feldLeeren) { for (const z of [A.lesen(), A.schreiben()]) { gl.bindFramebuffer(gl.FRAMEBUFFER, z.fb); gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT); } feldLeeren = false; }
     const halten = lesart === 0 ? 1.2 + 9 * WERTE[0][2] : 0.8 + 10 * WERTE[2][1];
-    const wachs = lesart === 0 ? 0.35 + 1.2 * WERTE[0][2] : 0.6;
+    const wachs = lesart === 0 ? 0.35 + 1.2 * WERTE[0][2] : 0.9;
     rechne(P.feld, A.schreiben(), { uAlt: A.lesen(), uI: interesse }, (u) => {
       gl.uniform2f(u.uPx, 1 / feldB, 1 / feldH); gl.uniform4fv(u.uStempel, stempel); gl.uniform4fv(u.uStempelR, stempelR);
       gl.uniform1i(u.uN, stempelN); gl.uniform1f(u.uAb, dt / halten); gl.uniform1f(u.uSchritt, FELD_SEITE / 256); gl.uniform1f(u.uSeite, seite);
@@ -1082,6 +1199,8 @@ function bild(ms) {
     wellenEnergie = Math.min(1, wellenEnergie * Math.exp(-dt / (0.8 + 3 * WERTE[1][1])) + summe * 0.35);
     menge = wellenEnergie;
   }
+  // 6d. Krümmung: das Zentrum folgt dem Daumen mit etwas Trägheit, die Kraft federt (losgelassen schwingt die Welt zurück)
+  if (lesart === 3) kruemmen(t, dt);
   stempelN = 0;
 
   // 6c. gasförmig: die Körner
@@ -1093,9 +1212,9 @@ function bild(ms) {
     rechne(P.koerner, K.schreiben(), { uS: K.lesen(), uFl: fluss, uA: A.lesen() }, (u) => {
       gl.uniform2f(u.uGitter, kornGx, kornGy); gl.uniform1f(u.uDt, dt); gl.uniform1f(u.uT, t % 1000); gl.uniform1f(u.uWind, WERTE[2][0]);
       gl.uniform1f(u.uSeite, seite); gl.uniform1f(u.uStart, koernerNeu ? 1 : 0); gl.uniform1f(u.uFps, fps);
-      gl.uniform4fv(u.uFinger, fi); gl.uniform1i(u.uFN, Math.min(4, fingerFeld.length)); gl.uniform1f(u.uFingerR, pinselRadius() * 0.9);
+      gl.uniform1f(u.uDiff, 4.0 + 10.0 * WERTE[2][1]); gl.uniform4fv(u.uFinger, fi); gl.uniform1i(u.uFN, Math.min(4, fingerFeld.length)); gl.uniform1f(u.uFingerR, pinselRadius() * 0.9);
     });
-    K.tauschen(); koernerNeu = false;
+    K.tauschen(); rauchLeeren = koernerNeu; koernerNeu = false;
   }
 
   // 7. die Lesart
@@ -1111,10 +1230,30 @@ function bild(ms) {
       gl.uniform2f(u.uPxH, 1 / welleB, 1 / welleH); gl.uniform1f(u.uTiefe, WERTE[1][0]); gl.uniform1f(u.uFunkeln, WERTE[1][2]);
       gl.uniform1f(u.uSeite, seite); gl.uniform1f(u.uT, t % 1000); gl.uniform4f(u.uRahmen, ...rahmenGL);
     });
+  } else if (lesart === 3) {
+    rechne(P.kruemmung, sz, { uScharf: scharfTex, uE: E.lesen() }, (u) => {
+      gl.uniform2f(u.uZ, kz[0], kz[1]); gl.uniform1f(u.uK, kraft); gl.uniform1f(u.uR, 0.12 + 0.5 * WERTE[3][1]);
+      gl.uniform1f(u.uZeit, WERTE[3][2]); gl.uniform1f(u.uSeite, seite); gl.uniform1f(u.uT, t % 1000); gl.uniform4f(u.uRahmen, ...rahmenGL);
+    });
   } else {
     gl.bindFramebuffer(gl.FRAMEBUFFER, sz.fb); gl.viewport(0, 0, sz.b, sz.h);
-    gl.clearColor(0.02, 0.02, 0.024, 1); gl.clear(gl.COLOR_BUFFER_BIT);
-    if (koernerAn) kornZeichnen(sz, jetzt, A.lesen(), seite);
+    if (koernerAn) rechne(P.gasgrund, sz, { uQ: scharfTex, uA: A.lesen() }, (u) => gl.uniform4f(u.uRahmen, ...rahmenGL));
+    else { gl.clearColor(0.02, 0.02, 0.024, 1); gl.clear(gl.COLOR_BUFFER_BIT); }
+    if (koernerAn) {
+      // erst die freien Körner weich in den Rauch, dann steigt der Rauch und verweht, zuletzt die Körner selbst
+      const kf = ziele.kornfrei, R = ziele.rauch;
+      gl.bindFramebuffer(gl.FRAMEBUFFER, kf.fb); gl.viewport(0, 0, kf.b, kf.h); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+      kornZeichnen(kf, jetzt, A.lesen(), seite, 1);
+      rechne(P.rauch, R.schreiben(), { uAlt: R.lesen(), uNeu: kf }, (u) => {
+        gl.uniform2f(u.uPx, 1 / kf.b, 1 / kf.h); gl.uniform1f(u.uDt, Math.min(dt, 0.05)); gl.uniform1f(u.uT, t % 1000); gl.uniform1f(u.uSeite, seite);
+        gl.uniform1f(u.uWind, WERTE[2][0]); gl.uniform1f(u.uHalt, 0.6 + 1.6 * WERTE[2][1]); gl.uniform1f(u.uLeeren, rauchLeeren ? 1 : 0);
+      });
+      R.tauschen(); rauchLeeren = false;
+      gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
+      rechne(P.rauchzeigen, sz, { uR: R.lesen() });
+      gl.disable(gl.BLEND);
+      kornZeichnen(sz, jetzt, A.lesen(), seite, 0);
+    }
     else rechne(P.kopie, sz, { uQ: scharfTex });   // ohne Float-Ziel keine Körner: dann wenigstens das Bild
   }
   nachbearbeiten(t);
@@ -1124,15 +1263,15 @@ function bild(ms) {
   if (ersterLauf && bilderGezaehlt > 2) { ersterLauf = false; spur('✓ läuft'); }
   requestAnimationFrame(bild);
 }
-function kornZeichnen(sz, bildTex, feld, seite) {
+function kornZeichnen(sz, bildTex, feld, seite, nurFrei) {
   const p = P.korn;
   gl.useProgram(p);
   gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, ziele.korn.lesen().tex); gl.uniform1i(p.u.uS, 1);
   gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, bildTex.tex); gl.uniform1i(p.u.uBild, 2);
   gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, feld.tex); gl.uniform1i(p.u.uA, 3);
   gl.uniform2i(p.u.uGitter, kornGx, kornGy); gl.uniform1f(p.u.uSeite, seite);
-  gl.uniform1f(p.u.uGroesse, WERTE[2][2]); gl.uniform1f(p.u.uStreck, 6);
-  gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+  gl.uniform1f(p.u.uGroesse, WERTE[2][2]); gl.uniform1f(p.u.uStreck, 4); gl.uniform1f(p.u.uNurFrei, nurFrei);
+  gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, nurFrei ? gl.ONE : gl.ONE_MINUS_SRC_ALPHA);
   gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, kornGx * kornGy);
   gl.disable(gl.BLEND);
 }
@@ -1144,9 +1283,9 @@ function nachbearbeiten(t) {
   rechne(P.weich, gB, { uQ: gA }, (u) => gl.uniform2f(u.uRichtung, 1.6 / b4, 0));
   rechne(P.weich, gA, { uQ: gB }, (u) => gl.uniform2f(u.uRichtung, 0, 1.6 / h4));
   rechne(P.zusammen, null, { uSzene: sz, uGlow: gA }, (u) => {
-    gl.uniform2f(u.uPx, 1 / B, 1 / H); gl.uniform1f(u.uGlowStaerke, [0.25, 0.4, 0.55][lesart]);
+    gl.uniform2f(u.uPx, 1 / B, 1 / H); gl.uniform1f(u.uGlowStaerke, [0.25, 0.4, 0.55, 0.3][lesart]);
     gl.uniform3f(u.uGlowFarbe, ...(lesart === 1 ? [0.85, 0.97, 1.0] : [1, 1, 1])); gl.uniform1f(u.uT, t % 100);
-    gl.uniform1f(u.uKorn, [0.035, 0.03, 0.02][lesart]);
+    gl.uniform1f(u.uKorn, [0.035, 0.03, 0.02, 0.03][lesart]);
   });
 }
 
@@ -1274,7 +1413,7 @@ if (Q.has('spur')) {
 lesartWaehlen(0, true);
 uebersetzen();
 // Direktstart für Tests und Vorführungen: ?beispiel, ?lesart=0|1|2
-if (Q.has('lesart')) lesartWaehlen(Math.max(0, Math.min(2, +Q.get('lesart') || 0)), true);
+if (Q.has('lesart')) lesartWaehlen(Math.max(0, Math.min(3, +Q.get('lesart') || 0)), true);
 if (Q.has('beispiel')) beispielStarten();
 // für Prüfungen: Werte setzen und den Finger von aussen führen
 window.__wahrnehmung = { WERTE, stempeln, tropfen, finger, lesartWaehlen, fingerFeld: () => fingerFeld };
