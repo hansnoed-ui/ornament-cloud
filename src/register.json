@@ -140,6 +140,15 @@
    "kurz": "Prototyp der Startseite: ein Kristall, dessen acht Facetten das eigene Material durch je einen Begriff von Deleuze zeigen."
   },
   {
+   "id": "brillant-titel",
+   "name": "Brillante Ideen (Titelsequenz)",
+   "tuer": "spielen-denken",
+   "art": "App",
+   "status": "direktlink",
+   "adresse": "alpha/brillant/",
+   "kurz": "Beispiel-Website: der Punkt hinter «Brillante Ideen» ist ein Brillant; dreht man ihn, legen sich die Bereiche als Glasschichten über die Seite."
+  },
+  {
    "id": "kunsttheorie",
    "name": "Theorie der Kunst zwischen Luhmann und Deleuze",
    "tuer": "spielen-denken",
