@@ -7,7 +7,7 @@
 // aus dem das Chaos die Momente durcheinanderwirft und die Ringe des Refrains ihre Echos holen.
 // WebGL2, ohne Bibliotheken, ohne CDN. Aufbau, Quellen, Aufnahme, Glossen und Einstieg wie Figur und Fläche.
 
-import { klangStarten, klangBild, klangAn, klangIstAn, klangSpur, klangSummen, klangSchlag, klangGlas } from './klang.js?v=1';
+import { klangStarten, klangBild, klangAn, klangIstAn, klangSpur, klangSummen, klangSchlag, klangGlas } from './klang.js?v=2';
 import { aufnahmeDatei } from '../gemeinsam/aufnahme.js?v=1';
 
 const $ = (id) => document.getElementById(id);
@@ -262,6 +262,10 @@ void main(){
   vec2 uv = clamp(v + vec2(d.x / uSeite, d.y), 0.002, 0.998);
   float a = smoothstep(0.2, 0.8, fbm(q * 1.1 + w * 1.8 + vec2(t * 0.02, -t * 0.013))) * (uN - 1.0) * (0.3 + 0.7 * uWucht);
   vec3 c = hist(uv, a);
+  // die Strömung zerlegt das Licht ein wenig: Rot und Blau treiben an ihren Rändern auseinander
+  vec2 sp = vec2(d.x / uSeite, d.y) * 0.06;
+  c.r = mix(c.r, hist(clamp(uv + sp, 0.002, 0.998), a).r, 0.8);
+  c.b = mix(c.b, hist(clamp(uv - sp, 0.002, 0.998), a).b, 0.8);
   float l = lu(c);
   // Nacht: entfärbt, kalt, dunkel; hellere Schlieren wie Mondlicht auf bewegtem Wasser
   float schliere = smoothstep(0.5, 0.9, fbm(q * vec2(1.6, 6.0) + w2 * 3.5 + vec2(0.0, t * 0.05)));
@@ -316,17 +320,24 @@ void main(){
       s += (texture(uScharf, v + nachUV(quer * amp)).rgb + texture(uScharf, v - nachUV(quer * amp)).rgb) * 0.1;
       vec3 geordnet = s * vec3(1.05, 1.0, 0.93);
       geordnet = mix(geordnet, geordnet * geordnet * (3.0 - 2.0 * geordnet), 0.25);
-      // Sand: eine haarfeine Linie auf dem Knoten, dazu Körner, die nahe der Linie liegen bleiben
-      float linie = 1.0 - smoothstep(0.35, 1.3, dn / uDpr);
+      // Sand: eine Linie auf dem Knoten. Ihre Stärke folgt der Platte wie echter Sand: wo die Platte flach schwingt,
+      // liegt mehr Sand (breiter), wo sie steil ist, nur ein Haar. Daneben eine schmale Kerbe: der Sand wirft ein Relief.
+      float lw = clamp(0.05 * uHpx / gP, 0.55 * uDpr, 1.25 * uDpr);
+      float linie = 1.0 - smoothstep(lw * 0.5 - 0.5, lw * 0.5 + 0.6, dn);
+      float kerbe = smoothstep(lw * 0.5 + 0.2, lw * 0.5 + 1.2, dn) * (1.0 - smoothstep(lw * 0.5 + 1.4, lw * 0.5 + 3.6 * uDpr, dn));
       vec2 zelle = floor(gl_FragCoord.xy / (2.6 * uDpr));
       vec2 j = vec2(h21(zelle), h21(zelle + 7.31));
       vec2 mitte = (zelle + 0.15 + 0.7 * j) * 2.6 * uDpr;
       float dd = length(gl_FragCoord.xy - mitte) / uDpr;
       float nahe = exp(-dn * dn / (2.0 * pow(5.0 * uDpr, 2.0)));
-      float korn = (1.0 - smoothstep(0.45, 1.05, dd)) * step(h21(zelle + 3.1), nahe * 0.85) * (0.55 + 0.45 * h21(zelle + floor(uT * 7.0)));
+      float korn = (1.0 - smoothstep(0.35, 0.9, dd)) * step(h21(zelle + 3.1), nahe * 0.5) * (0.55 + 0.45 * h21(zelle + floor(uT * 7.0)));
       vec3 sand = vec3(1.0, 0.94, 0.78);
+      vec3 quarz = mix(sand, vec3(0.86, 0.92, 1.0), h21(zelle + 9.7));        // jedes Korn ein wenig anders, wie Quarzsand
+      float funke = step(0.985, h21(zelle + floor(uT * 3.0 + j.x * 3.0)));       // ab und zu fängt ein Korn das Licht
       float menge = uPuls.z * zone;
-      geordnet = mix(geordnet, sand, clamp(linie * 0.8 + korn * 0.75, 0.0, 1.0) * menge);
+      geordnet *= 1.0 - 0.28 * kerbe * menge;
+      geordnet = mix(geordnet, sand, clamp(linie * 0.85, 0.0, 1.0) * menge);
+      geordnet = mix(geordnet, quarz * (1.0 + 1.6 * funke), clamp(korn * 0.8, 0.0, 1.0) * menge);
       geordnet += sand * nahe * 0.06 * menge;
       // ein feiner Ring bei jeder Note, der hinausläuft
       float pr = abs(r - uPuls.x) * uHpx / uDpr;
@@ -353,13 +364,17 @@ void main(){
       vec3 lf = vec3(1.0, 0.95, 0.86);
       c = mix(c, lf, clamp(linie * (0.55 + 0.45 * uRev.x) + linie2, 0.0, 1.0) * uRev.y);
       c += lf * 0.08 * uRev.x * exp(-dF * dF / 60.0) * uRev.y;
+      // das Revier liegt wie ein ausgeschnittenes Blatt über dem Chaos: draussen ein weicher Schatten, innen ein Hauch Licht
+      c *= 1.0 - 0.42 * exp(-max(-dF, 0.0) / 11.0) * (1.0 - innen) * uRev.y;
+      c += lf * 0.035 * exp(-max(dF, 0.0) / 26.0) * innen * uRev.y;
     }
     // die Ringe des Refrains: eine feine Front, dahinter ein schmales Band mit dem Bild von damals, leicht gebrochen
-    vec3 echoSumme = vec3(0.0); float echoGew = 0.0, front = 0.0; vec2 brechung = vec2(0.0);
+    vec3 echoSumme = vec3(0.0); float echoGew = 0.0; vec3 front = vec3(0.0); vec2 brechung = vec2(0.0);
     for (int i = 0; i < 12; i++) { if (i >= uRingN) break;
       vec4 R4 = uRing[i]; vec2 d = q - R4.xy; float dl = length(d); float s = R4.z - dl;
       float spx = s * uHpx / uDpr;
-      front += (1.0 - smoothstep(0.3, 1.2, abs(spx))) * R4.w;
+      // die Front zerlegt das Licht ein wenig: Rot läuft voraus, Blau hinterher
+      front += vec3(1.0 - smoothstep(0.3, 1.1, abs(spx + 0.7)), 1.0 - smoothstep(0.3, 1.1, abs(spx)), 1.0 - smoothstep(0.3, 1.1, abs(spx - 0.7))) * R4.w;
       float band = smoothstep(0.0, 6.0, spx) * (1.0 - smoothstep(18.0, 70.0, spx)) * R4.w;
       if (band > 0.002) {
         vec2 n = d / max(dl, 1e-4);
@@ -374,7 +389,7 @@ void main(){
       float w = clamp(echoGew, 0.0, 1.0);
       c = mix(c, mix(hier, e * vec3(1.06, 1.0, 0.92), uModeB.w), w * 0.9);
     }
-    c = mix(c, vec3(1.0, 0.96, 0.88), clamp(front, 0.0, 1.0) * 0.7);
+    c = mix(c, vec3(1.0, 0.96, 0.88), clamp(front, 0.0, 1.0) * 0.62);
     // die Marken: ein feiner Kreis, beim Schlag ein roter Punkt mit Hof
     for (int i = 0; i < 8; i++) { if (i >= uMarkN) break;
       float dm = length(q - uMark[i].xy) * uHpx / uDpr; float glut = uMark[i].w;
@@ -383,6 +398,9 @@ void main(){
       c = mix(c, vec3(0.96, 0.93, 0.88), kreis * 0.9);
       c = mix(c, vec3(0.85, 0.15, 0.11), punkt * (0.35 + 0.65 * glut));
       c += vec3(0.85, 0.2, 0.12) * glut * 0.35 * exp(-dm * dm / 260.0);
+      // beim Schlag löst sich ein zweiter, kleiner Kreis und weitet sich
+      float rp = 7.0 + (1.0 - glut) * 16.0;
+      c = mix(c, vec3(1.0, 0.95, 0.88), (1.0 - smoothstep(0.3, 1.1, abs(dm - rp))) * glut * glut * 0.7);
     }
   } else {
     // ===== Kosmos: der Kreis öffnet sich, und das Bild strömt auf Linien in eine Spirale aus Zeit =====
@@ -400,8 +418,15 @@ void main(){
     vec2 jj = vec2(h21(zelle + 11.0), h21(zelle + 23.7));
     float ds = length(gl_FragCoord.xy - (zelle + 0.2 + 0.6 * jj) * 5.0 * uDpr) / uDpr;
     float gr = h21(zelle + 5.5);
-    float stern = step(gr, 0.07 * uKosB.w) * (1.0 - smoothstep(0.2, 0.9 + 0.8 * gr / max(0.07 * uKosB.w, 1e-3), ds)) * (0.5 + 0.5 * sin(uT * (1.0 + 3.0 * jj.x) + jj.y * 6.28));
+    // Sterne als weiche, runde Lichtpunkte (Gauss), nie kleiner als ein Bildpunkt: sonst werden sie zu Kreuzchen
+    float sr = 0.45 + 0.9 * jj.x * jj.x;
+    float stern = step(gr, 0.07 * uKosB.w) * exp(-ds * ds / (sr * sr)) * (0.55 + 0.45 * sin(uT * (1.0 + 3.0 * jj.x) + jj.y * 6.28));
     raum += vec3(0.95, 0.93, 1.0) * stern;
+    // eine zweite, fernere Schicht, die sich langsamer dreht: Tiefe
+    vec2 fz = gl_FragCoord.xy + vec2(uKosC.y * 40.0 * uDpr, 0.0);
+    vec2 z2 = floor(fz / (9.0 * uDpr)); vec2 j2 = vec2(h21(z2 + 3.3), h21(z2 + 8.8));
+    float d2 = length(fz - (z2 + 0.2 + 0.6 * j2) * 9.0 * uDpr) / uDpr;
+    raum += vec3(0.75, 0.8, 1.0) * step(h21(z2 + 1.7), 0.1 * uKosB.w) * exp(-d2 * d2 / 0.3) * 0.4;
     // die Linien der Flucht: jede windet sich anders aus der Öffnung, trägt das Bild weiter weg und weiter zurück in der Zeit
     float L = log(r / R);
     vec3 strom = vec3(0.0); float stromA = 0.0;
@@ -424,14 +449,26 @@ void main(){
           // ein Farbsaum entlang der Linie: das Licht zerlegt sich, je weiter es kommt
           float spek = clamp(L * 0.4, 0.0, 0.5);
           bc = mix(bc, bc * vec3(1.0 + 0.4 * sin(du / breite * 2.0), 1.0, 1.0 + 0.4 * sin(du / breite * 2.0 + 2.5)), spek);
-          strom += bc * m * 1.25 + vec3(1.0, 0.97, 0.9) * kern * m * 0.5; stromA = max(stromA, m);
+          // feine Fasern in jeder Linie, wie Glasfasern, die das Bild tragen
+          float faser = 0.62 + 0.38 * sin(du / breite * 10.0 + L * 4.0 + fk);
+          strom += bc * m * 1.4 * faser + vec3(1.0, 0.97, 0.9) * kern * m * 0.45; stromA = max(stromA, m);
         }
       }
     }
     // aus der Öffnung fällt Licht in den Raum, wie aus einer Tür in die Nacht
     float tuer = exp(-dth * dth / max(spalt * spalt * 0.8, 1e-3)) * exp(-max(r - R, 0.0) / (0.06 + 0.2 * offen)) * offen * (1.0 - innen);
     vec3 draussen = raum + strom + vec3(1.0, 0.86, 0.66) * tuer * 0.22;
-    vec3 drin = bild * vec3(1.04, 1.0, 0.95);
+    // drinnen: das Bild wie hinter einer Glaslinse. Zum Rand hin vergrössert es und zerlegt das Licht,
+    // zur Öffnung hin zieht es sich hinaus; ein Randlicht macht die Kugel.
+    float rn = clamp(r / R, 0.0, 1.0);
+    vec2 zurOeffnung = vec2(cos(phi), sin(phi));
+    vec2 sog = zurOeffnung * offen * exp(-dth * dth / 0.6) * rn * rn * 0.05;
+    vec2 pl = p * (1.0 - 0.13 * pow(rn, 4.0)) - sog;
+    vec2 uvL = nachUV(uKos.xy + pl);
+    float ab = 0.006 * pow(rn, 3.0);
+    vec3 drin = vec3(texture(uScharf, nachUV(uKos.xy + pl * (1.0 + ab))).r, texture(uScharf, uvL).g, texture(uScharf, nachUV(uKos.xy + pl * (1.0 - ab))).b);
+    drin *= vec3(1.04, 1.0, 0.95) * (1.0 - 0.18 * smoothstep(0.2, 1.0, rn) * (0.5 - 0.5 * dot(p / r, normalize(vec2(-0.6, 0.8)))));
+    drin += vec3(1.0, 0.95, 0.88) * pow(rn, 9.0) * 0.22;
     c = mix(bild, mix(draussen, drin, innen), uNacht * uKosC.x);
     // die Wand des Kreises: haarfein, zeichnet sich ein, offen, wo der Daumen zieht
     float wl = (1.0 - smoothstep(0.3, 1.15, abs(rpx))) * wand * uKosC.x;
@@ -781,7 +818,7 @@ $('r-lesart').addEventListener('input', (e) => { const nr = +e.target.value; if 
 // Acht Schritte je Durchgang. Das Lied: das alte Spottlied der Kinder, sol sol mi la sol mi, überall auf der Welt gesungen.
 const LIED = [392.0, 392.0, 329.63, 440.0, 392.0, 329.63, 0, 0];
 // jede Note ihre Klangfigur [Ringe, Durchmesser]; bei jeder Wiederholung dreht sich die Figur ein wenig: die Wiederholung ist nie dieselbe
-const FIGUREN = { 392: [2, 5], 329.63: [-3, 7], 440: [-1, 4], 293.66: [4, 7], 493.88: [-3, 8] };
+const FIGUREN = { 392: [2, 5], 329.63: [-3, 7], 440: [-2, 7], 293.66: [4, 7], 493.88: [-3, 8] };
 const LEITER = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24];   // Pentatonik auf G
 const schrittDauer = () => 60 / (lesart === 1 ? 66 + 84 * WERTE[1][0] : 92) / 2;
 let schrittZeit = 0, schritt = -1, durchgang = 0;
@@ -914,7 +951,7 @@ function haende(t, dt) {
   const Rziel = (0.12 + 0.36 * W[0]) * (0.35 + 0.65 * Math.min(1, sum.halt / 2.6));
   sum.R = naeher(sum.R, singt ? Rziel : sum.R, dt, 0.6);
   if (sum.ordnung < 0.01 && !singt) sum.aktiv = false;
-  sum.mix = Math.min(1, sum.mix + dt / 0.14);
+  sum.mix = Math.min(1, sum.mix + dt / 0.32);
   sum.puls += dt * 0.32; sum.pulsA = Math.max(0, sum.pulsA - dt * 0.9);
 
   // Revier: Marken glühen nach, Ringe laufen hinaus und verblassen; das Revier wächst mit jedem Treffer
