@@ -52,14 +52,15 @@ body { font: 500 15px/1.4 'Brillant Display', system-ui, sans-serif; -webkit-fon
 /* 0.23 Vitrine im Raum (Christian, 20.11.2026: «dynamischer, schwebender, dreidimensionaler»). Die Karten stehen im
    Halbkreis im Raum; Lage, Schweben, Neigung, Licht und Parallaxe setzt brillant.js je Bild. */
 .vitrine { position: fixed; inset: 0; z-index: 50; overflow: hidden; touch-action: none; --auf: 0;
-  background: radial-gradient(90% 70% at 50% 46%, rgba(30, 26, 60, 0.35), rgba(6, 5, 16, 0.0) 70%), rgba(7, 6, 18, calc(var(--auf) * 0.66));
-  -webkit-backdrop-filter: blur(calc(var(--auf) * 20px)) saturate(1.1); backdrop-filter: blur(calc(var(--auf) * 20px)) saturate(1.1); }
+  background: radial-gradient(90% 70% at 50% 46%, rgba(30, 26, 60, 0.35), rgba(6, 5, 16, 0.0) 70%), rgba(7, 6, 18, calc(var(--auf) * 0.9));
+  }
 .vitrine[hidden] { display: none; }
-.v-raum { position: absolute; inset: 0; perspective: 1100px; perspective-origin: 50% 42%; transform-style: preserve-3d; cursor: grab; }
+.v-raum { position: absolute; inset: 0; perspective: 1100px; perspective-origin: 50% 42%; cursor: grab; }
 .v-raum:active { cursor: grabbing; }
 .v-karte { position: absolute; left: 50%; top: 47%; width: min(84vw, 380px); margin-left: calc(min(84vw, 380px) / -2); translate: 0 -50%;
-  transform-style: preserve-3d; will-change: transform, opacity; opacity: 0; -webkit-user-select: none; user-select: none; }
-.v-koerper { position: relative; border-radius: 22px; transform-style: preserve-3d;
+  will-change: transform, opacity; opacity: 0; -webkit-user-select: none; user-select: none; }
+.v-koerper { position: relative; border-radius: 22px;
+  -webkit-box-reflect: below 14px linear-gradient(transparent 74%, rgba(255, 255, 255, 0.09));
   background: linear-gradient(165deg, rgba(var(--ton), 0.2), rgba(var(--ton), 0.05) 42%, rgba(255,255,255,0.0) 70%), linear-gradient(#141230, #0d0b20);
   box-shadow: 0 50px 90px -40px rgba(0, 0, 0, 0.9), 0 30px 120px -50px rgba(var(--ton), 0.55), 0 1px 0 rgba(255,255,255,0.08) inset; }
 /* die Fassung: eine irisierende Haarlinie, die langsam umläuft */
@@ -87,17 +88,20 @@ body { font: 500 15px/1.4 'Brillant Display', system-ui, sans-serif; -webkit-fon
 /* holografischer Schimmer über der ganzen Karte, folgt der Neigung (Lage in brillant.js) */
 .v-glanz { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 3; mix-blend-mode: soft-light; background-size: 260% 260%;
   background-image: linear-gradient(115deg, transparent 30%, rgba(255, 170, 210, 0.5) 42%, rgba(170, 230, 255, 0.55) 50%, rgba(255, 240, 180, 0.45) 58%, transparent 70%); }
-.v-dunkel { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 5; transform: translateZ(40px); background: rgba(7, 6, 18, 1); opacity: 0; }
+.v-dunkel { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 5;  background: rgba(7, 6, 18, 1); opacity: 0; }
 /* Schrift eine Ebene vor dem Glas */
-.v-text { padding: 20px 22px 22px; display: flex; flex-direction: column; gap: 8px; transform: translateZ(28px); }
+.v-text { padding: 20px 22px 22px; display: flex; flex-direction: column; gap: 8px; }
 .v-kopf { margin: 0; font-size: 11.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--hell); }
 .v-name { margin: 0; font-weight: 600; font-size: clamp(28px, 8vw, 40px); line-height: 1.02; letter-spacing: -0.024em; color: #f7f5fc; text-wrap: balance;
   text-shadow: 0 12px 30px rgba(0, 0, 0, 0.45); }
 .v-satz { margin: 2px 0 0; font-size: 15px; line-height: 1.5; color: rgba(214, 210, 228, 0.82); text-wrap: pretty; }
-.v-zeile { display: flex; margin-top: 12px; }
+.v-zeile { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; }
+.v-sprachen { display: flex; gap: 9px; font-size: 11px; letter-spacing: 0.14em; color: rgba(214, 210, 228, 0.42); }
+.v-sprachen .jetzt { color: rgba(246, 244, 252, 0.9); }
+.v-sprachen em { font-style: normal; letter-spacing: 0.02em; font-size: 13px; color: rgba(214, 210, 228, 0.6); }
 .v-oeffnen { display: inline-flex; align-items: center; gap: 8px; padding: 11px 20px 11px 22px; border-radius: 999px; color: #fbfaff; text-decoration: none; font-size: 15px; letter-spacing: 0.02em;
   background: linear-gradient(180deg, rgba(var(--ton), 0.36), rgba(var(--ton), 0.16)); box-shadow: 0 0 0 1px rgba(var(--ton), 0.6) inset, 0 12px 30px -12px rgba(var(--ton), 0.9);
-  transform: translateZ(12px); transition: background 0.3s, box-shadow 0.3s; }
+  transition: background 0.3s, box-shadow 0.3s; }
 .v-oeffnen:hover { background: linear-gradient(180deg, rgba(var(--ton), 0.52), rgba(var(--ton), 0.24)); box-shadow: 0 0 0 1px rgba(var(--ton), 0.85) inset, 0 14px 36px -12px rgba(var(--ton), 1); }
 .v-karte:not(.vorn) .v-oeffnen { pointer-events: none; }
 .v-karte:not(.vorn) { cursor: pointer; }

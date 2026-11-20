@@ -13,11 +13,11 @@ const leinwand = $('leinwand');
 // Tippt man im Menü auf den Namen, öffnet sich die Vitrine (unten): Bild oder Film, Name, ein Satz, «Öffnen».
 const BEREICHE = [
   { name: 'the deleuzian scheme', kopf: 'im Entstehen · Bild, Film, Ton', satz: 'Begriffe von Deleuze als Verfahren: Kristallbild, Schichten der Zeit, Dauer, Wahrnehmung, Diagramm, Figur – angewandt auf eigenes Material.',
-    href: '/alpha/deleuze/start/', bild: 'vorschau/deleuzian-scheme.jpg', ton: [228, 92, 96] },
+    href: '/alpha/deleuze/start/', sprachen: ['de', 'en', 'fr'], bild: 'vorschau/deleuzian-scheme.jpg', ton: [228, 92, 96] },
   { name: 'Das Dritte Rad', kopf: 'Zeit · Form · Farbe', satz: 'Zeit, Form und Farbe drehen gegeneinander. Jede Drehung zieht einen Zettel, eine Begegnung aus ORNA und eine Übung aus OMNA COLOR.',
-    href: '/beta/drittes-rad/', schau: 'rad', ton: [232, 150, 80] },
+    href: '/beta/drittes-rad/', sprachen: ['de'], schau: 'rad', ton: [232, 150, 80] },
   { name: 'Animations', kopf: 'Bild · Bewegung', satz: 'Ein Bild, 24 Effekte, bis zu drei Ebenen: das Mischpult für eigene Animationen.',
-    href: '/animations/', bild: 'vorschau/animations.jpg', film: 'vorschau/animations.mp4', ton: [124, 108, 255] }
+    href: '/animations/', sprachen: ['de', 'en', 'es'], adressen: { en: '/animations/en/', es: '/animations/es/' }, bild: 'vorschau/animations.jpg', film: 'vorschau/animations.mp4', ton: [124, 108, 255] }
 ];
 // Die Farben der Schichten: Rot (Godard), Orange (das Rad), Violett.
 
@@ -37,28 +37,28 @@ const SPRACHE = (() => {
 const NBSP = ' ';   // schmales Leerzeichen vor «:» im Französischen
 const TEXTE = {
   de: { titel: 'Brillante Ideen.', iBei: 2, menu: 'Menü', anwendungen: 'Anwendungen', mehr: 'Mehr erfahren', oeffnen: 'Öffnen', oeffnenAria: (n) => `${n} öffnen`,
-    vor: 'Vorherige Anwendung', nach: 'Nächste Anwendung', zu: 'Schliessen', sprache: 'Sprache',
+    nurIn: { de: 'auf Deutsch', en: 'auf Englisch', fr: 'auf Französisch', es: 'auf Spanisch' }, vor: 'Vorherige Anwendung', nach: 'Nächste Anwendung', zu: 'Schliessen', sprache: 'Sprache',
     anw: [
       { kopf: 'im Entstehen · Bild, Film, Ton', satz: 'Begriffe von Deleuze als Verfahren: Kristallbild, Schichten der Zeit, Dauer, Wahrnehmung, Diagramm, Figur – angewandt auf eigenes Material.' },
-      { name: 'Das Dritte Rad', kopf: 'Zeit · Form · Farbe', satz: 'Zeit, Form und Farbe drehen gegeneinander. Jede Drehung zieht einen Zettel, eine Begegnung aus ORNA und eine Übung aus OMNA COLOR.' },
+      { kopf: 'Theorie · Kunstpraxis · Impuls', satz: 'Drei Ringe drehen gegeneinander. Jede Drehung verbindet einen Gedanken aus der Theorie mit einer künstlerischen Praxis und gibt einen Impuls für die eigene Arbeit.' },
       { kopf: 'Bild · Bewegung', satz: 'Ein Bild, 24 Effekte, bis zu drei Ebenen: das Mischpult für eigene Animationen.' }] },
   en: { titel: 'Brilliant Ideas.', iBei: 2, menu: 'Menu', anwendungen: 'Applications', mehr: 'Learn more', oeffnen: 'Open', oeffnenAria: (n) => `Open ${n}`,
-    vor: 'Previous application', nach: 'Next application', zu: 'Close', sprache: 'Language',
+    nurIn: { de: 'in German', en: 'in English', fr: 'in French', es: 'in Spanish' }, vor: 'Previous application', nach: 'Next application', zu: 'Close', sprache: 'Language',
     anw: [
       { kopf: 'in progress · image, film, sound', satz: 'Concepts of Deleuze as procedures: crystal-image, sheets of time, duration, perception, diagram, figure – applied to your own material.' },
-      { name: 'The Third Wheel', kopf: 'time · form · colour', satz: 'Time, form and colour turn against each other. Every turn draws a note from the Zettelkasten, an encounter from ORNA and an exercise from OMNA COLOR.' },
+      { kopf: 'theory · art practice · impulse', satz: 'Three rings turn against each other. Every turn joins a thought from theory with an artistic practice and gives an impulse for your own work.' },
       { kopf: 'image · motion', satz: 'One image, 24 effects, up to three layers: the mixing desk for your own animations.' }] },
   fr: { titel: 'Idées brillantes.', iBei: 8, menu: 'Menu', anwendungen: 'Applications', mehr: 'En savoir plus', oeffnen: 'Ouvrir', oeffnenAria: (n) => `Ouvrir ${n}`,
-    vor: 'Application précédente', nach: 'Application suivante', zu: 'Fermer', sprache: 'Langue',
+    nurIn: { de: 'en allemand', en: 'en anglais', fr: 'en français', es: 'en espagnol' }, vor: 'Application précédente', nach: 'Application suivante', zu: 'Fermer', sprache: 'Langue',
     anw: [
       { kopf: 'en cours · image, film, son', satz: `Les concepts de Deleuze comme procédés${NBSP}: image-cristal, nappes de passé, durée, perception, diagramme, Figure – appliqués à votre propre matériau.` },
-      { name: 'La troisième roue', kopf: 'temps · forme · couleur', satz: 'Le temps, la forme et la couleur tournent l’un contre l’autre. Chaque tour tire une fiche du Zettelkasten, une rencontre d’ORNA et un exercice d’OMNA COLOR.' },
+      { kopf: 'théorie · pratique artistique · impulsion', satz: 'Trois anneaux tournent l’un contre l’autre. Chaque tour relie une pensée théorique à une pratique artistique et donne une impulsion pour votre propre travail.' },
       { kopf: 'image · mouvement', satz: `Une image, 24 effets, jusqu’à trois calques${NBSP}: la table de mixage pour vos propres animations.` }] },
   es: { titel: 'Ideas brillantes.', iBei: 8, menu: 'Menú', anwendungen: 'Aplicaciones', mehr: 'Saber más', oeffnen: 'Abrir', oeffnenAria: (n) => `Abrir ${n}`,
-    vor: 'Aplicación anterior', nach: 'Aplicación siguiente', zu: 'Cerrar', sprache: 'Idioma',
+    nurIn: { de: 'en alemán', en: 'en inglés', fr: 'en francés', es: 'en español' }, vor: 'Aplicación anterior', nach: 'Aplicación siguiente', zu: 'Cerrar', sprache: 'Idioma',
     anw: [
       { kopf: 'en desarrollo · imagen, cine, sonido', satz: 'Conceptos de Deleuze como procedimientos: imagen-cristal, capas del pasado, duración, percepción, diagrama, figura – aplicados a tu propio material.' },
-      { name: 'La tercera rueda', kopf: 'tiempo · forma · color', satz: 'Tiempo, forma y color giran unos contra otros. Cada giro saca una ficha del Zettelkasten, un encuentro de ORNA y un ejercicio de OMNA COLOR.' },
+      { kopf: 'teoría · práctica artística · impulso', satz: 'Tres anillos giran unos contra otros. Cada giro une un pensamiento de la teoría con una práctica artística y da un impulso para tu propio trabajo.' },
       { kopf: 'imagen · movimiento', satz: 'Una imagen, 24 efectos, hasta tres capas: la mesa de mezclas para tus propias animaciones.' }] }
 };
 const T = TEXTE[SPRACHE];
@@ -930,10 +930,17 @@ const vKarten = BEREICHE.map((b, i) => {
   k.style.setProperty('--ton', b.ton.join(',')); k.style.setProperty('--hell', `rgb(${hell.join(',')})`);
   k.innerHTML = `<div class="v-schatten" aria-hidden="true"></div><div class="v-koerper"><div class="v-buehne"><div class="v-bild"></div><div class="v-licht" aria-hidden="true"></div></div>
     <div class="v-text"><p class="v-kopf"></p><h2 class="v-name" id="v-name-${i}"></h2><p class="v-satz"></p>
-    <div class="v-zeile"><a class="v-oeffnen" href="${b.href}">${T.oeffnen} <span aria-hidden="true">›</span></a></div></div>
+    <div class="v-zeile"><a class="v-oeffnen" href="${(b.adressen && b.adressen[SPRACHE]) || b.href}">${T.oeffnen} <span aria-hidden="true">›</span></a><span class="v-sprachen"></span></div></div>
     <div class="v-glanz" aria-hidden="true"></div><div class="v-dunkel" aria-hidden="true"></div></div>`;
   k.querySelector('.v-kopf').textContent = b.kopf; k.querySelector('.v-name').textContent = b.name; k.querySelector('.v-satz').textContent = b.satz;
   k.querySelector('.v-oeffnen').setAttribute('aria-label', T.oeffnenAria(b.name));
+  // in welchen Sprachen es die Anwendung gibt; fehlt die gewählte, steht dabei, in welcher sie sich öffnet
+  const vs = k.querySelector('.v-sprachen'), hat = b.sprachen.includes(SPRACHE);
+  vs.innerHTML = b.sprachen.map((l) => `<span${l === SPRACHE ? ' class="jetzt"' : ''} lang="${l}">${l.toUpperCase()}</span>`).join('');
+  if (!hat) { const n = document.createElement('em'); n.textContent = T.nurIn[b.sprachen[0]]; vs.prepend(n); vs.querySelectorAll('span').forEach((x) => x.remove()); }
+  vs.setAttribute('aria-hidden', 'true');
+  // the deleuzian scheme liest seine Sprache aus demselben Speicher, so reist die Wahl mit
+  if (b.sprachen.includes(SPRACHE)) k.querySelector('.v-oeffnen').addEventListener('click', () => { try { localStorage.setItem('kristall.sprache', SPRACHE); } catch {} });
   const bild = k.querySelector('.v-bild');
   if (b.schau) bild.append(document.createElement('canvas'));
   else { const im = new Image(); im.alt = ''; im.decoding = 'async'; im.src = b.bild; bild.append(im); }
@@ -946,7 +953,7 @@ const vKarten = BEREICHE.map((b, i) => {
 const N = BEREICHE.length;
 const vz = { pos: 0, ziel: 0, v: 0, auf: 0, aufZiel: 0, t0: 0, lauf: 0, aktiv: -1,
   zug: null, neig: { x: 0, y: 0 }, neigZiel: { x: 0, y: 0 }, kreisel: null, kreiselNull: null };
-let vZuletzt = null;
+let vZuletzt = null, vitrineVoll = false;
 const umlauf = (d) => ((d % N) + N + N / 2) % N - N / 2;   // kürzester Weg im Kreis, -2.5 … 2.5
 
 function vitrineAuf(i) {
@@ -954,15 +961,16 @@ function vitrineAuf(i) {
   vz.pos = vz.ziel = i; vz.v = 0; vz.aufZiel = 1; vz.t0 = performance.now(); vz.aktiv = -1;
   vKarten.forEach((k) => { k.flug = 0; });
   vitrineOffen = true; vitrine.hidden = false; vitrine.classList.add('auf'); spur('Vitrine ' + BEREICHE[i].name);
-  kreiselAn();
   cancelAnimationFrame(vz.lauf); vz.lauf = requestAnimationFrame(vitrineBild);
 }
 function vitrineZu() {
   if (!vitrineOffen || !vz.aufZiel) return;
-  vz.aufZiel = 0; vz.t0 = performance.now(); vitrine.classList.remove('auf');
+  vz.aufZiel = 0; vz.t0 = performance.now(); vitrine.classList.remove('auf'); wecken();
   if (vZuletzt && vZuletzt.focus) vZuletzt.focus({ preventScroll: true });
 }
-function vitrineWeiter(s) { vz.ziel = Math.round(vz.ziel) + s; }
+function vitrineWeiter(s) { vz.ziel = Math.round(vz.ziel) + s; wecken(); }
+// Die Bühne rechnet nur, solange sich etwas bewegt; steht alles, steht auch das Bild (kein Nachzittern der Schrift)
+function wecken() { if (vitrineOffen && !vz.lauf) { vz.letzt = 0; vz.lauf = requestAnimationFrame(vitrineBild); } }
 
 // die vordere Karte bekommt ihren Film oder ihr bewegtes Schaubild, die übrigen nur ihr Standbild
 function aktivSetzen(i) {
@@ -990,21 +998,8 @@ function aktivSetzen(i) {
   });
 }
 
-// Neigung: am Telefon folgt die Karte der Haltung des Geräts (relativ zur Haltung beim Öffnen), sonst dem Zeiger
-function kreiselAn() {
-  vz.kreiselNull = null;
-  if (vz.kreisel || ruhig || !('DeviceOrientationEvent' in window)) return;
-  vz.kreisel = (e) => {
-    if (e.beta == null || e.gamma == null) return;
-    if (!vz.kreiselNull) vz.kreiselNull = { b: e.beta, g: e.gamma };
-    // die Ausgangslage wandert langsam mit, damit die Karte nach einer Weile wieder gerade steht
-    vz.kreiselNull.b += (e.beta - vz.kreiselNull.b) * 0.004; vz.kreiselNull.g += (e.gamma - vz.kreiselNull.g) * 0.004;
-    const dx = Math.max(-1, Math.min(1, (e.gamma - vz.kreiselNull.g) / 18)), dy = Math.max(-1, Math.min(1, (e.beta - vz.kreiselNull.b) / 18));
-    vz.neigZiel.x = dx; vz.neigZiel.y = dy;
-  };
-  addEventListener('deviceorientation', vz.kreisel);
-}
-function kreiselAus() { if (vz.kreisel) removeEventListener('deviceorientation', vz.kreisel); vz.kreisel = null; }
+// Neigung nur zum Zeiger und beim Ziehen. Die Haltung des Telefons (Kreisel) ist seit 0.26 aus: die Sensoren rauschen,
+// die Karte bebte mit (Christian: «flackert und zittert»).
 
 const daempf = (x, k, f) => x * Math.pow(k, f);
 function vitrineBild(jetzt) {
@@ -1019,7 +1014,7 @@ function vitrineBild(jetzt) {
     else { const u = Math.max(0, Math.min(1, (seit - (2.5 - d) * 0.035) / (ruhig ? 0.2 : 0.5))); k.flug = Math.min(k.flug, 1 - u * u * (3 - 2 * u)); if (k.flug > 0.001) alleZu = false; }
   });
   if (!vz.aufZiel && alleZu) {
-    vitrineOffen = false; vitrine.hidden = true; kreiselAus();
+    vitrineOffen = false; vitrine.hidden = true; vitrineVoll = false;
     vKarten.forEach((k) => { if (k.film) { k.film.pause(); k.film.remove(); k.film = null; } if (k.schauStopp) { k.schauStopp(); k.schauStopp = null; } });
     vz.aktiv = -1; vz.letzt = 0; return;
   }
@@ -1027,13 +1022,13 @@ function vitrineBild(jetzt) {
   if (!vz.zug) {
     const a = (vz.ziel - vz.pos) * 0.012 - vz.v * 0.16;
     vz.v += a * f * (ruhig ? 3 : 1); vz.pos += vz.v * f;
-    if (Math.abs(vz.ziel - vz.pos) < 0.0005 && Math.abs(vz.v) < 0.0005) { vz.pos = vz.ziel; vz.v = 0; }
+    if (Math.abs(vz.ziel - vz.pos) < 0.0015 && Math.abs(vz.v) < 0.0015) { vz.pos = vz.ziel; vz.v = 0; }
   }
   const vorn = ((Math.round(vz.pos) % N) + N) % N;
   if (vorn !== vz.aktiv && vz.aufZiel) aktivSetzen(vorn);
 
   // Neigung zum Zeiger: weich nachgeführt; ohne Zeiger und Kreisel ein ruhiges Atmen
-  const atmen = ruhig ? 0 : 1;
+  const atmen = 0;   // 0.26: kein Schweben im Leerlauf mehr, die Tiefe kommt aus Raum, Schatten und Spiegelung
   vz.neig.x += (vz.neigZiel.x - vz.neig.x) * (1 - Math.pow(0.9, f));
   vz.neig.y += (vz.neigZiel.y - vz.neig.y) * (1 - Math.pow(0.9, f));
   const telefonHoch = Wv < 820;
@@ -1078,12 +1073,17 @@ function vitrineBild(jetzt) {
     k.schatten.style.opacity = ((0.55 - hoehe * 0.12) * fl * Math.max(0, 1 - ad * 0.5)).toFixed(3);
   });
   vitrine.style.setProperty('--auf', (vKarten.reduce((m, k) => Math.max(m, k.flug), 0)).toFixed(3));
-  vz.lauf = requestAnimationFrame(vitrineBild);
+  const fliegt = vKarten.some((k) => k.flug < 1);
+  vitrineVoll = !fliegt && vz.aufZiel === 1;
+  const bewegt = vz.zug || fliegt || vz.pos !== vz.ziel || Math.abs(vz.v) > 0 || Math.abs(vz.neigZiel.x - vz.neig.x) + Math.abs(vz.neigZiel.y - vz.neig.y) > 0.002;
+  if (!bewegt) { vz.neig.x = vz.neigZiel.x; vz.neig.y = vz.neigZiel.y; }
+  vz.lauf = bewegt ? requestAnimationFrame(vitrineBild) : 0;
 }
 
 // Ziehen: die Karten folgen dem Finger; loslassen mit Schwung zur nächsten Karte. Kurzes Tippen auf eine Nachbarkarte holt sie nach vorn.
 vRaum.addEventListener('pointerdown', (e) => {
   if (e.button > 0) return;
+  wecken();
   vz.zug = { x: e.clientX, y: e.clientY, pos: vz.pos, t: performance.now(), lx: e.clientX, lt: performance.now(), v: 0, bewegt: false, id: e.pointerId };
 });
 addEventListener('pointermove', (e) => {
@@ -1093,7 +1093,7 @@ addEventListener('pointermove', (e) => {
     const r = k.koerper.getBoundingClientRect();
     const nx = (e.clientX - (r.left + r.width / 2)) / (r.width / 2), ny = (e.clientY - (r.top + r.height / 2)) / (r.height / 2);
     const drin = Math.abs(nx) < 1.25 && Math.abs(ny) < 1.25;
-    vz.neigZiel.x = drin ? Math.max(-1, Math.min(1, nx)) : 0; vz.neigZiel.y = drin ? Math.max(-1, Math.min(1, ny)) : 0;
+    vz.neigZiel.x = drin ? Math.max(-1, Math.min(1, nx)) : 0; vz.neigZiel.y = drin ? Math.max(-1, Math.min(1, ny)) : 0; wecken();
   }
   const z = vz.zug; if (!z || z.id !== e.pointerId) return;
   const dx = e.clientX - z.x;
@@ -1108,7 +1108,7 @@ addEventListener('pointermove', (e) => {
 });
 const vLos = (e) => {
   const z = vz.zug; if (!z || z.id !== e.pointerId) return;
-  vz.zug = null; if (!vz.kreisel || e.pointerType !== 'touch') vz.neigZiel.x = 0;
+  vz.zug = null; vz.neigZiel.x = 0; wecken();
   if (z.bewegt) {
     vz.v = z.v; vz.ziel = Math.round(vz.pos + z.v * 9);
     vz.ziel = Math.max(Math.round(z.pos) - 2, Math.min(Math.round(z.pos) + 2, vz.ziel));
@@ -1118,16 +1118,16 @@ const vLos = (e) => {
   const karte = e.target.closest && e.target.closest('.v-karte');
   if (!karte) { vitrineZu(); return; }
   const i = vKarten.findIndex((k) => k.el === karte);
-  if (i !== vz.aktiv) { vz.ziel = Math.round(vz.pos) + Math.round(umlauf(i - vz.pos)); e.preventDefault(); }
+  if (i !== vz.aktiv) { vz.ziel = Math.round(vz.pos) + Math.round(umlauf(i - vz.pos)); e.preventDefault(); wecken(); }
 };
 addEventListener('pointerup', vLos);
-addEventListener('pointercancel', (e) => { if (vz.zug && vz.zug.id === e.pointerId) { vz.zug = null; vz.ziel = Math.round(vz.pos); } });
+addEventListener('pointercancel', (e) => { if (vz.zug && vz.zug.id === e.pointerId) { vz.zug = null; vz.ziel = Math.round(vz.pos); wecken(); } });
 // ein Klick, der aus einem Zug entstand, öffnet nichts
 vRaum.addEventListener('click', (e) => {
   const karte = e.target.closest('.v-karte'), i = vKarten.findIndex((k) => k.el === karte);
   if (i >= 0 && i !== vz.aktiv) e.preventDefault();
 }, true);
-vRaum.addEventListener('mouseleave', () => { vz.neigZiel.x = 0; vz.neigZiel.y = 0; });
+vRaum.addEventListener('mouseleave', () => { vz.neigZiel.x = 0; vz.neigZiel.y = 0; wecken(); });
 vitrine.querySelector('.v-zu').addEventListener('click', vitrineZu);
 vitrine.querySelector('.v-vor').addEventListener('click', () => vitrineWeiter(-1));
 vitrine.querySelector('.v-nach').addEventListener('click', () => vitrineWeiter(1));
@@ -1320,6 +1320,7 @@ let letzteMs = 0, ersterLauf = true, zustandGezeigt = -1, blitz = 0, gelandet = 
 function bild(ms) {
   requestAnimationFrame(bild);
   if (document.hidden || !lay) return;
+  if (vitrineVoll) { letzteMs = ms; return; }   // die Vitrine deckt den Stein: nicht rechnen, nichts flackert dahinter
   if (start < 0) start = ms;
   const t = (ms - start) / 1000;
   const dtMs = ms - (letzteMs || ms - 16.7), f = Math.min(4, Math.max(0.25, dtMs / 16.7)); letzteMs = ms;
