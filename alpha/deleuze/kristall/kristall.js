@@ -27,7 +27,7 @@ const TEXTE = {
     zustaende: [
       { kurz: 'vollkommen', titel: 'Der vollkommene Kristall', wer: 'Ophüls', text: 'Bei Max Ophüls ist der Kristall vollkommen: ein geschlossener Kreis, aus dem nichts entkommt. Die Zeiten kreisen um den Stein wie die Manege in «Lola Montès», jede Facette reicht ihre Zeit an die nächste weiter.' },
       { kurz: 'gesprungen', titel: 'Der gesprungene Kristall', wer: 'Renoir', text: 'Bei Jean Renoir hat der Kristall einen Riss. Durch ihn entweicht etwas: das Leben, eine Gegenwart, die noch nicht erstarrt ist und in die Zukunft geht. Das Theater in «Die goldene Karosse», das Spiel in «Die Spielregel». Jenseits des Risses zeigt der Stein nur noch das Jetzt.' },
-      { kurz: 'im Entstehen', titel: 'Der Kristall im Entstehen', wer: 'Fellini', text: 'Bei Federico Fellini ist der Kristall nie fertig, er wächst unablässig. Facetten treten hervor und sinken zurück: Was hervortritt, ist jetzt, was zurücksinkt, wird Vergangenheit.' },
+      { kurz: 'im Entstehen', titel: 'Der Kristall im Entstehen', wer: 'Fellini', text: 'Bei Federico Fellini ist der Kristall nie fertig, er wächst unablässig. Facette um Facette schiesst an: Was anschiesst, ist jetzt, und sinkt schon in die Vergangenheit, während die nächste wächst. Gross geworden, greift er ins Bild über.' },
       { kurz: 'im Zerfall', titel: 'Der Kristall im Zerfall', wer: 'Visconti', text: 'Bei Luchino Visconti zerfällt der Kristall von innen. Eine Welt geht unter, und die Einsicht kommt zu spät. Alles im Stein ist schon tief vergangen, es vergilbt, trübt sich, und die Facetten verlieren ihren Halt. «Der Leopard», «Ludwig».' }
     ],
     zustand: 'Zustand',
@@ -67,7 +67,7 @@ const TEXTE = {
     zustaende: [
       { kurz: 'perfect', titel: 'The perfect crystal', wer: 'Ophüls', text: 'In Max Ophüls the crystal is perfect: a closed circuit from which nothing escapes. The times circle the stone like the circus ring in “Lola Montès”, each facet passing its time on to the next.' },
       { kurz: 'cracked', titel: 'The cracked crystal', wer: 'Renoir', text: 'In Jean Renoir the crystal has a crack. Through it something escapes: life, a present not yet frozen, moving towards the future. The theatre of “The Golden Coach”, the game of “The Rules of the Game”. Beyond the crack the stone shows only the now.' },
-      { kurz: 'forming', titel: 'The crystal in formation', wer: 'Fellini', text: 'In Federico Fellini the crystal is never finished, it keeps growing. Facets push forward and sink back: what emerges is now, what recedes becomes past.' },
+      { kurz: 'forming', titel: 'The crystal in formation', wer: 'Fellini', text: 'In Federico Fellini the crystal is never finished, it keeps growing. Facet after facet shoots forth: what forms is now, and already sinks into the past while the next one grows. Grown large, it reaches into the image.' },
       { kurz: 'decomposing', titel: 'The crystal in decomposition', wer: 'Visconti', text: 'In Luchino Visconti the crystal decays from within. A world goes under, and understanding comes too late. Everything in the stone is already deeply past; it yellows, clouds over, and the facets lose their hold. “The Leopard”, “Ludwig”.' }
     ],
     zustand: 'State',
@@ -107,7 +107,7 @@ const TEXTE = {
     zustaende: [
       { kurz: 'parfait', titel: 'Le cristal parfait', wer: 'Ophuls', text: 'Chez Max Ophuls, le cristal est parfait : un circuit fermé dont rien ne s’échappe. Les temps tournent autour de la pierre comme la piste de « Lola Montès », chaque facette passe son temps à la suivante.' },
       { kurz: 'fêlé', titel: 'Le cristal fêlé', wer: 'Renoir', text: 'Chez Jean Renoir, le cristal a une fêlure. Par elle quelque chose s’échappe : la vie, un présent qui ne s’est pas encore figé et file vers l’avenir. Le théâtre du « Carrosse d’or », le jeu de « La Règle du jeu ». Au-delà de la fêlure, la pierre ne montre plus que le maintenant.' },
-      { kurz: 'en formation', titel: 'Le cristal en formation', wer: 'Fellini', text: 'Chez Federico Fellini, le cristal n’est jamais achevé, il ne cesse de croître. Des facettes avancent et se retirent : ce qui surgit est présent, ce qui recule devient passé.' },
+      { kurz: 'en formation', titel: 'Le cristal en formation', wer: 'Fellini', text: 'Chez Federico Fellini, le cristal n’est jamais achevé, il ne cesse de croître. Facette après facette, il se forme : ce qui surgit est présent et sombre déjà dans le passé tandis que la suivante pousse. Devenu grand, il gagne l’image.' },
       { kurz: 'en décomposition', titel: 'Le cristal en décomposition', wer: 'Visconti', text: 'Chez Luchino Visconti, le cristal se décompose de l’intérieur. Un monde s’effondre, et la révélation arrive trop tard. Tout dans la pierre est déjà profondément passé : cela jaunit, se trouble, et les facettes perdent prise. « Le Guépard », « Ludwig ».' }
     ],
     zustand: 'État',
@@ -830,6 +830,7 @@ document.querySelectorAll('[data-form]').forEach((b) => b.addEventListener('clic
 let titelUhr = 0;
 function zustandWaehlen(nr, still) {
   if (nr === 1 && zustand !== 1) rissStart = performance.now() / 1000;
+  if (nr === 2 && zustand !== 2) entstehenStart = performance.now() / 1000;
   zustand = nr;
   document.querySelectorAll('[data-zustand]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.zustand === nr)));
   $('r-zustand').value = String(Math.round(zustandRasten[ZUSTAND_STELLE.indexOf(nr)] * 1000));
@@ -1003,6 +1004,19 @@ const RISS = (() => {   // Rissebene im Stein, mit zwei Richtungen in ihr für d
 const rissW = new Float32Array(9);
 // gesprungen: beim Wechsel springt der Stein mit einem Ruck auf, dann atmet der Spalt langsam
 let rissStart = -10;
+// im Entstehen (Fellini): ein Kreislauf aus Anschiessen in Schüben, einer Front ins Bild und dem Sammeln zum Keim (Sekunden)
+const ENTSTEHEN = { dauer: 11, wachsen: 6.2, front: 9.2, schuebe: 7, vor: 1.12, keim: 0.32 };
+let entstehenStart = 0, frontStaerke = 0;
+const glatt = (a, b, x) => { const u = Math.min(1, Math.max(0, (x - a) / (b - a))); return u * u * (3 - 2 * u); };
+function entstehenZeit() {
+  const E = ENTSTEHEN, s = ((performance.now() / 1000 - entstehenStart) % E.dauer + E.dauer) % E.dauer;
+  let g = 1;
+  if (s < E.wachsen) { const x = s / E.wachsen * E.schuebe, k = Math.floor(x); g = E.keim + (1 - E.keim) * (k + glatt(0, 0.3, x - k)) / E.schuebe; }
+  const sammeln = glatt(E.dauer - 1.6, E.dauer, s);
+  g -= (1 - E.keim) * sammeln;
+  frontStaerke = s > E.wachsen && s < E.front ? Math.pow(Math.sin(Math.PI * (s - E.wachsen) / (E.front - E.wachsen)), 1.5) : 0;
+  return { s, g, sammeln };
+}
 const rissVer = new Float32Array(3);
 function rissSetzen(t) {
   const rad = huelle * zoom, seit = performance.now() / 1000 - rissStart;
@@ -1015,6 +1029,8 @@ function rissSetzen(t) {
   gl.uniform3fv(ort.uRissVer, rissVer);
 }
 function zustandAnwenden(t) {
+  const ent = zustand === 2 ? entstehenZeit() : null;
+  if (!ent) frontStaerke = 0;
   for (let i = 0; i < anzahl; i++) {
     faktor[i] = 1; alterAkt[i] = alter[i];
     if (zustand === 0) {
@@ -1022,9 +1038,17 @@ function zustandAnwenden(t) {
       const az = Math.atan2(ebenen[i * 3 + 2], ebenen[i * 3]) / (2 * Math.PI) + 0.5;
       alterAkt[i] = ((az + ebenen[i * 3 + 1] * 0.15 + t * 0.045) % 1) * 0.92 + 0.08;
     } else if (zustand === 2) {
-      // im Entstehen (Fellini): Facetten wachsen hervor und sinken zurück; was hervortritt, ist jetzt
-      const w = 0.5 + 0.5 * Math.sin(t * 0.55 + i * 2.399);
-      faktor[i] = 0.72 + 0.28 * w; alterAkt[i] = (1 - w) * 0.92 + 0.08;
+      // im Entstehen (Fellini): der Stein wächst in Schüben aus einem Keim, Facette um Facette schiesst an.
+      // Eine Facette, die noch nicht da ist, liegt weiter aussen und schneidet nicht. Kommt sie an, fährt sie ein,
+      // blitzt als Gegenwart auf (Alter unter null: heller, satter) und sinkt dann in ihre Vergangenheit.
+      const E = ENTSTEHEN, rang = (i * 0.618034) % 1, schub = Math.floor(rang * E.schuebe);
+      const seit = ent.s - (schub + 0.15 * ((i * 0.381966) % 1)) / E.schuebe * E.wachsen;
+      let f = E.vor, a = 0;
+      if (seit >= 0.6) { f = 1; a = alter[i] * Math.min(1, (seit - 0.6) / 3); }
+      else if (seit >= 0.18) { f = 0.94 + 0.06 * glatt(0.18, 0.6, seit); a = -1.2 * (1 - glatt(0.18, 0.6, seit)); }
+      else if (seit >= 0) { const u = seit / 0.18; f = E.vor + (0.94 - E.vor) * (1 - (1 - u) * (1 - u)); a = -1.2; }
+      faktor[i] = (f + (E.vor - f) * ent.sammeln) * ent.g;   // zum Schluss sammelt er sich zum Keim, der nur Gegenwart trägt
+      alterAkt[i] = a * (1 - ent.sammeln);
     } else if (zustand === 3) {
       // im Zerfall (Visconti): alles ist schon tief vergangen, Facetten sinken langsam ein
       alterAkt[i] = 0.55 + 0.45 * alter[i];
@@ -1050,7 +1074,7 @@ function zeitSetzen(kopf, intervall, t) {
   if (gebaut !== form + facetten || gebautSeite !== innerWidth / innerHeight) { kristallBauen(); gebautSeite = innerWidth / innerHeight; }
   zustandAnwenden(t);
   for (let i = 0; i < anzahl; i++) {
-    const zurueck = Math.min(SCHICHTEN - 1, Math.round(alterAkt[i] * tiefe / intervall));
+    const zurueck = Math.min(SCHICHTEN - 1, Math.round(Math.max(0, alterAkt[i]) * tiefe / intervall));
     schicht[i] = (kopf - zurueck + SCHICHTEN) % SCHICHTEN;
   }
 }
@@ -1177,7 +1201,7 @@ function bild(ms) {
   gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, scharfTex); gl.uniform1i(ort.uScharf, 3); gl.activeTexture(gl.TEXTURE0);
   gl.uniform3fv(ort.uN, ebenenW); gl.uniform1fv(ort.uR, abstandZ); gl.uniform1fv(ort.uSchicht, schicht); gl.uniform1fv(ort.uAlter, alterAkt);
   gl.uniform1i(ort.uK, anzahl); gl.uniform1f(ort.uKante, SCHLIFFE[form].kante); gl.uniform3fv(ort.uTon, SCHLIFFE[form].ton); gl.uniform1f(ort.uFeuer, SCHLIFFE[form].feuer); gl.uniform1f(ort.uVer, milieu());
-  gl.uniform1i(ort.uZustand, zustand); gl.uniform1f(ort.uUnschaerfe, 0.0025); gl.uniform1f(ort.uRad, huelle * zoom * 1.03); gl.uniform3fv(ort.uRiss, rissW.subarray(0, 3)); gl.uniform3fv(ort.uRissA, rissW.subarray(3, 6)); gl.uniform3fv(ort.uRissB, rissW.subarray(6, 9)); rissSetzen(t); gl.uniform1f(ort.uSeite, innerWidth / innerHeight);
+  gl.uniform1i(ort.uZustand, zustand); gl.uniform1f(ort.uUnschaerfe, 0.0025); gl.uniform1f(ort.uRad, huelle * zoom * 1.03 * (zustand === 2 ? ENTSTEHEN.vor : 1)); gl.uniform3fv(ort.uRiss, rissW.subarray(0, 3)); gl.uniform3fv(ort.uRissA, rissW.subarray(3, 6)); gl.uniform3fv(ort.uRissB, rissW.subarray(6, 9)); rissSetzen(t); gl.uniform1f(ort.uSeite, innerWidth / innerHeight);
   gl.uniform2f(ort.uLage, (gegenwart.x - 0.5) * 1.2, (gegenwart.y - 0.5) * 0.9); gl.uniform1f(ort.uJetzt, kopf);
   gl.uniform1f(ort.uBrech, brech); gl.uniform1f(ort.uT, t % 100);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -1329,7 +1353,13 @@ function keimSetzen(x, y) {
 }
 const KEIM_DAUER = 3.2;
 // das Milieu kristallisiert mit: die Verschmelzung schwillt beim Wachsen an und legt sich wieder
-function milieu() { const w = keimWachstum(performance.now() / 1000); return w >= 1 ? verschmelzung : verschmelzung + (0.85 - verschmelzung) * Math.sin(Math.PI * w) * Math.max(0, Math.sign(0.85 - verschmelzung)); }
+// im Entstehen greift der gross gewordene Kristall als Front ins Bild über (am Telefon etwas zurückhaltender)
+function milieu() {
+  const w = keimWachstum(performance.now() / 1000);
+  const keim = w >= 1 ? verschmelzung : verschmelzung + (0.85 - verschmelzung) * Math.sin(Math.PI * w) * Math.max(0, Math.sign(0.85 - verschmelzung));
+  const hoch = telefon || leicht ? 0.7 : 0.8;
+  return Math.max(keim, verschmelzung + Math.max(0, hoch - verschmelzung) * frontStaerke);
+}
 function keimWachstum(t) { return keimStart < 0 ? 1 : Math.min(1, (t - keimStart) / KEIM_DAUER); }
 // am Rechner auch per Doppelklick
 leinwand.addEventListener('dblclick', (e) => { if (keimWachstum(performance.now() / 1000) >= 1 || keimStart < 0) { letzterTipp = null; $('facettenzeit').classList.add('weg'); keimSetzen(e.clientX, e.clientY); } });
