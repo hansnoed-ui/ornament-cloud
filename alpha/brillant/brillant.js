@@ -1,5 +1,5 @@
 // Brillante Ideen: eine Titelsequenz mit dem Brillanten aus dem Kristallbild (alpha/deleuze/kristall/).
-// Der Punkt hinter «Ideen» ist ein echter, lichtbrechender Brillant (derselbe Schliff, derselbe Strahlengang).
+// Der i-Punkt in «Brillante» (bis 0.16: der Punkt hinter «Ideen») ist ein echter, lichtbrechender Brillant (derselbe Schliff, derselbe Strahlengang).
 // Dreht man ihn, legen sich die Bereiche als Glasschichten über die Seite; der Übergang geschieht Facette um Facette,
 // jede Facette des Steins bricht das Bild auf ihre Weise. Alles rechnet im Browser (WebGL 2), nichts wird geladen ausser Schrift.
 
@@ -472,9 +472,15 @@ function satzspiegel(c) {
   c.font = `600 ${fs}px ${SCHRIFT}`; if ('letterSpacing' in c) c.letterSpacing = SPERREN(fs);
   const gemR = fs * 0.27, luecke = fs * 0.06, y = Math.round(H * 0.47 + fs * 0.35);
   const satz = Math.round(hoch ? 16 : 19);
-  const saetze = ['Brillante Ideen', ...BEREICHE.map((b) => b.name)].map((t, k) => {
-    const b = c.measureText(t).width, x = (W - (b + luecke + gemR * 2)) / 2;
-    return { t, x, y, gem: { x: x + b + luecke + gemR, y: y - gemR * 0.62 } };
+  const saetze = ['Brillante Ideen.', ...BEREICHE.map((b) => b.name)].map((t, k) => {
+    const b = c.measureText(t).width;
+    if (!k) {
+      // 0.17 (Christian): der Brillant ist der i-Punkt in «Brillante», der Satz endet mit einem gewöhnlichen Punkt
+      const x = (W - b) / 2, i0 = c.measureText('Br').width, iw = c.measureText('Bri').width - i0;
+      return { t, x, y, iPunkt: { x: x + i0, w: iw }, gem: { x: x + i0 + iw / 2, y: y - fs * 0.86, r: fs * 0.21 } };
+    }
+    const x = (W - (b + luecke + gemR * 2)) / 2;
+    return { t, x, y, gem: { x: x + b + luecke + gemR, y: y - gemR * 0.62, r: gemR } };
   });
   // Glasscheibe der Bereiche: das Wort steht, wo der Titel stand; der Titel liegt verschwommen darunter
   const sw = Math.min(W - (hoch ? 28 : 80), 620), pad = hoch ? 34 : 48;
@@ -515,7 +521,18 @@ function satzMalen(c, k) {
   c.textBaseline = 'alphabetic';
   const g = c.createLinearGradient(0, z.y - lay.fs * 0.75, 0, z.y + lay.fs * 0.05);
   g.addColorStop(0, '#fbfaff'); g.addColorStop(0.65, '#e6e2f0'); g.addColorStop(1, '#bdb7cf');
-  c.fillStyle = g; c.fillText(z.t, z.x, z.y);
+  if (z.iPunkt) {
+    // Text ohne den Punkt des i: auf eigener Ebene zeichnen und den Punkt wegnehmen, der Brillant sitzt dort
+    const t = document.createElement('canvas'); t.width = Math.round(W * D); t.height = Math.round(H * D);
+    const tc = t.getContext('2d'); tc.setTransform(D, 0, 0, D, 0, 0);
+    tc.font = c.font; if ('letterSpacing' in tc) tc.letterSpacing = SPERREN(lay.fs); tc.textBaseline = 'alphabetic';
+    const g2 = tc.createLinearGradient(0, z.y - lay.fs * 0.75, 0, z.y + lay.fs * 0.05);
+    g2.addColorStop(0, '#fbfaff'); g2.addColorStop(0.65, '#e6e2f0'); g2.addColorStop(1, '#bdb7cf');
+    tc.fillStyle = g2; tc.fillText(z.t, z.x, z.y);
+    tc.globalCompositeOperation = 'destination-out';
+    tc.fillRect(z.iPunkt.x - lay.fs * 0.02, z.y - lay.fs * 1.05, z.iPunkt.w + lay.fs * 0.04, lay.fs * 0.47);
+    c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(t, 0, 0);
+  } else { c.fillStyle = g; c.fillText(z.t, z.x, z.y); }
   c.restore();
   if (!k) return null;
   // darunter, klein und leise: ein Satz zum Bereich
@@ -919,7 +936,7 @@ function bild(ms) {
 
   const ease = (x) => x * x * (3 - 2 * x), e = ease(fr);
   const gA = lay.saetze[A].gem, gB = lay.saetze[B].gem;
-  const gr = { x: gA.x + (gB.x - gA.x) * e, y: gA.y, r: lay.gemR }, grossR = Math.min(W, H) * 0.11;
+  const gr = { x: gA.x + (gB.x - gA.x) * e, y: gA.y + (gB.y - gA.y) * e, r: gA.r + (gB.r - gA.r) * e }, grossR = Math.min(W, H) * 0.11;
   // Menü: der Stein steigt gross über die Mitte und kehrt beim zweiten Tippen an seinen Platz zurück
   // langsam gleiten (Christian: «langsamer in seine Position»)
   menu += ((menuAuf ? 1 : 0) - menu) * (1 - Math.pow(0.965, f));
