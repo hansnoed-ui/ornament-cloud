@@ -960,7 +960,7 @@ function vitrineAuf(i) {
   vZuletzt = document.activeElement;
   vz.pos = vz.ziel = i; vz.v = 0; vz.aufZiel = 1; vz.t0 = performance.now(); vz.aktiv = -1;
   vKarten.forEach((k) => { k.flug = 0; });
-  vitrineOffen = true; vitrine.hidden = false; vitrine.classList.add('auf'); spur('Vitrine ' + BEREICHE[i].name);
+  vitrineOffen = true; vitrine.hidden = false; vitrine.classList.add('auf'); document.body.classList.add('vitrine-auf'); spur('Vitrine ' + BEREICHE[i].name);
   cancelAnimationFrame(vz.lauf); vz.lauf = requestAnimationFrame(vitrineBild);
 }
 function vitrineZu() {
@@ -1014,7 +1014,7 @@ function vitrineBild(jetzt) {
     else { const u = Math.max(0, Math.min(1, (seit - (2.5 - d) * 0.035) / (ruhig ? 0.2 : 0.5))); k.flug = Math.min(k.flug, 1 - u * u * (3 - 2 * u)); if (k.flug > 0.001) alleZu = false; }
   });
   if (!vz.aufZiel && alleZu) {
-    vitrineOffen = false; vitrine.hidden = true; vitrineVoll = false;
+    vitrineOffen = false; vitrine.hidden = true; vitrineVoll = false; document.body.classList.remove('vitrine-auf');
     vKarten.forEach((k) => { if (k.film) { k.film.pause(); k.film.remove(); k.film = null; } if (k.schauStopp) { k.schauStopp(); k.schauStopp = null; } });
     vz.aktiv = -1; vz.letzt = 0; return;
   }
@@ -1053,7 +1053,7 @@ function vitrineBild(jetzt) {
     // Flug aus dem Stein: von dessen Ort, winzig, gedreht
     const fl = k.flug, gegen = 1 - fl;
     x = x * fl + sx * gegen; y = y * fl + sy * gegen; z = z * fl - 380 * gegen * (1 - fl * 0.4);
-    ry += gegen * (sg || 1) * -120 * (1 - fl); rx += gegen * 40; sch = 0.06 + 0.94 * fl;
+    ry += gegen * (sg || 1) * -120 * (1 - fl); rx += gegen * 40; sch = 0.35 + 0.65 * fl;
     const sichtbar = ad < 2.2 ? 1 : Math.max(0, 1 - (ad - 2.2) / 0.3);
     k.el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, ${z.toFixed(1)}px) rotateY(${ry.toFixed(2)}deg) rotateX(${rx.toFixed(2)}deg) scale(${sch.toFixed(3)})`;
     k.el.style.opacity = (Math.min(1, fl * 1.6) * sichtbar).toFixed(3);
