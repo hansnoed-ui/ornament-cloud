@@ -14,8 +14,8 @@ const TEXTE = {
     titel: 'Schichten der Zeit', satz: 'Die Vergangenheit liegt in Schichten, und man springt hinein.',
     kamera: 'Kamera', video: 'Video oder Fotos', beispiel: 'Beispiel',
     tiefe: 'Zeittiefe', schichten: 'Schichten', fluss: 'Fluss', lesart: 'Lesart',
-    rand: 'Rand', rand4: 'Ornament', rand1: 'Relief', rand2: 'Kintsugi', rand3: 'Saum', rand5: 'Riss', stoff4: 'Riss',
-    stoff: 'Stoff', stoff3: 'Achat', stoff1: 'Lasur',
+    rand: 'Rand', rand4: 'Ornament', rand1: 'Relief', rand2: 'Kintsugi', rand3: 'Saum', rand5: 'Riss', rand6: 'Schnitt', rand7: 'Brand', stoff4: 'Riss',
+    stoff: 'Stoff', stoff3: 'Achat', stoff1: 'Lasur', form: 'Form', form2: 'Rechteck', form1: 'Kreis', form3: 'Kristall',
     glossen: {
       graben: { begriff: 'les nappes de passé', satz: 'Die Vergangenheit ist nicht vorbei, sie liegt unter der Gegenwart, in Schichten. Wer gräbt, findet keine einzelne Erinnerung, sondern eine ganze Region der Zeit.', zitat: '«Wer sich der eigenen verschütteten Vergangenheit zu nähern trachtet, muss sich verhalten wie ein Mann, der gräbt.»', quelle: 'Walter Benjamin, Ausgraben und Erinnern, um 1932' },
       tiefe: { begriff: 'la coexistence', satz: 'Die Schichten folgen nicht aufeinander, sie bestehen nebeneinander. Hier bestimmst du, wie weit die tiefste zurückreicht.', zitat: '«Le passé ne succède pas au présent qu’il n’est plus, il coexiste avec le présent qu’il a été.»', quelle: 'Deleuze, Le bergsonisme, PUF 1966, Kap. 3' },
@@ -51,8 +51,8 @@ const TEXTE = {
     titel: 'Sheets of the past', satz: 'The past lies in sheets, and one leaps into them.',
     kamera: 'Camera', video: 'Video or photos', beispiel: 'Example',
     tiefe: 'Depth of time', schichten: 'Sheets', fluss: 'Flow', lesart: 'Reading',
-    rand: 'Edge', rand4: 'Ornament', rand1: 'Relief', rand2: 'Kintsugi', rand3: 'Fringe', rand5: 'Tear', stoff4: 'Tear',
-    stoff: 'Matter', stoff3: 'Agate', stoff1: 'Glaze',
+    rand: 'Edge', rand4: 'Ornament', rand1: 'Relief', rand2: 'Kintsugi', rand3: 'Fringe', rand5: 'Tear', rand6: 'Cut', rand7: 'Burn', stoff4: 'Tear',
+    stoff: 'Matter', stoff3: 'Agate', stoff1: 'Glaze', form: 'Form', form2: 'Rectangle', form1: 'Circle', form3: 'Crystal',
     glossen: {
       graben: { begriff: 'les nappes de passé', satz: 'The past is not over, it lies beneath the present, in sheets. Whoever digs finds no single memory but a whole region of time.', zitat: '“He who seeks to approach his own buried past must conduct himself like a man digging.”', quelle: 'Walter Benjamin, Excavation and Memory, c. 1932' },
       tiefe: { begriff: 'la coexistence', satz: 'The sheets do not follow one another, they coexist. Here you decide how far back the deepest one reaches.', zitat: '« Le passé ne succède pas au présent qu’il n’est plus, il coexiste avec le présent qu’il a été. »', quelle: 'Deleuze, Le bergsonisme, PUF 1966, ch. 3 (original)' },
@@ -88,8 +88,8 @@ const TEXTE = {
     titel: 'Nappes de passé', satz: 'Le passé se tient en nappes, et l’on y saute.',
     kamera: 'Caméra', video: 'Vidéo ou photos', beispiel: 'Exemple',
     tiefe: 'Profondeur du temps', schichten: 'Nappes', fluss: 'Flux', lesart: 'Lecture',
-    rand: 'Bord', rand4: 'Ornement', rand1: 'Relief', rand2: 'Kintsugi', rand3: 'Frange', rand5: 'Lacéré', stoff4: 'Lacéré',
-    stoff: 'Matière', stoff3: 'Agate', stoff1: 'Glacis',
+    rand: 'Bord', rand4: 'Ornement', rand1: 'Relief', rand2: 'Kintsugi', rand3: 'Frange', rand5: 'Lacéré', rand6: 'Coupé', rand7: 'Brûlé', stoff4: 'Lacéré',
+    stoff: 'Matière', stoff3: 'Agate', stoff1: 'Glacis', form: 'Forme', form2: 'Rectangle', form1: 'Cercle', form3: 'Cristal',
     glossen: {
       graben: { begriff: 'les nappes de passé', satz: 'Le passé n’est pas fini, il gît sous le présent, en nappes. Qui fouille ne trouve pas un souvenir isolé, mais toute une région du temps.', zitat: '« Wer sich der eigenen verschütteten Vergangenheit zu nähern trachtet, muss sich verhalten wie ein Mann, der gräbt. »', quelle: 'Walter Benjamin, Ausgraben und Erinnern, vers 1932 (original)' },
       tiefe: { begriff: 'la coexistence', satz: 'Les nappes ne se suivent pas, elles coexistent. Ici tu décides jusqu’où remonte la plus profonde.', zitat: '« Le passé ne succède pas au présent qu’il n’est plus, il coexiste avec le présent qu’il a été. »', quelle: 'Deleuze, Le bergsonisme, PUF 1966, ch. 3' },
@@ -260,37 +260,48 @@ vec2 imR(vec2 q){ vec2 a = uRahmen.xy, b = uRahmen.zw; return a + (b - a) * (1.0
 vec3 verfahren(vec3 b, float m){
   float l = lum(b);
   vec2 q = gl_FragCoord.xy;
-  vec3 papier = vec3(0.95, 0.92, 0.85);
   if (m < 0.5) return b;
+  // jedes Verfahren auf seinem Papier, mit ungleichmässiger Farbdichte und Körnung, wie gedruckt und nicht gerechnet
+  float korn = rausch(q * 0.6), wolke = fbm(q / 90.0);
+  float dichte = 0.86 + 0.22 * wolke;
+  vec3 papier = vec3(0.93, 0.9, 0.83) * (0.97 + 0.04 * korn);
   if (m < 1.5) {
-    // Kupferstich: Linien schräg, je dunkler, desto breiter; im Schatten kreuzt eine zweite Lage
-    float a = dot(q, vec2(0.866, 0.5)) / 5.0, f1 = abs(fract(a) - 0.5) * 2.0, fw = fwidth(a) * 2.0;
-    float t1 = 1.0 - smoothstep((1.0 - l) * 0.9 - fw, (1.0 - l) * 0.9 + fw, f1);
-    float a2 = dot(q, vec2(-0.5, 0.866)) / 5.0, f2 = abs(fract(a2) - 0.5) * 2.0;
-    float t2 = (1.0 - smoothstep((0.55 - l) * 1.2 - fw, (0.55 - l) * 1.2 + fw, f2)) * step(l, 0.55);
-    return mix(papier, vec3(0.16, 0.1, 0.07), 1.0 - (1.0 - t1) * (1.0 - t2));
+    // Kupferstich: Sepia auf Bütten, die Linien schwellen mit dem Dunkel an und wiegen sich leicht mit dem Bild
+    vec3 platte = mix(papier, vec3(0.86, 0.8, 0.7), 0.35 * wolke);           // Plattenton
+    float a = dot(q, vec2(0.866, 0.5)) / 5.2 + l * 1.6, f1 = abs(fract(a) - 0.5) * 2.0, fw = fwidth(a) * 1.4;
+    float t1 = 1.0 - smoothstep((1.0 - l) * 0.85 - fw, (1.0 - l) * 0.85 + fw, f1);
+    float a2 = dot(q, vec2(-0.5, 0.866)) / 5.2 - l * 1.2, f2 = abs(fract(a2) - 0.5) * 2.0;
+    float t2 = (1.0 - smoothstep((0.5 - l) * 1.2 - fw, (0.5 - l) * 1.2 + fw, f2)) * step(l, 0.5);
+    return mix(platte, vec3(0.2, 0.12, 0.08), (1.0 - (1.0 - t1) * (1.0 - t2)) * dichte);
   }
   if (m < 2.5) {
-    // Raster: Punkte im gedrehten Gitter, gross im Dunkeln, in der Farbe des Bildes
-    vec2 r = mat2(0.966, 0.259, -0.259, 0.966) * q / 7.0, f = fract(r) - 0.5;
-    float rad = sqrt(max(0.0, 1.0 - l)) * 0.62, d = length(f), fw = fwidth(r.x) * 1.2;
-    return mix(papier, b * 0.55, 1.0 - smoothstep(rad - fw, rad + fw, d));
+    // Zeitungsraster: schwarze Punkte auf vergilbtem Zeitungspapier, die Farbe läuft etwas aus
+    vec3 zeitung = vec3(0.86, 0.83, 0.74) * (0.96 + 0.06 * korn) * (0.97 + 0.05 * wolke);
+    vec2 r = mat2(0.707, 0.707, -0.707, 0.707) * q / 6.0, f = fract(r) - 0.5;
+    float rad = sqrt(max(0.0, 1.0 - l)) * 0.6 + (rausch(q * 0.35) - 0.5) * 0.08;
+    float d = length(f), fw = fwidth(r.x) * 1.3;
+    return mix(zeitung, vec3(0.12, 0.11, 0.11), (1.0 - smoothstep(rad - fw, rad + fw, d)) * dichte);
   }
   if (m < 3.5) {
-    // Holzschnitt: schwarz oder Papier, die Schwelle folgt den Spuren des Hohleisens; ein gedämpftes Rot im Licht
-    float spur = sin(dot(q, vec2(0.2, 0.98)) / 3.2 + 4.0 * rausch(q / 60.0)) * 0.12;
-    float s1 = smoothstep(-0.03, 0.03, l + spur - 0.45);
-    vec3 c = mix(vec3(0.07, 0.06, 0.06), papier, s1);
-    return mix(c, vec3(0.72, 0.2, 0.15), (1.0 - smoothstep(-0.03, 0.03, l + spur - 0.8)) * s1 * 0.7);
+    // Holzschnitt auf Japanpapier: Schwarz mit Maserung, das Licht als Papier; ein gedämpftes Rot aus einem zweiten Stock
+    vec3 washi = vec3(0.94, 0.92, 0.86) * (0.97 + 0.04 * rausch(q * vec2(0.08, 0.9)));
+    float schwelle = smoothstep(-0.025, 0.025, l - 0.42 + (fbm(q / 26.0) - 0.5) * 0.1);
+    float maser = 0.5 + 0.5 * sin(q.y / 3.3 + 6.0 * fbm(q / vec2(220.0, 40.0)));
+    vec3 schwarz = mix(vec3(0.07, 0.065, 0.06), vec3(0.2, 0.18, 0.16), 0.35 * maser * maser);
+    vec3 c = mix(schwarz, washi, schwelle);
+    float rotStock = smoothstep(0.42, 0.5, l) * (1.0 - smoothstep(0.66, 0.74, l));
+    return mix(c, vec3(0.6, 0.17, 0.12) * (0.92 + 0.12 * maser), rotStock * 0.5 * dichte);
   }
   if (m > 4.5) {
     // Rötel: Kreide auf vergilbtem Bütten, die Körnung des Papiers fängt das Pigment
-    float korn = rausch(q * 0.55) * 0.6 + rausch(q * 0.13) * 0.4;
-    float t = smoothstep(0.15, 0.95, l + (korn - 0.5) * 0.35);
-    return mix(vec3(0.52, 0.2, 0.12), vec3(0.93, 0.86, 0.72), t);
+    float k2 = rausch(q * 0.55) * 0.6 + rausch(q * 0.13) * 0.4;
+    float t = smoothstep(0.15, 0.95, l + (k2 - 0.5) * 0.35);
+    return mix(vec3(0.5, 0.2, 0.13), vec3(0.92, 0.86, 0.74), t);
   }
-  // Cyanotypie: Preussischblau, das Licht als Papier
-  return mix(vec3(0.05, 0.17, 0.38), vec3(0.87, 0.9, 0.92), smoothstep(0.08, 0.92, l));
+  // Cyanotypie: Preussischblau, ungleich gestrichen, das Licht als Papier
+  float strich = fbm(q / vec2(300.0, 60.0));
+  vec3 blau = mix(vec3(0.04, 0.15, 0.33), vec3(0.08, 0.22, 0.42), strich);
+  return mix(blau, vec3(0.88, 0.89, 0.87) * (0.97 + 0.04 * korn), smoothstep(0.1, 0.9, l + (strich - 0.5) * 0.12));
 }
 // Je tiefer die Schicht, desto älter das Verfahren: eine kleine Mediengeschichte rückwärts.
 // a = 0 die erste vergangene Schicht: Raster (Zeitungsdruck), Cyanotypie, Kupferstich, Holzschnitt, Rötel, dann Holzschnitt und Rötel im Wechsel
@@ -309,14 +320,46 @@ vec2 zitter(float alter){
   float a = min(alter, 6.0);
   return uZitter * a * 0.0022 * vec2(sin(uT * 21.0 + alter * 1.7) + 0.5 * sin(uT * 47.0 + alter), cos(uT * 17.0 + alter * 2.3) + 0.5 * cos(uT * 39.0 - alter));
 }
-float rissVersatz(vec2 p){ return (fbm(p * 18.0) - 0.5) * 0.9 + (rausch(p * 140.0) - 0.5) * 0.25; }   // grob und fein, wie Papier reisst
+float rissVersatz(vec2 p){ return (fbm(p * 11.0) - 0.5) * 1.1 + (fbm(p * 47.0) - 0.5) * 0.28; }   // grob und fein, wie Papier reisst, ohne Zacken
 // d: Abstand zum Riss in Bildpunkten, > 0 auf dem oberen Blatt
+// Das obere Blatt endet in einem Streifen weissen Papierkerns, dessen Breite ruhig schwankt; sein Rand franst weich aus.
+// Auf dem unteren Blatt bleiben am Riss Fetzen des abgerissenen Papiers kleben, und es liegt im Schatten.
 vec3 riss(vec3 oben, vec3 unten, float d, vec2 p, float id){
-  float breite = 2.5 + 6.5 * rausch(p * 30.0 + id * 3.7);
-  float fasern = rausch(p * vec2(900.0, 120.0)) * rausch(p * vec2(140.0, 800.0));
-  vec3 o = mix(oben, vec3(0.96, 0.95, 0.92) * (0.93 + 0.07 * fasern), 1.0 - smoothstep(breite * 0.6, breite, d + fasern * 4.0));
-  vec3 un = unten * (1.0 - 0.42 * exp(-max(-d, 0.0) / 8.0));
-  return mix(un, o, smoothstep(-0.7, 0.7, d));
+  float fl = fbm(p * 7.0 + id * 3.7);
+  float kern = 5.5 * smoothstep(0.42, 0.78, fl) + 0.6 * smoothstep(0.3, 0.5, fl);   // Breite des Papierkerns: oft kaum da, stellenweise breit
+  float druckRand = kern + (fbm(p * 60.0 + id) - 0.5) * 2.5;                // wo die bedruckte Haut aufhört
+  vec3 papier = vec3(0.95, 0.94, 0.9) * (0.95 + 0.05 * fbm(p * 220.0));
+  vec3 o = mix(papier, oben, smoothstep(druckRand - 0.8, druckRand + 0.8, d));
+  o = mix(o, o * 0.82, exp(-pow((d - druckRand) / 0.9, 2.0)) * 0.6);         // eine feine Kante, wo die Haut abriss
+  // Fasern: ein weicher, halb durchsichtiger Saum vor der Papierkante
+  float faser = smoothstep(0.45, 0.8, rausch(p * vec2(520.0, 520.0) + id)) * 0.6;
+  float alpha = smoothstep(-0.6, 0.6, d) + faser * (1.0 - smoothstep(0.0, 2.6, -d));
+  // Fetzen auf dem unteren Blatt
+  float nah = exp(-max(-d, 0.0) / 22.0);
+  float fetzen = smoothstep(0.62, 0.66, fbm(p * 26.0 + id * 5.1) + 0.12 * nah) * nah * step(d, 0.0);
+  vec3 un = mix(unten, papier * 0.96, fetzen * 0.85);
+  un *= 1.0 - 0.38 * exp(-max(-d, 0.0) / 7.0) * (1.0 - fetzen * 0.6);
+  return mix(un, o, clamp(alpha, 0.0, 1.0));
+}
+// Schnitt (Matisse, Fontana): die Klinge zieht eine ruhige Linie; die Schnittkante fängt Licht, darunter liegt ein schmaler Spalt
+vec3 schnitt(vec3 oben, vec3 unten, float d){
+  vec3 o = oben * (1.0 + 0.22 * exp(-max(d, 0.0) / 1.6));                              // die gehobene Kante fängt Licht
+  vec3 un = unten * (1.0 - 0.55 * exp(-max(-d, 0.0) / 3.0) - 0.25 * exp(-max(-d, 0.0) / 18.0));
+  return mix(un, o, smoothstep(-0.6, 0.6, d));
+}
+// Brand (Burri, Combustioni): das obere Blatt ist abgebrannt; verkohlt am Rand, versengt nach innen, ein Hauch Glut
+vec3 brand(vec3 oben, vec3 unten, float d, vec2 p){
+  float sengen = 12.0 + 34.0 * fbm(p * 5.0);
+  vec3 o = mix(oben, oben * vec3(0.62, 0.44, 0.26), (1.0 - smoothstep(0.0, sengen, d)) * 0.85);
+  o = mix(o, vec3(0.05, 0.035, 0.03), 1.0 - smoothstep(1.5, 5.0 + 5.0 * fbm(p * 30.0), d));
+  o += vec3(0.6, 0.18, 0.04) * exp(-pow(d / 0.9, 2.0)) * 0.35 * smoothstep(0.45, 0.7, fbm(p * 14.0 + uT * 0.15));
+  vec3 un = unten * (1.0 - 0.45 * exp(-max(-d, 0.0) / 10.0));
+  return mix(un, o, smoothstep(-0.6, 0.6, d));
+}
+vec3 kante(vec3 oben, vec3 unten, float d, vec2 p, float id){
+  if (uRand == 6) return schnitt(oben, unten, d);
+  if (uRand == 7) return brand(oben, unten, d, p);
+  return riss(oben, unten, d, p, id);
 }
 
 // ---- Grabung (Welles): Terrassen in der Tiefenkarte, Wände mit allen Zeiten dazwischen ----
@@ -338,16 +381,16 @@ vec3 grabungRiss(vec2 u){
   vec2 g = vec2(grube(u + e.xy) - grube(u - e.xy), grube(u + e.yx) - grube(u - e.yx)) / (2.0 * e.x);
   float gl = length(g * vec2(1.0 / uSeite, 1.0)) * S + 1e-4;
   float px = max(uPxH, 1e-5);
-  float vers = rissVersatz(p) * 14.0;
+  float vers = uRand == 6 ? 0.0 : uRand == 7 ? (fbm(p * 6.0) - 0.5) * 34.0 + (fbm(p * 30.0) - 0.5) * 6.0 : rissVersatz(p) * 14.0;
   float bisUnten = (1.0 - w) / gl / px + vers, seitOben = w / gl / px - vers;     // in Bildpunkten, mit gerissenem Rand
   float da = smoothstep(0.4, 1.2, gl);
   bool unten = k < S - 1.5 && (k < 0.5 || bisUnten < seitOben);
   if (da < 0.01 || (k < 0.5 && !(k < S - 1.5))) return grabBlatt(u, k);
-  if (unten) return riss(grabBlatt(u, k), grabBlatt(u, k + 1.0), mix(1e3, bisUnten, da), p, k);
-  return riss(grabBlatt(u, k - 1.0), grabBlatt(u, k), mix(-1e3, -seitOben, da), p, k - 1.0);
+  if (unten) return kante(grabBlatt(u, k), grabBlatt(u, k + 1.0), mix(1e3, bisUnten, da), p, k);
+  return kante(grabBlatt(u, k - 1.0), grabBlatt(u, k), mix(-1e3, -seitOben, da), p, k - 1.0);
 }
 vec3 grabung(vec2 u){
-  if (uRand == 5) return grabungRiss(u);
+  if (uRand >= 5) return grabungRiss(u);
   vec2 p = u * vec2(uSeite, 1.0);
   float d0 = grube(u);
   // nur eine ruhige, grossräumige Unregelmässigkeit: die Ränder sollen nicht zittern
@@ -488,16 +531,24 @@ vec3 rahmenBlatt(vec2 d, float R, float kk, float id){
   vec3 b = schicht(vec2(0.5) + d / R, clamp(kk / (max(3.0, uS) - 1.0), 0.0, 1.0) * uSpanne);
   return verfahrenAlter(b, kk - 1.0) * (1.0 - 0.04 * min(kk, 8.0));
 }
+// das Mass der Rahmen: 2 Rechteck (Bild im Bild), 3 Kristall (eine unregelmässige Fläche aus sieben Facetten, wie der Brillant)
+float kegelMass(vec2 d){
+  if (uKegel != 3) return 2.0 * max(abs(d.x), abs(d.y));
+  vec2 a = d * vec2(uSeite, 1.0);
+  float m = 0.0;
+  for (int i = 0; i < 7; i++) { float w = float(i) * 0.8976 + 0.25 * sin(float(i) * 2.7 + 1.0); m = max(m, dot(a, vec2(cos(w), sin(w))) * (1.0 + 0.08 * cos(float(i) * 1.9))); }
+  return 2.0 * m;
+}
 vec3 kegelAbgrund(vec2 u){
   vec2 d = u - uSpitze;
-  float r = 2.0 * max(abs(d.x), abs(d.y)) + 1e-5;
-  float rmax = 2.0 * max(max(uSpitze.x, 1.0 - uSpitze.x), max(uSpitze.y, 1.0 - uSpitze.y));
+  float r = kegelMass(d) + 1e-5;
+  float rmax = max(max(kegelMass(-uSpitze), kegelMass(vec2(1.0) - uSpitze)), max(kegelMass(vec2(1.0, 0.0) - uSpitze), kegelMass(vec2(0.0, 1.0) - uSpitze)));
   float rmin = 0.03, S = max(3.0, uS), lz = log(rmax / rmin) / S;
   float ph = fract(uFT), L = log(r / rmin) / lz - ph, k = floor(L);
   float id = floor(log(r / rmin) / lz - uFT);
   float R = rmin * exp((k + 1.0 + ph) * lz), Ri = R * exp(-lz), Ra = R * exp(lz);
   float kk = max(0.0, k + ph);
-  float achse = abs(d.x) * uSeite > abs(d.y) ? uSeite : 1.0;
+  float achse = uKegel == 3 ? 1.0 : abs(d.x) * uSeite > abs(d.y) ? uSeite : 1.0;
   vec2 pa = u * vec2(uSeite, 1.0);
   float vers = rissVersatz(pa) * 14.0;
   float zuInnen = (r - Ri) * 0.5 * achse / uPxH - vers, zuAussen = (R - r) * 0.5 * achse / uPxH + vers;
@@ -507,7 +558,7 @@ vec3 kegelAbgrund(vec2 u){
   else c = riss(rahmenBlatt(d, R, kk, id), rahmenBlatt(d, Ra, kk + 1.0, id + 1.0), zuAussen, pa, id);
   return spitzePunkt(c, u);
 }
-vec3 kegel(vec2 u){ return uKegel == 2 ? kegelAbgrund(u) : kegelSchnitte(u); }
+vec3 kegel(vec2 u){ return uKegel == 1 ? kegelSchnitte(u) : kegelAbgrund(u); }
 
 // ---- Überschiebung (Resnais, Frankenthaler): ein fliessendes Feld, in Schichten geschnitten; ältere liegen oben ----
 // steht das Bild mit Saalschwarz daneben (Rechner, Hochformat), bleiben verschobene Schichten in seinem Rahmen: gespiegelt statt schwarz
@@ -1070,7 +1121,8 @@ function lesartWaehlen(nr, still) {
   lesart = nr;
   document.querySelectorAll('[data-lesart]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.lesart === nr)));
   $('r-lesart').value = String(nr);
-  document.querySelector('.raender:not(.stoffe)').hidden = nr !== 1;
+  document.querySelector('.raender:not(.stoffe):not(.formen)').hidden = nr !== 1;
+  document.querySelector('.formen').hidden = nr !== 0;
   document.querySelector('.stoffe').hidden = nr !== 2;
   lesartText();
   if (still) return;
@@ -1132,7 +1184,19 @@ const GEISTER_DAUER = 2.6;
 let geisterZug = 0;
 const VORSPANN = new URLSearchParams(location.search).has('vorspann');   // für den vorgerechneten Film der Schwelle
 // der Rand der Grabung: 4 Ornament mit Relief-Licht, 1 Relief, 2 Kintsugi, 3 Spektralsaum (0, die Haarlinie, nur mit ?rand=0)
-const KEGEL = Math.max(1, Math.min(2, +(new URLSearchParams(location.search).get('kegel') ?? 1) || 1));   // Entwürfe für den Kegel
+// die Form des Kegels: 2 Rechteck (Standard), 1 Kreis, 3 Kristall
+let kegelForm = 2;
+try { const r = localStorage.getItem('schichten.form'); if (r === '1' || r === '2' || r === '3') kegelForm = +r; } catch {}
+if (new URLSearchParams(location.search).has('kegel')) kegelForm = Math.max(1, Math.min(3, Math.round(+new URLSearchParams(location.search).get('kegel')) || 2));
+function formWaehlen(nr, still) {
+  kegelForm = nr;
+  document.querySelectorAll('[data-form]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.form === nr)));
+  if (still) return;
+  try { localStorage.setItem('schichten.form', String(nr)); } catch {}
+  spur('Form ' + nr);
+}
+document.querySelectorAll('[data-form]').forEach((b) => b.addEventListener('click', () => formWaehlen(+b.dataset.form)));
+formWaehlen(kegelForm, true);
 // der Stoff der Überschiebung: 3 Achat (Standard), 1 Lasur; ?ueber=0 der frühere Stand, 2 die Marmorierung (Entwürfe)
 let ueber = 4;
 try { const r = localStorage.getItem('schichten.stoff'); if (r === '1' || r === '3' || r === '4') ueber = +r; } catch {}
@@ -1147,9 +1211,9 @@ function stoffWaehlen(nr, still) {
 document.querySelectorAll('[data-stoff]').forEach((b) => b.addEventListener('click', () => stoffWaehlen(+b.dataset.stoff)));
 stoffWaehlen(ueber, true);
 let rand = 5;
-try { const r = localStorage.getItem('schichten.rand2'); if (r === '2' || r === '5') rand = +r; } catch {}   // wählbar: Riss, Kintsugi; die übrigen nur noch per ?rand
+try { const r = localStorage.getItem('schichten.rand2'); if (r === '2' || r === '5' || r === '6') rand = +r; } catch {}   // wählbar: Riss, Kintsugi, Schnitt; die übrigen nur noch per ?rand
 if (new URLSearchParams(location.search).has('rand')) rand = +new URLSearchParams(location.search).get('rand');
-rand = Math.max(0, Math.min(5, Math.round(rand) || 0));
+rand = Math.max(0, Math.min(7, Math.round(rand) || 0));
 function randWaehlen(nr, still) {
   rand = nr;
   document.querySelectorAll('[data-rand]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.rand === nr)));
@@ -1342,7 +1406,7 @@ function bild(ms) {
   gl.uniform1f(ort.uKopf, kopf); gl.uniform1f(ort.uN, SCHICHTEN);
   gl.uniform1f(ort.uSpanne, Math.min(SCHICHTEN - 1, tiefe / intervall)); gl.uniform1f(ort.uS, schichtZahl);
   gl.uniform1f(ort.uSeite, innerWidth / innerHeight); gl.uniform1f(ort.uT, t % 100); gl.uniform1f(ort.uFT, ft % 1000);
-  gl.uniform1i(ort.uLesart, lesart); gl.uniform2f(ort.uSpitze, spitze.x, spitze.y); gl.uniform2f(ort.uSchub, schub.x, schub.y); gl.uniform2f(ort.uGleit, gleit.x, gleit.y); gl.uniform1f(ort.uSprung, sprung); gl.uniform1i(ort.uRand, rand); gl.uniform1i(ort.uKegel, KEGEL); gl.uniform1f(ort.uPxH, 1 / leinwand.height); gl.uniform1i(ort.uUeber, ueber); gl.uniform4f(ort.uRahmen, rahmen[0], rahmen[1], rahmen[2], rahmen[3]); gl.uniform1f(ort.uZitter, zittern);
+  gl.uniform1i(ort.uLesart, lesart); gl.uniform2f(ort.uSpitze, spitze.x, spitze.y); gl.uniform2f(ort.uSchub, schub.x, schub.y); gl.uniform2f(ort.uGleit, gleit.x, gleit.y); gl.uniform1f(ort.uSprung, sprung); gl.uniform1i(ort.uRand, rand); gl.uniform1i(ort.uKegel, kegelForm); gl.uniform1f(ort.uPxH, 1 / leinwand.height); gl.uniform1i(ort.uUeber, ueber); gl.uniform4f(ort.uRahmen, rahmen[0], rahmen[1], rahmen[2], rahmen[3]); gl.uniform1f(ort.uZitter, zittern);
   zeichneFlaeche();
   nachbearbeiten(t);
   if (standbildWunsch) { standbildWunsch = false; leinwand.toBlob((b) => b && zeigen(b, 'schichten-' + zeitstempel() + '.png')); }
