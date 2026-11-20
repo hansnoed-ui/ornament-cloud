@@ -137,7 +137,7 @@ vec3 spektrum(float l){
 vec3 umwelt(vec3 d, float m){
   vec2 gemUV = uGem / uAufl;
   vec3 c = seite(gemUV + d.xy * vec2(uAufl.y / uAufl.x, 1.0) * 0.16, m) * 1.25;
-  c += vec3(1.0, 0.985, 0.96) * (pow(max(dot(d, L1), 0.0), 22.0) * 1.5 + pow(max(dot(d, L2), 0.0), 34.0) * 1.1 + pow(max(dot(d, L3), 0.0), 10.0) * 0.35);
+  c += vec3(1.0, 0.985, 0.96) * (pow(max(dot(d, L1), 0.0), 22.0) * 2.1 + pow(max(dot(d, L2), 0.0), 34.0) * 1.5 + pow(max(dot(d, L3), 0.0), 10.0) * 0.35);
   return c + vec3(0.045, 0.04, 0.085);
 }
 
@@ -250,7 +250,7 @@ vec4 stein(vec2 gq, float m){
   float glut = 0.0;
   for (int w = 0; w < WELLEN; w++) {
     float l = mix(410.0, 690.0, (float(w) + 0.5) / float(WELLEN));
-    float ior = 2.32 + 0.034 / pow(l / 1000.0, 2.0);   // Diamant: 2.42, deutliche Dispersion
+    float ior = 2.3 + 0.046 / pow(l / 1000.0, 2.0);    // Diamant 2.42, Dispersion bewusst verstärkt (Christian: «brillanter»)
     vec3 d = refract(rd, n0, 1.0 / ior), p = p0;
     for (int b = 0; b < WEGE; b++) {
       int i1; float t1 = austritt(p + d * 1e-4, d, i1);
@@ -266,7 +266,9 @@ vec4 stein(vec2 gq, float m){
     summe += gew;
   }
   innen /= summe;
-  float glanz = pow(max(dot(rf, L1), 0.0), 160.0) + 0.7 * pow(max(dot(rf, L2), 0.0), 220.0);
+  // Brillanz: ein Diamant lebt vom Gegensatz, tiefes Dunkel neben grellem Licht
+  innen = pow(innen, vec3(1.35)) * 1.35;
+  float glanz = (pow(max(dot(rf, L1), 0.0), 160.0) + 0.7 * pow(max(dot(rf, L2), 0.0), 220.0)) * 1.6;
   vec3 col = mix(innen, umwelt(rf, m), clamp(fres, 0.0, 1.0)) + glanz;
   col = mix(col, vec3(1.0, 0.99, 0.97), kante * 0.22);
   return vec4(col, 1.0);
@@ -873,7 +875,7 @@ function bild(ms) {
   gl.uniform1f(ort.uZeigen, zeigen); gl.uniform1f(ort.uBlitz, ruhig ? 0 : blitz);
   gl.uniform2f(ort.uGem, gx * D, (H - gy) * D); gl.uniform1f(ort.uGemR, rr * D);
   gl.uniform2f(ort.uFeld, gx * D, (H - gy) * D); gl.uniform1f(ort.uGross, Math.max(W, H) * 0.55 * D); gl.uniform1f(ort.uDimm, sanft(menu));
-  gl.uniform2f(ort.uAufl, Bw, Bh); gl.uniform1f(ort.uRad, huelle * 1.03); gl.uniform1f(ort.uT, t % 100); gl.uniform1f(ort.uFeuer, 1.4);
+  gl.uniform2f(ort.uAufl, Bw, Bh); gl.uniform1f(ort.uRad, huelle * 1.03); gl.uniform1f(ort.uT, t % 100); gl.uniform1f(ort.uFeuer, 2.3);
   const tonG = BEREICHE[glasK - 1].ton;
   gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, schriftTex[glasK - 1]); gl.uniform1i(ort.uSchrift, 3);
   gl.uniform4f(ort.uScheibe, ...glasZ.rect); gl.uniform1f(ort.uPraes, glasZ.praes); gl.uniform1f(ort.uStrahl, ruhig ? glasZ.strahl * 0.6 : glasZ.strahl);
@@ -900,7 +902,7 @@ function nachbearbeiten(t, sz) {
   gl.useProgram(zusammen.p);
   gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, sz.tex); gl.uniform1i(zusammen.ort.uSzene, 0);
   gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, gA.tex); gl.uniform1i(zusammen.ort.uGlow, 1);
-  gl.uniform1f(zusammen.ort.uGlowStaerke, 1.1); gl.uniform1f(zusammen.ort.uT, t % 100);
+  gl.uniform1f(zusammen.ort.uGlowStaerke, 1.35); gl.uniform1f(zusammen.ort.uT, t % 100);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   gl.activeTexture(gl.TEXTURE0);
 }
