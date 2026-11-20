@@ -460,7 +460,8 @@ void main(){
   // Fluss am Ort des Korns: Bildanteile je Videobild → je Sekunde
   vec2 fl = texture(uFl, clamp(p, 0.0, 1.0)).xy * uFps;
   vec2 w = wirbel(vec2(p.x * uSeite, p.y) * 2.6 + vec2(uT * 0.05, uT * 0.03)) * vec2(1.0 / uSeite, 1.0);
-  vec2 gas = fl * (1.2 + 5.0 * uWind) + w * (0.015 + 0.1 * uWind);
+  vec2 w2 = wirbel(vec2(p.x * uSeite, p.y) * 7.5 - vec2(uT * 0.11, uT * 0.07)) * vec2(1.0 / uSeite, 1.0);
+  vec2 gas = fl * (1.2 + 5.0 * uWind) + w * (0.06 + 0.22 * uWind) + w2 * 0.025;
   // gebunden: gedämpfte Feder; frei: die Geschwindigkeit folgt sanft dem Gas
   float k = 70.0 * pow(1.0 - frei, 2.0) + 0.15;
   vec2 feder = (heim - p) * k - vel * 2.0 * sqrt(k);
@@ -469,7 +470,7 @@ void main(){
   float id = float(ij.x) + float(ij.y) * uGitter.x;
   float takt = floor(uT * 30.0);
   vec2 stoss = vec2(h21(vec2(id * 0.0137, takt)), h21(vec2(id * 0.0291 + 5.1, takt + 0.5))) - 0.5;
-  acc += (stoss * uDiff * vec2(1.0 / uSeite, 1.0) + vec2(0.0, 0.05 + 0.1 * uWind)) * frei;
+  acc += (stoss * uDiff * vec2(1.0 / uSeite, 1.0) + vec2(0.0, 0.1 + 0.15 * uWind)) * frei;
   // der Daumen stösst die Körner beiseite und nimmt sie im Wischen mit
   vec2 qp = vec2(p.x * uSeite, p.y);
   for (int i = 0; i < 4; i++) {
@@ -486,10 +487,36 @@ void main(){
   o = vec4(p, vel);
 }`;
 // Jedes Korn ein kleiner, weicher Fleck; in Bewegung zieht es sich zu einem Strich (wie eine lange belichtete Spur).
+// Grund unter den Körnern: Solange sie gebunden sind, ist das Bild ganz (kein Raster zwischen den Körnern,
+// Christian 20.11.2026). Wo sie frei werden, bleibt Dunkel zurück.
+const FS_GASGRUND = KOPF + `uniform sampler2D uQ, uA; uniform vec4 uRahmen;
+void main(){
+  float frei = smoothstep(0.02, 0.4, texture(uA, v).r);
+  vec3 c = texture(uQ, v).rgb * pow(1.0 - frei, 1.5);
+  o = vec4(mix(vec3(0.02, 0.02, 0.024), c, innen(uRahmen)), 1.0);
+}`;
+// Rauch: Was die freien Körner hinterlassen, steigt auf, wirbelt und verweht (Rückkopplung im Bild)
+const FS_RAUCH = KOPF + `uniform sampler2D uAlt, uNeu; uniform vec2 uPx; uniform float uDt, uT, uSeite, uWind, uHalt, uLeeren;
+vec2 wirbel(vec2 p){
+  float e = 0.01;
+  float a = fbm(p + vec2(0, e)), b = fbm(p - vec2(0, e)), c = fbm(p + vec2(e, 0)), d = fbm(p - vec2(e, 0));
+  return vec2(a - b, -(c - d)) / (2.0 * e);
+}
+void main(){
+  vec2 q = vec2(v.x * uSeite, v.y);
+  vec2 w = wirbel(q * 2.4 + vec2(uT * 0.03, -uT * 0.07)) * (0.05 + 0.13 * uWind) + wirbel(q * 8.0 - uT * 0.13) * 0.018;
+  vec2 vel = w * vec2(1.0 / uSeite, 1.0) + vec2(0.0, 0.05 + 0.08 * uWind);
+  vec2 s = v - vel * uDt;
+  vec4 a = texture(uAlt, s) * 0.6 + 0.1 * (texture(uAlt, s + vec2(uPx.x, 0)) + texture(uAlt, s - vec2(uPx.x, 0)) + texture(uAlt, s + vec2(0, uPx.y)) + texture(uAlt, s - vec2(0, uPx.y)));
+  a *= exp(-uDt / uHalt) * (1.0 - uLeeren);
+  o = a + texture(uNeu, v) * 0.007;
+}`;
+const FS_RAUCHZEIGEN = KOPF + `uniform sampler2D uR;
+void main(){ vec3 c = texture(uR, v).rgb; o = vec4(1.0 - exp(-c * 1.0), 0.0); }`;
 const VS_KORN = `#version 300 es
 precision highp float; precision highp int;
 in vec2 a; out vec2 vq; out vec3 vc; out float vf;
-uniform highp sampler2D uS; uniform sampler2D uBild, uA; uniform ivec2 uGitter; uniform float uSeite, uGroesse, uStreck;
+uniform highp sampler2D uS; uniform sampler2D uBild, uA; uniform ivec2 uGitter; uniform float uSeite, uGroesse, uStreck, uNurFrei;
 float lu(vec3 c){ return dot(c, vec3(0.2126, 0.7152, 0.0722)); }
 void main(){
   ivec2 ij = ivec2(gl_InstanceID % uGitter.x, gl_InstanceID / uGitter.x);
@@ -504,12 +531,12 @@ void main(){
   float l = lu(farbe);
   float r = (1.0 / float(uGitter.y)) * mix(0.42 + 0.75 * sqrt(l), 1.15, uGroesse);
   float weit = smoothstep(0.0, 0.22, length((s.xy - heim) * vec2(uSeite, 1.0)));
-  r *= 1.0 + 1.8 * weit;
+  r *= 1.0 + 1.8 * weit + 1.5 * uNurFrei;
   float zieh = 1.0 + min(sp * uStreck, 5.0) * (1.0 - 0.6 * weit);
   vec2 off = (dir * a.x * zieh + nrm * a.y) * r;
   off.x /= uSeite;
   gl_Position = vec4((s.xy + off) * 2.0 - 1.0, 0.0, 1.0);
-  vq = vec2(a.x, a.y); vf = mix(1.0, 0.22, weit);
+  vq = vec2(a.x, a.y); vf = mix(mix(1.0, 0.16, weit) * smoothstep(0.0, 0.12, frei + weit), frei * 0.5, uNurFrei);
   // frei geworden leuchtet das Korn auf und wird ein wenig kühler, wie Staub im Projektorlicht
   vc = farbe * (1.0 + 0.55 * frei * (1.0 - weit)) + vec3(0.02, 0.03, 0.05) * frei;
 }`;
@@ -671,13 +698,13 @@ function rechne(prog, ziel, tex, setze) {
 }
 
 let flussB = 0, scharfTex = null, scharfB = 0, scharfH = 0, arbeitB = 0, arbeitH = 0, welleB = 0, welleH = 0, feldB = 0, feldH = 0;
-let kornGx = 0, kornGy = 0, koernerAn = false, koernerNeu = true;
+let rauchLeeren = true, kornGx = 0, kornGy = 0, koernerAn = false, koernerNeu = true;
 if (gl) {
   halbFloat = !!gl.getExtension('EXT_color_buffer_float');
   gl.getExtension('OES_texture_half_float_linear');
   try {
     for (const [n, fs] of Object.entries({ kopie: FS_KOPIE, ema: FS_EMA, lum: FS_LUM, lk: FS_LK, fglatt: FS_FGLATT, grund: FS_GRUND, interesse: FS_INTERESSE,
-      feld: FS_FELD, fest: FS_FEST, welle: FS_WELLE, fluessig: FS_FLUESSIG, kruemmung: FS_KRUEMMUNG, koerner: FS_KOERNER, hell: FS_HELL, weich: FS_WEICH, zusammen: FS_ZUSAMMEN })) P[n] = programm(fs);
+      feld: FS_FELD, fest: FS_FEST, welle: FS_WELLE, fluessig: FS_FLUESSIG, kruemmung: FS_KRUEMMUNG, koerner: FS_KOERNER, gasgrund: FS_GASGRUND, rauch: FS_RAUCH, rauchzeigen: FS_RAUCHZEIGEN, hell: FS_HELL, weich: FS_WEICH, zusammen: FS_ZUSAMMEN })) P[n] = programm(fs);
     P.korn = programm(FS_KORN, VS_KORN);
   } catch (e) { spur('Shader: ' + String(e.message).slice(0, 140)); console.error(e); melden(TEXTE[sprache].keinGL); }
   const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
@@ -721,7 +748,7 @@ function groesse() {
   const [ab, ah] = seitenMass(ARBEIT);
   if (ab !== arbeitB || ah !== arbeitH) {
     arbeitB = ab; arbeitH = ah;
-    paar('jetzt', ab, ah, false); paar('alle', ab, ah); paar('grund', ab, ah);
+    paar('jetzt', ab, ah, false); paar('alle', ab, ah); paar('grund', ab, ah); paar('rauch', ab, ah); zielBauen('kornfrei', ab, ah);
     grundNeu = true;
   }
   const [fb, fh] = seitenMass(FLUSS_SEITE);
@@ -1187,7 +1214,7 @@ function bild(ms) {
       gl.uniform1f(u.uSeite, seite); gl.uniform1f(u.uStart, koernerNeu ? 1 : 0); gl.uniform1f(u.uFps, fps);
       gl.uniform1f(u.uDiff, 4.0 + 10.0 * WERTE[2][1]); gl.uniform4fv(u.uFinger, fi); gl.uniform1i(u.uFN, Math.min(4, fingerFeld.length)); gl.uniform1f(u.uFingerR, pinselRadius() * 0.9);
     });
-    K.tauschen(); koernerNeu = false;
+    K.tauschen(); rauchLeeren = koernerNeu; koernerNeu = false;
   }
 
   // 7. die Lesart
@@ -1210,8 +1237,23 @@ function bild(ms) {
     });
   } else {
     gl.bindFramebuffer(gl.FRAMEBUFFER, sz.fb); gl.viewport(0, 0, sz.b, sz.h);
-    gl.clearColor(0.02, 0.02, 0.024, 1); gl.clear(gl.COLOR_BUFFER_BIT);
-    if (koernerAn) kornZeichnen(sz, jetzt, A.lesen(), seite);
+    if (koernerAn) rechne(P.gasgrund, sz, { uQ: scharfTex, uA: A.lesen() }, (u) => gl.uniform4f(u.uRahmen, ...rahmenGL));
+    else { gl.clearColor(0.02, 0.02, 0.024, 1); gl.clear(gl.COLOR_BUFFER_BIT); }
+    if (koernerAn) {
+      // erst die freien Körner weich in den Rauch, dann steigt der Rauch und verweht, zuletzt die Körner selbst
+      const kf = ziele.kornfrei, R = ziele.rauch;
+      gl.bindFramebuffer(gl.FRAMEBUFFER, kf.fb); gl.viewport(0, 0, kf.b, kf.h); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+      kornZeichnen(kf, jetzt, A.lesen(), seite, 1);
+      rechne(P.rauch, R.schreiben(), { uAlt: R.lesen(), uNeu: kf }, (u) => {
+        gl.uniform2f(u.uPx, 1 / kf.b, 1 / kf.h); gl.uniform1f(u.uDt, Math.min(dt, 0.05)); gl.uniform1f(u.uT, t % 1000); gl.uniform1f(u.uSeite, seite);
+        gl.uniform1f(u.uWind, WERTE[2][0]); gl.uniform1f(u.uHalt, 0.6 + 1.6 * WERTE[2][1]); gl.uniform1f(u.uLeeren, rauchLeeren ? 1 : 0);
+      });
+      R.tauschen(); rauchLeeren = false;
+      gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
+      rechne(P.rauchzeigen, sz, { uR: R.lesen() });
+      gl.disable(gl.BLEND);
+      kornZeichnen(sz, jetzt, A.lesen(), seite, 0);
+    }
     else rechne(P.kopie, sz, { uQ: scharfTex });   // ohne Float-Ziel keine Körner: dann wenigstens das Bild
   }
   nachbearbeiten(t);
@@ -1221,15 +1263,15 @@ function bild(ms) {
   if (ersterLauf && bilderGezaehlt > 2) { ersterLauf = false; spur('✓ läuft'); }
   requestAnimationFrame(bild);
 }
-function kornZeichnen(sz, bildTex, feld, seite) {
+function kornZeichnen(sz, bildTex, feld, seite, nurFrei) {
   const p = P.korn;
   gl.useProgram(p);
   gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, ziele.korn.lesen().tex); gl.uniform1i(p.u.uS, 1);
   gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, bildTex.tex); gl.uniform1i(p.u.uBild, 2);
   gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, feld.tex); gl.uniform1i(p.u.uA, 3);
   gl.uniform2i(p.u.uGitter, kornGx, kornGy); gl.uniform1f(p.u.uSeite, seite);
-  gl.uniform1f(p.u.uGroesse, WERTE[2][2]); gl.uniform1f(p.u.uStreck, 4);
-  gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+  gl.uniform1f(p.u.uGroesse, WERTE[2][2]); gl.uniform1f(p.u.uStreck, 4); gl.uniform1f(p.u.uNurFrei, nurFrei);
+  gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, nurFrei ? gl.ONE : gl.ONE_MINUS_SRC_ALPHA);
   gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, kornGx * kornGy);
   gl.disable(gl.BLEND);
 }
