@@ -23,7 +23,7 @@
   <meta name="twitter:description" content="Spuren mischen mit eigenen, versionierten Plugins, vorher und nachher hören, gegen eine Referenz messen.">
   <meta name="twitter:image" content="https://ornament.cloud/alpha/composer/og-composer.png">
   <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
-  <link rel="stylesheet" href="composer.css?v=8">
+  <link rel="stylesheet" href="composer.css?v=9">
 </head>
 <body>
   <header class="kopf">
@@ -84,6 +84,7 @@
   <section class="erzeugen" aria-label="Spuren erzeugen">
     <h2>Erzeugen</h2>
     <label class="feld">Stil <select id="stil"></select></label>
+    <label class="feld bpm-knopf" title="Tempo der erzeugten Spuren; doppelt antippen: zurück auf das Tempo des Stils"><span>BPM</span><input type="range" id="erzBpmKnopf" data-weg="600" min="40" max="240" step="1" value="120" aria-label="Tempo der erzeugten Spuren in BPM"><b id="erzBpmWert">120</b></label>
     <label class="feld">Takte <select id="takte"><option>4</option><option selected>8</option><option>16</option></select></label>
     <label class="feld">Tempo <input type="number" id="erzBpm" min="40" max="240" step="1"></label>
     <label class="feld">Startwert <input type="number" id="seed" min="1" max="99999" step="1" value="1"></label>

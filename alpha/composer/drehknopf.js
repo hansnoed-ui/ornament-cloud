@@ -3,7 +3,7 @@
 // input, change und dblclick und setzen inp.value; der Knopf zeichnet sich bei jedem Setzen neu. Ziehen nach oben oder rechts
 // dreht auf, nach unten oder links zu; Umschalt dreht fein. Doppelklick oder doppeltes Antippen setzt zurück wie bisher.
 
-const WAHL = ".param input[type=range], .luc-makro input[type=range], .regler-klein input[type=range], .regler.pan input[type=range]";
+const WAHL = ".bpm-knopf input[type=range], .param input[type=range], .luc-makro input[type=range], .regler-klein input[type=range], .regler.pan input[type=range]";
 const BOGEN = 270, START = -135;   // Grad: von unten links (−135°) bis unten rechts (+135°)
 const WEG = 180;                    // Pixel Ziehweg für den ganzen Bereich
 const NS = "http://www.w3.org/2000/svg";
@@ -58,7 +58,7 @@ function ausbauen(inp) {
     const d = (start.y - e.clientY) + (e.clientX - start.x);
     if (Math.abs(d) > 2) bewegt = true;
     if (!bewegt) return;
-    const a = Math.min(1, Math.max(0, start.a + (d / WEG) * (e.shiftKey ? 0.15 : 1)));
+    const a = Math.min(1, Math.max(0, start.a + (d / (Number(inp.dataset.weg) || WEG)) * (e.shiftKey ? 0.15 : 1)));
     const schritt = Number(inp.step) || 1;
     let v = min + a * (max - min); v = Math.round((v - min) / schritt) * schritt + min;
     v = Math.min(max, Math.max(min, Number(v.toFixed(6))));

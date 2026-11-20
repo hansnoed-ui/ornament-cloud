@@ -28,8 +28,8 @@ import { wavSpuren, abtastrateLesen, mono, tempoSchaetzen, einsaetzeFinden, wavS
 import * as BE from "./kern/bereiche.js";
 import * as FA from "./kern/fassungen.js";
 import { lucerneEinbauen, klangPanel, istSampler, samplerRechnen } from "./lucerne-ui.js";
-import { drehknoepfe } from "./drehknopf.js";
-import { handyAnsicht } from "./handy.js";
+import { drehknoepfe } from "./drehknopf.js?v=2";
+import { handyAnsicht, bpmKnopf } from "./handy.js?v=2";
 import { VORLAGEN, STIL_ZYKLEN, zyklusTakte, matraAuto } from "./kern/zyklen.js";
 import { grooveErzeugen, FAMILIEN as GROOVE_FAMILIEN, STIL_GROOVES } from "./kern/grooves.js";
 const PERK_NEU = "perkussion@0.2.0";
@@ -1785,3 +1785,4 @@ requestAnimationFrame(anzeigen);
 // Drehknöpfe statt Schieberegler für Plugin-, Melodie- und lucerne-Regler und das Panorama (Nachtpult, 20. November 2026)
 drehknoepfe();
 handyAnsicht();
+bpmKnopf();

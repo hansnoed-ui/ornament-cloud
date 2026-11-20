@@ -35,3 +35,18 @@ document.getElementById("transportMehr")?.addEventListener("click", (e) => {
   e.currentTarget.setAttribute("aria-expanded", String(offen));
   e.currentTarget.textContent = offen ? "weniger" : "mehr";
 });
+
+// BPM-Knopf bei Erzeugen (20. November 2026, Christian: «Ein Knopf "bpm" … prominent bei Erzeugen»). Er ist mit dem Zahlenfeld
+// «Tempo» verbunden: Drehen setzt das Feld, ein neuer Stil oder eine Eingabe im Feld dreht den Knopf mit. Doppelt antippen = Tempo des Stils.
+export function bpmKnopf() {
+  const knopf = document.getElementById("erzBpmKnopf"), feld = document.getElementById("erzBpm"), wert = document.getElementById("erzBpmWert");
+  if (!knopf || !feld) return;
+  const desc = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value");
+  let stilBpm = Number(desc.get.call(feld)) || 120;
+  const zeigen = (v) => { if (!v) return; knopf.value = Math.min(240, Math.max(40, Math.round(v))); wert.textContent = Math.round(v); };
+  Object.defineProperty(feld, "value", { configurable: true, get() { return desc.get.call(this); }, set(v) { desc.set.call(this, v); stilBpm = Number(v) || stilBpm; zeigen(Number(v)); } });
+  feld.addEventListener("input", () => zeigen(Number(desc.get.call(feld))));
+  knopf.addEventListener("input", () => { desc.set.call(feld, knopf.value); wert.textContent = knopf.value; });
+  knopf.addEventListener("dblclick", () => { desc.set.call(feld, stilBpm); zeigen(stilBpm); });
+  zeigen(Number(desc.get.call(feld)) || stilBpm);
+}
