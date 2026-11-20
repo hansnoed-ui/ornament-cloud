@@ -48,3 +48,62 @@ body { font: 500 15px/1.4 'Brillant Display', system-ui, sans-serif; -webkit-fon
 .fenster .projektion { background: none; -webkit-backdrop-filter: none; backdrop-filter: none; -webkit-mask-image: none; mask-image: none; padding-top: 18px; }
 /* 0.13: nur der Name, er selbst ist der Verweis (Christian) */
 .fenster .p-nr, .fenster .p-satz, .fenster .p-mehr { display: none; }
+
+/* 0.22 Vitrine (Christian, 20.11.2026): eine Anwendung, ins Licht gestellt. Dunkles Glas über dem Stein,
+   eine irisierende Haarlinie als Fassung, ein Glanz, der beim Öffnen einmal über das Bild streicht. */
+@property --v-winkel { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+.vitrine { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: max(56px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+  box-sizing: border-box; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y;
+  background: radial-gradient(120% 80% at 50% 40%, rgba(var(--ton), 0.10), rgba(8, 7, 20, 0.0) 60%), rgba(8, 7, 20, 0.62);
+  -webkit-backdrop-filter: blur(18px) saturate(1.1); backdrop-filter: blur(18px) saturate(1.1);
+  opacity: 0; transition: opacity 0.5s ease; }
+.vitrine[hidden] { display: none; }
+.vitrine.auf { opacity: 1; }
+.v-karte { position: relative; width: min(100%, 980px); display: grid; grid-template-columns: 1fr; border-radius: 20px; overflow: hidden; isolation: isolate;
+  background: linear-gradient(165deg, rgba(var(--ton), 0.09), rgba(255,255,255,0.025) 40%, rgba(12, 10, 28, 0.55));
+  box-shadow: 0 40px 120px -40px rgba(var(--ton), 0.45), 0 2px 0 rgba(255,255,255,0.03) inset;
+  transform: translateY(14px) scale(0.975); filter: blur(6px); opacity: 0;
+  transition: transform 0.75s cubic-bezier(.2,.75,.1,1), filter 0.6s ease, opacity 0.5s ease; }
+.vitrine.auf .v-karte { transform: none; filter: none; opacity: 1; }
+.vitrine.auf .v-karte.wechsel { transition-duration: 0.22s; opacity: 0.0; filter: blur(4px); transform: scale(0.99); }
+/* die Fassung: eine Haarlinie im Spektrum des Steins, die langsam umläuft */
+.v-karte::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none; z-index: 3;
+  background: conic-gradient(from var(--v-winkel), rgba(255,255,255,0.10), rgba(var(--ton), 0.75), rgba(150, 220, 255, 0.35), rgba(255, 210, 240, 0.5), rgba(255,255,255,0.10) 60%, rgba(var(--ton), 0.5), rgba(255,255,255,0.10));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude;
+  animation: v-fassung 14s linear infinite; }
+@keyframes v-fassung { to { --v-winkel: 360deg; } }
+.v-buehne { position: relative; aspect-ratio: 16 / 10; background: #07060f; overflow: hidden; }
+.v-buehne > img, .v-buehne > video, .v-buehne > canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.v-buehne.hoch > video, .v-buehne.hoch > img { object-position: 50% 42%; }
+/* ein feiner Schleier unten, damit das Bild in die Karte übergeht */
+.v-buehne::after { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  background: linear-gradient(to bottom, rgba(0,0,0,0) 62%, rgba(10, 9, 24, 0.55)), radial-gradient(130% 90% at 50% 40%, rgba(0,0,0,0) 60%, rgba(5, 4, 14, 0.4)); }
+/* der Glanz: ein schmales, irisierendes Licht, das einmal schräg über das Bild zieht */
+.v-buehne::before { content: ''; position: absolute; inset: -20% -60%; z-index: 2; pointer-events: none; opacity: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 230, 245, 0.0) 44%, rgba(255, 255, 255, 0.22) 48.5%, rgba(190, 225, 255, 0.16) 50%, rgba(255, 220, 190, 0.08) 51.5%, transparent 56%);
+  transform: translateX(-60%); mix-blend-mode: screen; }
+.vitrine.auf .v-karte.glanz .v-buehne::before { animation: v-glanz 1.6s cubic-bezier(.3,.1,.2,1) 0.35s 1 both; }
+@keyframes v-glanz { 0% { transform: translateX(-60%); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateX(60%); opacity: 0; } }
+.v-text { padding: 22px 22px 22px; display: flex; flex-direction: column; gap: 8px; }
+.v-kopf { margin: 0; font-size: 11.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--hell); }
+.v-name { margin: 0; font-weight: 600; font-size: clamp(30px, 8.4vw, 50px); line-height: 1.02; letter-spacing: -0.024em; color: #f7f5fc; text-wrap: balance; }
+.v-satz { margin: 4px 0 0; font-size: 15.5px; line-height: 1.5; color: rgba(214, 210, 228, 0.82); max-width: 40ch; text-wrap: pretty; }
+.v-zeile { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; }
+.v-oeffnen { position: relative; display: inline-flex; align-items: center; gap: 8px; padding: 11px 20px 11px 22px; border-radius: 999px; color: #fbfaff; text-decoration: none; font-size: 15px; letter-spacing: 0.02em;
+  background: linear-gradient(180deg, rgba(var(--ton), 0.34), rgba(var(--ton), 0.16)); box-shadow: 0 0 0 1px rgba(var(--ton), 0.55) inset, 0 10px 30px -12px rgba(var(--ton), 0.8); transition: background 0.3s, box-shadow 0.3s; }
+.v-oeffnen:hover { background: linear-gradient(180deg, rgba(var(--ton), 0.5), rgba(var(--ton), 0.24)); box-shadow: 0 0 0 1px rgba(var(--ton), 0.8) inset, 0 12px 36px -12px rgba(var(--ton), 1); }
+.v-blaettern { display: inline-flex; gap: 4px; }
+.v-blaettern button, .v-zu { font: inherit; color: rgba(238, 235, 248, 0.78); background: none; border: 0; width: 44px; height: 44px; border-radius: 50%; font-size: 22px; line-height: 1; cursor: pointer; transition: color 0.3s, background 0.3s; }
+.v-blaettern button:hover, .v-zu:hover { color: #fff; background: rgba(255,255,255,0.06); }
+.v-zu { position: fixed; top: max(8px, env(safe-area-inset-top)); right: max(8px, env(safe-area-inset-right)); font-size: 28px; font-weight: 400; }
+.v-oeffnen:focus-visible, .v-blaettern button:focus-visible, .v-zu:focus-visible { outline: 1px solid var(--text); outline-offset: 3px; }
+/* grosse Bildschirme: Bild links, Text rechts */
+@media (min-width: 820px) {
+  .v-karte { grid-template-columns: 1.45fr 1fr; }
+  .v-karte { align-items: stretch; }
+  .v-buehne { aspect-ratio: 16 / 10; }
+  .v-buehne::after { background: linear-gradient(to right, rgba(0,0,0,0) 70%, rgba(10, 9, 24, 0.5)), radial-gradient(130% 90% at 50% 50%, rgba(0,0,0,0) 60%, rgba(5, 4, 14, 0.4)); }
+  .v-text { padding: 40px 36px 32px; justify-content: center; }
+  .v-name { font-size: clamp(34px, 3.6vw, 50px); }
+}
+@media (prefers-reduced-motion: reduce) { .v-karte, .vitrine { transition: none; } .v-karte::before { animation: none; } }

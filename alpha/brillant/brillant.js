@@ -8,15 +8,22 @@ import { schliffEbenen } from '../deleuze/kristall/schliffe.js?v=8';
 const $ = (id) => document.getElementById(id);
 const leinwand = $('leinwand');
 
-// ---------- Inhalt (Beispiele aus ornament.cloud) ----------
+// ---------- Inhalt: fünf Anwendungen von ornament.cloud (Christian, 20.11.2026; ersetzt Webdesign, Apps, Vermittlung, Kuration, Editionen) ----------
+// Tippt man im Menü auf den Namen, öffnet sich die Vitrine (unten): Bild oder Film, Name, ein Satz, «Öffnen».
 const BEREICHE = [
-  { name: 'Webdesign', satz: 'Websites, die schnell sind, eigen und ohne Dienste von aussen.', href: '/angebot/webdesign/', ton: [124, 108, 255] },
-  { name: 'Apps', satz: 'Denkspiele, Farbräder und Bildmaschinen, die im Browser laufen.', href: '/apps/', ton: [84, 146, 255] },
-  { name: 'Vermittlung', satz: 'Seminare, Workshops und Beratung für Schulen, Teams und Institutionen.', href: '/angebot/vermittlung/', ton: [64, 196, 186] },
-  { name: 'Kuration', satz: 'Ausstellungen denken, ordnen, hängen.', href: '/angebot/kuration/', ton: [232, 182, 98] },
-  { name: 'Editionen', satz: 'Originale und Prints in kleinen Auflagen.', href: '/werke/', ton: [236, 112, 140] }
+  { name: 'the deleuzian scheme', kopf: 'im Entstehen · Bild, Film, Ton', satz: 'Begriffe von Deleuze als Verfahren: Kristallbild, Schichten der Zeit, Dauer, Wahrnehmung, Diagramm – angewandt auf eigenes Material.',
+    href: '/alpha/deleuze/start/', bild: 'vorschau/deleuzian-scheme.jpg', ton: [228, 92, 96] },
+  { name: 'Animations', kopf: 'Bild · Bewegung', satz: 'Ein Bild, 24 Effekte, bis zu drei Ebenen: das Mischpult für eigene Animationen.',
+    href: '/animations/', bild: '/b/bilder/schau/animations.jpg', film: '/b/bilder/schau/animations.mp4', hoch: true, ton: [124, 108, 255] },
+  { name: 'Das Dritte Rad', kopf: 'Zeit · Form · Farbe', satz: 'Zeit, Form und Farbe drehen gegeneinander. Jede Drehung zieht einen Zettel, eine Begegnung aus ORNA und eine Übung aus OMNA COLOR.',
+    href: '/beta/drittes-rad/', bild: '/b/bilder/schau/drittes-rad.jpg', film: '/b/bilder/schau/drittes-rad.mp4', zoom: 1.1, ton: [232, 162, 86] },
+  { name: 'Multiverse', kopf: 'vier Anwendungen zugleich', satz: 'Vier Anwendungen gleichzeitig nebeneinander, direkt bedienbar.',
+    href: '/multiverse/', bild: '/b/bilder/schau/multiverse.jpg', ton: [64, 196, 186] },
+  { name: 'Composer', kopf: 'Ton · Alpha', satz: 'Spuren erzeugen, schneiden und mischen: Synthesizer, Perkussion, Naturklänge und eigene Plugins.',
+    href: '/alpha/composer/', spuren: true, ton: [96, 150, 255] }
 ];
-// Die Farben der Schichten sind das Spektrum des Steins: Violett, Blau, Türkis, Gold, Rosa.
+// Die Farben der Schichten sind das Spektrum des Steins: Rot, Violett, Gold, Türkis, Blau.
+let vitrineOffen = false;
 const ZUSTAENDE = BEREICHE.length + 1;          // 0 = Titel, 1–5 = Bereiche
 const SCHRITT = (Math.PI * 2) / ZUSTAENDE;      // eine Sechsteldrehung je Bereich
 
@@ -512,8 +519,11 @@ function satzspiegel(c) {
       const x = (W - b) / 2, i0 = c.measureText('Br').width, iw = c.measureText('Bri').width - i0;
       return { t, x, y, iPunkt: { x: x + i0, w: iw }, gem: { x: x + i0 + iw / 2, y: y - fs * 0.86, r: fs * 0.21 } };
     }
-    const x = (W - (b + luecke + gemR * 2)) / 2;
-    return { t, x, y, gem: { x: x + b + luecke + gemR, y: y - gemR * 0.62, r: gemR } };
+    // lange Namen («the deleuzian scheme») verkleinern, bis sie mit dem Stein in die Breite passen
+    const platz = W * 0.88, eng = b + luecke + gemR * 2 > platz ? platz / (b + luecke + gemR * 2) : 1;
+    const fk = Math.floor(fs * eng), bk = b * fk / fs, rk = gemR * fk / fs;
+    const x = (W - (bk + luecke + rk * 2)) / 2;
+    return { t, x, y, fs: eng < 1 ? fk : undefined, gem: { x: x + bk + luecke + rk, y: y - rk * 0.62, r: rk } };
   });
   // Glasscheibe der Bereiche: das Wort steht, wo der Titel stand; der Titel liegt verschwommen darunter
   const sw = Math.min(W - (hoch ? 28 : 80), 620), pad = hoch ? 34 : 48;
@@ -548,11 +558,11 @@ function scheibeMalen(c, unscharf, ton) {
   c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(t, 0, 0); c.restore();
 }
 function satzMalen(c, k) {
-  const z = lay.saetze[k];
+  const z = lay.saetze[k], fs = z.fs || lay.fs;
   c.save();
-  c.font = `600 ${lay.fs}px ${SCHRIFT}`; if ('letterSpacing' in c) c.letterSpacing = SPERREN(lay.fs);
+  c.font = `600 ${fs}px ${SCHRIFT}`; if ('letterSpacing' in c) c.letterSpacing = SPERREN(fs);
   c.textBaseline = 'alphabetic';
-  const g = c.createLinearGradient(0, z.y - lay.fs * 0.75, 0, z.y + lay.fs * 0.05);
+  const g = c.createLinearGradient(0, z.y - fs * 0.75, 0, z.y + fs * 0.05);
   g.addColorStop(0, '#fbfaff'); g.addColorStop(0.65, '#e6e2f0'); g.addColorStop(1, '#bdb7cf');
   if (z.iPunkt) {
     // Text ohne den Punkt des i: auf eigener Ebene zeichnen und den Punkt wegnehmen, der Brillant sitzt dort
@@ -778,6 +788,7 @@ aufZeiger('pointercancel', loslassen);
 // Mausrad und Touchpad: ein Bereich je Bewegung, dann Ruhe, bis der Stein steht
 let radSumme = 0, radSperre = 0;
 addEventListener('wheel', (e) => {
+  if (vitrineOffen) return;
   e.preventDefault();
   const jetzt = performance.now();
   if (jetzt < radSperre) { radSperre = Math.max(radSperre, jetzt + 260); return; }
@@ -785,6 +796,7 @@ addEventListener('wheel', (e) => {
   if (Math.abs(radSumme) > 60) { weiter(Math.sign(radSumme)); radSumme = 0; radSperre = jetzt + 1500; }
 }, { passive: false });
 addEventListener('keydown', (e) => {
+  if (vitrineOffen) return;
   if (['ArrowRight', 'ArrowDown', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); weiter(1); }
   else if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); weiter(-1); }
   else if (e.key === 'Escape' && menuAuf) menuSchalten(false);
@@ -813,6 +825,7 @@ function menuSchalten(auf) {
 }
 nav.inert = true;
 const mehr = $('mehr');
+mehr.addEventListener('click', (e) => { const k = zuZustand(phi); if (k) { e.preventDefault(); vitrineAuf(k - 1); } });
 
 // ---------- Projektion (Christian, 20.11.2026: «3d aus dem Brillanten projiziert, nach einer Drehung präsentieren») ----------
 // Im offenen Menü wirft der Stein alle Bereiche als Glasflächen hinaus: sie stehen im Raum rund um seine Achse, jede
@@ -830,12 +843,132 @@ const flaechen = BEREICHE.map((b, i) => {
   el.setAttribute('aria-hidden', 'true');
   return el;
 });
+// lange Namen («the deleuzian scheme») passen am Telefon nicht in eine Zeile: Schrift sanft verkleinern
+function namenEinpassen() {
+  flaechen.forEach((el) => {
+    const n = el.querySelector('.p-name'); n.style.fontSize = '';
+    const verfuegbar = el.clientWidth - 24, ist = n.scrollWidth;
+    if (ist > verfuegbar) n.style.fontSize = Math.floor(parseFloat(getComputedStyle(n).fontSize) * verfuegbar / ist) + 'px';
+  });
+}
+addEventListener('resize', namenEinpassen);
+document.fonts.ready.then(namenEinpassen);
+
+// ---------- Vitrine (Christian, 20.11.2026: «im Stil der Seite präsentieren, wenn darauf geklickt wird, stilvoll, glänzend») ----------
+// Der Name im Menü öffnet keine neue Seite, sondern eine Vitrine über dem Stein: Film oder Bild, Name, ein Satz, «Öffnen».
+// Die Filme laden erst, wenn ihre Vitrine aufgeht; geschlossen wird sie mit Tippen daneben, × oder Esc.
+const vitrine = $('vitrine'), vKarte = vitrine.querySelector('.v-karte'), vBuehne = vitrine.querySelector('.v-buehne');
+const vKopf = vitrine.querySelector('.v-kopf'), vName = vitrine.querySelector('.v-name'), vSatz = vitrine.querySelector('.v-satz'), vOeffnen = vitrine.querySelector('.v-oeffnen');
+let vIndex = 0, vZuletzt = null, spurenLauf = 0;
+function vitrineFuellen(i) {
+  const b = BEREICHE[i], hell = b.ton.map((v) => Math.min(255, Math.round(v * 0.5 + 125)));
+  vIndex = i; cancelAnimationFrame(spurenLauf);
+  vitrine.style.setProperty('--ton', b.ton.join(',')); vitrine.style.setProperty('--hell', `rgb(${hell.join(',')})`);
+  vKopf.textContent = b.kopf; vName.textContent = b.name; vSatz.textContent = b.satz;
+  vOeffnen.href = b.href; vOeffnen.setAttribute('aria-label', `${b.name} öffnen`);
+  vBuehne.classList.toggle('hoch', !!b.hoch);
+  vBuehne.replaceChildren();
+  if (b.spuren) { const c = document.createElement('canvas'); vBuehne.append(c); spurenZeichnen(c, b.ton); }
+  else if (b.film && !ruhig) {
+    const v = document.createElement('video');
+    Object.assign(v, { muted: true, loop: true, playsInline: true, autoplay: true, poster: b.bild, preload: 'auto' });
+    v.setAttribute('muted', ''); v.setAttribute('playsinline', ''); v.src = b.film; vBuehne.append(v);
+    if (b.zoom) { v.style.transform = `scale(${b.zoom})`; v.style.transformOrigin = '50% 12%'; }   // die Bedienknöpfe am unteren Rand des Films bleiben ausserhalb
+    v.play().catch(() => {});
+  } else { const im = new Image(); im.alt = ''; im.decoding = 'async'; im.src = b.bild; vBuehne.append(im); }
+  // der Glanz streicht bei jedem Wechsel einmal über das Bild
+  vKarte.classList.remove('glanz'); void vKarte.offsetWidth; vKarte.classList.add('glanz');
+}
+function vitrineAuf(i) {
+  vZuletzt = document.activeElement; vitrineFuellen(i);
+  vitrineOffen = true; vitrine.hidden = false; spur('Vitrine ' + BEREICHE[i].name);
+  requestAnimationFrame(() => requestAnimationFrame(() => vitrine.classList.add('auf')));
+  setTimeout(() => vOeffnen.focus({ preventScroll: true }), 60);
+}
+function vitrineZu() {
+  if (!vitrineOffen) return;
+  vitrineOffen = false; vitrine.classList.remove('auf'); cancelAnimationFrame(spurenLauf);
+  setTimeout(() => { if (!vitrineOffen) { vitrine.hidden = true; vBuehne.replaceChildren(); } }, 520);
+  if (vZuletzt && vZuletzt.focus) vZuletzt.focus({ preventScroll: true });
+}
+let vZiel = 0, vWechsel = 0;
+function vitrineWeiter(s) {
+  // mehrmals rasch tippen zählt mit: vom angesteuerten, nicht vom gezeigten Eintrag aus weiter
+  vZiel = ((vWechsel ? vZiel : vIndex) + s + BEREICHE.length) % BEREICHE.length;
+  vKarte.classList.add('wechsel'); clearTimeout(vWechsel);
+  vWechsel = setTimeout(() => { vWechsel = 0; vitrineFuellen(vZiel); hin(vZiel + 1); vKarte.classList.remove('wechsel'); }, 220);
+}
+vitrine.addEventListener('click', (e) => { if (e.target === vitrine) vitrineZu(); });
+vitrine.querySelector('.v-zu').addEventListener('click', vitrineZu);
+vitrine.querySelector('.v-vor').addEventListener('click', () => vitrineWeiter(-1));
+vitrine.querySelector('.v-nach').addEventListener('click', () => vitrineWeiter(1));
+addEventListener('keydown', (e) => {
+  if (!vitrineOffen) return;
+  if (e.key === 'Escape') { e.preventDefault(); vitrineZu(); }
+  else if (e.key === 'ArrowRight') { e.preventDefault(); vitrineWeiter(1); }
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); vitrineWeiter(-1); }
+});
+// waagrecht wischen blättert auch in der Vitrine
+let vWisch = null;
+vitrine.addEventListener('pointerdown', (e) => { vWisch = { x: e.clientX, y: e.clientY }; });
+vitrine.addEventListener('pointerup', (e) => {
+  if (!vWisch) return; const dx = e.clientX - vWisch.x, dy = e.clientY - vWisch.y; vWisch = null;
+  if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) vitrineWeiter(dx < 0 ? 1 : -1);
+});
+flaechen.forEach((el, i) => el.addEventListener('click', (e) => { e.preventDefault(); vitrineAuf(i); }));
+
+// Für den Composer gibt es kein Bild: fünf Spuren als Haarlinien, eine Abspielmarke zieht langsam darüber
+function spurenZeichnen(c, ton) {
+  const x = c.getContext('2d'), dpr = Math.min(2, devicePixelRatio || 1);
+  const farben = [[228, 92, 96], [124, 108, 255], [232, 162, 86], [64, 196, 186], ton];
+  const namen = ['drums', 'bass', 'synth', 'natur', 'stimme'];
+  const t0 = performance.now();
+  // feste Hüllkurven je Spur (aus einem kleinen Zufallsgenerator mit Startwert, damit das Bild jedes Mal gleich ist)
+  let z = 7; const zufall = () => (z = (z * 16807) % 2147483647) / 2147483647;
+  const huelle = namen.map((n, k) => Array.from({ length: 64 }, (_, j) => {
+    const takt = k === 0 ? (j % 4 === 0 ? 1 : j % 2 ? 0.35 : 0.6) : 0.5 + 0.5 * Math.sin(j * (0.3 + k * 0.13) + k);
+    return Math.max(0.08, Math.min(1, takt * (0.55 + zufall() * 0.45)));
+  }));
+  const schritt = () => {
+    const w = c.clientWidth, h = c.clientHeight;
+    if (c.width !== Math.round(w * dpr)) { c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); }
+    x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, w, h);
+    const rand = w * 0.07, bahn = (h - rand * 1.2) / namen.length, zeit = (performance.now() - t0) / 1000;
+    const marke = ruhig ? 0.38 : ((zeit / 14) % 1);
+    x.font = `500 ${Math.max(9, Math.round(w / 52))}px ${SCHRIFT}`; x.textBaseline = 'middle';
+    namen.forEach((n, k) => {
+      const mitte = rand * 0.6 + bahn * (k + 0.5), f = farben[k], links = rand + w * 0.08, breit = w - links - rand;
+      x.fillStyle = 'rgba(214, 210, 228, 0.42)'; x.fillText(n, rand, mitte);
+      x.strokeStyle = 'rgba(255,255,255,0.06)'; x.lineWidth = 1; x.beginPath(); x.moveTo(links, mitte); x.lineTo(links + breit, mitte); x.stroke();
+      for (const [seite, alpha] of [[1, 0.9], [-1, 0.55]]) {
+        x.beginPath();
+        for (let p = 0; p <= breit; p += 1) {
+          const u = p / breit, j = u * 63, a = huelle[k][Math.floor(j)] * (1 - (j % 1)) + huelle[k][Math.min(63, Math.floor(j) + 1)] * (j % 1);
+          const welle = Math.abs(Math.sin(p * (0.42 + k * 0.09)) * 0.65 + Math.sin(p * (0.11 + k * 0.03) + k) * 0.35);
+          const yy = mitte - seite * a * welle * bahn * 0.4;
+          p ? x.lineTo(links + p, yy) : x.moveTo(links + p, yy);
+        }
+        const gespielt = x.createLinearGradient(links, 0, links + breit, 0);
+        const m = Math.max(0.0001, Math.min(0.9999, marke));
+        gespielt.addColorStop(0, `rgba(${f.join(',')},${alpha})`); gespielt.addColorStop(m, `rgba(${f.join(',')},${alpha})`);
+        gespielt.addColorStop(Math.min(1, m + 0.0001), `rgba(${f.join(',')},${alpha * 0.32})`); gespielt.addColorStop(1, `rgba(${f.join(',')},${alpha * 0.32})`);
+        x.strokeStyle = gespielt; x.lineWidth = 0.75; x.stroke();
+      }
+    });
+    const mx = rand + w * 0.08 + (w - rand * 2 - w * 0.08) * marke;
+    const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(0.5, 'rgba(255,255,255,0.75)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+    x.strokeStyle = g; x.lineWidth = 1; x.beginPath(); x.moveTo(mx, rand * 0.3); x.lineTo(mx, h - rand * 0.3); x.stroke();
+    if (!ruhig && vitrineOffen) spurenLauf = requestAnimationFrame(schritt);
+  };
+  spurenLauf = requestAnimationFrame(schritt);
+}
 let praes = 0, glasK = 1;
 // Mit Grafikkarte rechnet der Shader Licht und Glas (0.7, Christian: «Licht wird Glas»); die HTML-Flächen bleiben
 // unsichtbar darüber liegen, damit man tippen und mit der Tastatur hinkommt.
 const glasZ = { praes: 0, strahl: 0, ziel: [0, 0, 0], rect: [0, 0, 0, 0], funkel: 0 };
 const schriftTex = [];
 function schriftBauen() {
+  namenEinpassen();
   flaechen.forEach((el, i) => {
     const pw = el.offsetWidth, ph = el.offsetHeight;
     const c = document.createElement('canvas'); c.width = Math.round(pw * D); c.height = Math.round(ph * D);
