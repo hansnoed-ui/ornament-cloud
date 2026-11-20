@@ -480,7 +480,7 @@ function satzspiegel(c) {
   const sw = Math.min(W - (hoch ? 28 : 80), 620), pad = hoch ? 34 : 48;
   const scheibe = { x: (W - sw) / 2, y: y - fs * 0.95 - pad, w: sw, h: pad * 2 + fs * 0.95 + satz * 6.2 + 40 };
   // offenes Menü: der Stein gross über der Mitte, die Bereiche darunter
-  const menuGem = { x: W / 2, y: Math.round(H * (hoch ? 0.39 : 0.36)), r: Math.min(W, H) * (hoch ? 0.2 : 0.13) };
+  const menuGem = { x: W / 2, y: Math.round(H * 0.382), r: Math.min(W, H) * (hoch ? 0.2 : 0.13) };
   return { hoch, fs, gemR, satz, saetze, scheibe, menuGem };
 }
 // eine Glasscheibe ohne Kanten: weich auslaufend, was darunter liegt erscheint verschwommen und getönt
@@ -669,16 +669,26 @@ const zeiger = [];
 function aufZeiger(typ, fn) { zeiger.push([typ, fn]); leinwand.addEventListener(typ, fn); if (flach) flach.addEventListener(typ, fn); }
 const finger = new Map();
 let tipp = null;
+// 0.15 (Christian: «den Brillanten frei drehen»): wer auf dem Stein ansetzt, dreht ihn in alle Richtungen, mit Schwung;
+// daneben wischen blättert wie bisher. Steht er still, findet er langsam in seine Lage zurück.
+const frei = { an: false, g: 0, n: 0, vg: 0, vn: 0, los: 0 };
+const trifftStein = (x, y) => Math.hypot(x - gemJetzt.x, y - gemJetzt.y) < Math.max(30, Math.min(gemJetzt.r * 2.2, gemJetzt.r + 36));
 aufZeiger('pointerdown', (e) => {
   finger.set(e.pointerId, { x: e.clientX, y: e.clientY });
   try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
   tipp = { x: e.clientX, y: e.clientY, t: performance.now() };
+  if (finger.size === 1 && trifftStein(e.clientX, e.clientY)) { frei.an = true; frei.vg = frei.vn = 0; gezogen = false; return; }
   gezogen = true; ziel = null; omega = 0; letzteZug = performance.now();
   zugStart = Math.round(phi / SCHRITT) * SCHRITT; phi = zugStart;
 });
 aufZeiger('pointermove', (e) => {
-  const f = finger.get(e.pointerId); if (!f || !gezogen) return;
+  const f = finger.get(e.pointerId); if (!f || !(gezogen || frei.an)) return;
   const dx = e.clientX - f.x, dy = e.clientY - f.y; f.x = e.clientX; f.y = e.clientY;
+  if (frei.an) {
+    const k = 3.2 / Math.max(80, gemJetzt.r * 2.4);
+    frei.g += dx * k; frei.n += dy * k; frei.vg = frei.vg * 0.5 + dx * k * 0.5; frei.vn = frei.vn * 0.5 + dy * k * 0.5;
+    return;
+  }
   letzteZug = performance.now();
   // waagrecht und senkrecht drehen beide: nach links oder oben wischen führt weiter.
   // Der Finger zieht nur zäh, und nie weiter als knapp einen Bereich.
@@ -688,11 +698,12 @@ aufZeiger('pointermove', (e) => {
 const loslassen = (e) => {
   if (!finger.delete(e.pointerId)) return;
   if (finger.size) return;
+  if (frei.an) { frei.an = false; frei.los = performance.now(); }
   const warGezogen = gezogen; gezogen = false; omega = 0;
   // Tippen: auf den Stein öffnet und schliesst das Menü; daneben schliesst es nur
   if (tipp && Math.hypot(e.clientX - tipp.x, e.clientY - tipp.y) < 10 && performance.now() - tipp.t < 400) {
     if (warGezogen) phi = zugStart;
-    const treffer = Math.hypot(e.clientX - gemJetzt.x, e.clientY - gemJetzt.y) < Math.max(30, Math.min(gemJetzt.r * 2.2, gemJetzt.r + 36));
+    const treffer = trifftStein(e.clientX, e.clientY);
     ziel = Math.round(phi / SCHRITT) * SCHRITT;
     // Christian: im Menü nicht mehr zurückklickbar; Tippen daneben führt zurück zu «Brillante Ideen.»
     if (treffer) { if (!menuAuf) menuSchalten(true); } else if (menuAuf) menuSchalten(false);
@@ -784,7 +795,7 @@ function projizierenGlas(zustand, soll, f, mu, gx, gy, rr) {
   // 0.9: keine Strahlen, keine Scheibe. Das Werk zeigt sich im Stein; darunter stehen nur Name, Satz und Verweis.
   if (soll) glasK = zustand;
   const ps = sanft(praes), el = flaechen[glasK - 1];
-  const pw = el.offsetWidth, ph = el.offsetHeight, ruheY = gy + rr * 1.38 + ph / 2 + 6;
+  const pw = el.offsetWidth, ph = el.offsetHeight, ruheY = Math.max(gy + rr * 1.3 + ph / 2, H * 0.618);   // goldener Schnitt: Stein auf 0.382, Name auf 0.618
   glasZ.strahl = 0; glasZ.praes = 0;
   flaechen.forEach((e, i) => {
     const da = i + 1 === glasK ? ps * Math.max(0, (mu - 0.5) / 0.5) : 0, aktiv = da > 0.95;
@@ -911,9 +922,18 @@ function bild(ms) {
   const auftaktDreh = AUFTAKT ? (1 - ausrollen(ta)) * 5.5 : 0;
   // im offenen Menü dreht der Stein nicht von selbst: die Flächen um ihn stehen still, bis man ihn dreht
   const atem = ruhig ? 0 : 1 - mu * 0.7;
-  const gier = -phi + auftaktDreh + atem * 0.18 * Math.sin(t * 0.45);
+  // frei gedreht: Schwung klingt aus; nach einer Weile Ruhe kehrt er in die nächste gleichwertige Lage zurück (achtzählig)
+  if (!frei.an) {
+    frei.g += frei.vg * f; frei.n += frei.vn * f;
+    const daempf = Math.pow(0.955, f); frei.vg *= daempf; frei.vn *= daempf;
+    if (performance.now() - frei.los > 2600 && Math.abs(frei.vg) + Math.abs(frei.vn) < 0.004) {
+      const z = (1 - Math.pow(0.975, f)), A8 = Math.PI / 4, V = Math.PI * 2;
+      frei.g += (Math.round(frei.g / A8) * A8 - frei.g) * z; frei.n += (Math.round(frei.n / V) * V - frei.n) * z;
+    }
+  }
+  const gier = -phi + auftaktDreh + atem * 0.18 * Math.sin(t * 0.45) + frei.g;
   // im Menü kippt der Stein zur Betrachterin: man schaut von oben durch seine Tafel
-  const neig = 0.3 + atem * 0.08 * Math.sin(t * 0.31 + 1.0) + (1 - flug) * 0.35 + mu * 0.95;
+  const neig = 0.3 + atem * 0.08 * Math.sin(t * 0.31 + 1.0) + (1 - flug) * 0.35 + mu * 0.95 + frei.n;
   const roll = atem * 0.05 * Math.sin(t * 0.23);
   ebenenDrehen(gier, neig, roll);
 
