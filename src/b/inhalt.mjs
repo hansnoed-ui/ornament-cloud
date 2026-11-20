@@ -48,7 +48,7 @@ export const DENKEN = [
 ];
 export const ZEIGEN = [
   { slug: "drittes-rad", name: "Das Dritte Rad", kurz: "Zeit, Form und Farbe drehen gegeneinander. Jede Drehung zieht einen Zettel, eine Begegnung aus ORNA und eine Übung aus OMNA COLOR.",
-    ziel: "/beta/drittes-rad/", neuesFenster: true, bild: "b/bilder/schau/drittes-rad.jpg", bildAlt: "Das Dritte Rad: drei Ringe auf gelbem Grund, aussen Zeichen, in der Mitte ein Farbrad", weiter: "Drehen" },
+    ziel: "/beta/drittes-rad/?sprache=de", neuesFenster: true, bild: "b/bilder/schau/drittes-rad.jpg", bildAlt: "Das Dritte Rad: drei Ringe auf gelbem Grund, aussen Zeichen, in der Mitte ein Farbrad", weiter: "Drehen" },
   { slug: "omna-color", name: "OMNA COLOR", kurz: "Zwei Farbräder drehen gegeneinander. Was sie zeigen, wird eine Gestaltungsübung: 180 gibt es.",
     ziel: "apps/omna-color/", bild: "b/bilder/schau/omna-color.jpg", bildAlt: "OMNA COLOR: zwei ineinanderliegende Farbräder mit sieben Feldern auf schwarzem Grund", weiter: "Zur App" },
 ];
@@ -184,7 +184,7 @@ export const ANGEBOTE = [
       { name: "Principesse", von: "für Katharina Strickler", jahr: "2026", url: "https://principesse.ch/", adresse: "principesse.ch", bild: "b/bilder/schau/principesse.jpg", film: "b/bilder/schau/principesse.mp4",
         bildAlt: "Principesse im Film: drei gezeichnete Prinzessinnen mit Kronen und ein Hund mit Krone schweben als Figuren im Raum vor einem Nachthimmel mit Mond und Sternen",
         text: "Ein One-Pager, der mit einem kleinen Film beginnt: Die Principessa löst sich aus ihrem gezeichneten Bild, springt heraus und fliegt beim Scrollen durch die Seite. Am Ende eine Bestellkarte mit Auswahl und Vorschau." },
-      { name: "Das Dritte Rad", von: "Website als Anwendung", jahr: "2026", url: "/beta/drittes-rad/", adresse: "ornament.cloud/beta/drittes-rad", bild: "b/bilder/schau/drittes-rad.jpg", film: "b/bilder/schau/drittes-rad.mp4",
+      { name: "Das Dritte Rad", von: "Website als Anwendung", jahr: "2026", url: "/beta/drittes-rad/?sprache=de", adresse: "ornament.cloud/beta/drittes-rad", bild: "b/bilder/schau/drittes-rad.jpg", film: "b/bilder/schau/drittes-rad.mp4",
         bildAlt: "Das Dritte Rad im Film: das Zeichen des Rads baut sich langsam auf, ein Farbenkreis dreht über die ganze Fläche, dann erscheint die Anwendung mit den drei Ringen",
         text: "Eine Website, die man bedient statt liest: Drei Ringe drehen gegeneinander, jede Drehung zieht einen Zettel, eine Begegnung und eine Gestaltungsübung. Läuft im Browser, ohne Installation." },
       { name: "Multiverse", von: "Website als Arbeitsfläche", jahr: "2026", url: "/multiverse/", adresse: "ornament.cloud/multiverse", bild: "b/bilder/schau/multiverse.jpg",
