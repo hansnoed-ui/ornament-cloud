@@ -1147,7 +1147,7 @@ function stoffWaehlen(nr, still) {
 document.querySelectorAll('[data-stoff]').forEach((b) => b.addEventListener('click', () => stoffWaehlen(+b.dataset.stoff)));
 stoffWaehlen(ueber, true);
 let rand = 5;
-try { const r = localStorage.getItem('schichten.rand2'); if (r) rand = +r; } catch {}
+try { const r = localStorage.getItem('schichten.rand2'); if (r === '2' || r === '5') rand = +r; } catch {}   // wählbar: Riss, Kintsugi; die übrigen nur noch per ?rand
 if (new URLSearchParams(location.search).has('rand')) rand = +new URLSearchParams(location.search).get('rand');
 rand = Math.max(0, Math.min(5, Math.round(rand) || 0));
 function randWaehlen(nr, still) {

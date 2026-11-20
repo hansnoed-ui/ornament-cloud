@@ -194,4 +194,4 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 .raender button { background: none; border: 0; padding: 6px 0; cursor: pointer; font: inherit; text-transform: inherit; letter-spacing: 0.12em; color: var(--gris); white-space: nowrap; }
 .raender button[aria-pressed="true"] { color: var(--blanc); box-shadow: inset 0 -2px 0 var(--rouge); }
 @media (min-width: 900px) { .zt-regler .raender { grid-template-columns: 8em 1fr; } }
-.raender.stoffe .wahl { justify-content: flex-start; gap: 34px; }
+.raender .wahl { justify-content: flex-start; gap: 34px; }
