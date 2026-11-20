@@ -15,7 +15,7 @@ const BEREICHE = [
   { name: 'the deleuzian scheme', kopf: 'im Entstehen · Bild, Film, Ton', satz: 'Begriffe von Deleuze als Verfahren: Kristallbild, Schichten der Zeit, Dauer, Wahrnehmung, Diagramm, Figur – angewandt auf eigenes Material.',
     href: '/alpha/deleuze/start/', sprachen: ['de', 'en', 'fr'], bild: 'vorschau/deleuzian-scheme.jpg?v=3', ton: [228, 92, 96] },
   { name: 'Das Dritte Rad', kopf: 'Zeit · Form · Farbe', satz: 'Zeit, Form und Farbe drehen gegeneinander. Jede Drehung zieht einen Zettel, eine Begegnung aus ORNA und eine Übung aus OMNA COLOR.',
-    href: '/beta/drittes-rad/', sprachen: ['de'], schau: 'rad', ton: [232, 150, 80] },
+    href: '/beta/drittes-rad/', sprachen: ['de', 'en'], adressen: { de: '/beta/drittes-rad/?sprache=de', en: '/beta/drittes-rad/?sprache=en' }, schau: 'rad', ton: [232, 150, 80] },
   { name: 'Animations', kopf: 'Bild · Bewegung', satz: 'Ein Bild, 24 Effekte, bis zu drei Ebenen: das Mischpult für eigene Animationen.',
     href: '/animations/', sprachen: ['de', 'en', 'es'], adressen: { en: '/animations/en/', es: '/animations/es/' }, bild: 'vorschau/animations.jpg?v=2', film: 'vorschau/animations.mp4?v=2', ton: [124, 108, 255] }
 ];
@@ -925,22 +925,24 @@ document.fonts.ready.then(namenEinpassen);
 // Blättern: ziehen (die Karten folgen dem Finger mit Schwung), ‹ ›, Pfeiltasten oder eine Nachbarkarte antippen.
 const vitrine = $('vitrine'), vRaum = vitrine.querySelector('.v-raum');
 const vKarten = BEREICHE.map((b, i) => {
+  // fehlt die gewählte Sprache, öffnet sich die Anwendung auf Englisch, wenn es sie so gibt, sonst in ihrer ersten Sprache
+  const offen = b.sprachen.includes(SPRACHE) ? SPRACHE : (b.sprachen.includes('en') ? 'en' : b.sprachen[0]);
   const hell = b.ton.map((v) => Math.min(255, Math.round(v * 0.5 + 125)));
   const k = document.createElement('article'); k.className = 'v-karte'; k.setAttribute('aria-roledescription', 'Karte');
   k.style.setProperty('--ton', b.ton.join(',')); k.style.setProperty('--hell', `rgb(${hell.join(',')})`);
   k.innerHTML = `<div class="v-schatten" aria-hidden="true"></div><div class="v-koerper"><div class="v-buehne"><div class="v-bild"></div><div class="v-licht" aria-hidden="true"></div></div>
     <div class="v-text"><p class="v-kopf"></p><h2 class="v-name" id="v-name-${i}"></h2><p class="v-satz"></p>
-    <div class="v-zeile"><a class="v-oeffnen" href="${(b.adressen && b.adressen[SPRACHE]) || b.href}">${T.oeffnen} <span aria-hidden="true">›</span></a><span class="v-sprachen"></span></div></div>
+    <div class="v-zeile"><a class="v-oeffnen" href="${(b.adressen && b.adressen[offen]) || b.href}">${T.oeffnen} <span aria-hidden="true">›</span></a><span class="v-sprachen"></span></div></div>
     <div class="v-glanz" aria-hidden="true"></div><div class="v-dunkel" aria-hidden="true"></div></div>`;
   k.querySelector('.v-kopf').textContent = b.kopf; k.querySelector('.v-name').textContent = b.name; k.querySelector('.v-satz').textContent = b.satz;
   k.querySelector('.v-oeffnen').setAttribute('aria-label', T.oeffnenAria(b.name));
   // in welchen Sprachen es die Anwendung gibt; fehlt die gewählte, steht dabei, in welcher sie sich öffnet
   const vs = k.querySelector('.v-sprachen'), hat = b.sprachen.includes(SPRACHE);
   vs.innerHTML = b.sprachen.map((l) => `<span${l === SPRACHE ? ' class="jetzt"' : ''} lang="${l}">${l.toUpperCase()}</span>`).join('');
-  if (!hat) { const n = document.createElement('em'); n.textContent = T.nurIn[b.sprachen[0]]; vs.prepend(n); vs.querySelectorAll('span').forEach((x) => x.remove()); }
+  if (!hat) { const n = document.createElement('em'); n.textContent = T.nurIn[offen]; vs.prepend(n); vs.querySelectorAll('span').forEach((x) => x.remove()); }
   vs.setAttribute('aria-hidden', 'true');
   // the deleuzian scheme liest seine Sprache aus demselben Speicher, so reist die Wahl mit
-  if (b.sprachen.includes(SPRACHE)) k.querySelector('.v-oeffnen').addEventListener('click', () => { try { localStorage.setItem('kristall.sprache', SPRACHE); } catch {} });
+  k.querySelector('.v-oeffnen').addEventListener('click', () => { try { localStorage.setItem('kristall.sprache', offen); } catch {} });
   const bild = k.querySelector('.v-bild');
   if (b.schau) bild.append(document.createElement('canvas'));
   else { const im = new Image(); im.alt = ''; im.decoding = 'async'; im.src = b.bild; bild.append(im); }
