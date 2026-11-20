@@ -1004,6 +1004,36 @@ Schlagworte: ${p.schlagworte.map(esc).join("; ")}</pre>
 </div></section>`;
     veroeffentliche({ pfad: "werkstatt/", titel: "Werkstatt – Print on Demand", beschreibung: "Produkte aus dem Bestand für Print on Demand.", body, noindex: true, nurDe: true });
   }
+
+  /* ---------- Fehlerseite /404.html (20. November 2026, Christian: «wenn ich eine ungültige ornament.cloud Adresse eingebe lande ich noch auf der
+     Fehlermeldung der alten Seite»). Apache liefert sie unter jeder fehlenden Adresse aus (.htaccess «ErrorDocument 404 /404.html»): darum nur
+     absolute Verweise. Deutsch, mit einer Zeile Englisch; d · e führen auf die Startseiten. noindex, nicht in der Sitemap, nicht gezählt. ---------- */
+  if (istDe) {
+    const tueren = [
+      { ziel: "/", zeichen: "denken", name: "Startseite", kurz: "Theorie, die man anfassen kann.", weiter: "Zur Startseite" },
+      { ziel: "/werke/", zeichen: "werke", name: "Werke", kurz: "Räder, Bilder, Texte und Musik.", weiter: "Zu den Werken" },
+      { ziel: "/zettel/", zeichen: "zettel", name: "Zettelkasten", kurz: `${zettel.length} Zettel in sieben Zyklen.`, weiter: "Zum Zettelkasten" },
+      { ziel: "/apps/", zeichen: "app", name: "Apps", kurz: "Werkzeuge zum Spielen und Denken.", weiter: "Zu den Apps" },
+    ];
+    const body = `
+<section class="einstieg kapitel kapitel-gruen nichts" aria-labelledby="nichts-titel">
+  <div class="spalte">
+    <div class="einstieg-kopf">
+      <h1 class="titel" id="nichts-titel">Hier ist nichts.<small>Unter <code id="adresse">dieser Adresse</code> liegt keine Seite. Vielleicht ist sie umgezogen, vielleicht war der Verweis nie ganz richtig.</small></h1>
+      ${SIGNET_TAFEL}
+    </div>
+    <nav class="angebote tueren" aria-label="Weiter">${tueren.map((t) => `<a class="angebot" href="${t.ziel}"><span class="zeichen-gross">${zeichen(t.zeichen)}</span><h2>${esc(t.name)}</h2><p>${esc(t.kurz)}</p><span class="weiter">${esc(t.weiter)}</span></a>`).join("")}</nav>
+    <p class="einstieg-satz" lang="en">Nothing here. The page may have moved, or the link was never quite right. <a href="/en/">English start page</a></p>
+  </div>
+</section>
+<script>document.getElementById("adresse").textContent = decodeURI(location.pathname) + location.search;</script>`;
+    const html = seite({ pfad: "", titel: "Seite nicht gefunden", kopfTitel: "Seite nicht gefunden – ornament.cloud", noindex: true, zaehlen: false, body,
+      beschreibung: "Unter dieser Adresse liegt keine Seite von ornament.cloud.", module: ["tafeln-leben.js"],
+      kopfMehr: `<style>.nichts { padding-bottom: 56px; } .nichts .titel { max-width: 18ch; } .nichts .titel code { font: inherit; color: var(--tinte); overflow-wrap: anywhere; } @media (min-width: 901px) { .nichts .angebote.tueren { grid-template-columns: repeat(4, minmax(0, 1fr)); } } .nichts .einstieg-satz a { color: inherit; }</style>` })
+      .replace(' aria-current="page"', "");   // das Signet ist hier nicht «die aktuelle Seite»
+    if (/(href|src)="(?!\/|https?:|mailto:|data:|#)/.test(html)) throw new Error("404.html: relativer Verweis (die Seite erscheint unter jeder Adresse)");
+    writeFileSync(new URL("404.html", ROOT), html.replace("<head>", "<head>\n  <!-- Erzeugt von tools/build-b.mjs (Abschnitt «Fehlerseite») – nicht von Hand bearbeiten. Apache liefert sie unter jeder fehlenden Adresse aus. -->"));
+  }
 }
 
 bau("de");

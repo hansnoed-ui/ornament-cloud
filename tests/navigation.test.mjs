@@ -45,7 +45,7 @@ const AUSNAHMEN = [
   ["Der Zettelkasten «Social Media» im Rahmen des Neubaus (14. November 2026, Kopf und Fuss aus b/rahmen.js); eigene Tests in tests/social-media.test.mjs", /^social-media\/(index\.html|schlagworte\/|autorinnen\/|\d+-)/],
   ["Der Neubau unter b/ mit eigener Kopfzeile (20. Oktober 2026, docs/superpowers/specs/2026-10-20-b-neubau-design.md); eigene Tests in tests/b.test.mjs", /^b\//],
 ];
-const ueberspringen = new Set(["node_modules", "dist", "vendor", ".git", "404.html"]);   // 404.html (20. Oktober 2026, Hostpoint): Kopf wie überall, aber absolute Verweise, weil Apache sie unter jeder Adresse ausliefert; tests/hostpoint.test.mjs
+const ueberspringen = new Set(["node_modules", "dist", "vendor", ".git", "404.html"]);   // 404.html: seit 20. November 2026 im Stil des Neubaus (tools/build-b.mjs), absolute Verweise, weil Apache sie unter jeder Adresse ausliefert; tests/hostpoint.test.mjs
 const walk = (d, vor = "") => readdirSync(d, { withFileTypes: true }).flatMap((e) =>
   ueberspringen.has(e.name) ? [] : e.isDirectory() ? walk(new URL(e.name + "/", d), vor + e.name + "/") : e.name.endsWith(".html") ? [vor + e.name] : []);
 const alle = walk(root);

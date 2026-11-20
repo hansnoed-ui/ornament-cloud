@@ -55,14 +55,15 @@ test(".htaccess: HTTPS ohne www (Let's Encrypt ausgenommen), 404-Seite, Inhaltst
   assert.equal((h.match(/^\s*<IfModule /gm) || []).length, (h.match(/^\s*<\/IfModule>/gm) || []).length, "jedes <IfModule> wird geschlossen");
 });
 
-test("404-Seite: Kopf und Fuss der Website mit absoluten Verweisen, noindex, nicht in der Sitemap; robots.txt zeigt auf die Sitemap", () => {
+test("404-Seite: im Stil des Neubaus (aus tools/build-b.mjs), absolute Verweise, noindex, nicht in der Sitemap; robots.txt zeigt auf die Sitemap", () => {
   const s = lies("404.html");
   assert.match(s, /<meta name="robots" content="noindex">/);
-  assert.match(s, /<link rel="stylesheet" href="\/styles\.css\?v=\d+">/);
-  assert.equal(s.match(/<link rel="stylesheet" href="\/styles\.css\?v=(\d+)">/)[1], lies("impressum/index.html").match(/styles\.css\?v=(\d+)/)[1], "dieselbe Versionsmarke wie die übrigen Seiten");
-  for (const href of ['href="/"', 'href="/alpha/drittes-rad/"', 'href="/apps/"', 'href="/masterprompts/"', 'href="/zu-seiner-zeit/"', 'href="/social-media/"', 'href="/art/"', 'href="/impressum/"', 'href="/b/"']) assert.ok(s.includes(href), href);
-  assert.ok(!/href="\.\.?\//.test(s), "keine relativen Verweise (die Seite erscheint unter jeder Adresse)");
-  assert.match(s, /Fragen und Anmerkungen zur Website: <a href="mailto:hansnoed@gmail\.com">/);
+  assert.match(s, /Erzeugt von tools\/build-b\.mjs/);
+  assert.equal(s.match(/\/b\/b\.css\?v=(\d+)/)[1], lies("b/index.html").match(/\/b\/b\.css\?v=(\d+)/)[1], "dieselbe Versionsmarke wie der Neubau");
+  for (const href of ['href="/"', 'href="/en/"', 'href="/werke/"', 'href="/zettel/"', 'href="/apps/"', 'href="/impressum/"']) assert.ok(s.includes(href), href);
+  assert.ok(!/(href|src)="(?!\/|https?:|mailto:|data:|#)/.test(s), "keine relativen Verweise (die Seite erscheint unter jeder Adresse)");
+  assert.ok(!s.includes("/styles.css"), "nicht mehr die alte Gestaltung");
+  assert.ok(!s.includes("goatcounter"), "Fehlerseiten werden nicht gezählt");
   assert.ok(!lies("sitemap.xml").includes("404"));
   const r = lies("robots.txt");
   assert.match(r, /^User-agent: \*\nAllow: \/\n/m);
