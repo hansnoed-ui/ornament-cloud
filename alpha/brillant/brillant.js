@@ -142,7 +142,8 @@ uniform float uWirbel;             // wie stark die Facetten das Bild gerade bre
 uniform float uZeigen;             // Auftakt: wie weit die Schrift schon steht, 0 … 1
 uniform float uBlitz;
 uniform float uStern, uZeit, uKreisel;              // 0.19: feine, irisierende Strahlen um den ruhenden i-Punkt
-uniform float uDimm;               // offenes Menü: die Seite tritt zurück              // kurzes Aufblitzen, wenn der Stein seinen Platz findet
+uniform float uDimm;               // offenes Menü: die Seite tritt zurück
+uniform float uWeich;              // 0.29: Übergang ohne Facetten, als ruhige Blende (Menü)
 uniform vec2 uGem;                 // Mitte des Steins (Bildpunkte der Leinwand, unten links = 0)
 uniform float uGemR;               // Radius des Steins in Bildpunkten
 uniform vec2 uFeld;                // Mitte des grossen, unsichtbaren Steins, der das Bild zerlegt
@@ -403,7 +404,7 @@ void main(){
     }
     vec3 n = uN[bi];
     float th = h(float(bi) + 3.0) * 0.72;
-    m = smoothstep(th, th + 0.28, uF);
+    m = mix(smoothstep(th, th + 0.28, uF), smoothstep(0.0, 1.0, uF), uWeich);
     // 0.18 (Christian: «feiner, leicht irisierend»): kleinere Facetten, sanfterer Versatz, breiterer Farbsaum
     vec2 off = n.xy * uWirbel * 0.017 * vec2(uAufl.y / uAufl.x, 1.0);
     col = vec3(seite(uv + off * 0.7, m).r, seite(uv + off, m).g, seite(uv + off * 1.35, m).b);
@@ -776,6 +777,10 @@ function ebenenDrehen(gier, neig, roll) {
 // ---------- Bewegung: Drehwinkel, Schwung, Einrasten ----------
 let phi = 0, omega = 0, ziel = null, gezogen = false, letzteZug = 0, zugStart = 0;
 let menuAuf = false, menu = 0;
+// 0.29 (Christian: «schwammiges Netz, halb lesbare Texte aus alten Fassungen»): solange das Menü offen ist oder der Stein
+// nach dem Schliessen noch zum Titel zurückdreht, gibt es kein Facettennetz, und die Bereichsseiten (Name, Satz, Scheibe)
+// bleiben leer; der Name steht im Menü allein unter dem Stein.
+let ausMenu = false;
 const gemJetzt = { x: -99, y: -99, r: 10 };
 const zuZustand = (w) => ((Math.round(w / SCHRITT) % ZUSTAENDE) + ZUSTAENDE) % ZUSTAENDE;
 function hin(k) {   // kürzester Weg zum Zustand k, sonst immer vorwärts
@@ -878,7 +883,7 @@ const knoepfe = [...nav.children].slice(1);
 const steinKnopf = $('stein');
 steinKnopf.addEventListener('click', () => menuSchalten(!menuAuf));
 function menuSchalten(auf) {
-  menuAuf = auf; spur(auf ? 'Menü auf' : 'Menü zu');
+  menuAuf = auf; ausMenu = true; spur(auf ? 'Menü auf' : 'Menü zu');
   // zurück heisst immer: «Brillante Ideen.»
   if (!auf) hin(0);
   // im Menü steht immer ein Bereich mit Namen da (Christian: «zeigt keine Titel mehr»)
@@ -953,6 +958,8 @@ const vKarten = BEREICHE.map((b, i) => {
     film: null, schauStopp: null, flug: 0 };
 });
 const N = BEREICHE.length;
+const vMarken = vitrine.querySelector('.v-marken');
+BEREICHE.forEach(() => vMarken.append(document.createElement('i')));
 const vz = { pos: 0, ziel: 0, v: 0, auf: 0, aufZiel: 0, t0: 0, lauf: 0, aktiv: -1,
   zug: null, neig: { x: 0, y: 0 }, neigZiel: { x: 0, y: 0 }, kreisel: null, kreiselNull: null };
 let vZuletzt = null, vitrineVoll = false;
@@ -977,6 +984,7 @@ function wecken() { if (vitrineOffen && !vz.lauf) { vz.letzt = 0; vz.lauf = requ
 // die vordere Karte bekommt ihren Film oder ihr bewegtes Schaubild, die übrigen nur ihr Standbild
 function aktivSetzen(i) {
   vz.aktiv = i; if (vz.aufZiel) hin(i + 1);   // der Stein hinter dem Glas dreht mit
+  [...vMarken.children].forEach((m, j) => m.classList.toggle('jetzt', j === i));
   vKarten.forEach((k, j) => {
     const b = BEREICHE[j], vorn = j === i;
     k.el.classList.toggle('vorn', vorn); k.el.setAttribute('aria-hidden', String(!vorn)); k.oeffnen.tabIndex = vorn ? 0 : -1;
@@ -1080,6 +1088,15 @@ function vitrineBild(jetzt) {
   vitrineVoll = !fliegt && vz.aufZiel === 1;
   const bewegt = vz.zug || fliegt || vz.pos !== vz.ziel || Math.abs(vz.v) > 0 || Math.abs(vz.neigZiel.x - vz.neig.x) + Math.abs(vz.neigZiel.y - vz.neig.y) > 0.002;
   if (!bewegt) { vz.neig.x = vz.neigZiel.x; vz.neig.y = vz.neigZiel.y; }
+  // 0.29 (Christian: «mal gehts, mal nicht»): Chrome rastert eine Karte in dem Massstab, den sie beim Entstehen ihrer Ebene
+  // hatte, und behält ihn, solange sich die Transformation Bild für Bild ändert. Darum: unterwegs will-change (ruhig, ohne
+  // Neurastern in jedem Bild), in Ruhe weg damit; die vordere Karte steht dann ganz ohne 3D-Transformation da. Beides zwingt
+  // Chrome, sie in voller Grösse neu und scharf zu zeichnen, jedes Mal.
+  vitrine.classList.toggle('bewegt', !!bewegt);
+  if (!bewegt) {
+    const vk = vKarten[((Math.round(vz.pos) % N) + N) % N];
+    if (vk.flug >= 1 && Math.abs(vz.neig.x) + Math.abs(vz.neig.y) < 0.01) { vk.el.style.transform = 'none'; vk.bild.style.transform = 'none'; }
+  }
   vz.lauf = bewegt ? requestAnimationFrame(vitrineBild) : 0;
 }
 
@@ -1340,7 +1357,8 @@ function bild(ms) {
   }
   const p = phi / SCHRITT, a = Math.floor(p), fr = p - a;
   const A = ((a % ZUSTAENDE) + ZUSTAENDE) % ZUSTAENDE, B = (A + 1) % ZUSTAENDE;
-  const wirbel = Math.min(1, Math.sin(Math.PI * fr) * 1.1 + Math.min(0.5, Math.abs(omega) * 3));
+  if (ausMenu && !menuAuf && menu < 0.02 && Math.abs(fr - Math.round(fr)) < 0.001 && omega === 0) ausMenu = false;
+  const wirbel = ausMenu ? 0 : Math.min(1, Math.sin(Math.PI * fr) * 1.1 + Math.min(0.5, Math.abs(omega) * 3));
 
   // Auftakt
   const ta = AUFTAKT ? t / AUFTAKT : 1;
@@ -1411,14 +1429,14 @@ function bild(ms) {
   const sz = zielBauen('szene', Bw, Bh);
   gl.bindFramebuffer(gl.FRAMEBUFFER, sz.fb); gl.viewport(0, 0, Bw, Bh);
   const { p: P, ort } = haupt; gl.useProgram(P);
-  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, seitenTex[A]); gl.uniform1i(ort.uA, 0);
-  gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, seitenTex[B]); gl.uniform1i(ort.uB, 1);
+  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, ausMenu && A ? leerTex : seitenTex[A]); gl.uniform1i(ort.uA, 0);
+  gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, ausMenu && B ? leerTex : seitenTex[B]); gl.uniform1i(ort.uB, 1);
   gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, leerTex); gl.uniform1i(ort.uLeer, 2);
   gl.uniform3fv(ort.uN, ebenenW); gl.uniform1fv(ort.uR, abstandW); gl.uniform1i(ort.uK, K);
   gl.uniform1f(ort.uF, fr); gl.uniform1f(ort.uWirbel, ruhig ? Math.min(wirbel, 0.4) : wirbel);
   gl.uniform1f(ort.uZeigen, zeigen); gl.uniform1f(ort.uBlitz, ruhig ? 0 : blitz); gl.uniform1f(ort.uStern, stern); gl.uniform1f(ort.uZeit, t); gl.uniform1f(ort.uKreisel, kreisel);
   gl.uniform2f(ort.uGem, gx * D, (H - gy) * D); gl.uniform1f(ort.uGemR, rr * D);
-  gl.uniform2f(ort.uFeld, gx * D, (H - gy) * D); gl.uniform1f(ort.uGross, Math.max(W, H) * 0.34 * D); gl.uniform1f(ort.uDimm, sanft(menu));
+  gl.uniform2f(ort.uFeld, gx * D, (H - gy) * D); gl.uniform1f(ort.uGross, Math.max(W, H) * 0.34 * D); gl.uniform1f(ort.uDimm, sanft(menu)); gl.uniform1f(ort.uWeich, ausMenu ? 1 : 0);
   gl.uniform2f(ort.uAufl, Bw, Bh); gl.uniform1f(ort.uRad, huelle * 1.03); gl.uniform1f(ort.uT, t % 100); gl.uniform1f(ort.uFeuer, 2.3);
   const tonG = BEREICHE[glasK - 1].ton;
   gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, schriftTex[glasK - 1]); gl.uniform1i(ort.uSchrift, 3);
@@ -1558,13 +1576,14 @@ function flachFenster(c, f, x, y, r, { A, B, fr, mu }) {
 const smoothstep01 = (x) => { x = Math.min(1, Math.max(0, x)); return x * x * (3 - 2 * x); };
 function flachZeichnen(A, B, fr, zeigen, gx, gy, rr, gier, neig, roll, blitz, dimm) {
   const c = fctx; if (!c || !seitenBild[A]) return;
+  const bildA = ausMenu && A ? leerBild : seitenBild[A], bildB = ausMenu && B ? leerBild : seitenBild[B];
   c.setTransform(1, 0, 0, 1, 0, 0);
   const w = flach.width, h = flach.height;
   if (zeigen < 1) { c.drawImage(leerBild, 0, 0, w, h); c.globalAlpha = zeigen; }
-  c.drawImage(seitenBild[A], 0, 0, w, h);
+  c.drawImage(bildA, 0, 0, w, h);
   c.globalAlpha = 1;
   if (fr > 0.001) {
-    c.globalAlpha = fr * fr * (3 - 2 * fr); c.drawImage(seitenBild[B], 0, 0, w, h);
+    c.globalAlpha = fr * fr * (3 - 2 * fr); c.drawImage(bildB, 0, 0, w, h);
     // in der Mitte der Drehung löst sich die Schrift ins Leere
     c.globalAlpha = Math.pow(Math.sin(Math.PI * fr), 1.6) * 0.6; c.drawImage(leerBild, 0, 0, w, h);
     c.globalAlpha = 1;

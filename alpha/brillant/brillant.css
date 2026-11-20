@@ -59,10 +59,8 @@ body { font: 500 15px/1.4 'Brillant Display', system-ui, sans-serif; -webkit-fon
 .v-raum:active { cursor: grabbing; }
 .v-karte { position: absolute; left: 50%; top: 47%; width: min(84vw, 380px); margin-left: calc(min(84vw, 380px) / -2); translate: 0 -50%;
   opacity: 0; -webkit-user-select: none; user-select: none; }
-/* 0.27: kein will-change auf den Karten. Chrome rastert eine so markierte Ebene in dem Massstab, in dem sie entsteht, und
-   behält ihn: die Karten fliegen klein aus dem Stein und blieben am Handy verschwommen (Christian: «schwammige Vorformen»). */
+/* will-change nur während der Bewegung (.vitrine.bewegt), siehe brillant.js «0.29» */
 .v-koerper { position: relative; border-radius: 22px;
-  -webkit-box-reflect: below 14px linear-gradient(transparent 74%, rgba(255, 255, 255, 0.09));
   background: linear-gradient(165deg, rgba(var(--ton), 0.2), rgba(var(--ton), 0.05) 42%, rgba(255,255,255,0.0) 70%), linear-gradient(#141230, #0d0b20);
   box-shadow: 0 50px 90px -40px rgba(0, 0, 0, 0.9), 0 30px 120px -50px rgba(var(--ton), 0.55), 0 1px 0 rgba(255,255,255,0.08) inset; }
 /* die Fassung: eine irisierende Haarlinie, die langsam umläuft */
@@ -110,11 +108,18 @@ body { font: 500 15px/1.4 'Brillant Display', system-ui, sans-serif; -webkit-fon
 /* Schatten auf dem Boden unter der Karte */
 .v-schatten { position: absolute; left: 8%; right: 8%; top: 100%; height: 34px; border-radius: 50%; pointer-events: none; transform-origin: 50% 0;
   background: radial-gradient(closest-side, rgba(var(--ton), 0.32), rgba(0, 0, 0, 0.5) 45%, rgba(0, 0, 0, 0)); filter: blur(10px); }
-.v-steuer { position: absolute; left: 0; right: 0; bottom: max(18px, env(safe-area-inset-bottom)); display: flex; justify-content: center; gap: 28px; opacity: var(--auf); }
-.v-steuer button, .v-zu { font: inherit; color: rgba(238, 235, 248, 0.78); background: none; border: 0; width: 48px; height: 48px; border-radius: 50%; font-size: 24px; line-height: 1; cursor: pointer; transition: color 0.3s, background 0.3s; }
-.v-steuer button { box-shadow: 0 0 0 1px rgba(255,255,255,0.12) inset; }
-.v-steuer button:hover, .v-zu:hover { color: #fff; background: rgba(255,255,255,0.06); }
-.v-zu { position: absolute; top: max(8px, env(safe-area-inset-top)); right: max(8px, env(safe-area-inset-right)); font-size: 30px; font-weight: 400; opacity: var(--auf); z-index: 200; }
+/* 0.29 (Christian: Pfeile und Kreuz «unterdurchschnittlich elegant»): Haarlinien statt Schriftzeichen und Kreise;
+   dazwischen drei kleine Rauten, die vordere Karte trägt die Farbe des Brillanten */
+.v-steuer { position: absolute; left: 0; right: 0; bottom: max(14px, env(safe-area-inset-bottom)); display: flex; justify-content: center; align-items: center; gap: 6px; opacity: var(--auf); }
+.v-steuer button, .v-zu { display: grid; place-items: center; color: rgba(238, 235, 248, 0.62); background: none; border: 0; padding: 0; width: 48px; height: 48px; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: color 0.4s; }
+.v-steuer svg { width: 9px; height: 18px; }
+.v-zu svg { width: 15px; height: 15px; }
+.v-steuer svg path, .v-zu svg path { fill: none; stroke: currentColor; stroke-width: 1; vector-effect: non-scaling-stroke; stroke-linecap: round; stroke-linejoin: round; }
+.v-steuer button:hover, .v-zu:hover, .v-steuer button:active, .v-zu:active { color: #fff; }
+.v-marken { display: flex; gap: 12px; padding: 0 6px; }
+.v-marken i { width: 5px; height: 5px; transform: rotate(45deg); box-shadow: 0 0 0 0.75px rgba(238, 235, 248, 0.38) inset; transition: background 0.5s, box-shadow 0.5s; }
+.v-marken i.jetzt { background: linear-gradient(135deg, #fff 0%, #d9d2ff 40%, #ffd9e8 70%, #cfe9ff 100%); box-shadow: 0 0 6px rgba(220, 210, 255, 0.55); }
+.v-zu { position: absolute; top: max(6px, env(safe-area-inset-top)); right: max(6px, env(safe-area-inset-right)); opacity: var(--auf); z-index: 200; }
 .v-oeffnen:focus-visible, .v-steuer button:focus-visible, .v-zu:focus-visible { outline: 1px solid var(--text); outline-offset: 3px; }
 /* grosse Bildschirme: breite Karte, Bild links, Text rechts */
 @media (min-width: 820px) {
@@ -138,4 +143,8 @@ body { font: 500 15px/1.4 'Brillant Display', system-ui, sans-serif; -webkit-fon
 .menu-auf .sprachen { opacity: 0.35; }
 /* am Telefon steht die Wahl unten in der Mitte, oben gehört die Mitte dem Kopf */
 @media (max-width: 640px) { .sprachen { top: auto; right: 0; left: 0; justify-content: center; bottom: max(10px, env(safe-area-inset-bottom)); } }
+/* 0.29: ohne Spiegelung (die gespiegelte Schrift war lesbar und unruhig); während der Bewegung will-change, in Ruhe nicht (brillant.js) */
+.vitrine.bewegt .v-karte { will-change: transform; }
+.vitrine-auf .kopf { opacity: 0 !important; pointer-events: none; transition: opacity 0.4s; }
+.vitrine-auf .kopf a { pointer-events: none; }
 .vitrine-auf .sprachen { opacity: 0 !important; pointer-events: none; transition-delay: 0s; }
