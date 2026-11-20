@@ -5,8 +5,8 @@
 :root { --grund: #0b0a1a; --text: #f3f1f8; --leise: #9c97b1; }
 html, body { margin: 0; height: 100%; background: var(--grund); color: var(--text); overflow: hidden; overscroll-behavior: none; }
 body { font: 500 15px/1.4 'Brillant Display', system-ui, sans-serif; -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; }
-#leinwand { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
-#leinwand:active { cursor: grabbing; }
+#leinwand, .flach { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+#leinwand:active, .flach:active { cursor: grabbing; }
 .unsichtbar { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
 .kopf { position: fixed; top: max(14px, env(safe-area-inset-top)); left: 0; right: 0; text-align: center; pointer-events: none; opacity: 0; transition: opacity 1.2s ease 2.2s; }
@@ -23,3 +23,4 @@ body { font: 500 15px/1.4 'Brillant Display', system-ui, sans-serif; -webkit-fon
 
 .mehr { position: fixed; color: var(--ton, #b7b0ff); text-decoration: none; font-size: 15px; opacity: 0; pointer-events: none; transform: translateY(4px); transition: opacity 0.6s, transform 0.6s; white-space: nowrap; }
 .mehr.da { opacity: 1; pointer-events: auto; transform: none; }
+#leinwand[hidden] { display: none; }

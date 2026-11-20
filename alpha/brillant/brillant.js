@@ -36,8 +36,19 @@ const ruhig = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const MAX_DPR = telefon ? 2 : 2;
 const MAX_F = 60;
 
-const gl = leinwand.getContext('webgl2', { antialias: false, alpha: false, premultipliedAlpha: false, powerPreference: 'high-performance' });
-if (!gl) { spur('kein WebGL2'); document.body.classList.add('ohne-gl'); }
+// Ohne echte Grafikkarte (Windows «Microsoft Basic Render Driver», SwiftShader, llvmpipe) rechnet der Browser jeden
+// Bildpunkt auf dem Prozessor: der Stein stünde still. Dann zeichnet die Seite flach (Canvas 2D) und lädt sicher.
+// ?flach erzwingt die flache Fassung, ?gl die volle auch auf Software-Grafik (Prüfen im Container).
+const frage = new URLSearchParams(location.search);
+let gl = null;
+try { gl = frage.has('flach') ? null : leinwand.getContext('webgl2', { antialias: false, alpha: false, premultipliedAlpha: false, powerPreference: 'high-performance' }); } catch { gl = null; }
+if (gl && !frage.has('gl')) {
+  const info = gl.getExtension('WEBGL_debug_renderer_info');
+  const name = String(gl.getParameter(info ? info.UNMASKED_RENDERER_WEBGL : gl.RENDERER) || '');
+  if (/SwiftShader|Basic Render|llvmpipe|softpipe|WARP|Software/i.test(name)) { spur('Software-Grafik: ' + name); gl = null; }
+}
+if (!gl) spur('flach');
+let flach = null, fctx = null;   // flache Leinwand, entsteht erst bei Bedarf
 leinwand.addEventListener('webglcontextlost', (e) => { e.preventDefault(); spur('Kontext verloren'); });
 
 // ---------- Shader ----------
@@ -247,14 +258,14 @@ function programm(fs) {
   return { p, ort };
 }
 let haupt, hell, weich, zusammen, halbFloat = false;
-if (gl) {
+if (gl) try {
   haupt = programm(FS); hell = programm(FS_HELL); weich = programm(FS_WEICH); zusammen = programm(FS_ZUSAMMEN);
   const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
   gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
   halbFloat = !!gl.getExtension('EXT_color_buffer_float');
   spur('Grafik bereit');
-}
+} catch (e) { console.info('[brillant] Shader abgelehnt, flache Fassung:', e.message); spur('Shader abgelehnt'); gl = null; }
 
 const ziele = {};
 function zielBauen(name, b, hh) {
@@ -353,18 +364,20 @@ function texAus(canvas, alt) {
   return t;
 }
 const mehrOrt = [];
+const seitenBild = [];          // dieselben Seiten als Canvas, für die flache Fassung
+let leerBild = null;
 function seitenBauen() {
-  const s = document.createElement('canvas');
-  s.width = Math.round(W * D); s.height = Math.round(H * D);
-  const c = s.getContext('2d');
-  c.setTransform(D, 0, 0, D, 0, 0);
+  const neu = () => { const s = document.createElement('canvas'); s.width = Math.round(W * D); s.height = Math.round(H * D); const c = s.getContext('2d'); c.setTransform(D, 0, 0, D, 0, 0); return [s, c]; };
+  let [s, c] = neu();
   lay = satzspiegel(c);
-  grundMalen(c); leerTex = texAus(s, leerTex);            // leerer Grund für den Auftakt
+  grundMalen(c); leerBild = s;                             // leerer Grund für den Auftakt
+  if (gl) leerTex = texAus(s, leerTex);
   for (let k = 0; k <= BEREICHE.length; k++) {
-    c.setTransform(D, 0, 0, D, 0, 0);
+    [s, c] = neu();
     grundMalen(c, k ? BEREICHE[k - 1].ton : null);
     mehrOrt[k] = satzMalen(c, k);
-    seitenTex[k] = texAus(s, seitenTex[k]);
+    seitenBild[k] = s;
+    if (gl) seitenTex[k] = texAus(s, seitenTex[k]);
   }
 }
 
@@ -402,15 +415,18 @@ function hin(k) {   // kürzester Weg zum Zustand k, sonst immer vorwärts
 }
 const weiter = (s) => { ziel = (Math.round((ziel ?? phi) / SCHRITT) + s) * SCHRITT; };
 
+// Gesten gelten für die volle wie für die flache Leinwand
+const zeiger = [];
+function aufZeiger(typ, fn) { zeiger.push([typ, fn]); leinwand.addEventListener(typ, fn); if (flach) flach.addEventListener(typ, fn); }
 const finger = new Map();
 let tipp = null;
-leinwand.addEventListener('pointerdown', (e) => {
+aufZeiger('pointerdown', (e) => {
   finger.set(e.pointerId, { x: e.clientX, y: e.clientY });
-  leinwand.setPointerCapture(e.pointerId);
+  try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
   gezogen = true; ziel = null; omega = 0; letzteZug = performance.now();
   tipp = { x: e.clientX, y: e.clientY, t: performance.now() };
 });
-leinwand.addEventListener('pointermove', (e) => {
+aufZeiger('pointermove', (e) => {
   const f = finger.get(e.pointerId); if (!f) return;
   const dx = e.clientX - f.x, dy = e.clientY - f.y; f.x = e.clientX; f.y = e.clientY;
   const jetzt = performance.now(), dt = Math.max(8, Math.min(60, jetzt - letzteZug)); letzteZug = jetzt;
@@ -429,8 +445,8 @@ const loslassen = (e) => {
   // Schwung mitnehmen, dann einrasten
   ziel = Math.round((phi + omega * 9) / SCHRITT) * SCHRITT;
 };
-leinwand.addEventListener('pointerup', loslassen);
-leinwand.addEventListener('pointercancel', loslassen);
+aufZeiger('pointerup', loslassen);
+aufZeiger('pointercancel', loslassen);
 let radRuhe = 0;
 addEventListener('wheel', (e) => {
   e.preventDefault();
@@ -465,9 +481,10 @@ let gebautFuer = '';
 function groesse() {
   W = innerWidth; H = innerHeight;
   D = Math.min(devicePixelRatio || 1, MAX_DPR) * aufloesung;
-  leinwand.width = Math.round(W * D); leinwand.height = Math.round(H * D);
+  const ziel = gl ? leinwand : flachLeinwand();
+  ziel.width = Math.round(W * D); ziel.height = Math.round(H * D);
   const schl = `${W}x${H}@${D}`;
-  if (gl && schriftDa && schl !== gebautFuer) { gebautFuer = schl; seitenBauen(); }
+  if (schriftDa && schl !== gebautFuer) { gebautFuer = schl; seitenBauen(); }
 }
 let schriftDa = false;
 addEventListener('resize', () => { groesse(); });
@@ -483,6 +500,7 @@ function tempoMessen(ms, dt) {
 }
 
 // ---------- Lauf ----------
+let anlauf = [];
 let letzteMs = 0, ersterLauf = true, zustandGezeigt = -1, blitz = 0, gelandet = false;
 function bild(ms) {
   requestAnimationFrame(bild);
@@ -539,6 +557,13 @@ function bild(ms) {
     if (zeigeMehr) { const o = mehrOrt[zustand]; mehr.style.setProperty('--ton', `rgb(${o.ton.join(',')})`); mehr.style.left = '50%'; mehr.style.top = (o.y - 14) + 'px'; mehr.style.translate = '-50% 0'; }
   }
 
+  // Läuft die volle Fassung zu langsam (Software-Grafik, die sich nicht zu erkennen gab), zur flachen wechseln
+  if (gl && !frage.has('gl')) {
+    anlauf.push(dtMs);
+    if (anlauf.length === 24) { anlauf.sort((x, y) => x - y); if (anlauf[12] > 70) { spur('zu langsam: flach'); gl = null; gebautFuer = ''; groesse(); } }
+  }
+  if (!gl) { flachZeichnen(A, B, fr, zeigen, gx, gy, rr, gier, neig, roll, blitz); if (ersterLauf) { ersterLauf = false; spur('✓ läuft'); } return; }
+
   // Zeichnen
   const Bw = leinwand.width, Bh = leinwand.height;
   const sz = zielBauen('szene', Bw, Bh);
@@ -579,13 +604,104 @@ function nachbearbeiten(t, sz) {
   gl.activeTexture(gl.TEXTURE0);
 }
 
+// ---------- Flache Fassung (Canvas 2D) ----------
+// Derselbe Satz, dieselbe Drehung; der Brillant als Körper aus 64 Facetten, geschattet nach drei Lichtern.
+function flachLeinwand() {
+  if (!flach) {
+    flach = document.createElement('canvas'); flach.id = 'flach'; flach.setAttribute('aria-hidden', 'true');
+    flach.className = 'flach';
+    leinwand.after(flach); leinwand.hidden = true;
+    for (const [typ, fn] of zeiger) flach.addEventListener(typ, fn);
+    fctx = flach.getContext('2d', { alpha: false });
+  }
+  return flach;
+}
+// Körper des Brillanten: Rundiste (16), Tafel (8), Kalette; Masse wie in schliffe.js (Tafel 57 %, Pavillon 40.75°)
+const KOERPER = (() => {
+  const g = [], t = [], TY = 0.3, KY = -0.86;
+  for (let i = 0; i < 16; i++) { const a = (i / 16) * Math.PI * 2; g.push([Math.cos(a), 0, Math.sin(a)]); }
+  for (let i = 0; i < 8; i++) { const a = ((i + 0.5) / 8) * Math.PI * 2; t.push([Math.cos(a) * 0.57, TY, Math.sin(a) * 0.57]); }
+  const kal = [0, KY, 0], fl = [];
+  for (let k = 0; k < 8; k++) {
+    const g0 = g[2 * k], g1 = g[2 * k + 1], g2 = g[(2 * k + 2) % 16], t0 = t[(k + 7) % 8], t1 = t[k];
+    fl.push([g0, g1, t1, t0], [g1, g2, t1]);              // Krone: Haupt- und Rundistenfacetten
+    fl.push([g1, t[(k + 1) % 8], t1]);                      // Sterne
+  }
+  for (let i = 0; i < 16; i++) fl.push([g[(i + 1) % 16], g[i], kal]);   // Pavillon
+  fl.push([...t].reverse());                               // Tafel
+  return fl;
+})();
+function flachStein(c, x, y, r, gier, neig, roll, glanz) {
+  const cg = Math.cos(gier), sg = Math.sin(gier), cn = Math.cos(neig), sn = Math.sin(neig), cr = Math.cos(roll), sr = Math.sin(roll);
+  const dreh = ([px, py, pz]) => {
+    const x1 = cg * px + sg * pz, z1 = -sg * px + cg * pz;
+    const y2 = cn * py - sn * z1, z2 = sn * py + cn * z1;
+    return [cr * x1 - sr * y2, sr * x1 + cr * y2, z2];
+  };
+  const L = [[0.53, 0.68, 0.5], [-0.62, 0.55, 0.56], [0.1, -0.35, 0.93]];
+  const flaechen = [];
+  KOERPER.forEach((f, i) => {
+    const p = f.map(dreh);
+    const u = p[1].map((v, j) => v - p[0][j]), w = p[2].map((v, j) => v - p[0][j]);
+    let n = [u[1] * w[2] - u[2] * w[1], u[2] * w[0] - u[0] * w[2], u[0] * w[1] - u[1] * w[0]];
+    const l = Math.hypot(...n) || 1; n = n.map((v) => v / l);
+    // Aussenseite zeigt von der Mitte weg
+    const m = p.reduce((s, q) => [s[0] + q[0] / p.length, s[1] + q[1] / p.length, s[2] + q[2] / p.length], [0, 0, 0]);
+    if (n[0] * m[0] + n[1] * (m[1] + 0.2) + n[2] * m[2] < 0) n = n.map((v) => -v);
+    if (n[2] <= 0) return;
+    const z = m[2];
+    // Licht: Spiegelung der drei Fenster, dazu das Funkeln je Facette in den Farben des Spektrums
+    const rf = [2 * n[2] * n[0], 2 * n[2] * n[1], 2 * n[2] * n[2] - 1];
+    let hell = 0.1 + 0.25 * n[2];
+    for (const q of L) hell += Math.pow(Math.max(0, rf[0] * q[0] + rf[1] * q[1] + rf[2] * q[2]), 18) * 1.1;
+    const funke = Math.pow(Math.max(0, Math.sin(gier * 3 + i * 1.7)), 12);
+    flaechen.push({ p, z, hell: Math.min(1.4, hell), funke, ton: (i * 47 + gier * 180) % 360 });
+  });
+  flaechen.sort((a, b) => a.z - b.z);
+  c.save(); c.lineJoin = 'round';
+  for (const f of flaechen) {
+    c.beginPath(); f.p.forEach((q, j) => (j ? c.lineTo(x + q[0] * r, y - q[1] * r) : c.moveTo(x + q[0] * r, y - q[1] * r))); c.closePath();
+    const v = Math.round(Math.min(255, 40 + f.hell * 200));
+    c.fillStyle = `rgb(${Math.round(v * 0.92)},${Math.round(v * 0.93)},${v})`; c.fill();
+    if (f.funke > 0.02) { c.fillStyle = `hsla(${f.ton},90%,70%,${f.funke * 0.55})`; c.fill(); }
+    c.strokeStyle = 'rgba(255,255,255,0.28)'; c.lineWidth = Math.max(0.5, r * 0.025); c.stroke();
+  }
+  // weicher Schein und, beim Ankommen, ein feiner Stern
+  c.globalCompositeOperation = 'lighter';
+  const s = c.createRadialGradient(x, y, 0, x, y, r * 1.9);
+  s.addColorStop(0, 'rgba(210,205,255,0.09)'); s.addColorStop(1, 'rgba(210,205,255,0)');
+  c.fillStyle = s; c.fillRect(x - r * 1.9, y - r * 1.9, r * 3.8, r * 3.8);
+  if (glanz > 0.01) {
+    c.strokeStyle = `rgba(255,250,240,${glanz * 0.7})`; c.lineWidth = Math.max(0.6, r * 0.05);
+    const a = r * 4 * glanz + r;
+    c.beginPath(); c.moveTo(x - a, y); c.lineTo(x + a, y); c.moveTo(x, y - a * 0.7); c.lineTo(x, y + a * 0.7); c.stroke();
+  }
+  c.restore();
+}
+function flachZeichnen(A, B, fr, zeigen, gx, gy, rr, gier, neig, roll, blitz) {
+  const c = fctx; if (!c || !seitenBild[A]) return;
+  c.setTransform(1, 0, 0, 1, 0, 0);
+  const w = flach.width, h = flach.height;
+  if (zeigen < 1) { c.drawImage(leerBild, 0, 0, w, h); c.globalAlpha = zeigen; }
+  c.drawImage(seitenBild[A], 0, 0, w, h);
+  c.globalAlpha = 1;
+  if (fr > 0.001) {
+    c.globalAlpha = fr * fr * (3 - 2 * fr); c.drawImage(seitenBild[B], 0, 0, w, h);
+    // in der Mitte der Drehung löst sich die Schrift ins Leere
+    c.globalAlpha = Math.pow(Math.sin(Math.PI * fr), 1.6) * 0.88; c.drawImage(leerBild, 0, 0, w, h);
+    c.globalAlpha = 1;
+  }
+  c.setTransform(D, 0, 0, D, 0, 0);
+  flachStein(c, gx, gy, rr, gier, neig, roll, ruhig ? 0 : blitz);
+}
+
 // Erst die Schrift, dann die Seiten (sonst stünde der Titel in einer Ersatzschrift im Bild)
 groesse();
 Promise.all([document.fonts.load(`600 100px ${SCHRIFT}`), document.fonts.load(`500 16px ${SCHRIFT}`)])
   .catch(() => spur('Schrift fehlt'))
   .finally(() => {
     schriftDa = true; groesse();
-    if (gl) requestAnimationFrame(bild);
+    requestAnimationFrame(bild);
     const s = new URLSearchParams(location.search).get('bereich');
     if (s) { const k = BEREICHE.findIndex((b) => b.name.toLowerCase() === s.toLowerCase()) + 1; if (k > 0) { phi = k * SCHRITT; } }
   });
