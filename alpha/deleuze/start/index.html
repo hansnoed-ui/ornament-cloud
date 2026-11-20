@@ -7,11 +7,12 @@
 <meta name="theme-color" content="#0a0a0b">
 <title>the deleuzian scheme</title>
 <link rel="stylesheet" href="../gemeinsam/zwischentitel.css?v=1">
-<link rel="stylesheet" href="start.css?v=9">
+<link rel="stylesheet" href="start.css?v=10">
 </head>
 <body>
 <!-- Masterseite in der Gestaltung «Zwischentitel» (docs/GESTALTUNG.md):
      der Kristall der Eingänge, daneben die Operatoren als Schnittfolge. -->
+<div class="vorne">
 <header class="zt-band kopf">
   <b>the deleuzian scheme</b>
   <nav class="zt-sprachen" aria-label="Sprache"><button data-lang="de">de</button><button data-lang="en">en</button><button data-lang="fr">fr</button></nav>
@@ -31,8 +32,42 @@
     <ol class="folge" id="folge"></ol>
   </nav>
 </main>
+</div>
+
+<!-- Abspann: wie am Ende eines Films, ohne Erklärtext oben (Christian, 20.11.2026) -->
+<footer class="abspann" aria-labelledby="abspann-titel">
+  <h2 class="unsichtbar" id="abspann-titel"><span data-sprache="de">Abspann</span><span data-sprache="en">Credits</span><span data-sprache="fr">Générique</span></h2>
+  <dl class="rollen">
+    <dt><span data-sprache="de">Begriffe</span><span data-sprache="en">Concepts</span><span data-sprache="fr">Concepts</span></dt>
+    <dd>Gilles Deleuze<br>Félix Guattari</dd>
+    <dt><span data-sprache="de">mit</span><span data-sprache="en">with</span><span data-sprache="fr">avec</span></dt>
+    <dd>Henri Bergson<br>Gottfried Wilhelm Leibniz<br>Francis Bacon</dd>
+    <dt><span data-sprache="de">Bild</span><span data-sprache="en">Image</span><span data-sprache="fr">Image</span></dt>
+    <dd><span data-sprache="de">Porträt</span><span data-sprache="en">Portrait</span><span data-sprache="fr">Portrait</span> <i>Wan Pendel</i><br>ORNAMENT LAB</dd>
+    <dt><span data-sprache="de">Schrift</span><span data-sprache="en">Type</span><span data-sprache="fr">Caractères</span></dt>
+    <dd>Bodoni Moda<br>Barlow Condensed<br><small>SIL Open Font License</small></dd>
+    <dt><span data-sprache="de">ein Projekt von</span><span data-sprache="en">a project by</span><span data-sprache="fr">un projet de</span></dt>
+    <dd>ornament.cloud</dd>
+  </dl>
+  <div class="naechste">
+    <p class="zt-kennung">Phase 2</p>
+    <p class="naechste-namen"><span data-sprache="de">Rhizom</span><span data-sprache="en">Rhizome</span><span data-sprache="fr">Rhizome</span> · <span data-sprache="de">Körper ohne Organe</span><span data-sprache="en">Body without organs</span><span data-sprache="fr">Corps sans organes</span></p>
+    <p class="naechste-mit"><span data-sprache="de">dann mit</span><span data-sprache="en">then with</span><span data-sprache="fr">puis avec</span> Jacques Derrida · Vilém Flusser · Donna Haraway · Karen Barad · Hito Steyerl</p>
+  </div>
+  <p class="zt-titel suivre"><span data-sprache="de">Fortsetzung folgt<i>à suivre</i></span><span data-sprache="en">To be continued<i>à suivre</i></span><span data-sprache="fr">À suivre</span></p>
+  <p class="jahr">ornament.cloud · 2026</p>
+</footer>
+
+<!-- Tafel eines kommenden Begriffs: vom rechten Rand, mit × oder Wischen weg (tafeln.js) -->
+<aside class="glosse tafel" id="glosse" hidden aria-live="polite">
+  <p class="glosse-begriff" id="tafel-kennung"></p>
+  <p class="tafel-name" id="tafel-name"></p>
+  <p class="glosse-satz" id="tafel-satz"></p>
+  <p class="glosse-quelle" id="tafel-quelle"></p>
+</aside>
 
 <p class="meldung" id="meldung" hidden></p>
-<script type="module" src="start.js?v=12"></script>
+<script type="module" src="start.js?v=13"></script>
+<script src="../gemeinsam/tafeln.js?v=3" defer></script>
 </body>
 </html>
