@@ -5,21 +5,34 @@
 :root { --grund: #0b0a1a; --text: #f3f1f8; --leise: #9c97b1; }
 html, body { margin: 0; height: 100%; background: var(--grund); color: var(--text); overflow: hidden; overscroll-behavior: none; }
 body { font: 500 15px/1.4 'Brillant Display', system-ui, sans-serif; -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; }
-#leinwand { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
-#leinwand:active { cursor: grabbing; }
+#leinwand, .flach { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+#leinwand:active, .flach:active { cursor: grabbing; }
 .unsichtbar { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
 .kopf { position: fixed; top: max(14px, env(safe-area-inset-top)); left: 0; right: 0; text-align: center; pointer-events: none; opacity: 0; transition: opacity 1.2s ease 2.2s; }
 .kopf a { pointer-events: auto; color: rgba(156, 151, 177, 0.6); text-decoration: none; font-size: 13px; letter-spacing: 0.01em; }
 .bereit .kopf { opacity: 1; }
 
-/* Die Bereiche als stille Punkte: der aktuelle wird zum kurzen Strich */
-.bereiche { position: fixed; left: 0; right: 0; bottom: max(18px, env(safe-area-inset-bottom)); display: flex; justify-content: center; gap: 2px; opacity: 0; transition: opacity 1.2s ease 2.4s; }
-.bereit .bereiche { opacity: 1; }
-.bereiche button { appearance: none; border: 0; background: none; padding: 14px 7px; cursor: pointer; display: grid; place-items: center; }
-.bereiche button::before { content: ''; display: block; width: 5px; height: 5px; border-radius: 3px; background: rgba(243, 241, 248, 0.28); transition: width 0.5s cubic-bezier(.2,.7,.2,1), background 0.5s; }
-.bereiche button[aria-current="true"]::before { width: 18px; background: rgba(243, 241, 248, 0.85); }
+/* Der Stein ist der Menüknopf: eine unsichtbare Taste, die ihm folgt (die Leinwand fängt das Tippen ohnehin ab;
+   die Taste ist für Tastatur und Vorleser da) */
+.stein { position: fixed; left: 0; top: 0; width: 56px; height: 56px; border: 0; background: none; padding: 0; opacity: 0; pointer-events: none; }
+.stein:focus-visible { opacity: 1; outline: 1px solid var(--text); border-radius: 50%; }
+
+/* Menü: eine Glasscheibe ohne Kanten, weich auslaufend */
+.bereiche { position: fixed; left: 50%; top: 40%; transform: translate(-50%, 10px); width: min(86vw, 420px); padding: 34px 0 38px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  background: radial-gradient(ellipse at 50% 40%, rgba(60, 52, 120, 0.32), rgba(20, 18, 48, 0.18) 70%);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2); backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 62%, transparent 100%); mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 62%, transparent 100%);
+  opacity: 0; pointer-events: none; transition: opacity 0.7s ease, transform 0.9s cubic-bezier(.2,.7,.2,1); }
+.menu-auf .bereiche { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); transition-delay: 0.25s; }
+.bereiche button { appearance: none; border: 0; background: none; font: 600 26px/1.15 'Brillant Display', system-ui, sans-serif; letter-spacing: -0.02em;
+  color: rgba(243, 241, 248, 0.82); padding: 9px 20px; cursor: pointer; transition: color 0.4s; }
+.bereiche button.start { font-size: 14px; font-weight: 500; letter-spacing: 0.01em; color: var(--leise); padding-bottom: 14px; }
+.bereiche button:hover, .bereiche button[aria-current="true"] { color: #fff; }
 .bereiche button:focus-visible, .mehr:focus-visible, .kopf a:focus-visible { outline: 1px solid var(--text); outline-offset: 2px; border-radius: 6px; }
+.menu-auf .mehr { opacity: 0 !important; pointer-events: none !important; }
 
 .mehr { position: fixed; color: var(--ton, #b7b0ff); text-decoration: none; font-size: 15px; opacity: 0; pointer-events: none; transform: translateY(4px); transition: opacity 0.6s, transform 0.6s; white-space: nowrap; }
 .mehr.da { opacity: 1; pointer-events: auto; transform: none; }
+#leinwand[hidden] { display: none; }

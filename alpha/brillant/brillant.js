@@ -36,8 +36,19 @@ const ruhig = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const MAX_DPR = telefon ? 2 : 2;
 const MAX_F = 60;
 
-const gl = leinwand.getContext('webgl2', { antialias: false, alpha: false, premultipliedAlpha: false, powerPreference: 'high-performance' });
-if (!gl) { spur('kein WebGL2'); document.body.classList.add('ohne-gl'); }
+// Ohne echte Grafikkarte (Windows «Microsoft Basic Render Driver», SwiftShader, llvmpipe) rechnet der Browser jeden
+// Bildpunkt auf dem Prozessor: der Stein stünde still. Dann zeichnet die Seite flach (Canvas 2D) und lädt sicher.
+// ?flach erzwingt die flache Fassung, ?gl die volle auch auf Software-Grafik (Prüfen im Container).
+const frage = new URLSearchParams(location.search);
+let gl = null;
+try { gl = frage.has('flach') ? null : leinwand.getContext('webgl2', { antialias: false, alpha: false, premultipliedAlpha: false, powerPreference: 'high-performance' }); } catch { gl = null; }
+if (gl && !frage.has('gl')) {
+  const info = gl.getExtension('WEBGL_debug_renderer_info');
+  const name = String(gl.getParameter(info ? info.UNMASKED_RENDERER_WEBGL : gl.RENDERER) || '');
+  if (/SwiftShader|Basic Render|llvmpipe|softpipe|WARP|Software/i.test(name)) { spur('Software-Grafik: ' + name); gl = null; }
+}
+if (!gl) spur('flach');
+let flach = null, fctx = null;   // flache Leinwand, entsteht erst bei Bedarf
 leinwand.addEventListener('webglcontextlost', (e) => { e.preventDefault(); spur('Kontext verloren'); });
 
 // ---------- Shader ----------
@@ -59,7 +70,8 @@ uniform int uK;
 uniform float uF;                  // Übergang von A nach B, 0 … 1
 uniform float uWirbel;             // wie stark die Facetten das Bild gerade brechen
 uniform float uZeigen;             // Auftakt: wie weit die Schrift schon steht, 0 … 1
-uniform float uBlitz;              // kurzes Aufblitzen, wenn der Stein seinen Platz findet
+uniform float uBlitz;
+uniform float uDimm;               // offenes Menü: die Seite tritt zurück              // kurzes Aufblitzen, wenn der Stein seinen Platz findet
 uniform vec2 uGem;                 // Mitte des Steins (Bildpunkte der Leinwand, unten links = 0)
 uniform float uGemR;               // Radius des Steins in Bildpunkten
 uniform vec2 uFeld;                // Mitte des grossen, unsichtbaren Steins, der das Bild zerlegt
@@ -177,18 +189,20 @@ void main(){
     vec3 n = uN[bi];
     float th = h(float(bi) + 3.0) * 0.72;
     m = smoothstep(th, th + 0.28, uF);
-    vec2 off = n.xy * uWirbel * 0.013 * vec2(uAufl.y / uAufl.x, 1.0);
-    col = vec3(seite(uv + off * 0.94, m).r, seite(uv + off, m).g, seite(uv + off * 1.06, m).b);
-    col *= 1.0 + uWirbel * 0.07 * (dot(n, normalize(vec3(0.35, 0.6, 0.72))) - 0.62);
-    float kante = 1.0 - smoothstep(0.0, 2.5 / uGross, zweit - best);
-    col += kante * uWirbel * vec3(0.09, 0.088, 0.1);
+    vec2 off = n.xy * uWirbel * 0.03 * vec2(uAufl.y / uAufl.x, 1.0);
+    col = vec3(seite(uv + off * 0.9, m).r, seite(uv + off, m).g, seite(uv + off * 1.1, m).b);
+    col *= 1.0 + uWirbel * 0.2 * (dot(n, normalize(vec3(0.35, 0.6, 0.72))) - 0.62);
+    // keine Kanten: an den Facettengrenzen nur ein Hauch Licht, weich über viele Bildpunkte
+    float naht = 1.0 - smoothstep(0.0, 28.0 / uGross, zweit - best);
+    col += naht * uWirbel * vec3(0.035, 0.034, 0.045);
     // in der Mitte der Drehung löst sich die Schrift ins Leere: das alte Wort geht, bevor das neue kommt
-    col = mix(col, texture(uLeer, uv).rgb, pow(sin(3.14159 * uF), 1.6) * 0.88);
+    col = mix(col, texture(uLeer, uv).rgb, pow(sin(3.14159 * uF), 2.0) * 0.4);
   } else {
     m = uF >= 0.9995 ? 1.0 : 0.0;
     col = seite(uv, m);
   }
 
+  if (uDimm > 0.0) col = mix(col, texture(uLeer, uv).rgb * 0.85, uDimm);
   // der Brillant, in jedem Bildpunkt mehrfach abgetastet: er ist klein und soll trotzdem scharf funkeln
   vec2 gq = (p - uGem) / uGemR;
   float glow = 0.0;
@@ -247,14 +261,14 @@ function programm(fs) {
   return { p, ort };
 }
 let haupt, hell, weich, zusammen, halbFloat = false;
-if (gl) {
+if (gl) try {
   haupt = programm(FS); hell = programm(FS_HELL); weich = programm(FS_WEICH); zusammen = programm(FS_ZUSAMMEN);
   const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
   gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
   halbFloat = !!gl.getExtension('EXT_color_buffer_float');
   spur('Grafik bereit');
-}
+} catch (e) { console.info('[brillant] Shader abgelehnt, flache Fassung:', e.message); spur('Shader abgelehnt'); gl = null; }
 
 const ziele = {};
 function zielBauen(name, b, hh) {
@@ -309,7 +323,37 @@ function satzspiegel(c) {
     const b = c.measureText(t).width, x = (W - (b + luecke + gemR * 2)) / 2;
     return { t, x, y, gem: { x: x + b + luecke + gemR, y: y - gemR * 0.62 } };
   });
-  return { hoch, fs, gemR, satz, saetze };
+  // Glasscheibe der Bereiche: das Wort steht, wo der Titel stand; der Titel liegt verschwommen darunter
+  const sw = Math.min(W - (hoch ? 28 : 80), 620), pad = hoch ? 34 : 48;
+  const scheibe = { x: (W - sw) / 2, y: y - fs * 0.95 - pad, w: sw, h: pad * 2 + fs * 0.95 + satz * 6.2 + 40 };
+  // offenes Menü: der Stein gross über der Mitte, die Bereiche darunter
+  const menuGem = { x: W / 2, y: Math.round(H * (hoch ? 0.2 : 0.22)), r: Math.min(W, H) * (hoch ? 0.085 : 0.06) };
+  return { hoch, fs, gemR, satz, saetze, scheibe, menuGem };
+}
+// eine Glasscheibe ohne Kanten: weich auslaufend, was darunter liegt erscheint verschwommen und getönt
+function scheibeMalen(c, unscharf, ton) {
+  const P = lay.scheibe;
+  const t = document.createElement('canvas'); t.width = Math.round(W * D); t.height = Math.round(H * D);
+  const tc = t.getContext('2d'); tc.setTransform(D, 0, 0, D, 0, 0);
+  tc.drawImage(unscharf, 0, 0, W, H);
+  tc.fillStyle = 'rgba(12, 10, 30, 0.42)'; tc.fillRect(0, 0, W, H);
+  const g = tc.createLinearGradient(0, P.y, 0, P.y + P.h);
+  g.addColorStop(0, rgba(ton, 0.2)); g.addColorStop(0.55, rgba(ton, 0.1)); g.addColorStop(1, rgba(ton, 0.04));
+  tc.fillStyle = g; tc.fillRect(0, 0, W, H);
+  const sheen = tc.createLinearGradient(P.x, P.y, P.x + P.w * 0.8, P.y + P.h);
+  sheen.addColorStop(0, 'rgba(255,255,255,0.075)'); sheen.addColorStop(0.4, 'rgba(255,255,255,0)'); sheen.addColorStop(1, 'rgba(255,255,255,0.03)');
+  tc.fillStyle = sheen; tc.fillRect(0, 0, W, H);
+  // Maske: klein gezeichnet und weich vergrössert, so läuft die Scheibe ohne Kante aus
+  const k = 18, m = document.createElement('canvas'); m.width = Math.ceil(W / k); m.height = Math.ceil(H / k);
+  const mc = m.getContext('2d'); mc.fillStyle = '#fff';
+  mc.beginPath(); const rr = Math.min(P.h, P.w) * 0.22 / k;
+  if (mc.roundRect) mc.roundRect(P.x / k, P.y / k, P.w / k, P.h / k, rr); else mc.rect(P.x / k, P.y / k, P.w / k, P.h / k);
+  mc.fill();
+  const m2 = document.createElement('canvas'); m2.width = Math.ceil(W / 6); m2.height = Math.ceil(H / 6);
+  const m2c = m2.getContext('2d'); m2c.imageSmoothingQuality = 'high'; m2c.drawImage(m, 0, 0, m2.width, m2.height);
+  tc.setTransform(1, 0, 0, 1, 0, 0); tc.globalCompositeOperation = 'destination-in'; tc.imageSmoothingQuality = 'high';
+  tc.drawImage(m2, 0, 0, t.width, t.height);
+  c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(t, 0, 0); c.restore();
 }
 function satzMalen(c, k) {
   const z = lay.saetze[k];
@@ -325,9 +369,9 @@ function satzMalen(c, k) {
   const b = BEREICHE[k - 1], ss = lay.satz;
   c.save();
   c.textAlign = 'center'; c.font = `500 ${ss}px ${SCHRIFT}`; if ('letterSpacing' in c) c.letterSpacing = '0px';
-  c.fillStyle = 'rgba(200, 196, 216, 0.72)';
-  let y = z.y + lay.fs * 0.55 + ss * 1.6;
-  for (const zeile of zeilenUmbruch(c, b.satz, Math.min(W - 72, lay.hoch ? 300 : 420))) { c.fillText(zeile, W / 2, y); y += ss * 1.45; }
+  c.fillStyle = 'rgba(210, 206, 226, 0.78)';
+  let y = z.y + lay.fs * 0.5 + ss * 1.6;
+  for (const zeile of zeilenUmbruch(c, b.satz, Math.min(lay.scheibe.w - 60, lay.hoch ? 300 : 420))) { c.fillText(zeile, W / 2, y); y += ss * 1.45; }
   c.restore();
   return { y: y + ss * 0.9, ton: b.ton.map((v) => Math.min(255, Math.round(v * 0.5 + 125))) };
 }
@@ -353,18 +397,31 @@ function texAus(canvas, alt) {
   return t;
 }
 const mehrOrt = [];
+const seitenBild = [];          // dieselben Seiten als Canvas, für die flache Fassung
+let leerBild = null;
 function seitenBauen() {
-  const s = document.createElement('canvas');
-  s.width = Math.round(W * D); s.height = Math.round(H * D);
-  const c = s.getContext('2d');
-  c.setTransform(D, 0, 0, D, 0, 0);
+  const neu = () => { const s = document.createElement('canvas'); s.width = Math.round(W * D); s.height = Math.round(H * D); const c = s.getContext('2d'); c.setTransform(D, 0, 0, D, 0, 0); return [s, c]; };
+  let [s, c] = neu();
   lay = satzspiegel(c);
-  grundMalen(c); leerTex = texAus(s, leerTex);            // leerer Grund für den Auftakt
+  grundMalen(c); leerBild = s;                             // leerer Grund für den Auftakt
+  if (gl) leerTex = texAus(s, leerTex);
+  // der Titel, weich gerechnet: das sieht man durch die Scheiben
+  const [t0, c0] = neu(); grundMalen(c0); satzMalen(c0, 0);
+  const klein = document.createElement('canvas'); klein.width = Math.max(8, Math.round(W / 12)); klein.height = Math.max(8, Math.round(H / 12));
+  const kc = klein.getContext('2d'); kc.imageSmoothingQuality = 'high'; kc.drawImage(t0, 0, 0, klein.width, klein.height);
+  const unscharf = document.createElement('canvas'); unscharf.width = Math.round(W / 3); unscharf.height = Math.round(H / 3);
+  const uc = unscharf.getContext('2d'); uc.imageSmoothingQuality = 'high'; uc.drawImage(klein, 0, 0, unscharf.width, unscharf.height);
   for (let k = 0; k <= BEREICHE.length; k++) {
-    c.setTransform(D, 0, 0, D, 0, 0);
+    [s, c] = neu();
     grundMalen(c, k ? BEREICHE[k - 1].ton : null);
+    if (k) {
+      // der Titel bleibt sichtbar, still, und die Scheibe des Bereichs legt sich darüber
+      c.save(); c.globalAlpha = 0.5; satzMalen(c, 0); c.restore();
+      scheibeMalen(c, unscharf, BEREICHE[k - 1].ton);
+    }
     mehrOrt[k] = satzMalen(c, k);
-    seitenTex[k] = texAus(s, seitenTex[k]);
+    seitenBild[k] = s;
+    if (gl) seitenTex[k] = texAus(s, seitenTex[k]);
   }
 }
 
@@ -392,7 +449,9 @@ function ebenenDrehen(gier, neig, roll) {
 }
 
 // ---------- Bewegung: Drehwinkel, Schwung, Einrasten ----------
-let phi = 0, omega = 0, ziel = null, gezogen = false, letzteZug = 0;
+let phi = 0, omega = 0, ziel = null, gezogen = false, letzteZug = 0, zugStart = 0;
+let menuAuf = false, menu = 0;
+const gemJetzt = { x: -99, y: -99, r: 10 };
 const zuZustand = (w) => ((Math.round(w / SCHRITT) % ZUSTAENDE) + ZUSTAENDE) % ZUSTAENDE;
 function hin(k) {   // kürzester Weg zum Zustand k, sonst immer vorwärts
   const jetzt = Math.round(phi / SCHRITT);
@@ -400,57 +459,85 @@ function hin(k) {   // kürzester Weg zum Zustand k, sonst immer vorwärts
   if (d > ZUSTAENDE / 2) d -= ZUSTAENDE;
   ziel = (jetzt + d) * SCHRITT; spur('→ ' + k);
 }
-const weiter = (s) => { ziel = (Math.round((ziel ?? phi) / SCHRITT) + s) * SCHRITT; };
+// Langsam blättern: höchstens ein Bereich weiter als der, auf dem man gerade steht
+const weiter = (s) => { if (menuAuf) return; ziel = (Math.round(phi / SCHRITT) + s) * SCHRITT; };
 
+// Gesten gelten für die volle wie für die flache Leinwand
+const zeiger = [];
+function aufZeiger(typ, fn) { zeiger.push([typ, fn]); leinwand.addEventListener(typ, fn); if (flach) flach.addEventListener(typ, fn); }
 const finger = new Map();
 let tipp = null;
-leinwand.addEventListener('pointerdown', (e) => {
+aufZeiger('pointerdown', (e) => {
   finger.set(e.pointerId, { x: e.clientX, y: e.clientY });
-  leinwand.setPointerCapture(e.pointerId);
-  gezogen = true; ziel = null; omega = 0; letzteZug = performance.now();
+  try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
   tipp = { x: e.clientX, y: e.clientY, t: performance.now() };
+  if (menuAuf) return;
+  gezogen = true; ziel = null; omega = 0; letzteZug = performance.now();
+  zugStart = Math.round(phi / SCHRITT) * SCHRITT; phi = zugStart;
 });
-leinwand.addEventListener('pointermove', (e) => {
-  const f = finger.get(e.pointerId); if (!f) return;
+aufZeiger('pointermove', (e) => {
+  const f = finger.get(e.pointerId); if (!f || !gezogen) return;
   const dx = e.clientX - f.x, dy = e.clientY - f.y; f.x = e.clientX; f.y = e.clientY;
-  const jetzt = performance.now(), dt = Math.max(8, Math.min(60, jetzt - letzteZug)); letzteZug = jetzt;
-  // waagrecht und senkrecht drehen beide: nach links oder oben wischen führt weiter
-  const k = 2.6 / Math.min(innerWidth, innerHeight);
-  const d = (-dx - dy * 0.8) * k;
-  phi += d; omega = omega * 0.4 + (d / dt) * 16.7 * 0.6;
+  letzteZug = performance.now();
+  // waagrecht und senkrecht drehen beide: nach links oder oben wischen führt weiter.
+  // Der Finger zieht nur zäh, und nie weiter als knapp einen Bereich.
+  const k = 1.5 / Math.min(innerWidth, innerHeight);
+  phi = Math.max(zugStart - SCHRITT * 0.85, Math.min(zugStart + SCHRITT * 0.85, phi + (-dx - dy * 0.8) * k));
 });
 const loslassen = (e) => {
   if (!finger.delete(e.pointerId)) return;
   if (finger.size) return;
-  gezogen = false;
-  if (performance.now() - letzteZug > 90) omega = 0;
-  // Tippen ohne Ziehen: zum nächsten Bereich
-  if (tipp && Math.hypot(e.clientX - tipp.x, e.clientY - tipp.y) < 8 && performance.now() - tipp.t < 350) { omega = 0; weiter(1); return; }
-  // Schwung mitnehmen, dann einrasten
-  ziel = Math.round((phi + omega * 9) / SCHRITT) * SCHRITT;
+  const warGezogen = gezogen; gezogen = false; omega = 0;
+  // Tippen: auf den Stein öffnet und schliesst das Menü; daneben schliesst es nur
+  if (tipp && Math.hypot(e.clientX - tipp.x, e.clientY - tipp.y) < 10 && performance.now() - tipp.t < 400) {
+    if (warGezogen) phi = zugStart;
+    const treffer = Math.hypot(e.clientX - gemJetzt.x, e.clientY - gemJetzt.y) < Math.max(30, gemJetzt.r * 2.2);
+    if (treffer) menuSchalten(!menuAuf); else if (menuAuf) menuSchalten(false);
+    ziel = Math.round(phi / SCHRITT) * SCHRITT;
+    return;
+  }
+  if (!warGezogen) return;
+  // ein Viertel des Weges genügt, dann dreht der Stein langsam in den nächsten Bereich
+  const weg = (phi - zugStart) / SCHRITT;
+  ziel = zugStart + (Math.abs(weg) > 0.22 ? Math.sign(weg) * SCHRITT : 0);
 };
-leinwand.addEventListener('pointerup', loslassen);
-leinwand.addEventListener('pointercancel', loslassen);
-let radRuhe = 0;
+aufZeiger('pointerup', loslassen);
+aufZeiger('pointercancel', loslassen);
+// Mausrad und Touchpad: ein Bereich je Bewegung, dann Ruhe, bis der Stein steht
+let radSumme = 0, radSperre = 0;
 addEventListener('wheel', (e) => {
   e.preventDefault();
-  phi += (e.deltaY + e.deltaX) * 0.0024; ziel = null; clearTimeout(radRuhe);
-  radRuhe = setTimeout(() => { ziel = Math.round(phi / SCHRITT) * SCHRITT; }, 140);
+  if (menuAuf) return;
+  const jetzt = performance.now();
+  if (jetzt < radSperre) { radSperre = Math.max(radSperre, jetzt + 260); return; }
+  radSumme += e.deltaY + e.deltaX;
+  if (Math.abs(radSumme) > 60) { weiter(Math.sign(radSumme)); radSumme = 0; radSperre = jetzt + 1500; }
 }, { passive: false });
 addEventListener('keydown', (e) => {
   if (['ArrowRight', 'ArrowDown', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); weiter(1); }
   else if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); weiter(-1); }
-  else if (e.key === 'Home' || e.key === 'Escape') hin(0);
+  else if (e.key === 'Escape' && menuAuf) menuSchalten(false);
+  else if (e.key === 'Home') hin(0);
+  else if (e.key === 'Enter' && document.activeElement === document.body) menuSchalten(!menuAuf);
 });
 
-// Menü unten: die fünf Bereiche
+// Menü: öffnet sich, wenn man den Stein antippt; der Stein steht dann gross über den Bereichen
 const nav = $('bereiche');
-BEREICHE.forEach((b, i) => {
-  const t = document.createElement('button'); t.type = 'button'; t.setAttribute('aria-label', b.name); t.title = b.name;
-  t.addEventListener('click', () => hin(i + 1));
+['Brillante Ideen', ...BEREICHE.map((b) => b.name)].forEach((name, i) => {
+  const t = document.createElement('button'); t.type = 'button'; t.textContent = name; if (!i) t.className = 'start';
+  t.addEventListener('click', () => { menuSchalten(false); hin(i); });
   nav.append(t);
 });
-const knoepfe = [...nav.children];
+const knoepfe = [...nav.children].slice(1);
+const steinKnopf = $('stein');
+steinKnopf.addEventListener('click', () => menuSchalten(!menuAuf));
+function menuSchalten(auf) {
+  menuAuf = auf; spur(auf ? 'Menü auf' : 'Menü zu');
+  document.body.classList.toggle('menu-auf', auf);
+  nav.inert = !auf; steinKnopf.setAttribute('aria-expanded', String(auf));
+  if (auf && lay) nav.style.top = Math.round(lay.menuGem.y + lay.menuGem.r + 26) + 'px';
+}
+nav.inert = true;
 const mehr = $('mehr');
 
 // ---------- Auftakt ----------
@@ -465,9 +552,10 @@ let gebautFuer = '';
 function groesse() {
   W = innerWidth; H = innerHeight;
   D = Math.min(devicePixelRatio || 1, MAX_DPR) * aufloesung;
-  leinwand.width = Math.round(W * D); leinwand.height = Math.round(H * D);
+  const ziel = gl ? leinwand : flachLeinwand();
+  ziel.width = Math.round(W * D); ziel.height = Math.round(H * D);
   const schl = `${W}x${H}@${D}`;
-  if (gl && schriftDa && schl !== gebautFuer) { gebautFuer = schl; seitenBauen(); }
+  if (schriftDa && schl !== gebautFuer) { gebautFuer = schl; seitenBauen(); }
 }
 let schriftDa = false;
 addEventListener('resize', () => { groesse(); });
@@ -483,6 +571,7 @@ function tempoMessen(ms, dt) {
 }
 
 // ---------- Lauf ----------
+let anlauf = [], menuDreh = 0;
 let letzteMs = 0, ersterLauf = true, zustandGezeigt = -1, blitz = 0, gelandet = false;
 function bild(ms) {
   requestAnimationFrame(bild);
@@ -495,8 +584,8 @@ function bild(ms) {
   // Bewegung
   if (!gezogen) {
     if (ziel != null) {
-      // gedämpfte Feder zum Ziel
-      const a = (ziel - phi) * 0.012 - omega * 0.16;
+      // gedämpfte Feder zum Ziel, bewusst langsam: rund anderthalb Sekunden je Bereich
+      const a = (ziel - phi) * 0.0055 - omega * 0.14;
       omega += a * f; phi += omega * f;
       if (Math.abs(ziel - phi) < 0.0004 && Math.abs(omega) < 0.0004) { phi = ziel; omega = 0; }
     } else if (Math.abs(omega) > 0.0005) { phi += omega * f; omega *= Math.pow(0.95, f); }
@@ -515,12 +604,19 @@ function bild(ms) {
   const ease = (x) => x * x * (3 - 2 * x), e = ease(fr);
   const gA = lay.saetze[A].gem, gB = lay.saetze[B].gem;
   const gr = { x: gA.x + (gB.x - gA.x) * e, y: gA.y, r: lay.gemR }, grossR = Math.min(W, H) * 0.11;
-  const gx = W / 2 + (gr.x - W / 2) * flug, gy = H * 0.47 + (gr.y - H * 0.47) * flug - Math.sin(Math.PI * flug) * H * 0.03 - Math.sin(Math.PI * fr) * lay.fs * 0.35;
-  const rr = grossR + (gr.r - grossR) * flug;
+  // Menü: der Stein steigt gross über die Mitte und kehrt beim zweiten Tippen an seinen Platz zurück
+  menu += ((menuAuf ? 1 : 0) - menu) * (1 - Math.pow(0.9, f));
+  const mu = sanft(menu), mg = lay.menuGem;
+  const gx0 = W / 2 + (gr.x - W / 2) * flug, gy0 = H * 0.47 + (gr.y - H * 0.47) * flug - Math.sin(Math.PI * flug) * H * 0.03 - Math.sin(Math.PI * fr) * lay.fs * 0.35;
+  const rr0 = grossR + (gr.r - grossR) * flug;
+  const gx = gx0 + (mg.x - gx0) * mu, gy = gy0 + (mg.y - gy0) * mu - Math.sin(Math.PI * mu) * lay.fs * 0.6, rr = rr0 + (mg.r - rr0) * mu;
+  gemJetzt.x = gx; gemJetzt.y = gy; gemJetzt.r = rr;
+  steinKnopf.style.transform = `translate(${gx - 28}px, ${gy - 28}px)`;
   // Drehung: die Drehung um die Achse zeigt die Bereiche; im Auftakt dreht er sich frei aus
   const auftaktDreh = AUFTAKT ? (1 - ausrollen(ta)) * 5.5 : 0;
   const atem = ruhig ? 0 : 1;
-  const gier = -phi + auftaktDreh + atem * 0.18 * Math.sin(t * 0.45);
+  menuDreh += menu * 0.012 * f;
+  const gier = -phi + auftaktDreh + atem * 0.18 * Math.sin(t * 0.45) + menuDreh;
   const neig = 0.62 + atem * 0.08 * Math.sin(t * 0.31 + 1.0) + (1 - flug) * 0.35;
   const roll = atem * 0.05 * Math.sin(t * 0.23);
   ebenenDrehen(gier, neig, roll);
@@ -533,11 +629,18 @@ function bild(ms) {
     knoepfe.forEach((k, i) => k.setAttribute('aria-current', String(i + 1 === zustand)));
     if (zustand) { const b = BEREICHE[zustand - 1]; mehr.href = b.href; mehr.setAttribute('aria-label', `${b.name}: mehr erfahren`); }
   }
-  const zeigeMehr = zustand > 0 && ruht;
+  const zeigeMehr = zustand > 0 && ruht && menu < 0.05;
   if (zeigeMehr !== mehr.classList.contains('da')) {
     mehr.classList.toggle('da', zeigeMehr); mehr.tabIndex = zeigeMehr ? 0 : -1;
     if (zeigeMehr) { const o = mehrOrt[zustand]; mehr.style.setProperty('--ton', `rgb(${o.ton.join(',')})`); mehr.style.left = '50%'; mehr.style.top = (o.y - 14) + 'px'; mehr.style.translate = '-50% 0'; }
   }
+
+  // Läuft die volle Fassung zu langsam (Software-Grafik, die sich nicht zu erkennen gab), zur flachen wechseln
+  if (gl && !frage.has('gl')) {
+    anlauf.push(dtMs);
+    if (anlauf.length === 24) { anlauf.sort((x, y) => x - y); if (anlauf[12] > 70) { spur('zu langsam: flach'); gl = null; gebautFuer = ''; groesse(); } }
+  }
+  if (!gl) { flachZeichnen(A, B, fr, zeigen, gx, gy, rr, gier, neig, roll, blitz, menu * 0.9); if (ersterLauf) { ersterLauf = false; spur('✓ läuft'); } return; }
 
   // Zeichnen
   const Bw = leinwand.width, Bh = leinwand.height;
@@ -551,7 +654,7 @@ function bild(ms) {
   gl.uniform1f(ort.uF, fr); gl.uniform1f(ort.uWirbel, ruhig ? Math.min(wirbel, 0.4) : wirbel);
   gl.uniform1f(ort.uZeigen, zeigen); gl.uniform1f(ort.uBlitz, ruhig ? 0 : blitz);
   gl.uniform2f(ort.uGem, gx * D, (H - gy) * D); gl.uniform1f(ort.uGemR, rr * D);
-  gl.uniform2f(ort.uFeld, gx * D, (H - gy) * D); gl.uniform1f(ort.uGross, Math.max(W, H) * 0.85 * D);
+  gl.uniform2f(ort.uFeld, gx * D, (H - gy) * D); gl.uniform1f(ort.uGross, Math.max(W, H) * 0.55 * D); gl.uniform1f(ort.uDimm, menu * 0.9);
   gl.uniform2f(ort.uAufl, Bw, Bh); gl.uniform1f(ort.uRad, huelle * 1.03); gl.uniform1f(ort.uT, t % 100); gl.uniform1f(ort.uFeuer, 1.4);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   nachbearbeiten(t, sz);
@@ -579,13 +682,105 @@ function nachbearbeiten(t, sz) {
   gl.activeTexture(gl.TEXTURE0);
 }
 
+// ---------- Flache Fassung (Canvas 2D) ----------
+// Derselbe Satz, dieselbe Drehung; der Brillant als Körper aus 64 Facetten, geschattet nach drei Lichtern.
+function flachLeinwand() {
+  if (!flach) {
+    flach = document.createElement('canvas'); flach.id = 'flach'; flach.setAttribute('aria-hidden', 'true');
+    flach.className = 'flach';
+    leinwand.after(flach); leinwand.hidden = true;
+    for (const [typ, fn] of zeiger) flach.addEventListener(typ, fn);
+    fctx = flach.getContext('2d', { alpha: false });
+  }
+  return flach;
+}
+// Körper des Brillanten: Rundiste (16), Tafel (8), Kalette; Masse wie in schliffe.js (Tafel 57 %, Pavillon 40.75°)
+const KOERPER = (() => {
+  const g = [], t = [], TY = 0.3, KY = -0.86;
+  for (let i = 0; i < 16; i++) { const a = (i / 16) * Math.PI * 2; g.push([Math.cos(a), 0, Math.sin(a)]); }
+  for (let i = 0; i < 8; i++) { const a = ((i + 0.5) / 8) * Math.PI * 2; t.push([Math.cos(a) * 0.57, TY, Math.sin(a) * 0.57]); }
+  const kal = [0, KY, 0], fl = [];
+  for (let k = 0; k < 8; k++) {
+    const g0 = g[2 * k], g1 = g[2 * k + 1], g2 = g[(2 * k + 2) % 16], t0 = t[(k + 7) % 8], t1 = t[k];
+    fl.push([g0, g1, t1, t0], [g1, g2, t1]);              // Krone: Haupt- und Rundistenfacetten
+    fl.push([g1, t[(k + 1) % 8], t1]);                      // Sterne
+  }
+  for (let i = 0; i < 16; i++) fl.push([g[(i + 1) % 16], g[i], kal]);   // Pavillon
+  fl.push([...t].reverse());                               // Tafel
+  return fl;
+})();
+function flachStein(c, x, y, r, gier, neig, roll, glanz) {
+  const cg = Math.cos(gier), sg = Math.sin(gier), cn = Math.cos(neig), sn = Math.sin(neig), cr = Math.cos(roll), sr = Math.sin(roll);
+  const dreh = ([px, py, pz]) => {
+    const x1 = cg * px + sg * pz, z1 = -sg * px + cg * pz;
+    const y2 = cn * py - sn * z1, z2 = sn * py + cn * z1;
+    return [cr * x1 - sr * y2, sr * x1 + cr * y2, z2];
+  };
+  const L = [[0.53, 0.68, 0.5], [-0.62, 0.55, 0.56], [0.1, -0.35, 0.93]];
+  const flaechen = [];
+  KOERPER.forEach((f, i) => {
+    const p = f.map(dreh);
+    const u = p[1].map((v, j) => v - p[0][j]), w = p[2].map((v, j) => v - p[0][j]);
+    let n = [u[1] * w[2] - u[2] * w[1], u[2] * w[0] - u[0] * w[2], u[0] * w[1] - u[1] * w[0]];
+    const l = Math.hypot(...n) || 1; n = n.map((v) => v / l);
+    // Aussenseite zeigt von der Mitte weg
+    const m = p.reduce((s, q) => [s[0] + q[0] / p.length, s[1] + q[1] / p.length, s[2] + q[2] / p.length], [0, 0, 0]);
+    if (n[0] * m[0] + n[1] * (m[1] + 0.2) + n[2] * m[2] < 0) n = n.map((v) => -v);
+    if (n[2] <= 0) return;
+    const z = m[2];
+    // Licht: Spiegelung der drei Fenster, dazu das Funkeln je Facette in den Farben des Spektrums
+    const rf = [2 * n[2] * n[0], 2 * n[2] * n[1], 2 * n[2] * n[2] - 1];
+    let hell = 0.1 + 0.25 * n[2];
+    for (const q of L) hell += Math.pow(Math.max(0, rf[0] * q[0] + rf[1] * q[1] + rf[2] * q[2]), 18) * 1.1;
+    const funke = Math.pow(Math.max(0, Math.sin(gier * 3 + i * 1.7)), 12);
+    flaechen.push({ p, z, hell: Math.min(1.4, hell), funke, ton: (i * 47 + gier * 180) % 360 });
+  });
+  flaechen.sort((a, b) => a.z - b.z);
+  c.save(); c.lineJoin = 'round';
+  for (const f of flaechen) {
+    c.beginPath(); f.p.forEach((q, j) => (j ? c.lineTo(x + q[0] * r, y - q[1] * r) : c.moveTo(x + q[0] * r, y - q[1] * r))); c.closePath();
+    const v = Math.round(Math.min(255, 40 + f.hell * 200));
+    c.fillStyle = `rgb(${Math.round(v * 0.92)},${Math.round(v * 0.93)},${v})`; c.fill();
+    if (f.funke > 0.02) { c.fillStyle = `hsla(${f.ton},90%,70%,${f.funke * 0.55})`; c.fill(); }
+    c.strokeStyle = 'rgba(255,255,255,0.28)'; c.lineWidth = Math.max(0.5, r * 0.025); c.stroke();
+  }
+  // weicher Schein und, beim Ankommen, ein feiner Stern
+  c.globalCompositeOperation = 'lighter';
+  const s = c.createRadialGradient(x, y, 0, x, y, r * 1.9);
+  s.addColorStop(0, 'rgba(210,205,255,0.09)'); s.addColorStop(1, 'rgba(210,205,255,0)');
+  c.fillStyle = s; c.fillRect(x - r * 1.9, y - r * 1.9, r * 3.8, r * 3.8);
+  if (glanz > 0.01) {
+    c.strokeStyle = `rgba(255,250,240,${glanz * 0.7})`; c.lineWidth = Math.max(0.6, r * 0.05);
+    const a = r * 4 * glanz + r;
+    c.beginPath(); c.moveTo(x - a, y); c.lineTo(x + a, y); c.moveTo(x, y - a * 0.7); c.lineTo(x, y + a * 0.7); c.stroke();
+  }
+  c.restore();
+}
+function flachZeichnen(A, B, fr, zeigen, gx, gy, rr, gier, neig, roll, blitz, dimm) {
+  const c = fctx; if (!c || !seitenBild[A]) return;
+  c.setTransform(1, 0, 0, 1, 0, 0);
+  const w = flach.width, h = flach.height;
+  if (zeigen < 1) { c.drawImage(leerBild, 0, 0, w, h); c.globalAlpha = zeigen; }
+  c.drawImage(seitenBild[A], 0, 0, w, h);
+  c.globalAlpha = 1;
+  if (fr > 0.001) {
+    c.globalAlpha = fr * fr * (3 - 2 * fr); c.drawImage(seitenBild[B], 0, 0, w, h);
+    // in der Mitte der Drehung löst sich die Schrift ins Leere
+    c.globalAlpha = Math.pow(Math.sin(Math.PI * fr), 1.6) * 0.6; c.drawImage(leerBild, 0, 0, w, h);
+    c.globalAlpha = 1;
+  }
+  if (dimm > 0.002) { c.globalAlpha = dimm; c.drawImage(leerBild, 0, 0, w, h); c.globalAlpha = 1; }
+  c.setTransform(D, 0, 0, D, 0, 0);
+  flachStein(c, gx, gy, rr, gier, neig, roll, ruhig ? 0 : blitz);
+}
+
 // Erst die Schrift, dann die Seiten (sonst stünde der Titel in einer Ersatzschrift im Bild)
 groesse();
 Promise.all([document.fonts.load(`600 100px ${SCHRIFT}`), document.fonts.load(`500 16px ${SCHRIFT}`)])
   .catch(() => spur('Schrift fehlt'))
   .finally(() => {
     schriftDa = true; groesse();
-    if (gl) requestAnimationFrame(bild);
+    requestAnimationFrame(bild);
     const s = new URLSearchParams(location.search).get('bereich');
     if (s) { const k = BEREICHE.findIndex((b) => b.name.toLowerCase() === s.toLowerCase()) + 1; if (k > 0) { phi = k * SCHRITT; } }
   });
