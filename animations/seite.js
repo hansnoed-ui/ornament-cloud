@@ -1,13 +1,13 @@
 // Animationen – die Seite: Mischpult (das eigene Bild, Grund, drei Ebenen, Schalter, Sichern) mit den gesicherten Werken darunter
 // (gestreutes Raster, beim Darüberfahren lebendig, Klick lädt ins Mischpult) und Info. Ein Motor zeichnet für alles; die sichtbare
 // Leinwand übernimmt sein Bild. Seit 4. November 2026 ohne Reel, Beispielbilder und vorgefertigte Werke.
-import { motorErstellen, videoErstellen, DAUER, LAENGEN, MODI } from "./motor.js?v=36";
-import "./thema.js?v=36";
-import { EFFEKTE, EFFEKT_IDS, stufe, wertVon } from "./effekte.js?v=36";
-import { zufall, EIGEN } from "./rezepte.js?v=36";
-import { kurz, lang } from "./link.js?v=36";
-import { t, herkunft, fehlerText, SPRACHE, GEBIET } from "./sprache.js?v=36";
-import { VIDEO_AN, VIDEO_PX, VIDEO_PX_SPARSAM, istVideo, videoZerlegen } from "./video.js?v=36";
+import { motorErstellen, videoErstellen, DAUER, LAENGEN, MODI } from "./motor.js?v=37";
+import "./thema.js?v=37";
+import { EFFEKTE, EFFEKT_IDS, stufe, wertVon } from "./effekte.js?v=37";
+import { zufall, EIGEN } from "./rezepte.js?v=37";
+import { kurz, lang } from "./link.js?v=37";
+import { t, herkunft, fehlerText, SPRACHE, GEBIET } from "./sprache.js?v=37";
+import { VIDEO_AN, VIDEO_PX, VIDEO_PX_SPARSAM, istVideo, videoZerlegen } from "./video.js?v=37";
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, attr = {}, ...kinder) => {
@@ -59,7 +59,9 @@ const S = {
   bildBlob: null, bildName: "",   // das eigene Bild als JPEG (für «Werk sichern»), bleibt im Browser
   werk: null,   // das zuletzt ins Mischpult geladene gesicherte Werk
   werke: [], eigene: {}, dienst: false,   // alle gesicherten Werke; die eigenen mit ihrem Schlüssel (zum Löschen); ob werke.php antwortet
+  reiter: "e0",   // Handy: welcher Teil des Pults zu sehen ist (e0 … e2 eine Ebene, bild, sichern)
 };
+const handy = matchMedia("(max-width: 720px)");
 try { S.eigene = JSON.parse(gemerkt("animationen.eigene") || "{}"); } catch { S.eigene = {}; }
 const mit = (stapel) => ({ ...stapel, ohneBild: S.ohneBild || undefined, durchlauf: S.durchlauf || undefined, dauer: S.dauer, format: S.format !== "4x5" ? S.format : undefined });
 const ohne = () => (S.ohneBild ? "-ohne-bild" : "") + (S.durchlauf ? "-durchlauf" : "") + (S.dauer !== DAUER ? `-${S.dauer}s` : "");
@@ -93,6 +95,7 @@ function malen(c, stapel, t, [b, h] = aufloesung(c), huelle = mit) {
 // ——— Ansichten ———
 function ansicht(name, { verlauf = true } = {}) {
   S.ansicht = name;
+  document.documentElement.dataset.ansicht = name;   // Handy: im Mischpult das Dock, in der Info die Leiste der Ansichten
   for (const s of document.querySelectorAll(".ansicht")) s.hidden = s.id !== name;
   for (const b of document.querySelectorAll("[data-ansicht]")) b.setAttribute("aria-pressed", String(b.dataset.ansicht === name));
   if (verlauf) adresse();
@@ -220,12 +223,13 @@ function pultAufbauen() {
   $("pult-grund").replaceChildren(...["schwarz", "weiss"].map((g) => el("button", { type: "button", "aria-pressed": String(m.grund === g), text: g === "schwarz" ? t("Schwarz") : t("Weiss"),
     onclick: () => { m.grund = g; pultAufbauen(); adresse(); } })));
   $("pult-ebenen").replaceChildren(...m.ebenen.map((e, i) => ebeneFeld(e, i)));
+  reiterAufbauen();
   $("pult-sichern").disabled = !hatBild() || !S.dienst;
 }
 function ebeneFeld(e, i) {
   const m = S.mix, def = EFFEKTE[e.effekt];
   const neu = () => { pultAufbauen(); adresse(); };
-  const fs = el("fieldset", { class: `ebene${e.aus || !def ? " aus" : ""}` });
+  const fs = el("fieldset", { class: `ebene${e.aus || !def ? " aus" : ""}${S.reiter === `e${i}` ? " aktiv" : ""}` });
   const kopf = el("div", { class: "ebene-kopf" }, el("legend", { text: t("Ebene {n}", { n: i + 1 }) }));
   const schieben = (d) => { const j = i + d; [m.ebenen[i], m.ebenen[j]] = [m.ebenen[j], m.ebenen[i]]; neu(); };
   const hoch = el("button", { type: "button", title: t("nach oben"), "aria-label": t("Ebene {n} nach oben", { n: i + 1 }), text: "↑", onclick: () => schieben(-1) });
@@ -239,7 +243,7 @@ function ebeneFeld(e, i) {
   const effekt = el("select", { "aria-label": t("Effekt der Ebene {n}", { n: i + 1 }), onchange: (ev) => { e.effekt = ev.target.value; e.werte = []; e.aus = false; neu(); } },
     el("option", { value: "", text: t("— keine —") }), ...EFFEKT_IDS.map((id) => el("option", { value: id, text: t(EFFEKTE[id].name) })));
   effekt.value = e.effekt || "";
-  fs.append(effekt);
+  fs.append(effekt, effektLeiste(e, i, neu));
   if (!def) return fs;
   const regeln = el("div", { class: "regeln" });
   const quelle = el("select", { "aria-label": t("Quelle"), onchange: (ev) => { e.quelle = ev.target.value; adresse(); } },
@@ -256,6 +260,42 @@ function ebeneFeld(e, i) {
   });
   fs.append(regeln);
   return fs;
+}
+// Handy: alle Effekte als Leiste zum Wischen; antippen wechselt den Effekt sofort (dasselbe wie die Auswahlliste daneben am Laptop)
+let leistenStand = [], leistenMix = null;   // wie weit jede Leiste gewischt ist, damit sie beim Neuaufbau nicht an den Anfang springt
+function effektLeiste(e, i, neu) {
+  if (leistenMix !== S.mix) { leistenMix = S.mix; leistenStand = []; }   // neue Mischung: der gewählte Effekt steht sichtbar in der Mitte
+  const waehlen = (id) => { if (e.effekt === id) return; e.effekt = id; e.werte = []; e.aus = false; leistenStand[i] = leiste.scrollLeft; neu(); };
+  const leiste = el("div", { class: "wahl effekte", role: "group", "aria-label": t("Effekt der Ebene {n}", { n: i + 1 }) },
+    el("button", { type: "button", class: "keiner", "aria-pressed": String(!e.effekt), text: t("— keine —"), onclick: () => waehlen("") }),
+    ...EFFEKT_IDS.map((id) => el("button", { type: "button", "aria-pressed": String(e.effekt === id), text: t(EFFEKTE[id].name), onclick: () => waehlen(id) })));
+  leiste.addEventListener("scroll", () => { leistenStand[i] = leiste.scrollLeft; }, { passive: true });
+  requestAnimationFrame(() => {
+    if (leistenStand[i] != null) { leiste.scrollLeft = leistenStand[i]; return; }
+    const an = leiste.querySelector('[aria-pressed="true"]');
+    if (an) leiste.scrollLeft = an.offsetLeft - (leiste.clientWidth - an.offsetWidth) / 2;
+  });
+  return leiste;
+}
+// Handy: Reiter über dem Pult (Ebene 1 · 2 · 3 mit ihrem Effekt, Bild, Sichern); sie kleben mit der Bühne oben
+function reiterAufbauen() {
+  const knopf = (wert, kopf, name, klasse = "") => el("button", { type: "button", class: klasse, "aria-pressed": String(S.reiter === wert), onclick: () => reiterWahl(wert) },
+    ...(kopf ? [el("small", { text: kopf })] : []), el("span", { text: name }));
+  $("pult-reiter").setAttribute("aria-label", t("Pult"));
+  $("pult-reiter").replaceChildren(
+    ...S.mix.ebenen.slice(0, 3).map((e, i) => {
+      const def = EFFEKTE[e.effekt];
+      return knopf(`e${i}`, zwei(i + 1), def ? t(def.name) : t("+ Effekt"), !def ? "leer-ebene" : e.aus ? "" : "laeuft");
+    }),
+    knopf("bild", "", t("Bild"), "extra"), knopf("sichern", "", t("Sichern"), "extra"));
+  $("pult").dataset.reiter = S.reiter;
+}
+function reiterWahl(wert) {
+  if (S.reiter === wert) return;
+  S.reiter = wert; pultAufbauen();
+  // der gewählte Teil beginnt gleich unter der klebenden Bühne
+  const unten = document.querySelector(".pult-buehne").getBoundingClientRect().bottom, oben = $("pult").getBoundingClientRect().top;
+  if (oben < unten) scrollBy({ top: oben - unten });
 }
 // eine Wahl mit Stufen (z. B. die Form der Montage): flache Knöpfe wie die Schalter oben, der Wert bleibt 0 … 1
 function stufenWahl(r, wert, setzen) {
@@ -316,7 +356,16 @@ if (VIDEO_AN) {
   const hinweis = document.querySelector("#pult-leer .hinweis");
   if (hinweis) hinweis.textContent = t("JPEG, PNG, WebP oder ein kurzes Video (bis 12 s, MP4). Es bleibt auf deinem Gerät, bis du dein Werk sicherst.");
 }
-const pultMeldung = (text) => { $("pult-meldung").textContent = text; };
+let toastTimer = 0;
+const pultMeldung = (text) => {
+  $("pult-meldung").textContent = text;
+  if (!handy.matches) return;   // Handy: die Meldung steht im Teil «Bild», der oft nicht zu sehen ist, darum kurz über dem Dock
+  const p = $("pult-toast"); p.textContent = text; p.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { p.hidden = true; }, Math.min(9000, 3500 + text.length * 40));
+};
+$("pult-toast").addEventListener("click", () => { $("pult-toast").hidden = true; });
+$("dock-zufall").addEventListener("click", () => $("pult-zufall").click());
+$("dock-mp4").addEventListener("click", () => $("pult-mp4").click());
 $("pult-datei").addEventListener("change", (e) => { eigenesBild(e.target.files[0]); e.target.value = ""; });
 $("pult-waehlen").addEventListener("click", () => $("pult-datei").click());
 const buehne = $("buehne");

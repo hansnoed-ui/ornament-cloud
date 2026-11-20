@@ -71,11 +71,18 @@ geschlossenen Formen, eng in gross). Geprüft gegen Inter (optische Grösse), Sc
   Unter 420 px Breite weicht dafür der Seitenname neben der Marke.
 
 - **Kopf**: Marke links («ornament.cloud», Punkt im Akzent), Zeile in der Mitte, rechts die zwei Ansichten mit Nummer; die aktive trägt den Akzentpunkt.
-  Auf dem Handy wandern die Ansichten in eine feste Leiste am unteren Rand (Daumenweite), der Kopf behält nur die Marke.
+  Auf dem Handy wandern die Ansichten in eine feste Leiste am unteren Rand (Daumenweite), der Kopf behält nur die Marke; im Mischpult ersetzt sie das Dock (siehe unten).
 - **Mischpult**: Bühne links (klebt beim Rollen), darunter Uhr, Fortschrittslinie und Schlaufe, dann die Haupttaste **«Neu mischen»** (gefüllt, mit
   Akzentpunkt, 52 px hoch) und daneben «MP4 laden». Ohne Bild zeigt die Bühne die Aufforderung (gestrichelter Rahmen, Satz mit kursivem Wort,
   «Bild wählen …»). Pult rechts 400 px: Gruppen mit Versalbeschriftung, Schalter als flache Knöpfe mit 6 px Radius, Ebenen als Karten mit Haarlinie, dünne Regler mit
   Wert rechts, leise Tasten (Pause, Standbild, Link), zuunterst «Werk sichern» mit Titel und Name.
+- **Mischpult auf dem Handy** (bis 720 px, 20. November 2026, Wunsch: «dass das live mischen der effekte mühelos gelingt. Es müssen nicht alle
+  effekte gleichzeitig sichtbar sein»): Die Bühne klebt unter dem Kopf (Höhe `--buehne-h` 42svh, niedrige Handys 38svh), mit Uhr und darunter den
+  **Reitern** `01 · 02 · 03` (je Ebene ihr Effekt, Akzentpunkt = Ebene läuft, «+ Effekt» = leer), «Bild» und «Sichern». Darunter steht nur der
+  gewählte Teil (`data-reiter` auf dem Pult, `data-teil` an den Gruppen). Eine Ebene zeigt statt der Auswahlliste die **Effektleiste**: alle Effekte
+  als flache Knöpfe in einer Zeile zum Wischen, antippen wechselt sofort. Regler gestapelt (Name und Wert über der Bahn, Knopf 22 px), Quelle und
+  Mischmodus zuletzt. Das **Dock** am unteren Rand trägt «Neu mischen», «MP4» und «Info»; die Leiste der Ansichten erscheint nur in der Info.
+  Meldungen erscheinen kurz als **Hinweis** über dem Dock (sonst stünden sie im versteckten Teil «Bild»). Laptop und Tablet bleiben wie bisher.
 - **Werke**: unter dem Mischpult, von einer Haarlinie getrennt: grosse Zeile «Werke» mit der Anzahl leicht und im Akzent, daneben ein Satz,
   darunter das gestreute Raster mit drei Kachelgrössen (12 Spalten, Tablet 8, Handy 4). Beschriftung: Nummer, Titel, darunter leise
   «von Name · Datum»; eigene Werke mit «Löschen». Darüberfahren lässt die Animation laufen, Klick lädt sie ins Mischpult.
