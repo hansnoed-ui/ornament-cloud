@@ -71,6 +71,7 @@ uniform float uF;                  // Übergang von A nach B, 0 … 1
 uniform float uWirbel;             // wie stark die Facetten das Bild gerade brechen
 uniform float uZeigen;             // Auftakt: wie weit die Schrift schon steht, 0 … 1
 uniform float uBlitz;
+uniform float uStern, uZeit, uKreisel;              // 0.19: feine, irisierende Strahlen um den ruhenden i-Punkt
 uniform float uDimm;               // offenes Menü: die Seite tritt zurück              // kurzes Aufblitzen, wenn der Stein seinen Platz findet
 uniform vec2 uGem;                 // Mitte des Steins (Bildpunkte der Leinwand, unten links = 0)
 uniform float uGemR;               // Radius des Steins in Bildpunkten
@@ -379,6 +380,30 @@ void main(){
     float stern = (exp(-d.x * 2.2) * exp(-d.y * 60.0) + exp(-d.y * 2.2) * exp(-d.x * 60.0)) * 0.55 + exp(-dot(d, d) * 40.0) * 0.4;
     col += vec3(1.0, 0.97, 0.94) * stern * uBlitz;
     glow = max(glow, stern * uBlitz);
+  }
+  // 0.19 (Christian: «ruhig und langsam drehen, feine Lichtbrechungen ausstrahlen», erster Eindruck):
+  // haarfeine Strahlen in Spektralfarben, jeder mit eigener Länge, langsam kreisend und einzeln aufglimmend
+  if (uStern > 0.001) {
+    vec2 d = p - uGem; float r = length(d) / uGemR;
+    if (r > 0.75 && r < 9.0) {
+      float an = atan(d.y, d.x), s = 0.0; vec3 farbe = vec3(0.0);
+      for (int k = 0; k < 9; k++) {
+        float fk = float(k);
+        float a0 = fk * 2.39996 + uKreisel * 0.35 * (mod(fk, 2.0) * 2.0 - 1.0) + h(fk * 3.1) * 0.6;
+        float da = abs(mod(an - a0 + 3.14159, 6.28318) - 3.14159);
+        float quer = da * length(d);                                  // Abstand quer zum Strahl in Bildpunkten
+        float breite = uPx * (0.55 + 0.35 * h(fk + 9.0));
+        float lang = 2.2 + 4.5 * h(fk * 7.3);
+        float glimm = pow(0.5 + 0.5 * sin(uZeit * (0.35 + 0.25 * h(fk * 5.0)) + fk * 1.9), 3.0);
+        float w = exp(-quer * quer / (breite * breite)) * exp(-(r - 0.75) / lang) * smoothstep(0.75, 1.15, r) * glimm;
+        vec3 iris = 0.5 + 0.5 * cos(6.2832 * (r * 0.09 + h(fk * 2.3) + vec3(0.0, 0.33, 0.67)));
+        farbe += mix(vec3(1.0, 0.98, 0.95), iris, 0.6) * w; s += w;
+      }
+      float oben = 0.3 + 0.7 * smoothstep(-0.55, 0.15, d.y / length(d));   // über der Schrift voll, nach unten leise
+      farbe *= oben; s *= oben;
+      col += farbe * uStern * 0.55;
+      glow = max(glow, min(1.0, s * uStern * 0.35));
+    }
   }
   o = vec4(col, max(glow, lichtGlow));
 }`;
@@ -909,7 +934,7 @@ function tempoMessen(ms, dt) {
 
 // ---------- Lauf ----------
 let anlauf = [];
-let letzteMs = 0, ersterLauf = true, zustandGezeigt = -1, blitz = 0, gelandet = false;
+let letzteMs = 0, ersterLauf = true, zustandGezeigt = -1, blitz = 0, gelandet = false, kreisel = 0, stern = 0;
 function bild(ms) {
   requestAnimationFrame(bild);
   if (document.hidden || !lay) return;
@@ -937,6 +962,10 @@ function bild(ms) {
   const flug = AUFTAKT ? ausrollen((t - 0.9) / 1.5) : 1;
   if (!gelandet && flug >= 1) { gelandet = true; blitz = 1; document.body.classList.add('bereit'); }
   blitz *= Math.pow(0.93, f);
+  // 0.19: auf dem i ruhend dreht der Stein langsam um sich (eine Umdrehung in rund 40 s) und strahlt fein aus
+  const amI = A === 0 && fr < 0.02 && !gezogen && !frei.an && menu < 0.02 && gelandet;
+  stern += ((amI && !ruhig ? 1 : 0) - stern) * (1 - Math.pow(amI ? 0.985 : 0.9, f));
+  kreisel += (f / 60) * 0.16 * (ruhig ? 0 : Math.max(stern, 1 - sanft(menu)));
 
   const ease = (x) => x * x * (3 - 2 * x), e = ease(fr);
   const gA = lay.saetze[A].gem, gB = lay.saetze[B].gem;
@@ -963,7 +992,7 @@ function bild(ms) {
       frei.g += (Math.round(frei.g / A8) * A8 - frei.g) * z; frei.n += (Math.round(frei.n / V) * V - frei.n) * z;
     }
   }
-  const gier = -phi + auftaktDreh + atem * 0.18 * Math.sin(t * 0.45) + frei.g;
+  const gier = -phi + auftaktDreh + atem * 0.18 * Math.sin(t * 0.45) + frei.g + kreisel;
   // im Menü kippt der Stein zur Betrachterin: man schaut von oben durch seine Tafel
   const neig = 0.3 + atem * 0.08 * Math.sin(t * 0.31 + 1.0) + (1 - flug) * 0.35 + mu * 0.95 + frei.n;
   const roll = atem * 0.05 * Math.sin(t * 0.23);
@@ -1001,7 +1030,7 @@ function bild(ms) {
   gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, leerTex); gl.uniform1i(ort.uLeer, 2);
   gl.uniform3fv(ort.uN, ebenenW); gl.uniform1fv(ort.uR, abstandW); gl.uniform1i(ort.uK, K);
   gl.uniform1f(ort.uF, fr); gl.uniform1f(ort.uWirbel, ruhig ? Math.min(wirbel, 0.4) : wirbel);
-  gl.uniform1f(ort.uZeigen, zeigen); gl.uniform1f(ort.uBlitz, ruhig ? 0 : blitz);
+  gl.uniform1f(ort.uZeigen, zeigen); gl.uniform1f(ort.uBlitz, ruhig ? 0 : blitz); gl.uniform1f(ort.uStern, stern); gl.uniform1f(ort.uZeit, t); gl.uniform1f(ort.uKreisel, kreisel);
   gl.uniform2f(ort.uGem, gx * D, (H - gy) * D); gl.uniform1f(ort.uGemR, rr * D);
   gl.uniform2f(ort.uFeld, gx * D, (H - gy) * D); gl.uniform1f(ort.uGross, Math.max(W, H) * 0.34 * D); gl.uniform1f(ort.uDimm, sanft(menu));
   gl.uniform2f(ort.uAufl, Bw, Bh); gl.uniform1f(ort.uRad, huelle * 1.03); gl.uniform1f(ort.uT, t % 100); gl.uniform1f(ort.uFeuer, 2.3);
