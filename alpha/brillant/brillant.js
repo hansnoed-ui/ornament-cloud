@@ -78,6 +78,14 @@ uniform vec2 uFeld;                // Mitte des grossen, unsichtbaren Steins, de
 uniform float uGross;              // dessen Grösse in Bildpunkten
 uniform vec2 uAufl;                // Leinwand in Bildpunkten
 uniform float uRad, uT, uFeuer;
+// Licht wird Glas: Strahlen aus dem Stein und die Scheibe, in der sie sich sammeln (Bildpunkte, unten links = 0)
+uniform vec4 uScheibe;             // Mitte xy, halbe Breite und Höhe zw
+uniform float uPraes;              // wie weit sich die Scheibe verdichtet hat, 0 … 1
+uniform float uStrahl;             // Stärke der Strahlen
+uniform vec3 uZiel;                // Mitte des Fächers (x), Oberkante (y), halbe Breite (z)
+uniform float uFunkel, uPx;
+uniform sampler2D uSchrift;
+uniform vec3 uGlasTon;
 const float AUGE = 4.0;
 const vec3 L1 = vec3(0.53, 0.68, 0.5), L2 = vec3(-0.62, 0.55, 0.56), L3 = vec3(0.1, -0.35, 0.93);
 
@@ -131,6 +139,76 @@ vec3 umwelt(vec3 d, float m){
   vec3 c = seite(gemUV + d.xy * vec2(uAufl.y / uAufl.x, 1.0) * 0.16, m) * 1.25;
   c += vec3(1.0, 0.985, 0.96) * (pow(max(dot(d, L1), 0.0), 22.0) * 1.5 + pow(max(dot(d, L2), 0.0), 34.0) * 1.1 + pow(max(dot(d, L3), 0.0), 10.0) * 0.35);
   return c + vec3(0.045, 0.04, 0.085);
+}
+
+// ---------- Licht wird Glas ----------
+float rauschen(vec2 x){
+  vec2 i = floor(x), f = fract(x); f = f * f * (3.0 - 2.0 * f);
+  float a = h(i.x + i.y * 57.0), b = h(i.x + 1.0 + i.y * 57.0), c = h(i.x + (i.y + 1.0) * 57.0), d = h(i.x + 1.0 + (i.y + 1.0) * 57.0);
+  return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+}
+// Fächer feiner Spektralstrahlen: jeder Strahl eine Wellenlänge, von Rot bis Violett über die Breite der Scheibe.
+// Sie treten unten aus dem Stein, werden mit dem Weg breiter und leiser, und funkeln, wenn der Stein sich dreht.
+vec3 strahlen(vec2 P){
+  vec2 O = uGem - vec2(0.0, uGemR * 0.5);
+  vec3 s = vec3(0.0);
+  for (int i = 0; i < 19; i++) {
+    float f = (float(i) + (h(float(i) * 3.1) - 0.5) * 0.7) / 18.0;
+    vec2 T = vec2(uZiel.x + (f - 0.5) * 2.0 * uZiel.z, uZiel.y);
+    vec2 q = P - O, dir = normalize(T - O);
+    float t = dot(q, dir);
+    if (t < 0.0) continue;
+    float lauf = length(T - O), quer = abs(q.x * dir.y - q.y * dir.x);
+    float w = 0.55 * uPx + t * 0.008, w2 = w * 9.0;
+    float a = exp(-quer * quer / (w * w)) + 0.05 * exp(-quer * quer / (w2 * w2));
+    a *= smoothstep(uGemR * 0.25, uGemR * 0.9, t) * (1.0 - smoothstep(lauf * 1.0, lauf * 1.6, t)) * (0.4 + 0.6 * exp(-t / lauf));
+    float fl = 0.5 + 0.5 * sin(uT * 0.9 + float(i) * 2.7 + uFunkel * 7.0);
+    // Licht, nicht Disco: ein weisser Kern, die Farben nur als Saum, am stärksten an den Rändern des Fächers
+    float saum = 0.25 + 0.5 * abs(f - 0.5) * 2.0;
+    s += mix(vec3(0.92, 0.9, 1.0), spektrum(mix(660.0, 430.0, f)) * 1.15, saum) * a * fl;
+  }
+  return s * uStrahl * 0.3;
+}
+float kasten(vec2 P){
+  float R = 28.0 * uPx;
+  vec2 d = abs(P - uScheibe.xy) - uScheibe.zw + vec2(R);
+  return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0) - R;
+}
+// die Scheibe: dickes Glas ohne Kante. Zum Rand hin wird sie zur Linse, bricht die Strahlen in ihre Farben,
+// und sie verdichtet sich von oben, wo das Licht eintritt, Korn um Korn
+vec3 glas(vec2 P, vec3 col, out float k){
+  k = 0.0;
+  float sd = kasten(P), weich = 40.0 * uPx;
+  if (sd > weich * 0.4) return col;
+  vec2 e = vec2(1.5 * uPx, 0.0);
+  vec2 g = normalize(vec2(kasten(P + e.xy) - kasten(P - e.xy), kasten(P + e.yx) - kasten(P - e.yx)) + 1e-6);
+  float innen = clamp(-sd / (54.0 * uPx), 0.0, 1.0), linse = pow(1.0 - innen, 2.0);
+  float maske = 1.0 - smoothstep(-weich, weich * 0.4, sd);
+  vec2 lp = (P - (uScheibe.xy - uScheibe.zw)) / (2.0 * uScheibe.zw);
+  float korn = rauschen(P / (3.0 * uPx)) * 0.35 + rauschen(P / (14.0 * uPx)) * 0.65;
+  float front = (1.0 - lp.y) * 0.7 + korn * 0.3;
+  float da = smoothstep(front - 0.08, front + 0.16, uPraes * 1.24);
+  k = maske * da;
+  if (k < 0.002) return col;
+  vec2 off = -g * linse * 26.0 * uPx + vec2(0.0, 6.0 * uPx);
+  vec3 licht = vec3(strahlen(P + off * 0.82).r, strahlen(P + off).g, strahlen(P + off * 1.24).b);
+  vec3 c = col * 0.6 + uGlasTon * (0.07 + 0.1 * lp.y) * (0.75 + 0.5 * korn) + licht * 1.5;
+  // Tiefe: der dicke Rand fängt Licht von innen
+  c += (uGlasTon * 0.5 + 0.2) * pow(linse, 2.0) * maske * 0.12 * (0.6 + 0.4 * lp.y);
+  // wo das Licht oben eintritt, glimmt die Scheibe (Kaustik), leise über die ganze Breite
+  float oben = uScheibe.y + uScheibe.w - P.y;
+  c += (uGlasTon * 0.6 + 0.25) * exp(-oben / (16.0 * uPx)) * 0.32 * uStrahl * (0.5 + 0.5 * sin(lp.x * 19.0 + uFunkel * 3.0 + korn * 4.0));
+  // Farbsaum: im dicken Rand zerlegt das Glas das Licht
+  c += spektrum(mix(420.0, 680.0, 0.5 + 0.5 * sin(atan(g.y, g.x) * 2.0 + lp.x * 3.0 + uFunkel))) * pow(linse, 3.0) * maske * 0.09;
+  // ein Glanz von links oben, kaum sichtbar
+  c += vec3(0.95, 0.94, 1.0) * 0.045 * smoothstep(0.35, 1.0, lp.y * 0.65 + (1.0 - lp.x) * 0.35) * (1.0 - linse);
+  // Schrift zuletzt: als Licht in der Scheibe, ihr Farbsaum zieht sich zusammen
+  float ts = smoothstep(0.55, 1.0, uPraes);
+  float sp = (1.0 - ts) * (1.0 - ts) * 4.0 * uPx / (2.0 * uScheibe.z) + 0.3 * uPx / (2.0 * uScheibe.z);
+  vec2 tuv = lp + off / (2.0 * uScheibe.zw) * 0.12;
+  vec4 tr = texture(uSchrift, tuv + vec2(sp, 0.0)), tg = texture(uSchrift, tuv), tb = texture(uSchrift, tuv - vec2(sp, 0.0));
+  c = mix(c, c * 0.55, tg.a * ts * 0.6) + vec3(tr.r * tr.a, tg.g * tg.a, tb.b * tb.a) * ts * 1.04;
+  return mix(col, c, k);
 }
 
 vec4 stein(vec2 gq, float m){
@@ -203,6 +281,15 @@ void main(){
   }
 
   if (uDimm > 0.0) col = mix(col, texture(uLeer, uv).rgb * 0.85, uDimm);
+  float lichtGlow = 0.0;
+  if (uStrahl > 0.001 || uPraes > 0.001) {
+    float k = 0.0;
+    if (uPraes > 0.001) col = glas(p, col, k);
+    if (uStrahl > 0.001 && p.y < uGem.y && p.y > uZiel.y - 2.6 * uScheibe.w) {
+      vec3 s = strahlen(p) * (1.0 - k * 0.85);
+      col += s; lichtGlow = min(1.0, dot(s, vec3(0.33)) * 1.6);
+    }
+  }
   // der Brillant, in jedem Bildpunkt mehrfach abgetastet: er ist klein und soll trotzdem scharf funkeln
   vec2 gq = (p - uGem) / uGemR;
   float glow = 0.0;
@@ -223,7 +310,7 @@ void main(){
     col += vec3(1.0, 0.97, 0.94) * stern * uBlitz;
     glow = max(glow, stern * uBlitz);
   }
-  o = vec4(col, glow);
+  o = vec4(col, max(glow, lichtGlow));
 }`;
 
 // ---------- Nachbearbeitung: Leuchten nur aus dem Stein (Maske im Alphakanal), Korn ----------
@@ -423,6 +510,7 @@ function seitenBauen() {
     seitenBild[k] = s;
     if (gl) seitenTex[k] = texAus(s, seitenTex[k]);
   }
+  if (gl) schriftBauen();
 }
 
 // ---------- Brillant: Ebenen und Drehung ----------
@@ -556,11 +644,53 @@ const flaechen = BEREICHE.map((b, i) => {
   el.setAttribute('aria-hidden', 'true');
   return el;
 });
-let praes = 0;
+let praes = 0, glasK = 1;
+// Mit Grafikkarte rechnet der Shader Licht und Glas (0.7, Christian: «Licht wird Glas»); die HTML-Flächen bleiben
+// unsichtbar darüber liegen, damit man tippen und mit der Tastatur hinkommt.
+const glasZ = { praes: 0, strahl: 0, ziel: [0, 0, 0], rect: [0, 0, 0, 0], funkel: 0 };
+const schriftTex = [];
+function schriftBauen() {
+  flaechen.forEach((el, i) => {
+    const pw = el.offsetWidth, ph = el.offsetHeight;
+    const c = document.createElement('canvas'); c.width = Math.round(pw * D); c.height = Math.round(ph * D);
+    const x = c.getContext('2d'); x.setTransform(D, 0, 0, D, 0, 0); x.textAlign = 'center';
+    const hell = getComputedStyle(el).getPropertyValue('--hell') || '#b7b0ff';
+    for (const kind of el.children) {
+      const st = getComputedStyle(kind), fs = parseFloat(st.fontSize), lh = parseFloat(st.lineHeight) || fs * 1.3;
+      x.font = `${st.fontWeight} ${fs}px ${SCHRIFT}`; if ('letterSpacing' in x) x.letterSpacing = st.letterSpacing === 'normal' ? '0px' : st.letterSpacing;
+      x.fillStyle = kind.classList.contains('p-name') ? '#f7f5fc' : kind.classList.contains('p-satz') ? 'rgba(218,214,232,0.9)' : hell;
+      const zeilen = kind.classList.contains('p-satz') ? zeilenUmbruch(x, kind.textContent, kind.offsetWidth + 2) : [kind.textContent];
+      let y = kind.offsetTop + (lh - fs) / 2 + fs * 0.8;
+      for (const z of zeilen) { x.fillText(z, pw / 2, y); y += lh; }
+    }
+    schriftTex[i] = texAus(c, schriftTex[i]);
+  });
+}
+function projizierenGlas(zustand, soll, f, mu, gx, gy, rr) {
+  if (soll) glasK = zustand;
+  const ps = sanft(praes), el = flaechen[glasK - 1];
+  const pw = el.offsetWidth, ph = el.offsetHeight, ruheY = gy + rr * 1.3 + 34 + ph / 2;
+  // der Fächer zielt auf den Bereich, der gerade nach vorn dreht, und streicht beim Drehen über die Seite
+  const kN = Math.round(phi / SCHRITT), aN = kN * SCHRITT - phi, idx = ((kN % ZUSTAENDE) + ZUSTAENDE) % ZUSTAENDE;
+  const aus = sanft(Math.max(0, (mu - 0.3) / 0.7));
+  const zu = Math.max(0, Math.cos(aN * 2.7));
+  glasZ.strahl = (idx ? 1 : 0) * aus * zu * zu * (0.55 + 0.45 * ps);
+  const tx = gx + Math.sin(aN * 2.4) * W * 0.75;
+  glasZ.ziel = [tx * D, (H - (ruheY - ph / 2)) * D, (pw / 2) * (0.42 + 0.14 * ps) * D];
+  glasZ.praes = ps * aus;
+  glasZ.rect = [gx * D, (H - ruheY) * D, (pw / 2) * D, (ph / 2) * D];
+  flaechen.forEach((e, i) => {
+    const aktiv = i + 1 === glasK && ps > 0.95 && mu > 0.95;
+    e.style.opacity = '0'; e.style.pointerEvents = aktiv ? 'auto' : 'none'; e.tabIndex = aktiv ? 0 : -1; e.setAttribute('aria-hidden', String(!aktiv));
+    if (aktiv) e.style.transform = `translate(${gx - pw / 2}px, ${ruheY - ph / 2}px)`;
+  });
+  strahl.style.opacity = '0';
+}
 function projizieren(zustand, ruht, f, mu, gx, gy, rr) {
   const soll = ruht && zustand > 0 && mu > 0.6 ? 1 : 0;
-  // langsam vortreten, rasch zurück, sobald der Stein sich wieder dreht
-  praes += (soll - praes) * (1 - Math.pow(soll ? 0.95 : 0.85, f));
+  // langsam verdichten, rasch zurück, sobald der Stein sich wieder dreht
+  praes += (soll - praes) * (1 - Math.pow(soll ? (gl ? 0.972 : 0.95) : 0.85, f));
+  if (gl) return projizierenGlas(zustand, soll, f, mu, gx, gy, rr);
   const aus = Math.max(0, (mu - 0.25) / 0.75);           // wie weit die Flächen schon aus dem Stein getreten sind
   const pw = vorlage.offsetWidth, ph = vorlage.offsetHeight;
   const ruheY = gy + rr * 1.35 + 30 + ph / 2;
@@ -714,6 +844,11 @@ function bild(ms) {
   gl.uniform2f(ort.uGem, gx * D, (H - gy) * D); gl.uniform1f(ort.uGemR, rr * D);
   gl.uniform2f(ort.uFeld, gx * D, (H - gy) * D); gl.uniform1f(ort.uGross, Math.max(W, H) * 0.55 * D); gl.uniform1f(ort.uDimm, sanft(menu));
   gl.uniform2f(ort.uAufl, Bw, Bh); gl.uniform1f(ort.uRad, huelle * 1.03); gl.uniform1f(ort.uT, t % 100); gl.uniform1f(ort.uFeuer, 1.4);
+  const tonG = BEREICHE[glasK - 1].ton;
+  gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, schriftTex[glasK - 1]); gl.uniform1i(ort.uSchrift, 3);
+  gl.uniform4f(ort.uScheibe, ...glasZ.rect); gl.uniform1f(ort.uPraes, glasZ.praes); gl.uniform1f(ort.uStrahl, ruhig ? glasZ.strahl * 0.6 : glasZ.strahl);
+  gl.uniform3f(ort.uZiel, ...glasZ.ziel); gl.uniform1f(ort.uFunkel, gier); gl.uniform1f(ort.uPx, D);
+  gl.uniform3f(ort.uGlasTon, tonG[0] / 255, tonG[1] / 255, tonG[2] / 255);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   nachbearbeiten(t, sz);
 
