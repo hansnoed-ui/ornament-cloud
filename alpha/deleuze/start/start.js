@@ -10,7 +10,7 @@ const OPS = [
   { nr: 'I', jahr: 1985, href: '../kristall/', film: 'kristall', name: { de: 'Kristallbild', en: 'Crystal-image', fr: 'L’image-cristal' }, wort: { de: 'Kristall', en: 'Crystal', fr: 'Cristal' }, begriff: 'l’image-cristal' },
   { nr: 'II', jahr: 1985, href: '../schichten/', film: 'schichten', name: { de: 'Schichten der Zeit', en: 'Sheets of the past', fr: 'Les nappes de passé' }, wort: { de: 'Schichten', en: 'Sheets', fr: 'Nappes' }, begriff: 'les nappes de passé' },
   { nr: 'III', jahr: 1966, href: '../dauer/', film: 'dauer', name: { de: 'Dauer', en: 'Duration', fr: 'La durée' }, wort: { de: 'Dauer', en: 'Duration', fr: 'Durée' }, begriff: 'la durée' },
-  { nr: 'IV', jahr: 1983, name: { de: 'Wahrnehmung als Auswahl', en: 'Perception as selection', fr: 'La perception comme sélection' }, wort: { de: 'Auswahl', en: 'Selection', fr: 'Perception' }, begriff: 'la perception',
+  { nr: 'IV', jahr: 1983, href: '../wahrnehmung/', film: 'wahrnehmung', name: { de: 'Wahrnehmung als Auswahl', en: 'Perception as selection', fr: 'La perception comme sélection' }, wort: { de: 'Auswahl', en: 'Selection', fr: 'Perception' }, begriff: 'la perception',
     satz: { de: 'Wahrnehmen heisst weglassen: Vom Bild bleibt, was uns angeht.', en: 'To perceive is to subtract: what remains of the image is what concerns us.', fr: 'Percevoir, c’est soustraire : de l’image ne reste que ce qui nous intéresse.' },
     quelle: 'Cinéma 1. L’image-mouvement, 1983' },
   { nr: 'V', jahr: 1981, name: { de: 'Diagramm', en: 'Diagram', fr: 'Le diagramme' }, wort: { de: 'Diagramm', en: 'Diagram', fr: 'Diagramme' }, begriff: 'le diagramme',
