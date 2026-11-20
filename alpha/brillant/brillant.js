@@ -962,10 +962,10 @@ function bild(ms) {
   const flug = AUFTAKT ? ausrollen((t - 0.9) / 1.5) : 1;
   if (!gelandet && flug >= 1) { gelandet = true; blitz = 1; document.body.classList.add('bereit'); }
   blitz *= Math.pow(0.93, f);
-  // 0.19: auf dem i ruhend dreht der Stein langsam um sich (eine Umdrehung in rund 40 s) und strahlt fein aus
+  // 0.19: auf dem i ruhend dreht der Stein langsam um sich (eine Umdrehung in rund 22 s, Christian: «ein wenig schneller») und strahlt fein aus
   const amI = A === 0 && fr < 0.02 && !gezogen && !frei.an && menu < 0.02 && gelandet;
   stern += ((amI && !ruhig ? 1 : 0) - stern) * (1 - Math.pow(amI ? 0.985 : 0.9, f));
-  kreisel += (f / 60) * 0.16 * (ruhig ? 0 : Math.max(stern, 1 - sanft(menu)));
+  kreisel += (f / 60) * 0.28 * (ruhig ? 0 : Math.max(stern, 1 - sanft(menu)));
 
   const ease = (x) => x * x * (3 - 2 * x), e = ease(fr);
   const gA = lay.saetze[A].gem, gB = lay.saetze[B].gem;
