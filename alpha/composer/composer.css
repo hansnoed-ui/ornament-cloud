@@ -410,3 +410,12 @@ input[type="range"]:not(.dk-regler):focus-visible { outline: 2px solid var(--acc
   .erzeugen .tonart-wahl { flex: 1 1 auto; min-width: 0; }
   .erzeugen .tonart-wahl #leiter { flex: 1; min-width: 0; max-width: none; }
 }
+
+/* Erzeugen: dezentere, aber deutliche Tasten (20. November 2026, Christian). Statt heller Flächen ein klarer Rand und helle Schrift;
+   die Hauptaktionen («Spuren erzeugen», «Track erzeugen») mit hellerem Rand und einem feinen blauen Punkt. */
+.erzeugen .knopf { background: var(--modul-hoch); color: var(--text); border-color: var(--rand-hell); font-weight: 500; }
+.erzeugen .knopf.voll { background: transparent; color: var(--text); border-color: color-mix(in srgb, var(--text) 70%, transparent); }
+.erzeugen .knopf.voll::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 6px rgba(143,176,255,.7); }
+.erzeugen .knopf:hover, .erzeugen .knopf.voll:hover { background: #24231f; color: var(--text); border-color: var(--text); }
+.erzeugen .knopf:active { background: #2c2b27; }
+.erzeugen .knopf:disabled, .erzeugen .knopf:disabled:hover { opacity: 0.4; background: transparent; border-color: var(--rand-hell); }

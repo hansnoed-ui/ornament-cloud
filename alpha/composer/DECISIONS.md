@@ -212,3 +212,11 @@ Christian: «Ein Knopf "bpm" und noch eine Auswahl bitte prominent bei Erzeugen�
 ## ornament.lucerne entfernt (20. November 2026)
 
 Christian: «Nimm ornament Lucerne aus dem Composer». Entfernt sind der Bereich ornament.lucerne mit Klangsammlung, Makros und Groove-Editor, der Stil «ornament.lucerne» in der Stilwahl und die Sampler-Spuren (`lucerne-ui.js` gelöscht). Alte Projekte mit Sampler-Spuren brauchen nicht mehr zu laufen (Rückwärtskompatibilität nicht nötig). Der Motor in `kern/` und seine Tests bleiben im Repo.
+
+## «Track herunterladen», dezentere Tasten, höchstens 10 Spuren je Track (20. November 2026)
+
+Christian: «Track Herunterladen würde ich hier gerade bei Spuren erzeugen, Track erzeugen», «Etwas dezentere aber deutliche Buttons», «Nicht zuviele Spuren pro Track erzeugen wegen Überlastung».
+
+- «Track herunterladen» neben «Track erzeugen», gleiche Wirkung wie «Track (WAV)» oben.
+- Tasten bei Erzeugen mit Rand statt heller Fläche; die beiden Hauptaktionen mit hellerem Rand und blauem Punkt.
+- «Track erzeugen» legt höchstens `MAX_TRACK_SPUREN = 10` Spuren an (vorher bis 15). Es fallen zuerst weitere Drums nach Kick, Snare und Hi-Hat, dann wechselnde Perkussion bis auf zwei, dann ein Naturklang; Bass und Synths bleiben. Die wechselnde Perkussion verteilt sich auf die verbliebenen Instrumente.
