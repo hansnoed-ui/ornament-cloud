@@ -151,12 +151,14 @@ vec3 spektrum(float l){
 vec3 umwelt(vec3 d, float m){
   vec2 gemUV = uGem / uAufl;
   vec3 c = seite(gemUV + d.xy * vec2(uAufl.y / uAufl.x, 1.0) * 0.16, m) * 1.25;
-  c += vec3(1.0, 0.985, 0.96) * (pow(max(dot(d, L1), 0.0), 22.0) * 2.1 + pow(max(dot(d, L2), 0.0), 34.0) * 1.5 + pow(max(dot(d, L3), 0.0), 10.0) * 0.35) * (1.0 - uMenu * 0.3);
+  c += vec3(1.0, 0.985, 0.96) * (pow(max(dot(d, L1), 0.0), 22.0) * 2.1 + pow(max(dot(d, L2), 0.0), 34.0) * 1.5 + pow(max(dot(d, L3), 0.0), 10.0) * 0.35) * (1.0 - uMenu * 0.12);
+  // 0.14 (Christian: «echter»): Kupfer aus, der Stein bleibt klar; 0.7 gäbe den Kupfer-Look von 0.13
+  const float KUPFER = 0.0;
   // im Menü ein warmes Atelier statt Fotos: Kupfer zu Violett, unten dunkel (Christian: so «sehr schön», ohne Foto)
   if (uMenu > 0.001) {
     vec3 kupfer = mix(vec3(0.98, 0.56, 0.27), vec3(0.50, 0.36, 0.92), smoothstep(-0.1, 1.1, d.x * 0.8 + d.y * 0.6));
     kupfer *= 0.35 + 0.65 * smoothstep(-0.9, 0.6, d.y);
-    c = mix(c, kupfer * 0.9 + c * 0.3, uMenu * 0.7);
+    c = mix(c, kupfer * 0.9 + c * 0.3, uMenu * KUPFER);
   }
   return c + vec3(0.045, 0.04, 0.085);
 }
@@ -295,8 +297,8 @@ vec4 stein(vec2 gq, float m){
   vec3 col = mix(innen, umwelt(rf, m), clamp(fres, 0.0, 1.0)) + glanz;
   col = mix(col, vec3(1.0, 0.99, 0.97), kante * 0.22);
   // im Menü viel Funkeln, aber nicht grell: Lichter weich zusammendrücken statt ausbrennen
-  vec3 tief = pow(max(col, 0.0), vec3(1.3));
-  col = mix(col, tief * 1.2 / (1.0 + tief * 0.4), uMenu);
+  vec3 tief = pow(max(col, 0.0), vec3(1.15));
+  col = mix(col, tief * 1.4 / (1.0 + tief * 0.38), uMenu);
   // die Tafel als Fenster: man sieht durch sie das Werk, leicht gebrochen und mit Farbsaum zum Rand
   if (uMenu > 0.001 && i0 == uTafel) {
     gWm = smoothstep(0.3, 0.7, uWerkF);
@@ -782,7 +784,7 @@ function projizierenGlas(zustand, soll, f, mu, gx, gy, rr) {
   // 0.9: keine Strahlen, keine Scheibe. Das Werk zeigt sich im Stein; darunter stehen nur Name, Satz und Verweis.
   if (soll) glasK = zustand;
   const ps = sanft(praes), el = flaechen[glasK - 1];
-  const pw = el.offsetWidth, ph = el.offsetHeight, ruheY = gy + rr * 1.18 + ph / 2 - 10;
+  const pw = el.offsetWidth, ph = el.offsetHeight, ruheY = gy + rr * 1.38 + ph / 2 + 6;
   glasZ.strahl = 0; glasZ.praes = 0;
   flaechen.forEach((e, i) => {
     const da = i + 1 === glasK ? ps * Math.max(0, (mu - 0.5) / 0.5) : 0, aktiv = da > 0.95;
