@@ -327,7 +327,7 @@ function satzspiegel(c) {
   const sw = Math.min(W - (hoch ? 28 : 80), 620), pad = hoch ? 34 : 48;
   const scheibe = { x: (W - sw) / 2, y: y - fs * 0.95 - pad, w: sw, h: pad * 2 + fs * 0.95 + satz * 6.2 + 40 };
   // offenes Menü: der Stein gross über der Mitte, die Bereiche darunter
-  const menuGem = { x: W / 2, y: Math.round(H * (hoch ? 0.2 : 0.22)), r: Math.min(W, H) * (hoch ? 0.085 : 0.06) };
+  const menuGem = { x: W / 2, y: Math.round(H * (hoch ? 0.36 : 0.34)), r: Math.min(W, H) * (hoch ? 0.15 : 0.1) };
   return { hoch, fs, gemR, satz, saetze, scheibe, menuGem };
 }
 // eine Glasscheibe ohne Kanten: weich auslaufend, was darunter liegt erscheint verschwommen und getönt
@@ -426,7 +426,10 @@ function seitenBauen() {
 }
 
 // ---------- Brillant: Ebenen und Drehung ----------
-const roh = schliffEbenen('brillant', 1 / 1.15);
+// Christian, 20.11.2026: «weniger flach». Derselbe Schliff, in der Höhe gestreckt (tiefere Krone und Pavillon),
+// und weniger geneigt gezeigt, damit man das Profil des Brillanten sieht und nicht nur seine Tafel.
+const HOEHE = 1.3;
+const roh = schliffEbenen('brillant', 1 / 1.15).map(([x, y, z, d]) => { const n = [x, y / HOEHE, z], l = Math.hypot(...n); return [n[0] / l, n[1] / l, n[2] / l, d / l]; });
 const K = roh.length;
 const ebenenW = new Float32Array(MAX_F * 3), abstandW = new Float32Array(MAX_F);
 roh.forEach(([, , , d], i) => { abstandW[i] = d; });
@@ -460,7 +463,7 @@ function hin(k) {   // kürzester Weg zum Zustand k, sonst immer vorwärts
   ziel = (jetzt + d) * SCHRITT; spur('→ ' + k);
 }
 // Langsam blättern: höchstens ein Bereich weiter als der, auf dem man gerade steht
-const weiter = (s) => { if (menuAuf) return; ziel = (Math.round(phi / SCHRITT) + s) * SCHRITT; };
+const weiter = (s) => { ziel = (Math.round(phi / SCHRITT) + s) * SCHRITT; };
 
 // Gesten gelten für die volle wie für die flache Leinwand
 const zeiger = [];
@@ -471,7 +474,6 @@ aufZeiger('pointerdown', (e) => {
   finger.set(e.pointerId, { x: e.clientX, y: e.clientY });
   try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
   tipp = { x: e.clientX, y: e.clientY, t: performance.now() };
-  if (menuAuf) return;
   gezogen = true; ziel = null; omega = 0; letzteZug = performance.now();
   zugStart = Math.round(phi / SCHRITT) * SCHRITT; phi = zugStart;
 });
@@ -507,7 +509,6 @@ aufZeiger('pointercancel', loslassen);
 let radSumme = 0, radSperre = 0;
 addEventListener('wheel', (e) => {
   e.preventDefault();
-  if (menuAuf) return;
   const jetzt = performance.now();
   if (jetzt < radSperre) { radSperre = Math.max(radSperre, jetzt + 260); return; }
   radSumme += e.deltaY + e.deltaX;
@@ -535,10 +536,43 @@ function menuSchalten(auf) {
   menuAuf = auf; spur(auf ? 'Menü auf' : 'Menü zu');
   document.body.classList.toggle('menu-auf', auf);
   nav.inert = !auf; steinKnopf.setAttribute('aria-expanded', String(auf));
-  if (auf && lay) nav.style.top = Math.round(lay.menuGem.y + lay.menuGem.r + 26) + 'px';
 }
 nav.inert = true;
 const mehr = $('mehr');
+
+// ---------- Projektion: im offenen Menü wirft der Stein den Bereich, auf den er gedreht ist, als Glasfläche hinaus ----------
+const proj = $('projektion'), strahl = $('strahl'), strahlKern = strahl.firstElementChild;
+let projK = -1, projRichtung = 1, projZuletzt = 0;
+function projizieren(A, B, fr, mu, gx, gy, rr) {
+  // in der ersten Hälfte der Drehung zieht sich die alte Fläche in den Stein zurück, in der zweiten tritt die neue heraus
+  if (Math.abs(phi - projZuletzt) > 1e-4) projRichtung = Math.sign(phi - projZuletzt) || projRichtung;
+  projZuletzt = phi;
+  const k = fr < 0.5 ? A : B;
+  let p = fr < 0.5 ? 1 - sanft(fr * 2) : sanft((fr - 0.5) * 2);
+  if (!k) p = 0;
+  p *= Math.max(0, (mu - 0.35) / 0.65);
+  if (k !== projK && k > 0) {
+    projK = k; const b = BEREICHE[k - 1], hell = b.ton.map((v) => Math.min(255, Math.round(v * 0.5 + 125)));
+    proj.href = b.href; proj.style.setProperty('--ton', b.ton.join(',')); proj.style.setProperty('--hell', `rgb(${hell.join(',')})`);
+    proj.querySelector('.p-nr').textContent = `0${k}`;
+    proj.querySelector('.p-name').textContent = b.name;
+    proj.querySelector('.p-satz').textContent = b.satz;
+  }
+  if (p < 0.004) { proj.style.opacity = '0'; proj.style.pointerEvents = 'none'; proj.tabIndex = -1; strahl.style.opacity = '0'; return; }
+  // Ruhelage: unter dem Stein, mittig; unterwegs kommt sie aus seiner Mitte, gedreht in Drehrichtung
+  const pw = proj.offsetWidth, ph = proj.offsetHeight;
+  const ruheY = gy + rr * 1.35 + 34 + ph / 2;
+  const cx = gx, cy = gy + (ruheY - gy) * p;
+  const s = 0.06 + 0.94 * p;
+  const ry = (1 - p) * -projRichtung * 62, rx = (1 - p) * 28;
+  proj.style.transform = `translate(${cx - pw / 2}px, ${cy - ph / 2}px) perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) scale(${s})`;
+  proj.style.opacity = String(Math.pow(p, 0.8));
+  proj.style.pointerEvents = p > 0.95 ? 'auto' : 'none'; proj.tabIndex = p > 0.95 ? 0 : -1;
+  // Lichtkegel vom Stein zur Oberkante der Fläche
+  const halb = (pw * s) / 2 * Math.cos(ry * Math.PI / 180), oben = cy - (ph * s) / 2, unten = cy + (ph * s) / 2;
+  strahlKern.style.clipPath = `polygon(${gx - rr * 0.35}px ${gy}px, ${gx + rr * 0.35}px ${gy}px, ${cx + halb}px ${oben + 6}px, ${cx + halb * 0.96}px ${unten}px, ${cx - halb * 0.96}px ${unten}px, ${cx - halb}px ${oben + 6}px)`;
+  strahl.style.opacity = String(p * 0.8);
+}
 
 // ---------- Auftakt ----------
 // 0 – 1.1 s: der Stein allein, gross und drehend; bis 2.5 s gleitet er an seinen Platz, das Licht legt die Schrift frei.
@@ -612,12 +646,13 @@ function bild(ms) {
   const gx = gx0 + (mg.x - gx0) * mu, gy = gy0 + (mg.y - gy0) * mu - Math.sin(Math.PI * mu) * lay.fs * 0.6, rr = rr0 + (mg.r - rr0) * mu;
   gemJetzt.x = gx; gemJetzt.y = gy; gemJetzt.r = rr;
   steinKnopf.style.transform = `translate(${gx - 28}px, ${gy - 28}px)`;
+  projizieren(A, B, fr, mu, gx, gy, rr);
   // Drehung: die Drehung um die Achse zeigt die Bereiche; im Auftakt dreht er sich frei aus
   const auftaktDreh = AUFTAKT ? (1 - ausrollen(ta)) * 5.5 : 0;
   const atem = ruhig ? 0 : 1;
   menuDreh += menu * 0.012 * f;
   const gier = -phi + auftaktDreh + atem * 0.18 * Math.sin(t * 0.45) + menuDreh;
-  const neig = 0.62 + atem * 0.08 * Math.sin(t * 0.31 + 1.0) + (1 - flug) * 0.35;
+  const neig = 0.3 + atem * 0.08 * Math.sin(t * 0.31 + 1.0) + (1 - flug) * 0.35;
   const roll = atem * 0.05 * Math.sin(t * 0.23);
   ebenenDrehen(gier, neig, roll);
 
@@ -640,7 +675,7 @@ function bild(ms) {
     anlauf.push(dtMs);
     if (anlauf.length === 24) { anlauf.sort((x, y) => x - y); if (anlauf[12] > 70) { spur('zu langsam: flach'); gl = null; gebautFuer = ''; groesse(); } }
   }
-  if (!gl) { flachZeichnen(A, B, fr, zeigen, gx, gy, rr, gier, neig, roll, blitz, menu * 0.9); if (ersterLauf) { ersterLauf = false; spur('✓ läuft'); } return; }
+  if (!gl) { flachZeichnen(A, B, fr, zeigen, gx, gy, rr, gier, neig, roll, blitz, sanft(menu)); if (ersterLauf) { ersterLauf = false; spur('✓ läuft'); } return; }
 
   // Zeichnen
   const Bw = leinwand.width, Bh = leinwand.height;
@@ -654,7 +689,7 @@ function bild(ms) {
   gl.uniform1f(ort.uF, fr); gl.uniform1f(ort.uWirbel, ruhig ? Math.min(wirbel, 0.4) : wirbel);
   gl.uniform1f(ort.uZeigen, zeigen); gl.uniform1f(ort.uBlitz, ruhig ? 0 : blitz);
   gl.uniform2f(ort.uGem, gx * D, (H - gy) * D); gl.uniform1f(ort.uGemR, rr * D);
-  gl.uniform2f(ort.uFeld, gx * D, (H - gy) * D); gl.uniform1f(ort.uGross, Math.max(W, H) * 0.55 * D); gl.uniform1f(ort.uDimm, menu * 0.9);
+  gl.uniform2f(ort.uFeld, gx * D, (H - gy) * D); gl.uniform1f(ort.uGross, Math.max(W, H) * 0.55 * D); gl.uniform1f(ort.uDimm, sanft(menu));
   gl.uniform2f(ort.uAufl, Bw, Bh); gl.uniform1f(ort.uRad, huelle * 1.03); gl.uniform1f(ort.uT, t % 100); gl.uniform1f(ort.uFeuer, 1.4);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   nachbearbeiten(t, sz);
@@ -696,7 +731,7 @@ function flachLeinwand() {
 }
 // Körper des Brillanten: Rundiste (16), Tafel (8), Kalette; Masse wie in schliffe.js (Tafel 57 %, Pavillon 40.75°)
 const KOERPER = (() => {
-  const g = [], t = [], TY = 0.3, KY = -0.86;
+  const g = [], t = [], TY = 0.3 * 1.3, KY = -0.86 * 1.3;
   for (let i = 0; i < 16; i++) { const a = (i / 16) * Math.PI * 2; g.push([Math.cos(a), 0, Math.sin(a)]); }
   for (let i = 0; i < 8; i++) { const a = ((i + 0.5) / 8) * Math.PI * 2; t.push([Math.cos(a) * 0.57, TY, Math.sin(a) * 0.57]); }
   const kal = [0, KY, 0], fl = [];
