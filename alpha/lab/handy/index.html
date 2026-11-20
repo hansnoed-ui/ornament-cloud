@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>ornament.lab · Handy</title>
+  <!-- Handy-Fassung des Labs (20. November 2026, Wunsch: «ornament.lab in ein Handyformat … Buttons zum Zuschalten von Bildschirmen wie bei
+       Multiverse oder Wischen … kein grosses Scrolling»). Wie das Lab nur per Direktlink, nicht in der Suche. -->
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#131217" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f5f4f7" media="(prefers-color-scheme: light)">
+  <meta name="description" content="ornament.lab am Handy: Material, Effekt, Varianten, Klang, Film und Galerie auf je einem Bildschirm.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ornament.cloud">
+  <meta property="og:title" content="ornament.lab · Handy">
+  <meta property="og:description" content="ornament.lab am Handy: Material, Effekt, Varianten, Klang, Film und Galerie auf je einem Bildschirm.">
+  <meta property="og:image" content="https://ornament.cloud/assets/kacheln/lab.png">
+  <link rel="stylesheet" href="../../../vendor/fonts/fonts.css">
+  <link rel="stylesheet" href="handy.css?v=1">
+</head>
+<body>
+  <div class="app">
+    <header class="kopf">
+      <a class="marke" href="../" title="zum ganzen Lab">ornament<b>.</b>lab</a>
+      <div class="ort" id="ort" aria-live="polite">1 / 6 · Material</div>
+    </header>
+
+    <section class="buehne" id="buehne" aria-label="Bühne">
+      <div class="rahmen" id="rahmen">
+        <p class="leer" id="leer">Wähle ein Bild, ein Video oder nimm das Beispielbild.</p>
+        <img id="grundbild" alt="" hidden>
+        <img id="wirkung" alt="" hidden>
+        <video id="film" playsinline loop controls hidden></video>
+        <div class="raster6" id="raster6" hidden></div>
+        <canvas class="welle" id="welle" hidden></canvas>
+        <div class="etikett" id="etikett"></div>
+      </div>
+      <div class="arbeit" id="arbeit" hidden>
+        <div class="balken"><div id="balken"></div></div>
+        <p id="arbeitText">Rechnet …</p>
+        <button class="knopf klein" id="abbrechen" type="button">Abbrechen</button>
+      </div>
+    </section>
+
+    <div class="pult" id="pult">
+      <!-- 1 Material -->
+      <section class="feld" data-name="Material" aria-label="Material">
+        <h2>Material <em>Was bringst du mit?</em></h2>
+        <div class="quellen">
+          <label class="quelle" id="q-bild" for="datei"><b>Bild</b><span>wählen</span></label>
+          <label class="quelle" id="q-video" for="videodatei"><b>Video</b><span>6 Standbilder + Ton</span></label>
+          <label class="quelle" id="q-ton" for="tondatei"><b>Ton</b><span>MP3, WAV, M4A</span></label>
+        </div>
+        <input id="datei" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif,image/bmp" hidden>
+        <input id="videodatei" type="file" accept="video/mp4,video/webm,video/quicktime,video/x-m4v,.mp4,.m4v,.mov,.webm" hidden>
+        <input id="tondatei" type="file" accept="audio/wav,audio/x-wav,audio/mpeg,audio/ogg,audio/flac,audio/mp4,audio/x-m4a,audio/aac,audio/webm,audio/opus,.wav,.mp3,.ogg,.flac,.m4a,.aac,.opus" hidden>
+        <div class="reihe">
+          <button class="knopf" id="beispiel" type="button">Beispielbild</button>
+          <label class="knopf" for="oeffnen">Projekt öffnen</label>
+          <input id="oeffnen" type="file" accept=".zip,application/zip" hidden>
+        </div>
+        <p class="hinweis" id="materialHinweis">Ohne Ton macht das Lab den Beat aus dem Bild. Alles bleibt auf dem Handy.</p>
+      </section>
+
+      <!-- 2 Effekt -->
+      <section class="feld" data-name="Effekt" aria-label="Effekt">
+        <h2>Effekt <em id="effektname">wähle einen</em></h2>
+        <div class="streifen" id="effekte"></div>
+        <div class="regler" id="anteilZeile"><label for="anteil">Anteil</label><input id="anteil" type="range" min="0" max="100" value="100"><output id="anteilWert" for="anteil">100 %</output></div>
+        <div class="reihe">
+          <button class="knopf" id="jevEffekt" type="button"><i class="jev">jev</i> schlägt vor</button>
+          <button class="knopf voll" id="anwenden" type="button" disabled>Anwenden</button>
+        </div>
+      </section>
+
+      <!-- 3 Varianten -->
+      <section class="feld" data-name="Varianten" aria-label="Varianten">
+        <h2>Varianten <em id="variantenText">sechs nebeneinander</em></h2>
+        <div class="pillen" id="mod" role="group" aria-label="Verteilung über die Varianten">
+          <button class="pille" type="button" aria-pressed="true" data-mod="sinus">Sinus</button>
+          <button class="pille" type="button" aria-pressed="false" data-mod="saege">Rampe</button>
+          <button class="pille" type="button" aria-pressed="false" data-mod="dreieck">Dreieck</button>
+          <button class="pille" type="button" aria-pressed="false" data-mod="zufall">Zufall</button>
+        </div>
+        <div class="reihe">
+          <button class="knopf" id="variantenRechnen" type="button">Sechs rechnen</button>
+          <button class="knopf voll" id="weiter" type="button" disabled>Weiterführen</button>
+        </div>
+      </section>
+
+      <!-- 4 Klang -->
+      <section class="feld" data-name="Klang" aria-label="Klang">
+        <h2>Klang <em id="klangText">Beat aus dem Bild</em></h2>
+        <div class="pillen" id="kit" role="group" aria-label="Schlagzeug"></div>
+        <div class="reihe">
+          <button class="knopf" id="beatRegel" type="button">Nach Regeln</button>
+          <button class="knopf" id="beatJev" type="button"><i class="jev">jev</i> wählt</button>
+          <button class="knopf lab" id="hoeren" type="button" disabled>Hören</button>
+        </div>
+        <audio id="audio" preload="auto" hidden></audio>
+      </section>
+
+      <!-- 5 Film -->
+      <section class="feld" data-name="Film" aria-label="Film">
+        <h2>Film <em id="filmText">30 s aus Bild und Klang</em></h2>
+        <div class="pillen" id="format" role="group" aria-label="Format">
+          <button class="pille" type="button" aria-pressed="true" data-format="material">wie Material</button>
+          <button class="pille" type="button" aria-pressed="false" data-format="9:16">9:16</button>
+          <button class="pille" type="button" aria-pressed="false" data-format="4:5">4:5</button>
+          <button class="pille" type="button" aria-pressed="false" data-format="1:1">1:1</button>
+          <button class="pille" type="button" aria-pressed="false" data-format="16:9">16:9</button>
+        </div>
+        <div class="abschnitte" id="abschnitte"></div>
+        <div class="reihe">
+          <button class="knopf" id="zusammenstellen" type="button"><i class="jev">jev</i> stellt zusammen</button>
+          <button class="knopf lab" id="rechnen" type="button" disabled>Film rechnen</button>
+          <button class="knopf" id="filmSichern" type="button" hidden>MP4</button>
+        </div>
+      </section>
+
+      <!-- 6 Galerie -->
+      <section class="feld" data-name="Galerie" aria-label="Galerie">
+        <h2>Galerie <em id="galerieText">dein Weg, Schritt für Schritt</em></h2>
+        <div class="weg" id="weg" role="list" aria-label="Nacheinander"></div>
+        <div class="reihe">
+          <button class="knopf" id="pngSichern" type="button" disabled>PNG</button>
+          <button class="knopf" id="station" type="button" disabled aria-pressed="false">In den Film</button>
+          <button class="knopf voll" id="projektSichern" type="button" disabled>Projekt sichern</button>
+        </div>
+      </section>
+    </div>
+
+    <nav class="leiste" id="leiste" aria-label="Bildschirme"></nav>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script type="importmap">
+  { "imports": { "three": "../../../vendor/three-0.185.1/three.module.min.js", "three/addons/": "../../../vendor/three-0.185.1/addons/" } }
+  </script>
+  <script type="module" src="handy.js?v=1"></script>
+</body>
+</html>

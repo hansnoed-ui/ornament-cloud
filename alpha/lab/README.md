@@ -36,6 +36,20 @@ Keine Installation und keine Abhängigkeiten, nur Node 18 oder neuer. Der Server
 
 Arbeitsmodi: **Manuell**. **jev-assistiert** zeigt Vorschläge nach offen gelegten Regeln und, sobald der Schlüssel hinterlegt ist, auf Knopfdruck Wahrscheinlichkeiten von jev live (`docs/JEV-STATUS.md`). **Experimentell** lässt das Lab selbst Operationen verbinden, in Grenzen und mit Startwert.
 
+## Am Handy: `handy/`
+
+Seit dem 20. November 2026 (Wunsch: «ornament.lab in ein Handyformat bringen … Buttons zum Zuschalten von Bildschirmen wie bei Multiverse oder Wischen … kein grosses Scrolling, ein Top-Design, ganz neu») hat das Lab eine eigene Handy-Oberfläche unter <https://ornament.cloud/alpha/lab/handy/>. Die Oberfläche ist neu, die Rechnung nicht: Sie nutzt dieselben Module (`kern/`, `operationen/`, `medien/`, `jev/`) und dasselbe Projektformat, ein dort gesichertes Projekt öffnet das ganze Lab und umgekehrt. Das Lab selbst bleibt unverändert.
+
+- **Aufbau:** oben die Bühne mit dem Bild, darunter ein Pult, das man seitwärts wischt, unten sechs Pixel-Schalter wie im Multiverse (`handy/zeichen.js`, Raster aus `assets/pixel-schalter.js`). Jeder Bildschirm passt ohne Scrollen auf ein Handy. Die Adresse merkt sich den Bildschirm (`#film`, `#galerie` …).
+- **Material:** Bild, Video (sechs Standbilder und Tonspur), Ton, Beispielbild, Projekt öffnen.
+- **Effekt:** zehn Bildoperationen (`handy/auswahl.js`) als kleine Vorschauen aus dem eigenen Bild (in einem Nebenprojekt mit 256 px gerechnet, sie kommen nicht ins Projekt); antippen rechnet die grosse Fassung (1080 px), der Anteil blendet sofort und wird beim «Anwenden» gerechnet. **jev schlägt vor:** Wahrscheinlichkeiten für sechs Effekte (`jevWahl`), der wahrscheinlichste wird gewählt, die Zahlen stehen an den Vorschauen.
+- **Varianten:** sechs nebeneinander; ein Parameter je Effekt (`ziel`) wird mit Sinus, Rampe, Dreieck oder Zufall verteilt. Antippen wählt, «Weiterführen» macht die Variante zum Ausgang.
+- **Klang:** Beat aus dem Bild nach Regeln oder von jev gewählt (`jevBeat`), 30 s, Schlagzeug wählbar; die Wellenform liegt über dem Bild.
+- **Film:** Format, **jev stellt zusammen** (`jevKomposition`, sonst Zufall), sechs Abschnitte und Zettel/ORNA zum Antippen (an/aus), dann «Film rechnen» wie die Zusammenstellung des Vorschlags für 30 s, mit Signatur. Ohne Ton macht das Lab zuerst den Beat. Das MP4 lässt sich sichern.
+- **Galerie:** im Pult der Weg nacheinander (Material → jeder Schritt), auf der Bühne die Varianten des gewählten Schritts nebeneinander; antippen zeigt gross, mit «Weiterführen». «PNG», «In den Film» (der Film entsteht dann aus diesen Bildern, Überblendung, so lang wie der Ton, höchstens 30 s) und «Projekt sichern» (`.ornalab.zip`).
+- **Gestaltung:** dunkel zuerst, Graphit mit einem Hauch Violett, das Lab-Rosa aus dem Menü als einziger Akzent, Instrument Sans und Newsreader kursiv; hell mit Papiergrau und dem dunklen Rosa.
+- Wie das Lab nur per Direktlink und `noindex`. Neu laden verliert die Arbeit (keine IndexedDB): «Projekt sichern» in der Galerie. Tests: `node --test tests/lab-handy.test.mjs`.
+
 ## Prüfen
 
 ```bash
