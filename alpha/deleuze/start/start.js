@@ -9,7 +9,7 @@ const $ = (id) => document.getElementById(id);
 const OPS = [
   { nr: 'I', jahr: 1985, href: '../kristall/', name: { de: 'Kristallbild', en: 'Crystal-image', fr: 'L’image-cristal' }, wort: { de: 'Kristall', en: 'Crystal', fr: 'Cristal' }, begriff: 'l’image-cristal' },
   { nr: 'II', jahr: 1985, href: '../schichten/', name: { de: 'Schichten der Zeit', en: 'Sheets of the past', fr: 'Les nappes de passé' }, wort: { de: 'Schichten', en: 'Sheets', fr: 'Nappes' }, begriff: 'les nappes de passé' },
-  { nr: 'III', jahr: 1966, name: { de: 'Dauer', en: 'Duration', fr: 'La durée' }, wort: { de: 'Dauer', en: 'Duration', fr: 'Durée' }, begriff: 'la durée' },
+  { nr: 'III', jahr: 1966, href: '../dauer/', name: { de: 'Dauer', en: 'Duration', fr: 'La durée' }, wort: { de: 'Dauer', en: 'Duration', fr: 'Durée' }, begriff: 'la durée' },
   { nr: 'IV', jahr: 1983, name: { de: 'Wahrnehmung als Auswahl', en: 'Perception as selection', fr: 'La perception comme sélection' }, wort: { de: 'Auswahl', en: 'Selection', fr: 'Perception' }, begriff: 'la perception' },
   { nr: 'V', jahr: 1981, name: { de: 'Diagramm', en: 'Diagram', fr: 'Le diagramme' }, wort: { de: 'Diagramm', en: 'Diagram', fr: 'Diagramme' }, begriff: 'le diagramme' },
   { nr: 'VI', jahr: 1981, name: { de: 'Figur und Fläche', en: 'Figure and field', fr: 'La Figure et l’aplat' }, wort: { de: 'Figur', en: 'Figure', fr: 'Figure' }, begriff: 'la Figure et l’aplat' },
