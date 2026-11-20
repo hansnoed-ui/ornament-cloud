@@ -27,8 +27,8 @@ import { LINIEN, LEITERN, NOTEN, linieErzeugen, kickSchritte, grundFrequenz, ton
 import { wavSpuren, abtastrateLesen, mono, tempoSchaetzen, einsaetzeFinden, wavSchreiben, rateWandeln, dehnen } from "../lab/kern/klangwerk.js";
 import * as BE from "./kern/bereiche.js";
 import * as FA from "./kern/fassungen.js";
-import { drehknoepfe } from "./drehknopf.js?v=2";
-import { handyAnsicht, bpmKnopf } from "./handy.js?v=2";
+import { drehknoepfe } from "./drehknopf.js?v=3";
+import { handyAnsicht, bpmKnopf } from "./handy.js?v=3";
 import { VORLAGEN, STIL_ZYKLEN, zyklusTakte, matraAuto } from "./kern/zyklen.js";
 import { grooveErzeugen, FAMILIEN as GROOVE_FAMILIEN, STIL_GROOVES } from "./kern/grooves.js";
 const PERK_NEU = "perkussion@0.2.0";
