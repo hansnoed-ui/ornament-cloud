@@ -7,12 +7,14 @@
 <meta name="theme-color" content="#0a0a0b">
 <title>Dauer · the deleuzian scheme</title>
 <link rel="stylesheet" href="../gemeinsam/zwischentitel.css?v=1">
-<link rel="stylesheet" href="dauer.css?v=1">
+<link rel="stylesheet" href="dauer.css?v=2">
 </head>
 <body>
 <!-- Gestaltung «Zwischentitel» (docs/GESTALTUNG.md), Aufbau wie Kristallbild und Schichten der Zeit. -->
 <main class="buehne" id="buehne">
   <canvas id="leinwand" aria-label="Dauer"></canvas>
+  <div class="daumen" id="daumen" hidden aria-hidden="true"><span class="daumen-punkt"></span><span class="daumen-text" id="daumen-text">Daumen auflegen und warten</span></div>
+  <svg class="halt" id="halt" viewBox="0 0 100 100" aria-hidden="true"><circle class="halt-grund" cx="50" cy="50" r="44"/><circle class="halt-voll" id="halt-voll" cx="50" cy="50" r="44" pathLength="1"/></svg>
 
   <!-- Schwelle: der Operator als Zwischentitel -->
   <section class="auftakt" id="auftakt">
@@ -40,7 +42,7 @@
 
   <section class="regler" id="regler" hidden>
     <nav class="zustaende zt-wahl" aria-label="Lesart" data-t-label="lesart">
-      <input type="range" id="r-lesart" class="zt" min="0" max="2" step="1" value="0" aria-label="Lesart"><button data-lesart="0" data-stelle="0">Uhr</button><button data-lesart="1" data-stelle="1">Zucker</button><button data-lesart="2" data-stelle="2">Spannung</button>
+      <input type="range" id="r-lesart" class="zt" min="0" max="2" step="1" value="1" aria-label="Lesart"><button data-lesart="0" data-stelle="0">Uhr</button><button data-lesart="1" data-stelle="1">Zucker</button><button data-lesart="2" data-stelle="2">Spannung</button>
     </nav>
     <div class="zt-regler">
       <label><span id="n-a">Takt</span><input type="range" id="r-a" min="0" max="1" step="0.01" value="0.5"></label>
@@ -81,7 +83,7 @@
     <p class="glosse-zitat" id="glosse-zitat"></p>
     <p class="glosse-quelle" id="glosse-quelle"></p>
   </aside>
-    <p class="geste" id="geste" hidden data-t="geste">Den Finger ruhen lassen: dort schmilzt die Zeit.</p>
+    <p class="geste" id="geste" hidden data-t="geste">Halten und warten: das Vergangene löst sich im Jetzt.</p>
 </main>
 
 <!-- Lektüre: eine Folge von Texttafeln, seitlich wischbar -->
@@ -137,7 +139,7 @@
 </aside>
 
 <p class="meldung" id="meldung" hidden></p>
-<script type="module" src="dauer.js?v=2"></script>
+<script type="module" src="dauer.js?v=3"></script>
 <script src="../gemeinsam/tafeln.js?v=3"></script>
 </body>
 </html>

@@ -42,6 +42,7 @@ const TEXTE = {
     teilen: 'Teilen', sichern: 'Sichern', komma: '.', 'ergebnis-hinweis': 'Gesichert im Ordner «Downloads». «Teilen» legt es direkt in die Galerie oder eine App.',
     keineAufnahme: 'Dieser Browser kann die Leinwand nicht aufnehmen. Das Standbild geht.',
     geste: 'Den Finger ruhen lassen: dort schmilzt die Zeit.',
+    daumen: 'Daumen auflegen und warten',
     familie: 'Zeit · Le bergsonisme, Kapitel 2', 'b-titel': 'Dauer',
     'b-text': [
       'Henri Bergson unterscheidet zwei Zeiten. Die eine misst die Uhr: gleiche Abschnitte, nebeneinander gereiht wie Punkte auf einer Linie. Sie ist eigentlich Raum. Die andere erleben wir: Die Momente folgen nicht aufeinander, sie durchdringen sich, wie die Töne einer Melodie, von denen jeder den vorigen in sich trägt. Diese Zeit nennt Bergson Dauer, «la durée».',
@@ -84,6 +85,7 @@ const TEXTE = {
     teilen: 'Share', sichern: 'Save', komma: '.', 'ergebnis-hinweis': 'Saved to your “Downloads” folder. “Share” sends it straight to your gallery or an app.',
     keineAufnahme: 'This browser cannot record the canvas. Stills work.',
     geste: 'Let your finger rest: time melts there.',
+    daumen: 'Rest your thumb here and wait',
     familie: 'Time · Bergsonism, chapter 2', 'b-titel': 'Duration',
     'b-text': [
       'Henri Bergson distinguishes two times. One is measured by the clock: equal sections, lined up side by side like points on a line. It is really space. The other we live: the moments do not follow one another, they interpenetrate, like the notes of a melody, each carrying the one before. Bergson calls this time duration, “la durée”.',
@@ -126,6 +128,7 @@ const TEXTE = {
     teilen: 'Partager', sichern: 'Télécharger', komma: ',', 'ergebnis-hinweis': 'Enregistré dans le dossier « Téléchargements ». « Partager » l’envoie directement dans la galerie ou une app.',
     keineAufnahme: 'Ce navigateur ne peut pas enregistrer le canevas. L’image fixe fonctionne.',
     geste: 'Laisser reposer le doigt : là, le temps fond.',
+    daumen: 'Pose le pouce ici et attends',
     familie: 'Temps · Le bergsonisme, chapitre 2', 'b-titel': 'La durée',
     'b-text': [
       'Henri Bergson distingue deux temps. L’un est mesuré par l’horloge : des sections égales, alignées côte à côte comme des points sur une ligne. C’est en vérité de l’espace. L’autre, nous le vivons : les instants ne se succèdent pas, ils se pénètrent, comme les notes d’une mélodie dont chacune porte la précédente. Ce temps, Bergson l’appelle la durée.',
@@ -158,6 +161,7 @@ function uebersetzen() {
   if (aufnehmer) $('aufnahme').textContent = t.stopp;
   document.querySelectorAll('[data-lesart]').forEach((b) => { b.textContent = t.lesarten[+b.dataset.lesart].kurz; });
   $('geste').textContent = t.lesarten[lesart].geste;
+  $('daumen-text').textContent = t.daumen;
   reglerBeschriften();
   lesartText();
   document.querySelectorAll('[data-lang]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === sprache)));
@@ -207,8 +211,8 @@ const DRUCK_SCHRITTE = leicht ? 10 : telefon ? 18 : 26;   // Druckausgleich je B
 const MAX_DPR = leicht ? 0.6 : 2;                          // fein wie der Bildschirm; ruckelt es, senkt tempoMessen die Auflösung
 const MOMENTE_MAX = 12;                                    // Ring der Momente (Uhr)
 // Mareys Linien: Ketten von Leuchtpunkten, die mit dem Fluss reisen; je Takt wird ihre Lage festgehalten
-const LINIEN_K = leicht ? 0 : telefon ? 16 : 22, LINIEN_L = 12;
-const WARTEN_SEITE = 256;
+const LINIEN_K = leicht ? 0 : telefon ? 22 : 30, LINIEN_L = 12;
+const WARTEN_SEITE = leicht ? 256 : 512;                   // fein genug für die Haare des Pinsels
 const FLUSS_SEITE = leicht ? 120 : telefon ? 200 : 260;                 // feinste Stufe des optischen Flusses                                  // Feld des Wartens
 if (leicht) spur('Leichte Fassung (ohne Grafikkarte)');
 if (!gl) { melden(TEXTE[sprache].keinGL); spur('kein WebGL2'); }
@@ -234,7 +238,7 @@ void main(){ vec3 a = texture(uAlt, v).rgb, j = texture(uJetzt, v).rgb;
   o = vec4(mix(a, j, uRate * mix(1.0, 0.5, smoothstep(0.08, 0.3, d))), 1.0); }`;
 
 // Das Warten: ein Feld, in das der ruhende Finger Dauer füllt; es klingt langsam ab, wenn der Finger geht.
-const FS_WARTEN = KOPF + `uniform sampler2D uAlt; uniform vec2 uPx; uniform vec4 uStempel[16]; uniform vec2 uStempelR[16]; uniform int uN; uniform float uAb, uSeite;
+const FS_WARTEN = KOPF + `uniform sampler2D uAlt; uniform vec2 uPx; uniform vec4 uStempel[16]; uniform vec4 uStempelR[16]; uniform int uN; uniform float uAb, uSeite, uSchritt;
 void main(){
   float w = texture(uAlt, v).r;
   float n4 = 0.25 * (texture(uAlt, v + vec2(uPx.x, 0)).r + texture(uAlt, v - vec2(uPx.x, 0)).r + texture(uAlt, v + vec2(0, uPx.y)).r + texture(uAlt, v - vec2(0, uPx.y)).r);
@@ -242,15 +246,23 @@ void main(){
   // wer lange wartet, dessen Dauer breitet sich aus wie ein Fleck in Papier: der höchste Nachbar zieht mit, leicht abfallend
   // acht Richtungen auf einem Kreis von zwei Gitterpunkten: der Fleck wächst rund, nicht als Raute
   float nm = 0.0;
-  for (int k = 0; k < 8; k++) { float a = float(k) * 0.785398; nm = max(nm, texture(uAlt, v + vec2(cos(a), sin(a)) * uPx * 2.0).r); }
+  for (int k = 0; k < 8; k++) { float a = float(k) * 0.785398; nm = max(nm, texture(uAlt, v + vec2(cos(a), sin(a)) * uPx * 2.0 * uSchritt).r); }
   w = max(w, nm - 2.0 * (0.013 + 0.03 * (1.0 - nm)));
   vec2 q = vec2(v.x * uSeite, v.y);
   for (int i = 0; i < 16; i++) {
     if (i >= uN) break;
     vec2 a = vec2(uStempel[i].x * uSeite, uStempel[i].y), b = vec2(uStempel[i].z * uSeite, uStempel[i].w);
     vec2 ab = b - a; float h = clamp(dot(q - a, ab) / max(dot(ab, ab), 1e-8), 0.0, 1.0);
-    float r = length(q - a - ab * h) / uStempelR[i].x;
-    float f = max(0.0, 1.0 - r * r); w += uStempelR[i].y * f * f;
+    // ein Pinselzug: die Breite läuft von r0 nach r1 (Spitze am Anfang und am Ende), die Haare ziehen feine Bahnen
+    vec2 e = q - a - ab * h; float rr = mix(uStempelR[i].x, uStempelR[i].y, h);
+    float r = length(e) / max(rr, 1e-4);
+    float f = max(0.0, 1.0 - r * r); f *= f;
+    if (uStempelR[i].w >= 0.0) {
+      vec2 nrm = normalize(vec2(-ab.y, ab.x) + 1e-6);
+      float quer = dot(e, nrm) / max(rr, 1e-4);
+      f *= 0.6 + 0.4 * (0.5 + 0.5 * sin(quer * 19.0 + uStempelR[i].w)) * (0.7 + 0.3 * sin(quer * 47.0 + uStempelR[i].w * 2.3));
+    }
+    w += uStempelR[i].z * f;
   }
   w = clamp(w - uAb * (0.3 + w), 0.0, 1.0);
   o = vec4(w, 0, 0, 1);
@@ -462,26 +474,35 @@ void main(){
   // Loslassen: die Dauer zerspringt in Scherben, jede zeigt wieder einen einzelnen, grauen Moment;
   // dann erlischt eine Scherbe nach der anderen, und die Uhr zählt weiter
   if (uBruch > 0.0) {
-    vec2 z = vec2(v.x * uSeite, v.y) * 11.0, zi = floor(z);
+    const float DICHTE = 24.0;
+    vec2 z = vec2(v.x * uSeite, v.y) * DICHTE, zi = floor(z);
     float d1 = 9.0, d2 = 9.0; vec2 id = vec2(0), mz = vec2(0);
     for (int y = -1; y <= 1; y++) for (int x = -1; x <= 1; x++) {
       vec2 n = zi + vec2(x, y), pz = n + 0.15 + 0.7 * h22(n);
       float dd = length(z - pz);
       if (dd < d1) { d2 = d1; d1 = dd; id = n; mz = pz; } else if (dd < d2) d2 = dd;
     }
-    vec2 mitte = vec2(mz.x / 11.0 / uSeite, mz.y / 11.0);
+    vec2 mitte = vec2(mz.x / DICHTE / uSeite, mz.y / DICHTE);
     float wz = texture(uW, mitte).r;
     float r = h21(id);
-    float da = smoothstep(0.02, 0.12, wz) * step(uBruchT, 0.35 + 0.6 * r);
+    // jede Scherbe erlischt für sich, weich in einem Augenblick
+    float ende = 0.3 + 0.65 * r;
+    float da = smoothstep(0.02, 0.12, wz) * (1.0 - smoothstep(ende - 0.06, ende, uBruchT));
+    float rand = d2 - d1, rb = fwidth(rand);
     if (da > 0.0) {
-      // die Scherbe rückt ein wenig ab und zeigt einen Moment aus dem Ring
-      vec2 weg = (h22(id + 7.0) - 0.5) * 0.012 * (0.4 + uBruchT);
+      // die Scherbe rückt kaum merklich ab, bricht das Licht ein wenig und zeigt einen Moment aus dem Ring
+      vec2 weg = (h22(id + 7.0) - 0.5) * 0.005 * (0.5 + uBruchT);
       float lage = mod(uKopf - floor(r * uM) + uN, uN);
-      vec3 mc = textureLod(uRing, vec3(v + weg, lage), 0.0).rgb;
-      vec3 scherbe = silber(mc) * (0.62 + 0.3 * h21(id + 3.0));
-      float kante = 1.0 - smoothstep(0.0, 0.035, d2 - d1);
-      scherbe = mix(scherbe, vec3(1.0, 0.97, 0.92), kante * 0.85);
-      c = mix(c, scherbe, da * uBruch);
+      vec2 fa = (h22(id + 11.0) - 0.5) * 0.0025;
+      vec3 mc = vec3(textureLod(uRing, vec3(v + weg - fa, lage), 0.0).r, textureLod(uRing, vec3(v + weg, lage), 0.0).g, textureLod(uRing, vec3(v + weg + fa, lage), 0.0).b);
+      vec3 scherbe = silber(mc) * (0.86 + 0.14 * h21(id + 3.0));
+      // ein Schimmer über die Fläche, je Scherbe anders geneigt, wie Licht auf Glas
+      vec2 neig = normalize(h22(id + 5.0) - 0.5);
+      scherbe += vec3(0.95, 0.93, 0.9) * 0.07 * smoothstep(-0.4, 0.6, dot(z - mz, neig));
+      // die Bruchkante: eine Haarlinie
+      float kante = 1.0 - smoothstep(0.0, rb * 1.2, rand);
+      scherbe = mix(scherbe, vec3(1.0, 0.98, 0.94), kante * 0.6);
+      c = mix(c, scherbe, da * uBruch * 0.9);
     }
   }
   // ausserhalb des Bildes (Saalschwarz) bleibt es schwarz
@@ -559,12 +580,13 @@ void main(){
     r *= 0.45;
   } else {
     int n = uK * uP; m = id / n; int q = id % n, c = q / uP, i = 1 + (q % uP) * 3;
-    a = holen(m, c, i); b = a; gut = step(0.35, a.w); r *= 1.9;
+    a = holen(m, c, i); b = a; gut = step(0.35, a.w) * 0.8; r *= 1.5;
   }
   gut *= step(float(m), uM);
   float alter = float(m) / max(uM, 1.0);
   float wz = texture(uW, 0.5 * (a.xy + b.xy)).r;
-  vA = gut * mix(1.0, 0.14, pow(alter, 1.3)) * (1.0 - smoothstep(0.03, 0.45, wz)) * (uArt == 1 ? 0.55 : 1.0);
+  // neue Ketten treten über drei Takte ein, statt auf einen Schlag zu erscheinen
+  vA = gut * smoothstep(0.0, 3.0, a.z + 0.5) * 0.85 * mix(1.0, 0.12, pow(alter, 1.2)) * (1.0 - smoothstep(0.03, 0.45, wz)) * (uArt == 1 ? 0.55 : 1.0);
   vec2 p0 = a.xy * uRes, p1 = b.xy * uRes, d = p1 - p0; float len = length(d);
   vec2 t = len > 1e-3 ? d / len : vec2(1, 0), nn = vec2(-t.y, t.x);
   vec2 ec = vec2(float(gl_VertexID & 1) * 2.0 - 1.0, float(gl_VertexID >> 1) * 2.0 - 1.0);
@@ -972,7 +994,7 @@ function scharfFangen() {
 // ---------- Regler und Lesarten ----------
 // Je Lesart drei Regler mit eigenem Sinn; die Werte bleiben je Lesart erhalten.
 const WERTE = [[0.45, 0.6, 0.5], [0.55, 0.5, 0.6], [0.45, 0.5, 0.45]];
-let lesart = 0;
+let lesart = 1;
 const regler = ['r-a', 'r-b', 'r-c'];
 function reglerBeschriften() {
   const t = TEXTE[sprache];
@@ -1007,12 +1029,13 @@ document.querySelectorAll('[data-lesart]').forEach((b) => b.addEventListener('cl
 $('r-lesart').addEventListener('input', (e) => { const nr = +e.target.value; if (nr !== lesart) lesartWaehlen(nr); });
 
 // ---------- Das Warten: Stempel des Fingers ----------
-const stempel = new Float32Array(16 * 4), stempelR = new Float32Array(16 * 2); let stempelN = 0;
-const ruehr = new Float32Array(8 * 4); let ruehrN = 0;
+const stempel = new Float32Array(16 * 4), stempelR = new Float32Array(16 * 4); let stempelN = 0;
+const ruehr = new Float32Array(8 * 4); let ruehrN = 0, ruehrRadius = 0.1;
 const pinselRadius = () => 0.12 * (innerWidth < innerHeight ? 1 : 1.3);   // in Bildhöhen
-function stempeln(x, y, menge, x0 = x, y0 = y, r = pinselRadius()) {
-  if (stempelN < 16) { stempel.set([x0, y0, x, y], stempelN * 4); stempelR.set([r, menge], stempelN * 2); stempelN++; }
-  else { const k = 15 * 4; stempel[k + 2] = x; stempel[k + 3] = y; stempelR[15 * 2 + 1] = Math.max(stempelR[15 * 2 + 1], menge); }
+// r0, r1: Breite am Anfang und am Ende des Stücks; haar ≥ 0 zeichnet die Bahnen der Pinselhaare (Phase je Zug)
+function stempeln(x, y, menge, x0 = x, y0 = y, r = pinselRadius(), r0 = r, haar = -1) {
+  if (stempelN < 16) { stempel.set([x0, y0, x, y], stempelN * 4); stempelR.set([r0, r, menge, haar], stempelN * 4); stempelN++; }
+  else { const k = 15 * 4; stempel[k + 2] = x; stempel[k + 3] = y; stempelR[k + 1] = r; stempelR[k + 2] = Math.max(stempelR[k + 2], menge); }
 }
 function ruehren(x, y, vx, vy) {
   if (ruehrN < 8) { ruehr.set([x, y, vx, vy], ruehrN * 4); ruehrN++; }
@@ -1032,14 +1055,24 @@ function geisterWarten(t, dt) {
   if (lesart === 1) ruehren(x, y, Math.cos(u * 6.0 + z) * 260, Math.sin(u * 5.0 + z) * 260);
 }
 
+// ---------- Daumen: wo auflegen, und ein Ring, der sich füllt, so lange gewartet wird ----------
+let daumenGelernt = false, haltZeit = 0;
+function haltZeigen(x, y) { const h = $('halt'); h.style.left = x + 'px'; h.style.top = y + 'px'; h.classList.add('da'); }
+function haltBild(dt) {
+  if (finger.size) haltZeit += dt; else haltZeit = 0;
+  $('halt-voll').style.strokeDashoffset = String(1 - Math.min(1, wartenMenge * 1.15));
+  if (!daumenGelernt && haltZeit > 1.2) { daumenGelernt = true; $('daumen').classList.add('weg'); setTimeout(() => { $('daumen').hidden = true; }, 800); }
+}
+
 // ---------- Gesten ----------
 // In allen Lesarten: der ruhende Finger füllt Dauer ein (halten = warten), ziehen verteilt sie dünner.
 // Im Zucker rührt das Ziehen zusätzlich die Strömung um.
 const finger = new Map();
 const aufLeinwand = (cx, cy) => ({ x: cx / innerWidth, y: 1 - cy / innerHeight });
 leinwand.addEventListener('pointerdown', (e) => {
-  finger.set(e.pointerId, { x: e.clientX, y: e.clientY, t: performance.now(), vx: 0, vy: 0, bewegt: 0 });
+  finger.set(e.pointerId, { x: e.clientX, y: e.clientY, t: performance.now(), vx: 0, vy: 0, bewegt: 0, k: 1, r: 0, haar: Math.random() * 60 });
   leinwand.setPointerCapture(e.pointerId); $('geste').classList.add('weg');
+  haltZeigen(e.clientX, e.clientY);
   geisterStart = -1;
   glosse('warten');
 });
@@ -1048,17 +1081,34 @@ leinwand.addEventListener('pointermove', (e) => {
   const jetzt = performance.now(), dt = Math.max(8, jetzt - f.t) / 1000;
   const dx = e.clientX - f.x, dy = e.clientY - f.y;
   const a = aufLeinwand(f.x, f.y), p = aufLeinwand(e.clientX, e.clientY);
-  // entlang des Wegs: wer zieht, wartet weniger an jeder Stelle
-  stempeln(p.x, p.y, 0.012, a.x, a.y);
+  // entlang des Wegs wie ein Pinsel: langsam breit und satt, schnell schmal; der Zug beginnt spitz
+  const tempo = Math.hypot(dx, dy) / dt;
+  f.k += (Math.max(0.16, Math.min(1, 1.12 - tempo / 1500)) - f.k) * 0.3;
+  const spitze = Math.min(1, f.bewegt / 70), R = pinselRadius() * 0.8;
+  const r1 = R * f.k * (0.15 + 0.85 * spitze), r0 = f.r || r1 * 0.5;
+  stempeln(p.x, p.y, 0.09 + 0.07 * (1 - f.k), a.x, a.y, r1, r0, f.haar);
+  f.r = r1;
   if (lesart === 1) {
     const s = STROM_SEITE / innerHeight;   // Bildpunkte je Sekunde → Gitterpunkte je Sekunde
     ruehren(p.x, p.y, dx / dt * s * 0.55, -dy / dt * s * 0.55);
+    ruehrRadius = 0.035 + 0.075 * f.k;
   }
   f.vx = dx / dt; f.vy = dy / dt; f.bewegt += Math.hypot(dx, dy);
   f.x = e.clientX; f.y = e.clientY; f.t = jetzt;
+  haltZeigen(e.clientX, e.clientY);
 });
 const loslassen = (e) => {
+  const f = finger.get(e.pointerId);
+  // wer im Zug loslässt, lässt eine Spitze stehen: der Pinsel hebt sich in Richtung der Bewegung ab
+  if (f && f.r > 0 && performance.now() - f.t < 80) {
+    const v = Math.hypot(f.vx, f.vy);
+    if (v > 120) {
+      const l = Math.min(90, v * 0.05), a = aufLeinwand(f.x, f.y), b = aufLeinwand(f.x + f.vx / v * l, f.y + f.vy / v * l);
+      stempeln(b.x, b.y, 0.12, a.x, a.y, f.r * 0.08, f.r, f.haar);
+    }
+  }
   finger.delete(e.pointerId);
+  if (finger.size === 0) $('halt').classList.remove('da');
   // in der Uhr zerspringt die Dauer, wenn der letzte Finger geht
   if (lesart === 0 && finger.size === 0 && wartenMenge > 0.06) bruchAusloesen();
 };
@@ -1118,6 +1168,7 @@ function starten() {
   $('auftakt').hidden = true; $('kopf').hidden = false; $('regler').hidden = false;
   $('geste').textContent = TEXTE[sprache].lesarten[lesart].geste; $('geste').hidden = false; $('geste').classList.remove('weg');
   setTimeout(() => $('geste').classList.add('weg'), 5500);
+  if (!VORSPANN && !daumenGelernt) { $('daumen').hidden = false; $('daumen').classList.remove('weg'); }
   groesse();
   if (VORSPANN && geisterStart < 0) geisterStart = performance.now() / 1000 + 1.6;
   if (!laeuft && gl && P.uhr) { laeuft = true; requestAnimationFrame(bild); }
@@ -1181,7 +1232,7 @@ function bild(ms) {
     const Z = ziele.punkte;
     rechne(P.punkte, Z.schreiben(), { uZ: Z.lesen(), uFl: fluss, uJetzt: jetzt, uGrund: G.lesen() }, (u) => {
       gl.uniform1f(u.uNeu, neuesBild ? 1 : 0); gl.uniform1f(u.uTakt, taktJetzt ? 1 : 0); gl.uniform1f(u.uTaktNr, taktNr % 997);
-      gl.uniform1f(u.uLaenge, 0.2); gl.uniform1f(u.uSeite, innerWidth / innerHeight); gl.uniform1f(u.uStart, punkteNeu ? 1 : 0);
+      gl.uniform1f(u.uLaenge, 0.13); gl.uniform1f(u.uSeite, innerWidth / innerHeight); gl.uniform1f(u.uStart, punkteNeu ? 1 : 0);
     });
     Z.tauschen(); punkteNeu = false;
     if (taktJetzt) {
@@ -1204,11 +1255,11 @@ function bild(ms) {
   const bruchT = (t - bruchStart) / 1.3, bruch = lesart === 0 && bruchT >= 0 && bruchT < 1 ? 1 : 0;
   const halten = bruch ? 1.0 : lesart === 0 ? 0.6 + 6 * WERTE[0][2] : lesart === 1 ? 1.5 + 14 * WERTE[1][0] : 3;
   rechne(P.warten, Wp.schreiben(), { uAlt: Wp.lesen() }, (u) => {
-    gl.uniform2f(u.uPx, 1 / wb, 1 / wh); gl.uniform4fv(u.uStempel, stempel); gl.uniform2fv(u.uStempelR, stempelR);
-    gl.uniform1i(u.uN, stempelN); gl.uniform1f(u.uAb, dt / halten); gl.uniform1f(u.uSeite, innerWidth / innerHeight);
+    gl.uniform2f(u.uPx, 1 / wb, 1 / wh); gl.uniform4fv(u.uStempel, stempel); gl.uniform4fv(u.uStempelR, stempelR);
+    gl.uniform1i(u.uN, stempelN); gl.uniform1f(u.uAb, dt / halten); gl.uniform1f(u.uSchritt, WARTEN_SEITE / 256); gl.uniform1f(u.uSeite, innerWidth / innerHeight);
   });
   Wp.tauschen();
-  let summe = 0; for (let i = 0; i < stempelN; i++) summe += stempelR[i * 2 + 1];
+  let summe = 0; for (let i = 0; i < stempelN; i++) summe += stempelR[i * 4 + 2];
   wartenMenge = Math.max(0, Math.min(1, wartenMenge + summe * 0.6 - dt / halten * (0.3 + wartenMenge)));
   stempelN = 0;
   const W = Wp.lesen();
@@ -1220,7 +1271,7 @@ function bild(ms) {
     rechne(P.vAdvekt, V.schreiben(), { uV: V.lesen(), uFl: fluss, uW: W }, (u) => {
       gl.uniform2f(u.uPx, pxS[0], pxS[1]); gl.uniform1f(u.uDt, dt);
       gl.uniform1f(u.uHalt, 1 / (1 + (0.15 + 0.9 * (1 - wirbel)) * dt)); gl.uniform1f(u.uBewegt, 0.6 * (0.3 + wirbel)); gl.uniform1f(u.uSeite, innerWidth / innerHeight);
-      gl.uniform4fv(u.uRuehr, ruehr); gl.uniform1i(u.uRN, ruehrN); gl.uniform1f(u.uRuehrR, 0.1);
+      gl.uniform4fv(u.uRuehr, ruehr); gl.uniform1i(u.uRN, ruehrN); gl.uniform1f(u.uRuehrR, ruehrRadius);
     });
     V.tauschen();
     rechne(P.curl, ziele.curl, { uV: V.lesen() }, (u) => gl.uniform2f(u.uPx, pxS[0], pxS[1]));
@@ -1288,7 +1339,7 @@ function bild(ms) {
     if (linienAn) linienZeichnen(sz, W);
   } else if (lesart === 1) {
     rechne(P.zucker, sz, { uScharf: scharfTex, uD: D.lesen(), uW: W, uV: V.lesen() }, (u) => {
-      gl.uniform2f(u.uPxD, pxA[0], pxA[1]); gl.uniform2f(u.uPxW, 1 / wb, 1 / wh); gl.uniform1f(u.uSchlieren, 0.2 + 1.6 * WERTE[1][2]);
+      gl.uniform2f(u.uPxD, pxA[0], pxA[1]); gl.uniform2f(u.uPxW, WARTEN_SEITE / 256 / wb, WARTEN_SEITE / 256 / wh); gl.uniform1f(u.uSchlieren, 0.2 + 1.6 * WERTE[1][2]);
       gl.uniform1f(u.uSeite, innerWidth / innerHeight); gl.uniform4f(u.uRahmen, ...rahmenGL);
     });
   } else {
@@ -1297,6 +1348,7 @@ function bild(ms) {
     });
   }
   nachbearbeiten(t);
+  haltBild(dt);
   klangBild({ lesart, warten: wartenMenge, finger: finger.size, werte: WERTE[lesart], takt });
   if (standbildWunsch) { standbildWunsch = false; leinwand.toBlob((b) => b && zeigen(b, 'dauer-' + zeitstempel() + '.png')); }
   if (ersterLauf && gefuellt) { ersterLauf = false; spur('✓ läuft'); }
@@ -1315,9 +1367,9 @@ function linienZeichnen(sz, W) {
   gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
   gl.uniform3f(p.u.uFarbe, 0.98, 0.96, 0.9);
   // die Bahnen (uArt 1) bleiben aus: mit ihnen wurde aus dem Fächer ein Gitter
-  gl.uniform1f(p.u.uBreite, 1.5 * dpr); gl.uniform1i(p.u.uArt, 0); gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, (M + 1) * LINIEN_K * (LINIEN_L - 1));
+  gl.uniform1f(p.u.uBreite, 0.75 * dpr); gl.uniform1i(p.u.uArt, 0); gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, (M + 1) * LINIEN_K * (LINIEN_L - 1));
   gl.uniform3f(p.u.uFarbe, 1.0, 0.9, 0.82);
-  gl.uniform1f(p.u.uBreite, 1.3 * dpr); gl.uniform1i(p.u.uArt, 2); gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, (M + 1) * LINIEN_K * PK);
+  gl.uniform1f(p.u.uBreite, 0.8 * dpr); gl.uniform1i(p.u.uArt, 2); gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, (M + 1) * LINIEN_K * PK);
   gl.disable(gl.BLEND);
 }
 function nachbearbeiten(t) {
@@ -1452,8 +1504,8 @@ if (Q.has('spur')) {
   zeige(); setInterval(zeige, 1000);
 }
 
-// jeder Besuch beginnt mit der Uhr
-lesartWaehlen(0, true);
+// jeder Besuch beginnt mit dem Zucker (Christian, 20.11.2026)
+lesartWaehlen(1, true);
 uebersetzen();
 // Direktstart für Tests und Vorführungen: ?beispiel, ?lesart=0|1|2
 if (Q.has('lesart')) lesartWaehlen(Math.max(0, Math.min(2, +Q.get('lesart') || 0)), true);
