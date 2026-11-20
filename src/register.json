@@ -140,6 +140,15 @@
    "kurz": "Prototyp: die Bewegung als graue Momente wie bei Marey; wo der Finger wartet, schmelzen sie zur Dauer."
   },
   {
+   "id": "deleuze-wahrnehmung",
+   "name": "Wahrnehmung als Auswahl (the deleuzian scheme)",
+   "tuer": "spielen-denken",
+   "art": "App",
+   "status": "direktlink",
+   "adresse": "alpha/deleuze/wahrnehmung/",
+   "kurz": "Prototyp: das Bild zuerst durchscheinend im Licht; wo der Daumen hält, bleibt nur, was interessiert. Dazu Wasser und Körner."
+  },
+  {
    "id": "deleuze-start",
    "name": "the deleuzian scheme (Masterseite)",
    "tuer": "spielen-denken",
