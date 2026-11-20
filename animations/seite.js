@@ -1,13 +1,13 @@
 // Animationen – die Seite: Mischpult (das eigene Bild, Grund, drei Ebenen, Schalter, Sichern) mit den gesicherten Werken darunter
 // (gestreutes Raster, beim Darüberfahren lebendig, Klick lädt ins Mischpult) und Info. Ein Motor zeichnet für alles; die sichtbare
 // Leinwand übernimmt sein Bild. Seit 4. November 2026 ohne Reel, Beispielbilder und vorgefertigte Werke.
-import { motorErstellen, videoErstellen, DAUER, LAENGEN, MODI } from "./motor.js?v=37";
-import "./thema.js?v=37";
-import { EFFEKTE, EFFEKT_IDS, stufe, wertVon } from "./effekte.js?v=37";
-import { zufall, EIGEN } from "./rezepte.js?v=37";
-import { kurz, lang } from "./link.js?v=37";
-import { t, herkunft, fehlerText, SPRACHE, GEBIET } from "./sprache.js?v=37";
-import { VIDEO_AN, VIDEO_PX, VIDEO_PX_SPARSAM, istVideo, videoZerlegen } from "./video.js?v=37";
+import { motorErstellen, videoErstellen, DAUER, LAENGEN, MODI } from "./motor.js?v=38";
+import "./thema.js?v=38";
+import { EFFEKTE, EFFEKT_IDS, stufe, wertVon } from "./effekte.js?v=38";
+import { zufall, EIGEN } from "./rezepte.js?v=38";
+import { kurz, lang } from "./link.js?v=38";
+import { t, herkunft, fehlerText, SPRACHE, GEBIET } from "./sprache.js?v=38";
+import { VIDEO_AN, VIDEO_PX, VIDEO_PX_SPARSAM, istVideo, videoZerlegen } from "./video.js?v=38";
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, attr = {}, ...kinder) => {
@@ -59,7 +59,8 @@ const S = {
   bildBlob: null, bildName: "",   // das eigene Bild als JPEG (für «Werk sichern»), bleibt im Browser
   werk: null,   // das zuletzt ins Mischpult geladene gesicherte Werk
   werke: [], eigene: {}, dienst: false,   // alle gesicherten Werke; die eigenen mit ihrem Schlüssel (zum Löschen); ob werke.php antwortet
-  reiter: "e0",   // Handy: welcher Teil des Pults zu sehen ist (e0 … e2 eine Ebene, bild, sichern)
+  reiter: "e0",   // Handy: welcher Teil des Pults zu sehen ist (e0 … e2 eine Ebene, mehr: Bild, Format, Sichern)
+  reglerWahl: [0, 0, 0],   // Handy: welcher Regler je Ebene auf der Bühne liegt
 };
 const handy = matchMedia("(max-width: 720px)");
 try { S.eigene = JSON.parse(gemerkt("animationen.eigene") || "{}"); } catch { S.eigene = {}; }
@@ -222,6 +223,7 @@ function pultAufbauen() {
     onclick: () => bewegung({ dauer: d }) })));
   $("pult-grund").replaceChildren(...["schwarz", "weiss"].map((g) => el("button", { type: "button", "aria-pressed": String(m.grund === g), text: g === "schwarz" ? t("Schwarz") : t("Weiss"),
     onclick: () => { m.grund = g; pultAufbauen(); adresse(); } })));
+  $("pult-auflage").hidden = true;
   $("pult-ebenen").replaceChildren(...m.ebenen.map((e, i) => ebeneFeld(e, i)));
   reiterAufbauen();
   $("pult-sichern").disabled = !hatBild() || !S.dienst;
@@ -243,7 +245,8 @@ function ebeneFeld(e, i) {
   const effekt = el("select", { "aria-label": t("Effekt der Ebene {n}", { n: i + 1 }), onchange: (ev) => { e.effekt = ev.target.value; e.werte = []; e.aus = false; neu(); } },
     el("option", { value: "", text: t("— keine —") }), ...EFFEKT_IDS.map((id) => el("option", { value: id, text: t(EFFEKTE[id].name) })));
   effekt.value = e.effekt || "";
-  fs.append(effekt, effektLeiste(e, i, neu));
+  fs.append(effekt);
+  if (S.reiter === `e${i}`) { $("pult-effekte").replaceChildren(effektLeiste(e, i, neu)); auflage(e, i, def, neu); }
   if (!def) return fs;
   const regeln = el("div", { class: "regeln" });
   const quelle = el("select", { "aria-label": t("Quelle"), onchange: (ev) => { e.quelle = ev.target.value; adresse(); } },
@@ -265,7 +268,7 @@ function ebeneFeld(e, i) {
 let leistenStand = [], leistenMix = null;   // wie weit jede Leiste gewischt ist, damit sie beim Neuaufbau nicht an den Anfang springt
 function effektLeiste(e, i, neu) {
   if (leistenMix !== S.mix) { leistenMix = S.mix; leistenStand = []; }   // neue Mischung: der gewählte Effekt steht sichtbar in der Mitte
-  const waehlen = (id) => { if (e.effekt === id) return; e.effekt = id; e.werte = []; e.aus = false; leistenStand[i] = leiste.scrollLeft; neu(); };
+  const waehlen = (id) => { if (e.effekt === id) return; e.effekt = id; e.werte = []; e.aus = false; S.reglerWahl[i] = 0; leistenStand[i] = leiste.scrollLeft; neu(); };
   const leiste = el("div", { class: "wahl effekte", role: "group", "aria-label": t("Effekt der Ebene {n}", { n: i + 1 }) },
     el("button", { type: "button", class: "keiner", "aria-pressed": String(!e.effekt), text: t("— keine —"), onclick: () => waehlen("") }),
     ...EFFEKT_IDS.map((id) => el("button", { type: "button", "aria-pressed": String(e.effekt === id), text: t(EFFEKTE[id].name), onclick: () => waehlen(id) })));
@@ -277,18 +280,71 @@ function effektLeiste(e, i, neu) {
   });
   return leiste;
 }
-// Handy: Reiter über dem Pult (Ebene 1 · 2 · 3 mit ihrem Effekt, Bild, Sichern); sie kleben mit der Bühne oben
+// Handy (Runde 2, 20. November 2026, Christian: «Könnte auch ein Teil … über dem bild liegen, damit man das bild sieht, wenn man die regler
+// bedient? Regler mit menu auswählen?»): ein Regler liegt halbdurchsichtig unten auf der Bühne, das Menü daneben wählt, welcher.
+// Im Menü stehen alle Regler der Ebene, dazu Mischmodus und Quelle; Wahlen mit Stufen zeigen ihre Knöpfe statt der Bahn
+function auflage(e, i, def, neu) {
+  const box = $("pult-auflage");
+  if (!def || !hatBild()) { box.hidden = true; box.replaceChildren(); return; }
+  const regler = [
+    { name: t("Deckkraft"), wert: () => e.deckkraft ?? 1, setzen: (v) => { e.deckkraft = v; } },
+    ...def.regler.map((r, k) => {
+      const setzen = (v) => { const alt = def.regler.map((_, j) => wertVon(def, e.werte, j)); e.werte = alt; e.werte[k] = v; };
+      const wert = () => wertVon(def, e.werte, k);
+      return r.stufen ? { name: t(r.name), stufen: r.stufen.map((text, j) => ({ text: t(text), an: () => stufe(r, wert()) === j, setzen: () => setzen(j / (r.stufen.length - 1)) })) }
+        : { name: t(r.name), wert, setzen };
+    }),
+    { name: t("Mischmodus"), stufen: Object.keys(MODI).map((k) => ({ text: MODUS_NAMEN[k], an: () => (e.modus || "normal") === k, setzen: () => { e.modus = k; } })) },
+    { name: t("Platz"), stufen: S.mix.ebenen.map((_, j) => ({ text: t("Ebene {n}", { n: j + 1 }), an: () => i === j, setzen: () => {
+      if (j === i) return;
+      const [x] = S.mix.ebenen.splice(i, 1); S.mix.ebenen.splice(j, 0, x);
+      S.reiter = `e${j}`; S.reglerWahl[j] = S.reglerWahl[i]; neu();
+    } })) },
+    { name: t("Quelle"), stufen: [["bild", t("Bild")], ["unten", t("Ebenen darunter")]].map(([k, text]) => ({ text, an: () => (e.quelle || "bild") === k, setzen: () => { e.quelle = k; } })) },
+  ];
+  const k = Math.min(S.reglerWahl[i] ?? 0, regler.length - 1), rg = regler[k];
+  const menue = el("select", { "aria-label": t("Regler wählen"), onchange: (ev) => { S.reglerWahl[i] = +ev.target.value; auflage(e, i, def, neu); } },
+    ...regler.map((x, j) => el("option", { value: String(j), text: x.name })));
+  menue.value = String(k);
+  const sicht = el("button", { type: "button", class: "auflage-an", "aria-pressed": String(!e.aus), "aria-label": t("Ebene {n} an", { n: i + 1 }), text: e.aus ? t("aus") : t("an"), onclick: () => { e.aus = !e.aus; neu(); } });
+  const kopf = el("div", { class: "auflage-kopf" }, el("span", { class: "auflage-menue" }, menue), sicht);
+  if (rg.stufen) {
+    const knoepfe = rg.stufen.map((st) => el("button", { type: "button", "aria-pressed": String(st.an()), text: st.text,
+      onclick: () => { st.setzen(); knoepfe.forEach((b, j) => b.setAttribute("aria-pressed", String(rg.stufen[j].an()))); adresse(); } }));
+    box.replaceChildren(kopf, el("div", { class: "auflage-stufen" }, ...knoepfe));
+  } else {
+    const aus = el("output", { text: Math.round(rg.wert() * 100) });
+    const ein = el("input", { type: "range", min: "0", max: "1", step: "0.01", value: String(rg.wert()), "aria-label": rg.name });
+    ein.addEventListener("input", () => { const v = +ein.value; aus.textContent = Math.round(v * 100); rg.setzen(v); });
+    ein.addEventListener("change", adresse);
+    kopf.insertBefore(aus, sicht);
+    box.replaceChildren(kopf, ein);
+  }
+  box.hidden = false;
+  auflageLage();
+}
+// liegt der Regler auf der Bühne oder darunter? Darunter, sobald das Format (1:1, 16:9, 4:5 auf hohen Handys) unter der Bühne Platz lässt
+function auflageLage() {
+  const platz = $("buehne-platz"), box = $("pult-auflage");
+  if (!handy.matches || box.hidden) { platz.classList.remove("unter"); return; }
+  const frei = platz.querySelector(".mass").getBoundingClientRect().height - $("buehne").getBoundingClientRect().height;
+  platz.classList.toggle("unter", frei >= box.getBoundingClientRect().height + 4);
+}
+addEventListener("resize", auflageLage);
+// Handy: Reiter unter der Bühne (Ebene 1 · 2 · 3 mit ihrem Effekt, Mehr); sie kleben mit der Bühne oben
 function reiterAufbauen() {
   const knopf = (wert, kopf, name, klasse = "") => el("button", { type: "button", class: klasse, "aria-pressed": String(S.reiter === wert), onclick: () => reiterWahl(wert) },
     ...(kopf ? [el("small", { text: kopf })] : []), el("span", { text: name }));
   $("pult-reiter").setAttribute("aria-label", t("Pult"));
+  if (!S.reiter.startsWith("e")) { $("pult-effekte").replaceChildren(); $("pult-auflage").hidden = true; }
   $("pult-reiter").replaceChildren(
     ...S.mix.ebenen.slice(0, 3).map((e, i) => {
       const def = EFFEKTE[e.effekt];
       return knopf(`e${i}`, zwei(i + 1), def ? t(def.name) : t("+ Effekt"), !def ? "leer-ebene" : e.aus ? "" : "laeuft");
     }),
-    knopf("bild", "", t("Bild"), "extra"), knopf("sichern", "", t("Sichern"), "extra"));
+    knopf("mehr", "", t("Mehr"), "extra"));
   $("pult").dataset.reiter = S.reiter;
+  document.documentElement.dataset.reiter = S.reiter;
 }
 function reiterWahl(wert) {
   if (S.reiter === wert) return;
