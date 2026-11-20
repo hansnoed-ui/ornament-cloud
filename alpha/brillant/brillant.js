@@ -149,26 +149,44 @@ float rauschen(vec2 x){
 }
 // Fächer feiner Spektralstrahlen: jeder Strahl eine Wellenlänge, von Rot bis Violett über die Breite der Scheibe.
 // Sie treten unten aus dem Stein, werden mit dem Weg breiter und leiser, und funkeln, wenn der Stein sich dreht.
-vec3 strahlen(vec2 P){
+// 0.8 (Christian: «breiter, feiner, differenzierter»): 48 Strahlen, jeder mit eigener Stärke, Breite, Länge und
+// Wellenlänge. Gerechnet werden nur die Strahlen nahe beim Bildpunkt (der Fächer ist geordnet), darum bleibt es schnell.
+// nah: Abstand zum nächsten Strahl in Bildpunkten, daran wächst das Glas.
+const int STRAHLEN = 48;
+vec3 strahlen(vec2 P, out float nah){
+  nah = 1e5;
   vec2 O = uGem - vec2(0.0, uGemR * 0.5);
+  if (P.y >= O.y - 1.0) return vec3(0.0);
+  float xt = O.x + (P.x - O.x) * (O.y - uZiel.y) / (O.y - P.y);
+  float fp = ((xt - uZiel.x) / (2.0 * uZiel.z) + 0.5) * float(STRAHLEN - 1);
+  int mitte = int(floor(fp + 0.5));
   vec3 s = vec3(0.0);
-  for (int i = 0; i < 19; i++) {
-    float f = (float(i) + (h(float(i) * 3.1) - 0.5) * 0.7) / 18.0;
+  for (int j = -5; j <= 5; j++) {
+    int i = mitte + j;
+    if (i < 0 || i >= STRAHLEN) continue;
+    float fi = float(i);
+    float f = (fi + (h(fi * 3.1) - 0.5) * 0.8) / float(STRAHLEN - 1);
     vec2 T = vec2(uZiel.x + (f - 0.5) * 2.0 * uZiel.z, uZiel.y);
     vec2 q = P - O, dir = normalize(T - O);
     float t = dot(q, dir);
     if (t < 0.0) continue;
     float lauf = length(T - O), quer = abs(q.x * dir.y - q.y * dir.x);
-    float w = 0.55 * uPx + t * 0.008, w2 = w * 9.0;
-    float a = exp(-quer * quer / (w * w)) + 0.05 * exp(-quer * quer / (w2 * w2));
-    a *= smoothstep(uGemR * 0.25, uGemR * 0.9, t) * (1.0 - smoothstep(lauf * 1.0, lauf * 1.6, t)) * (0.4 + 0.6 * exp(-t / lauf));
-    float fl = 0.5 + 0.5 * sin(uT * 0.9 + float(i) * 2.7 + uFunkel * 7.0);
-    // Licht, nicht Disco: ein weisser Kern, die Farben nur als Saum, am stärksten an den Rändern des Fächers
-    float saum = 0.25 + 0.5 * abs(f - 0.5) * 2.0;
-    s += mix(vec3(0.92, 0.9, 1.0), spektrum(mix(660.0, 430.0, f)) * 1.15, saum) * a * fl;
+    float stark = 0.18 + 0.82 * pow(h(fi * 7.3 + 1.0), 2.2);      // wenige helle, viele leise
+    float breit = 0.55 + 0.9 * h(fi * 1.7 + 2.0);
+    float lang = 1.15 + 0.7 * h(fi * 4.1 + 3.0);
+    float w = (0.32 * uPx + t * 0.0035) * breit, w2 = w * 12.0;
+    float a = exp(-quer * quer / (w * w)) * stark + 0.03 * exp(-quer * quer / (w2 * w2));
+    a *= smoothstep(uGemR * 0.2, uGemR * 0.85, t) * (1.0 - smoothstep(lauf * lang * 0.8, lauf * lang, t)) * (0.35 + 0.65 * exp(-t / (lauf * 1.2)));
+    float fl = 0.55 + 0.45 * sin(uT * (0.5 + h(fi) * 0.9) + fi * 2.7 + uFunkel * (5.0 + 4.0 * h(fi * 9.1)));
+    // Licht, nicht Disco: weisser Kern, Farbe als Saum, zum Rand des Fächers hin satter
+    float l = mix(650.0, 440.0, f) + (h(fi * 5.9) - 0.5) * 70.0;
+    float saum = 0.18 + 0.55 * abs(f - 0.5) * 2.0;
+    s += mix(vec3(0.93, 0.91, 1.0), spektrum(l) * 1.2, saum) * a * fl;
+    if (t < lauf * lang) nah = min(nah, quer);
   }
-  return s * uStrahl * 0.3;
+  return s * uStrahl * 0.5;
 }
+vec3 strahlen(vec2 P){ float n; return strahlen(P, n); }
 float kasten(vec2 P){
   float R = 28.0 * uPx;
   vec2 d = abs(P - uScheibe.xy) - uScheibe.zw + vec2(R);
@@ -186,12 +204,19 @@ vec3 glas(vec2 P, vec3 col, out float k){
   float maske = 1.0 - smoothstep(-weich, weich * 0.4, sd);
   vec2 lp = (P - (uScheibe.xy - uScheibe.zw)) / (2.0 * uScheibe.zw);
   float korn = rauschen(P / (3.0 * uPx)) * 0.35 + rauschen(P / (14.0 * uPx)) * 0.65;
-  float front = (1.0 - lp.y) * 0.7 + korn * 0.3;
-  float da = smoothstep(front - 0.08, front + 0.16, uPraes * 1.24);
+  // Das Glas wächst aus dem Licht: zuerst entlang der Strahlen, von oben, wo sie eintreffen; dann füllt es
+  // den Raum zwischen ihnen, Korn um Korn
+  float nah; vec3 direkt = strahlen(P, nah);
+  float abstand = 2.0 * uZiel.z / float(STRAHLEN - 1);
+  float zwischen = smoothstep(0.0, abstand * 1.4, nah);
+  float front = (1.0 - lp.y) * 0.42 + zwischen * 0.4 + korn * 0.18;
+  float da = smoothstep(front - 0.06, front + 0.14, uPraes * 1.3);
   k = maske * da;
-  if (k < 0.002) return col;
+  // wo das Glas noch fehlt, glimmen die Strahlen beim Eintreten auf: Licht, das gleich fest wird
+  float werden = maske * (1.0 - da) * smoothstep(0.0, 0.5, uPraes) * (1.0 - zwischen);
+  if (k < 0.002) return col + direkt * werden * 1.2;
   vec2 off = -g * linse * 26.0 * uPx + vec2(0.0, 6.0 * uPx);
-  vec3 licht = vec3(strahlen(P + off * 0.82).r, strahlen(P + off).g, strahlen(P + off * 1.24).b);
+  vec3 licht = strahlen(P + off);
   vec3 c = col * 0.6 + uGlasTon * (0.07 + 0.1 * lp.y) * (0.75 + 0.5 * korn) + licht * 1.5;
   // Tiefe: der dicke Rand fängt Licht von innen
   c += (uGlasTon * 0.5 + 0.2) * pow(linse, 2.0) * maske * 0.12 * (0.6 + 0.4 * lp.y);
@@ -208,7 +233,7 @@ vec3 glas(vec2 P, vec3 col, out float k){
   vec2 tuv = lp + off / (2.0 * uScheibe.zw) * 0.12;
   vec4 tr = texture(uSchrift, tuv + vec2(sp, 0.0)), tg = texture(uSchrift, tuv), tb = texture(uSchrift, tuv - vec2(sp, 0.0));
   c = mix(c, c * 0.55, tg.a * ts * 0.6) + vec3(tr.r * tr.a, tg.g * tg.a, tb.b * tb.a) * ts * 1.04;
-  return mix(col, c, k);
+  return mix(col, c, k) + direkt * werden * 1.2;
 }
 
 vec4 stein(vec2 gq, float m){
@@ -679,9 +704,9 @@ function projizierenGlas(zustand, soll, f, mu, gx, gy, rr) {
   const kN = Math.round(phi / SCHRITT), aN = kN * SCHRITT - phi, idx = ((kN % ZUSTAENDE) + ZUSTAENDE) % ZUSTAENDE;
   const aus = sanft(Math.max(0, (mu - 0.3) / 0.7));
   const zu = Math.max(0, Math.cos(aN * 2.7));
-  glasZ.strahl = (idx ? 1 : 0) * aus * zu * zu * (0.55 + 0.45 * ps);
+  glasZ.strahl = (idx ? 1 : 0) * aus * zu * zu * (0.75 + 0.6 * Math.sin(Math.PI * ps) - 0.15 * ps);
   const tx = gx + Math.sin(aN * 2.4) * W * 0.75;
-  glasZ.ziel = [tx * D, (H - (ruheY - ph / 2)) * D, (pw / 2) * (0.42 + 0.14 * ps) * D];
+  glasZ.ziel = [tx * D, (H - (ruheY - ph / 2)) * D, (pw / 2) * (0.95 + 0.2 * ps) * D];
   glasZ.praes = ps * aus;
   glasZ.rect = [gx * D, (H - ruheY) * D, (pw / 2) * D, (ph / 2) * D];
   flaechen.forEach((e, i) => {
