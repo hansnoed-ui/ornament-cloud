@@ -46,5 +46,5 @@ body { font: 500 15px/1.4 'Brillant Display', system-ui, sans-serif; -webkit-fon
 #leinwand[hidden] { display: none; }
 /* 0.9 Facette als Fenster: mit Grafikkarte steht unter dem Stein nur Schrift, ohne Scheibe */
 .fenster .projektion { background: none; -webkit-backdrop-filter: none; backdrop-filter: none; -webkit-mask-image: none; mask-image: none; padding-top: 18px; }
-/* 0.11: nur der Name und der Verweis, keine Zahl, kein Satz (Christian) */
-.fenster .p-nr, .fenster .p-satz { display: none; }
+/* 0.12: Name, Satz und Verweis, keine Zahl (Christian) */
+.fenster .p-nr { display: none; }
