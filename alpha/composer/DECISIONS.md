@@ -192,3 +192,15 @@ Christian wollte den Composer «zwischen ornament.cloud und Studio-Look». Drei 
 - Nur ein Aussehen, dunkel (`color-scheme: dark`); Instrument Sans und die Blaupause bleiben wie auf ornament.cloud. Teile als Gerätefronten mit schwarzer Fuge, Takt und Lautheit in Displays, M und S als Lämpchen, Pegel als Fader.
 - Drehknöpfe (`drehknopf.js`) für Plugin-, Unterbrechungs-, Melodie- und lucerne-Regler und das Panorama. Der Schieberegler bleibt unsichtbar im Seitenbaum und trägt den Wert; app.js und lucerne-ui.js sind unverändert (input, change, dblclick, `inp.value`). Ziehen hoch/rechts = auf, Umschalt = fein, Doppelklick oder doppeltes Antippen = zurück, Pfeiltasten über den Fokus.
 - Handy (bis 820 px, `handy.js`): Erzeugen, ornament.lucerne, Messung und Urteil zugeklappt, sichtbar bleiben Stil, «Spuren erzeugen», «Track erzeugen»; Tippen auf die Überschrift klappt auf. Tempo, erste Eins und Pegelausgleich hinter «mehr» in der Wiedergabe-Leiste. Aktionen oben als Wischzeile, Tasten mindestens 34 px hoch, Tastenkürzel und Fusszeile ausgeblendet. Nichts fällt weg.
+
+## 20. November 2026: höchstens zwei Naturklänge, weniger Dropouts (Arrangement 0.2.1)
+
+Christian: «Wähle max 2 Naturgeräusche beim ersten Errechnen eines Beats, weniger Dropouts.»
+
+- «Track erzeugen» nimmt aus der Natur-Besetzung des Stils höchstens zwei Klänge, aus dem Startwert gewählt (`naturWahl`); ein anderer Startwert bringt eine andere Paarung. Ornament hatte fünf, Drum and Bass vier. «Spuren erzeugen» setzte schon vorher keine Natur.
+- Weniger Dropouts, im Schnitt rund ein Drittel weniger je Track (Ornament etwa 69 → 46, Drum and Bass etwa 49 → 35):
+  - Stocken: ein kurzes Loch je vier Takte statt zwei; die Naturklänge stocken nicht mehr mit.
+  - Sich verlieren: im letzten Takt fallen nur noch Drums und Bass weg, Flächen, Melodie und Natur tragen durch.
+  - Mischperkussion: setzt jeden vierten statt jeden zweiten Viertakt aus.
+  - Wechselnde Perkussion (Ornament): zwei statt einer Stimme je Abschnitt, in «Gas geben» und «Wiederfinden» drei statt zwei; kein doppeltes Dropout im Intro, aufeinanderfolgende Pausen einer Stimme sind ein Dropout.
+- Die Stille in Abschnitten, in denen eine Spur nicht spielt (Intro, Atmen, Outro …), bleibt: Sie ist der Aufbau des Tracks.

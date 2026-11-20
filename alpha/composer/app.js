@@ -20,7 +20,7 @@ import { ROLLEN, REGLER, REGLER_STD, sequenzErzeugen } from "./kern/sequenzen.js
 const SYNTH_NEU = "synth@0.2.0", SYNTH_MODUL = { "synth@0.1.0": SYNTH010, "synth@0.2.0": SYNTH020 };
 const { PATCHES, FAMILIEN_LISTE, CHARAKTERE } = SYNTH020;
 const synthModul = (q) => SYNTH_MODUL[q?.erzeuger] ?? SYNTH020;
-import { abschnitte as abschnitteVon, ereignisseFuer, funktionVon, BESETZUNG, wechselPerkussion, teileAus } from "./kern/arrangement.js";
+import { abschnitte as abschnitteVon, ereignisseFuer, funktionVon, BESETZUNG, wechselPerkussion, teileAus, naturWahl } from "./kern/arrangement.js";
 import { taktLesen } from "./kern/muster.js";
 import { stimmeVon, ERZEUGER } from "./erzeuger/register.js";
 import { LINIEN, LEITERN, NOTEN, linieErzeugen, kickSchritte, grundFrequenz, tonLesen } from "./kern/linien.js";
@@ -705,7 +705,7 @@ async function trackErzeugen() {
   for (const [s2, stimme] of b.mix ?? []) stilSpurDazu(s2, stimme, { anzahl: takte, bpm, seed, swing: stil.swing, abschnitte });
   const laufend = [];
   for (const syn of b.synths) laufend.push(synthDazu(syn));
-  for (const n of b.natur ?? []) laufend.push(flaecheDazu(n));
+  for (const n of naturWahl(b.natur, { seed })) laufend.push(flaecheDazu(n));   // höchstens zwei Naturklänge
   melde(`Track: Synths und Naturklänge werden gerechnet …`, 0);
   await Promise.all(laufend);
   // das Arrangement: Ereignisse je Spur, nach ihrer Funktion
