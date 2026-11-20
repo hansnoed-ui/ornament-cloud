@@ -195,3 +195,22 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 .raender button[aria-pressed="true"] { color: var(--blanc); box-shadow: inset 0 -2px 0 var(--rouge); }
 @media (min-width: 900px) { .zt-regler .raender { grid-template-columns: 8em 1fr; } }
 .raender .wahl { justify-content: flex-start; gap: 34px; }
+
+/* Daumen: wo man ihn auflegt, und wie lange schon gewartet wird (Christian, 20.11.2026: deutlicher zeigen) */
+.daumen { position: absolute; z-index: 1; left: 50%; top: 40%; transform: translate(-50%, -50%); pointer-events: none;
+  display: flex; flex-direction: column; align-items: center; gap: 16px; opacity: 1; transition: opacity .7s ease; }
+.daumen.weg { opacity: 0; }
+.daumen-punkt { position: relative; width: 64px; height: 64px; border-radius: 50%; border: 1px solid rgba(244, 240, 232, 0.75);
+  background: radial-gradient(circle, rgba(244, 240, 232, 0.16), rgba(244, 240, 232, 0) 70%); animation: daumenAtmen 2.6s ease-in-out infinite; }
+.daumen-punkt::after { content: ''; position: absolute; inset: -1px; border-radius: 50%; border: 1px solid rgba(244, 240, 232, 0.6); animation: daumenWelle 2.6s ease-out infinite; }
+.daumen-text { font-family: var(--didone); font-style: italic; font-size: 1.08rem; color: var(--blanc); white-space: nowrap;
+  padding: 5px 14px 6px; background: rgba(10, 10, 11, 0.55); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+@keyframes daumenAtmen { 0%, 100% { transform: scale(0.92); } 50% { transform: scale(1.04); } }
+@keyframes daumenWelle { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(2.1); opacity: 0; } }
+.halt { position: absolute; z-index: 1; left: 0; top: 0; width: 92px; height: 92px; margin: -46px 0 0 -46px; pointer-events: none;
+  opacity: 0; transition: opacity .35s ease; transform: rotate(-90deg); }
+.halt.da { opacity: 1; }
+.halt circle { fill: none; stroke-width: 1.4; vector-effect: non-scaling-stroke; }
+.halt-grund { stroke: rgba(244, 240, 232, 0.22); }
+.halt-voll { stroke: var(--rouge); stroke-dasharray: 1; stroke-dashoffset: 1; stroke-linecap: round; }
+@media (prefers-reduced-motion: reduce) { .daumen-punkt, .daumen-punkt::after { animation: none; } }
