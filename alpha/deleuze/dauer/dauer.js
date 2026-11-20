@@ -4,7 +4,7 @@
 // Spannung (Matière et mémoire, Kapitel IV: Rhythmen der Dauer, Kontraktion und Entspannung).
 // WebGL2, ohne Bibliotheken, ohne CDN. Aufbau, Quellen, Aufnahme, Glossen und Einstieg wie Schichten der Zeit.
 
-import { klangStarten, klangBild, klangAn, klangIstAn, klangSpur, klangTakt } from './klang.js?v=1';
+import { klangStarten, klangBild, klangAn, klangIstAn, klangSpur, klangTakt, klangBruch } from './klang.js?v=2';
 import { aufnahmeDatei } from '../gemeinsam/aufnahme.js?v=1';
 
 const $ = (id) => document.getElementById(id);
@@ -19,6 +19,8 @@ const TEXTE = {
       warten: { begriff: 'la durée', satz: 'Wo du wartest, hört die Zeit auf, aus Momenten zu bestehen. Sie durchdringen sich wie die Töne einer Melodie.', zitat: '«… comme il arrive quand nous nous rappelons, fondues pour ainsi dire ensemble, les notes d’une mélodie.»', quelle: 'Bergson, Essai sur les données immédiates de la conscience, 1889, Kap. II' },
       lesarten: { begriff: 'trois lectures', satz: 'Drei Arten, die Dauer zu lesen: gegen die Uhr, im Warten, in der Spannung.', zitat: '', quelle: 'Deleuze, Le bergsonisme, PUF 1966' },
       takt: { begriff: 'l’instant quelconque', satz: 'Die Uhr schneidet in gleichen Abständen. Kein Moment ist ausgezeichnet, jeder ist irgendeiner.', zitat: '', quelle: 'Deleuze, L’image-mouvement, Minuit 1983, Kap. 1, sinngemäss' },
+      linien: { begriff: 'la chronophotographie géométrique', satz: 'Marey kleidete seine Läufer schwarz und nähte weisse Streifen auf die Glieder. Auf der Platte blieb ein Gerippe aus Linien, Moment neben Moment.', zitat: '', quelle: 'Marey, Le mouvement, 1894' },
+      bruch: { begriff: 'le mécanisme cinématographique', satz: 'Lässt du los, zerfällt die Dauer wieder in Momente, wie Glas in Scherben. So arbeitet der Verstand: Er schneidet Momentaufnahmen aus dem, was fliesst.', zitat: '«Nous prenons des vues quasi instantanées sur la réalité qui passe …»', quelle: 'Bergson, L’évolution créatrice, 1907, Kap. IV' },
       momente: { begriff: 'les coupes immobiles', satz: 'Aus unbewegten Schnitten lässt sich keine Bewegung zusammensetzen, wie viele man auch nimmt.', zitat: '«… le mécanisme de notre connaissance usuelle est de nature cinématographique.»', quelle: 'Bergson, L’évolution créatrice, 1907, Kap. IV' },
       schmelze: { begriff: 'la multiplicité qualitative', satz: 'Grau bleiben die gezählten Momente. In der Dauer kehrt die Farbe zurück: Sie ist Qualität, nicht Menge.', zitat: '', quelle: 'Bergson, Essai, 1889, Kap. II, sinngemäss' },
       wartenR: { begriff: 'attendre', satz: 'Die Zeit des Wartens lässt sich nicht verkürzen. Hier bestimmst du, wie lange sich das Vergangene hält.', zitat: '«Si je veux me préparer un verre d’eau sucrée, j’ai beau faire, je dois attendre que le sucre fonde.»', quelle: 'Bergson, L’évolution créatrice, 1907, Kap. I' },
@@ -59,6 +61,8 @@ const TEXTE = {
       warten: { begriff: 'la durée', satz: 'Where you wait, time stops consisting of moments. They interpenetrate like the notes of a melody.', zitat: '« … comme il arrive quand nous nous rappelons, fondues pour ainsi dire ensemble, les notes d’une mélodie. »', quelle: 'Bergson, Time and Free Will (Essai), 1889, ch. II (original)' },
       lesarten: { begriff: 'trois lectures', satz: 'Three ways to read duration: against the clock, in waiting, in tension.', zitat: '', quelle: 'Deleuze, Bergsonism, 1966' },
       takt: { begriff: 'l’instant quelconque', satz: 'The clock cuts at equal intervals. No moment is privileged; each is any-instant-whatever.', zitat: '', quelle: 'Deleuze, The Movement-Image, 1983, ch. 1, paraphrased' },
+      linien: { begriff: 'la chronophotographie géométrique', satz: 'Marey dressed his runners in black and sewed white stripes along their limbs. On the plate a skeleton of lines remained, moment beside moment.', zitat: '', quelle: 'Marey, Le mouvement, 1894' },
+      bruch: { begriff: 'le mécanisme cinématographique', satz: 'Let go, and duration falls back into moments, like glass into shards. This is how the intellect works: it cuts snapshots out of what flows.', zitat: '« Nous prenons des vues quasi instantanées sur la réalité qui passe … »', quelle: 'Bergson, Creative Evolution, 1907, ch. IV (original)' },
       momente: { begriff: 'les coupes immobiles', satz: 'No movement can be assembled from immobile sections, however many one takes.', zitat: '« … le mécanisme de notre connaissance usuelle est de nature cinématographique. »', quelle: 'Bergson, Creative Evolution, 1907, ch. IV (original)' },
       schmelze: { begriff: 'la multiplicité qualitative', satz: 'The counted moments stay grey. In duration colour returns: it is quality, not quantity.', zitat: '', quelle: 'Bergson, Time and Free Will, 1889, ch. II, paraphrased' },
       wartenR: { begriff: 'attendre', satz: 'The time of waiting cannot be shortened. Here you decide how long the past holds.', zitat: '« Si je veux me préparer un verre d’eau sucrée, j’ai beau faire, je dois attendre que le sucre fonde. »', quelle: 'Bergson, Creative Evolution, 1907, ch. I (original)' },
@@ -99,6 +103,8 @@ const TEXTE = {
       warten: { begriff: 'la durée', satz: 'Là où tu attends, le temps cesse d’être fait d’instants. Ils se pénètrent comme les notes d’une mélodie.', zitat: '« … comme il arrive quand nous nous rappelons, fondues pour ainsi dire ensemble, les notes d’une mélodie. »', quelle: 'Bergson, Essai sur les données immédiates de la conscience, 1889, ch. II' },
       lesarten: { begriff: 'trois lectures', satz: 'Trois manières de lire la durée : contre l’horloge, dans l’attente, dans la tension.', zitat: '', quelle: 'Deleuze, Le bergsonisme, PUF 1966' },
       takt: { begriff: 'l’instant quelconque', satz: 'L’horloge coupe à intervalles égaux. Aucun instant n’est privilégié, chacun est quelconque.', zitat: '', quelle: 'Deleuze, L’image-mouvement, Minuit 1983, ch. 1, en substance' },
+      linien: { begriff: 'la chronophotographie géométrique', satz: 'Marey habillait ses coureurs de noir et cousait des bandes blanches le long des membres. Sur la plaque restait un squelette de lignes, instant après instant.', zitat: '', quelle: 'Marey, Le mouvement, 1894' },
+      bruch: { begriff: 'le mécanisme cinématographique', satz: 'Quand tu lâches, la durée retombe en instants, comme le verre en éclats. Ainsi procède l’intelligence : elle découpe des instantanés dans ce qui coule.', zitat: '« Nous prenons des vues quasi instantanées sur la réalité qui passe … »', quelle: 'Bergson, L’évolution créatrice, 1907, ch. IV' },
       momente: { begriff: 'les coupes immobiles', satz: 'Avec des coupes immobiles, on ne reconstitue pas le mouvement, quel que soit leur nombre.', zitat: '« … le mécanisme de notre connaissance usuelle est de nature cinématographique. »', quelle: 'Bergson, L’évolution créatrice, 1907, ch. IV' },
       schmelze: { begriff: 'la multiplicité qualitative', satz: 'Les instants comptés restent gris. Dans la durée, la couleur revient : elle est qualité, non quantité.', zitat: '', quelle: 'Bergson, Essai, 1889, ch. II, en substance' },
       wartenR: { begriff: 'attendre', satz: 'Le temps de l’attente ne se raccourcit pas. Ici tu décides combien de temps le passé se maintient.', zitat: '« Si je veux me préparer un verre d’eau sucrée, j’ai beau faire, je dois attendre que le sucre fonde. »', quelle: 'Bergson, L’évolution créatrice, 1907, ch. I' },
@@ -200,6 +206,8 @@ const STROM_SEITE = leicht ? 128 : telefon ? 176 : 240;   // Gitter der Strömun
 const DRUCK_SCHRITTE = leicht ? 10 : telefon ? 18 : 26;   // Druckausgleich je Bild (Jacobi)
 const MAX_DPR = leicht ? 0.6 : 2;                          // fein wie der Bildschirm; ruckelt es, senkt tempoMessen die Auflösung
 const MOMENTE_MAX = 12;                                    // Ring der Momente (Uhr)
+// Mareys Linien: Ketten von Leuchtpunkten, die mit dem Fluss reisen; je Takt wird ihre Lage festgehalten
+const LINIEN_K = leicht ? 0 : telefon ? 16 : 22, LINIEN_L = 12;
 const WARTEN_SEITE = 256;
 const FLUSS_SEITE = leicht ? 120 : telefon ? 200 : 260;                 // feinste Stufe des optischen Flusses                                  // Feld des Wartens
 if (leicht) spur('Leichte Fassung (ohne Grafikkarte)');
@@ -355,7 +363,7 @@ void main(){
 
 // ---- Die Dauer: jede Stelle sammelt ihre Vergangenheit; wie lange, bestimmt das Warten ----
 // Uhr: nur was sich bewegt (vormultipliziert: rgb = Farbe × Anteil, a = Anteil). Zucker: das ganze Bild, mitgeführt von der Strömung.
-const FS_DAUER = KOPF + `uniform sampler2D uD, uJetzt, uGrund, uW, uV, uFl; uniform vec2 uPx, uPxS; uniform float uDt, uSchnell, uLangsam, uAdvekt, uMatte, uLoesen, uSchmier;
+const FS_DAUER = KOPF + `uniform sampler2D uD, uJetzt, uGrund, uW, uV, uFl; uniform vec2 uPx, uPxS; uniform float uDt, uSchnell, uLangsam, uAdvekt, uMatte, uLoesen, uSchmier, uSchmelz, uZufall;
 float matte(vec3 c, vec3 g){ float d = max(abs(c.r - g.r), max(abs(c.g - g.g), abs(c.b - g.b))); return smoothstep(0.05, 0.2, d); }
 void main(){
   float w = texture(uW, v).r;
@@ -364,12 +372,15 @@ void main(){
   vec4 d = texture(uD, q);
   // im Zucker löst sich, was lange wartet: es verläuft ein wenig in seine Nachbarschaft
   vec4 n4 = 0.25 * (texture(uD, q + vec2(uPx.x, 0)) + texture(uD, q - vec2(uPx.x, 0)) + texture(uD, q + vec2(0, uPx.y)) + texture(uD, q - vec2(0, uPx.y)));
-  d = mix(d, n4, uLoesen * smoothstep(0.1, 0.9, w));
+  // in der Uhr schmilzt, was wartet: es breitet sich aus, statt in Streifen stehen zu bleiben
+  d = mix(d, n4, max(uLoesen, uSchmelz) * smoothstep(0.1, 0.9, w));
   // die Gegenwart, verschmiert über den Weg seit dem vorigen Bild: aus der Treppe der Bilder wird eine stetige Spur
   vec2 fl = texture(uFl, v).xy * uSchmier;
   vec3 j = vec3(0); float m = 0.0; vec3 g = texture(uGrund, v).rgb;
+  // die Proben zittern je Bildpunkt und Bild um ihren Platz: keine Leiter aus Kopien, sondern ein weicher Zug
+  float zz = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))) + uZufall);
   for (int k = 0; k < 8; k++) {
-    vec2 q2 = v - fl * (float(k) / 7.0);
+    vec2 q2 = v - fl * ((float(k) + zz) / 8.0);
     vec3 c = texture(uJetzt, q2).rgb; float mk = mix(1.0, matte(c, texture(uGrund, q2).rgb), uMatte);
     j += c * mk; m += mk;
   }
@@ -379,14 +390,19 @@ void main(){
 }`;
 
 // Uhr: die Lichter halten länger als die Schatten, wie auf einer lange belichteten Platte
-const FS_SPITZE = KOPF + `uniform sampler2D uAlt, uJetzt, uGrund, uW, uFl; uniform float uAbkl, uAbklW;
+const FS_SPITZE = KOPF + `uniform sampler2D uAlt, uJetzt, uGrund, uW, uFl; uniform float uAbkl, uAbklW, uZufall; uniform vec2 uPx;
 float matte(vec3 c, vec3 g){ float d = max(abs(c.r - g.r), max(abs(c.g - g.g), abs(c.b - g.b))); return smoothstep(0.05, 0.2, d); }
 void main(){
   vec2 fl = texture(uFl, v).xy;
   vec3 h = vec3(0);
-  for (int k = 0; k < 6; k++) { vec2 q = v - fl * (float(k) / 5.0); vec3 j = texture(uJetzt, q).rgb; h = max(h, j * matte(j, texture(uGrund, q).rgb)); }
+  float zz = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))) + uZufall);
+  for (int k = 0; k < 6; k++) { vec2 q = v - fl * ((float(k) + zz) / 6.0); vec3 j = texture(uJetzt, q).rgb; h = max(h, j * matte(j, texture(uGrund, q).rgb)); }
   float w = smoothstep(0.0, 0.85, texture(uW, v).r);
-  o = vec4(max(texture(uAlt, v).rgb * mix(uAbkl, uAbklW, w), h), 1.0);
+  // das Nachbild zerläuft im Warten zu einem Schein, statt als harte Spur stehen zu bleiben
+  vec3 a = texture(uAlt, v).rgb;
+  vec3 a4 = 0.25 * (texture(uAlt, v + vec2(uPx.x, 0)).rgb + texture(uAlt, v - vec2(uPx.x, 0)).rgb + texture(uAlt, v + vec2(0, uPx.y)).rgb + texture(uAlt, v - vec2(0, uPx.y)).rgb);
+  a = mix(a, a4, 0.6 * w);
+  o = vec4(max(a * mix(uAbkl, uAbklW, w), h * mix(1.0, 0.7, w)), 1.0);
 }`;
 
 // ---- Spannung: drei Gedächtnisse verschiedener Länge; ihre Differenzen sind die Rhythmen des Bildes ----
@@ -405,7 +421,9 @@ float matte(vec3 c, vec3 g){ float d = max(abs(c.r - g.r), max(abs(c.g - g.g), a
 // als feiner Linie (Mareys «chronophotographie géométrique»). Wo das Warten liegt, schmilzt das Gezählte zur Dauer in Farbe.
 const FS_UHR = KOPF + SILBER + `
 uniform sampler2D uScharf, uJetzt, uGrund, uD, uSp, uW; uniform sampler2DArray uRing;
-uniform float uKopf, uN, uM, uLinie, uT, uSeite; uniform vec4 uRahmen;
+uniform float uKopf, uN, uM, uLinie, uT, uSeite, uBruch, uBruchT, uPlatte; uniform vec4 uRahmen;
+float h21(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+vec2 h22(vec2 p){ return fract(sin(vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)))) * 43758.5453); }
 void main(){
   vec3 s = texture(uScharf, v).rgb, g = texture(uGrund, v).rgb, j = texture(uJetzt, v).rgb;
   float m0 = matte(j, g);
@@ -420,7 +438,7 @@ void main(){
     float a = mix(0.92, 0.16, pow(alter, 0.9));
     // Kontur: eine Linie von gut einem Bildpunkt, wo die Gestalt den Schuppen verlässt
     float lin = 1.0 - smoothstep(0.0, uLinie, abs(mk - 0.5) / max(fwidth(mk), 1e-4));
-    vec3 hell = silber(c) * mk * a * 0.82 + vec3(0.96, 0.94, 0.88) * lin * a * 0.55;
+    vec3 hell = silber(c) * mk * a * 0.82 * uPlatte + vec3(0.96, 0.94, 0.88) * lin * a * 0.55;
     platte = max(platte, hell);
   }
   vec3 gegenwart = silber(s);
@@ -441,10 +459,130 @@ void main(){
   vec3 c = mix(uhr, dauer, sch);
   // am Saum der Schmelze ein Hauch Wärme, wie Glas, das weich wird
   c += vec3(0.9, 0.3, 0.16) * pow(sch * (1.0 - sch) * 4.0, 2.0) * 0.05;
+  // Loslassen: die Dauer zerspringt in Scherben, jede zeigt wieder einen einzelnen, grauen Moment;
+  // dann erlischt eine Scherbe nach der anderen, und die Uhr zählt weiter
+  if (uBruch > 0.0) {
+    vec2 z = vec2(v.x * uSeite, v.y) * 11.0, zi = floor(z);
+    float d1 = 9.0, d2 = 9.0; vec2 id = vec2(0), mz = vec2(0);
+    for (int y = -1; y <= 1; y++) for (int x = -1; x <= 1; x++) {
+      vec2 n = zi + vec2(x, y), pz = n + 0.15 + 0.7 * h22(n);
+      float dd = length(z - pz);
+      if (dd < d1) { d2 = d1; d1 = dd; id = n; mz = pz; } else if (dd < d2) d2 = dd;
+    }
+    vec2 mitte = vec2(mz.x / 11.0 / uSeite, mz.y / 11.0);
+    float wz = texture(uW, mitte).r;
+    float r = h21(id);
+    float da = smoothstep(0.02, 0.12, wz) * step(uBruchT, 0.35 + 0.6 * r);
+    if (da > 0.0) {
+      // die Scherbe rückt ein wenig ab und zeigt einen Moment aus dem Ring
+      vec2 weg = (h22(id + 7.0) - 0.5) * 0.012 * (0.4 + uBruchT);
+      float lage = mod(uKopf - floor(r * uM) + uN, uN);
+      vec3 mc = textureLod(uRing, vec3(v + weg, lage), 0.0).rgb;
+      vec3 scherbe = silber(mc) * (0.62 + 0.3 * h21(id + 3.0));
+      float kante = 1.0 - smoothstep(0.0, 0.035, d2 - d1);
+      scherbe = mix(scherbe, vec3(1.0, 0.97, 0.92), kante * 0.85);
+      c = mix(c, scherbe, da * uBruch);
+    }
+  }
   // ausserhalb des Bildes (Saalschwarz) bleibt es schwarz
   vec2 r = step(uRahmen.xy, v) * step(v, uRahmen.zw);
   o = vec4(c * r.x * r.y, 1.0);
 }`;
+// ---- Mareys Linien ----
+// Zustand je Punkt (RGBA32F, winzig): xy Ort, z Alter in Takten, w ob er auf der Gestalt liegt.
+// Eine Kette beginnt neu, wo am meisten Bewegung ist, quer zur Bewegung gelegt: so fächert sie sich wie Mareys Glieder.
+const FS_PUNKTE = KOPF + `uniform highp sampler2D uZ; uniform sampler2D uFl, uJetzt, uGrund; uniform float uNeu, uTakt, uTaktNr, uLaenge, uSeite, uStart;
+float h21(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float matteAn(vec2 q){ vec3 c = texture(uJetzt, q).rgb, g = texture(uGrund, q).rgb; float d = max(abs(c.r - g.r), max(abs(c.g - g.g), abs(c.b - g.b))); return smoothstep(0.05, 0.2, d); }
+void main(){
+  ivec2 ij = ivec2(gl_FragCoord.xy); int L = textureSize(uZ, 0).x;
+  vec4 s = texelFetch(uZ, ij, 0), m = texelFetch(uZ, ivec2(L / 2, ij.y), 0);
+  float ch = float(ij.y), i = float(ij.x) / float(L - 1);
+  bool neu = uStart > 0.5;
+  if (uTakt > 0.5) {
+    bool aus = any(lessThan(m.xy, vec2(0.02))) || any(greaterThan(m.xy, vec2(0.98)));
+    neu = neu || aus || m.w < 0.3 || m.z > 36.0 || h21(vec2(ch, uTaktNr)) < 0.06;
+  }
+  if (neu) {
+    vec2 best = vec2(0.5); float bm = -1.0;
+    for (int k = 0; k < 12; k++) {
+      vec2 c = mix(vec2(0.1), vec2(0.9), vec2(h21(vec2(ch * 13.1 + float(k), uTaktNr + 1.7)), h21(vec2(ch * 7.3 - float(k), uTaktNr * 1.31 + 5.2))));
+      float b = matteAn(c) * (0.3 + length(texture(uFl, c).xy) * 300.0);
+      if (b > bm) { bm = b; best = c; }
+    }
+    vec2 f = texture(uFl, best).xy * vec2(uSeite, 1.0);
+    float a = length(f) > 2e-4 ? atan(f.y, f.x) + 1.5708 : h21(vec2(ch, uTaktNr * 2.1 + 9.0)) * 6.2832;
+    a += (h21(vec2(ch + 4.0, uTaktNr)) - 0.5) * 0.6;
+    vec2 p = best + vec2(cos(a) / uSeite, sin(a)) * (i - 0.5) * uLaenge;
+    s = vec4(p, 0.0, matteAn(p));
+  } else {
+    if (uNeu > 0.5) {
+      s.xy += texture(uFl, s.xy).xy;
+      // die Kette bleibt ein Stab: innere Punkte rücken zur Mitte ihrer Nachbarn (wie Mareys Streifen auf dem Glied)
+      int i0 = ij.x;
+      if (i0 > 0 && i0 < L - 1) {
+        vec2 a = texelFetch(uZ, ivec2(i0 - 1, ij.y), 0).xy, b = texelFetch(uZ, ivec2(i0 + 1, ij.y), 0).xy;
+        a += texture(uFl, a).xy; b += texture(uFl, b).xy;
+        s.xy = mix(s.xy, 0.5 * (a + b), 0.3);
+      }
+    }
+    if (uTakt > 0.5) s.z += 1.0;
+    s.w = mix(s.w, matteAn(s.xy), 0.35);
+  }
+  o = s;
+}`;
+const FS_PUNKTE_KOPIE = KOPF + `uniform highp sampler2D uZ; uniform int uZeile; void main(){ o = texelFetch(uZ, ivec2(gl_FragCoord.xy) - ivec2(0, uZeile), 0); }`;
+// Jede Linie ein Streifen aus zwei Dreiecken, im Bruchstück mit weichem Rand (Kapsel), damit sie fein und glatt bleibt.
+// uArt 0: die Glieder (Punkt zu Punkt in einem Moment); 1: die Bahnen (ein Punkt von Moment zu Moment); 2: die Knöpfe.
+const VS_LINIE = `#version 300 es
+precision highp float; precision highp sampler2D;
+uniform highp sampler2D uHist, uZ; uniform sampler2D uW; uniform int uL, uK, uKopf, uN, uArt, uP; uniform float uM, uBreite; uniform vec2 uRes;
+flat out vec4 vSeg; flat out float vA, vR;
+vec4 holen(int m, int c, int i){
+  if (m == 0) return texelFetch(uZ, ivec2(i, c), 0);
+  int lage = (uKopf - (m - 1) + uN * 4) % uN;
+  return texelFetch(uHist, ivec2(i, lage * uK + c), 0);
+}
+void main(){
+  int id = gl_InstanceID; vec4 a, b; int m; float r = uBreite * 0.5, gut = 1.0;
+  if (uArt == 0) {
+    int n = uK * (uL - 1); m = id / n; int q = id % n, c = q / (uL - 1), i = q % (uL - 1);
+    a = holen(m, c, i); b = holen(m, c, i + 1);
+    gut = step(0.4, min(a.w, b.w)) * step(abs(a.z - b.z), 0.5);
+    // ein Glied, das der Fluss auseinandergerissen hat, wird nicht gezogen
+    gut *= step(length((b.xy - a.xy) * vec2(uRes.x / uRes.y, 1.0)), 0.045);
+  } else if (uArt == 1) {
+    int n = uK * uP; m = id / n; int q = id % n, c = q / uP, i = 1 + (q % uP) * 3;
+    a = holen(m, c, i); b = holen(m + 1, c, i);
+    float soll = m == 0 ? 0.0 : 1.0;
+    gut = step(abs(a.z - b.z - soll), 0.25) * step(0.3, min(a.w, b.w)) * step(float(m + 1), uM);
+    r *= 0.45;
+  } else {
+    int n = uK * uP; m = id / n; int q = id % n, c = q / uP, i = 1 + (q % uP) * 3;
+    a = holen(m, c, i); b = a; gut = step(0.35, a.w); r *= 1.9;
+  }
+  gut *= step(float(m), uM);
+  float alter = float(m) / max(uM, 1.0);
+  float wz = texture(uW, 0.5 * (a.xy + b.xy)).r;
+  vA = gut * mix(1.0, 0.14, pow(alter, 1.3)) * (1.0 - smoothstep(0.03, 0.45, wz)) * (uArt == 1 ? 0.55 : 1.0);
+  vec2 p0 = a.xy * uRes, p1 = b.xy * uRes, d = p1 - p0; float len = length(d);
+  vec2 t = len > 1e-3 ? d / len : vec2(1, 0), nn = vec2(-t.y, t.x);
+  vec2 ec = vec2(float(gl_VertexID & 1) * 2.0 - 1.0, float(gl_VertexID >> 1) * 2.0 - 1.0);
+  float h = r + 1.5;
+  vec2 pp = (ec.x < 0.0 ? p0 : p1) + t * ec.x * h + nn * ec.y * h;
+  vSeg = vec4(p0, p1); vR = r;
+  gl_Position = vA > 0.003 ? vec4(pp / uRes * 2.0 - 1.0, 0, 1) : vec4(2, 2, 2, 1);
+}`;
+const FS_LINIE = `#version 300 es
+precision highp float; flat in vec4 vSeg; flat in float vA, vR; out vec4 o; uniform vec3 uFarbe;
+void main(){
+  vec2 p = gl_FragCoord.xy, a = vSeg.xy, b = vSeg.zw, ab = b - a;
+  float t = clamp(dot(p - a, ab) / max(dot(ab, ab), 1e-6), 0.0, 1.0);
+  float d = length(p - a - ab * t);
+  float k = clamp(vR + 0.5 - d, 0.0, 1.0) * vA;
+  o = vec4(uFarbe * k, k);
+}`;
+
 // Zucker: wo gewartet wird, hält sich das Vergangene und wird von der Strömung verzogen;
 // am Übergang bricht sich die Gegenwart in Schlieren, mit einer Spur Farbzerlegung wie in Sirup.
 const FS_ZUCKER = KOPF + `
@@ -539,10 +677,10 @@ void main(){
   o = vec4(c, 1.0);
 }`;
 
-function programm(fs) {
+function programm(fs, vs = VS) {
   const mk = (typ, src) => { const s = gl.createShader(typ); gl.shaderSource(s, src); gl.compileShader(s);
     if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
-  const p = gl.createProgram(); gl.attachShader(p, mk(gl.VERTEX_SHADER, VS)); gl.attachShader(p, mk(gl.FRAGMENT_SHADER, fs)); gl.bindAttribLocation(p, 0, 'a');
+  const p = gl.createProgram(); gl.attachShader(p, mk(gl.VERTEX_SHADER, vs)); gl.attachShader(p, mk(gl.FRAGMENT_SHADER, fs)); gl.bindAttribLocation(p, 0, 'a');
   gl.linkProgram(p); if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
   // Orte aller Uniforms: einmal erfragen, dann über p.u.Name
   p.u = {};
@@ -572,6 +710,21 @@ function zielBauen(name, b, hh, float = true) {
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   return z;
 }
+// Ziel mit voller Genauigkeit, nur für die wenigen Punkte der Linien (Halbgenauigkeit liesse sie wandern)
+function ziel32(name, b, hh) {
+  const z = ziele[name] || (ziele[name] = { tex: gl.createTexture(), fb: gl.createFramebuffer() });
+  if (z.b === b && z.h === hh) return z;
+  z.b = b; z.h = hh;
+  gl.bindTexture(gl.TEXTURE_2D, z.tex);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, b, hh, 0, gl.RGBA, gl.FLOAT, null);
+  for (const [k, w] of [[gl.TEXTURE_MIN_FILTER, gl.NEAREST], [gl.TEXTURE_MAG_FILTER, gl.NEAREST], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]]) gl.texParameteri(gl.TEXTURE_2D, k, w);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, z.fb);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, z.tex, 0);
+  z.ok = gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
+  gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  return z;
+}
 // Paar zum Hin- und Herrechnen
 function paar(name, b, hh, float = true) {
   const a = zielBauen(name + '0', b, hh, float), c = zielBauen(name + '1', b, hh, float);
@@ -595,6 +748,7 @@ function rechne(prog, ziel, tex, setze) {
   zeichneFlaeche();
 }
 
+let linienAn = false, punkteNeu = true, bruchStart = -9, bruchMenge = 0;
 let flussB = 0, scharfTex = null, scharfB = 0, scharfH = 0, ringTex = null, arbeitB = 0, arbeitH = 0, stromB = 0, stromH = 0;
 if (gl) {
   halbFloat = !!gl.getExtension('EXT_color_buffer_float');
@@ -602,7 +756,8 @@ if (gl) {
   try {
     for (const [n, fs] of Object.entries({ kopie: FS_KOPIE, lum: FS_LUM, lk: FS_LK, fglatt: FS_FGLATT, grund: FS_GRUND, warten: FS_WARTEN, vAdvekt: FS_V_ADVEKT, curl: FS_CURL, wirbel: FS_WIRBEL,
       div: FS_DIV, mal: FS_MAL, druck: FS_DRUCK, grad: FS_GRAD, dauer: FS_DAUER, spitze: FS_SPITZE, ema: FS_EMA, uhr: FS_UHR, zucker: FS_ZUCKER, spannung: FS_SPANNUNG,
-      hell: FS_HELL, weich: FS_WEICH, zusammen: FS_ZUSAMMEN })) P[n] = programm(fs);
+      hell: FS_HELL, weich: FS_WEICH, zusammen: FS_ZUSAMMEN, punkte: FS_PUNKTE, punkteKopie: FS_PUNKTE_KOPIE })) P[n] = programm(fs);
+    if (LINIEN_K) P.linie = programm(FS_LINIE, VS_LINIE);
   } catch (e) { spur('Shader: ' + String(e.message).slice(0, 140)); console.error(e); melden(TEXTE[sprache].keinGL); }
   const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
@@ -669,6 +824,11 @@ function groesse() {
   }
   const [wb, wh] = seitenMass(WARTEN_SEITE);
   paar('w', wb, wh);
+  if (LINIEN_K && P.linie && !ziele.hist && halbFloat) {
+    const a = ziel32('punkte0', LINIEN_L, LINIEN_K), c = ziel32('punkte1', LINIEN_L, LINIEN_K), h = ziel32('hist', LINIEN_L, LINIEN_K * MOMENTE_MAX);
+    if (a.ok && c.ok && h.ok) { const p = ziele.punkte = { nr: 0 }; p.lesen = () => (p.nr ? c : a); p.schreiben = () => (p.nr ? a : c); p.tauschen = () => { p.nr = 1 - p.nr; }; linienAn = true; }
+    else spur('Linien aus (kein Float-Ziel)');
+  }
   if (fotos.length) fotoBuehneGroesse();
 }
 addEventListener('resize', groesse);
@@ -866,7 +1026,7 @@ let geisterStart = -1, geisterZug = 0;
 function geisterWarten(t, dt) {
   if (geisterStart < 0 || t < geisterStart) return;
   const u = (t - geisterStart) / 4.2;
-  if (u > 1) { geisterStart = t + 2.2; geisterZug++; return; }
+  if (u > 1) { geisterStart = t + 2.2; geisterZug++; if (lesart === 0 && wartenMenge > 0.06) bruchAusloesen(); return; }
   const z = geisterZug, x = 0.5 + (z % 2 ? -0.08 : 0.1) + 0.06 * Math.sin(u * 3.1 + z), y = 0.6 + 0.05 * Math.cos(u * 2.3 + z * 1.7);
   stempeln(x, y, 1.1 * dt);
   if (lesart === 1) ruehren(x, y, Math.cos(u * 6.0 + z) * 260, Math.sin(u * 5.0 + z) * 260);
@@ -897,7 +1057,15 @@ leinwand.addEventListener('pointermove', (e) => {
   f.vx = dx / dt; f.vy = dy / dt; f.bewegt += Math.hypot(dx, dy);
   f.x = e.clientX; f.y = e.clientY; f.t = jetzt;
 });
-const loslassen = (e) => { finger.delete(e.pointerId); };
+const loslassen = (e) => {
+  finger.delete(e.pointerId);
+  // in der Uhr zerspringt die Dauer, wenn der letzte Finger geht
+  if (lesart === 0 && finger.size === 0 && wartenMenge > 0.06) bruchAusloesen();
+};
+function bruchAusloesen() {
+  bruchStart = performance.now() / 1000; bruchMenge = wartenMenge;
+  klangBruch(wartenMenge); glosse('bruch');
+}
 leinwand.addEventListener('pointerup', loslassen);
 leinwand.addEventListener('pointercancel', loslassen);
 
@@ -973,7 +1141,9 @@ function bild(ms) {
 
   // 2. der Ring der Momente (Uhr): ein Moment je Takt, mit leisem Ticken
   const takt = taktSek();
-  if (!gefuellt || t - letzterTakt >= takt) {
+  // ein Moment fällt immer auf ein neues Videobild: so steht jeder sauber für sich
+  const taktJetzt = !gefuellt || (t - letzterTakt >= takt && neuesBild);
+  if (taktJetzt) {
     gl.bindFramebuffer(gl.READ_FRAMEBUFFER, jetzt.fb);
     gl.bindTexture(gl.TEXTURE_2D_ARRAY, ringTex);
     if (!gefuellt) { for (let l = 0; l < MOMENTE_MAX; l++) gl.copyTexSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, l, 0, 0, arbeitB, arbeitH); gefuellt = true; }
@@ -981,6 +1151,7 @@ function bild(ms) {
     gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null);
     letzterTakt = t; taktNr++;
     if (lesart === 0) klangTakt(taktNr, wartenMenge);
+    if (lesart === 0 && linienAn && taktNr === 6) glosse('linien');
   }
 
   // 3. der ruhende Grund
@@ -1005,6 +1176,22 @@ function bild(ms) {
   FL.tauschen();
   const fluss = FL.lesen();
 
+  // 3c. Mareys Linien: die Punkte reisen mit dem Fluss; je Takt wird ihre Lage in den Verlauf geschrieben
+  if (linienAn && lesart === 0) {
+    const Z = ziele.punkte;
+    rechne(P.punkte, Z.schreiben(), { uZ: Z.lesen(), uFl: fluss, uJetzt: jetzt, uGrund: G.lesen() }, (u) => {
+      gl.uniform1f(u.uNeu, neuesBild ? 1 : 0); gl.uniform1f(u.uTakt, taktJetzt ? 1 : 0); gl.uniform1f(u.uTaktNr, taktNr % 997);
+      gl.uniform1f(u.uLaenge, 0.2); gl.uniform1f(u.uSeite, innerWidth / innerHeight); gl.uniform1f(u.uStart, punkteNeu ? 1 : 0);
+    });
+    Z.tauschen(); punkteNeu = false;
+    if (taktJetzt) {
+      const Hs = ziele.hist;
+      gl.bindFramebuffer(gl.FRAMEBUFFER, Hs.fb); gl.viewport(0, kopf * LINIEN_K, LINIEN_L, LINIEN_K);
+      gl.useProgram(P.punkteKopie); gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, Z.lesen().tex);
+      gl.uniform1i(P.punkteKopie.u.uZ, 1); gl.uniform1i(P.punkteKopie.u.uZeile, kopf * LINIEN_K); zeichneFlaeche();
+    }
+  } else punkteNeu = true;
+
   // 4. das Warten: ruhende Finger füllen Dauer ein
   for (const f of finger.values()) {
     const p = aufLeinwand(f.x, f.y), ruhig = Math.max(0, 1 - Math.hypot(f.vx, f.vy) / 900);
@@ -1014,7 +1201,8 @@ function bild(ms) {
   if (geisterStart > 0) geisterWarten(t, dt);
   const Wp = ziele.w, wb = Wp.lesen().b, wh = Wp.lesen().h;
   // wie lange die Dauer bleibt, wenn der Finger geht: Uhr nach «Schmelze», Zucker nach «Warten», Spannung mittel
-  const halten = lesart === 0 ? 0.6 + 6 * WERTE[0][2] : lesart === 1 ? 1.5 + 14 * WERTE[1][0] : 3;
+  const bruchT = (t - bruchStart) / 1.3, bruch = lesart === 0 && bruchT >= 0 && bruchT < 1 ? 1 : 0;
+  const halten = bruch ? 1.0 : lesart === 0 ? 0.6 + 6 * WERTE[0][2] : lesart === 1 ? 1.5 + 14 * WERTE[1][0] : 3;
   rechne(P.warten, Wp.schreiben(), { uAlt: Wp.lesen() }, (u) => {
     gl.uniform2f(u.uPx, 1 / wb, 1 / wh); gl.uniform4fv(u.uStempel, stempel); gl.uniform2fv(u.uStempelR, stempelR);
     gl.uniform1i(u.uN, stempelN); gl.uniform1f(u.uAb, dt / halten); gl.uniform1f(u.uSeite, innerWidth / innerHeight);
@@ -1057,7 +1245,7 @@ function bild(ms) {
     // Uhr: ohne Warten kurzes Gedächtnis (0,3 s), im Warten bis 1,5 bis 5 s; Zucker: ohne Warten die Gegenwart, im Warten 2 bis 20 s
     const langsam = uhr ? 1.5 + 3.5 * WERTE[0][2] : 2 + 18 * WERTE[1][0];
     rechne(P.dauer, D.schreiben(), { uD: D.lesen(), uJetzt: jetzt, uGrund: G.lesen(), uW: W, uV: V.lesen(), uFl: fluss }, (u) => {
-      gl.uniform1f(u.uSchmier, uhr ? 1.6 : 0.5);
+      gl.uniform1f(u.uSchmier, uhr ? 1.6 : 0.5); gl.uniform1f(u.uSchmelz, uhr ? 0.5 : 0); gl.uniform1f(u.uZufall, Math.random());
       gl.uniform2f(u.uPx, pxA[0], pxA[1]); gl.uniform2f(u.uPxS, pxS[0], pxS[1]); gl.uniform1f(u.uDt, dt);
       gl.uniform1f(u.uSchnell, uhr ? 1 - Math.exp(-dt / 0.3) : 1); gl.uniform1f(u.uLangsam, 1 - Math.exp(-dt / langsam));
       gl.uniform1f(u.uAdvekt, uhr ? 0 : 1); gl.uniform1f(u.uMatte, uhr ? 1 : 0); gl.uniform1f(u.uLoesen, uhr ? 0 : 0.02 + 0.08 * WERTE[1][2]);
@@ -1067,6 +1255,7 @@ function bild(ms) {
       const Sp = ziele.spitze;
       rechne(P.spitze, Sp.schreiben(), { uAlt: Sp.lesen(), uJetzt: jetzt, uGrund: G.lesen(), uW: W, uFl: fluss }, (u) => {
         gl.uniform1f(u.uAbkl, Math.exp(-dt / 0.25)); gl.uniform1f(u.uAbklW, Math.exp(-dt / (1.2 + 4 * WERTE[0][2])));
+        gl.uniform1f(u.uZufall, Math.random()); gl.uniform2f(u.uPx, pxA[0], pxA[1]);
       });
       Sp.tauschen();
     }
@@ -1093,7 +1282,10 @@ function bild(ms) {
       gl.uniform1f(u.uKopf, kopf); gl.uniform1f(u.uN, MOMENTE_MAX); gl.uniform1f(u.uM, momentZahl());
       gl.uniform1f(u.uLinie, 1.1 * Math.max(1, leinwand.height / 1400)); gl.uniform1f(u.uT, t % 100); gl.uniform1f(u.uSeite, innerWidth / innerHeight);
       gl.uniform4f(u.uRahmen, ...rahmenGL);
+      gl.uniform1f(u.uBruch, bruch ? Math.min(1, bruchT * 12) * Math.min(1, bruchMenge * 3) : 0); gl.uniform1f(u.uBruchT, Math.max(0, bruchT));
+      gl.uniform1f(u.uPlatte, linienAn ? 0.78 : 1);
     });
+    if (linienAn) linienZeichnen(sz, W);
   } else if (lesart === 1) {
     rechne(P.zucker, sz, { uScharf: scharfTex, uD: D.lesen(), uW: W, uV: V.lesen() }, (u) => {
       gl.uniform2f(u.uPxD, pxA[0], pxA[1]); gl.uniform2f(u.uPxW, 1 / wb, 1 / wh); gl.uniform1f(u.uSchlieren, 0.2 + 1.6 * WERTE[1][2]);
@@ -1109,6 +1301,24 @@ function bild(ms) {
   if (standbildWunsch) { standbildWunsch = false; leinwand.toBlob((b) => b && zeigen(b, 'dauer-' + zeitstempel() + '.png')); }
   if (ersterLauf && gefuellt) { ersterLauf = false; spur('✓ läuft'); }
   requestAnimationFrame(bild);
+}
+// Mareys Linien über die Platte: Glieder, Bahnen, Knöpfe; mit Vormultiplikation über das Bild gelegt
+function linienZeichnen(sz, W) {
+  const p = P.linie, M = Math.min(momentZahl(), MOMENTE_MAX - 1), PK = 4, dpr = leinwand.height / innerHeight;
+  gl.bindFramebuffer(gl.FRAMEBUFFER, sz.fb); gl.viewport(0, 0, sz.b, sz.h);
+  gl.useProgram(p);
+  gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, ziele.hist.tex); gl.uniform1i(p.u.uHist, 1);
+  gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, ziele.punkte.lesen().tex); gl.uniform1i(p.u.uZ, 2);
+  gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, W.tex); gl.uniform1i(p.u.uW, 3);
+  gl.uniform1i(p.u.uL, LINIEN_L); gl.uniform1i(p.u.uK, LINIEN_K); gl.uniform1i(p.u.uKopf, kopf); gl.uniform1i(p.u.uN, MOMENTE_MAX); gl.uniform1i(p.u.uP, PK);
+  gl.uniform1f(p.u.uM, M); gl.uniform2f(p.u.uRes, sz.b, sz.h);
+  gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+  gl.uniform3f(p.u.uFarbe, 0.98, 0.96, 0.9);
+  // die Bahnen (uArt 1) bleiben aus: mit ihnen wurde aus dem Fächer ein Gitter
+  gl.uniform1f(p.u.uBreite, 1.5 * dpr); gl.uniform1i(p.u.uArt, 0); gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, (M + 1) * LINIEN_K * (LINIEN_L - 1));
+  gl.uniform3f(p.u.uFarbe, 1.0, 0.9, 0.82);
+  gl.uniform1f(p.u.uBreite, 1.3 * dpr); gl.uniform1i(p.u.uArt, 2); gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, (M + 1) * LINIEN_K * PK);
+  gl.disable(gl.BLEND);
 }
 function nachbearbeiten(t) {
   const B = leinwand.width, H = leinwand.height, b4 = Math.max(1, Math.round(B / 4)), h4 = Math.max(1, Math.round(H / 4));

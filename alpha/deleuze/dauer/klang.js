@@ -111,3 +111,26 @@ export function klangBild(s) {
   const f = GRUND * Math.pow(2, (7 * Math.min(1, sp + s.warten * 0.6)) / 12);
   ton.frequency.setTargetAtTime(f, t, 0.4); ton2.frequency.setTargetAtTime(f * 1.003, t, 0.4);
 }
+
+// Loslassen in der Uhr: die Dauer zerspringt. Erst ein heller Sprung, dann rieseln die Scherben als Ticken
+// auseinander, immer weiter auseinander, bis wieder die Uhr geht.
+export function klangBruch(menge) {
+  if (!ctx || !an || ctx.state !== 'running') return;
+  const t0 = ctx.currentTime, m = Math.min(1, 0.3 + menge);
+  // der Sprung: kurzes, helles Rauschen
+  const q = ctx.createBufferSource(); q.buffer = rausch;
+  const f = ctx.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 3800;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(0.22 * m, t0 + 0.003); g.gain.exponentialRampToValueAtTime(0.0004, t0 + 0.16);
+  q.connect(f); f.connect(g); g.connect(trocken); g.connect(nass); q.start(t0, Math.random(), 0.2);
+  // die Scherben: gläserne Töne aus der Melodie, zwei Oktaven höher, immer seltener
+  const n = 9 + Math.round(9 * m);
+  for (let i = 0; i < n; i++) {
+    const t = t0 + 0.02 + 1.15 * Math.pow(i / n, 1.7) + Math.random() * 0.015;
+    const fr = GRUND * 8 * Math.pow(2, MELODIE[(i * 5) % MELODIE.length] / 12) * (1 + (Math.random() - 0.5) * 0.004);
+    const o = ctx.createOscillator(), v = ctx.createGain(); o.type = 'sine'; o.frequency.value = fr;
+    const laut = (0.05 + 0.04 * Math.random()) * m * (1 - 0.6 * i / n);
+    v.gain.setValueAtTime(0, t); v.gain.linearRampToValueAtTime(laut, t + 0.002); v.gain.exponentialRampToValueAtTime(0.0003, t + 0.25 + 0.3 * Math.random());
+    o.connect(v); v.connect(trocken); v.connect(nass); o.start(t); o.stop(t + 0.6);
+  }
+}
