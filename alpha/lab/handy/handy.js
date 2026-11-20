@@ -171,7 +171,7 @@ function buehne() {
   else if (i === 0) etikett(e.titel.replace(/\.(jpe?g|png|webp)/i, ""), `${e.breite} × ${e.hoehe}`, bild(S.ton) ? ["Ton"] : null);
   else if (i === 1) etikett(ef ? [ef] : "Effekt wählen", ef && R.hole(S.effekt).parameter.some((p) => p.id === "anteil") ? `Anteil ${Math.round(S.anteil * 100)} %` : null, S.jevEffekt ? "jev hat gewichtet" : null);
   else if (i === 3) etikett(S.beat.ergebnis ? [bild(S.beat.ergebnis).titel.split("·")[0].trim()] : "noch kein Klang", S.beat.quelle ? (S.beat.quelle === "jev" ? "gewählt von jev" : "nach Regeln") : null);
-  else if (i === 4) etikett(S.film.video ? [`Film · ${sekunden(S.film.video.bilder / FPS)}`] : "Vorschau", S.film.video ? `${S.film.video.breite} × ${S.film.video.hoehe}` : null);
+  else if (i === 4) S.film.video ? etikett() : etikett("Vorschau", S.film.format !== "material" ? S.film.format : null);   // beim Film liegen dort die Bedienelemente des Videos
   else etikett();
 }
 
@@ -615,6 +615,8 @@ function knoepfe() {
   $("rechnen").textContent = S.film.video ? "Neu rechnen" : "Film rechnen";
   $("filmSichern").hidden = !S.film.video;
   $("zusammenstellen").hidden = S.film.eigene.length > 0;
+  // mit drei Knöpfen in der Reihe wird es eng: dann nur «jev neu»
+  $("zusammenstellen").replaceChildren(el("i", { class: "jev", text: "jev" }), S.film.zusammen ? " neu" : " stellt zusammen");
   $("pngSichern").disabled = !galerieBild();
   $("station").disabled = !galerieBild();
   $("station").setAttribute("aria-pressed", String(S.film.eigene.includes(galerieBild())));
