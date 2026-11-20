@@ -208,3 +208,7 @@ Christian: «Wähle max 2 Naturgeräusche beim ersten Errechnen eines Beats, wen
 ## BPM-Knopf und Tonart bei Erzeugen (20. November 2026)
 
 Christian: «Ein Knopf "bpm" und noch eine Auswahl bitte prominent bei Erzeugen», die Auswahl: «Mach Tonart». Neben dem Stil steht ein grosser BPM-Drehknopf (40–240, fein: 600 px Ziehweg für den ganzen Bereich), verbunden mit dem Zahlenfeld «Tempo»; ein neuer Stil dreht ihn mit, doppelt antippen setzt auf das Tempo des Stils. Grundton und Tonleiter sind aus der Bass-Zeile neben den Knopf gezogen (gleiche IDs, wirken wie bisher). Beides bleibt am Handy auch zugeklappt sichtbar.
+
+## ornament.lucerne entfernt (20. November 2026)
+
+Christian: «Nimm ornament Lucerne aus dem Composer». Entfernt sind der Bereich ornament.lucerne mit Klangsammlung, Makros und Groove-Editor, der Stil «ornament.lucerne» in der Stilwahl und die Sampler-Spuren (`lucerne-ui.js` gelöscht). Alte Projekte mit Sampler-Spuren brauchen nicht mehr zu laufen (Rückwärtskompatibilität nicht nötig). Der Motor in `kern/` und seine Tests bleiben im Repo.

@@ -1,5 +1,7 @@
 # ornament.lucerne 0.1.0
 
+> **Seit 20. November 2026 nicht mehr im Composer** (Christian: «Nimm ornament Lucerne aus dem Composer»). Oberfläche (`lucerne-ui.js`), Stil und Klangsammlung sind entfernt; der Motor (`kern/lucerne.js`, `kern/sampler.js`, `kern/klangsammlung.js`) und seine Tests bleiben, falls er wieder gebraucht wird.
+
 Stilprofil `ornament.lucerne`, Schema 0.1.0 (Auftrag von Christian, 10. November 2026). Warme, leicht instabile Melodik aus eigenen
 Aufnahmen, gebrochene, präzise gesetzte Rhythmen, ein wiederkehrendes Motiv, das sich verwandelt. Boards of Canada und Aphex Twin sind
 Bezugspunkte für den Umgang mit Material. Die Regeln hier sind ein eigener Entwurf und keine Nachbildung.
