@@ -75,6 +75,14 @@ figure { margin: 0; }
 .kopf nav a.heim:hover { background: #fff; color: #000; text-decoration: none; }
 @media (max-width: 640px) { .kopf { flex-wrap: wrap; row-gap: 10px; } .kopf nav { flex-basis: 100%; justify-content: space-between; gap: 10px; } .kopf nav a:not(.knopf, .heim) { display: none; } }
 
+/* Sprache d, e, s, f: klein im Kopf, die gewählte im Faden der Kopfleiste */
+.sprachen { display: flex; margin-left: auto; margin-right: 6px; }
+.sprachen button { font: 15px var(--sans); color: #fff; opacity: .55; background: none; border: 0; padding: 6px 7px; min-width: 30px; min-height: 36px; cursor: pointer; }
+.sprachen button:hover { opacity: .9; }
+.sprachen button[aria-pressed="true"] { opacity: 1; color: var(--faden); }
+.schluss p.handy { margin-top: 10px; font-size: 16px; }
+.schluss p.handy + p.handy { margin-top: 4px; color: var(--grau); }
+
 /* Achse */
 .seite { display: grid; grid-template-columns: var(--achse) minmax(0, 1fr); column-gap: clamp(20px, 3vw, 48px); }
 .seite > .rand { grid-column: 1; min-width: 0; }
@@ -181,36 +189,37 @@ p { margin: 0; max-width: 62ch; }
 </head>
 <body>
 
-<div id="intro" aria-hidden="true"><canvas></canvas><button type="button" tabindex="-1">Intro überspringen</button></div>
+<div id="intro" aria-hidden="true"><canvas></canvas><button type="button" tabindex="-1" data-t="introWeg">Intro überspringen</button></div>
 
 <header class="kopf innen">
-  <a class="marke" href="#start" aria-label="ornament.lab, zum Anfang"><svg class="signet" viewBox="0 0 34 24" aria-hidden="true"></svg><span>ornament<span class="p">.</span>lab</span></a>
-  <nav aria-label="Seiten">
+  <a class="marke" href="#start" aria-label="ornament.lab, zum Anfang" data-t-aria="zumAnfang"><svg class="signet" viewBox="0 0 34 24" aria-hidden="true"></svg><span>ornament<span class="p">.</span>lab</span></a>
+    <div class="sprachen" id="sprachen" role="group" aria-label="Sprache" data-t-aria="sprache"></div>
+  <nav aria-label="Seiten" data-t-aria="seiten">
     <a class="heim" href="../../">ornament<span class="p">.</span>cloud <span aria-hidden="true">↗</span></a>
-    <a href="#durchgang">Durchgang</a>
-    <a href="#probieren">Probieren</a>
-    <a href="#katalog">Katalog</a>
-    <a class="knopf" href="../../alpha/lab/">Lab öffnen</a>
+    <a href="#durchgang" data-t="navDurchgang">Durchgang</a>
+    <a href="#probieren" data-t="navProbieren">Probieren</a>
+    <a href="#katalog" data-t="navKatalog">Katalog</a>
+    <a class="knopf" href="../../alpha/lab/" data-t="labOeffnen">Lab öffnen</a>
   </nav>
 </header>
 
 <main id="start">
-  <div class="band" aria-label="Ein Bild in sechs Zuständen">
-    <figure class="auf"><img src="bilder/portraet.jpg" alt="Beispielbild: Porträt mit Mosaik vor Rot"></figure>
-    <figure class="auf" style="--i:1"><img src="bilder/v-glitch.jpg" alt="Dasselbe Bild im Glitch"></figure>
+  <div class="band" aria-label="Ein Bild in sechs Zuständen" data-t-aria="band">
+    <figure class="auf"><img src="bilder/portraet.jpg" alt="Beispielbild: Porträt mit Mosaik vor Rot" data-t-alt="altPortraet"></figure>
+    <figure class="auf" style="--i:1"><img src="bilder/v-glitch.jpg" alt="Dasselbe Bild im Glitch" data-t-alt="altGlitch"></figure>
     <div class="blau auf" style="--i:2"><svg class="signet weiss" viewBox="0 0 34 24" aria-hidden="true"></svg></div>
-    <figure class="auf" style="--i:3"><img src="bilder/v-neu.jpg" alt="Dasselbe Bild zerlegt und neu gesetzt"></figure>
-    <figure class="auf" style="--i:4"><img src="bilder/v-raster.jpg" alt="Dasselbe Bild als Raster"></figure>
-    <figure class="auf" style="--i:5"><img src="bilder/v-teilung.jpg" alt="Dasselbe Bild als Teilung"></figure>
+    <figure class="auf" style="--i:3"><img src="bilder/v-neu.jpg" alt="Dasselbe Bild zerlegt und neu gesetzt" data-t-alt="altNeu"></figure>
+    <figure class="auf" style="--i:4"><img src="bilder/v-raster.jpg" alt="Dasselbe Bild als Raster" data-t-alt="altRaster"></figure>
+    <figure class="auf" style="--i:5"><img src="bilder/v-teilung.jpg" alt="Dasselbe Bild als Teilung" data-t-alt="altTeilung"></figure>
   </div>
 
   <section class="titelfeld feld nacht innen" aria-labelledby="titel">
     <div class="seite">
-      <div class="rand"><p class="notiz auf">ORNAMENT LAB 0.1, eine Werkstatt von Christian Strickler. Läuft ganz im Browser, nichts wird hochgeladen.</p></div>
+      <div class="rand"><p class="notiz auf" data-t="notizTitel">ORNAMENT LAB 0.1, eine Werkstatt von Christian Strickler. Läuft ganz im Browser, nichts wird hochgeladen.</p></div>
       <div class="haupt">
-        <h1 id="titel" class="auf">Ein Bild wird Material.</h1>
-        <p class="stand auf" style="--i:1">Operationen verändern es, Varianten stehen nebeneinander, jede lässt sich weiterführen. Erzeugen, beobachten, weiterführen.</p>
-        <div class="tat auf" style="--i:2"><a class="knopf" href="../../alpha/lab/">Lab öffnen <span aria-hidden="true">→</span></a></div>
+        <h1 id="titel" class="auf" data-t="h1">Ein Bild wird Material.</h1>
+        <p class="stand auf" style="--i:1" data-t="stand">Operationen verändern es, Varianten stehen nebeneinander, jede lässt sich weiterführen. Erzeugen, beobachten, weiterführen.</p>
+        <div class="tat auf" style="--i:2"><a class="knopf" href="../../alpha/lab/" data-t="labOeffnen">Lab öffnen <span aria-hidden="true">→</span></a></div>
       </div>
     </div>
   </section>
@@ -218,16 +227,16 @@ p { margin: 0; max-width: 62ch; }
   <section class="abschnitt feld hell innen" id="durchgang" aria-labelledby="h-durch">
     <div class="seite">
       <div class="rand">
-        <figure class="randbild auf" style="--i:2"><img src="bilder/v-raster.jpg" alt="Beispielbild als farbiges Raster" loading="lazy"><figcaption class="notiz">Raster: die Punkte nehmen Ton und Farbe des Bildes auf.</figcaption></figure>
+        <figure class="randbild auf" style="--i:2"><img src="bilder/v-raster.jpg" alt="Beispielbild als farbiges Raster" data-t-alt="altRasterFarbe" loading="lazy"><figcaption class="notiz" data-t="capRaster">Raster: die Punkte nehmen Ton und Farbe des Bildes auf.</figcaption></figure>
       </div>
       <div class="haupt">
-        <h2 id="h-durch" class="auf">Ein Durchgang in fünf Schritten.</h2>
+        <h2 id="h-durch" class="auf" data-t="hDurch">Ein Durchgang in fünf Schritten.</h2>
         <ol class="durchgang">
-          <li class="auf"><b>Material</b><span>Ein Bild, ein Video oder ein Ton. Alles bleibt auf deinem Gerät.</span></li>
-          <li class="auf" style="--i:1"><b>Operationen</b><span>Bildfilter, Linienbilder, Komposition, Klang. Jede mit Herkunft und Parametern.</span></li>
-          <li class="auf" style="--i:2"><b>Nebeneinander</b><span>Ein Sinus oder gehaltener Zufall verteilt einen Parameter über sechs Varianten.</span></li>
-          <li class="auf" style="--i:3"><b>Nacheinander</b><span>Der Verlauf wird zum Film über Stationen, im Takt eines Tons, als MP4.</span></li>
-          <li class="auf" style="--i:4"><b>Protokoll</b><span>Jede Entscheidung mit ihrer Art: Mensch, Zufall, Regel oder jev.</span></li>
+          <li class="auf"><b data-t="d1">Material</b><span data-t="d1t">Ein Bild, ein Video oder ein Ton. Alles bleibt auf deinem Gerät.</span></li>
+          <li class="auf" style="--i:1"><b data-t="d2">Operationen</b><span data-t="d2t">Bildfilter, Linienbilder, Komposition, Klang. Jede mit Herkunft und Parametern.</span></li>
+          <li class="auf" style="--i:2"><b data-t="d3">Nebeneinander</b><span data-t="d3t">Ein Sinus oder gehaltener Zufall verteilt einen Parameter über sechs Varianten.</span></li>
+          <li class="auf" style="--i:3"><b data-t="d4">Nacheinander</b><span data-t="d4t">Der Verlauf wird zum Film über Stationen, im Takt eines Tons, als MP4.</span></li>
+          <li class="auf" style="--i:4"><b data-t="d5">Protokoll</b><span data-t="d5t">Jede Entscheidung mit ihrer Art: Mensch, Zufall, Regel oder jev.</span></li>
         </ol>
       </div>
     </div>
@@ -236,13 +245,13 @@ p { margin: 0; max-width: 62ch; }
   <section class="ganz feld nacht innen" aria-labelledby="h-film">
     <div class="seite">
       <div class="rand">
-        <h2 id="h-film" class="auf">Vorschlag für 30 Sekunden.</h2>
-        <blockquote class="auf" style="--i:1"><p>Mit Bild und Ton schlägt das Lab einen Film vor. Du übernimmst ihn oder wählst neu.</p></blockquote>
-        <p class="notiz auf" style="--i:2">Sechs Abschnitte, zwei Klänge, vier Dramaturgien, ein Format von 9:16 bis 16:9. Am Schluss das Signet.</p>
-        <div class="mini auf" style="--i:3"><img src="bilder/v-glitch.jpg" alt="Abschnitt Glitch" loading="lazy"><img src="bilder/v-sort.jpg" alt="Abschnitt Pixelsortierung" loading="lazy"><img src="bilder/v-teilung.jpg" alt="Abschnitt Teilung" loading="lazy"></div>
+        <h2 id="h-film" class="auf" data-t="hFilm">Vorschlag für 30 Sekunden.</h2>
+        <blockquote class="auf" style="--i:1"><p data-t="zitat">Mit Bild und Ton schlägt das Lab einen Film vor. Du übernimmst ihn oder wählst neu.</p></blockquote>
+        <p class="notiz auf" style="--i:2" data-t="notizFilm">Sechs Abschnitte, zwei Klänge, vier Dramaturgien, ein Format von 9:16 bis 16:9. Am Schluss das Signet.</p>
+        <div class="mini auf" style="--i:3"><img src="bilder/v-glitch.jpg" alt="Abschnitt Glitch" data-t-alt="altAbGlitch" loading="lazy"><img src="bilder/v-sort.jpg" alt="Abschnitt Pixelsortierung" data-t-alt="altAbSort" loading="lazy"><img src="bilder/v-teilung.jpg" alt="Abschnitt Teilung" data-t-alt="altAbTeilung" loading="lazy"></div>
       </div>
       <div class="haupt">
-        <figure class="film auf" style="--i:1"><canvas id="film" width="760" height="760" role="img" aria-label="Das Beispielbild läuft durch die Stationen eines Films"></canvas><figcaption><i></i><span id="film-station">Station 1 · Ausgangsbild</span></figcaption></figure>
+        <figure class="film auf" style="--i:1"><canvas id="film" width="760" height="760" role="img" aria-label="Das Beispielbild läuft durch die Stationen eines Films" data-t-aria="ariaFilm"></canvas><figcaption><i></i><span id="film-station">Station 1 · Ausgangsbild</span></figcaption></figure>
       </div>
     </div>
   </section>
@@ -250,16 +259,16 @@ p { margin: 0; max-width: 62ch; }
   <section class="abschnitt feld flaeche innen" id="probieren" aria-labelledby="h-prob">
     <div class="seite">
       <div class="rand">
-        <figure class="pult auf"><canvas id="pult" width="720" height="720" role="img" aria-label="Das Beispielbild mit dem gewählten Verfahren"></canvas></figure>
+        <figure class="pult auf"><canvas id="pult" width="720" height="720" role="img" aria-label="Das Beispielbild mit dem gewählten Verfahren" data-t-aria="ariaPult"></canvas></figure>
       </div>
       <div class="haupt">
-        <h2 id="h-prob" class="auf">Probier es am Bild.</h2>
-        <p class="auf" style="--i:1;margin-top:24px">Vier Verfahren aus dem Lab, hier vereinfacht und direkt im Browser gerechnet. Im Lab hat jedes seine Parameter, Varianten und einen Verlauf für den Film.</p>
-        <div class="wahl auf" style="--i:2" role="group" aria-label="Verfahren" id="wahl">
-          <button type="button" data-v="raster" aria-pressed="true">Raster</button>
-          <button type="button" data-v="glitch">Glitch</button>
-          <button type="button" data-v="sort">Pixelsortierung</button>
-          <button type="button" data-v="neu">Neu setzen</button>
+        <h2 id="h-prob" class="auf" data-t="hProb">Probier es am Bild.</h2>
+        <p class="auf" style="--i:1;margin-top:24px" data-t="probText">Vier Verfahren aus dem Lab, hier vereinfacht und direkt im Browser gerechnet. Im Lab hat jedes seine Parameter, Varianten und einen Verlauf für den Film.</p>
+        <div class="wahl auf" style="--i:2" role="group" aria-label="Verfahren" data-t-aria="verfahren" id="wahl">
+          <button type="button" data-v="raster" aria-pressed="true" data-t="vRaster">Raster</button>
+          <button type="button" data-v="glitch" data-t="vGlitch">Glitch</button>
+          <button type="button" data-v="sort" data-t="vSort">Pixelsortierung</button>
+          <button type="button" data-v="neu" data-t="vNeu">Neu setzen</button>
         </div>
         <div class="protokoll auf" style="--i:3" aria-live="polite" id="protokoll"></div>
       </div>
@@ -268,18 +277,18 @@ p { margin: 0; max-width: 62ch; }
 
   <section class="abschnitt feld rosa innen" id="katalog" aria-labelledby="h-kat">
     <div class="seite">
-      <div class="rand"><figure class="randbild auf"><img src="bilder/v-punkte.jpg" alt="Beispielbild punktiert" loading="lazy"><figcaption class="notiz">Punktieren: die Dichte folgt dem Ton des Bildes.</figcaption></figure></div>
+      <div class="rand"><figure class="randbild auf"><img src="bilder/v-punkte.jpg" alt="Beispielbild punktiert" data-t-alt="altPunkte" loading="lazy"><figcaption class="notiz" data-t="capPunkte">Punktieren: die Dichte folgt dem Ton des Bildes.</figcaption></figure></div>
       <div class="haupt">
-        <h2 id="h-kat" class="auf">Was im Lab steht.</h2>
+        <h2 id="h-kat" class="auf" data-t="hKat">Was im Lab steht.</h2>
         <div class="katalog">
-          <div class="auf"><b>Bildfilter</b><span>Glitch, Pixelsortierung, Raster, Zerlegen und neu setzen.</span></div>
-          <div class="auf" style="--i:1"><b>Linienbilder</b><span>Schraffur in Lagen, Fliessfeld, Punktieren, Teilung.</span></div>
-          <div class="auf" style="--i:2"><b>Beat und Klang</b><span>Beat aus Bild, Klangerzeuger, Tempo, Dekonstruktion, Körner, Filter, Fertig mischen.</span></div>
-          <div class="auf" style="--i:3"><b>Stationen</b><span>Zustände werden Stationen, mit Halten, Übergang und Takt.</span></div>
-          <div class="auf" style="--i:4"><b>Modulation</b><span>Sinus, Rampe, gehaltener Zufall oder ein Steuersignal aus Bild oder Ton.</span></div>
-          <div class="auf" style="--i:5"><b>jev</b><span>Wählt Effekte und Dramaturgien, nach offen gelegten Regeln.</span></div>
-          <div class="auf" style="--i:6"><b>Komposition</b><span>Misst Schwerpunkt, Symmetrie, Licht und skaliert sie mit Faktoren.</span></div>
-          <div class="auf" style="--i:7"><b>Projekt</b><span>Speichern, öffnen, weiterarbeiten. Jeder Schritt bleibt nachvollziehbar.</span></div>
+          <div class="auf"><b data-t="k1">Bildfilter</b><span data-t="k1t">Glitch, Pixelsortierung, Raster, Zerlegen und neu setzen.</span></div>
+          <div class="auf" style="--i:1"><b data-t="k2">Linienbilder</b><span data-t="k2t">Schraffur in Lagen, Fliessfeld, Punktieren, Teilung.</span></div>
+          <div class="auf" style="--i:2"><b data-t="k3">Beat und Klang</b><span data-t="k3t">Beat aus Bild, Klangerzeuger, Tempo, Dekonstruktion, Körner, Filter, Fertig mischen.</span></div>
+          <div class="auf" style="--i:3"><b data-t="k4">Stationen</b><span data-t="k4t">Zustände werden Stationen, mit Halten, Übergang und Takt.</span></div>
+          <div class="auf" style="--i:4"><b data-t="k5">Modulation</b><span data-t="k5t">Sinus, Rampe, gehaltener Zufall oder ein Steuersignal aus Bild oder Ton.</span></div>
+          <div class="auf" style="--i:5"><b>jev</b><span data-t="k6t">Wählt Effekte und Dramaturgien, nach offen gelegten Regeln.</span></div>
+          <div class="auf" style="--i:6"><b data-t="k7">Komposition</b><span data-t="k7t">Misst Schwerpunkt, Symmetrie, Licht und skaliert sie mit Faktoren.</span></div>
+          <div class="auf" style="--i:7"><b data-t="k8">Projekt</b><span data-t="k8t">Speichern, öffnen, weiterarbeiten. Jeder Schritt bleibt nachvollziehbar.</span></div>
         </div>
       </div>
     </div>
@@ -287,11 +296,13 @@ p { margin: 0; max-width: 62ch; }
 
   <section class="schluss feld blau innen" aria-labelledby="h-schluss">
     <div class="seite">
-      <div class="rand"><p class="notiz" style="color:#fff">Am besten in Chrome, auch am Handy. Bilder und Töne bleiben auf deinem Gerät.</p></div>
+      <div class="rand"><p class="notiz" style="color:#fff" data-t="notizSchluss">Am besten in Chrome, auch am Handy. Bilder und Töne bleiben auf deinem Gerät.</p></div>
       <div class="haupt">
-        <h2 id="h-schluss" class="vs">Das Lab öffnen</h2>
-        <a class="gross" href="../../alpha/lab/">Zum Lab <span aria-hidden="true">→</span></a>
+        <h2 id="h-schluss" class="vs" data-t="hSchluss">Das Lab öffnen</h2>
+        <a class="gross" href="../../alpha/lab/" data-t="zumLab">Zum Lab <span aria-hidden="true">→</span></a>
         <p>ornament.cloud/alpha/lab</p>
+        <p class="handy"><span data-t="amHandy">Am Handy, in vier Sprachen:</span> <a href="../../alpha/lab/handy/">ornament.cloud/alpha/lab/handy</a></p>
+        <p class="handy" id="nurDeutsch" hidden data-t="nurDeutsch">Das ganze Lab spricht vorerst Deutsch.</p>
       </div>
     </div>
   </section>
@@ -299,7 +310,7 @@ p { margin: 0; max-width: 62ch; }
 
 <footer class="fuss feld nacht innen">
   <span class="marke"><svg class="signet" viewBox="0 0 34 24" aria-hidden="true"></svg><span>ornament<span class="p">.</span>lab</span></span>
-  <button type="button" id="nochmal">Intro noch einmal</button>
+  <button type="button" id="nochmal" data-t="nochmal">Intro noch einmal</button>
   <span>Christian Strickler · ornament.cloud</span>
 </footer>
 
@@ -403,6 +414,142 @@ const VERFAHREN = {
   } },
 };
 
+</script>
+<script>
+/* Sprache d, e, s, f (20. November 2026, Christian: «Gibt es das ornament lab auch schon englisch, spanisch, französisch?» → «Ja»).
+   Wie im Dritten Rad und in der Handy-Fassung: ?sprache=de|en|es|fr, dann gemerkt in «ornament.sprache» (gilt auch für alpha/lab/handy/),
+   dann die Sprache des Geräts, sonst Deutsch. Deutsch steht in der Seite selbst; data-t ersetzt den ersten Text eines Elements,
+   data-t-aria und data-t-alt die Attribute. Das ganze Lab (alpha/lab/) bleibt vorerst deutsch, die Handy-Fassung spricht alle vier. */
+const SPRACHEN = ["de", "en", "es", "fr"], KUERZEL = { de: "d", en: "e", es: "s", fr: "f" }, SPRACHNAME = { de: "Deutsch", en: "English", es: "Español", fr: "Français" };
+const LANDING = {
+  de: { station: "Station", sAusgang: "Ausgangsbild", sTeilung: "Teilung", startwert: "Startwert", mensch: "Mensch", zufall: "Zufall", regel: "Regel",
+    beschreibung: "ORNAMENT LAB: eine Werkstatt im Browser, in der ein Bild Material wird. Bildfilter, Linienbilder, Klang und Stationen bis zum Film." },
+  en: {
+    introWeg: "Skip intro", zumAnfang: "ornament.lab, back to the top", sprache: "Language", seiten: "Pages", navDurchgang: "Walkthrough", navProbieren: "Try it", navKatalog: "Catalogue", labOeffnen: "Open lab",
+    band: "One image in six states", altPortraet: "Sample image: portrait with mosaic against red", altGlitch: "The same image as glitch", altNeu: "The same image taken apart and reassembled", altRaster: "The same image as halftone", altTeilung: "The same image as division",
+    notizTitel: "ORNAMENT LAB 0.1, a workshop by Christian Strickler. Runs entirely in the browser, nothing is uploaded.",
+    h1: "An image becomes material.", stand: "Operations change it, variants stand side by side, each one can be taken further. Generate, observe, continue.",
+    altRasterFarbe: "Sample image as a coloured halftone", capRaster: "Halftone: the dots take on the tone and colour of the image.",
+    hDurch: "One pass in five steps.", d1: "Material", d1t: "An image, a video or a sound. Everything stays on your device.",
+    d2: "Operations", d2t: "Image filters, line drawings, composition, sound. Each with its origin and parameters.",
+    d3: "Side by side", d3t: "A sine or held chance spreads one parameter across six variants.",
+    d4: "One after another", d4t: "The course becomes a film through stations, in time with a sound, as MP4.",
+    d5: "Record", d5t: "Every decision with its kind: human, chance, rule or jev.",
+    hFilm: "A proposal for 30 seconds.", zitat: "Given an image and a sound, the lab proposes a film. You take it or choose again.",
+    notizFilm: "Six sections, two sounds, four dramaturgies, a format from 9:16 to 16:9. The signet at the end.",
+    altAbGlitch: "Section glitch", altAbSort: "Section pixel sorting", altAbTeilung: "Section division", ariaFilm: "The sample image runs through the stations of a film",
+    ariaPult: "The sample image with the chosen process", hProb: "Try it on the image.",
+    probText: "Four processes from the lab, simplified here and computed right in the browser. In the lab each has its parameters, variants and a course for the film.",
+    verfahren: "Process", vRaster: "Halftone", vGlitch: "Glitch", vSort: "Pixel sorting", vNeu: "Reassemble",
+    altPunkte: "Sample image stippled", capPunkte: "Stippling: the density follows the tone of the image.", hKat: "What the lab holds.",
+    k1: "Image filters", k1t: "Glitch, pixel sorting, halftone, taking apart and reassembling.",
+    k2: "Line drawings", k2t: "Hatching in layers, flow field, stippling, division.",
+    k3: "Beat and sound", k3t: "Beat from image, sound generator, tempo, deconstruction, grains, filters, final mix.",
+    k4: "Stations", k4t: "States become stations, with hold, transition and beat.",
+    k5: "Modulation", k5t: "Sine, ramp, held chance or a control signal from image or sound.",
+    k6t: "Chooses effects and dramaturgies, by rules laid open.",
+    k7: "Composition", k7t: "Measures centre of gravity, symmetry and light, and scales them by factors.",
+    k8: "Project", k8t: "Save, open, keep working. Every step stays traceable.",
+    notizSchluss: "Best in Chrome, on the phone too. Images and sounds stay on your device.", hSchluss: "Open the lab", zumLab: "To the lab",
+    amHandy: "On the phone, in four languages:", nurDeutsch: "The full lab speaks German for now.", nochmal: "Play intro again",
+    station: "Station", sAusgang: "Starting image", sTeilung: "Division", startwert: "seed", mensch: "Human", zufall: "Chance", regel: "Rule",
+    beschreibung: "ORNAMENT LAB: a workshop in the browser where an image becomes material. Image filters, line drawings, sound and stations, up to a film.",
+  },
+  es: {
+    introWeg: "Saltar la intro", zumAnfang: "ornament.lab, al principio", sprache: "Idioma", seiten: "Páginas", navDurchgang: "Recorrido", navProbieren: "Probar", navKatalog: "Catálogo", labOeffnen: "Abrir el lab",
+    band: "Una imagen en seis estados", altPortraet: "Imagen de ejemplo: retrato con mosaico sobre rojo", altGlitch: "La misma imagen con glitch", altNeu: "La misma imagen desmontada y recompuesta", altRaster: "La misma imagen como trama", altTeilung: "La misma imagen como división",
+    notizTitel: "ORNAMENT LAB 0.1, un taller de Christian Strickler. Funciona por completo en el navegador, no se sube nada.",
+    h1: "Una imagen se vuelve material.", stand: "Las operaciones la transforman, las variantes quedan una al lado de otra y cada una puede continuar. Generar, observar, continuar.",
+    altRasterFarbe: "Imagen de ejemplo como trama en color", capRaster: "Trama: los puntos toman el tono y el color de la imagen.",
+    hDurch: "Un recorrido en cinco pasos.", d1: "Material", d1t: "Una imagen, un vídeo o un sonido. Todo se queda en tu dispositivo.",
+    d2: "Operaciones", d2t: "Filtros de imagen, dibujos de líneas, composición, sonido. Cada una con su origen y sus parámetros.",
+    d3: "Una al lado de otra", d3t: "Un seno o un azar sostenido reparte un parámetro entre seis variantes.",
+    d4: "Una tras otra", d4t: "El recorrido se vuelve película a través de estaciones, al compás de un sonido, en MP4.",
+    d5: "Registro", d5t: "Cada decisión con su tipo: persona, azar, regla o jev.",
+    hFilm: "Una propuesta de 30 segundos.", zitat: "Con imagen y sonido, el lab propone una película. La aceptas o eliges de nuevo.",
+    notizFilm: "Seis secciones, dos sonidos, cuatro dramaturgias, un formato de 9:16 a 16:9. Al final, el signo.",
+    altAbGlitch: "Sección glitch", altAbSort: "Sección ordenación de píxeles", altAbTeilung: "Sección división", ariaFilm: "La imagen de ejemplo recorre las estaciones de una película",
+    ariaPult: "La imagen de ejemplo con el procedimiento elegido", hProb: "Pruébalo en la imagen.",
+    probText: "Cuatro procedimientos del lab, aquí simplificados y calculados directamente en el navegador. En el lab cada uno tiene sus parámetros, variantes y un recorrido para la película.",
+    verfahren: "Procedimiento", vRaster: "Trama", vGlitch: "Glitch", vSort: "Ordenar píxeles", vNeu: "Recomponer",
+    altPunkte: "Imagen de ejemplo punteada", capPunkte: "Punteado: la densidad sigue el tono de la imagen.", hKat: "Qué hay en el lab.",
+    k1: "Filtros de imagen", k1t: "Glitch, ordenación de píxeles, trama, desmontar y recomponer.",
+    k2: "Dibujos de líneas", k2t: "Rayado en capas, campo de flujo, punteado, división.",
+    k3: "Ritmo y sonido", k3t: "Ritmo a partir de la imagen, generador de sonido, tempo, deconstrucción, granos, filtros, mezcla final.",
+    k4: "Estaciones", k4t: "Los estados se vuelven estaciones, con pausa, transición y compás.",
+    k5: "Modulación", k5t: "Seno, rampa, azar sostenido o una señal de control a partir de imagen o sonido.",
+    k6t: "Elige efectos y dramaturgias, según reglas a la vista.",
+    k7: "Composición", k7t: "Mide el centro de gravedad, la simetría y la luz, y los escala con factores.",
+    k8: "Proyecto", k8t: "Guardar, abrir, seguir trabajando. Cada paso se puede rastrear.",
+    notizSchluss: "Mejor en Chrome, también en el móvil. Las imágenes y los sonidos se quedan en tu dispositivo.", hSchluss: "Abrir el lab", zumLab: "Al lab",
+    amHandy: "En el móvil, en cuatro idiomas:", nurDeutsch: "Por ahora, el lab completo solo está en alemán.", nochmal: "Ver la intro otra vez",
+    station: "Estación", sAusgang: "Imagen de partida", sTeilung: "División", startwert: "semilla", mensch: "Persona", zufall: "Azar", regel: "Regla",
+    beschreibung: "ORNAMENT LAB: un taller en el navegador donde una imagen se vuelve material. Filtros de imagen, dibujos de líneas, sonido y estaciones, hasta una película.",
+  },
+  fr: {
+    introWeg: "Passer l’intro", zumAnfang: "ornament.lab, retour au début", sprache: "Langue", seiten: "Pages", navDurchgang: "Parcours", navProbieren: "Essayer", navKatalog: "Catalogue", labOeffnen: "Ouvrir le lab",
+    band: "Une image en six états", altPortraet: "Image d’exemple : portrait avec mosaïque sur fond rouge", altGlitch: "La même image en glitch", altNeu: "La même image défaite et recomposée", altRaster: "La même image en trame", altTeilung: "La même image en division",
+    notizTitel: "ORNAMENT LAB 0.1, un atelier de Christian Strickler. Tout se passe dans le navigateur, rien n’est envoyé.",
+    h1: "Une image devient matière.", stand: "Des opérations la transforment, des variantes se tiennent côte à côte, chacune peut être poursuivie. Produire, observer, poursuivre.",
+    altRasterFarbe: "Image d’exemple en trame colorée", capRaster: "Trame : les points prennent le ton et la couleur de l’image.",
+    hDurch: "Un parcours en cinq étapes.", d1: "Matière", d1t: "Une image, une vidéo ou un son. Tout reste sur ton appareil.",
+    d2: "Opérations", d2t: "Filtres d’image, dessins au trait, composition, son. Chacune avec son origine et ses paramètres.",
+    d3: "Côte à côte", d3t: "Un sinus ou un hasard maintenu répartit un paramètre sur six variantes.",
+    d4: "L’une après l’autre", d4t: "Le parcours devient un film en stations, au rythme d’un son, en MP4.",
+    d5: "Journal", d5t: "Chaque décision avec sa nature : humain, hasard, règle ou jev.",
+    hFilm: "Une proposition de 30 secondes.", zitat: "Avec une image et un son, le lab propose un film. Tu l’acceptes ou tu choisis à nouveau.",
+    notizFilm: "Six sections, deux sons, quatre dramaturgies, un format de 9:16 à 16:9. À la fin, le signet.",
+    altAbGlitch: "Section glitch", altAbSort: "Section tri de pixels", altAbTeilung: "Section division", ariaFilm: "L’image d’exemple traverse les stations d’un film",
+    ariaPult: "L’image d’exemple avec le procédé choisi", hProb: "Essaie sur l’image.",
+    probText: "Quatre procédés du lab, simplifiés ici et calculés directement dans le navigateur. Dans le lab, chacun a ses paramètres, ses variantes et un parcours pour le film.",
+    verfahren: "Procédé", vRaster: "Trame", vGlitch: "Glitch", vSort: "Tri de pixels", vNeu: "Recomposer",
+    altPunkte: "Image d’exemple au pointillé", capPunkte: "Pointillé : la densité suit le ton de l’image.", hKat: "Ce que contient le lab.",
+    k1: "Filtres d’image", k1t: "Glitch, tri de pixels, trame, défaire et recomposer.",
+    k2: "Dessins au trait", k2t: "Hachures en couches, champ de flux, pointillé, division.",
+    k3: "Rythme et son", k3t: "Rythme tiré de l’image, générateur de son, tempo, déconstruction, grains, filtres, mixage final.",
+    k4: "Stations", k4t: "Les états deviennent des stations, avec pause, transition et rythme.",
+    k5: "Modulation", k5t: "Sinus, rampe, hasard maintenu ou signal de commande tiré de l’image ou du son.",
+    k6t: "Choisit effets et dramaturgies, selon des règles exposées.",
+    k7: "Composition", k7t: "Mesure le centre de gravité, la symétrie et la lumière, et les module par des facteurs.",
+    k8: "Projet", k8t: "Enregistrer, ouvrir, continuer. Chaque étape reste traçable.",
+    notizSchluss: "Idéal dans Chrome, aussi sur téléphone. Les images et les sons restent sur ton appareil.", hSchluss: "Ouvrir le lab", zumLab: "Vers le lab",
+    amHandy: "Sur téléphone, en quatre langues :", nurDeutsch: "Pour l’instant, le lab complet parle allemand.", nochmal: "Revoir l’intro",
+    station: "Station", sAusgang: "Image de départ", sTeilung: "Division", startwert: "graine", mensch: "Humain", zufall: "Hasard", regel: "Règle",
+    beschreibung: "ORNAMENT LAB : un atelier dans le navigateur où une image devient matière. Filtres d’image, dessins au trait, son et stations, jusqu’au film.",
+  },
+};
+// Französisch: schmale geschützte Leerzeichen vor : ; ? ! damit nichts allein am Zeilenanfang steht
+for (const [k, v] of Object.entries(LANDING.fr)) LANDING.fr[k] = v.replace(/ ([:;?!])/g, " $1");
+let spracheJetzt = "de";
+const tl = (k) => LANDING[spracheJetzt]?.[k] ?? LANDING.de[k] ?? k;
+(function () {
+  const passt = (x) => SPRACHEN.find((s) => String(x ?? "").toLowerCase().startsWith(s));
+  // das Deutsch der Seite merken, damit der Wechsel zurück ohne Neuladen geht
+  const ersterText = (e) => [...e.childNodes].find((n) => n.nodeType === 3 && n.data.trim());
+  for (const e of document.querySelectorAll("[data-t]")) { const n = ersterText(e); if (n) LANDING.de[e.dataset.t] ??= n.data.trim(); }
+  for (const e of document.querySelectorAll("[data-t-aria]")) LANDING.de[e.dataset.tAria] ??= e.getAttribute("aria-label");
+  for (const e of document.querySelectorAll("[data-t-alt]")) LANDING.de[e.dataset.tAlt] ??= e.getAttribute("alt");
+  function setze(s) {
+    spracheJetzt = s;
+    document.documentElement.lang = s === "de" ? "de-CH" : s;
+    for (const e of document.querySelectorAll("[data-t]")) { const n = ersterText(e); if (n) n.data = n.data.replace(n.data.trim(), tl(e.dataset.t)); }
+    for (const e of document.querySelectorAll("[data-t-aria]")) e.setAttribute("aria-label", tl(e.dataset.tAria));
+    for (const e of document.querySelectorAll("[data-t-alt]")) e.setAttribute("alt", tl(e.dataset.tAlt));
+    document.querySelector('meta[name="description"]').content = tl("beschreibung");
+    document.getElementById("nurDeutsch").hidden = s === "de";
+    for (const b of document.querySelectorAll("#sprachen button")) b.setAttribute("aria-pressed", String(b.lang === s));
+    dispatchEvent(new Event("sprache"));
+  }
+  const box = document.getElementById("sprachen");
+  for (const s of SPRACHEN) {
+    const b = document.createElement("button"); b.type = "button"; b.lang = s; b.textContent = KUERZEL[s]; b.title = SPRACHNAME[s]; b.setAttribute("aria-label", SPRACHNAME[s]);
+    b.addEventListener("click", () => { try { localStorage.setItem("ornament.sprache", s); } catch { /* privat */ } setze(s); });
+    box.append(b);
+  }
+  let start = passt(new URLSearchParams(location.search).get("sprache"));
+  try { if (start) localStorage.setItem("ornament.sprache", start); else start = passt(localStorage.getItem("ornament.sprache")); } catch { /* privat */ }
+  setze(start ?? (navigator.languages ?? []).map(passt).find(Boolean) ?? "de");
+})();
 </script>
 <script>
 document.documentElement.classList.add("js");
@@ -608,7 +755,7 @@ const beispiel = new Image(); beispiel.src = "bilder/portraet.jpg";
 beispiel.decode().then(() => {
   // Film: Stationen nacheinander, mit Überblendung, lebendige Verfahren laufen weiter
   const fc = document.getElementById("film"), fx = fc.getContext("2d"), qf = quelle(beispiel, 760, 760);
-  const STATIONEN = [["start", "Ausgangsbild"], ["glitch", "Glitch"], ["raster", "Raster"], ["sort", "Pixelsortierung"], ["teilung", "Teilung"]];
+  const STATIONEN = [["start", "sAusgang"], ["glitch", "vGlitch"], ["raster", "vRaster"], ["sort", "vSort"], ["teilung", "sTeilung"]];
   const zw = document.createElement("canvas"); zw.width = zw.height = 760; const zx = zw.getContext("2d");
   const male = (c, art, t, s) => art === "start" ? c.drawImage(qf.leinwand, 0, 0) : VERFAHREN[art].zeichne(c, qf, t, s);
   const statisch = new Map(); const stand = (art, s) => { const key = art + s; if (!statisch.has(key)) { const c = document.createElement("canvas"); c.width = c.height = 760; male(c.getContext("2d"), art, 0, s); statisch.set(key, c); if (statisch.size > 12) statisch.delete(statisch.keys().next().value); } return statisch.get(key); };
@@ -616,13 +763,14 @@ beispiel.decode().then(() => {
   const schild = document.getElementById("film-station");
   let filmSicht = false; new IntersectionObserver(es => { filmSicht = es[0].isIntersecting; }).observe(fc);
   let zuletzt = -1;
+  const schildSchreiben = () => { const i = Math.max(0, zuletzt); schild.textContent = `${tl("station")} ${i + 1} · ${tl(STATIONEN[i][1])}`; };
   const DAUER = 2.2;
   function filmBild(t) {
     const i = Math.floor(t / DAUER) % STATIONEN.length, j = (i + 1) % STATIONEN.length, f = (t % DAUER) / DAUER, s = Math.floor(t / DAUER);
     const zeichne = (c, art, ss) => lebend(art) ? male(c, art, t, ss) : c.drawImage(stand(art, art === "glitch" ? ss * 3 + Math.floor(t * 6) % 3 : ss), 0, 0);
     zeichne(fx, STATIONEN[i][0], s);
     if (f > .78) { zx.clearRect(0, 0, 760, 760); zeichne(zx, STATIONEN[j][0], s + 1); fx.globalAlpha = (f - .78) / .22; fx.drawImage(zw, 0, 0); fx.globalAlpha = 1; }
-    if (i !== zuletzt) { zuletzt = i; schild.textContent = `Station ${i + 1} · ${STATIONEN[i][1]}`; }
+    if (i !== zuletzt) { zuletzt = i; schildSchreiben(); }
   }
   filmBild(0);
   let t0 = performance.now();
@@ -631,8 +779,11 @@ beispiel.decode().then(() => {
   // Probieren: Verfahren wählen, das Protokoll schreibt mit
   const pc = document.getElementById("pult"), px = pc.getContext("2d"), qp = quelle(beispiel, 720, 720), prot = document.getElementById("protokoll");
   let wahl = "raster", samen = 11, eintraege = [];
-  const ARTEN = { raster: "Mensch", glitch: "Zufall", sort: "Regel", neu: "Zufall" };
-  function schreibe(v) { eintraege.unshift([ARTEN[v], `${VERFAHREN[v].name}${ARTEN[v] === "Zufall" ? ", Startwert " + samen : ""}`]); eintraege = eintraege.slice(0, 3); prot.innerHTML = eintraege.map(([a, s]) => `<div><b>${a}</b><span>${s}</span></div>`).join(""); }
+  const ARTEN = { raster: "mensch", glitch: "zufall", sort: "regel", neu: "zufall" }, NAMEN = { raster: "vRaster", glitch: "vGlitch", sort: "vSort", neu: "vNeu" };
+  // das Protokoll merkt sich Art, Verfahren und Startwert und schreibt sie in der gewählten Sprache
+  function zeigeProtokoll() { prot.replaceChildren(...eintraege.map(([a, v, s]) => { const d = document.createElement("div"), b = document.createElement("b"), t = document.createElement("span"); b.textContent = tl(a); t.textContent = tl(NAMEN[v]) + (a === "zufall" ? `, ${tl("startwert")} ${s}` : ""); d.append(b, t); return d; })); }
+  function schreibe(v) { eintraege.unshift([ARTEN[v], v, samen]); eintraege = eintraege.slice(0, 3); zeigeProtokoll(); }
+  addEventListener("sprache", () => { zeigeProtokoll(); schildSchreiben(); });
   function malePult(t = 0) { VERFAHREN[wahl].zeichne(px, qp, ruhig ? 0 : t, samen); }
   document.getElementById("wahl").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; wahl = b.dataset.v; samen++; document.querySelectorAll("#wahl button").forEach(x => x.setAttribute("aria-pressed", x === b)); malePult(performance.now() / 1000); schreibe(wahl); });
   malePult(0); schreibe("raster");

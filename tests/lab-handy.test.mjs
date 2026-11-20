@@ -87,3 +87,16 @@ test("Handy: vier Sprachen (d, e, s, f), jede mit allen Texten, alle Namen über
   assert.equal(S.spracheWaehlen({ suche: "", speicher: sp, geraet: ["fr-CH"] }), "es", "gemerkt");
   assert.equal(speicher.get("ornament.sprache"), "es");
 });
+
+test("Landing /beta/lab/: Schalter d, e, s, f, jeder Text der Seite in Englisch, Spanisch und Französisch, Verweis auf die Handy-Fassung", async () => {
+  const html = lies("beta/lab/index.html");
+  const { runInNewContext } = await import("node:vm");
+  const quelle = html.slice(html.indexOf("const LANDING = {"), html.indexOf("// Französisch: schmale"));
+  const LANDING = runInNewContext(`${quelle.replace("const LANDING =", "LANDING =")}; LANDING`, {});
+  const keys = new Set([...html.matchAll(/data-t(?:-aria|-alt)?="(\w+)"/g)].map((m) => m[1]));
+  for (const k of ["station", "sAusgang", "sTeilung", "startwert", "mensch", "zufall", "regel", "beschreibung"]) keys.add(k);
+  for (const s of ["en", "es", "fr"]) for (const k of keys) assert.ok(LANDING[s][k]?.trim(), `${s}: ${k}`);
+  assert.ok(html.includes('id="sprachen"') && html.includes('"ornament.sprache"'));
+  assert.ok(html.includes('href="../../alpha/lab/handy/"'));
+  assert.match(html, /<meta name="robots" content="noindex">/);
+});
