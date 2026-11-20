@@ -37,8 +37,8 @@ export const DENKEN = [
   { slug: "kunst-hypertext", name: "Hypertext", kurz: "2725 Facebook posts from 2013 to 2026 on art, communication, perception, psyche and society. Linked by keywords; up to four posts can be montaged into a new one, together with a note and an ORNA encounter. In German.", ziel: "/alpha/kunst/", neuesFenster: true, bild: "b/bilder/schau/kunst.jpg", bildAlt: "The hypertext: posts with topics and years on the left, the title and most frequent keywords in the centre, the local graph on the right", weiter: "To the hypertext" },
 ];
 export const ZEIGEN = [
-  { slug: "drittes-rad", name: "Das Dritte Rad", kurz: "Time, form and colour turn against each other. Each spin draws a note, an encounter from ORNA and an exercise from OMNA COLOR. In German.",
-    ziel: "/beta/drittes-rad/", neuesFenster: true, bild: "b/bilder/schau/drittes-rad.jpg", bildAlt: "Das Dritte Rad: three rings on a yellow ground, signs on the outside, a colour wheel in the middle", weiter: "Spin" },
+  { slug: "drittes-rad", name: "Das Dritte Rad", kurz: "Time, form and colour turn against each other. Each spin draws a note, an encounter from ORNA and an exercise from OMNA COLOR. In German and English.",
+    ziel: "/beta/drittes-rad/?sprache=en", neuesFenster: true, bild: "b/bilder/schau/drittes-rad.jpg", bildAlt: "Das Dritte Rad: three rings on a yellow ground, signs on the outside, a colour wheel in the middle", weiter: "Spin" },
   { slug: "omna-color", name: "OMNA COLOR", kurz: "Two colour wheels turn against each other. What they show becomes a design exercise: there are 180.",
     ziel: "apps/omna-color/", bild: "b/bilder/schau/omna-color.jpg", bildAlt: "OMNA COLOR: two nested colour wheels with seven fields on a black ground", weiter: "To the app" },
 ];
@@ -163,7 +163,7 @@ export const ANGEBOTE = [
       { name: "Principesse", von: "for Katharina Strickler", jahr: "2026", url: "https://principesse.ch/", adresse: "principesse.ch", bild: "b/bilder/schau/principesse.jpg", film: "b/bilder/schau/principesse.mp4",
         bildAlt: "Principesse on film: three drawn princesses with crowns and a dog with a crown float as figures in space before a night sky with moon and stars",
         text: "A one-pager that opens with a small film: the principessa leaves her drawn picture, jumps out and flies through the page as you scroll. At the end an order card with choices and a preview. In German." },
-      { name: "Das Dritte Rad", von: "website as application", jahr: "2026", url: "/beta/drittes-rad/", adresse: "ornament.cloud/beta/drittes-rad", bild: "b/bilder/schau/drittes-rad.jpg", film: "b/bilder/schau/drittes-rad.mp4",
+      { name: "Das Dritte Rad", von: "website as application", jahr: "2026", url: "/beta/drittes-rad/?sprache=en", adresse: "ornament.cloud/beta/drittes-rad", bild: "b/bilder/schau/drittes-rad.jpg", film: "b/bilder/schau/drittes-rad.mp4",
         bildAlt: "Das Dritte Rad on film: the sign of the wheel slowly builds up, a colour circle turns across the whole surface, then the application with its three rings appears",
         text: "A website you operate rather than read: three rings turn against each other, each turn draws a note, an encounter and a design exercise. Runs in the browser, nothing to install." },
       { name: "Multiverse", von: "website as workspace", jahr: "2026", url: "/multiverse/", adresse: "ornament.cloud/multiverse", bild: "b/bilder/schau/multiverse.jpg",

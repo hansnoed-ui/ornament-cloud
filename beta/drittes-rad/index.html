@@ -54,6 +54,11 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .leiste nav a { text-decoration: none; }
 .leiste nav a:hover { text-decoration: underline; }
 @media (max-width: 700px) { .leiste nav { display: none; } }
+/* Sprachwahl (20. November 2026): wie in ORNA und OMNA COLOR, zwei leise Knöpfe, die gewählte Sprache unterstrichen */
+.sprache { display: flex; gap: 2px; margin-left: auto; }
+.sprache button { font: inherit; font-size: 15px; line-height: 1; color: inherit; opacity: .62; background: none; border: 0; border-bottom: 1px solid transparent; padding: 8px 6px 6px; min-width: 32px; min-height: 32px; cursor: pointer; }
+.sprache button[aria-current] { opacity: 1; border-bottom-color: currentColor; }
+.sprache button:hover, .sprache button:focus-visible { opacity: 1; outline: none; border-bottom-color: currentColor; }
 
 /* ---- Bühne: das Feld in der gezogenen Farbe, dahinter beim Drehen der Farbenkreis ---- */
 .buehne { position: relative; isolation: isolate; overflow: hidden; background: var(--feld); color: var(--feld-tinte); transition: background-color .9s ease, color .9s ease;
@@ -248,6 +253,26 @@ body.dreht #farbkreis { opacity: 1; }
 <body>
 <script>
 document.body.classList.add("js");
+// Sprache (20. November 2026, Christian: «Ja mach es auch Englisch»): wie ORNA und OMNA COLOR zuerst ?sprache=de|en (wird gemerkt), dann die gemerkte Wahl
+// («ornament.sprache», gilt für alle Apps), sonst das Gerät. Die Texte der Seite stehen deutsch im HTML; data-t holt auf Englisch den Eintrag aus TEXTE.en.
+(function () {
+  var KEY = "ornament.sprache", q = new URLSearchParams(location.search).get("sprache"), l = null;
+  if (q === "de" || q === "en") { l = q; try { localStorage.setItem(KEY, q); } catch (e) {} }
+  if (!l) { try { var g = localStorage.getItem(KEY); if (g === "de" || g === "en") l = g; } catch (e) {} }
+  if (!l) l = /^de/i.test(navigator.language || "") ? "de" : (/^en/i.test(navigator.language || "") ? "en" : "de");
+  window.drSprache = l;
+  document.documentElement.lang = l === "en" ? "en" : "de-CH";
+  window.TEXTE = {
+    en: {
+      _titel: "Das Dritte Rad – ornament.cloud · Beta", heim: "← ornament.cloud", bereiche: "The three areas", sprache: "Language",
+      sagt: "Time, form and colour turn against each other. Each spin draws a stanza from the Zettelkasten, an encounter from ORNA and an exercise from OMNA COLOR.",
+      drehen: "Spin", bruecke: "Build a bridge",
+      ladefehler: "The wheel could not be loaded. This sometimes happens shortly after the page has been updated. Please reload it, ideally with Ctrl+Shift+R (on a Mac Cmd+Shift+R).",
+      rad: "Spin. Outside time, in the middle form, inside colour.", gezogen: "Drawn", nochmal: "Spin again", kopieren: "Copy card",
+      weiter: "Where next?", weiterAuf: "More on ornament.cloud", erste: "The first version of the wheel", intro: "Skip intro",
+    },
+  };
+})();
 // Startfarbe (28. Oktober 2026, Rückmeldung: «nicht schön beim intro und der landingpage des dritten rades finde ich das weiss im hintergrund»):
 // statt Weiss eine der sieben Farben des Rads, bei jedem Laden eine andere; dieselben Farben wie THEMEN (OMNA COLOR), dazu die Schrift mit mehr Kontrast
 (function () {
@@ -268,12 +293,12 @@ document.body.classList.add("js");
     </svg>
     <p class="i-name">Das Dritte Rad</p>
   </div>
-  <button type="button" tabindex="-1">Intro überspringen</button>
+  <button type="button" tabindex="-1" data-t="intro">Intro überspringen</button>
 </div>
 <script>
 // Das Intro läuft sofort (ohne auf die Module zu warten): einmal je Sitzung, nur auf der leeren Startseite (oder mit ?intro), nie bei «weniger Bewegung» und nie mit ?intro=0.
 (function () {
-  var intro = document.getElementById("intro"), q = location.search;
+  var intro = document.getElementById("intro"), q = location.search.replace(/([?&])sprache=(de|en)(&|$)/, "$1").replace(/[?&]$/, "");
   var gesehen = false; try { gesehen = sessionStorage.getItem("drad-intro") === "1"; } catch (e) {}
   var ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
   // ?intro=0 schaltet es ab (Multiverse, 8. November 2026); vor \b stand hier ein Steuerzeichen, ?intro griff deshalb nie
@@ -301,24 +326,25 @@ document.body.classList.add("js");
 })();
 </script>
 <header class="leiste">
-  <a class="heim" href="../../">← ornament.cloud</a>
-  <nav aria-label="Die drei Bereiche">
-    <a href="../../zu-seiner-zeit/">Zettelkasten</a>
-    <a href="../../portfolio/nebeneinander-nacheinander/">ORNA</a>
-    <a href="../../alpha/omna-color/">OMNA COLOR</a>
+  <a class="heim" href="../../" data-t-href="../../|../../en/">← ornament.cloud</a>
+  <nav aria-label="Die drei Bereiche" data-t-attr="aria-label=bereiche">
+    <a href="../../zu-seiner-zeit/" data-t-href="../../zu-seiner-zeit/|../../zu-seiner-zeit/en/">Zettelkasten</a>
+    <a href="../../portfolio/nebeneinander-nacheinander/?sprache=de" data-t-href="../../portfolio/nebeneinander-nacheinander/?sprache=de|../../portfolio/nebeneinander-nacheinander/?sprache=en">ORNA</a>
+    <a href="../../alpha/omna-color/?sprache=de" data-t-href="../../alpha/omna-color/?sprache=de|../../alpha/omna-color/?sprache=en">OMNA COLOR</a>
   </nav>
+  <div class="sprache" role="group" aria-label="Sprache" data-t-attr="aria-label=sprache"><button type="button" data-sprache="de" lang="de" title="Deutsch">DE</button><button type="button" data-sprache="en" lang="en" title="English">EN</button></div>
 </header>
 <main>
   <section class="buehne" id="buehne" aria-labelledby="titel">
     <div class="text">
       <h1 id="titel"><span>Das Dritte</span> <span>Rad</span></h1>
-      <p class="sagt">Zeit, Form und Farbe drehen gegeneinander. Jede Drehung zieht eine Strophe aus dem Zettelkasten, eine Begegnung aus ORNA und eine Übung aus OMNA COLOR.</p>
-      <div class="knoepfe"><button class="knopf" id="go" type="button">Drehen</button><button class="knopf zweit" id="bridge" type="button" aria-label="Brücke schlagen">Brücke schlagen</button></div>
-      <p class="notiz" id="ladefehler" role="alert" hidden>Das Rad konnte nicht geladen werden. Das passiert manchmal kurz nach einer Aktualisierung der Seite. Bitte lade sie neu, am besten mit Strg+Umschalt+R (am Mac Cmd+Umschalt+R).</p>
+      <p class="sagt" data-t="sagt">Zeit, Form und Farbe drehen gegeneinander. Jede Drehung zieht eine Strophe aus dem Zettelkasten, eine Begegnung aus ORNA und eine Übung aus OMNA COLOR.</p>
+      <div class="knoepfe"><button class="knopf" id="go" type="button" data-t="drehen">Drehen</button><button class="knopf zweit" id="bridge" type="button" data-t="bruecke">Brücke schlagen</button></div>
+      <p class="notiz" id="ladefehler" role="alert" data-t="ladefehler" hidden>Das Rad konnte nicht geladen werden. Das passiert manchmal kurz nach einer Aktualisierung der Seite. Bitte lade sie neu, am besten mit Strg+Umschalt+R (am Mac Cmd+Umschalt+R).</p>
     </div>
     <div class="radplatz">
       <svg id="farbkreis" viewBox="-100 -100 200 200" aria-hidden="true"><g id="farbkreis-ring"></g></svg>
-      <div class="wheel" id="wheel" role="button" tabindex="0" aria-label="Drehen. Aussen Zeit, mittig Form, innen Farbe.">
+      <div class="wheel" id="wheel" role="button" tabindex="0" aria-label="Drehen. Aussen Zeit, mittig Form, innen Farbe." data-t-attr="aria-label=rad">
         <svg viewBox="-100 -100 200 200" id="svg">
           <g id="zeit" class="spin"></g>
           <g id="form" class="spin"></g>
@@ -330,28 +356,28 @@ document.body.classList.add("js");
     </div>
   </section>
 
-  <section class="stuecke" id="result" aria-live="polite" aria-label="Gezogen" hidden>
+  <section class="stuecke" id="result" aria-live="polite" aria-label="Gezogen" data-t-attr="aria-label=gezogen" hidden>
     <p class="notiz" id="note" hidden></p>
     <article class="flaeche zeit" id="cZeit"></article>
     <article class="flaeche form" id="cForm"></article>
     <article class="flaeche farbe" id="cFarbe"></article>
     <div class="unten">
-      <button class="leise" id="again" type="button">Noch einmal drehen</button>
-      <button class="leise" id="copy" type="button">Karte kopieren</button>
+      <button class="leise" id="again" type="button" data-t="nochmal">Noch einmal drehen</button>
+      <button class="leise" id="copy" type="button" data-t="kopieren">Karte kopieren</button>
     </div>
   </section>
   <article class="lese" id="lese" hidden></article>
   <!-- die vier Wege stehen nach dem Text (Rückmeldung: «bei "die ganze begegnung zeigen" zeigt es die 4 auswahlen und nicht den text»): man liest zuerst, dann geht es weiter -->
-  <nav class="wege" id="wege" aria-label="Wie geht es weiter?" hidden></nav>
+  <nav class="wege" id="wege" aria-label="Wie geht es weiter?" data-t-attr="aria-label=weiter" hidden></nav>
 </main>
 <footer class="schluss">
   <p class="name">Das Dritte Rad</p>
-  <nav aria-label="Weiter auf ornament.cloud">
-    <a href="../../">ornament.cloud</a>
-    <a href="../../zu-seiner-zeit/">Zettelkasten</a>
-    <a href="../../portfolio/nebeneinander-nacheinander/">ORNA</a>
-    <a href="../../alpha/omna-color/">OMNA COLOR</a>
-    <a href="../../alpha/drittes-rad/">Die erste Fassung des Rads</a>
+  <nav aria-label="Weiter auf ornament.cloud" data-t-attr="aria-label=weiterAuf">
+    <a href="../../" data-t-href="../../|../../en/">ornament.cloud</a>
+    <a href="../../zu-seiner-zeit/" data-t-href="../../zu-seiner-zeit/|../../zu-seiner-zeit/en/">Zettelkasten</a>
+    <a href="../../portfolio/nebeneinander-nacheinander/?sprache=de" data-t-href="../../portfolio/nebeneinander-nacheinander/?sprache=de|../../portfolio/nebeneinander-nacheinander/?sprache=en">ORNA</a>
+    <a href="../../alpha/omna-color/?sprache=de" data-t-href="../../alpha/omna-color/?sprache=de|../../alpha/omna-color/?sprache=en">OMNA COLOR</a>
+    <a href="../../alpha/drittes-rad/" data-t="erste">Die erste Fassung des Rads</a>
   </nav>
 </footer>
 
@@ -362,10 +388,42 @@ addEventListener("load", function () { setTimeout(function () { if (!window.radG
 <script type="module">
 import { symbolMarkup, SYMBOL_COUNT } from "../../portfolio/nebeneinander-nacheinander/js/symbols.js";
 import { planRing, positionAt } from "../../portfolio/nebeneinander-nacheinander/js/lib/spin.js";   // Auslaufkurve des Doppelrads (ORNA)
-import { ZYKLEN, THEMEN, STROPHEN, PERSONEN, nameVon, nrVon, ziehung, bruecke, adresse, strophe, paar, uebung, paareVon, wegeImSpiel, rueckkehr } from "../../alpha/drittes-rad/engine.js?v=6e41759c";
-import { kachelnBauen } from "../../alpha/drittes-rad/kacheln.js?v=6e41759c";
+import { ZYKLEN, THEMEN, STROPHEN, PERSONEN, nameVon, nrVon, ziehung, bruecke, adresse, strophe, paar, uebung, paareVon, wegeImSpiel, rueckkehr, setzeSprache, L } from "../../alpha/drittes-rad/engine.js?v=b50b7319";
+import { kachelnBauen } from "../../alpha/drittes-rad/kacheln.js?v=b50b7319";
 
 const GOETHE = ["schön", "edel", "gut", "nützlich", "gemein", "Phantasie", "unnötig"];   // Goethe 1809: Eigenschaften je Farbe (Rot bis Violett)
+const GOETHE_EN = ["beautiful", "noble", "good", "useful", "common", "imagination", "unnecessary"];
+
+// ---- Sprache: Sätze der Seite (die Stücke selbst kommen über L aus der Engine) ----
+let SPR = window.drSprache === "en" ? "en" : "de";
+const T = {
+  de: { zeitWo: (r, n) => `Zeit · Zettelkasten · Zyklus ${r}, ${n}`, verweise: "Verweise", ganzText: "Den ganzen Text lesen", formWo: (n) => `Form · ORNA · das Rad zeigt ${n}`,
+    ganzBegegnung: "Die ganze Begegnung", farbeWo: (t) => `Farbe · OMNA COLOR · ${t}`, goethe: (i) => `Goethe 1809: ${GOETHE[i]}`, min: (d) => `${d} Min.`, material: "Material: ",
+    ganzUebung: "Die ganze Übung", zkWo: (r, n) => `Zettelkasten · Zyklus ${r}, ${n}`, inOrna: "→ in ORNA", anklaenge: "Anklänge", ornaWo: "ORNA · Begegnung", frage: "Frage",
+    weitere: "Weitere Begegnungen", mit: (n) => `mit ${n}`, imZ: "Im Zettelkasten", omnaWo: (id) => `OMNA COLOR · Übung ${id}`, thema: (t) => `Thema ${t}`, nachbar: (t) => `Nachbar ${t}`,
+    schluss: "Zum Schluss", weiter: "Wie geht es weiter?", karte: ["Das Dritte Rad", "Zeit", "Form", "Farbe"], kopiert: "Kopiert", kopieren: "Karte kopieren", nichtKopiert: "Kopieren nicht möglich" },
+  en: { zeitWo: (r, n) => `Time · Zettelkasten · cycle ${r}, ${n}`, verweise: "References", ganzText: "Read the whole text", formWo: (n) => `Form · ORNA · the wheel shows ${n}`,
+    ganzBegegnung: "The whole encounter", farbeWo: (t) => `Colour · OMNA COLOR · ${t}`, goethe: (i) => `Goethe 1809: ${GOETHE_EN[i]}`, min: (d) => `${d} min`, material: "Material: ",
+    ganzUebung: "The whole exercise", zkWo: (r, n) => `Zettelkasten · cycle ${r}, ${n}`, inOrna: "→ in ORNA", anklaenge: "Resonances", ornaWo: "ORNA · encounter", frage: "Question",
+    weitere: "Further encounters", mit: (n) => `with ${n}`, imZ: "In the Zettelkasten", omnaWo: (id) => `OMNA COLOR · exercise ${id}`, thema: (t) => `Theme ${t}`, nachbar: (t) => `Neighbour ${t}`,
+    schluss: "At the end", weiter: "Where next?", karte: ["Das Dritte Rad", "Time", "Form", "Colour"], kopiert: "Copied", kopieren: "Copy card", nichtKopiert: "Copying not possible" },
+};
+const t = () => T[SPR];
+/** feste Texte im HTML: data-t (Text), data-t-attr (Attribute), data-t-href (Adresse «de|en»); Deutsch steht im HTML und wird beim ersten Wechsel gemerkt */
+function texteSetzen() {
+  const en = SPR === "en", E = window.TEXTE.en;
+  document.documentElement.lang = en ? "en" : "de-CH";
+  for (const el of document.querySelectorAll("[data-t]")) { if (el.dataset.de == null) el.dataset.de = el.textContent; el.textContent = en && E[el.dataset.t] ? E[el.dataset.t] : el.dataset.de; }
+  for (const el of document.querySelectorAll("[data-t-attr]")) for (const p of el.dataset.tAttr.split(";")) {
+    const [a, k] = p.split("="), alt = "data-de-" + a;
+    if (!el.hasAttribute(alt)) el.setAttribute(alt, el.getAttribute(a) ?? "");
+    el.setAttribute(a, en && E[k] ? E[k] : el.getAttribute(alt));
+  }
+  for (const el of document.querySelectorAll("[data-t-href]")) { const [de, e] = el.dataset.tHref.split("|"); el.setAttribute("href", en ? e : de); }
+  for (const b of document.querySelectorAll(".sprache [data-sprache]")) b.toggleAttribute("aria-current", b.dataset.sprache === SPR);
+}
+SPR = await setzeSprache(SPR);
+texteSetzen();
 // Sieben Zeichen für die sieben Zyklen (nach den alten Planetenzeichen), wie in der ersten Fassung
 const PLANETEN = [
   { d: "M-4,0 A4,4 0 1 0 4,0 A4,4 0 1 0 -4,0", punkt: true },
@@ -518,61 +576,61 @@ function zeige({ scroll = false, schreibe: wie = null, fokussiere = false } = {}
 }
 
 function uebersicht() {
-  const { iz, i_f, ic, s, c, e } = cur;
+  const { iz, i_f, ic } = cur, s = L.strophe(cur.s), c = L.paar(cur.c), e = L.uebung(cur.e), zy = ZYKLEN[iz][0];
   const verweise = [...new Set(s.r.map((r) => r.p))];
   $("cZeit").replaceChildren(
-    h("div", {}, h("p", { class: "wo", text: `Zeit · Zettelkasten · Zyklus ${ZYKLEN[iz][0]}, ${ZYKLEN[iz][1]}` }),
+    h("div", {}, h("p", { class: "wo", text: t().zeitWo(zy, L.zyklus(zy)) }),
       h("h2", {}, h("a", { href: ziel("zeit"), "data-anim": "keine", text: `${s.n} · ${s.t}` }))),
-    h("div", { class: "rechts" }, h("p", { class: "lead", text: s.b }), h("p", { class: "meta", text: "Verweise: " + verweise.join(" · ") }), h("span", { class: "weiter", text: "Den ganzen Text lesen" })));
+    h("div", { class: "rechts" }, h("p", { class: "lead", text: s.b }), h("p", { class: "meta", text: t().verweise + ": " + verweise.join(" · ") }), h("span", { class: "weiter", text: t().ganzText })));
   const titel = h("a", { href: ziel("form"), "data-anim": "keine" });
   [c.artistId, c.theoristId].forEach((id, k) => { if (k) titel.append(" × "); titel.append(h("span", { text: nameVon(id) })); });
   $("cForm").replaceChildren(
-    h("div", {}, h("p", { class: "wo", text: `Form · ORNA · das Rad zeigt ${PERSONEN[i_f].name}` }), h("h2", {}, titel), svgVon(i_f, "-1.2 -1.2 2.4 2.4", "zeichen-gross")),
-    h("div", { class: "rechts" }, h("p", { class: "lead", text: ersterSatz(c.text) }), h("p", { class: "frage", text: c.question }), h("span", { class: "weiter", text: "Die ganze Begegnung" })));
+    h("div", {}, h("p", { class: "wo", text: t().formWo(PERSONEN[i_f].name) }), h("h2", {}, titel), svgVon(i_f, "-1.2 -1.2 2.4 2.4", "zeichen-gross")),
+    h("div", { class: "rechts" }, h("p", { class: "lead", text: ersterSatz(c.text) }), h("p", { class: "frage", text: c.question }), h("span", { class: "weiter", text: t().ganzBegegnung })));
   $("cFarbe").replaceChildren(
-    h("div", {}, h("p", { class: "wo", text: `Farbe · OMNA COLOR · ${THEMEN[ic][0]}` }), h("h2", {}, h("a", { href: ziel("farbe"), "data-anim": "keine", text: e.n }))),
+    h("div", {}, h("p", { class: "wo", text: t().farbeWo(L.thema(THEMEN[ic][0])) }), h("h2", {}, h("a", { href: ziel("farbe"), "data-anim": "keine", text: e.n }))),
     h("div", { class: "rechts" },
-      h("div", { class: "chips" }, h("span", { class: "chip", text: `Goethe 1809: ${GOETHE[ic]}` }), h("span", { class: "chip", text: `${e.d} Min.` })),
-      h("p", { class: "meta", text: "Material: " + e.m }),
+      h("div", { class: "chips" }, h("span", { class: "chip", text: t().goethe(ic) }), h("span", { class: "chip", text: t().min(e.d) })),
+      h("p", { class: "meta", text: t().material + e.m }),
       h("ol", { class: "schritte" }, ...e.a.map((t) => h("li", { text: t }))),
-      h("span", { class: "weiter", text: "Die ganze Übung" })));
+      h("span", { class: "weiter", text: t().ganzUebung })));
   $("note").hidden = !cur.note; $("note").textContent = cur.note || "";
   for (const id of ["cZeit", "cForm", "cFarbe"]) erscheinen($(id));
 }
 
 function lese() {
-  const { fokus, s, c, e, iz, i_f } = cur, kopf = [], k = [];
+  const { fokus, iz, i_f } = cur, s = L.strophe(cur.s), c = L.paar(cur.c), e = L.uebung(cur.e), zy = ZYKLEN[iz][0], kopf = [], k = [];
   if (fokus === "zeit") {
-    kopf.push(h("p", { class: "wo", text: `Zettelkasten · Zyklus ${ZYKLEN[iz][0]}, ${ZYKLEN[iz][1]}` }), h("h2", { tabindex: "-1", text: `${s.n} · ${s.t}` }), h("p", { class: "lead", text: s.b }));
+    kopf.push(h("p", { class: "wo", text: t().zkWo(zy, L.zyklus(zy)) }), h("h2", { tabindex: "-1", text: `${s.n} · ${s.t}` }), h("p", { class: "lead", text: s.b }));
     for (const t of s.x.split(/\n{2,}/)) k.push(h("p", { class: "text", text: t }));
-    k.push(h("h3", { text: "Verweise" }), h("ul", {}, ...s.r.map((r) => {
+    k.push(h("h3", { text: t().verweise }), h("ul", {}, ...s.r.map((r) => {
       const li = h("li", {}, h("b", { text: r.p }), h("span", { class: "meta", text: [r.w, r.d].filter(Boolean).join(" · ") }), h("span", { text: r.n }));
-      if (nrVon(r.s) !== undefined) li.append(lnk("→ in ORNA", adresse.spiel(rueckkehr({ art: "strophe", slug: s.s }, Math.random, { person: r.s }), "form")));
+      if (nrVon(r.s) !== undefined) li.append(lnk(t().inOrna, adresse.spiel(rueckkehr({ art: "strophe", slug: s.s }, Math.random, { person: r.s }), "form")));
       return li; })));
-    const an = (s.v || []).map((id) => STROPHEN.find((x) => x.n === id)).filter(Boolean);
-    if (an.length) k.push(h("h3", { text: "Anklänge" }), h("ul", {}, ...an.map((x) => h("li", {}, lnk(`${x.n} · ${x.t}`, adresse.spiel(rueckkehr({ art: "strophe", slug: x.s }), "zeit")), h("span", { class: "meta", text: x.b })))));
+    const an = (s.v || []).map((id) => STROPHEN.find((x) => x.n === id)).filter(Boolean).map(L.strophe);
+    if (an.length) k.push(h("h3", { text: t().anklaenge }), h("ul", {}, ...an.map((x) => h("li", {}, lnk(`${x.n} · ${x.t}`, adresse.spiel(rueckkehr({ art: "strophe", slug: x.s }), "zeit")), h("span", { class: "meta", text: x.b })))));
   } else if (fokus === "form") {
     const ids = [c.artistId, c.theoristId];
-    kopf.push(h("p", { class: "wo", text: "ORNA · Begegnung" }), h("h2", { tabindex: "-1", text: ids.map(nameVon).join(" × ") }),
+    kopf.push(h("p", { class: "wo", text: t().ornaWo }), h("h2", { tabindex: "-1", text: ids.map(nameVon).join(" × ") }),
       h("div", { class: "zeichen-paar" }, ...ids.map((id) => h("figure", { class: nrVon(id) === i_f ? "am-rad" : "" }, svgVon(nrVon(id)), h("figcaption", { text: nameVon(id) })))));
-    k.push(h("p", { class: "text", text: c.text }), h("p", { class: "frage" }, h("small", { text: "Frage" }), c.question));
-    k.push(h("h3", { text: "Weitere Begegnungen" }), h("ul", {}, ...ids.map((id) => {
+    k.push(h("p", { class: "text", text: c.text }), h("p", { class: "frage" }, h("small", { text: t().frage }), c.question));
+    k.push(h("h3", { text: t().weitere }), h("ul", {}, ...ids.map((id) => {
       const li = h("li", {}, h("b", { text: nameVon(id) }));
-      for (const x of paareVon(nrVon(id)).filter((x) => x !== c).slice(0, 4)) li.append(lnk(`mit ${nameVon(x.artistId === id ? x.theoristId : x.artistId)}`, adresse.spiel(rueckkehr({ art: "paar", id: x.id }, Math.random, { person: id }), "form")));
+      for (const x of paareVon(nrVon(id)).filter((x) => x !== cur.c).slice(0, 4)) li.append(lnk(t().mit(nameVon(x.artistId === id ? x.theoristId : x.artistId)), adresse.spiel(rueckkehr({ art: "paar", id: x.id }, Math.random, { person: id }), "form")));
       return li; })));
     const imZ = ids.flatMap((id) => STROPHEN.filter((x) => x.r.some((r) => r.s === id)).slice(0, 3).map((x) => [id, x]));
-    if (imZ.length) k.push(h("h3", { text: "Im Zettelkasten" }), h("ul", {}, ...imZ.map(([id, x]) => h("li", {}, h("b", { text: nameVon(id) }), lnk(`${x.n} · ${x.t}`, adresse.spiel(rueckkehr({ art: "strophe", slug: x.s }, Math.random, { person: id, paar: c }), "zeit"))))));
+    if (imZ.length) k.push(h("h3", { text: t().imZ }), h("ul", {}, ...imZ.map(([id, x]) => h("li", {}, h("b", { text: nameVon(id) }), lnk(`${x.n} · ${L.strophe(x).t}`, adresse.spiel(rueckkehr({ art: "strophe", slug: x.s }, Math.random, { person: id, paar: cur.c }), "zeit"))))));
   } else {
     const chip = (name) => h("span", { class: "chip", text: name });
-    kopf.push(h("p", { class: "wo", text: `OMNA COLOR · Übung ${e.id}` }), h("h2", { tabindex: "-1", text: e.n }),
-      h("div", { class: "chips" }, chip(`Thema ${e.t}`), ...(e.nb || []).map((n) => chip(`Nachbar ${n}`)), chip(`${e.d} Min.`), chip(`Goethe 1809: ${GOETHE[cur.ic]}`)));
-    k.push(h("p", { class: "meta", text: "Material: " + e.m }), h("ol", { class: "schritte text" }, ...e.a.map((t) => h("li", { text: t }))), h("p", { class: "frage" }, h("small", { text: "Zum Schluss" }), e.f));
+    kopf.push(h("p", { class: "wo", text: t().omnaWo(e.id) }), h("h2", { tabindex: "-1", text: e.n }),
+      h("div", { class: "chips" }, chip(t().thema(e.t)), ...(e.nb || []).map((n) => chip(t().nachbar(n))), chip(t().min(e.d)), chip(t().goethe(cur.ic))));
+    k.push(h("p", { class: "meta", text: t().material + e.m }), h("ol", { class: "schritte text" }, ...e.a.map((x) => h("li", { text: x }))), h("p", { class: "frage" }, h("small", { text: t().schluss }), e.f));
   }
   $("lese").dataset.fokus = fokus;
   $("lese").replaceChildren(h("div", { class: "kopf" }, ...kopf), h("div", { class: "koerper" }, ...k));
   const kacheln = kachelnBauen(wegeImSpiel(alsZiel(), fokus), { breit: true });
   for (const a of kacheln.querySelectorAll("a")) a.href = lokal(a.href);
-  $("wege").replaceChildren(h("h2", { text: "Wie geht es weiter?" }), kacheln);
+  $("wege").replaceChildren(h("h2", { text: t().weiter }), kacheln);
   erscheinen($("lese"));
 }
 
@@ -634,8 +692,20 @@ geheZu(location.search, { anim: "keine" });
 
 $("copy").addEventListener("click", async () => {
   if (!cur) return;
-  const txt = ["Das Dritte Rad", `Zeit: ${cur.s.n} · ${cur.s.t}`, `Form: ${nameVon(cur.c.artistId)} × ${nameVon(cur.c.theoristId)}`, `Farbe: ${cur.e.n} (${THEMEN[cur.ic][0]})`].join("\n");
-  try { await navigator.clipboard.writeText(txt); $("copy").textContent = "Kopiert"; setTimeout(() => ($("copy").textContent = "Karte kopieren"), 1800); } catch { $("copy").textContent = "Kopieren nicht möglich"; }
+  const [kt, kz, kf, kc] = t().karte, s = L.strophe(cur.s), e = L.uebung(cur.e);
+  const txt = [kt, `${kz}: ${s.n} · ${s.t}`, `${kf}: ${nameVon(cur.c.artistId)} × ${nameVon(cur.c.theoristId)}`, `${kc}: ${e.n} (${e.t})`].join("\n");
+  try { await navigator.clipboard.writeText(txt); $("copy").textContent = t().kopiert; setTimeout(() => ($("copy").textContent = t().kopieren), 1800); } catch { $("copy").textContent = t().nichtKopiert; }
+});
+// Sprachwahl: Texte, Stücke und Wege sofort umstellen, ohne neu zu drehen; die Wahl gilt auch für ORNA und OMNA COLOR
+document.querySelector(".sprache").addEventListener("click", async (ev) => {
+  const b = ev.target.closest("[data-sprache]");
+  if (!b || b.dataset.sprache === SPR) return;
+  try { localStorage.setItem("ornament.sprache", b.dataset.sprache); } catch { /* ohne Speicher */ }
+  SPR = await setzeSprache(b.dataset.sprache);
+  texteSetzen();
+  if (cur) zeige();
+  const q = new URLSearchParams(location.search);
+  if (q.has("sprache")) { q.set("sprache", SPR); try { history.replaceState(history.state, "", "?" + q); } catch { /* eingebettete Ansicht */ } }
 });
 window.radGeladen = true;   // letzte Zeile: das Rad ist gestartet
 </script>

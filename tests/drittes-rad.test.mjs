@@ -40,7 +40,7 @@ test("Versionsmarke: jeder Import eines Radmoduls trägt dieselbe, aktuelle Mark
   const marke = b.marke(Object.fromEntries(b.MODULE.map((n) => [n, lies(`alpha/drittes-rad/${n}`)])));
   assert.match(marke, /^[0-9a-f]{8}$/);
   const IMPORT = /(?:\bfrom\s*|\bimport\s*\(\s*)["'](\.\/[^"'?]+)(\?v=[0-9a-f]{8})?["']/g;      // Importe innerhalb des Rad-Ordners (ORNA und symbols.js liegen ausserhalb und tragen keine Marke)
-  const erwartet = { "index.html": 2, "engine.js": 2, "kacheln.js": 1, "weiter.js": 2 };
+  const erwartet = { "index.html": 2, "engine.js": 3, "kacheln.js": 1, "weiter.js": 2 };   // engine.js: daten.js, jev.js und (nur für Englisch nachgeladen) daten.en.js
   assert.deepEqual([...b.MIT_MARKE].sort(), Object.keys(erwartet).sort(), "alle Dateien, die Radmodule importieren, werden gestempelt");
   for (const f of b.MIT_MARKE) {
     const importe = [...lies(`alpha/drittes-rad/${f}`).matchAll(IMPORT)];
@@ -69,7 +69,7 @@ test("Versionsmarke: folgt dem Inhalt der Module (nicht den Marken selbst), Seit
   const b = await import(new URL("tools/build-drittes-rad.ts", root).href);
   const d = Object.fromEntries(b.MODULE.map((n) => [n, lies(`alpha/drittes-rad/${n}`)]));
   const m = b.marke(d);
-  assert.deepEqual([...b.MODULE].sort(), ["daten.js", "engine.js", "jev.js", "kacheln.js"], "die vier Module, die zusammen geladen werden müssen");
+  assert.deepEqual([...b.MODULE].sort(), ["daten.en.js", "daten.js", "engine.js", "jev.js", "kacheln.js"], "die Module, die zusammen geladen werden müssen (daten.en.js nur auf Englisch)");
   // Fixpunkt: mit beliebigen oder ohne Marken im Text kommt dieselbe Marke heraus, und Stempeln ändert sie nicht
   const mit = (x) => Object.fromEntries(Object.entries(d).map(([n, t]) => [n, b.stempeln(t, x)]));
   assert.equal(b.marke(mit("00000000")), m);
@@ -413,4 +413,39 @@ test("Seiten: nichts von fremden Servern, Auswahl nur mit ?rad=, kein Eintrag in
   assert.ok(!lies("sitemap.xml").includes("drittes-rad"));
   for (const f of ["alpha/drittes-rad/weiter.js", "alpha/drittes-rad/kacheln.js", "alpha/drittes-rad/engine.js"])
     assert.ok(!/https?:\/\//.test(lies(f).replace(/\/\/ .*$/gm, "")), `${f} lädt nichts von aussen`);
+});
+
+// ---------- Englisch (20. November 2026, Christian: «Ja mach es auch Englisch») ----------
+test("Englisch: jedes Stück hat eine Übersetzung, Ziehung und Adressen bleiben gleich, Deutsch bleibt Standard", async () => {
+  const D = await import(new URL("alpha/drittes-rad/daten.en.js", root).href);
+  const { constellationsEn } = await import(new URL("portfolio/nebeneinander-nacheinander/js/data/constellations.en.js", root).href);
+  for (const s of E.STROPHEN) { const x = D.STROPHEN_EN[s.s]; assert.ok(x && x.t && x.b && x.x && x.r.length === s.r.length, `Strophe ${s.s}`); }
+  for (const e of E.UEBUNGEN) { const x = D.UEBUNGEN_EN[e.id]; assert.ok(x && x.n && x.a.length && x.m && x.f, `Übung ${e.id}`); }
+  for (const c of E.KONSTELLATIONEN) assert.ok(constellationsEn[c.id]?.text && constellationsEn[c.id]?.question, `Konstellation ${c.id}`);
+  for (const [r] of E.ZYKLEN) assert.ok(D.ZYKLEN_EN[r], `Zyklus ${r}`);
+  for (const [t] of E.THEMEN) assert.ok(D.THEMEN_EN[t], `Thema ${t}`);
+  assert.equal(E.sprache(), "de", "ohne Wahl deutsch (die erste Fassung bleibt deutsch)");
+  const deutsch = E.wegeImSpiel({ ...E.ziehung(0, 0, 0, zufallsfolge(7)), person: E.PERSONEN[0].id }, "zeit", { zufall: zufallsfolge(3) });
+  try {
+    assert.equal(await E.setzeSprache("en"), "en");
+    const z = E.ziehung(0, 0, 0, zufallsfolge(7));
+    assert.equal(E.L.strophe(z.strophe).s, z.strophe.s, "die Adresse einer Strophe bleibt");
+    assert.notEqual(E.L.strophe(z.strophe).t, z.strophe.t, "der Titel ist übersetzt");
+    const w = E.wegeImSpiel({ ...z, person: E.PERSONEN[0].id }, "zeit", { zufall: zufallsfolge(3) });
+    assert.deepEqual(w.map((x) => x.url), deutsch.map((x) => x.url), "dieselben Wege in beiden Sprachen");
+    assert.equal(w[0].titel, "Back to the wheel");
+    assert.ok(w.every((x) => !/Strophe|Zurück|dreht|gemeinsam|Nähe|Los,/.test(x.titel + x.grund)), "keine deutschen Sätze: " + w.map((x) => x.grund).join(" / "));
+    for (let i = 0; i < 40; i++) assert.ok(!/Brücke|Strophe|Übung|bleibt liegen/.test(E.bruecke(zufallsfolge(i + 1)).notiz), "Brücke auf Englisch");
+    assert.match(E.rueckkehr({ art: "uebung", id: "040" }, zufallsfolge(5)).notiz, /^Back in the wheel: The exercise «/);
+  } finally { await E.setzeSprache("de"); }
+  assert.equal(E.wegeImSpiel({ ...E.ziehung(0, 0, 0, zufallsfolge(7)), person: E.PERSONEN[0].id }, "zeit", { zufall: zufallsfolge(3) })[0].titel, "Zurück ins Rad");
+});
+
+test("Beta-Fassung: Sprachwahl DE/EN, gemerkt wie in ORNA und OMNA COLOR, Links in der gewählten Sprache", () => {
+  const s = lies("beta/drittes-rad/index.html");
+  assert.match(s, /<div class="sprache" role="group"[^>]*><button type="button" data-sprache="de"[^>]*>DE<\/button><button type="button" data-sprache="en"[^>]*>EN<\/button><\/div>/);
+  assert.ok(s.includes('var KEY = "ornament.sprache"') && s.includes('localStorage.setItem("ornament.sprache"'), "dieselbe gemerkte Wahl wie die Apps");
+  assert.ok(s.includes('data-t-href="../../zu-seiner-zeit/|../../zu-seiner-zeit/en/"'), "Zettelkasten englisch");
+  assert.ok(s.includes("../../portfolio/nebeneinander-nacheinander/?sprache=en") && s.includes("../../alpha/omna-color/?sprache=en"), "ORNA und OMNA COLOR englisch");
+  for (const k of [...s.matchAll(/data-t="([^"]+)"/g)].map((m) => m[1])) assert.ok(new RegExp(`\\b${k}: "`).test(s), `Text ${k} hat Englisch`);
 });

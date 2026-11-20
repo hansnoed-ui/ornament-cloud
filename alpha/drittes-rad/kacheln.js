@@ -1,7 +1,7 @@
 // «Das Dritte Rad»: die vier Wege als Kacheln, gemeinsam für die Radseite (index.html) und die Leiste auf den Originalseiten (weiter.js).
 // Reihenfolge fest: Das Dritte Rad, Zettelkasten, ORNA, OMNA COLOR. Die Kachel des Bereichs, in dem man steht, zeigt «hier weiter».
 // Importe mit ?v=<Marke>: setzt tools/build-drittes-rad.ts (gegen alte Module im Zwischenspeicher des Browsers, siehe dort).
-import { BEREICH } from "./engine.js?v=6e41759c";
+import { L } from "./engine.js?v=b50b7319";
 
 export const KACHELN_CSS = `
 .drad-kacheln{list-style:none;margin:0;padding:0;display:grid;gap:8px;grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -11,6 +11,7 @@ export const KACHELN_CSS = `
 .drad-kachel em{font-style:normal;color:#a89f86;font-size:.76rem}
 .drad-kachel.rad{border-color:#c9a45c;background:#c9a45c14}
 .drad-kachel.hier small::after{content:" · hier weiter"}
+:lang(en) .drad-kachel.hier small::after{content:" · continue here"}
 .drad-kachel:hover,.drad-kachel:focus-visible{border-color:#f0d78f;outline:none}
 @media (min-width:760px){.drad-kacheln.breit{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media (max-width:560px){.drad-kacheln.kompakt em{display:none}.drad-kacheln.kompakt .drad-kachel{padding:6px 10px}.drad-kacheln.kompakt b{font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
@@ -26,7 +27,7 @@ export function kachelnBauen(items, { kompakt = false, breit = false } = {}) {
     a.href = w.url;
     a.dataset.bereich = w.bereich;
     a.dataset.anim = w.bereich === "rad" ? "voll" : "schnell";
-    const k = document.createElement("small"); k.textContent = BEREICH[w.bereich];
+    const k = document.createElement("small"); k.textContent = L.bereich(w.bereich);
     const t = document.createElement("b"); t.textContent = w.titel;
     const g = document.createElement("em"); g.textContent = w.grund;
     a.append(k, t, g); li.append(a); ul.append(li);

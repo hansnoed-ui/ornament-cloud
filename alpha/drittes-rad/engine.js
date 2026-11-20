@@ -2,11 +2,11 @@
 // Verbindet drei Bestände: Zettelkasten (Strophen, daten.js), ORNA (Personen, Konstellationen, direkt aus dem Rad) und OMNA COLOR (Übungen, daten.js).
 // Alles läuft im Browser. Nichts wird gesendet. Zufall und Gewichtung sind nur Vorschläge, das Los darf absurd sein (Auftrag vom 2. Oktober 2026).
 // Importe mit ?v=<Marke>: setzt tools/build-drittes-rad.ts (gegen alte Module im Zwischenspeicher des Browsers, siehe dort).
-import { ZYKLEN, THEMEN, STROPHEN, UEBUNGEN } from "./daten.js?v=6e41759c";
+import { ZYKLEN, THEMEN, STROPHEN, UEBUNGEN } from "./daten.js?v=b50b7319";
 import { constellations } from "../../portfolio/nebeneinander-nacheinander/js/data/constellations.js";
 import { artists } from "../../portfolio/nebeneinander-nacheinander/js/data/artists.js";
 import { theorists } from "../../portfolio/nebeneinander-nacheinander/js/data/theorists.js";
-import { JEV } from "./jev.js?v=6e41759c";
+import { JEV } from "./jev.js?v=b50b7319";
 
 export { ZYKLEN, THEMEN, STROPHEN, UEBUNGEN };
 export const KONSTELLATIONEN = constellations;
@@ -31,6 +31,65 @@ export const adresse = {
   rad: (a) => `${WURZEL}alpha/drittes-rad/?von=` + (a && a.art ? `${a.art}~${encodeURIComponent(a.slug ?? a.id)}` : "los"),
 };
 export const BEREICH = { rad: "Das Dritte Rad", zeit: "Zettelkasten", form: "ORNA", farbe: "OMNA COLOR" };
+
+// ---------- Sprache (20. November 2026, Christian: «Ja mach es auch Englisch») ----------
+// Gerechnet wird immer mit den deutschen Originalen (Wörter, Stämme, jev), damit Ziehung und Adressen in beiden Sprachen gleich bleiben.
+// Englisch ist nur die Anzeige: Texte aus daten.en.js (Zettelkasten, OMNA COLOR) und constellations.en.js (ORNA), Sätze aus SATZ.en.
+// Die erste Fassung (alpha) bleibt deutsch; die Beta-Seite ruft sprache("en") auf.
+let EN = null, SPRACHE = "de";
+export const sprache = () => SPRACHE;
+/** Sprache setzen; Englisch lädt beim ersten Mal die Übersetzungen nach. Gibt die gesetzte Sprache zurück (bei einem Ladefehler bleibt es Deutsch). */
+export async function setzeSprache(l) {
+  if (l === "en" && !EN) {
+    try {
+      const [d, k] = await Promise.all([import("./daten.en.js?v=b50b7319"), import("../../portfolio/nebeneinander-nacheinander/js/data/constellations.en.js")]);
+      EN = { ...d, PAARE_EN: k.constellationsEn };
+    } catch { return SPRACHE; }
+  }
+  SPRACHE = l === "en" ? "en" : "de";
+  return SPRACHE;
+}
+const en = () => SPRACHE === "en" && EN;
+/** Stücke in der gewählten Sprache: dieselben Felder wie im Original, nur die Texte ersetzt */
+export const L = {
+  strophe: (s) => { const x = en() && EN.STROPHEN_EN[s.s]; return x ? { ...s, t: x.t, b: x.b, x: x.x, r: s.r.map((r, i) => ({ ...r, ...(x.r[i] || {}), p: r.p, s: r.s })) } : s; },
+  paar: (c) => { const x = en() && EN.PAARE_EN[c.id]; return x ? { ...c, text: x.text || c.text, question: x.question || c.question } : c; },
+  uebung: (e) => { const x = en() && EN.UEBUNGEN_EN[e.id]; return x ? { ...e, ...x, t: L.thema(e.t), nb: (e.nb || []).map(L.thema) } : e; },
+  thema: (t) => (en() && EN.THEMEN_EN[t]) || t,
+  zyklus: (roman) => (en() && EN.ZYKLEN_EN[roman]) || ZYKLEN.find((z) => z[0] === roman)?.[1] || roman,
+  bereich: (b) => (b === "rad" ? "Das Dritte Rad" : BEREICH[b]),
+};
+/** Sätze, die das Rad selbst bildet */
+const SATZ = {
+  de: {
+    strophe: (s) => `«${s.t}» (Strophe ${s.n})`, uebungTitel: (e) => `${e.n} (${e.t})`,
+    beide: (namen) => `${namen} kommt in beiden vor`, und: " und ", gemeinsam: (w) => `gemeinsam: ${w}`,
+    jevAuch: "jev sieht auch eine Nähe", jevAllein: "jev sieht eine Nähe, auch ohne gemeinsames Wort", anklang: "ein Anklang im Zettelkasten",
+    gleich: (t) => `gleiches Thema «${t}»`, nachbar: (t) => `Nachbarthema «${t}»`, los: "Los, ohne erkennbaren Zusammenhang",
+    zurueck: "Zurück ins Rad", drehtVon: (x) => `dreht von ${x} aus weiter`, drehtFrei: "dreht frei weiter", daneben: "liegt im Rad daneben",
+    absurd: "Eine absurde Brücke: Nichts verbindet diese drei, ausser dass du sie jetzt zusammendenkst.",
+    jev: (s, f, g, e) => `Brücke nach jev: Strophe ${s.n} «${s.t}» und ${f} liegen nah beieinander (${g || "jev sieht eine Nähe"}). Die Übung «${e.n}» liegt der Konstellation nah.`,
+    person: (s, name, w) => `Brücke: In Strophe ${s.n} «${s.t}» wird ${name} genannt, und die Konstellation hängt daran.` + (w ? ` Die Übung teilt ${w} mit beiden.` : " Die Übung hat das Los gezogen."),
+    genannt: (name, s) => ` ${name} wird in Strophe ${s.n} «${s.t}» genannt.`, imRad: "Zurück im Rad: ",
+    bleibt: { strophe: (s) => `Strophe ${s.n} «${s.t}» bleibt liegen, das Rad sucht Form und Farbe dazu.`, paar: (f) => `${f} bleiben liegen, das Rad sucht Zeit und Farbe dazu.`,
+      uebung: (e) => `Die Übung «${e.n}» bleibt liegen, das Rad sucht Zeit und Form dazu.`, person: (x) => `${x} bleibt liegen, das Rad sucht Zeit, Form und Farbe dazu.` },
+  },
+  // Gemeinsame Wörter stammen aus den deutschen Originalen; auf Englisch nennt das Rad sie darum nicht einzeln
+  en: {
+    strophe: (s) => `«${s.t}» (stanza ${s.n})`, uebungTitel: (e) => `${e.n} (${e.t})`,
+    beide: (namen) => `${namen} ${namen.includes(" and ") ? "appear" : "appears"} in both`, und: " and ", gemeinsam: () => "close in wording",
+    jevAuch: "jev sees a closeness too", jevAllein: "jev sees a closeness, even without a shared word", anklang: "a resonance in the Zettelkasten",
+    gleich: (t) => `same theme «${t}»`, nachbar: (t) => `neighbouring theme «${t}»`, los: "Chance, with no visible connection",
+    zurueck: "Back to the wheel", drehtVon: (x) => `turns on from ${x}`, drehtFrei: "turns on freely", daneben: "lies beside it in the wheel",
+    absurd: "An absurd bridge: nothing connects these three, except that you are now thinking them together.",
+    jev: (s, f, g, e) => `Bridge by jev: stanza ${s.n} «${s.t}» and ${f} lie close together (${g || "jev sees a closeness"}). The exercise «${e.n}» lies close to the constellation.`,
+    person: (s, name, w) => `Bridge: stanza ${s.n} «${s.t}» names ${name}, and the constellation hangs on it.` + (w ? " The exercise is close to both in wording." : " The exercise was drawn by chance."),
+    genannt: (name, s) => ` ${name} is named in stanza ${s.n} «${s.t}».`, imRad: "Back in the wheel: ",
+    bleibt: { strophe: (s) => `Stanza ${s.n} «${s.t}» stays in place, the wheel looks for form and colour to go with it.`, paar: (f) => `${f} stay in place, the wheel looks for time and colour to go with them.`,
+      uebung: (e) => `The exercise «${e.n}» stays in place, the wheel looks for time and form to go with it.`, person: (x) => `${x} stays in place, the wheel looks for time, form and colour to go with it.` },
+  },
+};
+const S_ = () => SATZ[SPRACHE];
 
 // ---------- Wörter: grob auf den Stamm gekürzt, damit «Wiederholung» und «Wiederholungen» zusammenfallen ----------
 const STOP = new Set(("werden wurde wurden wird einer einen einem eines diese dieser dieses diesen diesem nicht nichts immer sowie durch ohne wenn dann " +
@@ -131,28 +190,28 @@ const KANDIDATEN = {
   farbe: () => UEBUNGEN.map((e, i) => ({ bereich: "farbe", nr: i, item: e, stems: IDX.farbe[i], personen: new Set() })),
 };
 export const titel = (bereich, item) =>
-  bereich === "zeit" ? `«${item.t}» (Strophe ${item.n})` : bereich === "form" ? `${nameVon(item.artistId)} × ${nameVon(item.theoristId)}` : `${item.n} (${item.t})`;
+  bereich === "zeit" ? S_().strophe(L.strophe(item)) : bereich === "form" ? `${nameVon(item.artistId)} × ${nameVon(item.theoristId)}` : S_().uebungTitel(L.uebung(item));
 export const adresseVon = (bereich, item) => adresse[{ zeit: "strophe", form: "paar", farbe: "uebung" }[bereich]](item);
 
 /** Begründung: gemeinsame Person, gemeinsame Wörter, Nähe nach jev */
 export function grund(von, ziel) {
   const teile = [];
   const pers = [...von.personen].filter((p) => ziel.personen.has(p));
-  if (pers.length) teile.push(`${pers.slice(0, 2).map((p) => `«${nameVon(p)}»`).join(" und ")} kommt in beiden vor`);
+  if (pers.length) teile.push(S_().beide(pers.slice(0, 2).map((p) => `«${nameVon(p)}»`).join(S_().und)));
   const g = gemeinsam(von.stems, ziel.stems);
-  if (g.woerter.length && g.wert >= SCHWELLE) teile.push(`gemeinsam: ${g.woerter.map((w) => `«${w}»`).join(", ")}`);
+  if (g.woerter.length && g.wert >= SCHWELLE) teile.push(S_().gemeinsam(g.woerter.map((w) => `«${w}»`).join(", ")));
   const gl = gleicheArt(von, ziel);
   if (gl) teile.push(gl.text);
-  if (jevRang(von, ziel.bereich, ziel.nr) >= 0) teile.push(teile.length ? "jev sieht auch eine Nähe" : "jev sieht eine Nähe, auch ohne gemeinsames Wort");
+  if (jevRang(von, ziel.bereich, ziel.nr) >= 0) teile.push(teile.length ? S_().jevAuch : S_().jevAllein);
   return teile.join(" · ");
 }
 const JEV_BONUS = [8, 7.2, 6.4, 5.6, 4.8, 4.2, 3.7, 3.4];   // nach Rang: jevs Nennung trägt allein über die Schwelle, ein gemeinsames Wort oder eine Person zählt dazu
 /** Nähe innerhalb desselben Bereichs: Anklänge der Strophen untereinander (Zettelkasten), gleiches oder Nachbarthema (OMNA COLOR) */
 function gleicheArt(von, k) {
   if (von.bereich !== k.bereich || !von.item) return null;
-  if (von.bereich === "zeit" && (von.item.v || []).includes(k.item.n)) return { wert: 6, text: "ein Anklang im Zettelkasten" };
-  if (von.bereich === "farbe" && von.item.t === k.item.t) return { wert: 3.3, text: `gleiches Thema «${k.item.t}»` };
-  if (von.bereich === "farbe" && (von.item.nb || []).includes(k.item.t)) return { wert: 3.3, text: `Nachbarthema «${k.item.t}»` };
+  if (von.bereich === "zeit" && (von.item.v || []).includes(k.item.n)) return { wert: 6, text: S_().anklang };
+  if (von.bereich === "farbe" && von.item.t === k.item.t) return { wert: 3.3, text: S_().gleich(L.thema(k.item.t)) };
+  if (von.bereich === "farbe" && (von.item.nb || []).includes(k.item.t)) return { wert: 3.3, text: S_().nachbar(L.thema(k.item.t)) };
   return null;
 }
 const wert = (von, k) => {
@@ -175,14 +234,14 @@ export function beste(von, bereich, { ausser = null, loseAnteil = 0.15, zufall =
   const los = !wahl;
   if (!wahl) wahl = zieh(k, zufall);
   const g = von && !los ? grund(von, wahl) : "";
-  return { bereich, item: wahl.item, profil: wahl, titel: titel(bereich, wahl.item), grund: g || "Los, ohne erkennbaren Zusammenhang", url: adresseVon(bereich, wahl.item), los: los || !g };
+  return { bereich, item: wahl.item, profil: wahl, titel: titel(bereich, wahl.item), grund: g || S_().los, url: adresseVon(bereich, wahl.item), los: los || !g };
 }
 
 /** Name des Stücks, bei dem man steht, für Sätze wie «dreht von … aus weiter» */
 function nenne(a) {
-  if (a.art === "strophe") return `«${strophe(a.slug).t}»`;
+  if (a.art === "strophe") return `«${L.strophe(strophe(a.slug)).t}»`;
   if (a.art === "paar") return `${nameVon(paar(a.id).artistId)} × ${nameVon(paar(a.id).theoristId)}`;
-  if (a.art === "uebung") return `«${uebung(a.id).n}»`;
+  if (a.art === "uebung") return `«${L.uebung(uebung(a.id)).n}»`;
   return nameVon(a.slug);
 }
 /** Beschreibung eines Stücks als Anker ({art, slug|id}), so wie profil() und rueckkehr() sie lesen */
@@ -195,7 +254,7 @@ export const ankerVon = (bereich, item) => ({ zeit: { art: "strophe", slug: item
 export function wege(aktuell, opt = {}) {
   const von = profil(aktuell);
   const hier = von ? von.bereich : aktuell?.bereich;
-  const rad = { bereich: "rad", titel: "Zurück ins Rad", grund: von ? `dreht von ${nenne(aktuell)} aus weiter` : "dreht frei weiter", url: adresse.rad(von ? aktuell : null), hier: false };
+  const rad = { bereich: "rad", titel: S_().zurueck, grund: von ? S_().drehtVon(nenne(aktuell)) : S_().drehtFrei, url: adresse.rad(von ? aktuell : null), hier: false };
   return [rad, ...["zeit", "form", "farbe"].map((b) => {
     const w = beste(von, b, { ...opt, ausser: von && von.bereich === b ? von.item : null });
     return { bereich: b, titel: w.titel, grund: w.grund, url: adresse.spiel(rueckkehr(ankerVon(b, w.item), opt.zufall), b), hier: b === hier };
@@ -210,9 +269,9 @@ export function wegeImSpiel(z, fokus, opt = {}) {
   const items = { zeit: z.strophe, form: z.paar, farbe: z.uebung };
   const profile = { zeit: profilStrophe(z.strophe), form: profilPaar(z.paar), farbe: profilUebung(z.uebung) };
   const anker = ankerVon(fokus, items[fokus]);
-  const rad = { bereich: "rad", titel: "Zurück ins Rad", grund: `dreht von ${nenne(anker)} aus weiter`, url: adresse.rad(anker), hier: false };
+  const rad = { bereich: "rad", titel: S_().zurueck, grund: S_().drehtVon(nenne(anker)), url: adresse.rad(anker), hier: false };
   return [rad, ...["zeit", "form", "farbe"].map((b) => {
-    if (b !== fokus) return { bereich: b, titel: titel(b, items[b]), grund: grund(profile[fokus], profile[b]) || "liegt im Rad daneben", url: adresse.spiel(z, b), hier: false };
+    if (b !== fokus) return { bereich: b, titel: titel(b, items[b]), grund: grund(profile[fokus], profile[b]) || S_().daneben, url: adresse.spiel(z, b), hier: false };
     const w = beste(profile[fokus], b, { ...opt, ausser: items[b] });
     return { bereich: b, titel: w.titel, grund: w.grund, url: adresse.spiel(rueckkehr(ankerVon(b, w.item), opt.zufall), b), hier: true };
   })];
@@ -243,7 +302,7 @@ export function bruecke(zufall = Math.random) {
   if (r < 0.2) {
     const s = zieh(STROPHEN, zufall), c = zieh(constellations, zufall), e = zieh(UEBUNGEN, zufall);
     return { strophe: s, paar: c, uebung: e, person: zufall() < 0.5 ? c.artistId : c.theoristId, absurd: true, quelle: "los",
-      notiz: "Eine absurde Brücke: Nichts verbindet diese drei, ausser dass du sie jetzt zusammendenkst." };
+      notiz: S_().absurd };
   }
   if (r < 0.55 && JEV_GUELTIG) {
     const s = zieh(STROPHEN, zufall), nrK = zieh(JEV.zf[strophenNr.get(s.s)].slice(0, 5), zufall), c = constellations[nrK];
@@ -252,7 +311,7 @@ export function bruecke(zufall = Math.random) {
     const person = genannt.length ? zieh(genannt, zufall) : zufall() < 0.5 ? c.artistId : c.theoristId;
     const g = grund(profilStrophe(s), profilPaar(c));
     return { strophe: s, paar: c, uebung: e, person, absurd: false, quelle: "jev",
-      notiz: `Brücke nach jev: Strophe ${s.n} «${s.t}» und ${titel("form", c)} liegen nah beieinander (${g || "jev sieht eine Nähe"}). Die Übung «${e.n}» liegt der Konstellation nah.` };
+      notiz: S_().jev(L.strophe(s), titel("form", c), g, L.uebung(e)) };
   }
   const mitPerson = STROPHEN.filter((s) => s.r.some((r) => personNr.has(r.s)));
   const s = zieh(mitPerson, zufall);
@@ -263,7 +322,7 @@ export function bruecke(zufall = Math.random) {
   const e = beste({ ...vereinen(ps, pp), bereich: "farbe" }, "farbe", { loseAnteil: 0, zufall }).item;
   const g = gemeinsam(vereinen(ps, pp).stems, IDX.farbe[uebungNr.get(e.id)]).woerter;
   return { strophe: s, paar: c, uebung: e, person, absurd: false, quelle: "person",
-    notiz: `Brücke: In Strophe ${s.n} «${s.t}» wird ${nameVon(person)} genannt, und die Konstellation hängt daran.` + (g.length ? ` Die Übung teilt ${g.map((w) => `«${w}»`).join(", ")} mit beiden.` : " Die Übung hat das Los gezogen.") };
+    notiz: S_().person(L.strophe(s), nameVon(person), g.map((w) => `«${w}»`).join(", ")) };
 }
 
 /**
@@ -304,13 +363,14 @@ export function rueckkehr(von, zufall = Math.random, vorgabe = {}) {
   }
   // Farbe
   e = p.art === "uebung" ? p.item : beste(vereinen(ps, profilPaar(c)), "farbe", { loseAnteil: 0.1, zufall }).item;
-  const genannt = nennt(s).includes(person) ? ` ${nameVon(person)} wird in Strophe ${s.n} «${s.t}» genannt.` : "";
-  const notiz = "Zurück im Rad: " + ({
-    strophe: `Strophe ${s.n} «${s.t}» bleibt liegen, das Rad sucht Form und Farbe dazu.`,
-    paar: `${nameVon(c.artistId)} × ${nameVon(c.theoristId)} bleiben liegen, das Rad sucht Zeit und Farbe dazu.`,
-    uebung: `Die Übung «${e.n}» bleibt liegen, das Rad sucht Zeit und Form dazu.`,
-    person: `${nenne(von)} bleibt liegen, das Rad sucht Zeit, Form und Farbe dazu.`,
-  })[p.art] + genannt;
+  const sl = L.strophe(s), B = S_().bleibt;
+  const genannt = nennt(s).includes(person) ? S_().genannt(nameVon(person), sl) : "";
+  const notiz = S_().imRad + ({
+    strophe: () => B.strophe(sl),
+    paar: () => B.paar(`${nameVon(c.artistId)} × ${nameVon(c.theoristId)}`),
+    uebung: () => B.uebung(L.uebung(e)),
+    person: () => B.person(nenne(von)),
+  })[p.art]() + genannt;
   return { strophe: s, paar: c, uebung: e, person, absurd: false, notiz };
 }
 

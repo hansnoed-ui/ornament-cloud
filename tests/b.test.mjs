@@ -404,7 +404,7 @@ test("Schaubilder: auf der Startseite Das Dritte Rad und OMNA COLOR vor der Musi
   for (const [datei, B] of [["b/index.html", "/"], ["b/en/index.html", "/en/"]]) {
     const html = lies(datei), abschnitt = html.slice(html.indexOf('id="hoeren-sehen"'), html.indexOf('id="spielen-denken"'));
     const stuecke = [...abschnitt.matchAll(/<a class="schau-stueck" href="([^"]+)"/g)].map((m) => m[1]);
-    assert.deepEqual(stuecke, ["/beta/drittes-rad/", `${B}apps/omna-color/`], `${datei}: zwei Stücke zum Zeigen`);
+    assert.deepEqual(stuecke, [`/beta/drittes-rad/?sprache=${B === "/" ? "de" : "en"}`, `${B}apps/omna-color/`], `${datei}: zwei Stücke zum Zeigen, das Rad in der Sprache der Seite`);
     assert.ok(!abschnitt.includes('class="platte"') && html.indexOf('class="platte"') > html.indexOf('id="zuletzt-titel"') && html.indexOf('class="platte"') < html.indexOf('id="liste-titel"'), `${datei}: die Musik steht nicht bei «Sehen», sondern nach «Zuletzt»`);
     // zuoberst der Film aus Animations (von Christian, 13. November 2026): stumm, als Schlaufe, erst geladen, wenn er ins Bild kommt
     const film = abschnitt.match(/<a class="schau-film" href="\/animations\/" target="_blank" rel="noopener">[\s\S]*?<\/a>/)?.[0];
@@ -416,7 +416,7 @@ test("Schaubilder: auf der Startseite Das Dritte Rad und OMNA COLOR vor der Musi
   for (const datei of ["b/angebot/webdesign/index.html", "b/en/angebot/webdesign/index.html"]) {
     const html = lies(datei), schau = html.match(/<section class="referenzen schau-abschnitt"[\s\S]*?<\/section>/)?.[0];
     assert.ok(schau, `${datei}: Abschnitt zum Anschauen`);
-    assert.deepEqual([...schau.matchAll(/<a class="schau-stueck" href="([^"]+)" target="_blank" rel="noopener"/g)].map((m) => m[1]), ["https://kaiserbuehne.ch/", "https://www.oberer-turm.ch/", "https://principesse.ch/", "/beta/drittes-rad/", "/multiverse/", "/gamma/"], `${datei}: Kaiserbühne, Supervisionen, Principesse, Das Dritte Rad, Multiverse und Gamma, in neuem Fenster`);
+    assert.deepEqual([...schau.matchAll(/<a class="schau-stueck" href="([^"]+)" target="_blank" rel="noopener"/g)].map((m) => m[1]), ["https://kaiserbuehne.ch/", "https://www.oberer-turm.ch/", "https://principesse.ch/", `/beta/drittes-rad/?sprache=${datei.includes("/en/") ? "en" : "de"}`, "/multiverse/", "/gamma/"], `${datei}: Kaiserbühne, Supervisionen, Principesse, Das Dritte Rad, Multiverse und Gamma, in neuem Fenster`);
     assert.ok(schau.includes("Katharina Strickler"), `${datei}: für wen die Seite gebaut ist`);
   }
   assert.ok(statSync(new URL("b/bilder/schau/animations.mp4", root)).size < 2_500_000, "der Film bleibt unter 2,5 MB");
@@ -497,7 +497,7 @@ test("Sehen: eigene Seite, zuvorderst im Menü («Hören» am Schluss), mit Film
     assert.equal((html.match(/<figure class="foto"/g) || []).length, 7 + 8 + 6, `${datei}: sieben Fotografien, acht Prints, sechs Ansichten`);
     assert.equal((html.match(/<video class="kachel-film"/g) || []).length, 1, `${datei}: nur der eine Film`);
     assert.ok(!html.includes('class="schau-stueck"') && !html.includes(`href="${B}apps/phorma`), `${datei}: keine Räder, keine App-Kacheln`);
-    assert.ok(lies(datei.replace("sehen/", "apps/")).includes('class="schau-stueck" href="/beta/drittes-rad/"'), "Das Dritte Rad steht bei den Apps");
+    assert.ok(lies(datei.replace("sehen/", "apps/")).includes('class="schau-stueck" href="/beta/drittes-rad/?sprache='), "Das Dritte Rad steht bei den Apps");
   }
   assert.ok(lies("sitemap.xml").includes("<loc>https://ornament.cloud/sehen/</loc>"));
 });
