@@ -194,9 +194,11 @@ if (new URLSearchParams(location.search).has('spur')) {
   const text = document.createElement('div'), taste = document.createElement('button');
   taste.textContent = 'Spur kopieren';
   taste.style.cssText = 'margin-top:8px;padding:6px 0;background:none;border:0;color:#c8102e;font:inherit;letter-spacing:.18em;text-transform:uppercase;cursor:pointer';
+  // Grafikchip einmal erfragen und den Hilfskontext gleich freigeben (zu viele Kontexte kosten den Kristall seinen eigenen)
+  let gl2 = '?';
+  try { const c = document.createElement('canvas').getContext('webgl2'); const x = c && c.getExtension('WEBGL_debug_renderer_info'); gl2 = c ? (x ? c.getParameter(x.UNMASKED_RENDERER_WEBGL) : 'WebGL 2') : 'kein WebGL 2'; c?.getExtension('WEBGL_lose_context')?.loseContext(); } catch {}
   const inhalt = () => {
     let jetzt = []; try { jetzt = JSON.parse(localStorage.getItem(SPUR) || '[]'); } catch {}
-    let gl2 = '?'; try { const c = document.createElement('canvas').getContext('webgl2'); const x = c && c.getExtension('WEBGL_debug_renderer_info'); gl2 = c ? (x ? c.getParameter(x.UNMASKED_RENDERER_WEBGL) : 'WebGL 2') : 'kein WebGL 2'; } catch {}
     return 'Kristall ' + (document.querySelector('script[src*="kristall.js"]')?.getAttribute('src') || '') + '\n' + navigator.userAgent + '\nGrafik: ' + gl2 +
       '\nVorher: ' + spurVorher.join(' → ') + '\nJetzt: ' + jetzt.join(' → ');
   };
@@ -214,14 +216,19 @@ if (new URLSearchParams(location.search).has('spur')) {
 
 // ---------- Grafik ----------
 const telefon = matchMedia('(pointer: coarse)').matches || Math.min(screen.width, screen.height) < 700;
-const SCHICHTEN = telefon ? 40 : 64;       // Zeitpuffer
-const LANGE_SEITE = telefon ? 640 : 1080;  // Grösse der Zeitschichten im Puffer (Brechungen, Spiegelungen)
-const MAX_DPR = telefon ? 1.25 : 1.5;
-const SCHARF_SEITE = telefon ? 1280 : 1920;  // die Gegenwart: so scharf, wie der Bildschirm sie zeigt
-const MAX_F = 60;              // Ebenen: der Brillant braucht 57
-
 const leinwand = $('leinwand');
 const gl = leinwand.getContext('webgl2', { antialias: false, alpha: false, premultipliedAlpha: false, powerPreference: 'high-performance' });
+// Ohne Grafikkarte (Software wie «Microsoft Basic Render Driver», SwiftShader, llvmpipe) rechnet der Prozessor jeden Bildpunkt:
+// dann eine leichte Fassung mit weniger Bildpunkten und Strahlen (20.11.2026, Laptop in Edge ruckelte). ?voll erzwingt die volle.
+const grafikName = (() => { try { const x = gl && gl.getExtension('WEBGL_debug_renderer_info'); return x ? String(gl.getParameter(x.UNMASKED_RENDERER_WEBGL)) : ''; } catch { return ''; } })();
+const leicht = !new URLSearchParams(location.search).has('voll') &&
+  (/basic render|swiftshader|llvmpipe|softpipe|software/i.test(grafikName) || new URLSearchParams(location.search).has('leicht'));
+const SCHICHTEN = telefon || leicht ? 40 : 64;       // Zeitpuffer
+const LANGE_SEITE = telefon || leicht ? 640 : 1080;  // Grösse der Zeitschichten im Puffer (Brechungen, Spiegelungen)
+const MAX_DPR = leicht ? 0.6 : telefon ? 1.25 : 1.5;
+const SCHARF_SEITE = leicht ? 960 : telefon ? 1280 : 1920;  // die Gegenwart: so scharf, wie der Bildschirm sie zeigt
+const MAX_F = 60;              // Ebenen: der Brillant braucht 57
+if (leicht) spur('Leichte Fassung (ohne Grafikkarte)');
 if (!gl) { melden(TEXTE[sprache].keinGL); spur('kein WebGL2'); }
 leinwand.addEventListener('webglcontextlost', (e) => { e.preventDefault(); melden(TEXTE[sprache].kontextWeg); spur('Kontext verloren'); });
 
@@ -234,9 +241,10 @@ const fsText = (riss) => `#version 300 es
 #define RISS ${riss}
 precision highp float; precision highp sampler2DArray;
 #define MAX_K ${MAX_F}
-#define WELLEN ${telefon ? 4 : 5}
-#define WEGE ${telefon ? 3 : 4}
-#define PWELLEN ${telefon ? 2 : 3}
+#define WELLEN ${leicht ? 3 : telefon ? 4 : 5}
+#define WEGE ${leicht ? 2 : telefon ? 3 : 4}
+#define PWELLEN ${leicht ? 2 : telefon ? 2 : 3}
+#define PROBEN ${leicht ? 4 : 8}
 in vec2 v; out vec4 o;
 uniform sampler2DArray uZeit;
 uniform sampler2D uScharf;       // die Gegenwart in voller Auflösung (Zeitschichten bleiben klein)
@@ -344,11 +352,11 @@ void main(){
   if (unsch > 0.0005) {
     vec2 r = vec2(unsch / uSeite, unsch);
     vec3 s = jetzt;
-    for (int k = 0; k < 8; k++) {
-      float w = float(k) * 2.39996 + 0.5, rr = sqrt((float(k) + 0.5) / 8.0);
+    for (int k = 0; k < PROBEN; k++) {
+      float w = float(k) * 2.39996 + 0.5, rr = sqrt((float(k) + 0.5) / float(PROBEN));
       s += jetztHolen(v + vec2(cos(w), sin(w)) * rr * r);
     }
-    jetzt = s / 9.0;
+    jetzt = s / float(PROBEN + 1);
   }
   float vign = smoothstep(1.6, 0.35, length(sc * vec2(uSeite * 0.75, 1.0)));
   vec3 col = jetzt * mix(0.32, 0.78, vign);
@@ -615,7 +623,7 @@ function tempoMessen(ms, dt) {
   messung.sort((a, b) => a - b);
   const mitte = messung[15]; messung = [];
   let neu = aufloesung;
-  if (mitte > 24) neu = Math.max(0.5, aufloesung * 0.82);
+  if (mitte > 24) neu = Math.max(leicht ? 0.35 : 0.5, aufloesung * 0.82);
   else if (mitte < 17.5 && aufloesung < 1) neu = Math.min(1, aufloesung * 1.12);
   if (neu !== aufloesung) { aufloesung = neu; letzteAnpassung = ms; groesse(); spur('Auflösung ' + aufloesung.toFixed(2)); }
 }
