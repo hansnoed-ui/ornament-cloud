@@ -51,3 +51,52 @@ test("Handy: Seite nur per Direktlink (noindex), Module relativ zum Lab, Rückfr
   assert.ok(e && e.status === "direktlink");
   assert.ok(!lies("sitemap.xml").includes("alpha/lab/handy"));
 });
+
+test("Handy: vier Sprachen (d, e, s, f), jede mit allen Texten, alle Namen übersetzt, gewählt wie auf der Website", async () => {
+  const S = await import(new URL("alpha/lab/handy/sprache.js", root).href);
+  const { BILD_EFFEKTE, BEAT_FRAGEN } = await import(new URL("alpha/lab/jev/fragen.js", root).href);
+  assert.deepEqual(S.SPRACHEN, ["de", "en", "es", "fr"]);
+  assert.deepEqual(Object.values(S.KUERZEL), ["d", "e", "s", "f"]);
+  const de = Object.keys(S.T.de);
+  for (const s of S.SPRACHEN) {
+    assert.deepEqual(Object.keys(S.T[s]).sort(), [...de].sort(), `${s}: Schlüssel`);
+    for (const [k, v] of Object.entries(S.T[s])) {
+      assert.ok(v.trim(), `${s}.${k} leer`);
+      assert.deepEqual((v.match(/\{\w+\}/g) ?? []).sort(), (S.T.de[k].match(/\{\w+\}/g) ?? []).sort(), `${s}.${k}: Platzhalter`);
+      assert.ok(!v.includes("ß"), `${s}.${k}: ß`);
+    }
+  }
+  // jeder Text, den Seite und Skript brauchen, steht im Wörterbuch
+  const html = lies("alpha/lab/handy/index.html"), js = lies("alpha/lab/handy/handy.js");
+  const gebraucht = new Set([...html.matchAll(/data-t(?:-aria|-title)?="(\w+)"/g), ...js.matchAll(/\bt\("(\w+)"/g), ...js.matchAll(/"data-t(?:-aria)?": `s\$\{i\}`/g)].map((m) => m[1]).filter(Boolean));
+  for (const i of [0, 1, 2, 3, 4, 5]) gebraucht.add(`s${i}`);
+  for (const k of gebraucht) assert.ok(k in S.T.de, `fehlt im Wörterbuch: ${k}`);
+  // Namen: Effekte, Parameter der Varianten, Schlagzeuge, Tempo, Groove, Tonart und die Bildeffekte der Zusammenstellung
+  const namen = [...EFFEKTE.map((x) => x.id), ...EFFEKTE.map((x) => `p.${x.ziel}`), ...Object.keys(BEAT_FRAGEN.kit.katalog), ...Object.keys(BEAT_FRAGEN.tempo.katalog),
+    ...Object.keys(BEAT_FRAGEN.groove.katalog).map((k) => `groove.${k}`), ...Object.keys(BEAT_FRAGEN.tonart.katalog).map((k) => `tonart.${k}`), ...Object.keys(BILD_EFFEKTE)];
+  for (const s of ["en", "es", "fr"]) for (const k of namen) assert.ok(S.NAMEN[s][k], `${s}: Name für ${k}`);
+  const t = S.uebersetzer("fr");
+  assert.equal(t("variante", { n: 3 }), "Variante 3");
+  assert.equal(t.n("lab.fluss", "Fliessfeld"), "Champ de flux");
+  assert.equal(S.uebersetzer("de").n("lab.fluss", "Fliessfeld"), "Fliessfeld");
+  // Adresse vor Gemerktem vor Gerät, sonst Deutsch
+  const speicher = new Map(); const sp = { getItem: (k) => speicher.get(k) ?? null, setItem: (k, v) => speicher.set(k, v) };
+  assert.equal(S.spracheWaehlen({ suche: "", speicher: sp, geraet: [] }), "de");
+  assert.equal(S.spracheWaehlen({ suche: "", speicher: sp, geraet: ["fr-CH", "de"] }), "fr");
+  assert.equal(S.spracheWaehlen({ suche: "?sprache=es", speicher: sp, geraet: ["fr-CH"] }), "es");
+  assert.equal(S.spracheWaehlen({ suche: "", speicher: sp, geraet: ["fr-CH"] }), "es", "gemerkt");
+  assert.equal(speicher.get("ornament.sprache"), "es");
+});
+
+test("Landing /beta/lab/: Schalter d, e, s, f, jeder Text der Seite in Englisch, Spanisch und Französisch, Verweis auf die Handy-Fassung", async () => {
+  const html = lies("beta/lab/index.html");
+  const { runInNewContext } = await import("node:vm");
+  const quelle = html.slice(html.indexOf("const LANDING = {"), html.indexOf("// Französisch: schmale"));
+  const LANDING = runInNewContext(`${quelle.replace("const LANDING =", "LANDING =")}; LANDING`, {});
+  const keys = new Set([...html.matchAll(/data-t(?:-aria|-alt)?="(\w+)"/g)].map((m) => m[1]));
+  for (const k of ["station", "sAusgang", "sTeilung", "startwert", "mensch", "zufall", "regel", "beschreibung"]) keys.add(k);
+  for (const s of ["en", "es", "fr"]) for (const k of keys) assert.ok(LANDING[s][k]?.trim(), `${s}: ${k}`);
+  assert.ok(html.includes('id="sprachen"') && html.includes('"ornament.sprache"'));
+  assert.ok(html.includes('href="../../alpha/lab/handy/"'));
+  assert.match(html, /<meta name="robots" content="noindex">/);
+});
