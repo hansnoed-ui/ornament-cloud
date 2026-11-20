@@ -19,7 +19,7 @@ const OPS = [
   { nr: 'VI', jahr: 1981, href: '../figur/', film: 'figur', name: { de: 'Figur und Fläche', en: 'Figure and field', fr: 'La Figure et l’aplat' }, wort: { de: 'Figur', en: 'Figure', fr: 'Figure' }, begriff: 'la Figure et l’aplat',
     satz: { de: 'Die Figur wird isoliert, der Grund wird zur flachen, gleichmässigen Farbfläche.', en: 'The Figure is isolated; the ground becomes a flat, even field of colour.', fr: 'La Figure est isolée ; le fond devient un aplat de couleur uniforme.' },
     quelle: 'Francis Bacon. Logique de la sensation, 1981' },
-  { nr: 'VII', jahr: 1980, name: { de: 'Ritornell', en: 'Refrain', fr: 'La ritournelle' }, wort: { de: 'Ritornell', en: 'Refrain', fr: 'Ritournelle' }, begriff: 'la ritournelle',
+  { nr: 'VII', jahr: 1980, href: '../ritornell/', film: 'ritornell', name: { de: 'Ritornell', en: 'Refrain', fr: 'La ritournelle' }, wort: { de: 'Ritornell', en: 'Refrain', fr: 'Ritournelle' }, begriff: 'la ritournelle',
     satz: { de: 'Ein kleiner Refrain zieht einen Kreis um das Ungewisse und macht daraus ein Zuhause.', en: 'A little refrain draws a circle around the uncertain and makes a home of it.', fr: 'Une petite ritournelle trace un cercle autour de l’incertain et en fait un chez-soi.' },
     quelle: 'Deleuze, Guattari, Mille plateaux, 1980' },
   { nr: 'VIII', jahr: 1988, name: { de: 'Falte', en: 'Fold', fr: 'Le pli' }, wort: { de: 'Falte', en: 'Fold', fr: 'Pli' }, begriff: 'le pli',
