@@ -177,11 +177,40 @@ $('meldung').addEventListener('click', () => { $('meldung').hidden = true; });
 // sauberes Ende festhalten, sonst hält die Spur jeden Neuladen für einen Absturz
 addEventListener('pagehide', () => spur('Ende'));
 document.addEventListener('visibilitychange', () => { if (document.hidden) spur('Pause'); });
+let spurVorher = [];
 try {
-  const s = JSON.parse(localStorage.getItem(SPUR) || '[]');
+  const s = JSON.parse(localStorage.getItem(SPUR) || '[]'); spurVorher = s;
   if (s.length && !['✓ läuft', 'Start', 'Ende', 'Pause'].includes(s.at(-1))) melden(TEXTE[sprache].letzterLauf + s.slice(-3).join(' → '));
   localStorage.setItem(SPUR, JSON.stringify(['Start']));
 } catch {}
+// Fehler, die das Modul anhalten, landen ebenfalls in der Spur
+addEventListener('error', (e) => spur('Fehler: ' + String(e.message || e.error || '?').slice(0, 160)));
+addEventListener('unhandledrejection', (e) => spur('Fehler: ' + String(e.reason?.message || e.reason || '?').slice(0, 160)));
+// Mit ?spur: die Spur unten auf der Seite, mit einer Taste zum Kopieren (am Telefon sind Bildschirmfotos nicht immer erlaubt).
+// Gäste sehen das nie; nur wer die Adresse mit ?spur öffnet.
+if (new URLSearchParams(location.search).has('spur')) {
+  const kasten = document.createElement('div');
+  kasten.style.cssText = 'position:fixed;left:8px;right:8px;top:calc(max(16px, env(safe-area-inset-top)) + 44px);z-index:9;max-height:30vh;overflow:auto;padding:10px 12px;background:rgba(10,10,11,.92);border-left:2px solid #c8102e;font:12px/1.4 "Barlow Condensed",sans-serif;color:#f1eee6;white-space:pre-wrap';
+  const text = document.createElement('div'), taste = document.createElement('button');
+  taste.textContent = 'Spur kopieren';
+  taste.style.cssText = 'margin-top:8px;padding:6px 0;background:none;border:0;color:#c8102e;font:inherit;letter-spacing:.18em;text-transform:uppercase;cursor:pointer';
+  const inhalt = () => {
+    let jetzt = []; try { jetzt = JSON.parse(localStorage.getItem(SPUR) || '[]'); } catch {}
+    let gl2 = '?'; try { const c = document.createElement('canvas').getContext('webgl2'); const x = c && c.getExtension('WEBGL_debug_renderer_info'); gl2 = c ? (x ? c.getParameter(x.UNMASKED_RENDERER_WEBGL) : 'WebGL 2') : 'kein WebGL 2'; } catch {}
+    return 'Kristall ' + (document.querySelector('script[src*="kristall.js"]')?.getAttribute('src') || '') + '\n' + navigator.userAgent + '\nGrafik: ' + gl2 +
+      '\nVorher: ' + spurVorher.join(' → ') + '\nJetzt: ' + jetzt.join(' → ');
+  };
+  let fest = '';
+  const zeigen = () => { const t = inhalt(); if (t !== fest) { fest = t; text.textContent = t; } };
+  taste.addEventListener('click', async () => {
+    const t = inhalt();
+    try { await navigator.clipboard.writeText(t); taste.textContent = 'Kopiert'; }
+    catch { const r = document.createRange(); r.selectNodeContents(text); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); taste.textContent = 'Markiert, jetzt kopieren'; }
+    setTimeout(() => { taste.textContent = 'Spur kopieren'; }, 2500);
+  });
+  kasten.append(text, taste); document.body.append(kasten);
+  zeigen(); setInterval(zeigen, 1000);
+}
 
 // ---------- Grafik ----------
 const telefon = matchMedia('(pointer: coarse)').matches || Math.min(screen.width, screen.height) < 700;
