@@ -375,7 +375,8 @@ void main(){
 
 // ---- Die Dauer: jede Stelle sammelt ihre Vergangenheit; wie lange, bestimmt das Warten ----
 // Uhr: nur was sich bewegt (vormultipliziert: rgb = Farbe × Anteil, a = Anteil). Zucker: das ganze Bild, mitgeführt von der Strömung.
-const FS_DAUER = KOPF + `uniform sampler2D uD, uJetzt, uGrund, uW, uV, uFl; uniform vec2 uPx, uPxS; uniform float uDt, uSchnell, uLangsam, uAdvekt, uMatte, uLoesen, uSchmier, uSchmelz, uZufall;
+const FS_DAUER = KOPF + `uniform sampler2D uD, uJetzt, uGrund, uW, uV, uFl; uniform vec2 uPx, uPxS; uniform float uDt, uSchnell, uLangsam, uAdvekt, uMatte, uLoesen, uSchmier, uSchmelz, uZufall, uHaltW, uSeite;
+uniform vec4 uWisch[8], uWischR[8]; uniform int uWN;
 float matte(vec3 c, vec3 g){ float d = max(abs(c.r - g.r), max(abs(c.g - g.g), abs(c.b - g.b))); return smoothstep(0.05, 0.2, d); }
 void main(){
   float w = texture(uW, v).r;
@@ -386,6 +387,20 @@ void main(){
   vec4 n4 = 0.25 * (texture(uD, q + vec2(uPx.x, 0)) + texture(uD, q - vec2(uPx.x, 0)) + texture(uD, q + vec2(0, uPx.y)) + texture(uD, q - vec2(0, uPx.y)));
   // in der Uhr schmilzt, was wartet: es breitet sich aus, statt in Streifen stehen zu bleiben
   d = mix(d, n4, max(uLoesen, uSchmelz) * smoothstep(0.1, 0.9, w));
+  // der Pinsel (Zucker): wie ein Finger in nasser Farbe nimmt er auf, was unter ihm liegt, und trägt es den Zug entlang
+  vec2 qa = vec2(v.x * uSeite, v.y);
+  for (int i = 0; i < 8; i++) {
+    if (i >= uWN) break;
+    vec2 a = vec2(uWisch[i].x * uSeite, uWisch[i].y), b = vec2(uWisch[i].z * uSeite, uWisch[i].w), ab = b - a;
+    float h = clamp(dot(qa - a, ab) / max(dot(ab, ab), 1e-8), 0.0, 1.0);
+    vec2 e = qa - a - ab * h; float rr = mix(uWischR[i].x, uWischR[i].y, h);
+    float f = max(0.0, 1.0 - dot(e, e) / max(rr * rr, 1e-8)); f = sqrt(f);
+    float quer = dot(e, normalize(vec2(-ab.y, ab.x) + 1e-6)) / max(rr, 1e-4);
+    // die Haare tragen ungleich viel: so bleibt der Zug gestreift
+    f *= 0.55 + 0.45 * (0.5 + 0.5 * sin(quer * 19.0 + uWischR[i].w)) * (0.7 + 0.3 * sin(quer * 47.0 + uWischR[i].w * 2.3));
+    vec2 weg = vec2((b.x - a.x) / uSeite, b.y - a.y);
+    d = mix(d, texture(uD, v - weg), f * uWischR[i].z);
+  }
   // die Gegenwart, verschmiert über den Weg seit dem vorigen Bild: aus der Treppe der Bilder wird eine stetige Spur
   vec2 fl = texture(uFl, v).xy * uSchmier;
   vec3 j = vec3(0); float m = 0.0; vec3 g = texture(uGrund, v).rgb;
@@ -397,7 +412,7 @@ void main(){
     j += c * mk; m += mk;
   }
   j /= max(m, 1e-3); m /= 8.0;
-  float r = mix(uSchnell, uLangsam, smoothstep(0.0, 0.85, w));
+  float r = mix(uSchnell, uLangsam, smoothstep(0.0, uHaltW, w));
   o = d + (vec4(j * m, m) - d) * r;
 }`;
 
@@ -620,9 +635,14 @@ void main(){
   off.x /= uSeite;
   vec3 s = vec3(texture(uScharf, v + off * 0.92).r, texture(uScharf, v + off).g, texture(uScharf, v + off * 1.1).b);
   vec3 c = mix(s, d.rgb, sch);
-  // Schlieren: wo das Gelöste steile Kanten hat, fängt es Licht
+  // der Zug liegt auf wie nasse Farbe: auf der Lichtseite ein feiner Glanz, auf der anderen ein Hauch Schatten.
+  // Kein Aufhellen der Fläche: lesbar wird der Pinsel an seinem Rand und an dem, was er mitgenommen hat.
+  float relief = dot(gw / (uPxW.x * 2.0), normalize(vec2(-0.6, 0.8))) * 0.012;
+  c *= 1.0 - 0.32 * clamp(-relief, 0.0, 1.0);
+  c += vec3(1.0, 0.95, 0.86) * 0.22 * smoothstep(0.15, 0.9, relief);
+  // Schlieren: nur wo das Gelöste sehr steile Kanten hat, ein schwacher Lichtfaden
   float kante = length(vec2(lx, ly));
-  c += vec3(1.0, 0.93, 0.8) * smoothstep(0.08, 0.45, kante) * sch * 0.22 * uSchlieren;
+  c += vec3(1.0, 0.93, 0.8) * smoothstep(0.25, 0.6, kante) * sch * 0.05 * uSchlieren;
   vec2 r = step(uRahmen.xy, v) * step(v, uRahmen.zw);
   o = vec4(c * mix(1.0, r.x * r.y, 1.0 - sch * 0.0), 1.0);
 }`;
@@ -1030,6 +1050,7 @@ $('r-lesart').addEventListener('input', (e) => { const nr = +e.target.value; if 
 
 // ---------- Das Warten: Stempel des Fingers ----------
 const stempel = new Float32Array(16 * 4), stempelR = new Float32Array(16 * 4); let stempelN = 0;
+const wisch = new Float32Array(8 * 4), wischR = new Float32Array(8 * 4); let wischN = 0;
 const ruehr = new Float32Array(8 * 4); let ruehrN = 0, ruehrRadius = 0.1;
 const pinselRadius = () => 0.12 * (innerWidth < innerHeight ? 1 : 1.3);   // in Bildhöhen
 // r0, r1: Breite am Anfang und am Ende des Stücks; haar ≥ 0 zeichnet die Bahnen der Pinselhaare (Phase je Zug)
@@ -1061,7 +1082,8 @@ function haltZeigen(x, y) { const h = $('halt'); h.style.left = x + 'px'; h.styl
 function haltBild(dt) {
   if (finger.size) haltZeit += dt; else haltZeit = 0;
   $('halt-voll').style.strokeDashoffset = String(1 - Math.min(1, wartenMenge * 1.15));
-  if (!daumenGelernt && haltZeit > 1.2) { daumenGelernt = true; $('daumen').classList.add('weg'); setTimeout(() => { $('daumen').hidden = true; }, 800); }
+  const gezogen = [...finger.values()].some((f) => f.bewegt > 120);
+  if (!daumenGelernt && (haltZeit > 1.2 || gezogen)) { daumenGelernt = true; $('daumen').classList.add('weg'); setTimeout(() => { $('daumen').hidden = true; }, 800); }
 }
 
 // ---------- Gesten ----------
@@ -1092,6 +1114,7 @@ leinwand.addEventListener('pointermove', (e) => {
     const s = STROM_SEITE / innerHeight;   // Bildpunkte je Sekunde → Gitterpunkte je Sekunde
     ruehren(p.x, p.y, dx / dt * s * 0.55, -dy / dt * s * 0.55);
     ruehrRadius = 0.035 + 0.075 * f.k;
+    if (wischN < 8) { wisch.set([a.x, a.y, p.x, p.y], wischN * 4); wischR.set([r0 * 0.9, r1 * 0.9, 0.9, f.haar], wischN * 4); wischN++; }
   }
   f.vx = dx / dt; f.vy = dy / dt; f.bewegt += Math.hypot(dx, dy);
   f.x = e.clientX; f.y = e.clientY; f.t = jetzt;
@@ -1296,12 +1319,15 @@ function bild(ms) {
     // Uhr: ohne Warten kurzes Gedächtnis (0,3 s), im Warten bis 1,5 bis 5 s; Zucker: ohne Warten die Gegenwart, im Warten 2 bis 20 s
     const langsam = uhr ? 1.5 + 3.5 * WERTE[0][2] : 2 + 18 * WERTE[1][0];
     rechne(P.dauer, D.schreiben(), { uD: D.lesen(), uJetzt: jetzt, uGrund: G.lesen(), uW: W, uV: V.lesen(), uFl: fluss }, (u) => {
+      gl.uniform1f(u.uHaltW, uhr ? 0.85 : 0.3); gl.uniform1f(u.uSeite, innerWidth / innerHeight);
+      gl.uniform4fv(u.uWisch, wisch); gl.uniform4fv(u.uWischR, wischR); gl.uniform1i(u.uWN, uhr ? 0 : wischN);
       gl.uniform1f(u.uSchmier, uhr ? 1.6 : 0.5); gl.uniform1f(u.uSchmelz, uhr ? 0.5 : 0); gl.uniform1f(u.uZufall, Math.random());
       gl.uniform2f(u.uPx, pxA[0], pxA[1]); gl.uniform2f(u.uPxS, pxS[0], pxS[1]); gl.uniform1f(u.uDt, dt);
       gl.uniform1f(u.uSchnell, uhr ? 1 - Math.exp(-dt / 0.3) : 1); gl.uniform1f(u.uLangsam, 1 - Math.exp(-dt / langsam));
       gl.uniform1f(u.uAdvekt, uhr ? 0 : 1); gl.uniform1f(u.uMatte, uhr ? 1 : 0); gl.uniform1f(u.uLoesen, uhr ? 0 : 0.02 + 0.08 * WERTE[1][2]);
     });
     D.tauschen();
+    wischN = 0;
     if (uhr) {
       const Sp = ziele.spitze;
       rechne(P.spitze, Sp.schreiben(), { uAlt: Sp.lesen(), uJetzt: jetzt, uGrund: G.lesen(), uW: W, uFl: fluss }, (u) => {
@@ -1313,6 +1339,7 @@ function bild(ms) {
   }
 
   if (lesart !== 2) rhythmusNeu = true;
+  wischN = 0;
   // 7. die Rhythmen (Spannung): Gedächtnisse von etwa 1/f Sekunden
   if (lesart === 2) {
     const fHoch = 0.5 * Math.pow(12, WERTE[2][1]);   // 0,5 bis 6 Hz: Atem, Puls, Flimmern
