@@ -1,0 +1,10 @@
+# Brillante Ideen: Seiten (HTML) immer frisch prüfen lassen, damit ein Merge sofort ankommt.
+# Module, Stylesheets und Videos tragen ?v= und dürfen im Speicher bleiben (19.11.2026, Christian sah nach dem Merge alte Teile).
+<IfModule mod_expires.c>
+  ExpiresByType text/html "access plus 0 seconds"
+</IfModule>
+<IfModule mod_headers.c>
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>
