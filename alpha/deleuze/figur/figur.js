@@ -301,16 +301,29 @@ void main(){
   float likeHi = wieGrund(texture(uQ, v).rgb);
   float sicher = smoothstep(0.7, 0.3, Bu);
   float kante = (1.0 - smoothstep(0.3, 0.8, likeHi)) * smoothstep(0.995, 0.6, Bu);
-  float fg = max(sicher, kante);
+  // Saum: Am Rand der Figur mischt das kleine Feld Figur und Grund, die Flutung hält dort ein Feld zu früh an.
+  // Liegt gleich daneben sicherer Grund und sieht der Punkt selbst ganz wie Grund aus, gehört er zum Grund.
+  float Bn = 0.0;
+  for (int k = 0; k < 8; k++) { float a = float(k) * 0.785398; Bn = max(Bn, texture(uB, v + vec2(cos(a), sin(a)) * uPxB * 1.25).r); }
+  float saum = smoothstep(0.75, 0.95, Bn) * smoothstep(0.55, 0.9, likeHi);
+  float fg = max(sicher * (1.0 - saum), kante);
   float alt = texture(uAlt, v).r;
   o = vec4(mix(alt, fg, uNeu), 0.0, 0.0, 1.0);
+}`;
+// die Silhouette im Rund, Quelle des Schattens (wird danach weich gefaltet)
+const FS_SILH = KOPF + `uniform sampler2D uM; uniform vec4 uRing; uniform float uRingWink, uSeite, uFlut;
+void main(){
+  vec2 q = vec2(v.x * uSeite, v.y) - uRing.xy; float cs = cos(uRingWink), sn = sin(uRingWink);
+  vec2 e = vec2(cs * q.x + sn * q.y, -sn * q.x + cs * q.y) / uRing.zw;
+  float innen = 1.0 - smoothstep(0.97, 1.01, length(e));
+  o = vec4(smoothstep(0.3, 0.7, texture(uM, v).r) * innen * uFlut, 0.0, 0.0, 1.0);
 }`;
 // eine kleine Kopie der Matte, aus der die Seite Mitte und Grösse der Figur liest (für das Rund von selbst)
 const FS_MKLEIN = KOPF + `uniform sampler2D uM; void main(){ o = vec4(texture(uM, v).r, 0.0, 0.0, 1.0); }`;
 
 // ---------- Lesart I: Isolieren. Die Figur, das Rund, die Fläche ----------
 // Ring in Bildhöhen (x mal Seitenverhältnis). uFlut: wie weit die Fläche von aussen herein ist, uRund: wie weit das Rund gefüllt ist.
-const FS_SZENE = KOPF + `uniform sampler2D uScharf, uM, uB; uniform vec2 uPxS; uniform float uSeite, uT, uHpx;
+const FS_SZENE = KOPF + `uniform sampler2D uScharf, uM, uB, uS1, uS2; uniform vec2 uPxS; uniform float uSeite, uT, uHpx;
 uniform vec4 uRing; uniform float uRingWink, uRingStart, uRingDir, uRingZug, uFlut, uRund, uRmax;
 uniform vec3 uAplat, uRond, uOmbre, uLigne; uniform float uKontur, uSchatten, uFigur;
 void main(){
@@ -339,31 +352,39 @@ void main(){
   // das Rund füllt sich vom Rand zur Mitte
   float innen = (1.0 - smoothstep(-1.0, 1.0, dpx)) * smoothstep(1.0 - uRund * 1.05 - 0.02, 1.0 - uRund * 1.05 + 0.04, rr);
   float flaeche = aussen + innen;
-  // der Schatten: eine dunkle Lache unter der Figur, nach links unten versetzt
-  vec2 vs = v + vec2(0.022 / uSeite, 0.05), qs = vec2(vs.x * uSeite, vs.y) - uRing.xy;
-  vec2 es = vec2(cs * qs.x + sn * qs.y, -sn * qs.x + cs * qs.y) / uRing.zw;
-  float sch = (1.0 - texture(uB, vs).r) * (1.0 - smoothstep(0.9, 1.05, length(es)));
-  sch = smoothstep(0.3, 0.75, sch) * (1.0 - 0.45 * smoothstep(0.0, 0.5, texture(uB, v + vec2(0.0, 0.11)).r));
+  // der Schatten: eine dunkle Lache, die an der Figur hängt und nach links unten ausläuft.
+  // Aus der Silhouette im Rund, zweimal weich gefaltet: nah an der Figur dicht und klar, weiter weg weich wie lasiert
+  vec2 off = vec2(0.032 / uSeite, 0.07);
+  float s1 = texture(uS1, v + off * 0.45).r, s2 = texture(uS2, v + off).r;
+  float sch = max(smoothstep(0.12, 0.62, s1) * 0.92, smoothstep(0.06, 0.55, s2) * 0.78);
+  // die Lache dünnt nach aussen aus, ohne Kante: ganz feines Rauschen in der Dichte wie Farbe auf roher Leinwand
+  sch *= 0.94 + 0.06 * (fbm(q * 9.0 + 4.0) - 0.5) * 2.0;
   vec3 grund = mix(bild, aplat, aussen);
   grund = mix(grund, rond, innen);
   // gemalter Rand des Runds: innen ein Hauch dunkler, wie dicker aufgetragen
-  grund *= 1.0 - 0.10 * innen * exp(-abs(dpx) / (10.0 * uHpx / 900.0));
-  grund = mix(grund, grund * uOmbre * 2.2, uSchatten * 0.92 * sch * flaeche);
+  grund *= 1.0 - 0.06 * innen * exp(-abs(dpx) / (22.0 * uHpx / 900.0));
+  // der Schatten nimmt die Farbe der Fläche mit und wird tiefer, nicht grau
+  vec3 tiefe = mix(grund * uOmbre * 2.2, uOmbre, 0.35);
+  grund = mix(grund, tiefe, uSchatten * 0.9 * sch * flaeche);
   // die Linie des Runds, haarfein, zeichnet sich von ihrem Anfang her
   float wink = atan(e.y, e.x);
   float teil = fract((wink - uRingStart) * uRingDir / 6.28318 + 1.0);
   float zug = smoothstep(teil - 0.004, teil + 0.004, uRingZug);
-  float lw = mix(0.45, 1.6, uKontur) * uHpx / 900.0;
-  float linie = (1.0 - smoothstep(lw, lw + 1.0, abs(dpx))) * zug;
-  float linie2 = (1.0 - smoothstep(lw * 0.6, lw * 0.6 + 1.0, abs(dpx + 5.0 * uHpx / 900.0))) * zug * 0.35 * uKontur;
-  grund = mix(grund, uLigne, max(linie, linie2) * (0.55 + 0.45 * uKontur));
+  // ein einziger Haarstrich: Breite in Bildpunkten des Bildschirms, das Profil eine Glocke (nie treppig),
+  // Druck und Dichte schwanken kaum merklich entlang des Umfangs wie bei einem Strich von Hand
+  float px1 = uHpx / 900.0;
+  float druck = 0.85 + 0.3 * (fbm(vec2(wink * 2.2 + 1.7, 0.5)) - 0.5) * 2.0;
+  float lw = mix(0.35, 1.0, uKontur) * px1 * druck;
+  float sg = 0.5 * lw + 0.42;
+  float linie = exp(-0.5 * dpx * dpx / (sg * sg)) * min(1.0, lw / 0.7 + 0.35) * zug;
+  grund = mix(grund, uLigne, linie * (0.6 + 0.35 * uKontur) * (0.9 + 0.1 * druck));
   // die Figur: unverändert lebendig, nur etwas dichter, und an der Kante eine Membran in der Farbe der Fläche
   vec3 fig = mix(bild, bild * bild * (3.0 - 2.0 * bild), 0.22 * uFigur);
   // das Rund isoliert: draussen deckt die Fläche alles zu, auch was zur Figur gehörte (ein Hauch Übergang, keine Treppe)
   fg *= mix(1.0, 1.0 - smoothstep(-0.8, 0.8, dpx), uFlut);
   float membran = fg * (1.0 - fg) * 4.0 * uKontur * innen;
   vec3 c = mix(grund, fig, fg);
-  c = mix(c, mix(uAplat, uOmbre, 0.5), membran * 0.25);
+  c = mix(c, mix(uAplat, uOmbre, 0.5), membran * 0.14);
   // feines Zittern unter einem Achtbit-Schritt: sonst stehen in den grossen Flächen Stufen wie Höhenlinien
   c += (h21(gl_FragCoord.xy + fract(uT) * 61.0) - 0.5) * (2.0 / 255.0);
   // im Alpha: wie sehr hier Figur steht (nach dem Schnitt durch das Rund), für das Fleisch
@@ -688,7 +709,7 @@ if (gl) {
   gl.getExtension('OES_texture_half_float_linear');
   try {
     for (const [n, fs] of Object.entries({ kopie: FS_KOPIE, klein: FS_KLEIN, flut: FS_FLUT, matte: FS_MATTE, mklein: FS_MKLEIN, szene: FS_SZENE,
-      feder: FS_FEDER, schrei: FS_SCHREI, maske: FS_MASKE, tensor: FS_TENSOR, fleisch: FS_FLEISCH, hell: FS_HELL, weich: FS_WEICH, zusammen: FS_ZUSAMMEN })) P[n] = programm(fs);
+      feder: FS_FEDER, schrei: FS_SCHREI, maske: FS_MASKE, tensor: FS_TENSOR, fleisch: FS_FLEISCH, hell: FS_HELL, weich: FS_WEICH, zusammen: FS_ZUSAMMEN, silh: FS_SILH })) P[n] = programm(fs);
     P.spur = programm(FS_SPUR, VS_SPUR);
   } catch (e) { spur('Shader: ' + String(e.message).slice(0, 140)); console.error(e); melden(TEXTE[sprache].keinGL); }
   const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
@@ -1332,7 +1353,20 @@ function bild(ms) {
     return Math.hypot((cs * dx + sn * dy) / ring.rx, (-sn * dx + cs * dy) / ring.ry);
   })) : 2;
   const fE = flut * flut * (3 - 2 * flut);
-  rechne(P.szene, sz, { uScharf: scharfTex, uM: M.lesen(), uB: F.lesen() }, (u) => {
+  // 1b. die Silhouette im Rund, zweimal weich: nah (S1) und weit (S2), Quelle des Schattens
+  const sb = Math.max(32, Math.round(arbeitB / 3)), sh = Math.max(32, Math.round(arbeitH / 3));
+  const S1 = zielBauen('sch1', sb, sh), S2 = zielBauen('sch2', sb, sh), SB = zielBauen('schB', sb, sh);
+  if (ring) {
+    rechne(P.silh, S1, { uM: M.lesen() }, (u) => { gl.uniform4f(u.uRing, ...ringU); gl.uniform1f(u.uRingWink, ring.w); gl.uniform1f(u.uSeite, seite); gl.uniform1f(u.uFlut, Math.min(1, flut * 1.4)); });
+    const falten = (Z, schritt, mal) => { for (let i = 0; i < mal; i++) {
+      rechne(P.weich, SB, { uQ: Z }, (u) => gl.uniform2f(u.uRichtung, schritt / sb, 0));
+      rechne(P.weich, Z, { uQ: SB }, (u) => gl.uniform2f(u.uRichtung, 0, schritt / sh));
+    } };
+    rechne(P.kopie, S2, { uQ: S1 });
+    falten(S1, 1, 2);
+    falten(S2, 1, 1); falten(S2, 2, 1); falten(S2, 3, 2);
+  }
+  rechne(P.szene, sz, { uScharf: scharfTex, uM: M.lesen(), uB: F.lesen(), uS1: S1, uS2: S2 }, (u) => {
     gl.uniform2f(u.uPxS, 1 / sz.b, 1 / sz.h); gl.uniform1f(u.uSeite, seite); gl.uniform1f(u.uT, t % 1000); gl.uniform1f(u.uHpx, sz.h);
     gl.uniform4f(u.uRing, ...ringU); gl.uniform1f(u.uRingWink, ring ? ring.w : 0); gl.uniform1f(u.uRingStart, ring ? ring.start : 0); gl.uniform1f(u.uRingDir, ring ? ring.dir : 1);
     gl.uniform1f(u.uRingZug, ring ? ringZug : 0); gl.uniform1f(u.uFlut, ring ? fE : 0); gl.uniform1f(u.uRund, ring ? Math.max(0, Math.min(1, (flut - 0.3) / 0.7)) : 0); gl.uniform1f(u.uRmax, rmax);
