@@ -200,7 +200,9 @@ const VS = `#version 300 es
 in vec2 a; out vec2 v;
 void main(){ v = a*0.5+0.5; gl_Position = vec4(a,0.,1.); }`;
 
-const FS = `#version 300 es
+// RISS 1: mit dem zerbrochenen Stein (gesprungen); RISS 0 ist der Notbetrieb, falls ein Grafiktreiber den Shader ablehnt
+const fsText = (riss) => `#version 300 es
+#define RISS ${riss}
 precision highp float; precision highp sampler2DArray;
 #define MAX_K ${MAX_F}
 #define WELLEN ${telefon ? 4 : 5}
@@ -230,9 +232,14 @@ uniform float uVer;             // Verschmelzung: wie weit der Kristall ins Bild
 uniform float uSpalt, uRissC;   // gesprungen: halbe Spaltbreite und Lage der Rissebene
 uniform vec3 uRissVer;          // gesprungen: Richtung, in der die beiden Stücke auseinanderweichen
 // Zusatzebene für das gerade gerechnete Stück des gesprungenen Steins (xyz Normale, w Abstand); null = keine
-vec4 gZ = vec4(0.0);
 const int RISSFLAECHE = 99;
+#if RISS
+vec4 gZ = vec4(0.0);
 vec3 ebeneZ(int k){ return k == RISSFLAECHE ? gZ.xyz : uN[k]; }
+#else
+const vec4 gZ = vec4(0.0);
+vec3 ebeneZ(int k){ return uN[k]; }
+#endif
 
 float h(float n){ return fract(sin(n*91.345+7.13)*43758.5453); }
 vec3 holen(vec2 u, float s){ vec2 m = 1.0 - abs(mod(u, 2.0) - 1.0); return texture(uZeit, vec3(m.x, 1.0 - m.y, s)).rgb; }
@@ -260,11 +267,13 @@ bool treffenS(vec3 ro, vec3 rd, float sk, out float t0, out int i0){
     float t = ab / dn;
     if (dn < 0.0) { if (t > t0) { t0 = t; i0 = k; } } else { t1 = min(t1, t); }
   }
+#if RISS
   if (gZ.x != 0.0 || gZ.y != 0.0 || gZ.z != 0.0) {
-    float dn = dot(rd, gZ.xyz), ab = gZ.w - dot(ro, gZ.xyz);
-    if (abs(dn) < 1e-6) { if (ab < 0.0) return false; }
-    else { float t = ab / dn; if (dn < 0.0) { if (t > t0) { t0 = t; i0 = RISSFLAECHE; } } else { t1 = min(t1, t); } }
+    float dz = dot(rd, gZ.xyz), az = gZ.w - dot(ro, gZ.xyz);
+    if (abs(dz) < 1e-6) { if (az < 0.0) return false; }
+    else { float tz = az / dz; if (dz < 0.0) { if (tz > t0) { t0 = tz; i0 = RISSFLAECHE; } } else { t1 = min(t1, tz); } }
   }
+#endif
   return t0 < t1 && t1 > 0.0;
 }
 bool treffen(vec3 ro, vec3 rd, out float t0, out int i0){ return treffenS(ro, rd, 1.0, t0, i0); }
@@ -275,10 +284,12 @@ float austrittS(vec3 p, vec3 d, float sk, out int i1){
     vec3 n = ebene(k); float dn = dot(d, n);
     if (dn > 1e-6) { float t = (uR[k] * sk - dot(p, n)) / dn; if (t < t1) { t1 = t; i1 = k; } }
   }
+#if RISS
   if (gZ.x != 0.0 || gZ.y != 0.0 || gZ.z != 0.0) {
-    float dn = dot(d, gZ.xyz);
-    if (dn > 1e-6) { float t = (gZ.w - dot(p, gZ.xyz)) / dn; if (t < t1) { t1 = t; i1 = RISSFLAECHE; } }
+    float dz = dot(d, gZ.xyz);
+    if (dz > 1e-6) { float tz = (gZ.w - dot(p, gZ.xyz)) / dz; if (tz < t1) { t1 = tz; i1 = RISSFLAECHE; } }
   }
+#endif
   return t1;
 }
 float austritt(vec3 p, vec3 d, out int i1){ return austrittS(p, d, 1.0, i1); }
@@ -347,6 +358,7 @@ void main(){
   // gesprungener Kristall (Renoir): der Stein ist in zwei Stücke zerbrochen, die auseinanderweichen.
   // Durch den Spalt entweicht Licht: die Gegenwart, das Leben, das nicht im Kristall bleibt.
   float t0; int i0; bool trifft = false; vec3 versatz = vec3(0.0); float jenseits = 0.0;
+#if RISS
   if (uZustand == 1 && uSpalt > 0.0) {
     float ta, tb; int ia, ib;
     vec3 offA = uRissVer * uSpalt;
@@ -357,8 +369,12 @@ void main(){
     if (ha && (!hb || ta < tb)) { gZ = vec4(-uRiss, -uRissC); t0 = ta; i0 = ia; versatz = offA; jenseits = 1.0; trifft = true; }
     else if (hb) { t0 = tb; i0 = ib; versatz = -offA; trifft = true; }
   } else trifft = treffen(rk, rd, t0, i0) && t0 > 0.0;
+#else
+  trifft = treffen(rk, rd, t0, i0) && t0 > 0.0;
+#endif
 
   // Licht aus dem Spalt: eine dünne leuchtende Schicht entlang der Rissebene, die über den Stein hinaus ins Bild strahlt
+#if RISS
   if (uZustand == 1 && uSpalt > 0.0) {
     float dn = dot(rd, uRiss), tc = (uRissC - dot(rk, uRiss)) / (abs(dn) < 1e-4 ? 1e-4 : dn);
     if (tc > 0.0) {
@@ -374,6 +390,7 @@ void main(){
       col += schein / (1.0 + 0.6 * dot(col, vec3(0.333)));   // auf hellem Bild sanfter, damit nichts ausbrennt
     }
   }
+#endif
 
   if (trifft) {
     vec3 p0 = rk - versatz + rd * t0, n0 = ebeneZ(i0);
@@ -537,7 +554,9 @@ function nachbearbeiten(t) {
 
 let prog, ort = {}, zeitTex = null, pufferB = 0, pufferH = 0, scharfTex = null, scharfB = 0, scharfH = 0;
 if (gl) {
-  prog = programm(VS, FS);
+  // Lehnt der Grafiktreiber des Geräts den vollen Shader ab, läuft der Kristall ohne Bruch weiter, statt die Seite zu blockieren
+  try { prog = programm(VS, fsText(1)); }
+  catch (e) { spur('Shader ohne Bruch: ' + String(e.message || e).slice(0, 160)); console.error(e); prog = programm(VS, fsText(0)); }
   gl.useProgram(prog);
   const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
