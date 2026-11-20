@@ -4,6 +4,7 @@
 
 import { SCHLIFFE, schliffEbenen } from './schliffe.js?v=8';
 import { klangStarten, klangBild, klangAn, klangIstAn, klangSpur } from './klang.js?v=1';
+import { aufnahmeDatei } from '../gemeinsam/aufnahme.js?v=1';
 
 const $ = (id) => document.getElementById(id);
 
@@ -1087,9 +1088,10 @@ $('aufnahme').addEventListener('click', () => {
   const typA = ton ? (['video/mp4;codecs=avc1,mp4a.40.2', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus'].find((m) => MediaRecorder.isTypeSupported(m)) || typ) : typ;
   aufnehmer = new MediaRecorder(strom, typA ? { mimeType: typA, videoBitsPerSecond: telefon ? 8e6 : 16e6, audioBitsPerSecond: 128e3 } : undefined);
   aufnehmer.ondataavailable = (e) => e.data.size && teile.push(e.data);
-  aufnehmer.onstop = () => {
+  aufnehmer.onstop = async () => {
     clearInterval(uhr);
-    const b = new Blob(teile, { type: (aufnehmer.mimeType || 'video/webm').split(';')[0] });
+    const sekunden = (performance.now() - aufnahmeStart) / 1000;
+    const b = await aufnahmeDatei(teile, (aufnehmer.mimeType || 'video/webm').split(';')[0], sekunden);   // Länge in den Dateikopf
     aufnehmer = null; knopf.classList.remove('laeuft'); knopf.textContent = TEXTE[sprache].aufnahme;
     zeigen(b, 'kristallbild-' + zeitstempel() + (b.type.includes('mp4') ? '.mp4' : '.webm'));
   };
