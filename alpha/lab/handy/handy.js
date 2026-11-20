@@ -21,10 +21,13 @@ import * as ZS from "../kern/zusammenstellung.js";
 import * as VS from "../kern/vorschlag.js";
 import { N, ZEICHEN as PIXELZEICHEN } from "./zeichen.js?v=1";
 import { EFFEKTE, NAMEN } from "./auswahl.js?v=1";
+import { uebersetzer, spracheWaehlen, setzeSeite, merken, SPRACHEN, KUERZEL, NAME } from "./sprache.js?v=1";
 
 export const HANDY_VERSION = "1.0.0";
 const R = labRegister();
 const $ = (id) => document.getElementById(id);
+// Sprache (d, e, s, f wie auf der Website): alle Texte der Oberfläche über t(), gerechnet wird überall gleich
+let t = uebersetzer(spracheWaehlen());
 
 const SEITE = 1080;          // Rechengrösse am Handy (das Lab rechnet bis 1200)
 const VORSCHAU = 256;        // die kleinen Bilder im Streifen
@@ -52,10 +55,14 @@ function el(tag, attrs = {}, ...kinder) {
   for (const c of kinder.flat()) if (c !== null && c !== undefined && c !== false) e.append(c instanceof Node ? c : document.createTextNode(String(c)));
   return e;
 }
-const sekunden = (s) => `${(Math.round(s * 10) / 10).toLocaleString("de-CH")} s`;
+const ORT = { de: "de-CH", en: "en-GB", es: "es-ES", fr: "fr-CH" };
+const zahl = (x, n = 1, fest = 0) => x.toLocaleString(ORT[t.sprache], { maximumFractionDigits: n, minimumFractionDigits: fest });
+const sekunden = (s) => `${zahl(Math.round(s * 10) / 10)} s`;
 const slug = (s) => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "handy";
 const kurz = (t) => String(t).split(":")[0];
 const effektVon = (opId) => EFFEKTE.find((x) => x.id === opId);
+/** Name eines Effekts in der Sprache der Seite (Deutsch aus auswahl.js oder dem Register des Labs) */
+const effektName = (opId) => t.n(opId, effektVon(opId)?.name ?? R.hole(opId)?.name ?? opId);
 const bild = (id) => (id ? P.ergebnis(S.projekt, id) : null);
 const url = (id) => S.medien.url(bild(id));
 const bilder = () => S.projekt.ergebnisse.filter((x) => x.typ === "IMAGE");
@@ -79,21 +86,23 @@ function gpu() {
 
 // ---------- Rechnen: ein Auftrag zur Zeit, mit Schleier auf der Bühne und Abbrechen ----------
 function arbeit(text, anteil = null) {
-  $("arbeit").hidden = false; $("arbeitText").textContent = text;
+  $("arbeit").hidden = false; if (text !== null) $("arbeitText").textContent = text;
   const b = $("balken"); b.parentElement.classList.toggle("unbestimmt", anteil === null);
   if (anteil !== null) b.style.width = `${Math.round(Math.max(0, Math.min(1, anteil)) * 100)}%`;
 }
 async function laufen(text, fn) {
-  if (S.laeuft) { toast("Es rechnet schon. Erst fertig rechnen lassen oder abbrechen."); return false; }
+  if (S.laeuft) { toast(t("esRechnet")); return false; }
   S.laeuft = new AbortController(); arbeit(text); knoepfe();
   try { await fn(S.laeuft.signal); geaendert(); return true; }
   catch (f) {
     f = zugriffsMeldung(f, new Blob());
-    if (f.name === "AbortError") toast("Abgebrochen."); else { console.warn(f); toast(`Fehler: ${f.message}`, true); }
+    if (f.name === "AbortError") toast(t("abgebrochen")); else { console.warn(f); toast(t("fehler", { m: f.message }), true); }
     return false;
   } finally { S.laeuft = null; $("arbeit").hidden = true; alles(); }
 }
 const melden = (text, anteil = null) => { if (S.laeuft) arbeit(text, anteil); };
+// die Module des Labs melden deutsch: in den anderen Sprachen bleibt der eigene Satz stehen, nur der Balken läuft
+const kern = (text, anteil = null) => melden(t.sprache === "de" ? text : null, anteil);
 $("abbrechen").addEventListener("click", () => S.laeuft?.abort());
 
 // ---------- Pixel-Schalter (Zeichen 13 × 13 wie im Multiverse) und Wechsel der Bildschirme ----------
@@ -101,7 +110,7 @@ const pult = $("pult"), leiste = $("leiste");
 const ruhig = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 const ZEICHEN = PIXELZEICHEN;
 const schalter = NAMEN.map((n, i) => {
-  const b = el("button", { class: "schalter", type: "button", "aria-label": n }, el("span", { class: "knauf" }, el("canvas", { width: N, height: N, "aria-hidden": "true" })), n);
+  const b = el("button", { class: "schalter", type: "button", "data-t-aria": `s${i}` }, el("span", { class: "knauf" }, el("canvas", { width: N, height: N, "aria-hidden": "true" })), el("span", { "data-t": `s${i}` }));
   b.addEventListener("click", () => zu(i));
   leiste.append(b);
   return { b, knauf: b.firstChild, g: b.querySelector("canvas").getContext("2d"), t0: 0, an: false };
@@ -134,7 +143,7 @@ function setze(i) {
   S.feld = i;
   schalter.forEach((s, j) => { const an = j === i; if (an && !s.an) s.t0 = ruhig() ? -1e9 : performance.now(); s.an = an; s.b.setAttribute("aria-current", String(an)); });
   requestAnimationFrame(malen);
-  $("ort").textContent = `${i + 1} / 6 · ${NAMEN[i]}`;
+  $("ort").textContent = `${i + 1} / 6 · ${t(`s${i}`)}`;
   try { history.replaceState(null, "", `#${NAMEN[i].toLowerCase()}`); } catch { /* egal */ }
   if (neu) { if (i === 1) vorschauenStarten(); buehne(); }
 }
@@ -166,12 +175,12 @@ function buehne() {
   filmEl.hidden = !(i === 4 && S.film.video);
   if (i === 4 && S.film.video) { if (filmEl.getAttribute("src") !== S.film.video.url) filmEl.src = S.film.video.url; } else filmEl.pause();
   welle.hidden = !(i === 3 && S.beat.ergebnis); if (!welle.hidden) welleZeichnen();
-  const ef = S.effekt ? effektVon(S.effekt)?.name : null;
+  const ef = S.effekt ? effektName(S.effekt) : null;
   if (!e) etikett();
-  else if (i === 0) etikett(e.titel.replace(/\.(jpe?g|png|webp)/i, ""), `${e.breite} × ${e.hoehe}`, bild(S.ton) ? ["Ton"] : null);
-  else if (i === 1) etikett(ef ? [ef] : "Effekt wählen", ef && R.hole(S.effekt).parameter.some((p) => p.id === "anteil") ? `Anteil ${Math.round(S.anteil * 100)} %` : null, S.jevEffekt ? "jev hat gewichtet" : null);
-  else if (i === 3) etikett(S.beat.ergebnis ? [bild(S.beat.ergebnis).titel.split("·")[0].trim()] : "noch kein Klang", S.beat.quelle ? (S.beat.quelle === "jev" ? "gewählt von jev" : "nach Regeln") : null);
-  else if (i === 4) S.film.video ? etikett() : etikett("Vorschau", S.film.format !== "material" ? S.film.format : null);   // beim Film liegen dort die Bedienelemente des Videos
+  else if (i === 0) etikett(e.titel.replace(/\.(jpe?g|png|webp)/i, ""), `${e.breite} × ${e.hoehe}`, bild(S.ton) ? [t("tonEtikett")] : null);
+  else if (i === 1) etikett(ef ? [ef] : t("effektEtikett"), ef && R.hole(S.effekt).parameter.some((p) => p.id === "anteil") ? t("anteilEtikett", { n: Math.round(S.anteil * 100) }) : null, S.jevEffekt ? t("jevGewichtet") : null);
+  else if (i === 3) etikett(S.beat.ergebnis ? [bild(S.beat.ergebnis).knoten ? t("beatTitel") : bild(S.beat.ergebnis).titel.split("·")[0].trim()] : t("keinKlang"), S.beat.quelle ? (S.beat.quelle === "jev" ? t("vonJev") : t("nachRegeln")) : null);
+  else if (i === 4) S.film.video ? etikett() : etikett(t("vorschau"), S.film.format !== "material" ? S.film.format : null);   // beim Film liegen dort die Bedienelemente des Videos
   else etikett();
 }
 
@@ -180,26 +189,26 @@ const gewaehlt = (fn) => async (ev) => { const f = ev.target.files[0]; try { if 
 async function importiere(datei) {
   if (datei.type.startsWith("video/") || (!datei.type && /\.(mp4|m4v|mov|webm)$/i.test(datei.name))) return importiereVideo(datei);
   if (datei.type.startsWith("audio/") || (!datei.type && /\.(wav|mp3|ogg|flac|m4a|aac|opus)$/i.test(datei.name))) return importiereTon(datei);
-  await laufen(`${datei.name} wird gelesen …`, async () => {
+  await laufen(t("liest", { name: datei.name }), async () => {
     const { original, arbeit: a } = await S.medien.importiere(datei);
     const e = P.fuegeMaterialHinzu(S.projekt, { titel: original.name, mime: "image/png", herkunft: { original, hinweis: a.width < original.breite || a.height < original.hoehe ? `auf ${a.width} × ${a.height} px verkleinert (Arbeitsgrösse)` : "Originalgrösse", oberflaeche: "handy" } });
     Object.assign(e, await S.medien.ablegen(e, a));
     neuerAusgang(e.id);
-    toast(`${original.breite} × ${original.hoehe} px. Wische weiter zu «Effekt».`);
+    toast(t("bildGelesen", { b: original.breite, h: original.hoehe }));
   });
 }
 async function importiereTon(datei) {
-  await laufen(`${datei.name} wird gelesen …`, async () => {
+  await laufen(t("liest", { name: datei.name }), async () => {
     const imp = await S.medien.importiereTon(datei);
     const e = P.fuegeMaterialHinzu(S.projekt, { titel: imp.original.name, typ: "AUDIO", mime: imp.mime, ton: imp.ton, herkunft: { original: imp.original, hinweis: sekunden(imp.ton.dauer), oberflaeche: "handy" } });
     Object.assign(e, await S.medien.ablegenTon(e, imp));
     S.ton = e.id; S.film.messung = null;
-    toast(`Ton: ${sekunden(imp.ton.dauer)}. Er wird die Tonspur des Films.`);
+    toast(t("tonGelesen", { d: sekunden(imp.ton.dauer) }));
   });
 }
 async function importiereVideo(datei) {
-  await laufen(`${datei.name} wird gelesen …`, async () => {
-    const imp = await S.medien.importiereVideo(datei, { melden });
+  await laufen(t("liest", { name: datei.name }), async () => {
+    const imp = await S.medien.importiereVideo(datei, { melden: kern });
     const video = { name: imp.original.name, sha256: imp.original.sha256, dauer: imp.original.dauer, breite: imp.original.breite, hoehe: imp.original.hoehe, ...(imp.ton ? {} : { tonFehler: imp.tonFehler ?? "keine Tonspur" }) };
     const ids = [];
     for (const b of imp.bilder) {
@@ -211,7 +220,7 @@ async function importiereVideo(datei) {
       Object.assign(t, await S.medien.ablegenTon(t, imp.ton)); S.ton = t.id;
     }
     neuerAusgang(ids[0]);
-    toast(`${ids.length} Standbilder${imp.ton ? " und die Tonspur" : `, ohne lesbaren Ton (${video.tonFehler})`}.`, !imp.ton);
+    toast(imp.ton ? t("videoGelesen", { n: ids.length }) : t("videoStumm", { n: ids.length, grund: video.tonFehler }), !imp.ton);
   });
 }
 /** ein neues Bild wird Ausgang: Vorschauen, Varianten und Messungen gehören zum alten */
@@ -224,11 +233,11 @@ $("videodatei").addEventListener("change", gewaehlt(importiereVideo));
 $("tondatei").addEventListener("change", gewaehlt(importiereTon));
 $("beispiel").addEventListener("click", async () => {
   try { const r = await fetch("../../the-fictory/beispiel.jpg"); await importiere(new File([await r.blob()], "beispiel.jpg (The Fictory)", { type: "image/jpeg" })); }
-  catch (f) { toast(`Das Beispielbild liess sich nicht laden: ${f.message}`, true); }
+  catch (f) { toast(t("beispielFehlt", { m: f.message }), true); }
 });
 $("oeffnen").addEventListener("change", gewaehlt(async (datei) => {
-  if (S.ungespeichert && S.projekt.ergebnisse.length && !(await bestaetigen("Das jetzige Projekt ist nicht gesichert. Trotzdem öffnen?"))) return;
-  await laufen(`${datei.name} wird geöffnet …`, async () => {
+  if (S.ungespeichert && S.projekt.ergebnisse.length && !(await bestaetigen(t("ungesichert")))) return;
+  await laufen(t("oeffnet", { name: datei.name }), async () => {
     const { projekt, medien, fehlt } = await entpacke(await dateiLesen(datei));
     projekt.exporte ??= [];
     S.projekt = projekt; S.medien.uebernehmen(medien);
@@ -237,7 +246,7 @@ $("oeffnen").addEventListener("change", gewaehlt(async (datei) => {
     S.film = { ...S.film, zusammen: null, messung: null, video: null, eigene: [] };
     S.beat = { plan: null, quelle: null, kit: null, ergebnis: S.ton, jevFehler: "" };
     neuerAusgang(gew ?? bilder().at(-1)?.id ?? null);
-    toast(`«${projekt.titel}»: ${projekt.ergebnisse.length} Ergebnisse${fehlt.length ? `, ${fehlt.length} Dateien fehlen` : ""}.`, fehlt.length > 0);
+    toast(t(fehlt.length ? "geoeffnetFehlt" : "geoeffnet", { t: projekt.titel, n: projekt.ergebnisse.length, f: fehlt.length }), fehlt.length > 0);
   });
   S.ungespeichert = false;
 }));
@@ -245,8 +254,8 @@ $("oeffnen").addEventListener("change", gewaehlt(async (datei) => {
 function bestaetigen(frage) {
   return new Promise((ja) => {
     const box = el("div", { class: "arbeit" }, el("p", { text: frage }),
-      el("div", { class: "reihe" }, el("button", { class: "knopf klein", type: "button", onclick: () => { box.remove(); ja(false); }, text: "Nein" }),
-        el("button", { class: "knopf klein", type: "button", onclick: () => { box.remove(); ja(true); }, text: "Ja" })));
+      el("div", { class: "reihe" }, el("button", { class: "knopf klein", type: "button", onclick: () => { box.remove(); ja(false); }, text: t("nein") }),
+        el("button", { class: "knopf klein", type: "button", onclick: () => { box.remove(); ja(true); }, text: t("ja") })));
     $("buehne").append(box);
   });
 }
@@ -287,20 +296,20 @@ function effekteZeigen() {
   box.replaceChildren(...EFFEKTE.map((x) => el("button", { class: "wahl", type: "button", "aria-pressed": String(S.effekt === x.id), "data-op": x.id, onclick: () => effektWaehlen(x.id) },
     el("span", { class: "bildchen", style: vorschauen.get(x.id) ? `background-image:url("${vorschauen.get(x.id)}")` : bild(S.aktuell) ? `background-image:url("${url(S.aktuell)}");filter:grayscale(1) opacity(.35)` : "" },
       p[x.id] !== undefined ? el("b", { class: "p", text: `${Math.round(p[x.id] * 100)}` }) : null),
-    el("span", { text: x.name }))));
-  $("effektname").textContent = S.effekt ? effektVon(S.effekt).name : "wähle einen";
+    el("span", { text: effektName(x.id) }))));
+  $("effektname").textContent = S.effekt ? effektName(S.effekt) : t("effektWaehlen");
   const mitAnteil = S.effekt && R.hole(S.effekt).parameter.some((x) => x.id === "anteil");
   $("anteil").disabled = !mitAnteil;
 }
 async function effektWaehlen(opId, wahl = null) {
   S.effekt = opId; S.effektWahl = wahl; effekteZeigen();
-  if (!bild(S.aktuell)) { toast("Zuerst ein Bild unter «Material»."); return; }
+  if (!bild(S.aktuell)) { toast(t("zuerstBild")); return; }
   const schluessel = `${S.aktuell}|${opId}`;
   if (S.vorschauFuer === schluessel) { buehne(); return; }
-  await laufen(`${effektVon(opId).name} wird gerechnet …`, async (signal) => {
+  await laufen(t("wirdGerechnet", { name: effektName(opId) }), async (signal) => {
     // die grosse Vorschau entsteht im Projekt (mit Anteil 1): «Anwenden» nimmt sie, wenn der Anteil 100 % ist, sonst wird mit dem Anteil gerechnet
     const op = R.hole(opId);
-    const r = await fuehreAus({ register: R, projekt: S.projekt, medien: S.medien, abbrechen: signal, melden: (t, a) => melden(t, a),
+    const r = await fuehreAus({ register: R, projekt: S.projekt, medien: S.medien, abbrechen: signal, melden: kern,
       auftrag: { operation: opId, eingaben: { [op.eingaenge[0].name]: S.aktuell }, parameter: parameterFuer(opId, 1), seed: neuerStartwert(), variation: { anzahl: 1, achse: "varianten", routen: [] }, wahl: wahl ?? { art: "mensch", details: { oberflaeche: "handy", anlass: "Vorschau" } } } });
     S.vorschau = r.ergebnisse[0].id; S.vorschauFuer = schluessel; S.vorschauKnoten = r.knoten.id;
   });
@@ -311,19 +320,19 @@ function parameterFuer(opId, anteil = S.anteil) {
   if (op.parameter.some((x) => x.id === "anteil")) p.anteil = Math.round(anteil * 100) / 100;
   return p;
 }
-$("anteil").addEventListener("input", (ev) => { S.anteil = ev.target.value / 100; $("anteilWert").textContent = `${ev.target.value} %`; buehne(); });
+$("anteil").addEventListener("input", (ev) => { S.anteil = ev.target.value / 100; $("anteilWert").textContent = `${zahl(Number(ev.target.value), 0)} %`; buehne(); });
 $("anwenden").addEventListener("click", anwenden);
 async function anwenden() {
   if (!S.effekt || !S.vorschau) return;
   const mitAnteil = R.hole(S.effekt).parameter.some((x) => x.id === "anteil");
-  if (!mitAnteil || S.anteil >= 0.995) { weiterfuehren(S.vorschau, "Angewendet. Das ist jetzt dein Bild."); return; }
-  await laufen(`${effektVon(S.effekt).name} mit ${Math.round(S.anteil * 100)} % …`, async (signal) => {
+  if (!mitAnteil || S.anteil >= 0.995) { weiterfuehren(S.vorschau, t("angewendet")); return; }
+  await laufen(t("mitAnteil", { name: effektName(S.effekt), n: Math.round(S.anteil * 100) }), async (signal) => {
     const op = R.hole(S.effekt);
-    const r = await fuehreAus({ register: R, projekt: S.projekt, medien: S.medien, abbrechen: signal, melden,
+    const r = await fuehreAus({ register: R, projekt: S.projekt, medien: S.medien, abbrechen: signal, melden: kern,
       auftrag: { operation: S.effekt, eingaben: { [op.eingaenge[0].name]: S.aktuell }, parameter: parameterFuer(S.effekt), seed: P.knoten(S.projekt, S.vorschauKnoten)?.seed ?? neuerStartwert(), variation: { anzahl: 1, achse: "varianten", routen: [] }, wahl: S.effektWahl ?? { art: "mensch", details: { oberflaeche: "handy" } } } });
     S.vorschauFertig = r.ergebnisse[0].id;
   });
-  if (S.vorschauFertig) { weiterfuehren(S.vorschauFertig, "Angewendet. Das ist jetzt dein Bild."); S.vorschauFertig = null; }
+  if (S.vorschauFertig) { weiterfuehren(S.vorschauFertig, t("angewendet")); S.vorschauFertig = null; }
 }
 function weiterfuehren(id, meldung) {
   P.waehleVariante(S.projekt, id, "mensch", { oberflaeche: "handy" });
@@ -333,29 +342,29 @@ function weiterfuehren(id, meldung) {
 }
 // jev schlägt den nächsten Effekt vor: Wahrscheinlichkeiten für sechs Effekte (jev/wahl.php nimmt 2–6), der wahrscheinlichste wird gewählt
 $("jevEffekt").addEventListener("click", async () => {
-  if (!bild(S.aktuell)) { toast("Zuerst ein Bild unter «Material»."); return; }
+  if (!bild(S.aktuell)) { toast(t("zuerstBild")); return; }
   const verlauf = P.verlauf(S.projekt, S.aktuell).schritte.map((s) => s.knoten.operation);
   const letzte = verlauf.at(-1);
   const optionen = EFFEKTE.map((x) => x.id).filter((id) => id !== letzte).sort((a, b) => hash(a + S.aktuell) - hash(b + S.aktuell)).slice(0, 6);
-  if (!jevVerfuegbar()) { toast("jev ist gerade nicht erreichbar. Wähle selbst, die Regeln des Labs gelten weiter.", true); return; }
+  if (!jevVerfuegbar()) { toast(t("jevWeg"), true); return; }
   let antwort = null;
-  await laufen("jev wird gefragt …", async () => { antwort = await jevWahl({ verlauf, optionen }); });
+  await laufen(t("jevGefragt"), async () => { antwort = await jevWahl({ verlauf, optionen }); });
   if (!antwort) return;
   S.jevEffekt = antwort; effekteZeigen();
   const [id, p] = Object.entries(antwort.wahrscheinlichkeiten).sort((a, b) => b[1] - a[1])[0];
-  toast(`jev: ${effektVon(id).name} (p = ${p.toFixed(2)})${antwort.zwischengespeichert ? ", aus dem Zwischenspeicher" : ""}.`);
+  toast(t(antwort.zwischengespeichert ? "jevSagtCache" : "jevSagt", { name: effektName(id), p: zahl(p, 2, 2) }));
   effektWaehlen(id, { art: "jev", details: { quelle: antwort.quelle, modell: antwort.modell, wahrscheinlichkeit: p, wahrscheinlichkeiten: antwort.wahrscheinlichkeiten, lage: antwort.lage, zwischengespeichert: antwort.zwischengespeichert, gefragt: antwort.zeit, oberflaeche: "handy" } });
 });
 const hash = (s) => { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
 
 // ---------- 3 · Varianten: sechs nebeneinander, ein Parameter verteilt ----------
 async function variantenRechnen() {
-  if (!bild(S.aktuell)) { toast("Zuerst ein Bild unter «Material»."); return; }
-  if (!S.effekt) { toast("Wähle zuerst unter «Effekt» einen Effekt."); zu(1); return; }
+  if (!bild(S.aktuell)) { toast(t("zuerstBild")); return; }
+  if (!S.effekt) { toast(t("zuerstEffekt")); zu(1); return; }
   const x = effektVon(S.effekt), op = R.hole(S.effekt), seed = neuerStartwert();
   const routen = [{ ziel: x.ziel, tiefe: 0.5, polaritaet: "bipolar", modulator: { quelle: S.mod, frequenz: 1, phase: 0, seed, stufen: 6 } }];
-  await laufen(`Sechs Varianten: ${x.name} …`, async (signal) => {
-    const r = await fuehreAus({ register: R, projekt: S.projekt, medien: S.medien, abbrechen: signal, melden,
+  await laufen(t("sechsVarianten", { name: effektName(x.id) }), async (signal) => {
+    const r = await fuehreAus({ register: R, projekt: S.projekt, medien: S.medien, abbrechen: signal, melden: kern,
       auftrag: { operation: S.effekt, eingaben: { [op.eingaenge[0].name]: S.aktuell }, parameter: parameterFuer(S.effekt), seed, variation: { anzahl: 6, achse: "varianten", routen }, wahl: { art: "mensch", details: { oberflaeche: "handy", verteilung: S.mod } } } });
     S.varianten = { fuer: S.aktuell, op: S.effekt, ids: r.ergebnisse.filter((e) => e.typ === "IMAGE").map((e) => e.id), ziel: x.ziel };
     S.variante = null;
@@ -365,53 +374,58 @@ function variantenBuehne() {
   raster6.classList.remove("zwei");
   const v = S.varianten && S.varianten.fuer === S.aktuell ? S.varianten : null;
   if (!v) {
-    raster6.replaceChildren(el("p", { class: "hinweis", text: S.effekt ? `«Sechs rechnen» verteilt ${R.hole(S.effekt).parameter.find((p) => p.id === effektVon(S.effekt).ziel)?.name ?? "einen Parameter"} über sechs Varianten.` : "Wähle zuerst unter «Effekt» einen Effekt, dann rechnet das Lab hier sechs Varianten." }));
+    raster6.replaceChildren(el("p", { class: "hinweis", text: S.effekt ? t("variantenHinweis", { p: parameterName(S.effekt, effektVon(S.effekt).ziel) ?? t("einParameter") }) : t("variantenLeer") }));
     return;
   }
   const op = R.hole(v.op), pn = op.parameter.find((p) => p.id === v.ziel);
   raster6.replaceChildren(...v.ids.map((id, k) => {
     const e = bild(id), w = e.variante?.parameter?.[v.ziel];
-    return el("button", { type: "button", "aria-pressed": String(S.variante === id), "aria-label": `Variante ${k + 1}`, onclick: () => { S.variante = S.variante === id ? null : id; knoepfe(); variantenBuehne(); } },
-      el("img", { src: S.medien.url(e), alt: "" }), w !== undefined ? el("small", { text: `${Math.round(w * 1000) / 1000}` }) : null);
+    return el("button", { type: "button", "aria-pressed": String(S.variante === id), "aria-label": t("variante", { n: k + 1 }), onclick: () => { S.variante = S.variante === id ? null : id; knoepfe(); variantenBuehne(); } },
+      el("img", { src: S.medien.url(e), alt: "" }), w !== undefined ? el("small", { text: zahl(w, 3) }) : null);
   }));
-  $("variantenText").textContent = pn ? `${pn.name.replace(/\s*\(.*\)$/, "")} verteilt` : "sechs nebeneinander";
+  $("variantenText").textContent = pn ? t("verteilt", { p: parameterName(v.op, v.ziel) }) : t("nebeneinander");
 }
 $("mod").addEventListener("click", (ev) => { const b = ev.target.closest(".pille"); if (!b) return; S.mod = b.dataset.mod; for (const p of $("mod").children) p.setAttribute("aria-pressed", String(p === b)); });
 $("variantenRechnen").addEventListener("click", variantenRechnen);
-$("weiter").addEventListener("click", () => { if (S.variante) weiterfuehren(S.variante, "Weitergeführt. Diese Variante ist jetzt dein Bild."); });
+$("weiter").addEventListener("click", () => { if (S.variante) weiterfuehren(S.variante, t("weitergefuehrt")); });
+/** Name des verteilten Parameters: deutsch aus dem Register, sonst das Wort aus der Übersetzung (Parameter heissen je Effekt anders) */
+function parameterName(opId, ziel) {
+  const p = R.hole(opId).parameter.find((x) => x.id === ziel); if (!p) return null;
+  return t.n(`p.${ziel}`, p.name.replace(/\s*\(.*\)$/, ""));
+}
 
 // ---------- 4 · Klang: Beat aus dem Bild (Regeln oder jev), Schlagzeug wählbar ----------
 const KITS = ["jazz", "trocken", "hand", "elektronisch", "weich", "glitch", "jungle", "metallisch"];
 function kitsZeigen() {
   const kat = BEAT_FRAGEN.kit.katalog;
   $("kit").replaceChildren(...KITS.filter((k) => kat[k]).map((k) => el("button", { class: "pille", type: "button", "aria-pressed": String((S.beat.kit ?? S.beat.plan?.kit) === k), "data-kit": k,
-    onclick: () => { S.beat.kit = S.beat.kit === k ? null : k; kitsZeigen(); if (S.beat.plan) beatRechnen(S.beat.quelle); }, text: kurz(kat[k]).replace(/^./, (c) => c.toUpperCase()) })));
+    onclick: () => { S.beat.kit = S.beat.kit === k ? null : k; kitsZeigen(); if (S.beat.plan) beatRechnen(S.beat.quelle); }, text: t.n(k, kurz(kat[k]).replace(/^./, (c) => c.toUpperCase())) })));
 }
 async function beatRechnen(art) {
   const e = bild(S.aktuell) ?? bilder().find((x) => !x.knoten);
-  if (!e) { toast("Zuerst ein Bild unter «Material»."); return null; }
+  if (!e) { toast(t("zuerstBild")); return null; }
   let fertig = null;
-  await laufen("Das Bild wird gehört …", async (signal) => {
+  await laufen(t("gehoert"), async (signal) => {
     const quelle = e.herkunft?.video;
     const ids = quelle ? bilder().filter((x) => !x.knoten && x.herkunft?.video?.sha256 === quelle.sha256).sort((a, b) => a.herkunft.video.zeit - b.herkunft.video.zeit).slice(0, 6).map((x) => x.id) : [e.id];
     const messung = beatMessen(await Promise.all(ids.map((id) => S.medien.bild(bild(id)))));
     const seed = neuerStartwert();
     let plan, wahl, jevFehler = "";
     if (art === "jev" && jevVerfuegbar()) {
-      melden("jev wählt Tempo, Groove, Klänge und Tonart …");
+      melden(t("jevBeat"));
       try { const a = await jevBeat({ merkmale: messung.merkmale }, { abbrechen: signal }); plan = planAusJev(a.antworten, seed); wahl = { art: "jev", details: { anlass: "Beat aus Bild", quelle: a.quelle, modell: a.modell, antworten: a.antworten, lage: a.lage, zwischengespeichert: a.zwischengespeichert, gefragt: a.zeit, gezogen: seed, oberflaeche: "handy" } }; }
       catch (f) { if (f.name === "AbortError") throw f; jevFehler = f.message; }
-    } else if (art === "jev") jevFehler = "nicht erreichbar";
+    } else if (art === "jev") jevFehler = t("nichtErreichbar");
     if (!plan) { const r = regelPlan(messung.merkmale); plan = r.plan; wahl = { art: "regel", details: { anlass: "Beat aus Bild", gruende: r.gruende, merkmale: messung.merkmale, ...(jevFehler ? { ohneJev: jevFehler } : {}), oberflaeche: "handy" } }; art = "regel"; }
     if (S.beat.kit && S.beat.kit !== plan.kit) { plan = { ...plan, kit: S.beat.kit }; wahl = { art: "mensch", details: { anlass: "Beat aus Bild", geaendert: ["kit"], vorschlag: wahl.art, ...wahl.details } }; }
-    melden("Der Beat wird gespielt und gemischt …");
+    melden(t("beatSpielt"));
     const eingaben = Object.fromEntries(ids.map((id, i) => [i ? `bild${i + 1}` : "bild", id]));
-    const r = await fuehreAus({ register: R, projekt: S.projekt, medien: S.medien, melden, abbrechen: signal, auftrag: { operation: "lab.beat", eingaben, parameter: { ...plan, dauer: 30 }, seed, wahl } });
+    const r = await fuehreAus({ register: R, projekt: S.projekt, medien: S.medien, melden: kern, abbrechen: signal, auftrag: { operation: "lab.beat", eingaben, parameter: { ...plan, dauer: 30 }, seed, wahl } });
     const ton = r.ergebnisse.find((x) => x.typ === "AUDIO");
     Object.assign(S.beat, { plan, quelle: art, ergebnis: ton.id, jevFehler });
     S.ton = ton.id; S.film.messung = null; fertig = ton.id;
     $("audio").src = S.medien.url(ton);
-    if (jevFehler) toast(`jev ${jevFehler}: nach Regeln gemacht.`, true);
+    if (jevFehler) toast(t("jevNichtBeat", { m: jevFehler }), true);
   });
   return fertig;
 }
@@ -419,9 +433,9 @@ $("beatRegel").addEventListener("click", () => beatRechnen("regel"));
 $("beatJev").addEventListener("click", () => beatRechnen("jev"));
 const audio = $("audio");
 $("hoeren").addEventListener("click", () => { if (audio.paused) audio.play().catch((f) => toast(f.message, true)); else audio.pause(); });
-audio.addEventListener("play", () => { $("hoeren").textContent = "Stopp"; welleLaufen(); });
-audio.addEventListener("pause", () => { $("hoeren").textContent = "Hören"; });
-audio.addEventListener("ended", () => { $("hoeren").textContent = "Hören"; });
+audio.addEventListener("play", () => { $("hoeren").textContent = t("stopp"); welleLaufen(); });
+audio.addEventListener("pause", () => { $("hoeren").textContent = t("hoeren"); });
+audio.addEventListener("ended", () => { $("hoeren").textContent = t("hoeren"); });
 let welleDaten = null, welleFuer = null;
 async function welleZeichnen() {
   const id = S.beat.ergebnis ?? S.ton; if (!id) return;
@@ -439,53 +453,54 @@ function welleLaufen() { if (audio.paused || S.feld !== 3) return; welleZeichnen
 
 // ---------- 5 · Film: jev (oder der Zufall) stellt 30 s aus vielen Effekten zusammen, oder der Film aus deinen Bildern ----------
 async function messung(signal) {
-  if (!S.ton) { melden("Noch kein Ton: das Lab macht den Beat aus dem Bild …"); }
+  if (!S.ton) { melden(t("keinTon")); }
   const f = S.film;
   const tonId = S.ton;
   if (f.messung && f.messung.bild === S.aktuell && f.messung.ton === tonId) return f.messung;
-  melden("Bild und Klang werden gemessen …", 0);
-  f.messung = await VS.messen({ register: R, projekt: S.projekt, medien: S.medien, bild: S.aktuell, ton: tonId, beginn: 0, melden: (t, a) => melden(t, a), abbrechen: signal });
+  melden(t("misst"), 0);
+  f.messung = await VS.messen({ register: R, projekt: S.projekt, medien: S.medien, bild: S.aktuell, ton: tonId, beginn: 0, melden: kern, abbrechen: signal });
   const quelle = bild(S.aktuell)?.herkunft?.video;
   const stills = quelle ? bilder().filter((x) => !x.knoten && x.herkunft?.video?.sha256 === quelle.sha256).sort((a, b) => a.herkunft.video.zeit - b.herkunft.video.zeit) : [];
   if (stills.length > 1) f.messung.videoBilder = stills.map((x) => x.id);
   return f.messung;
 }
 async function zusammenstellen() {
-  if (!bild(S.aktuell)) { toast("Zuerst ein Bild unter «Material»."); return; }
+  if (!bild(S.aktuell)) { toast(t("zuerstBild")); return; }
   if (!S.ton && !(await beatRechnen(jevVerfuegbar() ? "jev" : "regel"))) return;
-  await laufen("Bild und Klang werden gemessen …", async (signal) => {
+  await laufen(t("misst"), async (signal) => {
     await messung(signal);
     let komposition = null, fehler = "";
-    if (jevVerfuegbar()) { melden("jev stellt zusammen …"); try { komposition = await jevKomposition({ merkmale: S.film.messung.merkmale }, { abbrechen: signal }); } catch (f) { if (f.name === "AbortError") throw f; fehler = f.message; } }
-    else fehler = "nicht erreichbar";
+    if (jevVerfuegbar()) { melden(t("jevStelltZusammen")); try { komposition = await jevKomposition({ merkmale: S.film.messung.merkmale }, { abbrechen: signal }); } catch (f) { if (f.name === "AbortError") throw f; fehler = f.message; } }
+    else fehler = t("nichtErreichbar");
     const alt = S.film.zusammen?.plan;
     S.film.zusammen = { antworten: komposition?.antworten ?? ZS.gleichverteilt(), jev: komposition, fehler, geaendert: new Set(),
       plan: { ...ZS.zusammenstellen(komposition?.antworten ?? ZS.gleichverteilt(), neuerStartwert()), zettel: S.film.zettel ? { strophe: "" } : null, orna: S.film.orna ? { konstellation: "" } : null,
         lebendig: true, bewegung: ZS.BEWEGUNG, signatur: true, format: S.film.format, abschnitte: alt?.abschnitte ?? ZS.standardAbschnitte() } };
     S.film.eigene = [];
-    toast(komposition ? `jev (${komposition.modell}) hat zusammengestellt. Tippe Abschnitte an, um sie auszuschalten.` : `Zufällig zusammengestellt (jev ${fehler}).`, !komposition);
+    toast(komposition ? t("jevHat", { m: komposition.modell }) : t("zufaelligZusammen", { m: fehler }), !komposition);
   });
 }
 function abschnitteZeigen() {
   const box = $("abschnitte"), z = S.film.zusammen;
   box.className = "abschnitte";
   if (S.film.eigene.length) {
-    box.replaceChildren(...S.film.eigene.map((id, k) => el("button", { type: "button", "aria-pressed": "true", "aria-label": `Bild ${k + 1} aus dem Film nehmen`, onclick: () => { S.film.eigene.splice(k, 1); alles(); } },
+    box.replaceChildren(...S.film.eigene.map((id, k) => el("button", { type: "button", "aria-pressed": "true", "aria-label": t("bildAusFilm", { n: k + 1 }), onclick: () => { S.film.eigene.splice(k, 1); alles(); } },
       el("img", { src: url(id), alt: "", style: "width:100%;height:100%;object-fit:cover;display:block" }))));
-    $("filmText").textContent = `${S.film.eigene.length} Bilder aus der Galerie`;
+    $("filmText").textContent = t("bilderGalerie", { n: S.film.eigene.length });
     return;
   }
-  if (!z) { box.classList.add("offen"); box.replaceChildren("jev stellt sechs Abschnitte zusammen"); $("filmText").textContent = "30 s aus Bild und Klang"; return; }
+  if (!z) { box.classList.add("offen"); box.replaceChildren(t("abschnitteLeer")); $("filmText").textContent = t("filmText"); return; }
   const pl = z.plan;
-  const karte = (feld, name) => el("button", { class: "karte", type: "button", style: "--d:.75", "aria-pressed": String(Boolean(pl[feld])), "aria-label": `${name} ${pl[feld] ? "aus" : "an"}`,
+  const karte = (feld, name) => el("button", { class: "karte", type: "button", style: "--d:.75", "aria-pressed": String(Boolean(pl[feld])), "aria-label": `${name} ${pl[feld] ? t("aus") : t("an")}`,
     onclick: () => { S.film[feld] = !pl[feld]; pl[feld] = pl[feld] ? null : feld === "zettel" ? { strophe: "" } : { konstellation: "" }; z.geaendert.add(feld); abschnitteZeigen(); }, text: name });
-  box.replaceChildren(karte("zettel", "Zettel"),
-    ...pl.bild.map((b, i) => el("button", { class: "effekt", type: "button", "aria-pressed": String(pl.abschnitte[i].an), "aria-label": `Abschnitt ${i + 1}: ${kurz(BILD_EFFEKTE[b])}`,
+  const bildName = (b) => t.n(b, kurz(BILD_EFFEKTE[b]));
+  box.replaceChildren(karte("zettel", t("zettel")),
+    ...pl.bild.map((b, i) => el("button", { class: "effekt", type: "button", "aria-pressed": String(pl.abschnitte[i].an), "aria-label": t("abschnitt", { n: i + 1, name: bildName(b) }),
       onclick: () => { const a = pl.abschnitte[i]; if (a.an && pl.abschnitte.filter((x) => x.an).length === 1) return; a.an = !a.an; z.geaendert.add(`abschnitt${i + 1}`); abschnitteZeigen(); } },
-      el("b", { text: kurz(BILD_EFFEKTE[b]) }))),
-    karte("orna", "ORNA"));
+      el("b", { text: bildName(b) }))),
+    karte("orna", t("orna")));
   const sek = Math.round(ZS.abschnitteNormieren(pl).filter((a) => a.an).reduce((s, a) => s + a.dauer, 0));
-  $("filmText").textContent = `${z.jev ? "jev" : "Zufall"} · ${sek} s Animation${pl.zettel || pl.orna ? " + Signatur" : ""}`;
+  $("filmText").textContent = t("filmPlan", { wer: z.jev ? "jev" : t("zufallWer"), s: sek, sig: pl.zettel || pl.orna ? t("signatur") : "" });
 }
 $("format").addEventListener("click", (ev) => {
   const b = ev.target.closest(".pille"); if (!b) return;
@@ -500,15 +515,15 @@ async function filmRechnen() {
   const z = S.film.zusammen; if (!z) return;
   const herkunft = z.jev ? { quelle: z.jev.quelle, modell: z.jev.modell, antworten: z.antworten, lage: z.jev.lage, zwischengespeichert: z.jev.zwischengespeichert, gefragt: z.jev.zeit } : { verteilung: "gleich", ...(z.fehler ? { ohneJev: z.fehler } : {}) };
   const wahl = z.geaendert.size ? { art: "mensch", details: { geaendert: [...z.geaendert], vorschlag: z.jev ? "jev" : "zufall", oberflaeche: "handy", ...herkunft } } : { art: z.jev ? "jev" : "zufall", details: { oberflaeche: "handy", ...herkunft } };
-  await laufen("Die Zusammenstellung wird gerechnet …", async (signal) => {
+  await laufen(t("zusammenRechnet"), async (signal) => {
     await messung(signal);
-    const r = await ZS.zusammenstellungRechnen({ register: R, projekt: S.projekt, medien: S.medien, messung: S.film.messung, plan: z.plan, wahl, seed: neuerStartwert(), melden: (t, a) => melden(t, a), abbrechen: signal });
+    const r = await ZS.zusammenstellungRechnen({ register: R, projekt: S.projekt, medien: S.medien, messung: S.film.messung, plan: z.plan, wahl, seed: neuerStartwert(), melden: kern, abbrechen: signal });
     await film(r.plan, signal, { vorschlag: "zusammenstellung", entscheidung: r.entscheidung.id, auswahl: "Zusammenstellung (Handy)" });
   });
 }
 /** der Film aus den Bildern, die in der Galerie «In den Film» genommen wurden: Überblendung, im Takt des Tons, so lang wie er (höchstens 30 s) */
 async function eigenerFilm() {
-  await laufen("Dein Film wird gerechnet …", async (signal) => {
+  await laufen(t("deinFilm"), async (signal) => {
     const n = S.film.eigene.length;
     let dauer = 3 * n;
     if (S.ton) { const t = await S.medien.ton(bild(S.ton)); dauer = Math.min(30, t.pcm.length / t.rate); }
@@ -527,16 +542,16 @@ async function film(plan, signal, { vorschlag = null, entscheidung = null, auswa
   const ton = roh ? { pcm: roh.pcm, spuren: roh.spuren, rate: roh.rate, beginn: pt.takt?.ton === tonId ? pt.takt.tonBeginn : plan.tonBeginn ?? 0, dauer: pt.dauer } : null;
   const ids = liste.map((x) => x.ergebnis), zeitplan = [];
   const d = P.entscheide(S.projekt, { art: "mensch", gegenstand: "stationen", gewaehlt: ids, details: { auswahl, uebergang: pt.art, takt: pt.takt?.ereignisfolge ?? null, oberflaeche: "handy", ...(entscheidung ? { dramaturgie: entscheidung } : {}) } });
-  melden(`Der Film wird gerechnet: ${pt.bilder} Bilder …`, 0);
+  melden(t("filmBilder", { n: pt.bilder }), 0);
   const r = await videoAus(ST.filmbilder({ register: R, projekt: S.projekt, medien: S.medien, partitur: pt, seite: 1280, abbrechen: signal, zeitplan, lebendig: pt.lebendig ? gpu() : null }),
-    { melden: (t) => melden(`Film: ${t} von ${pt.bilder} Bildern`, Number(String(t).match(/\d+/)?.[0]) / pt.bilder || null), halten: 0, ton });
+    { melden: (k) => melden(t("filmFortschritt", { k, n: pt.bilder }), Number(String(k).match(/\d+/)?.[0]) / pt.bilder || null), halten: 0, ton });
   const id = P.neueId("x"), name = `medien/${id}-stationen.${r.endung}`;
   const abgelegt = await S.medien.ablegenDatei(name, r.bytes, r.mime);
   S.projekt.exporte.push({ id, art: "stationen", ergebnis: ids.at(-1), stationen: ids, entscheidung: d.id, partitur: pt, zeitplan, datei: name, mime: r.mime, codec: r.codec, ton: r.ton, tonQuelle: r.ton ? tonId : null,
     ...(ton ? { tonBeginn: ton.beginn } : {}), ...(vorschlag ? { dramaturgie: vorschlag } : {}), bilder: r.bilder, fps: FPS, breite: r.breite, hoehe: r.hoehe, sha256: abgelegt.sha256, zeit: new Date().toISOString() });
   if (S.film.video) URL.revokeObjectURL(S.film.video.url);
   S.film.video = { ...r, url: URL.createObjectURL(r.blob), name: `ornament-lab-${slug(S.projekt.titel)}-${new Date().toISOString().slice(0, 10)}.${r.endung}` };
-  toast(`Film fertig: ${sekunden(r.bilder / FPS)}, ${(r.blob.size / 1e6).toFixed(1)} MB${r.ton ? ", mit Ton" : ""}.`);
+  toast(t(r.ton ? "filmFertigTon" : "filmFertig", { d: sekunden(r.bilder / FPS), mb: zahl(r.blob.size / 1e6) }));
 }
 $("filmSichern").addEventListener("click", () => { const v = S.film.video; if (v) herunterladen(v.blob, v.name); });
 
@@ -548,37 +563,37 @@ function weg() {
 }
 function galerieZeigen() {
   const box = $("weg"), schritte = weg();
-  if (!schritte.length) { box.replaceChildren(el("p", { class: "hinweis", text: "Hier steht dein Weg, sobald ein Bild da ist." })); return; }
+  if (!schritte.length) { box.replaceChildren(el("p", { class: "hinweis", text: t("wegLeer") })); return; }
   if (!schritte.some((s) => s.ergebnis.id === S.galerie)) S.galerie = schritte.at(-1).ergebnis.id;
   const teile = [];
   schritte.forEach((s, k) => {
     if (k) teile.push(el("span", { class: "pfeil", "aria-hidden": "true", text: "→" }));
-    const name = s.knoten ? (effektVon(s.knoten.operation)?.name ?? R.hole(s.knoten.operation)?.name ?? s.knoten.operation) : "Material";
-    teile.push(el("button", { type: "button", role: "listitem", "aria-pressed": String(S.galerie === s.ergebnis.id), "aria-label": `Schritt ${k}: ${name}`, title: name,
+    const name = s.knoten ? effektName(s.knoten.operation) : t("materialSchritt");
+    teile.push(el("button", { type: "button", role: "listitem", "aria-pressed": String(S.galerie === s.ergebnis.id), "aria-label": t("schritt", { n: k, name }), title: name,
       onclick: () => { S.galerie = s.ergebnis.id; S.gross = null; galerieZeigen(); buehne(); knoepfe(); } },
       el("img", { src: S.medien.url(s.ergebnis), alt: "" }), el("small", { text: k ? String(k) : "M" })));
   });
   box.replaceChildren(...teile);
   const sel = schritte.find((s) => s.ergebnis.id === S.galerie);
-  $("galerieText").textContent = sel?.knoten ? `${effektVon(sel.knoten.operation)?.name ?? R.hole(sel.knoten.operation).name} · ${sel.knoten.ausgaben.length} nebeneinander` : `${schritte.length - 1} Schritte nacheinander`;
+  $("galerieText").textContent = sel?.knoten ? t("nebenZahl", { name: effektName(sel.knoten.operation), n: sel.knoten.ausgaben.length }) : t("schritteNach", { n: schritte.length - 1 });
   // nur den Streifen schieben: scrollIntoView würde auch das Pult zur Galerie wischen
   requestAnimationFrame(() => { const b = box.querySelector('[aria-pressed="true"]'); if (b) box.scrollLeft = b.offsetLeft - (box.clientWidth - b.offsetWidth) / 2; });
 }
 function galerieBuehne() {
   const e = bild(S.galerie);
-  if (!e) { raster6.replaceChildren(el("p", { class: "hinweis", text: "Noch keine Bilder." })); return; }
+  if (!e) { raster6.replaceChildren(el("p", { class: "hinweis", text: t("keineBilder") })); return; }
   if (S.gross) {
     raster6.classList.add("zwei"); raster6.style.gridTemplateColumns = "1fr";
     const g = S.gross;
-    raster6.replaceChildren(el("button", { type: "button", "aria-pressed": "true", "aria-label": "zurück zum Raster", onclick: () => { S.gross = null; galerieBuehne(); knoepfe(); } }, el("img", { src: url(g), alt: bild(g)?.titel ?? "", style: "object-fit:contain" })),
-      g !== S.aktuell ? el("button", { class: "knopf klein voll schwebend", type: "button", onclick: () => weiterfuehren(g, "Weitergeführt. Dieses Bild ist jetzt dein Bild."), text: "Weiterführen" }) : null);
+    raster6.replaceChildren(el("button", { type: "button", "aria-pressed": "true", "aria-label": t("zurueck"), onclick: () => { S.gross = null; galerieBuehne(); knoepfe(); } }, el("img", { src: url(g), alt: bild(g)?.titel ?? "", style: "object-fit:contain" })),
+      g !== S.aktuell ? el("button", { class: "knopf klein voll schwebend", type: "button", onclick: () => weiterfuehren(g, t("weitergefuehrtBild")), text: t("weiter") }) : null);
     return;
   }
   raster6.style.gridTemplateColumns = "";
   const geschwister = P.geschwister(S.projekt, e.id).filter((x) => x?.typ === "IMAGE");
   raster6.classList.toggle("zwei", geschwister.length <= 4 && geschwister.length > 1);
   if (geschwister.length === 1) raster6.style.gridTemplateColumns = "1fr";
-  raster6.replaceChildren(...geschwister.map((x, k) => el("button", { type: "button", "aria-pressed": String(x.id === S.aktuell), "aria-label": `${x.titel}, gross zeigen`, onclick: () => { S.gross = x.id; galerieBuehne(); knoepfe(); } },
+  raster6.replaceChildren(...geschwister.map((x, k) => el("button", { type: "button", "aria-pressed": String(x.id === S.aktuell), "aria-label": t("gross", { t: x.titel }), onclick: () => { S.gross = x.id; galerieBuehne(); knoepfe(); } },
     el("img", { src: S.medien.url(x), alt: "", style: geschwister.length === 1 ? "object-fit:contain" : "" }), geschwister.length > 1 ? el("small", { text: String(k + 1) }) : null)));
 }
 const galerieBild = () => S.gross ?? S.galerie;
@@ -587,15 +602,15 @@ $("station").addEventListener("click", () => {
   const id = galerieBild(); if (!id) return;
   const i = S.film.eigene.indexOf(id);
   if (i >= 0) S.film.eigene.splice(i, 1); else S.film.eigene.push(id);
-  toast(i >= 0 ? "Aus dem Film genommen." : `Im Film: ${S.film.eigene.length} Bild${S.film.eigene.length === 1 ? "" : "er"}. Unter «Film» rechnen.`);
+  toast(i >= 0 ? t("ausFilm") : S.film.eigene.length === 1 ? t("imFilm1") : t("imFilm", { n: S.film.eigene.length }));
   alles();
 });
 $("projektSichern").addEventListener("click", async () => {
-  if (S.laeuft) { toast("Sichern geht, sobald die Rechnung fertig ist."); return; }
-  await laufen("Projekt wird gepackt …", async () => {
-    const blob = await packeBlob(S.projekt, S.medien.dateien, { melden: (a) => melden("Projekt wird gepackt …", a) });
+  if (S.laeuft) { toast(t("sichernSpaeter")); return; }
+  await laufen(t("packt"), async () => {
+    const blob = await packeBlob(S.projekt, S.medien.dateien, { melden: (a) => melden(t("packt"), a) });
     herunterladen(blob, `${slug(S.projekt.titel)}-${new Date().toISOString().slice(0, 10)}${ENDUNG}`);
-    toast(`Gesichert: ${(blob.size / 1e6).toFixed(1)} MB.${blob.size > HOECHSTENS ? " Achtung: zu gross, um es wieder zu öffnen." : " Öffnen geht hier und im ganzen Lab."}`, blob.size > HOECHSTENS);
+    toast(t(blob.size > HOECHSTENS ? "zuGross" : "gesichert", { mb: zahl(blob.size / 1e6) }), blob.size > HOECHSTENS);
   });
   S.ungespeichert = false;
 });
@@ -606,45 +621,51 @@ function knoepfe() {
   $("anwenden").disabled = !frei || !S.vorschau || S.vorschauFuer !== `${S.aktuell}|${S.effekt}`;
   $("jevEffekt").disabled = !frei || !da;
   $("variantenRechnen").disabled = !frei || !da || !S.effekt;
-  $("variantenRechnen").textContent = S.varianten?.fuer === S.aktuell ? "Neu würfeln" : "Sechs rechnen";
+  $("variantenRechnen").textContent = S.varianten?.fuer === S.aktuell ? t("wuerfeln") : t("sechs");
   $("weiter").disabled = !frei || !S.variante;
   $("beatRegel").disabled = $("beatJev").disabled = !frei || !da;
   $("hoeren").disabled = !S.beat.ergebnis && !S.ton;
   $("zusammenstellen").disabled = !frei || !da;
   $("rechnen").disabled = !frei || !(S.film.zusammen || S.film.eigene.length);
-  $("rechnen").textContent = S.film.video ? "Neu rechnen" : "Film rechnen";
+  $("rechnen").textContent = S.film.video ? t("neuRechnen") : t("rechnen");
   $("filmSichern").hidden = !S.film.video;
   $("zusammenstellen").hidden = S.film.eigene.length > 0;
   // mit drei Knöpfen in der Reihe wird es eng: dann nur «jev neu»
-  $("zusammenstellen").replaceChildren(el("i", { class: "jev", text: "jev" }), S.film.zusammen ? " neu" : " stellt zusammen");
+  $("zusammenstellen").replaceChildren(el("i", { class: "jev", text: "jev" }), S.film.zusammen ? ` ${t("jevNeu")}` : ` ${t("jevStellt")}`);
   $("pngSichern").disabled = !galerieBild();
   $("station").disabled = !galerieBild();
   $("station").setAttribute("aria-pressed", String(S.film.eigene.includes(galerieBild())));
   $("projektSichern").disabled = !frei || !S.projekt.ergebnisse.length;
-  for (const id of ["beatJev", "zusammenstellen", "jevEffekt"]) $(id).title = jevVerfuegbar() ? "jev live" : "jev ist nicht erreichbar: dann Regeln und Zufall";
+  for (const id of ["beatJev", "zusammenstellen", "jevEffekt"]) $(id).title = jevVerfuegbar() ? t("jevLive") : t("jevAus");
   // kleiner Punkt am Schalter: dort wartet etwas Neues
   schalter[3].knauf.classList.toggle("bereit", Boolean(S.beat.ergebnis));
   schalter[4].knauf.classList.toggle("bereit", Boolean(S.film.video));
 }
 function materialZeigen() {
-  const e = bild(S.aktuell), t = bild(S.ton);
-  $("q-bild").classList.toggle("da", Boolean(e) && !e.herkunft?.video); $("q-bild").lastChild.textContent = e && !e.herkunft?.video ? "geladen" : "wählen";
+  const e = bild(S.aktuell), ton = bild(S.ton);
+  $("q-bild").classList.toggle("da", Boolean(e) && !e.herkunft?.video); $("q-bild").lastChild.textContent = e && !e.herkunft?.video ? t("geladen") : t("waehlen");
   $("q-video").classList.toggle("da", Boolean(e?.herkunft?.video));
-  $("q-ton").classList.toggle("da", Boolean(t)); $("q-ton").lastChild.textContent = t ? (t.knoten ? "Beat aus Bild" : sekunden(t.ton?.dauer ?? 0)) : "MP3, WAV, M4A";
-  $("materialHinweis").textContent = !e ? "Ohne Ton macht das Lab den Beat aus dem Bild. Alles bleibt auf dem Handy."
-    : S.ungespeichert ? "Neu laden verliert die Arbeit. Unter «Galerie» sicherst du das Projekt." : "Alles bleibt auf dem Handy.";
+  $("q-ton").classList.toggle("da", Boolean(ton)); $("q-ton").lastChild.textContent = ton ? (ton.knoten ? t("beatTitel") : sekunden(ton.ton?.dauer ?? 0)) : t("tonFormate");
+  $("materialHinweis").textContent = t(!e ? "hinweisLeer" : S.ungespeichert ? "hinweisSichern" : "hinweisDa");
 }
 function klangZeigen() {
   kitsZeigen();
-  const t = bild(S.beat.ergebnis ?? S.ton);
-  if (t && $("audio").getAttribute("src") !== S.medien.url(t)) $("audio").src = S.medien.url(t);
+  const ton = bild(S.beat.ergebnis ?? S.ton);
+  if (ton && $("audio").getAttribute("src") !== S.medien.url(ton)) $("audio").src = S.medien.url(ton);
   const pl = S.beat.plan;
-  const name = (frage) => kurz(BEAT_FRAGEN[frage]?.katalog?.[pl[frage]] ?? pl[frage] ?? "");
-  $("klangText").textContent = pl ? `${name("tempo")} · ${name("groove")} · ${name("tonart")}` : t ? "eigener Ton" : "Beat aus dem Bild";
+  const name = (frage) => t.n(frage === "tempo" ? pl[frage] : `${frage}.${pl[frage]}`, kurz(BEAT_FRAGEN[frage]?.katalog?.[pl[frage]] ?? pl[frage] ?? ""));
+  $("klangText").textContent = pl ? `${name("tempo")} · ${name("groove")} · ${name("tonart")}` : ton ? t("eigenerTon") : t("beatAusBild");
+}
+// ---------- Sprache: d, e, s, f oben rechts ----------
+function spracheZeigen() {
+  setzeSeite(document, t);
+  $("sprachen").replaceChildren(...SPRACHEN.map((s) => el("button", { type: "button", lang: s, title: NAME[s], "aria-label": NAME[s], "aria-pressed": String(s === t.sprache),
+    onclick: () => { if (s === t.sprache) return; t = uebersetzer(s); merken(s); spracheZeigen(); alles(); setze(S.feld); } }, KUERZEL[s])));
+  $("hoeren").textContent = audio.paused ? t("hoeren") : t("stopp");
 }
 function alles() { materialZeigen(); effekteZeigen(); klangZeigen(); abschnitteZeigen(); galerieZeigen(); buehne(); knoepfe(); }
 
 addEventListener("beforeunload", (ev) => { if (S.ungespeichert) { ev.preventDefault(); ev.returnValue = ""; } });
 const start = Math.max(0, NAMEN.findIndex((n) => `#${n.toLowerCase()}` === location.hash));
-alles(); setze(start); requestAnimationFrame(() => pult.scrollTo({ left: start * pult.clientWidth }));
+spracheZeigen(); alles(); setze(start); requestAnimationFrame(() => pult.scrollTo({ left: start * pult.clientWidth }));
 jevPruefen().then(() => knoepfe()).catch(() => {});

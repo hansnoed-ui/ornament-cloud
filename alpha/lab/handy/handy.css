@@ -43,10 +43,16 @@ button:disabled { opacity: .38; cursor: default; }
 }
 
 /* Kopf */
-.kopf { display: flex; align-items: baseline; justify-content: space-between; padding-block: 10px 8px; }
+.kopf { display: flex; align-items: center; gap: 8px; padding-block: 10px 8px; }
 .marke { font-weight: 500; letter-spacing: -.02em; font-size: 15px; color: inherit; text-decoration: none; }
 .marke b { font-weight: 500; color: var(--lab); }
-.ort { font-size: 12px; color: var(--grau); font-variant-numeric: tabular-nums; letter-spacing: .02em; }
+.ort { margin-left: auto; font-size: 12px; color: var(--grau); font-variant-numeric: tabular-nums; letter-spacing: .02em; }
+/* Sprache d, e, s, f wie in der Kopfleiste der Website: klein, nur die gewählte in Lab-Rosa */
+.sprachen { display: flex; margin: -8px -8px -8px 6px; }
+.sprachen button { appearance: none; border: 0; background: none; color: var(--grau); font: inherit; font-size: 12px; letter-spacing: .04em;
+  min-width: 26px; min-height: 32px; padding: 0 4px; cursor: pointer; }
+.sprachen button[aria-pressed="true"] { color: var(--lab); }
+.sprachen button:focus-visible { outline: 1px solid var(--lab); outline-offset: -4px; }
 
 /* Bühne */
 .buehne { position: relative; min-height: 0; background: var(--buehne); border-radius: 14px; overflow: hidden; display: grid; place-items: center; }

@@ -23,7 +23,7 @@ const warte = (page, fn, ms = 180000) => page.waitForFunction(fn, null, { timeou
 const frei = (page) => warte(page, () => !ornamentLabHandy.laeuft);
 
 for (const schema of ["dark", "light"]) {
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 780 }, colorScheme: schema, hasTouch: true, acceptDownloads: true });
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 780 }, colorScheme: schema, hasTouch: true, acceptDownloads: true, locale: "de-CH" });
   const page = await ctx.newPage();
   const fehler = [], fremd = [];
   page.on("pageerror", (e) => fehler.push(e.message));
@@ -97,6 +97,19 @@ for (const schema of ["dark", "light"]) {
     const [download] = await Promise.all([page.waitForEvent("download"), page.click("#projektSichern")]);
     assert.match(download.suggestedFilename(), /\.ornalab\.zip$/);
     await frei(page); await passt();
+  });
+  await check(`${schema}: Sprache d, e, s, f: Texte wechseln sofort, gemerkt fürs nächste Mal, nichts scrollt`, async () => {
+    assert.equal(await page.evaluate(() => document.documentElement.lang), "de");
+    for (const [sp, sichern, ort] of [["en", "Save project", "Gallery"], ["es", "Guardar proyecto", "Galería"], ["fr", "Enregistrer le projet", "Galerie"]]) {
+      await page.click(`#sprachen [lang="${sp}"]`);
+      assert.equal(await page.evaluate(() => document.documentElement.lang), sp);
+      assert.equal(await page.locator("#projektSichern").textContent(), sichern);
+      assert.match(await page.locator("#ort").textContent(), new RegExp(`6 / 6 · ${ort}`));
+      await passt();
+    }
+    assert.equal(await page.evaluate(() => localStorage.getItem("ornament.sprache")), "fr");
+    await page.click('#sprachen [lang="de"]');
+    assert.equal(await page.locator("#projektSichern").textContent(), "Projekt sichern");
   });
   await check(`${schema}: keine Fehler, nichts von fremden Servern`, async () => {
     assert.deepEqual(fehler, []); assert.deepEqual(fremd, []);
