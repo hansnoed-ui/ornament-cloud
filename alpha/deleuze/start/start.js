@@ -74,6 +74,7 @@ document.querySelectorAll('[data-lang]').forEach((b) => b.addEventListener('clic
   sprache = b.dataset.lang;
   try { localStorage.setItem('kristall.sprache', sprache); } catch {}
   uebersetzen();
+  const g = gezeigt; gezeigt = -2; if (g >= 0) untertitelZeigen(g); // die Beschriftung gleich in der neuen Sprache
 }));
 
 // ---------- Absturzspur (Lehre aus PHORMA) ----------
@@ -193,20 +194,23 @@ const MALER = [
   }
 ];
 
-let hell = -1, auto = -1, ruhe = 0, gezeigt = -2;
+// Die Montage beginnt sofort bei I: Beschriftung und rote Kante stehen vom ersten Bild an (Christian, 20.11.2026: der erste
+// Eindruck war leer und sprang nach fünf Sekunden). ruhe zählt erst ab der ersten Berührung.
+let hell = -1, auto = 0, ruhe = -Infinity, gezeigt = -2;
 const bewegungRuhig = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function zeichnen(t) {
   ctx.clearRect(0, 0, S, S);
-  if (!S || !gefuellt) return;
+  if (!S) return;
   const aktiv = hell >= 0 ? hell : auto;
-  facetten.forEach((f, k) => {
+  // Solange das Video lädt, steht schon der Schliff: Kanten ohne Bild
+  if (gefuellt) facetten.forEach((f, k) => {
     ctx.save(); pfad(f.poly); ctx.clip();
     MALER[k](f, t);
     if (!OPS[k].href) { ctx.fillStyle = 'rgba(10,10,11,0.18)'; ctx.fillRect(...f.box); }
     ctx.restore();
   });
-  ctx.save(); pfad(tisch); ctx.clip(); decken(frame(0), [tisch[7][0] - 2, tisch[0][1] - 2, tisch[2][0] - tisch[7][0] + 4, tisch[4][1] - tisch[0][1] + 4]); ctx.restore();
+  if (gefuellt) { ctx.save(); pfad(tisch); ctx.clip(); decken(frame(0), [tisch[7][0] - 2, tisch[0][1] - 2, tisch[2][0] - tisch[7][0] + 4, tisch[4][1] - tisch[0][1] + 4]); ctx.restore(); }
   // Kanten: dünn und weiss, die gewählte Facette rot
   ctx.lineJoin = 'round';
   facetten.forEach((f, k) => { pfad(f.poly); ctx.strokeStyle = 'rgba(241,238,230,0.7)'; ctx.lineWidth = dpr; ctx.stroke(); });
@@ -253,17 +257,20 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) { vid
 function lauf(ms) {
   requestAnimationFrame(lauf);
   const t = ms / 1000;
-  if (!sichtbar || document.hidden || !quelleBereit()) return;
+  if (!sichtbar || document.hidden) return;
+  if (!quelleBereit()) { if (!gefuellt) zeichnen(t); return; }
   if (ms - letzte < (bewegungRuhig ? 500 : 33)) return; // höchstens 30 Bilder pro Sekunde, das schont das Telefon
   letzte = ms;
+  if (!gefuellt) letzterWechsel = ms; // I bleibt nach dem ersten Bild noch volle drei Sekunden
   einfangen();
   // Wer nichts berührt, sieht eine langsame Montage durch die Facetten
   if (!bewegungRuhig && hell < 0 && ms - ruhe > 5000) {
     if (ms - letzterWechsel > 3200) { auto = (auto + 1) % 8; letzterWechsel = ms; untertitelZeigen(auto); }
-  } else if (hell < 0 && ms - ruhe <= 5000 && auto >= 0) { auto = -1; untertitelZeigen(-1); }
+  } else if (hell < 0 && gezeigt >= 0) auto = gezeigt; // nach einer Berührung bleibt die letzte Beschriftung stehen
   zeichnen(t);
   if (gefuellt === 30) spur('✓ läuft');
 }
 groesse();
+untertitelZeigen(auto); letzterWechsel = performance.now();
 beispiel();
 requestAnimationFrame(lauf);
