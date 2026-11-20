@@ -151,7 +151,13 @@ vec3 spektrum(float l){
 vec3 umwelt(vec3 d, float m){
   vec2 gemUV = uGem / uAufl;
   vec3 c = seite(gemUV + d.xy * vec2(uAufl.y / uAufl.x, 1.0) * 0.16, m) * 1.25;
-  c += vec3(1.0, 0.985, 0.96) * (pow(max(dot(d, L1), 0.0), 22.0) * 2.1 + pow(max(dot(d, L2), 0.0), 34.0) * 1.5 + pow(max(dot(d, L3), 0.0), 10.0) * 0.35);
+  c += vec3(1.0, 0.985, 0.96) * (pow(max(dot(d, L1), 0.0), 22.0) * 2.1 + pow(max(dot(d, L2), 0.0), 34.0) * 1.5 + pow(max(dot(d, L3), 0.0), 10.0) * 0.35) * (1.0 - uMenu * 0.3);
+  // im Menü ein warmes Atelier statt Fotos: Kupfer zu Violett, unten dunkel (Christian: so «sehr schön», ohne Foto)
+  if (uMenu > 0.001) {
+    vec3 kupfer = mix(vec3(0.98, 0.56, 0.27), vec3(0.50, 0.36, 0.92), smoothstep(-0.1, 1.1, d.x * 0.8 + d.y * 0.6));
+    kupfer *= 0.35 + 0.65 * smoothstep(-0.9, 0.6, d.y);
+    c = mix(c, kupfer * 0.9 + c * 0.3, uMenu * 0.7);
+  }
   return c + vec3(0.045, 0.04, 0.085);
 }
 
@@ -288,6 +294,9 @@ vec4 stein(vec2 gq, float m){
   float glanz = (pow(max(dot(rf, L1), 0.0), 160.0) + 0.7 * pow(max(dot(rf, L2), 0.0), 220.0)) * 1.6;
   vec3 col = mix(innen, umwelt(rf, m), clamp(fres, 0.0, 1.0)) + glanz;
   col = mix(col, vec3(1.0, 0.99, 0.97), kante * 0.22);
+  // im Menü viel Funkeln, aber nicht grell: Lichter weich zusammendrücken statt ausbrennen
+  vec3 tief = pow(max(col, 0.0), vec3(1.3));
+  col = mix(col, tief * 1.2 / (1.0 + tief * 0.4), uMenu);
   // die Tafel als Fenster: man sieht durch sie das Werk, leicht gebrochen und mit Farbsaum zum Rand
   if (uMenu > 0.001 && i0 == uTafel) {
     gWm = smoothstep(0.3, 0.7, uWerkF);
@@ -941,7 +950,7 @@ function bild(ms) {
   gl.uniform1f(ort.uZeigen, zeigen); gl.uniform1f(ort.uBlitz, ruhig ? 0 : blitz);
   gl.uniform2f(ort.uGem, gx * D, (H - gy) * D); gl.uniform1f(ort.uGemR, rr * D);
   gl.uniform2f(ort.uFeld, gx * D, (H - gy) * D); gl.uniform1f(ort.uGross, Math.max(W, H) * 0.55 * D); gl.uniform1f(ort.uDimm, sanft(menu));
-  gl.uniform2f(ort.uAufl, Bw, Bh); gl.uniform1f(ort.uRad, huelle * 1.03); gl.uniform1f(ort.uT, t % 100); gl.uniform1f(ort.uFeuer, 2.3 + mu * 1.4);
+  gl.uniform2f(ort.uAufl, Bw, Bh); gl.uniform1f(ort.uRad, huelle * 1.03); gl.uniform1f(ort.uT, t % 100); gl.uniform1f(ort.uFeuer, 2.3);
   const tonG = BEREICHE[glasK - 1].ton;
   gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, schriftTex[glasK - 1]); gl.uniform1i(ort.uSchrift, 3);
   gl.uniform4f(ort.uScheibe, ...glasZ.rect); gl.uniform1f(ort.uPraes, glasZ.praes); gl.uniform1f(ort.uStrahl, ruhig ? glasZ.strahl * 0.6 : glasZ.strahl);
@@ -971,7 +980,7 @@ function nachbearbeiten(t, sz) {
   gl.useProgram(zusammen.p);
   gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, sz.tex); gl.uniform1i(zusammen.ort.uSzene, 0);
   gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, gA.tex); gl.uniform1i(zusammen.ort.uGlow, 1);
-  gl.uniform1f(zusammen.ort.uGlowStaerke, 1.35); gl.uniform1f(zusammen.ort.uT, t % 100);
+  gl.uniform1f(zusammen.ort.uGlowStaerke, 1.35 - sanft(menu) * 0.4); gl.uniform1f(zusammen.ort.uT, t % 100);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   gl.activeTexture(gl.TEXTURE0);
 }
