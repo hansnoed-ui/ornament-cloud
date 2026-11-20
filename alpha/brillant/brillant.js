@@ -152,7 +152,6 @@ vec3 umwelt(vec3 d, float m){
   vec2 gemUV = uGem / uAufl;
   vec3 c = seite(gemUV + d.xy * vec2(uAufl.y / uAufl.x, 1.0) * 0.16, m) * 1.25;
   c += vec3(1.0, 0.985, 0.96) * (pow(max(dot(d, L1), 0.0), 22.0) * 2.1 + pow(max(dot(d, L2), 0.0), 34.0) * 1.5 + pow(max(dot(d, L3), 0.0), 10.0) * 0.35);
-  if (uMenu > 0.001) c = mix(c, werkJetzt(0.5 + d.xy * vec2(0.45, 0.5)) * 0.85 + c * 0.3, uMenu * 0.55);
   return c + vec3(0.045, 0.04, 0.085);
 }
 
@@ -578,7 +577,9 @@ function werkeLaden() {
     im.src = src;
   }))).then(() => { werkAtlas = atlas; werkS = S; werkeDa = true; if (gl) werkTex = texAus(atlas, werkTex); });
 }
-werkeLaden();
+// 0.12 (Christian: «nicht gut mit diesen integrierten Fotos»): der Stein zeigt nur Licht; die Werke bleiben abschaltbar hier
+const FOTOS = false;
+if (FOTOS) werkeLaden();
 document.body.classList.add('fenster');
 const mehrOrt = [];
 const seitenBild = [];          // dieselben Seiten als Canvas, für die flache Fassung
@@ -948,7 +949,7 @@ function bild(ms) {
   gl.uniform3f(ort.uGlasTon, tonG[0] / 255, tonG[1] / 255, tonG[2] / 255);
   gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D, werkTex); gl.uniform1i(ort.uWerke, 4);
   gl.uniform2f(ort.uWerk, A - 1, B - 1); gl.uniform1f(ort.uWerkF, fr * fr * (3 - 2 * fr)); gl.uniform1f(ort.uMenu, mu);
-  gl.uniform1f(ort.uFenster, FENSTER); gl.uniform1i(ort.uTafel, TAFEL);
+  gl.uniform1f(ort.uFenster, FENSTER); gl.uniform1i(ort.uTafel, FOTOS ? TAFEL : -1);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   nachbearbeiten(t, sz);
 
