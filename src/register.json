@@ -167,6 +167,15 @@
    "kurz": "Prototyp: mit dem Daumen ein Rund um die Figur ziehen, ringsum wird das Bild zu Bacons flacher Farbe; der Körper schreit, verformt sich oder wird zu Fleisch."
   },
   {
+   "id": "deleuze-ritornell",
+   "name": "Ritornell (the deleuzian scheme)",
+   "tuer": "spielen-denken",
+   "art": "App",
+   "status": "direktlink",
+   "adresse": "alpha/deleuze/ritornell/",
+   "kurz": "Prototyp: den Daumen halten, und eine gesummte Stimme ordnet das eigene Bild wie Sand auf einer Klangplatte; im Takt Marken setzen, bis ein Revier wächst; den Kreis öffnen und das Bild als Spirale aus Zeit hinauslassen."
+  },
+  {
    "id": "deleuze-start",
    "name": "the deleuzian scheme (Masterseite)",
    "tuer": "spielen-denken",
