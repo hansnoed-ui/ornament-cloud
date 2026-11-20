@@ -1,4 +1,4 @@
-// Arrangement 0.2.0 – aus Spuren, die als Schleifen laufen, einen ganzen Track machen. Der Track soll «atmen, stocken, Gas geben, sich
+// Arrangement 0.2.1 (20.11.2026: weniger Dropouts, höchstens zwei Naturklänge) – aus Spuren, die als Schleifen laufen, einen ganzen Track machen. Der Track soll «atmen, stocken, Gas geben, sich
 // verlieren und wiederfinden», «wirbeln, wummen» (Christian, 9. November 2026). Der Ablauf wird aus dem Startwert gewählt:
 //   Intro → Aufbau → (Mittelteile in wechselnder Folge: Hauptteil, Stocken, Atmen, Gas geben, Sich verlieren, Wiederfinden) → Outro
 // Alles sind gewöhnliche Unterbrechungen (kern/unterbrechungen.js) mit der Markierung «arr»: Sie stehen in der Liste jeder Spur und lassen
@@ -82,8 +82,9 @@ export function ereignisseFuer(funktion, abschn, { seed = 1, takte } = {}) {
     out.push(E("dropout", abschn[i].von, (bis - abschn[i].von) * 16, { rest: 0, kante: 12 }));
     i = j;
   }
-  // die Mischperkussion setzt auch in ihren Abschnitten jeden zweiten Viertakt aus
-  if (f === "mix") for (const a of abschn) if (spielt(a)) for (let t = a.von + 4; t < a.bis; t += 8) out.push(E("dropout", t, Math.min(4, a.bis - t) * 16, { rest: 0, kante: 20 }));
+  // die Mischperkussion setzt auch in ihren Abschnitten aus: seit 20.11.2026 nur noch jeden vierten statt jeden zweiten Viertakt
+  // («weniger Dropouts», Christian)
+  if (f === "mix") for (const a of abschn) if (spielt(a)) for (let t = a.von + 12; t < a.bis; t += 16) out.push(E("dropout", t, Math.min(4, a.bis - t) * 16, { rest: 0, kante: 20 }));
   abschn.forEach((a, idx) => {
     const L = a.bis - a.von, gem = zufall(seed * 131 + idx * 17), naechster = abschn[idx + 1];
     if (a.typ === "intro") {
@@ -106,9 +107,10 @@ export function ereignisseFuer(funktion, abschn, { seed = 1, takte } = {}) {
       if (f === "melodie") out.push(E("stutter", a.bis - 0.5, 8, { teilung: 32, abfall: 0, steigen: 1 }));
       if (f === "oben") out.push(E("filter", a.von, L * 16, { typ: "hoch", von: 2500, bis: 200, resonanz: 30 }));
     }
-    if (a.typ === "stocken" && f !== "natur") {
-      // alle Spuren halten gemeinsam an: je vier Takte zwei kurze Löcher (ein bis zwei Schläge), dazu am Ende ein Tape-Stop der Drums
-      for (let g = 0; g < L; g += 4) for (const takt of [a.von + g + 1, a.von + g + 3]) {
+    if (a.typ === "stocken" && !["natur", "naturklang"].includes(f)) {
+      // alle Spuren halten gemeinsam an: je vier Takte ein kurzes Loch (ein bis zwei Schläge; bis 20.11.2026 zwei), dazu am Ende ein
+      // Tape-Stop der Drums
+      for (let g = 0; g < L; g += 4) for (const takt of [a.von + g + 3]) {
         const schlag = Math.floor(gem() * 4), lang = 4 + 4 * Math.floor(gem() * 2);
         if (takt < a.bis) out.push(E("dropout", takt + schlag / 4, lang, { rest: 0, kante: 3 }));
       }
@@ -124,7 +126,8 @@ export function ereignisseFuer(funktion, abschn, { seed = 1, takte } = {}) {
       if (f === "perkussion") { out.push(E("glitch", a.von, Math.min(L, 2) * 16, { teilung: 32, dichte: 70, zerkleinern: 40 })); out.push(E("echo", a.von + 2, 8, { zeit: 16 / 3, rueck: 75, dunkel: 60, anteil: 90 })); }
       if (f === "pad") out.push(E("knarz", a.von, L * 16, { dichte: 60, laenge: 260, staerke: 80, farbe: "mix" }));
       if (f === "melodie") out.push(E("rueckwaerts", a.von + 1, 16, { kante: 10 }));
-      if (!["natur", "kick"].includes(f) && L >= 2) out.push(E("dropout", a.bis - 1, 16, { rest: f === "pad" ? 30 : 0, kante: 40 }));   // die Kick kehrt hier schon zurück
+      // im letzten Takt fallen Drums und Bass weg (die Kick kehrt hier schon zurück); Flächen, Melodie und Natur tragen seit 20.11.2026 durch
+      if ([...DRUMS, "bass", "mix", "fremd"].includes(f) && f !== "kick" && L >= 2) out.push(E("dropout", a.bis - 1, 16, { rest: 0, kante: 40 }));
     }
     if (a.typ === "outro" && f === "pad") out.push(E("filter", a.von, L * 16, { typ: "tief", von: 14000, bis: 250, resonanz: 20 }));
   });
@@ -139,23 +142,43 @@ export function ereignisseFuer(funktion, abschn, { seed = 1, takte } = {}) {
  * helles «Na» lief als nervendes Dauergeräusch durch DnB, ECM und Goa), keine Pflanzentextur als Natur (Glocken sind keine Naturgeräusche).
  */
 /**
- * Wechselnde Perkussion (Ornament Style): je Abschnitt spielen nur eine oder zwei der Stimmen (aus dem Startwert, nie zweimal dieselbe
- * Auswahl hintereinander); die übrigen schweigen dort. Gibt Map stimme → [Dropout-Ereignisse].
+ * Wechselnde Perkussion (Ornament Style): je Abschnitt spielen nur zwei der Stimmen, in «Gas geben» und «Wiederfinden» drei (aus dem
+ * Startwert, nie zweimal dieselbe Auswahl hintereinander); die übrigen schweigen dort. Bis 20.11.2026 waren es eine bzw. zwei; Christian
+ * wollte weniger Dropouts. Wo die Perkussion ohnehin schweigt (Intro), kommt kein zweites Dropout dazu, und aufeinanderfolgende Pausen
+ * derselben Stimme werden zu einem Dropout zusammengefasst. Gibt Map stimme → [Dropout-Ereignisse].
  */
 export function wechselPerkussion(stimmen, abschn, { seed = 1 } = {}) {
-  const rnd = zufall(seed * 977 + 11), aus = new Map(stimmen.map((s) => [s, []]));
+  const rnd = zufall(seed * 977 + 11), aus = new Map(stimmen.map((s) => [s, []])), offen = new Map();
+  const spalte = FUNKTIONEN.indexOf("perkussion");
   let vorher = "";
   for (const a of abschn) {
+    if (!(SPIELT[a.typ]?.[spalte] ?? 1)) { offen.clear(); continue; }
     let wahl;
     for (let v = 0; v < 6; v++) {
-      const n = ["gas", "wiederfinden"].includes(a.typ) ? 2 : 1, rest = [...stimmen];
+      const n = ["gas", "wiederfinden"].includes(a.typ) ? 3 : 2, rest = [...stimmen];
       wahl = Array.from({ length: Math.min(n, rest.length) }, () => rest.splice(Math.floor(rnd() * rest.length), 1)[0]).sort();
-      if (wahl.join() !== vorher || stimmen.length < 2) break;
+      if (wahl.join() !== vorher || stimmen.length <= n) break;
     }
     vorher = wahl.join();
-    for (const s of stimmen) if (!wahl.includes(s)) aus.get(s).push(E("dropout", a.von, (a.bis - a.von) * 16, { rest: 0, kante: 20 }));
+    for (const s of stimmen) {
+      if (wahl.includes(s)) { offen.delete(s); continue; }
+      const e = offen.get(s);
+      if (e) e.schritte += (a.bis - a.von) * 16;   // die Pause davor läuft weiter
+      else { const neu = E("dropout", a.von, (a.bis - a.von) * 16, { rest: 0, kante: 20 }); aus.get(s).push(neu); offen.set(s, neu); }
+    }
   }
   return aus;
+}
+
+/**
+ * Naturklänge für einen ganzen Track: höchstens zwei aus der Besetzung des Stils, aus dem Startwert gewählt (20.11.2026, Christian:
+ * «max 2 Naturgeräusche»). Die Reihenfolge der Besetzung bleibt.
+ */
+export function naturWahl(liste, { seed = 1, hoechstens = 2 } = {}) {
+  if (!liste?.length || liste.length <= hoechstens) return [...(liste ?? [])];
+  const rnd = zufall(seed * 389 + 5), rest = liste.map((_, i) => i), wahl = [];
+  while (wahl.length < hoechstens) wahl.push(rest.splice(Math.floor(rnd() * rest.length), 1)[0]);
+  return wahl.sort((x, y) => x - y).map((i) => liste[i]);
 }
 
 /** Teile einer Spur aus den Abschnitten: defs { typ: Zeilen, fill } → [{ von, bis, takte | null, fill }] (Wirbel an jedem Abschnittsende) */

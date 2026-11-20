@@ -481,10 +481,24 @@ test("Ornament Style: zuoberst, Pop und ECM ausgeblendet, Perkussion wechselt je
   assert.ok(STILE.find((s) => s.key === "pop").versteckt && STILE.find((s) => s.key === "ecm").versteckt);
   const { abschnitte } = A.abschnitte(90, 174, { seed: 2 }), stimmen = A.BESETZUNG.ornament.wechsel, w = A.wechselPerkussion(stimmen, abschnitte, { seed: 2 });
   for (const a of abschnitte) {
-    const still = stimmen.filter((s) => w.get(s).some((e) => e.takt === a.von));
+    if (a.typ === "intro") { assert.ok(stimmen.every((s) => !w.get(s).some((e) => e.takt < a.bis)), "im Intro kein zweites Dropout"); continue; }
+    const still = stimmen.filter((s) => w.get(s).some((e) => e.takt < a.bis && e.takt + e.schritte / 16 > a.von));
     const spielen = stimmen.length - still.length;
-    assert.ok(spielen >= 1 && spielen <= 2, `${a.name}: ${spielen} Perkussionsstimmen`);
+    assert.equal(spielen, ["gas", "wiederfinden"].includes(a.typ) ? 3 : 2, `${a.name}: ${spielen} Perkussionsstimmen`);
   }
+  // aufeinanderfolgende Pausen einer Stimme sind ein einziges Dropout
+  for (const s of stimmen) { const d = w.get(s); for (let i = 1; i < d.length; i++) assert.ok(d[i].takt > d[i - 1].takt + d[i - 1].schritte / 16, `${s}: Pausen zusammengefasst`); }
+});
+
+test("Arrangement 0.2.1: höchstens zwei Naturklänge je Track, aus dem Startwert", () => {
+  for (const [key, b] of Object.entries(A.BESETZUNG)) for (let seed = 1; seed <= 12; seed++) {
+    const w = A.naturWahl(b.natur, { seed });
+    assert.ok(w.length <= 2 && w.length === Math.min(2, b.natur?.length ?? 0), `${key}/${seed}: ${w.length}`);
+    assert.deepEqual(A.naturWahl(b.natur, { seed }), w, "gleicher Startwert, gleiche Wahl");
+    assert.ok(w.every((n) => b.natur.includes(n)));
+  }
+  const wahlen = new Set(Array.from({ length: 20 }, (_, i) => A.naturWahl(A.BESETZUNG.ornament.natur, { seed: i + 1 }).map(([s]) => s).join()));
+  assert.ok(wahlen.size >= 4, `Ornament wechselt die Naturklänge (${[...wahlen].join(" | ")})`);
 });
 
 test("Composer 0.3: Teile je Abschnitt (Drums und Bass), Wirbel an jedem Abschnittsende", () => {
