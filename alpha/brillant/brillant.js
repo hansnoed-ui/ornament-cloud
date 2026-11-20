@@ -327,7 +327,7 @@ function satzspiegel(c) {
   const sw = Math.min(W - (hoch ? 28 : 80), 620), pad = hoch ? 34 : 48;
   const scheibe = { x: (W - sw) / 2, y: y - fs * 0.95 - pad, w: sw, h: pad * 2 + fs * 0.95 + satz * 6.2 + 40 };
   // offenes Menü: der Stein gross über der Mitte, die Bereiche darunter
-  const menuGem = { x: W / 2, y: Math.round(H * (hoch ? 0.36 : 0.34)), r: Math.min(W, H) * (hoch ? 0.15 : 0.1) };
+  const menuGem = { x: W / 2, y: Math.round(H * (hoch ? 0.36 : 0.34)), r: Math.min(W, H) * (hoch ? 0.16 : 0.1) };
   return { hoch, fs, gemR, satz, saetze, scheibe, menuGem };
 }
 // eine Glasscheibe ohne Kanten: weich auslaufend, was darunter liegt erscheint verschwommen und getönt
@@ -540,38 +540,61 @@ function menuSchalten(auf) {
 nav.inert = true;
 const mehr = $('mehr');
 
-// ---------- Projektion: im offenen Menü wirft der Stein den Bereich, auf den er gedreht ist, als Glasfläche hinaus ----------
-const proj = $('projektion'), strahl = $('strahl'), strahlKern = strahl.firstElementChild;
-let projK = -1, projRichtung = 1, projZuletzt = 0;
-function projizieren(A, B, fr, mu, gx, gy, rr) {
-  // in der ersten Hälfte der Drehung zieht sich die alte Fläche in den Stein zurück, in der zweiten tritt die neue heraus
-  if (Math.abs(phi - projZuletzt) > 1e-4) projRichtung = Math.sign(phi - projZuletzt) || projRichtung;
-  projZuletzt = phi;
-  const k = fr < 0.5 ? A : B;
-  let p = fr < 0.5 ? 1 - sanft(fr * 2) : sanft((fr - 0.5) * 2);
-  if (!k) p = 0;
-  p *= Math.max(0, (mu - 0.35) / 0.65);
-  if (k !== projK && k > 0) {
-    projK = k; const b = BEREICHE[k - 1], hell = b.ton.map((v) => Math.min(255, Math.round(v * 0.5 + 125)));
-    proj.href = b.href; proj.style.setProperty('--ton', b.ton.join(',')); proj.style.setProperty('--hell', `rgb(${hell.join(',')})`);
-    proj.querySelector('.p-nr').textContent = `0${k}`;
-    proj.querySelector('.p-name').textContent = b.name;
-    proj.querySelector('.p-satz').textContent = b.satz;
+// ---------- Projektion (Christian, 20.11.2026: «3d aus dem Brillanten projiziert, nach einer Drehung präsentieren») ----------
+// Im offenen Menü wirft der Stein alle Bereiche als Glasflächen hinaus: sie stehen im Raum rund um seine Achse, jede
+// auf ihrer Seite des Schliffs, und drehen mit ihm. Kommt die Drehung zur Ruhe, wendet sich die vordere Fläche ganz zu
+// und tritt vor; die übrigen weichen ins Dunkel zurück.
+const vorlage = $('projektion'), strahl = $('strahl'), strahlKern = strahl.firstElementChild;
+const flaechen = BEREICHE.map((b, i) => {
+  const el = i ? vorlage.cloneNode(true) : vorlage; el.removeAttribute('id');
+  if (i) vorlage.parentNode.insertBefore(el, vorlage.nextSibling);
+  const hell = b.ton.map((v) => Math.min(255, Math.round(v * 0.5 + 125)));
+  el.href = b.href; el.style.setProperty('--ton', b.ton.join(',')); el.style.setProperty('--hell', `rgb(${hell.join(',')})`);
+  el.querySelector('.p-nr').textContent = `0${i + 1}`;
+  el.querySelector('.p-name').textContent = b.name;
+  el.querySelector('.p-satz').textContent = b.satz;
+  el.setAttribute('aria-hidden', 'true');
+  return el;
+});
+let praes = 0;
+function projizieren(zustand, ruht, f, mu, gx, gy, rr) {
+  const soll = ruht && zustand > 0 && mu > 0.6 ? 1 : 0;
+  // langsam vortreten, rasch zurück, sobald der Stein sich wieder dreht
+  praes += (soll - praes) * (1 - Math.pow(soll ? 0.95 : 0.85, f));
+  const aus = Math.max(0, (mu - 0.25) / 0.75);           // wie weit die Flächen schon aus dem Stein getreten sind
+  const pw = vorlage.offsetWidth, ph = vorlage.offsetHeight;
+  const ruheY = gy + rr * 1.35 + 30 + ph / 2;
+  const R = Math.min(W * 0.46, 300), ps = sanft(praes);
+  let kegel = null;
+  for (let i = 0; i < flaechen.length; i++) {
+    const el = flaechen[i];
+    // Winkel der Fläche um die Achse des Steins: 0 = vorn
+    let a = (i + 1) * SCHRITT - phi;
+    a = Math.atan2(Math.sin(a), Math.cos(a));
+    const vorn = Math.cos(a), sichtbar = Math.max(0, vorn);
+    const vor = i + 1 === zustand ? ps : 0;                // diese Fläche präsentiert sich gerade
+    const e = sanft(aus);
+    if (e < 0.004 || sichtbar < 0.02) { el.style.opacity = '0'; el.style.pointerEvents = 'none'; el.tabIndex = -1; continue; }
+    // unterwegs: auf dem Kreis um den Stein, leicht nach unten geneigt, kleiner; präsentiert: flach und ganz da
+    const r = R * e * (1 - vor * 0.6);
+    const cy = gy + (ruheY - gy) * e * (0.8 + 0.2 * vor) - (1 - vorn) * rr * 0.5;
+    const s = (0.1 + 0.62 * e) + 0.28 * vor;
+    const rx = (1 - e) * 60 + 14 * (1 - vor) * e;
+    el.style.transform = `translate(${gx - pw / 2}px, ${cy - ph / 2}px) perspective(1000px) translateZ(${-r}px) rotateY(${a * 180 / Math.PI}deg) translateZ(${r}px) rotateX(${rx}deg) scale(${s})`;
+    el.style.zIndex = String(Math.round(vorn * 10) + 10);
+    el.style.opacity = String(Math.min(1, Math.pow(sichtbar, 1.8) * e * (0.6 + 0.4 * vor)));
+    // der Lichtkegel folgt der Fläche, die am weitesten vorn steht
+    const tiefe = 1000 / (1000 - (r * vorn - r)), x = gx + r * Math.sin(a) * tiefe;
+    const st = Math.pow(sichtbar, 3) * e * (0.35 + 0.65 * vor);
+    if (!kegel || st > kegel.st) kegel = { st, x, oben: cy - ph * s / 2, unten: cy + ph * s / 2 * Math.cos(rx * Math.PI / 180), halb: pw * s / 2 * Math.abs(vorn) * tiefe };
+    const aktiv = vor > 0.95 && mu > 0.95;
+    el.style.pointerEvents = aktiv ? 'auto' : 'none'; el.tabIndex = aktiv ? 0 : -1; el.setAttribute('aria-hidden', String(!aktiv));
   }
-  if (p < 0.004) { proj.style.opacity = '0'; proj.style.pointerEvents = 'none'; proj.tabIndex = -1; strahl.style.opacity = '0'; return; }
-  // Ruhelage: unter dem Stein, mittig; unterwegs kommt sie aus seiner Mitte, gedreht in Drehrichtung
-  const pw = proj.offsetWidth, ph = proj.offsetHeight;
-  const ruheY = gy + rr * 1.35 + 34 + ph / 2;
-  const cx = gx, cy = gy + (ruheY - gy) * p;
-  const s = 0.06 + 0.94 * p;
-  const ry = (1 - p) * -projRichtung * 62, rx = (1 - p) * 28;
-  proj.style.transform = `translate(${cx - pw / 2}px, ${cy - ph / 2}px) perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) scale(${s})`;
-  proj.style.opacity = String(Math.pow(p, 0.8));
-  proj.style.pointerEvents = p > 0.95 ? 'auto' : 'none'; proj.tabIndex = p > 0.95 ? 0 : -1;
-  // Lichtkegel vom Stein zur Oberkante der Fläche
-  const halb = (pw * s) / 2 * Math.cos(ry * Math.PI / 180), oben = cy - (ph * s) / 2, unten = cy + (ph * s) / 2;
-  strahlKern.style.clipPath = `polygon(${gx - rr * 0.35}px ${gy}px, ${gx + rr * 0.35}px ${gy}px, ${cx + halb}px ${oben + 6}px, ${cx + halb * 0.96}px ${unten}px, ${cx - halb * 0.96}px ${unten}px, ${cx - halb}px ${oben + 6}px)`;
-  strahl.style.opacity = String(p * 0.8);
+  // Lichtkegel vom Stein zur vordersten Fläche
+  if (!kegel || kegel.st < 0.01) { strahl.style.opacity = '0'; return; }
+  const { x, oben, unten, halb } = kegel;
+  strahlKern.style.clipPath = `polygon(${gx - rr * 0.35}px ${gy}px, ${gx + rr * 0.35}px ${gy}px, ${x + halb}px ${oben + 6}px, ${x + halb * 0.96}px ${unten}px, ${x - halb * 0.96}px ${unten}px, ${x - halb}px ${oben + 6}px)`;
+  strahl.style.opacity = String(kegel.st * 0.8);
 }
 
 // ---------- Auftakt ----------
@@ -605,7 +628,7 @@ function tempoMessen(ms, dt) {
 }
 
 // ---------- Lauf ----------
-let anlauf = [], menuDreh = 0;
+let anlauf = [];
 let letzteMs = 0, ersterLauf = true, zustandGezeigt = -1, blitz = 0, gelandet = false;
 function bild(ms) {
   requestAnimationFrame(bild);
@@ -646,12 +669,11 @@ function bild(ms) {
   const gx = gx0 + (mg.x - gx0) * mu, gy = gy0 + (mg.y - gy0) * mu - Math.sin(Math.PI * mu) * lay.fs * 0.6, rr = rr0 + (mg.r - rr0) * mu;
   gemJetzt.x = gx; gemJetzt.y = gy; gemJetzt.r = rr;
   steinKnopf.style.transform = `translate(${gx - 28}px, ${gy - 28}px)`;
-  projizieren(A, B, fr, mu, gx, gy, rr);
   // Drehung: die Drehung um die Achse zeigt die Bereiche; im Auftakt dreht er sich frei aus
   const auftaktDreh = AUFTAKT ? (1 - ausrollen(ta)) * 5.5 : 0;
-  const atem = ruhig ? 0 : 1;
-  menuDreh += menu * 0.012 * f;
-  const gier = -phi + auftaktDreh + atem * 0.18 * Math.sin(t * 0.45) + menuDreh;
+  // im offenen Menü dreht der Stein nicht von selbst: die Flächen um ihn stehen still, bis man ihn dreht
+  const atem = ruhig ? 0 : 1 - mu * 0.7;
+  const gier = -phi + auftaktDreh + atem * 0.18 * Math.sin(t * 0.45);
   const neig = 0.3 + atem * 0.08 * Math.sin(t * 0.31 + 1.0) + (1 - flug) * 0.35;
   const roll = atem * 0.05 * Math.sin(t * 0.23);
   ebenenDrehen(gier, neig, roll);
@@ -659,6 +681,7 @@ function bild(ms) {
   // Menü und Verweis
   const zustand = zuZustand(phi);
   const ruht = !gezogen && Math.abs(fr - Math.round(fr)) < 0.03 && Math.abs(omega) < 0.01;
+  projizieren(zustand, !gezogen && Math.abs(fr - Math.round(fr)) < 0.015 && Math.abs(omega) < 0.003, f, mu, gx, gy, rr);
   if (zustand !== zustandGezeigt) {
     zustandGezeigt = zustand;
     knoepfe.forEach((k, i) => k.setAttribute('aria-current', String(i + 1 === zustand)));
