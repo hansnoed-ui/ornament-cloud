@@ -1501,7 +1501,7 @@ function knoepfeAuffrischen() {
   const hat = z.daten.size > 0;
   $("spielen").disabled = !hat; $("spielen").textContent = z.laeuft || z.startet ? "■" : "▶";
   for (const id of ["projektSpeichern"]) $(id).disabled = !z.projekt.spuren.length;
-  for (const id of ["exportieren", "trackLaden", "messenKnopf", "zielKnopf"]) $(id).disabled = !hat;
+  for (const id of ["exportieren", "trackLaden", "erzTrackLaden", "messenKnopf", "zielKnopf"]) $(id).disabled = !hat;
   $("schleifeAn").setAttribute("aria-pressed", String(z.schleifeAn)); $("allesVorher").setAttribute("aria-pressed", String(z.allesVorher));
   $("referenzAn").setAttribute("aria-pressed", String(z.referenzAn));
 }
@@ -1670,6 +1670,8 @@ $("projektDatei").onchange = (e) => { if (e.target.files[0]) projektOeffnen(e.ta
 $("projektSpeichern").onclick = projektSpeichern;
 $("exportieren").onclick = () => exportieren().catch((e) => melde(`Export: ${e.message}`, 8000));
 /** nur der fertige Track: die Summe als WAV 24 Bit (dieselbe Rechnung wie «Exportieren», ohne Einzelspuren) */
+// «Track herunterladen» bei Erzeugen (20. November 2026, Christian) macht dasselbe wie «Track (WAV)» oben
+$("erzTrackLaden").onclick = () => $("trackLaden").onclick();
 $("trackLaden").onclick = async () => {
   try {
     await bisFertig();

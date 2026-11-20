@@ -367,7 +367,7 @@ input[type="range"]:not(.dk-regler):focus-visible { outline: 2px solid var(--acc
   /* Erzeugen zu: nur Stil, Spuren erzeugen und Track erzeugen */
   .erzeugen:not(.offen) > :not(h2):not(.feld):not(#erzeugen):not(.track-zeile),
   .erzeugen:not(.offen) > .feld:not(:has(#stil)):not(.bpm-knopf):not(.tonart-wahl),
-  .erzeugen:not(.offen) .track-zeile > :not(#trackErzeugen) { display: none; }
+  .erzeugen:not(.offen) .track-zeile > :not(#trackErzeugen):not(#erzTrackLaden) { display: none; }
   .erzeugen:not(.offen) .track-zeile { flex-basis: auto; background: none; padding: 0; margin: 0; border: 0; }
   .erzeugen:not(.offen) { gap: 10px; }
   .erzeugen #erzeugen { margin-left: 0; }
