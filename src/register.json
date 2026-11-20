@@ -149,6 +149,15 @@
    "kurz": "Prototyp: das Bild zuerst durchscheinend im Licht; wo der Daumen hält, bleibt nur, was interessiert. Dazu Wasser und Körner."
   },
   {
+   "id": "deleuze-diagramm",
+   "name": "Diagramm (the deleuzian scheme)",
+   "tuer": "spielen-denken",
+   "art": "App",
+   "status": "direktlink",
+   "adresse": "alpha/deleuze/diagramm/",
+   "kurz": "Prototyp: mit dem Daumen durch das eigene Bild wischen wie Bacon, Farbfäden fliessen lassen wie Pollock oder Kräfte setzen wie in Foucaults Karte."
+  },
+  {
    "id": "deleuze-start",
    "name": "the deleuzian scheme (Masterseite)",
    "tuer": "spielen-denken",
