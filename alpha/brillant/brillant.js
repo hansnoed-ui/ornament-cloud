@@ -463,15 +463,20 @@ function satzMalen(c, k) {
   return { y: y + ss * 0.9, ton: b.ton.map((v) => Math.min(255, Math.round(v * 0.5 + 125))) };
 }
 const rgba = (t, a) => `rgba(${t[0]},${t[1]},${t[2]},${a})`;
-function zeilenUmbruch(c, text, breite) {
+function umbrechen(c, text, breite) {
   const w = text.split(' '), z = []; let akt = '';
   for (const s of w) { const p = akt ? akt + ' ' + s : s; if (c.measureText(p).width > breite && akt) { z.push(akt); akt = s; } else akt = p; }
   if (akt) z.push(akt);
+  return z;
+}
+// ausgleichen: so schmal wie möglich bei gleicher Zeilenzahl, damit kein Wort allein steht.
+// (Bis 0.7 rief sich das rekursiv auf und wuchs bei breiten Spalten exponentiell: am Laptop hing die Seite.)
+function zeilenUmbruch(c, text, breite) {
+  const z = umbrechen(c, text, breite);
   if (z.length < 2) return z;
-  // ausgleichen: so schmal wie möglich bei gleicher Zeilenzahl, damit kein Wort allein steht
   let b = breite;
-  while (b > 120) { const n = zeilenUmbruch(c, text, b - 10); if (n.length !== z.length) break; b -= 10; }
-  return b === breite ? z : zeilenUmbruch(c, text, b);
+  while (b > 120 && umbrechen(c, text, b - 10).length === z.length) b -= 10;
+  return b === breite ? z : umbrechen(c, text, b);
 }
 
 function texAus(canvas, alt) {
