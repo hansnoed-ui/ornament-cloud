@@ -23,7 +23,7 @@
   <meta name="twitter:description" content="Spuren mischen mit eigenen, versionierten Plugins, vorher und nachher hören, gegen eine Referenz messen.">
   <meta name="twitter:image" content="https://ornament.cloud/alpha/composer/og-composer.png">
   <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
-  <link rel="stylesheet" href="composer.css?v=8">
+  <link rel="stylesheet" href="composer.css?v=10">
 </head>
 <body>
   <header class="kopf">
@@ -84,6 +84,8 @@
   <section class="erzeugen" aria-label="Spuren erzeugen">
     <h2>Erzeugen</h2>
     <label class="feld">Stil <select id="stil"></select></label>
+    <label class="feld bpm-knopf" title="Tempo der erzeugten Spuren; doppelt antippen: zurück auf das Tempo des Stils"><span>BPM</span><input type="range" id="erzBpmKnopf" data-weg="600" min="40" max="240" step="1" value="120" aria-label="Tempo der erzeugten Spuren in BPM"><b id="erzBpmWert">120</b></label>
+    <span class="feld tonart-wahl" title="Tonart aller erzeugten Spuren: Grundton und Tonleiter; Bass, Synth und Fläche folgen ihr"><label for="tonart">Tonart</label> <select id="tonart"></select> <select id="leiter" aria-label="Tonleiter"></select></span>
     <label class="feld">Takte <select id="takte"><option>4</option><option selected>8</option><option>16</option></select></label>
     <label class="feld">Tempo <input type="number" id="erzBpm" min="40" max="240" step="1"></label>
     <label class="feld">Startwert <input type="number" id="seed" min="1" max="99999" step="1" value="1"></label>
@@ -96,8 +98,6 @@
       <label class="feld klein"><input type="checkbox" id="mitBass" checked> Bass</label>
       <label class="feld">Stimme <select id="bassStimme"></select></label>
       <label class="feld">Linie <select id="bassLinie"></select></label>
-      <label class="feld">Tonart <select id="tonart"></select></label>
-      <select id="leiter" aria-label="Tonleiter"></select>
       <button class="knopf klein" id="bassDazu" title="nur den Bass neu erzeugen, aus der Kick der vorhandenen Drums">nur Bass neu</button>
     </div>
     <div class="bass-zeile track-zeile">
@@ -176,6 +176,6 @@
   <input type="file" id="ersatzDatei" accept="audio/*,.wav,.flac,.mp3,.ogg,.m4a,.aif,.aiff" hidden>
   <div class="meldung" id="meldung" role="status" hidden></div>
   <footer class="fuss"><p>ORNAMENT COMPOSER 0.1 · Drums, Perkussion, Bass, Synth 0.2.0 · Natur 0.3.0 · Unterbrechungen 0.2.0 · Arrangement 0.2.0 · Bereiche, Fassungen 0.1.0 · Klangsammlung, Sampler, ornament.lucerne 0.1.0 · Kanalzug, Raum, Bassfett, Echo, Glanz, Grenze 0.1.0 · Tasten: Leertaste spielen, V vorher, R Referenz, L Schleife, 1–7 Varianten, A Schlag anhören, ↑ ↓ Spur wählen · Bereich ziehen (auf der Summe oder einer Spur), dann M stumm, − leiser, + lauter, E Effekt, Esc aufheben</p></footer>
-  <script type="module" src="app.js?v=18"></script>
+  <script type="module" src="app.js?v=19"></script>
 </body>
 </html>

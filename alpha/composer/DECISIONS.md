@@ -204,3 +204,7 @@ Christian: «Wähle max 2 Naturgeräusche beim ersten Errechnen eines Beats, wen
   - Mischperkussion: setzt jeden vierten statt jeden zweiten Viertakt aus.
   - Wechselnde Perkussion (Ornament): zwei statt einer Stimme je Abschnitt, in «Gas geben» und «Wiederfinden» drei statt zwei; kein doppeltes Dropout im Intro, aufeinanderfolgende Pausen einer Stimme sind ein Dropout.
 - Die Stille in Abschnitten, in denen eine Spur nicht spielt (Intro, Atmen, Outro …), bleibt: Sie ist der Aufbau des Tracks.
+
+## BPM-Knopf und Tonart bei Erzeugen (20. November 2026)
+
+Christian: «Ein Knopf "bpm" und noch eine Auswahl bitte prominent bei Erzeugen», die Auswahl: «Mach Tonart». Neben dem Stil steht ein grosser BPM-Drehknopf (40–240, fein: 600 px Ziehweg für den ganzen Bereich), verbunden mit dem Zahlenfeld «Tempo»; ein neuer Stil dreht ihn mit, doppelt antippen setzt auf das Tempo des Stils. Grundton und Tonleiter sind aus der Bass-Zeile neben den Knopf gezogen (gleiche IDs, wirken wie bisher). Beides bleibt am Handy auch zugeklappt sichtbar.
