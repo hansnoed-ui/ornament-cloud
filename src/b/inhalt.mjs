@@ -238,6 +238,11 @@ export const ANGEBOTE = [
     text: "Werke auf Papier und Leinwand, Prints in kleinen Auflagen, Installationen mit Bild, Bewegung und Ton, Arbeiten für Räume und Bildschirme. Dazu Editionen aus dem Zettelkasten: das Buch, das Kartenset, das Poster und die Notizbücher, gedruckt auf Bestellung. Bestellt wird per Mail, bezahlt per QR-Rechnung oder TWINT; Versand in der Schweiz inbegriffen. Auftragsarbeiten für Häuser, Firmen und Private nach Gespräch.",
     fuer: "Für Sammler:innen, Architekt:innen, Firmen, Gemeinden, Häuser und für alle, die ein Werk oder ein Buch für einen bestimmten Ort suchen.",
     ablauf: ["Aussuchen auf der Seite «Werke» oder ein Gespräch über den Ort und das, was er braucht.", "Bestellung per Mail, Bestätigung mit Rechnung; bei Auftragsarbeiten ein Entwurf als Skizze oder bewegte Vorschau.", "Versand versichert, oder Werk, Montage und Übergabe mit Zertifikat."],
+    // Zum Anschauen seit 20. November 2026 (Christian bestätigte Eintrag und Satz; Bild und Film wie bei Webdesign). Vermittlung bleibt ohne
+    // Abschnitt, bis Christian Referenzen liefert.
+    schau: [{ name: "Principesse", von: "für Katharina Strickler", jahr: "2026", url: "https://principesse.ch/", adresse: "principesse.ch", bild: "b/bilder/schau/principesse.jpg", film: "b/bilder/schau/principesse.mp4",
+      bildAlt: "Principesse im Film: drei gezeichnete Prinzessinnen mit Kronen und ein Hund mit Krone schweben als Figuren im Raum vor einem Nachthimmel mit Mond und Sternen",
+      text: "Gezeichnete Prinzessinnen als Bilder zum Bestellen: aussuchen, Vorschau ansehen, per Bestellkarte anfragen." }],
     dialog: [
       { frage: "Was?", wahlen: ["ein Print oder Original", "ein Buch, Karten, ein Poster", "eine Auftragsarbeit", "etwas für einen Bildschirm"] },
       { frage: "Für welchen Ort?", wahlen: ["eine Wohnung", "ein Büro oder Empfang", "einen öffentlichen Raum", "ein Geschenk"] },
