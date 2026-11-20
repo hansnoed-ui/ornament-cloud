@@ -236,10 +236,11 @@ const VS = `#version 300 es
 in vec2 a; out vec2 v;
 void main(){ v = a*0.5+0.5; gl_Position = vec4(a,0.,1.); }`;
 
-// RISS 2: zerbrochener Stein mit Licht aus dem Spalt; RISS 1: nur die zwei Stücke; RISS 0: Notbetrieb ohne Bruch.
-// Lehnt ein Grafiktreiber eine Stufe ab, versucht der Kristall die nächstkleinere.
-const fsText = (riss) => `#version 300 es
-#define RISS ${riss}
+// SCHNITT 1: der gesprungene Stein, je Durchgang ein Stück mit seiner Rissebene; LICHT 1: Licht aus dem Spalt.
+// Lehnt ein Grafiktreiber eine Fassung ab, versucht der Kristall die nächstkleinere (zuletzt ohne Bruch).
+const fsText = (schnitt, licht) => `#version 300 es
+#define SCHNITT ${schnitt}
+#define LICHT ${licht}
 precision highp float; precision highp sampler2DArray;
 #define MAX_K ${MAX_F}
 #define WELLEN ${leicht ? 3 : telefon ? 4 : 5}
@@ -249,10 +250,10 @@ precision highp float; precision highp sampler2DArray;
 in vec2 v; out vec4 o;
 uniform sampler2DArray uZeit;
 uniform sampler2D uScharf;       // die Gegenwart in voller Auflösung (Zeitschichten bleiben klein)
-uniform vec3 uN[MAX_K];        // Ebenen des Kristalls (Normalen)
-uniform float uR[MAX_K];       // Abstände
-uniform float uSchicht[MAX_K]; // Zeitschicht je Facette
-uniform float uAlter[MAX_K];   // 0 = jetzt, 1 = tief vergangen
+// Ebenen und Zeiten gepackt: jedes Feldelement belegt am Telefon einen ganzen Uniform-Vektor, und Adreno erlaubt
+// nur 256 (20.11.2026: vier getrennte Listen à 60 liessen für den Bruch keinen Platz mehr)
+uniform vec4 uE[MAX_K];        // Ebenen des Kristalls: xyz Normale (schon gedreht), w Abstand
+uniform vec2 uZA[MAX_K];       // je Facette: x Zeitschicht, y Alter (0 = jetzt, 1 = tief vergangen)
 uniform int uK;
 uniform float uKante;          // Stärke des Kantenlichts
 uniform vec3 uTon;             // Färbung im Stein (Absorption je Weglänge)
@@ -268,11 +269,15 @@ uniform int uZustand;          // 0 vollkommen, 1 gesprungen, 2 im Entstehen, 3 
 uniform vec3 uRiss, uRissA, uRissB;   // Rissebene (gedreht mit dem Stein)
 uniform float uVer;             // Verschmelzung: wie weit der Kristall ins Bild übergreift
 uniform float uSpalt, uRissC;   // gesprungen: halbe Spaltbreite und Lage der Rissebene
-uniform vec3 uRissVer;          // gesprungen: Richtung, in der die beiden Stücke auseinanderweichen
+// gesprungen, je Durchgang ein Stück: seine Rissebene (xyz Normale, w Abstand; null = ganzer Stein), sein Versatz,
+// ob es das Stück jenseits des Risses ist, und ob nur der Stein gezeichnet wird (zweiter Durchgang, vorderes Stück)
+uniform vec4 uZ;
+uniform vec3 uVersatz;
+uniform float uJenseits, uNurStein;
 // Kennung der Rissfläche; z ist die Zusatzebene des gerade gerechneten Stücks (xyz Normale, w Abstand), null = keine.
 // Kein globaler Zustand und kein Zugriff ausserhalb der Ebenenliste: manche Handytreiber lehnen beides ab.
 const int RISSFLAECHE = 99;
-vec3 ebeneZ(int k, vec4 z){ return k == RISSFLAECHE ? z.xyz : uN[min(k, MAX_K - 1)]; }
+vec3 ebeneZ(int k, vec4 z){ return k == RISSFLAECHE ? z.xyz : uE[min(k, MAX_K - 1)].xyz; }
 
 float h(float n){ return fract(sin(n*91.345+7.13)*43758.5453); }
 vec3 holen(vec2 u, float s){ vec2 m = 1.0 - abs(mod(u, 2.0) - 1.0); return texture(uZeit, vec3(m.x, 1.0 - m.y, s)).rgb; }
@@ -285,30 +290,34 @@ vec2 wand(vec3 p, vec3 d){
   vec2 q = p.xy + d.xy / max(-d.z, 0.42) * (p.z - WAND) * 0.55;
   return q / vec2(hh * uSeite, hh) * 0.5 + 0.5;
 }
-vec3 ebene(int k){ return uN[k]; }   // schon gedreht (auf dem Prozessor, einmal je Bild)
+vec3 ebene(int k){ return uE[k].xyz; }   // schon gedreht (auf dem Prozessor, einmal je Bild)
 
 // konvexer Kristall als Schnitt von Halbräumen: Eintritt und Austritt exakt
-bool treffenS(vec3 ro, vec3 rd, float sk, out float t0, out int i0){
+bool treffenS(vec3 ro, vec3 rd, float sk, vec4 z, out float t0, out int i0){
   t0 = -1e9; float t1 = 1e9; i0 = 0;
   // Hüllkugel zuerst: wer sie verfehlt, verfehlt den Stein, ohne alle Ebenen zu prüfen
   float rr = uRad * sk, bb = dot(ro, rd), cc = dot(ro, ro) - rr * rr;
   if (cc > 0.0 && (bb > 0.0 || bb * bb < cc)) return false;
   for (int k = 0; k < MAX_K; k++) {
     if (k >= uK) break;
-    vec3 n = ebene(k); float dn = dot(rd, n), ab = uR[k] * sk - dot(ro, n);
+    vec3 n = ebene(k); float dn = dot(rd, n), ab = uE[k].w * sk - dot(ro, n);
     if (abs(dn) < 1e-6) { if (ab < 0.0) return false; continue; }
     float t = ab / dn;
     if (dn < 0.0) { if (t > t0) { t0 = t; i0 = k; } } else { t1 = min(t1, t); }
   }
+#if SCHNITT
+  float dz = dot(rd, z.xyz), az = z.w - dot(ro, z.xyz);
+  if (abs(dz) > 1e-6) { float tz = az / dz; if (dz < 0.0) { if (tz > t0) { t0 = tz; i0 = RISSFLAECHE; } } else { t1 = min(t1, tz); } }
+  else if (az < 0.0) return false;
+#endif
   return t0 < t1 && t1 > 0.0;
 }
-bool treffen(vec3 ro, vec3 rd, out float t0, out int i0){ return treffenS(ro, rd, 1.0, t0, i0); }
 float austrittS(vec3 p, vec3 d, float sk, out int i1){
   float t1 = 1e9; i1 = 0;
   for (int k = 0; k < MAX_K; k++) {
     if (k >= uK) break;
     vec3 n = ebene(k); float dn = dot(d, n);
-    if (dn > 1e-6) { float t = (uR[k] * sk - dot(p, n)) / dn; if (t < t1) { t1 = t; i1 = k; } }
+    if (dn > 1e-6) { float t = (uE[k].w * sk - dot(p, n)) / dn; if (t < t1) { t1 = t; i1 = k; } }
   }
   return t1;
 }
@@ -318,35 +327,6 @@ float austrittZ(vec3 p, vec3 d, vec4 z, out int i1){
   if (dz > 1e-6) { float tz = (z.w - dot(p, z.xyz)) / dz; if (tz < t1) { t1 = tz; i1 = RISSFLAECHE; } }
   return t1;
 }
-#if RISS
-// eine Zusatzebene in den Ein- und Austritt eines Strahls einrechnen
-void halbraum(vec3 ro, vec3 rd, vec4 z, inout float t0, inout float t1, inout int i0){
-  float dn = dot(rd, z.xyz), ab = z.w - dot(ro, z.xyz);
-  if (abs(dn) < 1e-6) { if (ab < 0.0) t1 = -1e9; return; }
-  float t = ab / dn;
-  if (dn < 0.0) { if (t > t0) { t0 = t; i0 = RISSFLAECHE; } } else t1 = min(t1, t);
-}
-// gesprungen: beide Stücke in einem Durchgang über die Ebenen. Gleiche Richtung, Ursprung um ±off verschoben;
-// Stück A liegt jenseits der Rissebene, Stück B diesseits. ta, tb < 0: verfehlt.
-void stueckeTreffen(vec3 ro, vec3 rd, vec3 off, out float ta, out int ia, out float tb, out int ib){
-  float a0 = -1e9, a1 = 1e9, b0 = -1e9, b1 = 1e9; ia = 0; ib = 0; ta = -1.0; tb = -1.0;
-  float rr = uRad + length(off), bb = dot(ro, rd), cc = dot(ro, ro) - rr * rr;
-  if (cc > 0.0 && (bb > 0.0 || bb * bb < cc)) return;
-  vec3 ra = ro - off, rb = ro + off;
-  for (int k = 0; k < MAX_K; k++) {
-    if (k >= uK) break;
-    vec3 n = uN[k]; float dn = dot(rd, n), aa = uR[k] - dot(ra, n), ab = uR[k] - dot(rb, n);
-    if (abs(dn) < 1e-6) { if (aa < 0.0) a1 = -1e9; if (ab < 0.0) b1 = -1e9; continue; }
-    float sa = aa / dn, sb = ab / dn;
-    if (dn < 0.0) { if (sa > a0) { a0 = sa; ia = k; } if (sb > b0) { b0 = sb; ib = k; } }
-    else { a1 = min(a1, sa); b1 = min(b1, sb); }
-  }
-  halbraum(ra, rd, vec4(-uRiss, -uRissC), a0, a1, ia);
-  halbraum(rb, rd, vec4(uRiss, uRissC), b0, b1, ib);
-  if (a0 < a1 && a0 > 0.0) ta = a0;
-  if (b0 < b1 && b0 > 0.0) tb = b0;
-}
-#endif
 // Wellenlänge (nm) -> Farbgewicht, weich genug für ein sauberes Spektrum
 vec3 spektrum(float l){
   float r = exp(-pow((l - 610.0) / 55.0, 2.0)) + 0.35 * exp(-pow((l - 420.0) / 30.0, 2.0));
@@ -366,7 +346,7 @@ void main(){
   // Mit der Verschmelzung wird das Bild wieder scharf: Aktuelles und Virtuelles gleichen sich an.
   vec3 jetzt = jetztHolen(v);
   float unsch = uUnschaerfe * pow(1.0 - uVer, 1.5);
-  if (unsch > 0.0005) {
+  if (unsch > 0.0005 && uNurStein < 0.5) {
     vec2 r = vec2(unsch / uSeite, unsch);
     vec3 s = jetzt;
     for (int k = 0; k < PROBEN; k++) {
@@ -381,9 +361,9 @@ void main(){
   // Verschmelzung: der Kristall greift ins Bild über. Ein grösserer, unsichtbarer Kristall um den Stein
   // zerlegt das Bild in Facetten; jede bricht eine andere vergangene Zeit und spiegelt die Gegenwart.
   // Je stärker, desto weniger lässt sich sagen, wo der Stein endet und das Bild beginnt.
-  if (uVer > 0.001) {
+  if (uVer > 0.001 && uNurStein < 0.5) {
     float G = 1.0 + 2.6 * uVer, u0; int k0;
-    if (treffenS(rk, rd, G, u0, k0) && u0 > 0.0) {
+    if (treffenS(rk, rd, G, vec4(0.0), u0, k0) && u0 > 0.0) {
       vec3 g0 = rk + rd * u0, gn = ebene(k0);
       float A = 1.3 + 0.5 * uBrech, B = 0.006 + 0.02 * uBrech;
       vec3 geist = vec3(0.0), summe = vec3(0.0);
@@ -395,7 +375,7 @@ void main(){
         vec3 q = g0 + d * t1, aus = refract(d, -ebene(i1), ior);
         if (dot(aus, aus) == 0.0) aus = reflect(d, -ebene(i1));
         vec3 gew = spektrum(l);
-        geist += holen(wand(q + vec3(uLage, 0.0), aus), uSchicht[k0]) * gew;
+        geist += holen(wand(q + vec3(uLage, 0.0), aus), uZA[k0].x) * gew;
         summe += gew;
       }
       geist /= summe;
@@ -403,7 +383,7 @@ void main(){
       geist = mix(geist, jetztHolen(wand(g0 + vec3(uLage, 0.0), reflect(rd, gn))), clamp(fres, 0.0, 1.0));
       // feine Facettenkanten im Bild
       float zweite = -1e9;
-      for (int k = 0; k < MAX_K; k++) { if (k >= uK) break; if (k != k0) zweite = max(zweite, dot(g0, ebene(k)) - uR[k] * G); }
+      for (int k = 0; k < MAX_K; k++) { if (k >= uK) break; if (k != k0) zweite = max(zweite, dot(g0, ebene(k)) - uE[k].w * G); }
       float linie = 1.0 - smoothstep(0.0, 0.008 * G, -zweite);
       col = mix(col, geist * mix(0.42, 0.9, vign), uVer * 0.85) + linie * 0.18 * uVer;
     }
@@ -411,22 +391,20 @@ void main(){
 
   // gesprungener Kristall (Renoir): der Stein ist in zwei Stücke zerbrochen, die auseinanderweichen.
   // Durch den Spalt entweicht Licht: die Gegenwart, das Leben, das nicht im Kristall bleibt.
-  float t0; int i0; bool trifft = false; vec3 versatz = vec3(0.0); float jenseits = 0.0; vec4 z = vec4(0.0);
-#if RISS
-  if (uZustand == 1 && uSpalt > 0.0) {
-    float ta, tb; int ia, ib;
-    vec3 offA = uRissVer * uSpalt;
-    stueckeTreffen(rk, rd, offA, ta, ia, tb, ib);
-    if (ta > 0.0 && (tb <= 0.0 || ta < tb)) { z = vec4(-uRiss, -uRissC); t0 = ta; i0 = ia; versatz = offA; jenseits = 1.0; trifft = true; }
-    else if (tb > 0.0) { z = vec4(uRiss, uRissC); t0 = tb; i0 = ib; versatz = -offA; trifft = true; }
-  } else trifft = treffen(rk, rd, t0, i0) && t0 > 0.0;
+  // Zwei Durchgänge: erst das hintere Stück mit dem Bild, dann das vordere allein darüber. So bleibt der Shader
+  // so klein wie ohne Bruch (Christians Android lehnte grössere Fassungen ab, 20.11.2026).
+  float t0; int i0; vec3 versatz = uVersatz; float jenseits = uJenseits;
+#if SCHNITT
+  vec4 z = uZ;
 #else
-  trifft = treffen(rk, rd, t0, i0) && t0 > 0.0;
+  vec4 z = vec4(0.0);
 #endif
+  bool trifft = treffenS(rk - versatz, rd, 1.0, z, t0, i0) && t0 > 0.0;
+  if (uNurStein > 0.5 && !trifft) discard;
 
   // Licht aus dem Spalt: eine dünne leuchtende Schicht entlang der Rissebene, die über den Stein hinaus ins Bild strahlt
-#if RISS >= 2
-  if (uZustand == 1 && uSpalt > 0.0) {
+#if LICHT
+  if (uZustand == 1 && uSpalt > 0.0 && uNurStein < 0.5) {
     float dn = dot(rd, uRiss), tc = (uRissC - dot(rk, uRiss)) / (abs(dn) < 1e-4 ? 1e-4 : dn);
     if (tc > 0.0) {
       vec3 pc = rk + rd * tc;
@@ -450,7 +428,7 @@ void main(){
     int iz = bruch ? 0 : i0;
     // Kantenlicht: wie nah liegt der Punkt an einer zweiten Ebene?
     float zweite = -1e9;
-    for (int k = 0; k < MAX_K; k++) { if (k >= uK) break; if (k != i0) zweite = max(zweite, dot(p0, ebene(k)) - uR[k]); }
+    for (int k = 0; k < MAX_K; k++) { if (k >= uK) break; if (k != i0) zweite = max(zweite, dot(p0, ebene(k)) - uE[k].w); }
     if (!bruch && dot(z.xyz, z.xyz) > 0.0) zweite = max(zweite, dot(p0, z.xyz) - z.w);
     float kante = 1.0 - smoothstep(0.0, mix(0.005, 0.012 + 0.01 * uBrech, step(0.5, uKante)), -zweite);
 
@@ -461,7 +439,7 @@ void main(){
 
     // Brechung ins Innere: das Virtuelle, je Facette eine andere Zeit, spektral zerlegt
     float A = 1.42 + 0.95 * uBrech, B = 0.004 + 0.03 * uBrech;
-    float sch = uSchicht[iz];
+    float sch = uZA[iz].x;
     if (jenseits > 0.5) sch = uJetzt;      // jenseits des Risses: nichts Vergangenes mehr, nur das Jetzt
     vec3 innen = vec3(0.0), summe = vec3(0.0);
     for (int w = 0; w < WELLEN; w++) {
@@ -483,7 +461,7 @@ void main(){
       summe += gew;
     }
     innen /= summe;
-    float alter = uAlter[iz];
+    float alter = uZA[iz].y;
     float lum = dot(innen, vec3(0.299, 0.587, 0.114));
     innen = mix(innen, vec3(lum) * vec3(0.9, 0.96, 1.08), alter * 0.4) * (1.0 - alter * 0.22);
     innen *= vec3(1.02, 1.0, 0.98) * 1.08;
@@ -603,12 +581,13 @@ function nachbearbeiten(t) {
   gl.activeTexture(gl.TEXTURE0);
 }
 
-let prog, ort = {}, zeitTex = null, pufferB = 0, pufferH = 0, scharfTex = null, scharfB = 0, scharfH = 0;
+let prog, bruchGeht = false, ort = {}, zeitTex = null, pufferB = 0, pufferH = 0, scharfTex = null, scharfB = 0, scharfH = 0;
 if (gl) {
   // Lehnt der Grafiktreiber des Geräts den vollen Shader ab, läuft der Kristall ohne Bruch weiter, statt die Seite zu blockieren
-  for (const stufe of [2, 1, 0]) {
-    try { prog = programm(VS, fsText(stufe)); if (stufe < 2) spur('Shader Stufe ' + stufe); break; }
-    catch (e) { spur('Shader ' + stufe + ' abgelehnt: ' + String(e.message || e).slice(0, 160)); console.error(e); if (!stufe) throw e; }
+  for (const [schnitt, licht] of [[1, 1], [1, 0], [0, 0]]) {
+    const name = schnitt + '' + licht;
+    try { prog = programm(VS, fsText(schnitt, licht)); bruchGeht = schnitt === 1; spur('Shader ' + name); break; }
+    catch (e) { spur('Shader ' + name + ' abgelehnt: ' + String(e.message || e).slice(0, 160)); console.error(e); if (!schnitt) throw e; }
   }
   gl.useProgram(prog);
   const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
@@ -620,7 +599,7 @@ if (gl) {
     weichQ: gl.getUniformLocation(progWeich, 'uQ'), weichR: gl.getUniformLocation(progWeich, 'uRichtung'),
     zSzene: gl.getUniformLocation(progZusammen, 'uSzene'), zGlow: gl.getUniformLocation(progZusammen, 'uGlow'), zPx: gl.getUniformLocation(progZusammen, 'uPx'),
     zGlowStaerke: gl.getUniformLocation(progZusammen, 'uGlowStaerke'), zT: gl.getUniformLocation(progZusammen, 'uT') };
-  for (const n of ['uZeit', 'uN', 'uR', 'uSchicht', 'uAlter', 'uK', 'uKante', 'uTon', 'uFeuer', 'uVer', 'uZustand', 'uUnschaerfe', 'uRad', 'uRiss', 'uRissA', 'uRissB', 'uLage', 'uSeite', 'uBrech', 'uT', 'uJetzt', 'uScharf', 'uSpalt', 'uRissC', 'uRissVer']) ort[n] = gl.getUniformLocation(prog, n);
+  for (const n of ['uZeit', 'uE', 'uZA', 'uK', 'uKante', 'uTon', 'uFeuer', 'uVer', 'uZustand', 'uUnschaerfe', 'uRad', 'uRiss', 'uRissA', 'uRissB', 'uLage', 'uSeite', 'uBrech', 'uT', 'uJetzt', 'uScharf', 'uSpalt', 'uRissC', 'uZ', 'uVersatz', 'uJenseits', 'uNurStein']) ort[n] = gl.getUniformLocation(prog, n);
   spur('Grafik bereit');
 }
 
@@ -1024,9 +1003,27 @@ function rissSetzen(t) {
   const atem = 1 + 0.3 * Math.sin(t * 0.55) + 0.12 * Math.sin(t * 1.7);
   for (let r = 0; r < 3; r++) rissVer[r] = rissW[r] + 0.9 * rissW[6 + r];   // auseinander und seitlich verschoben
   const l = Math.hypot(rissVer[0], rissVer[1], rissVer[2]); for (let r = 0; r < 3; r++) rissVer[r] /= l;
-  gl.uniform1f(ort.uSpalt, zustand === 1 ? 0.12 * rad * ruck * atem : 0);
+  const spalt = zustand === 1 ? 0.12 * rad * ruck * atem : 0;
+  gl.uniform1f(ort.uSpalt, spalt);
   gl.uniform1f(ort.uRissC, 0.04 * rad);
-  gl.uniform3fv(ort.uRissVer, rissVer);
+  return spalt;
+}
+// den Stein zeichnen; gesprungen in zwei Durchgängen. Die Rissebene trennt die Stücke, darum liegt
+// das Stück auf der Seite des Auges überall vorn: erst das andere mit dem Bild, dann dieses allein darüber.
+const AUGE = 3.2;
+function steinZeichnen(spalt) {
+  const ganz = () => { gl.uniform4f(ort.uZ, 0, 0, 0, 0); gl.uniform3f(ort.uVersatz, 0, 0, 0); gl.uniform1f(ort.uJenseits, 0); gl.uniform1f(ort.uNurStein, 0); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); };
+  if (!(zustand === 1 && spalt > 0 && bruchGeht)) { ganz(); return; }
+  const c = 0.04 * huelle * zoom, lx = (gegenwart.x - 0.5) * 1.2, ly = (gegenwart.y - 0.5) * 0.9;
+  const jenseitsVorn = -lx * rissW[0] - ly * rissW[1] + AUGE * rissW[2] > c;
+  const stueck = (jenseits, nurStein) => {
+    const s = jenseits ? 1 : -1;
+    gl.uniform4f(ort.uZ, -s * rissW[0], -s * rissW[1], -s * rissW[2], -s * c);
+    gl.uniform3f(ort.uVersatz, s * rissVer[0] * spalt, s * rissVer[1] * spalt, s * rissVer[2] * spalt);
+    gl.uniform1f(ort.uJenseits, jenseits ? 1 : 0); gl.uniform1f(ort.uNurStein, nurStein);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  };
+  stueck(!jenseitsVorn, 0); stueck(jenseitsVorn, 1);
 }
 function zustandAnwenden(t) {
   const ent = zustand === 2 ? entstehenZeit() : null;
@@ -1162,7 +1159,7 @@ function scharfFangen() {
 }
 
 let ersterLauf = true, letzteMs = 0;
-const abstandZ = new Float32Array(MAX_F);
+const abstandZ = new Float32Array(MAX_F), ebenePack = new Float32Array(MAX_F * 4), zeitPack = new Float32Array(MAX_F * 2);
 function bild(ms) {
   const t = ms / 1000;
   if (quelle === beispiel) beispielMalen(t);
@@ -1199,12 +1196,16 @@ function bild(ms) {
   gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D_ARRAY, zeitTex);
   gl.uniform1i(ort.uZeit, 0);
   gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, scharfTex); gl.uniform1i(ort.uScharf, 3); gl.activeTexture(gl.TEXTURE0);
-  gl.uniform3fv(ort.uN, ebenenW); gl.uniform1fv(ort.uR, abstandZ); gl.uniform1fv(ort.uSchicht, schicht); gl.uniform1fv(ort.uAlter, alterAkt);
+  for (let i = 0; i < MAX_F; i++) {
+    ebenePack[i * 4] = ebenenW[i * 3]; ebenePack[i * 4 + 1] = ebenenW[i * 3 + 1]; ebenePack[i * 4 + 2] = ebenenW[i * 3 + 2]; ebenePack[i * 4 + 3] = abstandZ[i];
+    zeitPack[i * 2] = schicht[i]; zeitPack[i * 2 + 1] = alterAkt[i];
+  }
+  gl.uniform4fv(ort.uE, ebenePack); gl.uniform2fv(ort.uZA, zeitPack);
   gl.uniform1i(ort.uK, anzahl); gl.uniform1f(ort.uKante, SCHLIFFE[form].kante); gl.uniform3fv(ort.uTon, SCHLIFFE[form].ton); gl.uniform1f(ort.uFeuer, SCHLIFFE[form].feuer); gl.uniform1f(ort.uVer, milieu());
-  gl.uniform1i(ort.uZustand, zustand); gl.uniform1f(ort.uUnschaerfe, 0.0025); gl.uniform1f(ort.uRad, huelle * zoom * 1.03 * (zustand === 2 ? ENTSTEHEN.vor : 1)); gl.uniform3fv(ort.uRiss, rissW.subarray(0, 3)); gl.uniform3fv(ort.uRissA, rissW.subarray(3, 6)); gl.uniform3fv(ort.uRissB, rissW.subarray(6, 9)); rissSetzen(t); gl.uniform1f(ort.uSeite, innerWidth / innerHeight);
+  gl.uniform1i(ort.uZustand, zustand); gl.uniform1f(ort.uUnschaerfe, 0.0025); gl.uniform1f(ort.uRad, huelle * zoom * 1.03 * (zustand === 2 ? ENTSTEHEN.vor : 1)); gl.uniform3fv(ort.uRiss, rissW.subarray(0, 3)); gl.uniform3fv(ort.uRissA, rissW.subarray(3, 6)); gl.uniform3fv(ort.uRissB, rissW.subarray(6, 9)); const spalt = rissSetzen(t); gl.uniform1f(ort.uSeite, innerWidth / innerHeight);
   gl.uniform2f(ort.uLage, (gegenwart.x - 0.5) * 1.2, (gegenwart.y - 0.5) * 0.9); gl.uniform1f(ort.uJetzt, kopf);
   gl.uniform1f(ort.uBrech, brech); gl.uniform1f(ort.uT, t % 100);
-  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  steinZeichnen(spalt);
   nachbearbeiten(t);
   if (standbildWunsch) { standbildWunsch = false; leinwand.toBlob((b) => b && zeigen(b, 'kristallbild-' + zeitstempel() + '.png')); }
   if (ersterLauf && gefuellt) { ersterLauf = false; spur('✓ läuft'); }
