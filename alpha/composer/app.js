@@ -28,6 +28,8 @@ import { wavSpuren, abtastrateLesen, mono, tempoSchaetzen, einsaetzeFinden, wavS
 import * as BE from "./kern/bereiche.js";
 import * as FA from "./kern/fassungen.js";
 import { lucerneEinbauen, klangPanel, istSampler, samplerRechnen } from "./lucerne-ui.js";
+import { drehknoepfe } from "./drehknopf.js";
+import { handyAnsicht } from "./handy.js";
 import { VORLAGEN, STIL_ZYKLEN, zyklusTakte, matraAuto } from "./kern/zyklen.js";
 import { grooveErzeugen, FAMILIEN as GROOVE_FAMILIEN, STIL_GROOVES } from "./kern/grooves.js";
 const PERK_NEU = "perkussion@0.2.0";
@@ -259,7 +261,7 @@ function regler(kurz, wert, min, max, schritt, setze, zeige) {
   inp.oninput = () => { const v = Number(inp.value); out.textContent = zeige(v); setze(v); };
   inp.ondblclick = () => { const v = min < 0 && max > 0 ? 0 : min; inp.value = v; out.textContent = zeige(v); setze(v); };
   inp.title = "Doppelklick: zurück auf 0";
-  return el("label", { className: "regler" }, el("span", { textContent: kurz }), inp, out);
+  return el("label", { className: kurz === "◐" ? "regler pan" : "regler" }, el("span", { textContent: kurz }), inp, out);
 }
 function umschalt(text, cls, an, titel, klick) { const b = el("button", { className: `mini ${cls}`, textContent: text, title: titel }); b.setAttribute("aria-pressed", String(an)); b.onclick = klick; return b; }
 
@@ -1779,3 +1781,7 @@ allesAufbauen();
 // ornament.lucerne: Klangsammlung und Steuerung (eigenes Modul, bekommt nur, was es braucht)
 const LUI = await lucerneEinbauen({ z, $, el, melde, atmen, PR, post, senden, allesAufbauen, spurSenden, spurNeuRechnen, kontext, spielen, bisFertig, schnellEinpegeln, schleifeSenden, zeichnen, zeigeRechnen, herunterladen, sha256, imWorker, imWorkerRoh, tonWecken, NOTEN });
 requestAnimationFrame(anzeigen);
+
+// Drehknöpfe statt Schieberegler für Plugin-, Melodie- und lucerne-Regler und das Panorama (Nachtpult, 20. November 2026)
+drehknoepfe();
+handyAnsicht();
