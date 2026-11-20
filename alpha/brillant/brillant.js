@@ -86,6 +86,20 @@ uniform vec3 uZiel;                // Mitte des Fächers (x), Oberkante (y), hal
 uniform float uFunkel, uPx;
 uniform sampler2D uSchrift;
 uniform vec3 uGlasTon;
+// 0.9 Facette als Fenster: im Menü schaut man durch die Tafel des Steins auf ein Werk des Bereichs
+uniform sampler2D uWerke;          // fünf Werke nebeneinander
+uniform vec2 uWerk;                // Werk vor und nach der Drehung (-1 = keines)
+uniform float uWerkF, uMenu, uFenster;
+uniform int uTafel;
+float gWm = 0.0;                   // Übergang des Werks in der gerade getroffenen Facette
+vec3 werk(vec2 uv, float i){
+  if (i < -0.5) return vec3(0.035, 0.03, 0.08);
+  // ausserhalb des Bildes ins Dunkel, nie verschmiert
+  vec2 r = smoothstep(vec2(0.0), vec2(0.06), uv) * smoothstep(vec2(0.0), vec2(0.06), 1.0 - uv);
+  vec3 c = texture(uWerke, vec2((i + clamp(uv.x, 0.002, 0.998)) / 5.0, clamp(uv.y, 0.002, 0.998))).rgb;
+  return mix(vec3(0.035, 0.03, 0.08), c, r.x * r.y);
+}
+vec3 werkJetzt(vec2 uv){ return mix(werk(uv, uWerk.x), werk(uv, uWerk.y), gWm); }
 const float AUGE = 4.0;
 const vec3 L1 = vec3(0.53, 0.68, 0.5), L2 = vec3(-0.62, 0.55, 0.56), L3 = vec3(0.1, -0.35, 0.93);
 
@@ -138,6 +152,7 @@ vec3 umwelt(vec3 d, float m){
   vec2 gemUV = uGem / uAufl;
   vec3 c = seite(gemUV + d.xy * vec2(uAufl.y / uAufl.x, 1.0) * 0.16, m) * 1.25;
   c += vec3(1.0, 0.985, 0.96) * (pow(max(dot(d, L1), 0.0), 22.0) * 2.1 + pow(max(dot(d, L2), 0.0), 34.0) * 1.5 + pow(max(dot(d, L3), 0.0), 10.0) * 0.35);
+  if (uMenu > 0.001) c = mix(c, werkJetzt(0.5 + d.xy * vec2(0.45, 0.5)) * 0.8 + c * 0.12, uMenu * 0.75);
   return c + vec3(0.045, 0.04, 0.085);
 }
 
@@ -246,6 +261,9 @@ vec4 stein(vec2 gq, float m){
   float kante = 1.0 - smoothstep(0.0, 0.035, -zweite);
   vec3 rf = reflect(rd, n0);
   float fres = 0.04 + 0.96 * pow(1.0 - abs(dot(rd, n0)), 5.0);
+  // jede Facette wechselt das Werk zu ihrer eigenen Zeit
+  float thW = h(float(i0) * 1.3 + 5.0) * 0.55;
+  gWm = smoothstep(thW, thW + 0.45, uWerkF);
   vec3 innen = vec3(0.0), summe = vec3(0.0);
   float glut = 0.0;
   for (int w = 0; w < WELLEN; w++) {
@@ -271,6 +289,17 @@ vec4 stein(vec2 gq, float m){
   float glanz = (pow(max(dot(rf, L1), 0.0), 160.0) + 0.7 * pow(max(dot(rf, L2), 0.0), 220.0)) * 1.6;
   vec3 col = mix(innen, umwelt(rf, m), clamp(fres, 0.0, 1.0)) + glanz;
   col = mix(col, vec3(1.0, 0.99, 0.97), kante * 0.22);
+  // die Tafel als Fenster: man sieht durch sie das Werk, leicht gebrochen und mit Farbsaum zum Rand
+  if (uMenu > 0.001 && i0 == uTafel) {
+    gWm = smoothstep(0.3, 0.7, uWerkF);
+    vec3 rt = refract(rd, n0, 1.0 / 2.42);
+    vec2 w = 0.5 + (gq + rt.xy * 0.22) / (2.0 * uFenster);
+    vec2 aus = (w - 0.5) * 0.014;
+    vec3 fenster = vec3(werkJetzt(w + aus).r, werkJetzt(w).g, werkJetzt(w - aus).b);
+    float randW = smoothstep(0.32, 0.5, length(w - 0.5));
+    fenster = fenster * (1.0 - randW * 0.35) + glanz * 0.5 + fres * 0.12;
+    col = mix(col, fenster, uMenu * (1.0 - kante * 0.6));
+  }
   return vec4(col, 1.0);
 }
 
@@ -441,7 +470,7 @@ function satzspiegel(c) {
   const sw = Math.min(W - (hoch ? 28 : 80), 620), pad = hoch ? 34 : 48;
   const scheibe = { x: (W - sw) / 2, y: y - fs * 0.95 - pad, w: sw, h: pad * 2 + fs * 0.95 + satz * 6.2 + 40 };
   // offenes Menü: der Stein gross über der Mitte, die Bereiche darunter
-  const menuGem = { x: W / 2, y: Math.round(H * (hoch ? 0.36 : 0.34)), r: Math.min(W, H) * (hoch ? 0.16 : 0.1) };
+  const menuGem = { x: W / 2, y: Math.round(H * (hoch ? 0.36 : 0.34)), r: Math.min(W, H) * (hoch ? 0.33 : 0.2) };
   return { hoch, fs, gemR, satz, saetze, scheibe, menuGem };
 }
 // eine Glasscheibe ohne Kanten: weich auslaufend, was darunter liegt erscheint verschwommen und getönt
@@ -515,6 +544,25 @@ function texAus(canvas, alt) {
   texParam();
   return t;
 }
+// Werke für das Fenster (vorerst aus ornament.cloud; Christian kann sie tauschen)
+const WERKE = ['/b/bilder/schau/kaiserbuehne.jpg', '/b/bilder/schau/drittes-rad.jpg', '/b/bilder/fotografie/turm-am-bild-800.jpg',
+  '/b/bilder/fotografie/turm-farben-800.jpg', '/b/bilder/fotografie/print-kopf-pink-800.jpg'];
+let werkTex = null;
+function werkeLaden() {
+  if (!gl) return;
+  werkTex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, werkTex);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([9, 8, 20, 255])); texParam();
+  const S = telefon ? 384 : 512, atlas = document.createElement('canvas'); atlas.width = S * 5; atlas.height = S;
+  const c = atlas.getContext('2d'); c.fillStyle = '#090814'; c.fillRect(0, 0, atlas.width, S);
+  Promise.all(WERKE.map((src, i) => new Promise((ok) => {
+    const im = new Image(); im.decoding = 'async';
+    im.onload = () => { const k = Math.min(im.width, im.height); c.drawImage(im, (im.width - k) / 2, (im.height - k) / 2, k, k, i * S, 0, S, S); ok(); };
+    im.onerror = () => { spur('Werk fehlt: ' + src); ok(); };
+    im.src = src;
+  }))).then(() => { if (gl) werkTex = texAus(atlas, werkTex); });
+}
+werkeLaden();
+if (gl) document.body.classList.add('fenster');
 const mehrOrt = [];
 const seitenBild = [];          // dieselben Seiten als Canvas, für die flache Fassung
 let leerBild = null;
@@ -551,6 +599,8 @@ function seitenBauen() {
 const HOEHE = 1.3;
 const roh = schliffEbenen('brillant', 1 / 1.15).map(([x, y, z, d]) => { const n = [x, y / HOEHE, z], l = Math.hypot(...n); return [n[0] / l, n[1] / l, n[2] / l, d / l]; });
 const K = roh.length;
+const FENSTER = 0.76;
+const TAFEL = roh.reduce((b, n, i) => (n[1] > roh[b][1] ? i : b), 0);
 const ebenenW = new Float32Array(MAX_F * 3), abstandW = new Float32Array(MAX_F);
 roh.forEach(([, , , d], i) => { abstandW[i] = d; });
 let huelle = 0;
@@ -613,9 +663,9 @@ const loslassen = (e) => {
   // Tippen: auf den Stein öffnet und schliesst das Menü; daneben schliesst es nur
   if (tipp && Math.hypot(e.clientX - tipp.x, e.clientY - tipp.y) < 10 && performance.now() - tipp.t < 400) {
     if (warGezogen) phi = zugStart;
-    const treffer = Math.hypot(e.clientX - gemJetzt.x, e.clientY - gemJetzt.y) < Math.max(30, gemJetzt.r * 2.2);
-    if (treffer) menuSchalten(!menuAuf); else if (menuAuf) menuSchalten(false);
+    const treffer = Math.hypot(e.clientX - gemJetzt.x, e.clientY - gemJetzt.y) < Math.max(30, Math.min(gemJetzt.r * 2.2, gemJetzt.r + 36));
     ziel = Math.round(phi / SCHRITT) * SCHRITT;
+    if (treffer) menuSchalten(!menuAuf); else if (menuAuf) menuSchalten(false);
     return;
   }
   if (!warGezogen) return;
@@ -654,6 +704,8 @@ const steinKnopf = $('stein');
 steinKnopf.addEventListener('click', () => menuSchalten(!menuAuf));
 function menuSchalten(auf) {
   menuAuf = auf; spur(auf ? 'Menü auf' : 'Menü zu');
+  // zurück heisst immer: «Brillante Ideen.»
+  if (!auf) hin(0);
   document.body.classList.toggle('menu-auf', auf);
   nav.inert = !auf; steinKnopf.setAttribute('aria-expanded', String(auf));
 }
@@ -699,22 +751,15 @@ function schriftBauen() {
   });
 }
 function projizierenGlas(zustand, soll, f, mu, gx, gy, rr) {
+  // 0.9: keine Strahlen, keine Scheibe. Das Werk zeigt sich im Stein; darunter stehen nur Name, Satz und Verweis.
   if (soll) glasK = zustand;
   const ps = sanft(praes), el = flaechen[glasK - 1];
-  const pw = el.offsetWidth, ph = el.offsetHeight, ruheY = gy + rr * 1.3 + 34 + ph / 2;
-  // der Fächer zielt auf den Bereich, der gerade nach vorn dreht, und streicht beim Drehen über die Seite
-  const kN = Math.round(phi / SCHRITT), aN = kN * SCHRITT - phi, idx = ((kN % ZUSTAENDE) + ZUSTAENDE) % ZUSTAENDE;
-  const aus = sanft(Math.max(0, (mu - 0.3) / 0.7));
-  const zu = Math.max(0, Math.cos(aN * 2.7));
-  glasZ.strahl = (idx ? 1 : 0) * aus * zu * zu * (0.75 + 0.6 * Math.sin(Math.PI * ps) - 0.15 * ps);
-  const tx = gx + Math.sin(aN * 2.4) * W * 0.75;
-  glasZ.ziel = [tx * D, (H - (ruheY - ph / 2)) * D, (pw / 2) * (0.95 + 0.2 * ps) * D];
-  glasZ.praes = ps * aus;
-  glasZ.rect = [gx * D, (H - ruheY) * D, (pw / 2) * D, (ph / 2) * D];
+  const pw = el.offsetWidth, ph = el.offsetHeight, ruheY = gy + rr * 1.18 + ph / 2 - 10;
+  glasZ.strahl = 0; glasZ.praes = 0;
   flaechen.forEach((e, i) => {
-    const aktiv = i + 1 === glasK && ps > 0.95 && mu > 0.95;
-    e.style.opacity = '0'; e.style.pointerEvents = aktiv ? 'auto' : 'none'; e.tabIndex = aktiv ? 0 : -1; e.setAttribute('aria-hidden', String(!aktiv));
-    if (aktiv) e.style.transform = `translate(${gx - pw / 2}px, ${ruheY - ph / 2}px)`;
+    const da = i + 1 === glasK ? ps * Math.max(0, (mu - 0.5) / 0.5) : 0, aktiv = da > 0.95;
+    e.style.opacity = String(da); e.style.pointerEvents = aktiv ? 'auto' : 'none'; e.tabIndex = aktiv ? 0 : -1; e.setAttribute('aria-hidden', String(!aktiv));
+    if (da > 0) e.style.transform = `translate(${gx - pw / 2}px, ${ruheY - ph / 2 + (1 - da) * 10}px)`;
   });
   strahl.style.opacity = '0';
 }
@@ -824,7 +869,8 @@ function bild(ms) {
   const gA = lay.saetze[A].gem, gB = lay.saetze[B].gem;
   const gr = { x: gA.x + (gB.x - gA.x) * e, y: gA.y, r: lay.gemR }, grossR = Math.min(W, H) * 0.11;
   // Menü: der Stein steigt gross über die Mitte und kehrt beim zweiten Tippen an seinen Platz zurück
-  menu += ((menuAuf ? 1 : 0) - menu) * (1 - Math.pow(0.9, f));
+  // langsam gleiten (Christian: «langsamer in seine Position»)
+  menu += ((menuAuf ? 1 : 0) - menu) * (1 - Math.pow(0.965, f));
   const mu = sanft(menu), mg = lay.menuGem;
   const gx0 = W / 2 + (gr.x - W / 2) * flug, gy0 = H * 0.47 + (gr.y - H * 0.47) * flug - Math.sin(Math.PI * flug) * H * 0.03 - Math.sin(Math.PI * fr) * lay.fs * 0.35;
   const rr0 = grossR + (gr.r - grossR) * flug;
@@ -836,7 +882,8 @@ function bild(ms) {
   // im offenen Menü dreht der Stein nicht von selbst: die Flächen um ihn stehen still, bis man ihn dreht
   const atem = ruhig ? 0 : 1 - mu * 0.7;
   const gier = -phi + auftaktDreh + atem * 0.18 * Math.sin(t * 0.45);
-  const neig = 0.3 + atem * 0.08 * Math.sin(t * 0.31 + 1.0) + (1 - flug) * 0.35;
+  // im Menü kippt der Stein zur Betrachterin: man schaut von oben durch seine Tafel
+  const neig = 0.3 + atem * 0.08 * Math.sin(t * 0.31 + 1.0) + (1 - flug) * 0.35 + mu * 0.95;
   const roll = atem * 0.05 * Math.sin(t * 0.23);
   ebenenDrehen(gier, neig, roll);
 
@@ -858,7 +905,7 @@ function bild(ms) {
   // Läuft die volle Fassung zu langsam (Software-Grafik, die sich nicht zu erkennen gab), zur flachen wechseln
   if (gl && !frage.has('gl')) {
     anlauf.push(dtMs);
-    if (anlauf.length === 24) { anlauf.sort((x, y) => x - y); if (anlauf[12] > 70) { spur('zu langsam: flach'); gl = null; gebautFuer = ''; groesse(); } }
+    if (anlauf.length === 24) { anlauf.sort((x, y) => x - y); if (anlauf[12] > 70) { spur('zu langsam: flach'); gl = null; document.body.classList.remove('fenster'); gebautFuer = ''; groesse(); } }
   }
   if (!gl) { flachZeichnen(A, B, fr, zeigen, gx, gy, rr, gier, neig, roll, blitz, sanft(menu)); if (ersterLauf) { ersterLauf = false; spur('✓ läuft'); } return; }
 
@@ -881,6 +928,9 @@ function bild(ms) {
   gl.uniform4f(ort.uScheibe, ...glasZ.rect); gl.uniform1f(ort.uPraes, glasZ.praes); gl.uniform1f(ort.uStrahl, ruhig ? glasZ.strahl * 0.6 : glasZ.strahl);
   gl.uniform3f(ort.uZiel, ...glasZ.ziel); gl.uniform1f(ort.uFunkel, gier); gl.uniform1f(ort.uPx, D);
   gl.uniform3f(ort.uGlasTon, tonG[0] / 255, tonG[1] / 255, tonG[2] / 255);
+  gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D, werkTex); gl.uniform1i(ort.uWerke, 4);
+  gl.uniform2f(ort.uWerk, A - 1, B - 1); gl.uniform1f(ort.uWerkF, fr * fr * (3 - 2 * fr)); gl.uniform1f(ort.uMenu, mu);
+  gl.uniform1f(ort.uFenster, FENSTER); gl.uniform1i(ort.uTafel, TAFEL);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   nachbearbeiten(t, sz);
 
