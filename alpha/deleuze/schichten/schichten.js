@@ -283,10 +283,32 @@ vec3 verfahren(vec3 b, float m){
     vec3 c = mix(vec3(0.07, 0.06, 0.06), papier, s1);
     return mix(c, vec3(0.72, 0.2, 0.15), (1.0 - smoothstep(-0.03, 0.03, l + spur - 0.8)) * s1 * 0.7);
   }
+  if (m > 4.5) {
+    // Rötel: Kreide auf vergilbtem Bütten, die Körnung des Papiers fängt das Pigment
+    float korn = rausch(q * 0.55) * 0.6 + rausch(q * 0.13) * 0.4;
+    float t = smoothstep(0.15, 0.95, l + (korn - 0.5) * 0.35);
+    return mix(vec3(0.52, 0.2, 0.12), vec3(0.93, 0.86, 0.72), t);
+  }
   // Cyanotypie: Preussischblau, das Licht als Papier
   return mix(vec3(0.05, 0.17, 0.38), vec3(0.87, 0.9, 0.92), smoothstep(0.08, 0.92, l));
 }
-float verfahrenNr(float id){ return 1.0 + mod(id, 4.0); }        // ältere Plakate: Kupferstich, Raster, Holzschnitt, Cyanotypie
+// Je tiefer die Schicht, desto älter das Verfahren: eine kleine Mediengeschichte rückwärts.
+// a = 0 die erste vergangene Schicht: Raster (Zeitungsdruck), Cyanotypie, Kupferstich, Holzschnitt, Rötel, dann Holzschnitt und Rötel im Wechsel
+float verfahrenNr(float a){ return a < 0.5 ? 2.0 : a < 1.5 ? 4.0 : a < 2.5 ? 1.0 : mod(a - 3.0, 2.0) < 0.5 ? 3.0 : 5.0; }
+// fliessendes Alter (Kegel): das Blatt altert auf dem Weg nach aussen von Verfahren zu Verfahren
+vec3 verfahrenAlter(vec3 b, float a){
+  float i = floor(a), f = a - i;
+  vec3 c = i < -0.5 ? b : verfahren(b, verfahrenNr(i));
+  float ueber = smoothstep(0.62, 0.98, f);
+  if (ueber > 0.0) c = mix(c, verfahren(b, verfahrenNr(i + 1.0)), ueber);
+  return c;
+}
+// das Nachzittern: ältere Blätter folgen der Geste träger und zittern länger nach
+uniform float uZitter;
+vec2 zitter(float alter){
+  float a = min(alter, 6.0);
+  return uZitter * a * 0.0022 * vec2(sin(uT * 21.0 + alter * 1.7) + 0.5 * sin(uT * 47.0 + alter), cos(uT * 17.0 + alter * 2.3) + 0.5 * cos(uT * 39.0 - alter));
+}
 float rissVersatz(vec2 p){ return (fbm(p * 18.0) - 0.5) * 0.9 + (rausch(p * 140.0) - 0.5) * 0.25; }   // grob und fein, wie Papier reisst
 // d: Abstand zum Riss in Bildpunkten, > 0 auf dem oberen Blatt
 vec3 riss(vec3 oben, vec3 unten, float d, vec2 p, float id){
@@ -303,7 +325,7 @@ float grube(vec2 u){ return texture(uGrube, u).r; }
 float linie(float abst, float breite){ float h = 0.5 * breite; return 1.0 - smoothstep(h - 0.75 * uPxH, h + 0.75 * uPxH, abs(abst)); }
 // Grabung als Décollage: der Finger reisst Plakat um Plakat ab; jede Terrasse ist ein älteres Blatt
 vec3 grabBlatt(vec2 u, float j){
-  vec2 qb = u + (vec2(0.5) - u) * 0.018 * j;
+  vec2 qb = u + (vec2(0.5) - u) * 0.018 * j + zitter(j);
   vec3 b = schicht(qb, lagVon(j));
   return verfahren(b, j < 0.5 ? 0.0 : verfahrenNr(j - 1.0)) * (1.0 - 0.05 * j);
 }
@@ -439,14 +461,16 @@ vec3 spitzePunkt(vec3 c, vec2 u){
 vec3 ringBlatt(vec2 u, vec2 p, float kk, float id){
   float dreh = 0.05 * kk * (1.0 + 0.8 * uSprung);
   vec2 d = mat2(cos(dreh), sin(dreh), -sin(dreh), cos(dreh)) * p * (1.0 - min(kk, 14.0) * 0.028 * (1.0 + uSprung));
-  vec3 b = schicht(uSpitze + d / vec2(uSeite, 1.0), min(kk, uS - 1.0) / max(1.0, uS - 1.0) * uSpanne);
-  return verfahren(b, id < -0.5 ? 0.0 : verfahrenNr(id)) * (1.0 - 0.04 * min(kk, 8.0));
+  vec3 b = schicht(uSpitze + d / vec2(uSeite, 1.0) + zitter(kk), min(kk, uS - 1.0) / max(1.0, uS - 1.0) * uSpanne);
+  return verfahrenAlter(b, kk - 1.0) * (1.0 - 0.04 * min(kk, 8.0));
 }
 vec3 kegelSchnitte(vec2 u){
   vec2 p = (u - uSpitze) * vec2(uSeite, 1.0);
-  float r = length(p);
   float weit = length(max(uSpitze, 1.0 - uSpitze) * vec2(uSeite, 1.0));
   float B = weit / max(3.0, uS);
+  // die Ringe sind von Hand gerissen: leicht unrund, jeder anders, nach aussen freier
+  float r0 = length(p);
+  float r = r0 + B * (0.55 + 0.9 * min(1.0, r0 / weit)) * (fbm(p * 1.6 + vec2(3.1, 7.7)) - 0.5);
   float ph = fract(uFT), rr = r / B - ph, k = floor(rr), inn = rr - k;
   float id = floor(r / B - uFT), id0 = id - k;                 // id: das Blatt, das mit dem Ring nach aussen wandert
   float kk = max(0.0, k + ph);
@@ -462,7 +486,7 @@ vec3 kegelSchnitte(vec2 u){
 // B, der Abgrund: das Bild steckt Rahmen in Rahmen in sich selbst; jeder Rahmen ein älteres Plakat, gerissen, das innere oben
 vec3 rahmenBlatt(vec2 d, float R, float kk, float id){
   vec3 b = schicht(vec2(0.5) + d / R, clamp(kk / (max(3.0, uS) - 1.0), 0.0, 1.0) * uSpanne);
-  return verfahren(b, id < -0.5 ? 0.0 : verfahrenNr(id)) * (1.0 - 0.04 * min(kk, 8.0));
+  return verfahrenAlter(b, kk - 1.0) * (1.0 - 0.04 * min(kk, 8.0));
 }
 vec3 kegelAbgrund(vec2 u){
   vec2 d = u - uSpitze;
@@ -649,7 +673,7 @@ vec3 achat(vec2 u){
 
 // ---- Überschiebung als Décollage (?ueber=4, Standard): ältere Plakate sind über jüngere geschoben ----
 vec3 ueberBlatt(vec2 u, float km){
-  vec2 schub = vec2(cos(km * 2.4), sin(km * 2.4)) * 0.012 * km + uGleit * km / uS;
+  vec2 schub = vec2(cos(km * 2.4), sin(km * 2.4)) * 0.012 * km + uGleit * km / uS + zitter(km);
   vec3 b = schicht(imR(u + schub), lagVon(km));
   return verfahren(b, km < 0.5 ? 0.0 : verfahrenNr(km - 1.0));
 }
@@ -834,7 +858,7 @@ if (gl) {
   const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
   gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
-  ort = orte(prog, ['uZeit', 'uScharf', 'uGrube', 'uKopf', 'uN', 'uSpanne', 'uS', 'uSeite', 'uT', 'uFT', 'uLesart', 'uSpitze', 'uSchub', 'uGleit', 'uSprung', 'uRand', 'uKegel', 'uPxH', 'uUeber', 'uRahmen']);
+  ort = orte(prog, ['uZeit', 'uScharf', 'uGrube', 'uKopf', 'uN', 'uSpanne', 'uS', 'uSeite', 'uT', 'uFT', 'uLesart', 'uSpitze', 'uSchub', 'uGleit', 'uSprung', 'uRand', 'uKegel', 'uPxH', 'uUeber', 'uRahmen', 'uZitter']);
   ortG = orte(progGrube, ['uAlt', 'uPx', 'uStempel', 'uStempelR', 'uN', 'uAb', 'uSeite']);
   ortH = orte(progHell, ['uQ', 'uPx']); ortW = orte(progWeich, ['uQ', 'uRichtung']);
   ortZ = orte(progZusammen, ['uSzene', 'uGlow', 'uPx', 'uGlowStaerke', 'uT']);
@@ -1108,7 +1132,7 @@ const GEISTER_DAUER = 2.6;
 let geisterZug = 0;
 const VORSPANN = new URLSearchParams(location.search).has('vorspann');   // für den vorgerechneten Film der Schwelle
 // der Rand der Grabung: 4 Ornament mit Relief-Licht, 1 Relief, 2 Kintsugi, 3 Spektralsaum (0, die Haarlinie, nur mit ?rand=0)
-const KEGEL = Math.max(1, Math.min(2, +(new URLSearchParams(location.search).get('kegel') ?? 2) || 2));   // Entwürfe für den Kegel
+const KEGEL = Math.max(1, Math.min(2, +(new URLSearchParams(location.search).get('kegel') ?? 1) || 1));   // Entwürfe für den Kegel
 // der Stoff der Überschiebung: 3 Achat (Standard), 1 Lasur; ?ueber=0 der frühere Stand, 2 die Marmorierung (Entwürfe)
 let ueber = 4;
 try { const r = localStorage.getItem('schichten.stoff'); if (r === '1' || r === '3' || r === '4') ueber = +r; } catch {}
@@ -1123,7 +1147,7 @@ function stoffWaehlen(nr, still) {
 document.querySelectorAll('[data-stoff]').forEach((b) => b.addEventListener('click', () => stoffWaehlen(+b.dataset.stoff)));
 stoffWaehlen(ueber, true);
 let rand = 5;
-try { const r = localStorage.getItem('schichten.rand2'); if (r) rand = +r; } catch {}
+try { const r = localStorage.getItem('schichten.rand2'); if (r === '2' || r === '5') rand = +r; } catch {}   // wählbar: Riss, Kintsugi; die übrigen nur noch per ?rand
 if (new URLSearchParams(location.search).has('rand')) rand = +new URLSearchParams(location.search).get('rand');
 rand = Math.max(0, Math.min(5, Math.round(rand) || 0));
 function randWaehlen(nr, still) {
@@ -1157,7 +1181,7 @@ function geisterGraben(t, dt) {
 // Grabung: ziehen gräbt; halten gräbt tiefer. Kegel: tippen oder ziehen setzt die Spitze. Überschiebung: ziehen schiebt.
 const finger = new Map();
 let spitze = { x: 0.5, y: 0.55 }, spitzeZiel = { x: 0.5, y: 0.55 }, sprung = 0;
-let schub = { x: 0, y: 0 }, schubV = { x: 0, y: 0 }, gleit = { x: 0, y: 0 }, grabStaerke = 0, letzteSchicht = 0;
+let schub = { x: 0, y: 0 }, schubV = { x: 0, y: 0 }, gleit = { x: 0, y: 0 }, grabStaerke = 0, letzteSchicht = 0, zittern = 0;
 const aufLeinwand = (e) => ({ x: e.clientX / innerWidth, y: 1 - e.clientY / innerHeight });
 leinwand.addEventListener('pointerdown', (e) => {
   finger.set(e.pointerId, { x: e.clientX, y: e.clientY, t: performance.now() });
@@ -1300,6 +1324,9 @@ function bild(ms) {
     klangGraben(grabStaerke, d);
     if (k !== letzteSchicht) { if (k > letzteSchicht) klangSchwelle(k); letzteSchicht = k; }
   } else letzteSchicht = 0;
+  // Nachzittern: steigt mit der Geste, klingt über gut eine Sekunde aus
+  const anstoss = lesart === 1 ? grabStaerke : lesart === 2 ? Math.min(1, Math.hypot(schubV.x, schubV.y) * 0.6) : sprung;
+  zittern = Math.max(zittern * Math.pow(0.08, dt), anstoss);
   grabStaerke *= Math.pow(0.02, dt);
   klangBild({ tiefe, mittel: lesart === 1 ? Math.min(1, mittel * 3) : lesart === 0 ? 0.45 : 0.3, fluss, gleiten: lesart === 2 ? Math.hypot(schubV.x, schubV.y) : 0 });
 
@@ -1315,7 +1342,7 @@ function bild(ms) {
   gl.uniform1f(ort.uKopf, kopf); gl.uniform1f(ort.uN, SCHICHTEN);
   gl.uniform1f(ort.uSpanne, Math.min(SCHICHTEN - 1, tiefe / intervall)); gl.uniform1f(ort.uS, schichtZahl);
   gl.uniform1f(ort.uSeite, innerWidth / innerHeight); gl.uniform1f(ort.uT, t % 100); gl.uniform1f(ort.uFT, ft % 1000);
-  gl.uniform1i(ort.uLesart, lesart); gl.uniform2f(ort.uSpitze, spitze.x, spitze.y); gl.uniform2f(ort.uSchub, schub.x, schub.y); gl.uniform2f(ort.uGleit, gleit.x, gleit.y); gl.uniform1f(ort.uSprung, sprung); gl.uniform1i(ort.uRand, rand); gl.uniform1i(ort.uKegel, KEGEL); gl.uniform1f(ort.uPxH, 1 / leinwand.height); gl.uniform1i(ort.uUeber, ueber); gl.uniform4f(ort.uRahmen, rahmen[0], rahmen[1], rahmen[2], rahmen[3]);
+  gl.uniform1i(ort.uLesart, lesart); gl.uniform2f(ort.uSpitze, spitze.x, spitze.y); gl.uniform2f(ort.uSchub, schub.x, schub.y); gl.uniform2f(ort.uGleit, gleit.x, gleit.y); gl.uniform1f(ort.uSprung, sprung); gl.uniform1i(ort.uRand, rand); gl.uniform1i(ort.uKegel, KEGEL); gl.uniform1f(ort.uPxH, 1 / leinwand.height); gl.uniform1i(ort.uUeber, ueber); gl.uniform4f(ort.uRahmen, rahmen[0], rahmen[1], rahmen[2], rahmen[3]); gl.uniform1f(ort.uZitter, zittern);
   zeichneFlaeche();
   nachbearbeiten(t);
   if (standbildWunsch) { standbildWunsch = false; leinwand.toBlob((b) => b && zeigen(b, 'schichten-' + zeitstempel() + '.png')); }
