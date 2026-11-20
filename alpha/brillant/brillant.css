@@ -63,13 +63,11 @@ body { font: 500 15px/1.4 'Brillant Display', system-ui, sans-serif; -webkit-fon
 .v-koerper { position: relative; border-radius: 22px;
   background: linear-gradient(165deg, rgba(var(--ton), 0.2), rgba(var(--ton), 0.05) 42%, rgba(255,255,255,0.0) 70%), linear-gradient(#141230, #0d0b20);
   box-shadow: 0 50px 90px -40px rgba(0, 0, 0, 0.9), 0 30px 120px -50px rgba(var(--ton), 0.55), 0 1px 0 rgba(255,255,255,0.08) inset; }
-/* die Fassung: eine irisierende Haarlinie, die langsam umläuft */
+/* die Fassung: eine irisierende Haarlinie. 0.30: sie läuft nicht mehr um (das Neumalen in jedem Bild liess die Karten ruckeln) */
 @property --v-winkel { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
 .v-koerper::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none; z-index: 4;
   background: conic-gradient(from var(--v-winkel), rgba(255,255,255,0.12), rgba(var(--ton), 0.8), rgba(150, 220, 255, 0.4), rgba(255, 210, 240, 0.55), rgba(255,255,255,0.12) 60%, rgba(var(--ton), 0.55), rgba(255,255,255,0.12));
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude;
-  animation: v-fassung 14s linear infinite; }
-@keyframes v-fassung { to { --v-winkel: 360deg; } }
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
 .v-buehne { position: relative; aspect-ratio: 16 / 10; border-radius: 22px 22px 6px 6px; overflow: hidden; background: #07060f; }
 .v-bild { position: absolute; inset: -2%; }
 .v-bild > img, .v-bild > video, .v-bild > canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -78,7 +76,9 @@ body { font: 500 15px/1.4 'Brillant Display', system-ui, sans-serif; -webkit-fon
 .v-bild.hoch > img, .v-bild.hoch > video { object-position: 50% 42%; }
 .v-buehne::after { content: ''; position: absolute; inset: 0; pointer-events: none;
   background: linear-gradient(to bottom, rgba(0,0,0,0) 58%, rgba(10, 9, 24, 0.6)), radial-gradient(130% 90% at 50% 40%, rgba(0,0,0,0) 60%, rgba(5, 4, 14, 0.42)); }
-.v-licht { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen; z-index: 1; }
+.v-licht { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen; z-index: 1; overflow: hidden; }
+/* 0.30: Licht und Glanz liegen fest und werden nur verschoben (brillant.js) */
+.v-licht i { position: absolute; left: -100%; top: -100%; width: 300%; height: 300%; background: radial-gradient(40% 30% at 50% 50%, rgba(255,255,255,0.17), rgba(255,255,255,0) 52%); }
 /* einmal beim Nach-vorn-Kommen: ein schmales, irisierendes Licht zieht schräg über das Bild */
 .v-buehne::before { content: ''; position: absolute; inset: -20% -60%; z-index: 2; pointer-events: none; opacity: 0;
   background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.24) 48.5%, rgba(190, 225, 255, 0.17) 50%, rgba(255, 220, 190, 0.08) 51.5%, transparent 56%);
@@ -86,7 +86,8 @@ body { font: 500 15px/1.4 'Brillant Display', system-ui, sans-serif; -webkit-fon
 .v-karte.glanzlauf .v-buehne::before { animation: v-glanz 1.7s cubic-bezier(.3,.1,.2,1) 0.25s 1 both; }
 @keyframes v-glanz { 0% { transform: translateX(-60%); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateX(60%); opacity: 0; } }
 /* holografischer Schimmer über der ganzen Karte, folgt der Neigung (Lage in brillant.js) */
-.v-glanz { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 3; mix-blend-mode: soft-light; background-size: 260% 260%;
+.v-glanz { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 3; mix-blend-mode: soft-light; overflow: hidden; }
+.v-glanz i { position: absolute; left: 0; top: 0; width: 260%; height: 260%;
   background-image: linear-gradient(115deg, transparent 30%, rgba(255, 170, 210, 0.5) 42%, rgba(170, 230, 255, 0.55) 50%, rgba(255, 240, 180, 0.45) 58%, transparent 70%); }
 .v-dunkel { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 5;  background: rgba(7, 6, 18, 1); opacity: 0; }
 /* Schrift eine Ebene vor dem Glas */
@@ -108,19 +109,19 @@ body { font: 500 15px/1.4 'Brillant Display', system-ui, sans-serif; -webkit-fon
 /* Schatten auf dem Boden unter der Karte */
 .v-schatten { position: absolute; left: 8%; right: 8%; top: 100%; height: 34px; border-radius: 50%; pointer-events: none; transform-origin: 50% 0;
   background: radial-gradient(closest-side, rgba(var(--ton), 0.32), rgba(0, 0, 0, 0.5) 45%, rgba(0, 0, 0, 0)); filter: blur(10px); }
-/* 0.29 (Christian: Pfeile und Kreuz «unterdurchschnittlich elegant»): Haarlinien statt Schriftzeichen und Kreise;
-   dazwischen drei kleine Rauten, die vordere Karte trägt die Farbe des Brillanten */
-.v-steuer { position: absolute; left: 0; right: 0; bottom: max(14px, env(safe-area-inset-bottom)); display: flex; justify-content: center; align-items: center; gap: 6px; opacity: var(--auf); }
-.v-steuer button, .v-zu { display: grid; place-items: center; color: rgba(238, 235, 248, 0.62); background: none; border: 0; padding: 0; width: 48px; height: 48px; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: color 0.4s; }
-.v-steuer svg { width: 9px; height: 18px; }
-.v-zu svg { width: 15px; height: 15px; }
-.v-steuer svg path, .v-zu svg path { fill: none; stroke: currentColor; stroke-width: 1; vector-effect: non-scaling-stroke; stroke-linecap: round; stroke-linejoin: round; }
-.v-steuer button:hover, .v-zu:hover, .v-steuer button:active, .v-zu:active { color: #fff; }
-.v-marken { display: flex; gap: 12px; padding: 0 6px; }
+/* 0.30 (Christian: «Pfeile brauchts nicht», «das x feiner, sauberer eingepasst»): geblättert wird mit dem Finger; unten nur
+   drei kleine Rauten für die Lage. Das Kreuz ist eine Haarlinie, bündig mit der rechten Kante der Karte. */
+.v-steuer { position: absolute; left: 0; right: 0; bottom: max(26px, calc(env(safe-area-inset-bottom) + 14px)); display: flex; justify-content: center; opacity: var(--auf); pointer-events: none; }
+.v-marken { display: flex; gap: 12px; }
 .v-marken i { width: 5px; height: 5px; transform: rotate(45deg); box-shadow: 0 0 0 0.75px rgba(238, 235, 248, 0.38) inset; transition: background 0.5s, box-shadow 0.5s; }
 .v-marken i.jetzt { background: linear-gradient(135deg, #fff 0%, #d9d2ff 40%, #ffd9e8 70%, #cfe9ff 100%); box-shadow: 0 0 6px rgba(220, 210, 255, 0.55); }
-.v-zu { position: absolute; top: max(6px, env(safe-area-inset-top)); right: max(6px, env(safe-area-inset-right)); opacity: var(--auf); z-index: 200; }
-.v-oeffnen:focus-visible, .v-steuer button:focus-visible, .v-zu:focus-visible { outline: 1px solid var(--text); outline-offset: 3px; }
+.v-zu { position: absolute; z-index: 200; top: max(10px, env(safe-area-inset-top)); right: calc(50% - min(84vw, 380px) / 2 - 16px);
+  display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  color: rgba(238, 235, 248, 0.55); opacity: var(--auf); transition: color 0.4s; }
+.v-zu svg { width: 12px; height: 12px; overflow: visible; }
+.v-zu svg path { fill: none; stroke: currentColor; stroke-width: 0.85; vector-effect: non-scaling-stroke; stroke-linecap: round; }
+.v-zu:hover, .v-zu:active { color: #fff; }
+.v-oeffnen:focus-visible, .v-zu:focus-visible { outline: 1px solid var(--text); outline-offset: 3px; }
 /* grosse Bildschirme: breite Karte, Bild links, Text rechts */
 @media (min-width: 820px) {
   .v-karte { width: min(68vw, 860px); margin-left: calc(min(68vw, 860px) / -2); top: 46%; }
@@ -130,6 +131,7 @@ body { font: 500 15px/1.4 'Brillant Display', system-ui, sans-serif; -webkit-fon
   .v-text { padding: 36px 36px 30px 46px; justify-content: center; }
   .v-name { font-size: clamp(32px, 3.4vw, 48px); }
   .v-raum { perspective: 1600px; }
+  .v-zu { top: max(18px, env(safe-area-inset-top)); right: calc(50% - min(68vw, 860px) / 2 - 16px); }
 }
 @media (prefers-reduced-motion: reduce) { .v-koerper::before { animation: none; } }
 
@@ -144,7 +146,8 @@ body { font: 500 15px/1.4 'Brillant Display', system-ui, sans-serif; -webkit-fon
 /* am Telefon steht die Wahl unten in der Mitte, oben gehört die Mitte dem Kopf */
 @media (max-width: 640px) { .sprachen { top: auto; right: 0; left: 0; justify-content: center; bottom: max(10px, env(safe-area-inset-bottom)); } }
 /* 0.29: ohne Spiegelung (die gespiegelte Schrift war lesbar und unruhig); während der Bewegung will-change, in Ruhe nicht (brillant.js) */
-.vitrine.bewegt .v-karte { will-change: transform; }
+.vitrine.bewegt .v-karte, .vitrine.bewegt .v-licht i, .vitrine.bewegt .v-glanz i { will-change: transform; }
+.vitrine.bewegt .v-dunkel, .vitrine.bewegt .v-glanz { will-change: opacity; }
 .vitrine-auf .kopf { opacity: 0 !important; pointer-events: none; transition: opacity 0.4s; }
 .vitrine-auf .kopf a { pointer-events: none; }
 .vitrine-auf .sprachen { opacity: 0 !important; pointer-events: none; transition-delay: 0s; }

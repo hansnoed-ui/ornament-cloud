@@ -72,8 +72,6 @@ document.getElementById('mehr').firstChild.textContent = T.mehr + ' ';
 document.getElementById('stein').setAttribute('aria-label', T.menu);
 document.getElementById('bereiche').setAttribute('aria-label', T.anwendungen);
 document.getElementById('vitrine').setAttribute('aria-label', T.anwendungen);
-document.querySelector('.v-vor').setAttribute('aria-label', T.vor);
-document.querySelector('.v-nach').setAttribute('aria-label', T.nach);
 document.querySelector('.v-zu').setAttribute('aria-label', T.zu);
 document.querySelector('.p-mehr').firstChild.textContent = T.mehr + ' ';
 {
@@ -935,10 +933,10 @@ const vKarten = BEREICHE.map((b, i) => {
   const hell = b.ton.map((v) => Math.min(255, Math.round(v * 0.5 + 125)));
   const k = document.createElement('article'); k.className = 'v-karte'; k.setAttribute('aria-roledescription', 'Karte');
   k.style.setProperty('--ton', b.ton.join(',')); k.style.setProperty('--hell', `rgb(${hell.join(',')})`);
-  k.innerHTML = `<div class="v-schatten" aria-hidden="true"></div><div class="v-koerper"><div class="v-buehne"><div class="v-bild"></div><div class="v-licht" aria-hidden="true"></div></div>
+  k.innerHTML = `<div class="v-schatten" aria-hidden="true"></div><div class="v-koerper"><div class="v-buehne"><div class="v-bild"></div><div class="v-licht" aria-hidden="true"><i></i></div></div>
     <div class="v-text"><p class="v-kopf"></p><h2 class="v-name" id="v-name-${i}"></h2><p class="v-satz"></p>
     <div class="v-zeile"><a class="v-oeffnen" href="${(b.adressen && b.adressen[offen]) || b.href}">${T.oeffnen} <span aria-hidden="true">›</span></a><span class="v-sprachen"></span></div></div>
-    <div class="v-glanz" aria-hidden="true"></div><div class="v-dunkel" aria-hidden="true"></div></div>`;
+    <div class="v-glanz" aria-hidden="true"><i></i></div><div class="v-dunkel" aria-hidden="true"></div></div>`;
   k.querySelector('.v-kopf').textContent = b.kopf; k.querySelector('.v-name').textContent = b.name; k.querySelector('.v-satz').textContent = b.satz;
   k.querySelector('.v-oeffnen').setAttribute('aria-label', T.oeffnenAria(b.name));
   // in welchen Sprachen es die Anwendung gibt; fehlt die gewählte, steht dabei, in welcher sie sich öffnet
@@ -953,7 +951,7 @@ const vKarten = BEREICHE.map((b, i) => {
   else { const im = new Image(); im.alt = ''; im.decoding = 'async'; im.src = b.bild; bild.append(im); }
   if (b.hoch) bild.classList.add('hoch');
   vRaum.append(k);
-  return { el: k, koerper: k.querySelector('.v-koerper'), bild, licht: k.querySelector('.v-licht'), glanz: k.querySelector('.v-glanz'),
+  return { el: k, koerper: k.querySelector('.v-koerper'), bild, licht: k.querySelector('.v-licht i'), glanz: k.querySelector('.v-glanz'), glanzI: k.querySelector('.v-glanz i'),
     dunkel: k.querySelector('.v-dunkel'), schatten: k.querySelector('.v-schatten'), text: k.querySelector('.v-text'), oeffnen: k.querySelector('.v-oeffnen'),
     film: null, schauStopp: null, flug: 0 };
 });
@@ -981,6 +979,14 @@ function vitrineWeiter(s) { vz.ziel = Math.round(vz.ziel) + s; wecken(); }
 // Die Bühne rechnet nur, solange sich etwas bewegt; steht alles, steht auch das Bild (kein Nachzittern der Schrift)
 function wecken() { if (vitrineOffen && !vz.lauf) { vz.letzt = 0; vz.lauf = requestAnimationFrame(vitrineBild); } }
 
+function filmAn(k, b) {
+  const v = document.createElement('video');
+  Object.assign(v, { muted: true, loop: true, playsInline: true, autoplay: true, poster: b.bild, preload: 'auto' });
+  v.setAttribute('muted', ''); v.setAttribute('playsinline', ''); v.src = b.film;
+  if (b.zoom) { v.style.transform = `scale(${b.zoom})`; v.style.transformOrigin = '50% 12%'; }   // die Bedienknöpfe am unteren Rand des Films bleiben ausserhalb
+  v.addEventListener('playing', () => v.classList.add('laeuft'), { once: true });
+  k.bild.append(v); k.film = v; v.play().catch(() => {});
+}
 // die vordere Karte bekommt ihren Film oder ihr bewegtes Schaubild, die übrigen nur ihr Standbild
 function aktivSetzen(i) {
   vz.aktiv = i; if (vz.aufZiel) hin(i + 1);   // der Stein hinter dem Glas dreht mit
@@ -991,12 +997,11 @@ function aktivSetzen(i) {
     if (vorn) { vitrine.setAttribute('aria-labelledby', `v-name-${j}`); k.el.classList.remove('glanzlauf'); void k.el.offsetWidth; k.el.classList.add('glanzlauf'); }
     if (b.film && !ruhig) {
       if (vorn && !k.film) {
-        const v = document.createElement('video');
-        Object.assign(v, { muted: true, loop: true, playsInline: true, autoplay: true, poster: b.bild, preload: 'auto' });
-        v.setAttribute('muted', ''); v.setAttribute('playsinline', ''); v.src = b.film;
-        if (b.zoom) { v.style.transform = `scale(${b.zoom})`; v.style.transformOrigin = '50% 12%'; }   // die Bedienknöpfe am unteren Rand des Films bleiben ausserhalb
-        v.addEventListener('playing', () => v.classList.add('laeuft'), { once: true });
-        k.bild.append(v); k.film = v; v.play().catch(() => {});
+        // 0.30: während des Flugs aus dem Stein noch kein Film (das Entpacken kostet Bilder), er kommt danach
+        const warten = vz.aufZiel ? 1000 - (performance.now() - vz.t0) : 0;
+        clearTimeout(k.filmWarten);
+        if (warten > 0) k.filmWarten = setTimeout(() => { if (vz.aktiv === j && vitrineOffen && vz.aufZiel && !k.film) filmAn(k, b); }, warten + 30);
+        else filmAn(k, b);
       } else if (!vorn && k.film) { const v = k.film; k.film = null; v.classList.remove('laeuft'); setTimeout(() => { v.pause(); v.removeAttribute('src'); v.load(); v.remove(); }, 400); }
     }
     if (b.schau) {
@@ -1072,8 +1077,10 @@ function vitrineBild(jetzt) {
     k.dunkel.style.opacity = Math.min(0.72, ad * 0.5).toFixed(3);
     // Licht: ein weicher Fleck, der gegen die Neigung über das Glas gleitet; dazu ein irisierendes Band
     const lx = 50 + (ry / 34) * -40 + vz.neig.x * 22, ly = 30 - rx * 3 - vz.neig.y * 18;
-    k.licht.style.background = `radial-gradient(120% 90% at ${lx.toFixed(1)}% ${ly.toFixed(1)}%, rgba(255,255,255,0.17), rgba(255,255,255,0) 52%)`;
-    k.glanz.style.backgroundPosition = `${(50 + ry * 1.6 + vz.neig.x * 30).toFixed(1)}% ${(50 + rx * 3).toFixed(1)}%`;
+    // 0.30: Licht und Glanz sind feste Verläufe, die nur verschoben werden (Transformation statt Neumalen in jedem Bild: flüssig am Handy)
+    k.licht.style.transform = `translate3d(${((lx - 50) / 3).toFixed(2)}%, ${((ly - 50) / 3).toFixed(2)}%, 0)`;
+    const gpx = Math.max(-20, Math.min(120, 50 + ry * 1.6 + vz.neig.x * 30)), gpy = Math.max(-20, Math.min(120, 50 + rx * 3));
+    k.glanzI.style.transform = `translate3d(${(-gpx * 1.6 / 2.6).toFixed(2)}%, ${(-gpy * 1.6 / 2.6).toFixed(2)}%, 0)`;
     k.glanz.style.opacity = (0.35 + Math.min(0.65, Math.abs(ry) / 30 + Math.hypot(vz.neig.x, vz.neig.y) * 0.4)).toFixed(3);
     // Parallaxe: das Bild liegt hinter dem Glas und verschiebt sich gegen die Drehung
     // 0.26: nur noch ein Hauch Parallaxe und keine Vergrösserung, damit das Motiv ganz im Ausschnitt bleibt
@@ -1084,8 +1091,11 @@ function vitrineBild(jetzt) {
     k.schatten.style.opacity = ((0.55 - hoehe * 0.12) * fl * Math.max(0, 1 - ad * 0.5)).toFixed(3);
   });
   vitrine.style.setProperty('--auf', (vKarten.reduce((m, k) => Math.max(m, k.flug), 0)).toFixed(3));
-  const fliegt = vKarten.some((k) => k.flug < 1);
-  vitrineVoll = !fliegt && vz.aufZiel === 1;
+  // 0.30 (Christian: Karten «lassen sich nicht wegklicken»): der Zeitstempel des Bildes liegt vor dem Tippen, im ersten Bild
+  // nach dem Schliessen stand der Flug also noch auf 1, und die Bühne hielt an. Schliessen läuft jetzt bis zum Ende.
+  const fliegt = vKarten.some((k) => k.flug < 1) || !vz.aufZiel;
+  // 0.30 (Christian: «ruckelig»): der Stein rechnet nicht mit, solange die Vitrine offen ist oder aufgeht; er ruht unter dem Schleier
+  vitrineVoll = vz.aufZiel === 1;
   const bewegt = vz.zug || fliegt || vz.pos !== vz.ziel || Math.abs(vz.v) > 0 || Math.abs(vz.neigZiel.x - vz.neig.x) + Math.abs(vz.neigZiel.y - vz.neig.y) > 0.002;
   if (!bewegt) { vz.neig.x = vz.neigZiel.x; vz.neig.y = vz.neigZiel.y; }
   // 0.29 (Christian: «mal gehts, mal nicht»): Chrome rastert eine Karte in dem Massstab, den sie beim Entstehen ihrer Ebene
@@ -1116,7 +1126,10 @@ addEventListener('pointermove', (e) => {
     vz.neigZiel.x = drin ? Math.max(-1, Math.min(1, nx)) : 0; vz.neigZiel.y = drin ? Math.max(-1, Math.min(1, ny)) : 0; wecken();
   }
   const z = vz.zug; if (!z || z.id !== e.pointerId) return;
-  const dx = e.clientX - z.x;
+  const dx = e.clientX - z.x, dy = e.clientY - z.y;
+  // 0.30: nach unten wischen schliesst; die Karten geben dem Finger ein wenig nach
+  if (!z.bewegt && !z.runter && dy > 10 && dy > Math.abs(dx) * 1.2) { z.runter = true; try { vRaum.setPointerCapture(e.pointerId); } catch {} }
+  if (z.runter) { vRaum.style.transform = `translate3d(0, ${(Math.max(0, dy) * 0.35).toFixed(1)}px, 0)`; vRaum.style.opacity = String(Math.max(0.4, 1 - dy / 600)); return; }
   if (!z.bewegt && Math.abs(dx) > 8) { z.bewegt = true; try { vRaum.setPointerCapture(e.pointerId); } catch {} }
   if (!z.bewegt) return;
   const breite = vKarten[0].el.offsetWidth || 320;
@@ -1129,6 +1142,12 @@ addEventListener('pointermove', (e) => {
 const vLos = (e) => {
   const z = vz.zug; if (!z || z.id !== e.pointerId) return;
   vz.zug = null; vz.neigZiel.x = 0; wecken();
+  if (z.runter) {
+    vRaum.style.transition = 'transform 0.35s ease, opacity 0.35s ease'; vRaum.style.transform = ''; vRaum.style.opacity = '';
+    setTimeout(() => { vRaum.style.transition = ''; }, 380);
+    if (e.clientY - z.y > 70) vitrineZu();
+    return;
+  }
   if (z.bewegt) {
     vz.v = z.v; vz.ziel = Math.round(vz.pos + z.v * 9);
     vz.ziel = Math.max(Math.round(z.pos) - 2, Math.min(Math.round(z.pos) + 2, vz.ziel));
@@ -1149,8 +1168,6 @@ vRaum.addEventListener('click', (e) => {
 }, true);
 vRaum.addEventListener('mouseleave', () => { vz.neigZiel.x = 0; vz.neigZiel.y = 0; wecken(); });
 vitrine.querySelector('.v-zu').addEventListener('click', vitrineZu);
-vitrine.querySelector('.v-vor').addEventListener('click', () => vitrineWeiter(-1));
-vitrine.querySelector('.v-nach').addEventListener('click', () => vitrineWeiter(1));
 addEventListener('keydown', (e) => {
   if (!vitrineOffen) return;
   if (e.key === 'Escape') { e.preventDefault(); vitrineZu(); }
