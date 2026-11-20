@@ -158,6 +158,15 @@
    "kurz": "Prototyp: mit dem Daumen durch das eigene Bild wischen wie Bacon, Farbfäden fliessen lassen wie Pollock oder Kräfte setzen wie in Foucaults Karte."
   },
   {
+   "id": "deleuze-figur",
+   "name": "Figur und Fläche (the deleuzian scheme)",
+   "tuer": "spielen-denken",
+   "art": "App",
+   "status": "direktlink",
+   "adresse": "alpha/deleuze/figur/",
+   "kurz": "Prototyp: mit dem Daumen ein Rund um die Figur ziehen, ringsum wird das Bild zu Bacons flacher Farbe; der Körper schreit, verformt sich oder wird zu Fleisch."
+  },
+  {
    "id": "deleuze-start",
    "name": "the deleuzian scheme (Masterseite)",
    "tuer": "spielen-denken",

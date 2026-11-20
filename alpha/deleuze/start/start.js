@@ -16,7 +16,7 @@ const OPS = [
   { nr: 'V', jahr: 1981, href: '../diagramm/', film: 'diagramm', name: { de: 'Diagramm', en: 'Diagram', fr: 'Le diagramme' }, wort: { de: 'Diagramm', en: 'Diagram', fr: 'Diagramme' }, begriff: 'le diagramme',
     satz: { de: 'Zufällige Striche der Hand stören das Klischee, und aus dem Chaos taucht die Figur auf.', en: 'Chance marks of the hand disturb the cliché, and the Figure rises out of the chaos.', fr: 'Des traits au hasard de la main brouillent le cliché, et la Figure surgit du chaos.' },
     quelle: 'Francis Bacon. Logique de la sensation, 1981' },
-  { nr: 'VI', jahr: 1981, name: { de: 'Figur und Fläche', en: 'Figure and field', fr: 'La Figure et l’aplat' }, wort: { de: 'Figur', en: 'Figure', fr: 'Figure' }, begriff: 'la Figure et l’aplat',
+  { nr: 'VI', jahr: 1981, href: '../figur/', film: 'figur', name: { de: 'Figur und Fläche', en: 'Figure and field', fr: 'La Figure et l’aplat' }, wort: { de: 'Figur', en: 'Figure', fr: 'Figure' }, begriff: 'la Figure et l’aplat',
     satz: { de: 'Die Figur wird isoliert, der Grund wird zur flachen, gleichmässigen Farbfläche.', en: 'The Figure is isolated; the ground becomes a flat, even field of colour.', fr: 'La Figure est isolée ; le fond devient un aplat de couleur uniforme.' },
     quelle: 'Francis Bacon. Logique de la sensation, 1981' },
   { nr: 'VII', jahr: 1980, name: { de: 'Ritornell', en: 'Refrain', fr: 'La ritournelle' }, wort: { de: 'Ritornell', en: 'Refrain', fr: 'Ritournelle' }, begriff: 'la ritournelle',
