@@ -30,7 +30,7 @@ const BEREICHE = [
 // IP-Adresse irren würde; zudem bleibt alles im Browser, ohne Abfrage bei einem Dienst. ?lang=fr erzwingt eine Sprache,
 // ein Tippen auf DE EN FR ES oben rechts merkt sie sich auf diesem Gerät. Was keine der vier ist, liest Englisch.
 const SPRACHEN = ['de', 'en', 'fr', 'es'];
-const SPRACHE = (() => {
+let SPRACHE = (() => {
   const q = new URLSearchParams(location.search).get('lang');
   if (SPRACHEN.includes(q)) return q;
   try { const g = localStorage.getItem('brillant.sprache'); if (SPRACHEN.includes(g)) return g; } catch {}
@@ -68,29 +68,34 @@ const TEXTE = {
       { kopf: 'imagen · movimiento', satz: 'Una imagen, 24 efectos, hasta tres capas: la mesa de mezclas para tus propias animaciones.' },
       { kopf: 'generar · observar · continuar', satz: 'Una imagen se vuelve material. Las operaciones la transforman, las variantes quedan una al lado de otra y cada una puede continuar.' }] }
 };
-const T = TEXTE[SPRACHE];
-BEREICHE.forEach((b, i) => Object.assign(b, T.anw[i]));
-const TITEL = T.titel, TITEL_KURZ = TITEL.replace(/\.$/, '');
-// feste Texte der Seite
-document.documentElement.lang = SPRACHE;
-document.title = `${TITEL_KURZ} · ornament.cloud`;
-document.querySelector('h1').textContent = TITEL;
-document.getElementById('mehr').firstChild.textContent = T.mehr + ' ';
-document.getElementById('stein').setAttribute('aria-label', T.menu);
-document.getElementById('bereiche').setAttribute('aria-label', T.anwendungen);
-document.getElementById('vitrine').setAttribute('aria-label', T.anwendungen);
-document.querySelector('.v-zu').setAttribute('aria-label', T.zu);
-document.querySelector('.p-mehr').firstChild.textContent = T.mehr + ' ';
-{
+let T, TITEL, TITEL_KURZ;
+// feste Texte der Seite; 0.32: auch später aufrufbar, wenn man auf einer Karte die Sprache wechselt
+function grundTexte() {
+  T = TEXTE[SPRACHE];
+  BEREICHE.forEach((b, i) => Object.assign(b, T.anw[i]));
+  TITEL = T.titel; TITEL_KURZ = TITEL.replace(/\.$/, '');
+  document.documentElement.lang = SPRACHE;
+  document.title = `${TITEL_KURZ} · ornament.cloud`;
+  document.querySelector('h1').textContent = TITEL;
+  document.getElementById('mehr').firstChild.textContent = T.mehr + ' ';
+  document.getElementById('stein').setAttribute('aria-label', T.menu);
+  document.getElementById('bereiche').setAttribute('aria-label', T.anwendungen);
+  document.getElementById('vitrine').setAttribute('aria-label', T.anwendungen);
+  document.querySelector('.v-zu').setAttribute('aria-label', T.zu);
+  for (const pm of document.querySelectorAll('.p-mehr')) pm.firstChild.textContent = T.mehr + ' ';
   const wahl = document.getElementById('sprachen'); wahl.setAttribute('aria-label', T.sprache);
+  for (const a of wahl.children) { if (a.lang === SPRACHE) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current'); }
+}
+{
+  const wahl = document.getElementById('sprachen');
   for (const k of SPRACHEN) {
     const a = document.createElement('a'); a.textContent = k.toUpperCase(); a.lang = k; a.hreflang = k;
     const u = new URL(location.href); u.searchParams.set('lang', k); a.href = u.pathname + u.search;
-    if (k === SPRACHE) a.setAttribute('aria-current', 'true');
     a.addEventListener('click', () => { try { localStorage.setItem('brillant.sprache', k); } catch {} });
     wahl.append(a);
   }
 }
+grundTexte();
 let vitrineOffen = false;
 const ZUSTAENDE = BEREICHE.length + 1;          // 0 = Titel, 1–3 = Anwendungen
 const SCHRITT = (Math.PI * 2) / ZUSTAENDE;      // eine Vierteldrehung je Anwendung
@@ -879,10 +884,11 @@ addEventListener('keydown', (e) => {
 
 // Menü: öffnet sich, wenn man den Stein antippt; der Stein steht dann gross über den Bereichen
 const nav = $('bereiche');
+const navKnoepfe = [];
 [TITEL_KURZ, ...BEREICHE.map((b) => b.name)].forEach((name, i) => {
   const t = document.createElement('button'); t.type = 'button'; t.textContent = name; if (!i) t.className = 'start';
   t.addEventListener('click', () => { menuSchalten(false); hin(i); });
-  nav.append(t);
+  nav.append(t); navKnoepfe.push(t);
 });
 const knoepfe = [...nav.children].slice(1);
 const steinKnopf = $('stein');
@@ -936,7 +942,8 @@ document.fonts.ready.then(namenEinpassen);
 const vitrine = $('vitrine'), vRaum = vitrine.querySelector('.v-raum');
 const vKarten = BEREICHE.map((b, i) => {
   // fehlt die gewählte Sprache, öffnet sich die Anwendung auf Englisch, wenn es sie so gibt, sonst in ihrer ersten Sprache
-  const offen = b.sprachen.includes(SPRACHE) ? SPRACHE : (b.sprachen.includes('en') ? 'en' : b.sprachen[0]);
+  const offenFuer = (sp) => (b.sprachen.includes(sp) ? sp : (b.sprachen.includes('en') ? 'en' : b.sprachen[0]));
+  const offen = offenFuer(SPRACHE);
   const hell = b.ton.map((v) => Math.min(255, Math.round(v * 0.5 + 125)));
   const k = document.createElement('article'); k.className = 'v-karte'; k.setAttribute('aria-roledescription', 'Karte');
   k.style.setProperty('--ton', b.ton.join(',')); k.style.setProperty('--hell', `rgb(${hell.join(',')})`);
@@ -948,20 +955,27 @@ const vKarten = BEREICHE.map((b, i) => {
   k.querySelector('.v-oeffnen').setAttribute('aria-label', T.oeffnenAria(b.name));
   // 0.31 (Christian: «auf der Karte die Sprache auch einstellen»): die Sprachen der Anwendung sind Knöpfe. Vorgewählt ist die
   // Sprache der Seite oder, fehlt sie, Englisch bzw. die erste; ein Tippen wählt, in welcher Fassung «Öffnen» die Anwendung zeigt.
+  // 0.32 (Christian: «ändert aber nicht den Text»): ein Tippen stellt zugleich die ganze Seite auf diese Sprache um (spracheWechseln).
   const vs = k.querySelector('.v-sprachen'), oe = k.querySelector('.v-oeffnen');
   let wahl = offen;
   const waehlen = (l) => {
     wahl = l; oe.href = (b.adressen && b.adressen[l]) || b.href;
     vs.querySelectorAll('button').forEach((x) => { const an = x.lang === l; x.classList.toggle('jetzt', an); x.setAttribute('aria-pressed', String(an)); });
   };
-  vs.setAttribute('role', 'group'); vs.setAttribute('aria-label', T.sprache);
   for (const l of b.sprachen) {
     const kn = document.createElement('button'); kn.type = 'button'; kn.lang = l; kn.textContent = l.toUpperCase();
-    kn.setAttribute('aria-label', `${T.oeffnen} ${T.nurIn[l]}`);
-    kn.addEventListener('click', (e) => { e.stopPropagation(); waehlen(l); });
+    kn.addEventListener('click', (e) => { e.stopPropagation(); if (l === wahl && l === SPRACHE) return; spracheWechseln(l, i); });
     vs.append(kn);
   }
-  waehlen(offen);
+  // Texte der Karte in der Sprache der Seite; die Wahl der Fassung folgt ihr, ausser man hat für diese Karte eben eine gewählt
+  const beschriften = (fassung) => {
+    k.querySelector('.v-kopf').textContent = b.kopf; k.querySelector('.v-satz').textContent = b.satz;
+    oe.firstChild.textContent = T.oeffnen + ' '; oe.setAttribute('aria-label', T.oeffnenAria(b.name));
+    vs.setAttribute('role', 'group'); vs.setAttribute('aria-label', T.sprache);
+    vs.querySelectorAll('button').forEach((x) => x.setAttribute('aria-label', `${T.oeffnen} ${T.nurIn[x.lang]}`));
+    waehlen(fassung || offenFuer(SPRACHE));
+  };
+  beschriften(offen);
   // the deleuzian scheme liest seine Sprache aus demselben Speicher, so reist die Wahl mit
   oe.addEventListener('click', () => { try { localStorage.setItem('kristall.sprache', wahl); } catch {} });
   const bild = k.querySelector('.v-bild');
@@ -971,8 +985,28 @@ const vKarten = BEREICHE.map((b, i) => {
   vRaum.append(k);
   return { el: k, koerper: k.querySelector('.v-koerper'), bild, licht: k.querySelector('.v-licht i'), glanz: k.querySelector('.v-glanz'), glanzI: k.querySelector('.v-glanz i'),
     dunkel: k.querySelector('.v-dunkel'), schatten: k.querySelector('.v-schatten'), text: k.querySelector('.v-text'), oeffnen: k.querySelector('.v-oeffnen'),
-    film: null, schauStopp: null, flug: 0 };
+    film: null, schauStopp: null, flug: 0, beschriften };
 });
+
+// 0.32: Sprache wechseln, ohne die Seite neu zu laden. Die Schrift der Karten blendet kurz aus und in der neuen Sprache wieder ein;
+// Titel, Menü und Namen unter dem Stein werden neu gesetzt (die Bilder der Seite neu gerechnet, unsichtbar hinter dem Schleier).
+// Die Wahl gilt wie ein Tippen oben auf DE EN FR ES: gemerkt auf dem Gerät, in der Adresse (?lang=).
+let seitenNeu = false;
+function spracheWechseln(l, karte) {
+  if (!SPRACHEN.includes(l)) return;
+  try { localStorage.setItem('brillant.sprache', l); } catch {}
+  try { const u = new URL(location.href); u.searchParams.set('lang', l); history.replaceState(null, '', u.pathname + u.search + u.hash); } catch {}
+  const texte = vKarten.map((k) => k.text);
+  texte.forEach((t) => t.classList.add('wechsel'));
+  setTimeout(() => {
+    SPRACHE = l; grundTexte(); zustandGezeigt = -1;
+    vKarten.forEach((k, j) => k.beschriften(j === karte ? l : null));
+    navKnoepfe[0].textContent = TITEL_KURZ;
+    flaechen.forEach((el, j) => { el.querySelector('.p-satz').textContent = BEREICHE[j].satz; });
+    seitenNeu = true;   // die Bilder der Seite erst neu rechnen, wenn die Vitrine zu ist (das Rechnen hielte sonst die Karten an)
+    requestAnimationFrame(() => texte.forEach((t) => t.classList.remove('wechsel')));
+  }, ruhig ? 0 : 260);
+}
 const N = BEREICHE.length;
 // 0.31: Bilder der Karten früh laden und dekodieren, damit beim Öffnen nichts nachpoppt
 (window.requestIdleCallback || ((f) => setTimeout(f, 1200)))(() => {
@@ -1059,6 +1093,7 @@ function vitrineBild(jetzt) {
   const schleier = vz.aufZiel ? Math.min(1, seit / (ruhig ? 0.2 : 0.6)) : vKarten.reduce((m, k) => Math.max(m, k.flug), 0);
   if (!vz.aufZiel && alleZu) {
     vitrineOffen = false; vitrine.hidden = true; vitrineVoll = false; document.body.classList.remove('vitrine-auf');
+    if (seitenNeu) { seitenNeu = false; gebautFuer = ''; groesse(); }
     vKarten.forEach((k) => { if (k.film) { k.film.pause(); k.film.remove(); k.film = null; } if (k.schauStopp) { k.schauStopp(); k.schauStopp = null; } });
     vz.aktiv = -1; vz.letzt = 0; return;
   }
