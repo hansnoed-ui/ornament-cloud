@@ -43,9 +43,9 @@ const TEXTE = {
     lesarten: [
       { kurz: 'Isolieren', titel: 'Das Rund und die Fläche', wer: 'Bacon', geste: 'Mit dem Daumen einen Kreis um die Figur ziehen.', text: 'Bacon setzt seine Figuren in ein Rund: einen Kreis auf dem Boden, ein Oval, eine Bahn wie in der Manege. Ringsum liegen grosse flache Farbfelder, Orange, Rosa, Violett, ohne Raum und ohne Landschaft. Deleuze nennt sie die aplats. Die Isolierung ist die erste Bedingung: Allein im Rund erzählt die Figur keine Geschichte mehr, sie wird nicht mehr erklärt, sie ist nur noch da. Hier ziehst du das Rund mit dem Daumen. Das Bild ringsum wird zur Fläche, die Figur bleibt lebendig im Rund und wirft ihren dunklen Schatten.' },
       { kurz: 'Schrei', titel: 'Der Schrei', wer: 'Bacon', geste: 'Ziehen verformt den Körper. Halten öffnet den Mund.', text: 'Bei Bacon geschieht in der Figur etwas, das nicht zu sehen ist: Kräfte zerren an ihr. Der Körper zieht sich zusammen, dehnt sich, zuckt, und er will hinaus, durch einen Punkt der Flucht: ein Waschbecken, einen Schirm, einen Mund. Der Schrei der Päpste nach Velázquez ist für Deleuze die Operation, durch die der ganze Körper durch den Mund entweicht. Bacon wollte den Schrei malen, nicht das Grauen. Hier verformt dein Daumen den Körper wie eine Masse, die zurückfedert. Hältst du ihn, öffnet sich ein Loch, der Körper strömt hinein, und wie ein Vorhang fallen senkrechte Schlieren über das Bild.' },
-      { kurz: 'Fleisch', titel: 'Das Fleisch', wer: 'Bacon, Rembrandt', geste: 'Mit dem Daumen über die Figur streichen.', text: 'Bacon malt keine Gesichter, sondern Köpfe, und unter dem Kopf das Fleisch. Fleisch ist der Körper, wo die Knochen ihn nicht mehr tragen, eine Zone, in der Mensch und Tier nicht mehr zu unterscheiden sind. Bacon malt es nicht mit Grauen, sondern mit Mitleid: Jeder, der leidet, ist Fleisch. Er denkt dabei an Rembrandt und an die Metzgereien, und er gibt den Schatten Blau und Violett. Hier wird die Figur unter deinem Daumen zu Fleisch. Die Fasern folgen den Linien des Gesichts, Fett zieht sich hindurch, und die frische Stelle glänzt.' }
+      { kurz: 'Fleisch', titel: 'Das Fleisch', wer: 'Bacon, Rembrandt', geste: 'Mit dem Daumen über die Figur streichen.', text: 'Bacon malt keine Gesichter, sondern Köpfe, und unter dem Kopf das Fleisch. Fleisch ist der Körper, wo die Knochen ihn nicht mehr tragen, eine Zone, in der Mensch und Tier nicht mehr zu unterscheiden sind. Bacon malt es nicht mit Grauen, sondern mit Mitleid: Jeder, der leidet, ist Fleisch. Er denkt dabei an Rembrandt und an die Metzgereien, und er gibt den Schatten Blau und Violett. Hier wird die Figur unter deinem Daumen zu Fleisch. Die Fasern folgen den Linien des Gesichts, Fett zieht sich hindurch, die frische Stelle glänzt, und dann sinkt das Fleisch langsam von den Knochen: Das Gesicht verliert seine Form, der Kopf bleibt.' }
     ],
-    wenden: 'Kamera wenden', tonAn: 'Ton an', tonAus: 'Ton aus',
+    wenden: 'Kamera wenden', tonAn: 'Ton an', tonAus: 'Ton aus', loesen: 'Rund lösen', loesenHinweis: 'Unten links lösen: das Rund geht wieder auf.',
     begriff: 'Begriff', standbild: 'Standbild', aufnahme: 'Aufnahme', stopp: 'Stopp',
     teilen: 'Teilen', sichern: 'Sichern', komma: '.', 'ergebnis-hinweis': 'Gesichert im Ordner «Downloads». «Teilen» legt es direkt in die Galerie oder eine App.',
     keineAufnahme: 'Dieser Browser kann die Leinwand nicht aufnehmen. Das Standbild geht.',
@@ -90,9 +90,9 @@ const TEXTE = {
     lesarten: [
       { kurz: 'Isolate', titel: 'The round and the field', wer: 'Bacon', geste: 'Draw a circle around the Figure with your thumb.', text: 'Bacon sets his Figures in a round: a circle on the floor, an oval, a ring as in the circus. All around lie large flat fields of colour, orange, pink, violet, without space and without landscape. Deleuze calls them aplats. Isolation is the first condition: alone in the round the Figure no longer tells a story, it is no longer explained, it is simply there. Here you draw the round with your thumb. The image around it becomes field, the Figure stays alive in the round and casts its dark shadow.' },
       { kurz: 'Scream', titel: 'The scream', wer: 'Bacon', geste: 'Drag to deform the body. Hold to open the mouth.', text: 'In Bacon something happens inside the Figure that cannot be seen: forces tug at it. The body contracts, stretches, twitches, and it wants out, through a point of escape: a washbasin, an umbrella, a mouth. For Deleuze the scream of the popes after Velázquez is the operation by which the whole body escapes through the mouth. Bacon wanted to paint the scream, not the horror. Here your thumb deforms the body like a mass that springs back. Hold it and a hole opens, the body pours into it, and vertical streaks fall over the image like a curtain.' },
-      { kurz: 'Meat', titel: 'Meat', wer: 'Bacon, Rembrandt', geste: 'Stroke the Figure with your thumb.', text: 'Bacon does not paint faces but heads, and under the head the meat. Meat is the body where the bones no longer carry it, a zone where man and animal can no longer be told apart. Bacon paints it not with horror but with pity: everyone who suffers is meat. He thinks of Rembrandt and of butchers’ shops, and he gives the shadows blue and violet. Here the Figure turns to meat under your thumb. The fibres follow the lines of the face, fat runs through it, and the fresh place glistens.' }
+      { kurz: 'Meat', titel: 'Meat', wer: 'Bacon, Rembrandt', geste: 'Stroke the Figure with your thumb.', text: 'Bacon does not paint faces but heads, and under the head the meat. Meat is the body where the bones no longer carry it, a zone where man and animal can no longer be told apart. Bacon paints it not with horror but with pity: everyone who suffers is meat. He thinks of Rembrandt and of butchers’ shops, and he gives the shadows blue and violet. Here the Figure turns to meat under your thumb. The fibres follow the lines of the face, fat runs through it, the fresh place glistens, and then the meat slowly sinks from the bones: the face loses its form, the head remains.' }
     ],
-    wenden: 'Flip camera', tonAn: 'Sound on', tonAus: 'Sound off',
+    wenden: 'Flip camera', tonAn: 'Sound on', tonAus: 'Sound off', loesen: 'Release the round', loesenHinweis: 'Bottom left to release: the round opens again.',
     begriff: 'Concept', standbild: 'Still', aufnahme: 'Record', stopp: 'Stop',
     teilen: 'Share', sichern: 'Save', komma: '.', 'ergebnis-hinweis': 'Saved to your “Downloads” folder. “Share” sends it straight to your gallery or an app.',
     keineAufnahme: 'This browser cannot record the canvas. Stills work.',
@@ -137,9 +137,9 @@ const TEXTE = {
     lesarten: [
       { kurz: 'Isoler', titel: 'Le rond et l’aplat', wer: 'Bacon', geste: 'Trace du pouce un cercle autour de la Figure.', text: 'Bacon pose ses Figures dans un rond : un cercle au sol, un ovale, une piste comme au cirque. Autour s’étendent de grands champs de couleur plate, orange, rose, violet, sans espace ni paysage. Deleuze les appelle les aplats. Isoler la Figure est la condition première : seule dans le rond, la Figure ne raconte plus d’histoire, on ne l’explique plus, elle est là. Ici tu traces le rond du pouce. L’image autour devient aplat, la Figure reste vivante dans le rond et jette son ombre sombre.' },
       { kurz: 'Cri', titel: 'Le cri', wer: 'Bacon', geste: 'Glisse pour déformer le corps. Tiens pour ouvrir la bouche.', text: 'Chez Bacon, il se passe dans la Figure quelque chose qu’on ne voit pas : des forces la tirent. Le corps se contracte, s’étire, tressaille, et il veut sortir, par un point de fuite : un lavabo, un parapluie, une bouche. Pour Deleuze, le cri des papes d’après Vélasquez est l’opération par laquelle le corps tout entier s’échappe par la bouche. Bacon voulait peindre le cri plutôt que l’horreur. Ici ton pouce déforme le corps comme une masse qui revient. Tiens-le, un trou s’ouvre, le corps s’y engouffre, et des traînées verticales tombent sur l’image comme un rideau.' },
-      { kurz: 'Viande', titel: 'La viande', wer: 'Bacon, Rembrandt', geste: 'Passe le pouce sur la Figure.', text: 'Bacon ne peint pas des visages, mais des têtes, et sous la tête la viande. La viande, c’est le corps là où les os ne le portent plus, une zone où l’homme et la bête ne se distinguent plus. Bacon ne la peint pas avec horreur, mais avec pitié : quiconque souffre est de la viande. Il pense à Rembrandt et aux boucheries, et il donne aux ombres du bleu et du violet. Ici la Figure devient viande sous ton pouce. Les fibres suivent les lignes du visage, le gras la traverse, et l’endroit frais luit.' }
+      { kurz: 'Viande', titel: 'La viande', wer: 'Bacon, Rembrandt', geste: 'Passe le pouce sur la Figure.', text: 'Bacon ne peint pas des visages, mais des têtes, et sous la tête la viande. La viande, c’est le corps là où les os ne le portent plus, une zone où l’homme et la bête ne se distinguent plus. Bacon ne la peint pas avec horreur, mais avec pitié : quiconque souffre est de la viande. Il pense à Rembrandt et aux boucheries, et il donne aux ombres du bleu et du violet. Ici la Figure devient viande sous ton pouce. Les fibres suivent les lignes du visage, le gras la traverse, l’endroit frais luit, puis la viande descend lentement des os : le visage perd sa forme, la tête reste.' }
     ],
-    wenden: 'Retourner', tonAn: 'Son activé', tonAus: 'Son coupé',
+    wenden: 'Retourner', tonAn: 'Son activé', tonAus: 'Son coupé', loesen: 'Défaire le rond', loesenHinweis: 'En bas à gauche pour défaire : le rond se rouvre.',
     begriff: 'Concept', standbild: 'Image', aufnahme: 'Enregistrer', stopp: 'Arrêter',
     teilen: 'Partager', sichern: 'Télécharger', komma: ',', 'ergebnis-hinweis': 'Enregistré dans le dossier « Téléchargements ». « Partager » l’envoie directement dans la galerie ou une app.',
     keineAufnahme: 'Ce navigateur ne peut pas enregistrer le canevas. L’image fixe fonctionne.',
@@ -366,7 +366,8 @@ void main(){
   c = mix(c, mix(uAplat, uOmbre, 0.5), membran * 0.25);
   // feines Zittern unter einem Achtbit-Schritt: sonst stehen in den grossen Flächen Stufen wie Höhenlinien
   c += (h21(gl_FragCoord.xy + fract(uT) * 61.0) - 0.5) * (2.0 / 255.0);
-  o = vec4(c, 1.0);
+  // im Alpha: wie sehr hier Figur steht (nach dem Schnitt durch das Rund), für das Fleisch
+  o = vec4(c, fg);
 }`;
 
 // ---------- Lesart II: Schrei. Der Körper unter Kräften, und der Mund als Punkt der Flucht ----------
@@ -440,7 +441,7 @@ void main(){
 
 // ---------- Lesart III: Fleisch ----------
 // Maske M: r = Fleisch, g = frisch (glänzt). Der Daumen trägt auf, das Fleisch breitet sich in der Figur ein wenig aus.
-const FS_MASKE = KOPF + `uniform sampler2D uAlt, uM; uniform vec2 uPx; uniform vec4 uS[16]; uniform vec4 uSR[16]; uniform int uN; uniform float uSeite, uAb, uFrisch;
+const FS_MASKE = KOPF + `uniform sampler2D uAlt, uM; uniform vec2 uPx; uniform vec4 uS[16]; uniform vec4 uSR[16]; uniform int uN; uniform float uSeite, uAb, uFrisch, uDt, uStufe;
 void main(){
   vec4 alt = texture(uAlt, v);
   vec4 n4 = 0.25 * (texture(uAlt, v + vec2(uPx.x, 0)) + texture(uAlt, v - vec2(uPx.x, 0)) + texture(uAlt, v + vec2(0, uPx.y)) + texture(uAlt, v - vec2(0, uPx.y)));
@@ -459,7 +460,12 @@ void main(){
     fl = max(fl, rand * uSR[k].y);
     fr = max(fr, rand);
   }
-  o = vec4(min(fl, 1.0), fr, 0.0, 1.0);
+  // b: wie weit das Fleisch von den Knochen gesunken ist. Es sinkt, solange es Fleisch ist, langsam, fast ohne Ende,
+  // und gleicht sich mit den Nachbarn aus, damit keine Treppen entstehen
+  float sink = mix(alt.b, n4.b, 0.5);
+  sink = min(1.0, sink + max(uDt * 0.1 * (1.15 - sink), uStufe) * smoothstep(0.15, 0.6, fl));
+  sink *= smoothstep(0.0, 0.08, fl + n4.r * 0.5);
+  o = vec4(min(fl, 1.0), fr, sink, 1.0);
 }`;
 const FS_TENSOR = KOPF + `uniform sampler2D uQ; uniform vec2 uPx;
 void main(){
@@ -485,7 +491,7 @@ vec3 fleischFarbe(float l, float tiefe){
 }
 float fbm3(vec2 p){ float s = 0.0, a = 0.5; mat2 m = mat2(0.8, 0.6, -0.6, 0.8); for (int k = 0; k < 3; k++) { s += a * rauschen(p); p = m * p * 2.03 + 17.1; a *= 0.5; } return s / 0.875; }
 float ader(vec2 q, vec2 d0){ vec2 wq = q * 3.4 + d0 * 0.35; return fbm3(wq + vec2(fbm3(q * 1.7 + 4.0), fbm3(q * 1.7 - 3.0)) * 1.8); }
-float fettAus(float a, float aw){ return 1.0 - smoothstep(0.01, 0.01 + aw * 1.5 + 0.035, abs(a - 0.55)); }
+float fettAus(float a, float aw){ return 1.0 - smoothstep(0.004, 0.004 + aw * 1.2 + 0.012, abs(a - 0.55)); }
 // Richtung der Fasern: entlang der Kanten, wo das Bild eine Richtung hat; sonst ein langsamer Strom aus Rauschen (nie die Achsen)
 vec2 richtung(vec2 p){
   vec3 J = texture(uT, p).rgb;
@@ -500,19 +506,25 @@ vec2 richtung(vec2 p){
   return normalize(mix(w, t, smoothstep(0.06, 0.4, koh)) + 1e-5);
 }
 void main(){
-  vec3 s = texture(uS, v).rgb;
+  vec4 s4 = texture(uS, v);
+  vec3 s = s4.rgb;
   vec4 F = texture(uFl, v);
-  float m = texture(uM, v).r;
-  float menge = F.r * smoothstep(0.35, 0.65, m);
-  if (menge < 0.004) { o = vec4(s, 1.0); return; }
-  // Fasern entlang der Linien des Gesichts (Linienintegralfaltung über Rauschen, Cabral und Leedom 1993)
   vec2 q = vec2(v.x * uSeite, v.y);
-  vec2 d0 = richtung(v);
+  // das Fleisch sinkt von den Knochen: was darüber lag, hängt nun hier, in senkrechten Bahnen ungleich lang wie zähe Masse
+  // (die Bahnen hängen nur von x ab, darum laufen sie senkrecht; ein zweites, feines Band franst sie aus)
+  float bahn = 0.55 + 0.9 * fbm3(vec2(q.x * 7.0, 2.3)) + 0.35 * (fbm3(vec2(q.x * 31.0, 7.7)) - 0.5);
+  float sinkHier = max(F.b, texture(uFl, v + vec2(0.0, 0.05)).b);
+  float sag = 0.14 * sinkHier * sinkHier * (2.0 - sinkHier) * bahn;
+  vec2 vs = v + vec2(0.0, sag);
+  vec4 Fs = texture(uFl, vs), ss = texture(uS, vs);
+  float menge = max(F.r, Fs.r * smoothstep(0.0, 0.01, sag)) * s4.a * mix(1.0, ss.a, 0.6);
+  if (menge < 0.004) { o = vec4(s, 1.0); return; }
+  vec2 d0 = richtung(vs);
   float sum = 0.0, ws = 0.0, w2 = 0.0;
   float schritt = mix(0.5, 1.6, uFasern);
   for (int r = 0; r < 2; r++) {
     float sg = r == 0 ? 1.0 : -1.0;
-    vec2 p = v, dv = d0 * sg;
+    vec2 p = vs, dv = d0 * sg;
     for (int i = 0; i <= N; i++) {
       if (i > 0 || r == 0) { float w = 0.5 + 0.5 * cos(3.14159 * float(i) / float(N + 1)); sum += texture(uR, p).r * w; ws += w; w2 += w * w; }
       vec2 d = richtung(p);
@@ -523,26 +535,33 @@ void main(){
   // auf eine Streuung von eins gebracht: die Fasern sind gleich deutlich, wie lang sie auch sind
   float faser = clamp((sum / ws - 0.5) / sqrt(w2 / (ws * ws) / 12.0), -2.5, 2.5);
   // die Helligkeit kommt geglättet aus dem Bild: Flächen von Fleisch, nicht die Splitter des Mosaiks
-  float l = lu(texture(uBild, v).rgb);
+  // dazu ein Teil des scharfen Bildes, damit Augen, Mund und Nase im Fleisch noch zu lesen sind: Kopf, nicht Gesicht
+  float lg = 0.0;
+  // beim Sinken zieht es Schlieren: das geglättete Bild längs der Bahn gemittelt, wie Farbe, die mit dem Fleisch rutscht
+  for (int k = 0; k < 4; k++) lg += lu(texture(uBild, v + vec2(0.0, sag * (0.25 + 0.25 * float(k)))).rgb);
+  float l = mix(lg * 0.25, lu(ss.rgb), mix(0.55, 0.3, smoothstep(0.0, 0.08, sag)));
   // Fett: weiche, gebogene Adern in Rahm, von den Linien des Bildes mitgenommen
   // drei Proben im Abstand von gut einem Bildpunkt statt dFdx: so entstehen keine Blöcke aus 2 × 2 Punkten
   float eps = 1.5 / uHpx;
-  float a0 = ader(q, d0), ax = ader(q + vec2(eps, 0.0), d0), ay = ader(q + vec2(0.0, eps), d0);
+  vec2 qs = vec2(q.x, vs.y);
+  float a0 = ader(qs, d0), ax = ader(qs + vec2(eps, 0.0), d0), ay = ader(qs + vec2(0.0, eps), d0);
   float aw = length(vec2(ax - a0, ay - a0)) / 1.5;
   float st = 0.3 + 0.6 * uFasern;
   float fett = fettAus(a0, aw) * st, fx = fettAus(ax, aw) * st, fy = fettAus(ay, aw) * st;
   // das Fleisch ist nicht überall gleich: grosse Zonen dunkler und röter, wie Muskel neben Muskel
-  float zone = fbm3(q * 2.6 + 9.0) - 0.5;
-  float L = clamp(l * (0.82 + 0.5 * zone) + faser * 0.04 * (0.4 + uFasern) + fett * 0.35, 0.0, 1.0);
+  float zone = fbm3(qs * 2.6 + 9.0) - 0.5;
+  float L = clamp(l * (0.9 + 0.26 * zone) + faser * 0.04 * (0.4 + uFasern) + fett * 0.3, 0.0, 1.0);
   vec3 c = fleischFarbe(L, uTiefe);
   c = mix(c, vec3(0.98, 0.9, 0.8), fett * 0.65);
   // nasser Glanz: Relief aus Fasern und Fett, Licht von links oben
   vec3 n = normalize(vec3(-(fx - fett) * 0.9, -(fy - fett) * 0.9, 1.0));
   vec3 Lg = normalize(vec3(-0.4, 0.6, 0.7)), H = normalize(Lg + vec3(0.0, 0.0, 1.0));
   c *= mix(1.0, max(dot(n, Lg), 0.0) / Lg.z, 0.4);
-  float glanz = pow(max(dot(n, H), 0.0), 50.0) * uNass * (0.3 + 0.7 * F.g);
+  float glanz = pow(max(dot(n, H), 0.0), 50.0) * uNass * (0.3 + 0.7 * max(F.g, Fs.g));
   c += glanz * vec3(1.0, 0.95, 0.94) * 0.6;
-  c *= 1.0 + 0.08 * uNass * F.g;
+  c *= 1.0 + 0.08 * uNass * max(F.g, Fs.g);
+  // unten an jeder Bahn sammelt es sich dunkel, wie ein Tropfen kurz vor dem Fallen
+  c *= 1.0 - 0.28 * smoothstep(0.02, 0.0, abs(menge - 0.32)) * smoothstep(0.01, 0.05, sag);
   // Rand wie ein trockener Pinsel: die Fasern franzen ihn fein aus
   float deck = smoothstep(0.2, 0.5, menge + faser * 0.05);
   o = vec4(mix(s, c, deck), 1.0);
@@ -738,7 +757,7 @@ function groesse() {
   const [fb, fh] = seitenMass(FEDER_SEITE);
   if (fb !== federB || fh !== federH) { federB = fb; federH = fh; paar('feder', fb, fh); federLeeren = true; }
   const [mb, mh] = seitenMass(FLEISCH_SEITE);
-  if (mb !== fleischB || mh !== fleischH) { fleischB = mb; fleischH = mh; paar('fleisch', mb, mh, false); fleischLeeren = true; }
+  if (mb !== fleischB || mh !== fleischH) { fleischB = mb; fleischH = mh; paar('fleisch', mb, mh); fleischLeeren = true; }
   // Rauschen für die Fasern, so fein wie der Bildschirm (etwas gröber, damit die Fasern glatt sind)
   const fdpr = Math.min(devicePixelRatio || 1, MAX_DPR);
   const nb = Math.round(innerWidth * fdpr), nh = Math.round(innerHeight * fdpr);
@@ -994,13 +1013,32 @@ function farben(w) {
 
 // ---------- das Rund ----------
 // In Bildhöhen (x mal Seitenverhältnis): Mitte, Halbachsen, Winkel. Gezogen: eine Ellipse, die zur Spur passt.
-let ring = null, ringZiel = null, ringZug = 0, flut = 0, ringSeit = 0;
+let ring = null, ringZiel = null, ringZug = 0, flut = 0, ringSeit = 0, loesen = false, loesenGezeigt = false, loesenHinweisDa = false;
+// das Rund lösen: die Linie zeichnet sich zurück, die Fläche zieht sich an den Rand, das Fleisch vergeht, die Kräfte lassen los
+function rundLoesen() {
+  if (!ring || loesen) return;
+  loesen = true; spurPunkte = []; spurAlpha = 0;
+  loesenZeigen();
+  spur('Rund lösen');
+}
+function loesenZeigen() {
+  const da = !!ring && !loesen;
+  if (da === loesenGezeigt) return;
+  loesenGezeigt = da; $('loesen').hidden = !da;
+  // beim ersten Rund einmal sagen, wo es wieder aufgeht
+  if (da && !loesenHinweisDa) {
+    loesenHinweisDa = true;
+    setTimeout(() => { if (!ring || loesen || finger.size) return; const g = $('geste'); g.textContent = TEXTE[sprache].loesenHinweis; g.hidden = false; g.classList.remove('weg'); clearTimeout(titelUhr); titelUhr = setTimeout(() => g.classList.add('weg'), 3200); }, 3400);
+  }
+}
 function ringSetzen(r, zeichnen = true) {
+  if (loesen) { loesen = false; ring = null; }
   if (!ring) { ring = { ...r }; flut = 0; }
   ringZiel = { ...r };
   if (zeichnen) ringZug = 0;
   ringSeit = performance.now() / 1000;
   klangRund();
+  loesenZeigen();
   spur('Rund gesetzt');
 }
 function ellipseAus(punkte) {
@@ -1214,6 +1252,7 @@ function tonZeigen() {
   b.setAttribute('aria-label', TEXTE[sprache][k]); b.title = TEXTE[sprache][k];
 }
 try { if (localStorage.getItem('kristall.ton') === 'aus') klangAn(false); } catch {}
+$('loesen').addEventListener('click', rundLoesen);
 $('ton').addEventListener('click', () => {
   klangStarten(); klangAn(!klangIstAn()); tonZeigen();
   try { localStorage.setItem('kristall.ton', klangIstAn() ? 'an' : 'aus'); } catch {}
@@ -1248,8 +1287,12 @@ function bild(ms) {
   if (geisterStart > 0) geist(t);
   haende(t, dt);
 
-  // das Rund gleitet zu seinem Ziel, die Linie zeichnet sich, die Fläche flutet herein
-  if (ringZiel) {
+  // das Rund gleitet zu seinem Ziel, die Linie zeichnet sich, die Fläche flutet herein; beim Lösen alles rückwärts
+  if (loesen && ring) {
+    ringZug = Math.max(0, ringZug - dt / 0.8);
+    flut = Math.max(0, flut - dt / 1.3);
+    if (flut <= 0 && ringZug <= 0) { ring = null; ringZiel = null; loesen = false; federLeeren = true; fleischLeeren = true; loesenZeigen(); spur('Rund gelöst'); }
+  } else if (ringZiel) {
     const k = 1 - Math.exp(-dt / 0.18);
     for (const n of ['cx', 'cy', 'rx', 'ry']) ring[n] = lerp(ring[n], ringZiel[n], k);
     let dw = ringZiel.w - ring.w; while (dw > Math.PI / 2) dw -= Math.PI; while (dw < -Math.PI / 2) dw += Math.PI;
@@ -1325,7 +1368,7 @@ function bild(ms) {
     if (fleischLeeren) { zielLeeren(Fl.lesen()); zielLeeren(Fl.schreiben()); fleischLeeren = false; }
     rechne(P.maske, Fl.schreiben(), { uAlt: Fl.lesen(), uM: M.lesen() }, (u) => {
       gl.uniform2f(u.uPx, 1 / fleischB, 1 / fleischH); gl.uniform4fv(u.uS, stempel); gl.uniform4fv(u.uSR, stempelR); gl.uniform1i(u.uN, stempelN);
-      gl.uniform1f(u.uSeite, seite); gl.uniform1f(u.uAb, Math.exp(-dt / 240)); gl.uniform1f(u.uFrisch, Math.exp(-dt / 2.5));
+      gl.uniform1f(u.uSeite, seite); gl.uniform1f(u.uAb, Math.exp(-dt / (loesen ? 0.5 : 240))); gl.uniform1f(u.uFrisch, Math.exp(-dt / 2.5)); gl.uniform1f(u.uDt, dt); gl.uniform1f(u.uStufe, halbFloat ? 0 : 1.2 / 255);
     });
     Fl.tauschen();
     if (neuesBild || nr < 3) {
@@ -1517,4 +1560,4 @@ uebersetzen();
 if (Q.has('lesart')) lesartWaehlen(Math.max(0, Math.min(2, +Q.get('lesart') || 0)), true);
 if (Q.has('beispiel')) beispielStarten();
 // für Prüfungen: Werte setzen, Finger von aussen führen, das Rund setzen
-window.__figur = { WERTE, finger, fingerNeu, lesartWaehlen, ringSetzen, ringVonSelbst, ellipseAus, rundAusSpur, spurPunkte: () => spurPunkte, setSpur: (p) => { spurPunkte = p; } };
+window.__figur = { WERTE, rundLoesen, ring: () => ring, finger, fingerNeu, lesartWaehlen, ringSetzen, ringVonSelbst, ellipseAus, rundAusSpur, spurPunkte: () => spurPunkte, setSpur: (p) => { spurPunkte = p; } };
