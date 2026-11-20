@@ -20,6 +20,72 @@ const BEREICHE = [
     href: '/animations/', bild: 'vorschau/animations.jpg', film: 'vorschau/animations.mp4', ton: [124, 108, 255] }
 ];
 // Die Farben der Schichten: Rot (Godard), Orange (das Rad), Violett.
+
+// ---------- Sprache (0.25, Christian, 20.11.2026: «komplett deutsch, englisch, spanisch, französisch») ----------
+// Gewählt wird nach der Sprache, die der Browser meldet (navigator.languages, dieselbe Angabe wie Accept-Language):
+// sie sagt, was die Besucherin lesen will, auch in der mehrsprachigen Schweiz oder unterwegs, wo die Herkunft der
+// IP-Adresse irren würde; zudem bleibt alles im Browser, ohne Abfrage bei einem Dienst. ?lang=fr erzwingt eine Sprache,
+// ein Tippen auf DE EN FR ES oben rechts merkt sie sich auf diesem Gerät. Was keine der vier ist, liest Englisch.
+const SPRACHEN = ['de', 'en', 'fr', 'es'];
+const SPRACHE = (() => {
+  const q = new URLSearchParams(location.search).get('lang');
+  if (SPRACHEN.includes(q)) return q;
+  try { const g = localStorage.getItem('brillant.sprache'); if (SPRACHEN.includes(g)) return g; } catch {}
+  for (const l of navigator.languages || [navigator.language || '']) { const k = String(l).slice(0, 2).toLowerCase(); if (SPRACHEN.includes(k)) return k; }
+  return 'en';
+})();
+const NBSP = ' ';   // schmales Leerzeichen vor «:» im Französischen
+const TEXTE = {
+  de: { titel: 'Brillante Ideen.', iBei: 2, menu: 'Menü', anwendungen: 'Anwendungen', mehr: 'Mehr erfahren', oeffnen: 'Öffnen', oeffnenAria: (n) => `${n} öffnen`,
+    vor: 'Vorherige Anwendung', nach: 'Nächste Anwendung', zu: 'Schliessen', sprache: 'Sprache',
+    anw: [
+      { kopf: 'im Entstehen · Bild, Film, Ton', satz: 'Begriffe von Deleuze als Verfahren: Kristallbild, Schichten der Zeit, Dauer, Wahrnehmung, Diagramm, Figur – angewandt auf eigenes Material.' },
+      { name: 'Das Dritte Rad', kopf: 'Zeit · Form · Farbe', satz: 'Zeit, Form und Farbe drehen gegeneinander. Jede Drehung zieht einen Zettel, eine Begegnung aus ORNA und eine Übung aus OMNA COLOR.' },
+      { kopf: 'Bild · Bewegung', satz: 'Ein Bild, 24 Effekte, bis zu drei Ebenen: das Mischpult für eigene Animationen.' }] },
+  en: { titel: 'Brilliant Ideas.', iBei: 2, menu: 'Menu', anwendungen: 'Applications', mehr: 'Learn more', oeffnen: 'Open', oeffnenAria: (n) => `Open ${n}`,
+    vor: 'Previous application', nach: 'Next application', zu: 'Close', sprache: 'Language',
+    anw: [
+      { kopf: 'in progress · image, film, sound', satz: 'Concepts of Deleuze as procedures: crystal-image, sheets of time, duration, perception, diagram, figure – applied to your own material.' },
+      { name: 'The Third Wheel', kopf: 'time · form · colour', satz: 'Time, form and colour turn against each other. Every turn draws a note from the Zettelkasten, an encounter from ORNA and an exercise from OMNA COLOR.' },
+      { kopf: 'image · motion', satz: 'One image, 24 effects, up to three layers: the mixing desk for your own animations.' }] },
+  fr: { titel: 'Idées brillantes.', iBei: 8, menu: 'Menu', anwendungen: 'Applications', mehr: 'En savoir plus', oeffnen: 'Ouvrir', oeffnenAria: (n) => `Ouvrir ${n}`,
+    vor: 'Application précédente', nach: 'Application suivante', zu: 'Fermer', sprache: 'Langue',
+    anw: [
+      { kopf: 'en cours · image, film, son', satz: `Les concepts de Deleuze comme procédés${NBSP}: image-cristal, nappes de passé, durée, perception, diagramme, Figure – appliqués à votre propre matériau.` },
+      { name: 'La troisième roue', kopf: 'temps · forme · couleur', satz: 'Le temps, la forme et la couleur tournent l’un contre l’autre. Chaque tour tire une fiche du Zettelkasten, une rencontre d’ORNA et un exercice d’OMNA COLOR.' },
+      { kopf: 'image · mouvement', satz: `Une image, 24 effets, jusqu’à trois calques${NBSP}: la table de mixage pour vos propres animations.` }] },
+  es: { titel: 'Ideas brillantes.', iBei: 8, menu: 'Menú', anwendungen: 'Aplicaciones', mehr: 'Saber más', oeffnen: 'Abrir', oeffnenAria: (n) => `Abrir ${n}`,
+    vor: 'Aplicación anterior', nach: 'Aplicación siguiente', zu: 'Cerrar', sprache: 'Idioma',
+    anw: [
+      { kopf: 'en desarrollo · imagen, cine, sonido', satz: 'Conceptos de Deleuze como procedimientos: imagen-cristal, capas del pasado, duración, percepción, diagrama, figura – aplicados a tu propio material.' },
+      { name: 'La tercera rueda', kopf: 'tiempo · forma · color', satz: 'Tiempo, forma y color giran unos contra otros. Cada giro saca una ficha del Zettelkasten, un encuentro de ORNA y un ejercicio de OMNA COLOR.' },
+      { kopf: 'imagen · movimiento', satz: 'Una imagen, 24 efectos, hasta tres capas: la mesa de mezclas para tus propias animaciones.' }] }
+};
+const T = TEXTE[SPRACHE];
+BEREICHE.forEach((b, i) => Object.assign(b, T.anw[i]));
+const TITEL = T.titel, TITEL_KURZ = TITEL.replace(/\.$/, '');
+// feste Texte der Seite
+document.documentElement.lang = SPRACHE;
+document.title = `${TITEL_KURZ} · ornament.cloud`;
+document.querySelector('h1').textContent = TITEL;
+document.getElementById('mehr').firstChild.textContent = T.mehr + ' ';
+document.getElementById('stein').setAttribute('aria-label', T.menu);
+document.getElementById('bereiche').setAttribute('aria-label', T.anwendungen);
+document.getElementById('vitrine').setAttribute('aria-label', T.anwendungen);
+document.querySelector('.v-vor').setAttribute('aria-label', T.vor);
+document.querySelector('.v-nach').setAttribute('aria-label', T.nach);
+document.querySelector('.v-zu').setAttribute('aria-label', T.zu);
+document.querySelector('.p-mehr').firstChild.textContent = T.mehr + ' ';
+{
+  const wahl = document.getElementById('sprachen'); wahl.setAttribute('aria-label', T.sprache);
+  for (const k of SPRACHEN) {
+    const a = document.createElement('a'); a.textContent = k.toUpperCase(); a.lang = k; a.hreflang = k;
+    const u = new URL(location.href); u.searchParams.set('lang', k); a.href = u.pathname + u.search;
+    if (k === SPRACHE) a.setAttribute('aria-current', 'true');
+    a.addEventListener('click', () => { try { localStorage.setItem('brillant.sprache', k); } catch {} });
+    wahl.append(a);
+  }
+}
 let vitrineOffen = false;
 const ZUSTAENDE = BEREICHE.length + 1;          // 0 = Titel, 1–3 = Anwendungen
 const SCHRITT = (Math.PI * 2) / ZUSTAENDE;      // eine Vierteldrehung je Anwendung
@@ -504,16 +570,16 @@ const SPERREN = (fs) => `${-0.022 * fs}px`;
 function satzspiegel(c) {
   const hoch = W / H < 0.9 || W < 640;
   c.font = `600 100px ${SCHRIFT}`; if ('letterSpacing' in c) c.letterSpacing = SPERREN(100);
-  const ref = c.measureText('Brillante Ideen').width + 30;
+  const ref = c.measureText(TITEL_KURZ).width + 30;
   const fs = Math.round(Math.min(hoch ? 46 : 84, (W * (hoch ? 0.76 : 0.6)) / ref * 100));
   c.font = `600 ${fs}px ${SCHRIFT}`; if ('letterSpacing' in c) c.letterSpacing = SPERREN(fs);
   const gemR = fs * 0.27, luecke = fs * 0.06, y = Math.round(H * 0.47 + fs * 0.35);
   const satz = Math.round(hoch ? 16 : 19);
-  const saetze = ['Brillante Ideen.', ...BEREICHE.map((b) => b.name)].map((t, k) => {
+  const saetze = [TITEL, ...BEREICHE.map((b) => b.name)].map((t, k) => {
     const b = c.measureText(t).width;
     if (!k) {
       // 0.17 (Christian): der Brillant ist der i-Punkt in «Brillante», der Satz endet mit einem gewöhnlichen Punkt
-      const x = (W - b) / 2, i0 = c.measureText('Br').width, iw = c.measureText('Bri').width - i0;
+      const x = (W - b) / 2, i0 = c.measureText(t.slice(0, T.iBei)).width, iw = c.measureText(t.slice(0, T.iBei + 1)).width - i0;
       return { t, x, y, iPunkt: { x: x + i0, w: iw }, gem: { x: x + i0 + iw / 2, y: y - fs * 0.86, r: fs * 0.21 } };
     }
     // lange Namen («the deleuzian scheme») verkleinern, bis sie mit dem Stein in die Breite passen
@@ -803,7 +869,7 @@ addEventListener('keydown', (e) => {
 
 // Menü: öffnet sich, wenn man den Stein antippt; der Stein steht dann gross über den Bereichen
 const nav = $('bereiche');
-['Brillante Ideen', ...BEREICHE.map((b) => b.name)].forEach((name, i) => {
+[TITEL_KURZ, ...BEREICHE.map((b) => b.name)].forEach((name, i) => {
   const t = document.createElement('button'); t.type = 'button'; t.textContent = name; if (!i) t.className = 'start';
   t.addEventListener('click', () => { menuSchalten(false); hin(i); });
   nav.append(t);
@@ -864,10 +930,10 @@ const vKarten = BEREICHE.map((b, i) => {
   k.style.setProperty('--ton', b.ton.join(',')); k.style.setProperty('--hell', `rgb(${hell.join(',')})`);
   k.innerHTML = `<div class="v-schatten" aria-hidden="true"></div><div class="v-koerper"><div class="v-buehne"><div class="v-bild"></div><div class="v-licht" aria-hidden="true"></div></div>
     <div class="v-text"><p class="v-kopf"></p><h2 class="v-name" id="v-name-${i}"></h2><p class="v-satz"></p>
-    <div class="v-zeile"><a class="v-oeffnen" href="${b.href}">Öffnen <span aria-hidden="true">›</span></a></div></div>
+    <div class="v-zeile"><a class="v-oeffnen" href="${b.href}">${T.oeffnen} <span aria-hidden="true">›</span></a></div></div>
     <div class="v-glanz" aria-hidden="true"></div><div class="v-dunkel" aria-hidden="true"></div></div>`;
   k.querySelector('.v-kopf').textContent = b.kopf; k.querySelector('.v-name').textContent = b.name; k.querySelector('.v-satz').textContent = b.satz;
-  k.querySelector('.v-oeffnen').setAttribute('aria-label', `${b.name} öffnen`);
+  k.querySelector('.v-oeffnen').setAttribute('aria-label', T.oeffnenAria(b.name));
   const bild = k.querySelector('.v-bild');
   if (b.schau) bild.append(document.createElement('canvas'));
   else { const im = new Image(); im.alt = ''; im.decoding = 'async'; im.src = b.bild; bild.append(im); }
@@ -1321,7 +1387,7 @@ function bild(ms) {
   if (zustand !== zustandGezeigt) {
     zustandGezeigt = zustand;
     knoepfe.forEach((k, i) => k.setAttribute('aria-current', String(i + 1 === zustand)));
-    if (zustand) { const b = BEREICHE[zustand - 1]; mehr.href = b.href; mehr.setAttribute('aria-label', `${b.name}: mehr erfahren`); }
+    if (zustand) { const b = BEREICHE[zustand - 1]; mehr.href = b.href; mehr.setAttribute('aria-label', `${b.name}: ${T.mehr}`); }
   }
   const zeigeMehr = zustand > 0 && ruht && menu < 0.05;
   if (zeigeMehr !== mehr.classList.contains('da')) {
