@@ -9,7 +9,7 @@ const $ = (id) => document.getElementById(id);
 const leinwand = $('leinwand');
 
 // ---------- Inhalt: drei Anwendungen von ornament.cloud (Christian, 20.11.2026; ersetzt Webdesign, Apps, Vermittlung, Kuration, Editionen;
-// Composer und Multiverse wieder heraus, ORNAMENT LAB folgt, wenn es so weit ist) ----------
+// Composer und Multiverse wieder heraus; ORNAMENT LAB seit 0.31 dabei, Christian: «Das Lab gibts jetzt auch d/e/s/f») ----------
 // Tippt man im Menü auf den Namen, öffnet sich die Vitrine (unten): Bild oder Film, Name, ein Satz, «Öffnen».
 const BEREICHE = [
   { name: 'the deleuzian scheme', kopf: 'im Entstehen · Bild, Film, Ton', satz: 'Begriffe von Deleuze als Verfahren: Kristallbild, Schichten der Zeit, Dauer, Wahrnehmung, Diagramm, Figur – angewandt auf eigenes Material.',
@@ -17,7 +17,10 @@ const BEREICHE = [
   { name: 'Das Dritte Rad', kopf: 'Zeit · Form · Farbe', satz: 'Zeit, Form und Farbe drehen gegeneinander. Jede Drehung zieht einen Zettel, eine Begegnung aus ORNA und eine Übung aus OMNA COLOR.',
     href: '/beta/drittes-rad/', sprachen: ['de', 'en'], adressen: { de: '/beta/drittes-rad/?sprache=de', en: '/beta/drittes-rad/?sprache=en' }, schau: 'rad', ton: [232, 150, 80] },
   { name: 'Animations', kopf: 'Bild · Bewegung', satz: 'Ein Bild, 24 Effekte, bis zu drei Ebenen: das Mischpult für eigene Animationen.',
-    href: '/animations/', sprachen: ['de', 'en', 'es'], adressen: { en: '/animations/en/', es: '/animations/es/' }, bild: 'vorschau/animations.jpg?v=2', film: 'vorschau/animations.mp4?v=2', ton: [124, 108, 255] }
+    href: '/animations/', sprachen: ['de', 'en', 'es'], adressen: { en: '/animations/en/', es: '/animations/es/' }, bild: 'vorschau/animations.jpg?v=2', film: 'vorschau/animations.mp4?v=2', ton: [124, 108, 255] },
+  { name: 'ornament.lab', kopf: 'Erzeugen · Beobachten · Weiterführen', satz: '',
+    href: '/beta/lab/', sprachen: ['de', 'en', 'es', 'fr'], adressen: { de: '/beta/lab/?sprache=de', en: '/beta/lab/?sprache=en', es: '/beta/lab/?sprache=es', fr: '/beta/lab/?sprache=fr' },
+    schau: 'lab', ton: [96, 140, 255] }
 ];
 // Die Farben der Schichten: Rot (Godard), Orange (das Rad), Violett.
 
@@ -41,25 +44,29 @@ const TEXTE = {
     anw: [
       { kopf: 'im Entstehen · Bild, Film, Ton', satz: 'Begriffe von Deleuze als Verfahren: Kristallbild, Schichten der Zeit, Dauer, Wahrnehmung, Diagramm, Figur – angewandt auf eigenes Material.' },
       { kopf: 'Theorie · Kunstpraxis · Impuls', satz: 'Drei Ringe drehen gegeneinander. Jede Drehung verbindet einen Gedanken aus der Theorie mit einer künstlerischen Praxis und gibt einen Impuls für die eigene Arbeit.' },
-      { kopf: 'Bild · Bewegung', satz: 'Ein Bild, 24 Effekte, bis zu drei Ebenen: das Mischpult für eigene Animationen.' }] },
+      { kopf: 'Bild · Bewegung', satz: 'Ein Bild, 24 Effekte, bis zu drei Ebenen: das Mischpult für eigene Animationen.' },
+      { kopf: 'Erzeugen · Beobachten · Weiterführen', satz: 'Ein Bild wird Material. Operationen verändern es, Varianten stehen nebeneinander, jede lässt sich weiterführen.' }] },
   en: { titel: 'Brilliant Ideas.', iBei: 2, menu: 'Menu', anwendungen: 'Applications', mehr: 'Learn more', oeffnen: 'Open', oeffnenAria: (n) => `Open ${n}`,
     nurIn: { de: 'in German', en: 'in English', fr: 'in French', es: 'in Spanish' }, vor: 'Previous application', nach: 'Next application', zu: 'Close', sprache: 'Language',
     anw: [
       { kopf: 'in progress · image, film, sound', satz: 'Concepts of Deleuze as procedures: crystal-image, sheets of time, duration, perception, diagram, figure – applied to your own material.' },
       { kopf: 'theory · art practice · impulse', satz: 'Three rings turn against each other. Every turn joins a thought from theory with an artistic practice and gives an impulse for your own work.' },
-      { kopf: 'image · motion', satz: 'One image, 24 effects, up to three layers: the mixing desk for your own animations.' }] },
+      { kopf: 'image · motion', satz: 'One image, 24 effects, up to three layers: the mixing desk for your own animations.' },
+      { kopf: 'generate · observe · continue', satz: 'An image becomes material. Operations change it, variants stand side by side, each one can be taken further.' }] },
   fr: { titel: 'Idées brillantes.', iBei: 8, menu: 'Menu', anwendungen: 'Applications', mehr: 'En savoir plus', oeffnen: 'Ouvrir', oeffnenAria: (n) => `Ouvrir ${n}`,
     nurIn: { de: 'en allemand', en: 'en anglais', fr: 'en français', es: 'en espagnol' }, vor: 'Application précédente', nach: 'Application suivante', zu: 'Fermer', sprache: 'Langue',
     anw: [
       { kopf: 'en cours · image, film, son', satz: `Les concepts de Deleuze comme procédés${NBSP}: image-cristal, nappes de passé, durée, perception, diagramme, Figure – appliqués à votre propre matériau.` },
       { kopf: 'théorie · pratique artistique · impulsion', satz: 'Trois anneaux tournent l’un contre l’autre. Chaque tour relie une pensée théorique à une pratique artistique et donne une impulsion pour votre propre travail.' },
-      { kopf: 'image · mouvement', satz: `Une image, 24 effets, jusqu’à trois calques${NBSP}: la table de mixage pour vos propres animations.` }] },
+      { kopf: 'image · mouvement', satz: `Une image, 24 effets, jusqu’à trois calques${NBSP}: la table de mixage pour vos propres animations.` },
+      { kopf: 'produire · observer · poursuivre', satz: 'Une image devient matière. Des opérations la transforment, des variantes se tiennent côte à côte, chacune peut être poursuivie.' }] },
   es: { titel: 'Ideas brillantes.', iBei: 8, menu: 'Menú', anwendungen: 'Aplicaciones', mehr: 'Saber más', oeffnen: 'Abrir', oeffnenAria: (n) => `Abrir ${n}`,
     nurIn: { de: 'en alemán', en: 'en inglés', fr: 'en francés', es: 'en español' }, vor: 'Aplicación anterior', nach: 'Aplicación siguiente', zu: 'Cerrar', sprache: 'Idioma',
     anw: [
       { kopf: 'en desarrollo · imagen, cine, sonido', satz: 'Conceptos de Deleuze como procedimientos: imagen-cristal, capas del pasado, duración, percepción, diagrama, figura – aplicados a tu propio material.' },
       { kopf: 'teoría · práctica artística · impulso', satz: 'Tres anillos giran unos contra otros. Cada giro une un pensamiento de la teoría con una práctica artística y da un impulso para tu propio trabajo.' },
-      { kopf: 'imagen · movimiento', satz: 'Una imagen, 24 efectos, hasta tres capas: la mesa de mezclas para tus propias animaciones.' }] }
+      { kopf: 'imagen · movimiento', satz: 'Una imagen, 24 efectos, hasta tres capas: la mesa de mezclas para tus propias animaciones.' },
+      { kopf: 'generar · observar · continuar', satz: 'Una imagen se vuelve material. Las operaciones la transforman, las variantes quedan una al lado de otra y cada una puede continuar.' }] }
 };
 const T = TEXTE[SPRACHE];
 BEREICHE.forEach((b, i) => Object.assign(b, T.anw[i]));
@@ -939,13 +946,24 @@ const vKarten = BEREICHE.map((b, i) => {
     <div class="v-glanz" aria-hidden="true"><i></i></div><div class="v-dunkel" aria-hidden="true"></div></div>`;
   k.querySelector('.v-kopf').textContent = b.kopf; k.querySelector('.v-name').textContent = b.name; k.querySelector('.v-satz').textContent = b.satz;
   k.querySelector('.v-oeffnen').setAttribute('aria-label', T.oeffnenAria(b.name));
-  // in welchen Sprachen es die Anwendung gibt; fehlt die gewählte, steht dabei, in welcher sie sich öffnet
-  const vs = k.querySelector('.v-sprachen'), hat = b.sprachen.includes(SPRACHE);
-  vs.innerHTML = b.sprachen.map((l) => `<span${l === SPRACHE ? ' class="jetzt"' : ''} lang="${l}">${l.toUpperCase()}</span>`).join('');
-  if (!hat) { const n = document.createElement('em'); n.textContent = T.nurIn[offen]; vs.prepend(n); vs.querySelectorAll('span').forEach((x) => x.remove()); }
-  vs.setAttribute('aria-hidden', 'true');
+  // 0.31 (Christian: «auf der Karte die Sprache auch einstellen»): die Sprachen der Anwendung sind Knöpfe. Vorgewählt ist die
+  // Sprache der Seite oder, fehlt sie, Englisch bzw. die erste; ein Tippen wählt, in welcher Fassung «Öffnen» die Anwendung zeigt.
+  const vs = k.querySelector('.v-sprachen'), oe = k.querySelector('.v-oeffnen');
+  let wahl = offen;
+  const waehlen = (l) => {
+    wahl = l; oe.href = (b.adressen && b.adressen[l]) || b.href;
+    vs.querySelectorAll('button').forEach((x) => { const an = x.lang === l; x.classList.toggle('jetzt', an); x.setAttribute('aria-pressed', String(an)); });
+  };
+  vs.setAttribute('role', 'group'); vs.setAttribute('aria-label', T.sprache);
+  for (const l of b.sprachen) {
+    const kn = document.createElement('button'); kn.type = 'button'; kn.lang = l; kn.textContent = l.toUpperCase();
+    kn.setAttribute('aria-label', `${T.oeffnen} ${T.nurIn[l]}`);
+    kn.addEventListener('click', (e) => { e.stopPropagation(); waehlen(l); });
+    vs.append(kn);
+  }
+  waehlen(offen);
   // the deleuzian scheme liest seine Sprache aus demselben Speicher, so reist die Wahl mit
-  k.querySelector('.v-oeffnen').addEventListener('click', () => { try { localStorage.setItem('kristall.sprache', offen); } catch {} });
+  oe.addEventListener('click', () => { try { localStorage.setItem('kristall.sprache', wahl); } catch {} });
   const bild = k.querySelector('.v-bild');
   if (b.schau) bild.append(document.createElement('canvas'));
   else { const im = new Image(); im.alt = ''; im.decoding = 'async'; im.src = b.bild; bild.append(im); }
@@ -956,6 +974,11 @@ const vKarten = BEREICHE.map((b, i) => {
     film: null, schauStopp: null, flug: 0 };
 });
 const N = BEREICHE.length;
+// 0.31: Bilder der Karten früh laden und dekodieren, damit beim Öffnen nichts nachpoppt
+(window.requestIdleCallback || ((f) => setTimeout(f, 1200)))(() => {
+  vKarten.forEach((k) => { const im = k.bild.querySelector('img'); if (im && im.decode) im.decode().catch(() => {}); });
+  Object.values(SCHAU).forEach((a) => a.bilder.forEach((src) => { const im = schauBild(src); if (im.decode) im.decode().catch(() => {}); }));
+});
 const vMarken = vitrine.querySelector('.v-marken');
 BEREICHE.forEach(() => vMarken.append(document.createElement('i')));
 const vz = { pos: 0, ziel: 0, v: 0, auf: 0, aufZiel: 0, t0: 0, lauf: 0, aktiv: -1,
@@ -967,6 +990,7 @@ function vitrineAuf(i) {
   vZuletzt = document.activeElement;
   vz.pos = vz.ziel = i; vz.v = 0; vz.aufZiel = 1; vz.t0 = performance.now(); vz.aktiv = -1;
   vKarten.forEach((k) => { k.flug = 0; });
+  vitrine.hidden = false; vz.breite = vKarten[0].el.offsetWidth || 320;
   vitrineOffen = true; vitrine.hidden = false; vitrine.classList.add('auf'); document.body.classList.add('vitrine-auf'); spur('Vitrine ' + BEREICHE[i].name);
   cancelAnimationFrame(vz.lauf); vz.lauf = requestAnimationFrame(vitrineBild);
 }
@@ -994,11 +1018,11 @@ function aktivSetzen(i) {
   vKarten.forEach((k, j) => {
     const b = BEREICHE[j], vorn = j === i;
     k.el.classList.toggle('vorn', vorn); k.el.setAttribute('aria-hidden', String(!vorn)); k.oeffnen.tabIndex = vorn ? 0 : -1;
-    if (vorn) { vitrine.setAttribute('aria-labelledby', `v-name-${j}`); k.el.classList.remove('glanzlauf'); void k.el.offsetWidth; k.el.classList.add('glanzlauf'); }
+    if (vorn) { vitrine.setAttribute('aria-labelledby', `v-name-${j}`); k.el.style.setProperty('--glanz-verz', `${Math.max(0.25, 2 - (performance.now() - vz.t0) / 1000).toFixed(2)}s`); k.el.classList.remove('glanzlauf'); void k.el.offsetWidth; k.el.classList.add('glanzlauf'); }
     if (b.film && !ruhig) {
       if (vorn && !k.film) {
         // 0.30: während des Flugs aus dem Stein noch kein Film (das Entpacken kostet Bilder), er kommt danach
-        const warten = vz.aufZiel ? 1000 - (performance.now() - vz.t0) : 0;
+        const warten = vz.aufZiel ? 2100 - (performance.now() - vz.t0) : 0;
         clearTimeout(k.filmWarten);
         if (warten > 0) k.filmWarten = setTimeout(() => { if (vz.aktiv === j && vitrineOffen && vz.aufZiel && !k.film) filmAn(k, b); }, warten + 30);
         else filmAn(k, b);
@@ -1020,14 +1044,19 @@ const daempf = (x, k, f) => x * Math.pow(k, f);
 function vitrineBild(jetzt) {
   const f = Math.min(3, (jetzt - (vz.letzt || jetzt)) / 16.67 || 1); vz.letzt = jetzt;
   const t = jetzt / 1000, Wv = innerWidth, Hv = innerHeight;
-  // Öffnen und Schliessen: jede Karte fliegt mit kleinem Versatz, die vordere zuerst
-  const seit = (jetzt - vz.t0) / 1000;
+  // 0.31 (Christian: «zu unruhig und auch zu schnell»): kein Flug aus dem Stein mehr. Erst legt sich der Schleier (0,6 s),
+  // dann hebt sich die vordere Karte langsam ins Licht (1,6 s, weiche Kurve), die Nachbarn folgen leiser nach.
+  // Schliessen: die Karten sinken still zurück und verblassen.
+  const seit = Math.max(0, (jetzt - vz.t0) / 1000);
   let alleZu = true;
   vKarten.forEach((k, i) => {
     const d = Math.abs(umlauf(i - vz.pos));
-    if (vz.aufZiel) { const u = Math.max(0, Math.min(1, (seit - d * 0.07) / (ruhig ? 0.25 : 0.95))); k.flug = 1 - Math.pow(1 - u, 4); alleZu = false; }
-    else { const u = Math.max(0, Math.min(1, (seit - (2.5 - d) * 0.035) / (ruhig ? 0.2 : 0.5))); k.flug = Math.min(k.flug, 1 - u * u * (3 - 2 * u)); if (k.flug > 0.001) alleZu = false; }
+    if (vz.aufZiel) {
+      const u = Math.max(0, Math.min(1, (seit - (ruhig ? 0 : 0.35 + d * 0.28)) / (ruhig ? 0.3 : 1.6)));
+      k.flug = u * u * u * (u * (u * 6 - 15) + 10); alleZu = false;   // smootherstep: ruhiger Anfang, weiches Ende
+    } else { const u = Math.max(0, Math.min(1, seit / (ruhig ? 0.2 : 0.6))); k.flug = Math.min(k.flug, 1 - u * u * (3 - 2 * u)); if (k.flug > 0.001) alleZu = false; }
   });
+  const schleier = vz.aufZiel ? Math.min(1, seit / (ruhig ? 0.2 : 0.6)) : vKarten.reduce((m, k) => Math.max(m, k.flug), 0);
   if (!vz.aufZiel && alleZu) {
     vitrineOffen = false; vitrine.hidden = true; vitrineVoll = false; document.body.classList.remove('vitrine-auf');
     vKarten.forEach((k) => { if (k.film) { k.film.pause(); k.film.remove(); k.film = null; } if (k.schauStopp) { k.schauStopp(); k.schauStopp = null; } });
@@ -1047,11 +1076,9 @@ function vitrineBild(jetzt) {
   vz.neig.x += (vz.neigZiel.x - vz.neig.x) * (1 - Math.pow(0.9, f));
   vz.neig.y += (vz.neigZiel.y - vz.neig.y) * (1 - Math.pow(0.9, f));
   const telefonHoch = Wv < 820;
-  const breite = vKarten[0].el.offsetWidth || 320;
+  // 0.31: die Breite einmal beim Öffnen messen, nicht in jedem Bild (das erzwang jedes Mal ein neues Layout)
+  const breite = vz.breite || 320;
   const abstand = breite * (telefonHoch ? 0.82 : 0.74);
-  // Ursprung des Flugs: der Stein, relativ zur Mitte der Bühne
-  const r = vRaum.getBoundingClientRect(), mx = r.left + r.width / 2, my = r.top + r.height / 2;
-  const sx = gemJetzt.x - mx, sy = gemJetzt.y - my;
   vKarten.forEach((k, i) => {
     const d = umlauf(i - vz.pos), ad = Math.abs(d), sg = Math.sign(d);
     // im Halbkreis: seitlich versetzt, nach hinten, zur Mitte gedreht
@@ -1065,13 +1092,12 @@ function vitrineBild(jetzt) {
     rx += atmen * Math.sin(t * 0.63 + ph) * 1.6; ry += atmen * Math.cos(t * 0.51 + ph) * 2.2;
     // Neigung zum Finger nur für die vordere Karte
     rx += -vz.neig.y * 9 * vornGrad; ry += vz.neig.x * 11 * vornGrad;
-    // Flug aus dem Stein: von dessen Ort, winzig, gedreht
+    // Erscheinen: aus etwas Tiefe und ein wenig von unten, ohne Drehung
     const fl = k.flug, gegen = 1 - fl;
-    x = x * fl + sx * gegen; y = y * fl + sy * gegen; z = z * fl - 380 * gegen * (1 - fl * 0.4);
-    ry += gegen * (sg || 1) * -120 * (1 - fl); rx += gegen * 40; sch = 0.35 + 0.65 * fl;
+    y += gegen * 34; z -= gegen * 90;
     const sichtbar = ad < 2.2 ? 1 : Math.max(0, 1 - (ad - 2.2) / 0.3);
     k.el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, ${z.toFixed(1)}px) rotateY(${ry.toFixed(2)}deg) rotateX(${rx.toFixed(2)}deg) scale(${sch.toFixed(3)})`;
-    k.el.style.opacity = (Math.min(1, fl * 1.6) * sichtbar).toFixed(3);
+    k.el.style.opacity = (fl * sichtbar).toFixed(3);
     k.el.style.zIndex = String(100 - Math.round(ad * 10));
     k.el.style.pointerEvents = fl > 0.9 && sichtbar > 0.5 ? 'auto' : 'none';
     k.dunkel.style.opacity = Math.min(0.72, ad * 0.5).toFixed(3);
@@ -1090,10 +1116,10 @@ function vitrineBild(jetzt) {
     k.schatten.style.transform = `translateY(${(26 + hoehe * 4).toFixed(1)}px) scale(${(0.86 - hoehe * 0.04).toFixed(3)}, 1)`;
     k.schatten.style.opacity = ((0.55 - hoehe * 0.12) * fl * Math.max(0, 1 - ad * 0.5)).toFixed(3);
   });
-  vitrine.style.setProperty('--auf', (vKarten.reduce((m, k) => Math.max(m, k.flug), 0)).toFixed(3));
+  vitrine.style.setProperty('--auf', schleier.toFixed(3));
   // 0.30 (Christian: Karten «lassen sich nicht wegklicken»): der Zeitstempel des Bildes liegt vor dem Tippen, im ersten Bild
   // nach dem Schliessen stand der Flug also noch auf 1, und die Bühne hielt an. Schliessen läuft jetzt bis zum Ende.
-  const fliegt = vKarten.some((k) => k.flug < 1) || !vz.aufZiel;
+  const fliegt = vKarten.some((k) => k.flug < 1) || !vz.aufZiel || schleier < 1;
   // 0.30 (Christian: «ruckelig»): der Stein rechnet nicht mit, solange die Vitrine offen ist oder aufgeht; er ruht unter dem Schleier
   vitrineVoll = vz.aufZiel === 1;
   const bewegt = vz.zug || fliegt || vz.pos !== vz.ziel || Math.abs(vz.v) > 0 || Math.abs(vz.neigZiel.x - vz.neig.x) + Math.abs(vz.neigZiel.y - vz.neig.y) > 0.002;
@@ -1186,15 +1212,45 @@ flaechen.forEach((el, i) => el.addEventListener('click', (e) => { e.preventDefau
 // ---------- Schaubilder, die sich bewegen (0.24) ----------
 // Das Dritte Rad: die drei Ringe der Anwendung (Zeit, Form, Farbe, aus ihrem eigenen SVG abgenommen) drehen gegeneinander,
 // wie in der Anwendung selbst, auf dunklem Grund mit warmem Schein und einem Lichtrand.
-// laufend = false zeichnet ein Standbild, sobald die Bilder da sind.
+// laufend = false zeichnet ein Standbild, sobald die Bilder da sind (die Zeit heisst dann -1).
 const schauBilder = new Map();
 function schauBild(src) {
   if (!schauBilder.has(src)) { const im = new Image(); im.decoding = 'async'; im.src = src; schauBilder.set(src, im); }
   return schauBilder.get(src);
 }
 const SCHAU = {
-  rad: { bilder: ['zeit', 'form', 'farbe', 'kern'].map((n) => `vorschau/rad-${n}.png`), malen: radMalen }
+  rad: { bilder: ['zeit', 'form', 'farbe', 'kern'].map((n) => `vorschau/rad-${n}.png`), malen: radMalen },
+  lab: { bilder: [0, 1, 2, 3, 4, 5, 6].map((n) => `vorschau/lab-${n}.jpg`), malen: labMalen }
 };
+// ornament.lab (0.31): «Ein Bild wird Material». Das Porträt aus dem Lab steht als Tafel im Dunkel; eine haarfeine Naht zieht
+// langsam von links nach rechts darüber und hinterlässt den nächsten Zustand (Raster, Glitch, Teilung, Punkte, Sortierung,
+// neu zusammengesetzt), dann ruht das Bild. Das Standbild zeigt den Schnitt mitten im Gesicht: Porträt links, Raster rechts.
+function labMalen(x, w, h, t, bilder, ton) {
+  const s = Math.min(h * 0.8, w * 0.56), bx = (w - s) / 2, by = h * 0.47 - s / 2;
+  grundMalenSchau(x, w, h, ton, [w / 2, h * 0.47]);
+  // Schatten unter der schwebenden Tafel
+  x.save(); x.translate(w / 2, by + s + s * 0.05); x.scale(1, 0.1);
+  const sch = x.createRadialGradient(0, 0, 0, 0, 0, s * 0.6); sch.addColorStop(0, 'rgba(0,0,0,0.55)'); sch.addColorStop(1, 'rgba(0,0,0,0)');
+  x.fillStyle = sch; x.beginPath(); x.arc(0, 0, s * 0.6, 0, Math.PI * 2); x.fill(); x.restore();
+  const N = bilder.length, P = 3.6, ZUG = 1.5;                 // je Zustand 3,6 s, davon 1,5 s die Naht
+  const stand = t < 0;
+  const k = stand ? 0 : Math.floor(t / P), lokal = stand ? ZUG / 2 : t - k * P;
+  const u = Math.min(1, lokal / ZUG), e = u * u * (3 - 2 * u);
+  const alt = bilder[k % N], neu = bilder[(k + 1) % N];
+  const nx = Math.round(bx + s * (stand ? 0.5 : e));
+  x.drawImage(alt, bx, by, s, s);
+  if (e > 0) { x.save(); x.beginPath(); x.rect(bx, by, nx - bx, s); x.clip(); x.drawImage(neu, bx, by, s, s); x.restore(); }
+  // die Naht: eine Haarlinie mit leisem Schein, nur solange sie zieht
+  const da = stand ? 1 : Math.sin(Math.PI * u);
+  if (da > 0.01) {
+    const g = x.createLinearGradient(nx - 14, 0, nx + 14, 0);
+    g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(0.5, `rgba(255,255,255,${0.16 * da})`); g.addColorStop(1, 'rgba(255,255,255,0)');
+    x.fillStyle = g; x.fillRect(nx - 14, by, 28, s);
+    x.fillStyle = `rgba(255,255,255,${0.85 * da})`; x.fillRect(nx - 0.5, by, 1, s);
+  }
+  // Fassung: eine feine, kühle Haarlinie um die Tafel
+  x.lineWidth = 1; x.strokeStyle = `rgba(${ton.join(',')},0.45)`; x.strokeRect(bx + 0.5, by + 0.5, s - 1, s - 1);
+}
 function schauZeichnen(c, b, laufend) {
   const art = SCHAU[b.schau], bilder = art.bilder.map(schauBild), x = c.getContext('2d');
   const dpr = Math.min(2, devicePixelRatio || 1), t0 = performance.now() - 4000;
@@ -1206,7 +1262,7 @@ function schauZeichnen(c, b, laufend) {
     if (fertig) {
       if (c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)) { c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); }
       x.setTransform(dpr, 0, 0, dpr, 0, 0);
-      art.malen(x, w, h, ruhig ? 6 : (performance.now() - t0) / 1000, bilder, b.ton);
+      art.malen(x, w, h, ruhig || !laufend ? -1 : (performance.now() - t0) / 1000, bilder, b.ton);   // -1: Standbild
       if (!laufend || ruhig) { an = false; return; }
     }
     lauf = requestAnimationFrame(schritt);
@@ -1339,7 +1395,7 @@ function groesse() {
   if (schriftDa && schl !== gebautFuer) { gebautFuer = schl; seitenBauen(); }
 }
 let schriftDa = false;
-addEventListener('resize', () => { groesse(); });
+addEventListener('resize', () => { groesse(); if (vitrineOffen) { vz.breite = vKarten[0].el.offsetWidth || 320; wecken(); } });
 
 // Tempo: ruckelt es, rechnet die Seite mit weniger Bildpunkten
 let messung = [], letzteAnpassung = 0;
