@@ -14,6 +14,7 @@ const TEXTE = {
     kamera: 'Kamera', video: 'Video oder Fotos', beispiel: 'Beispiel',
     tiefe: 'Zeittiefe', schichten: 'Schichten', fluss: 'Fluss', lesart: 'Lesart',
     rand: 'Rand', rand4: 'Ornament', rand1: 'Relief', rand2: 'Kintsugi', rand3: 'Saum',
+    stoff: 'Stoff', stoff3: 'Achat', stoff1: 'Lasur',
     glossen: {
       graben: { begriff: 'les nappes de passé', satz: 'Die Vergangenheit ist nicht vorbei, sie liegt unter der Gegenwart, in Schichten. Wer gräbt, findet keine einzelne Erinnerung, sondern eine ganze Region der Zeit.', zitat: '«Wer sich der eigenen verschütteten Vergangenheit zu nähern trachtet, muss sich verhalten wie ein Mann, der gräbt.»', quelle: 'Walter Benjamin, Ausgraben und Erinnern, um 1932' },
       tiefe: { begriff: 'la coexistence', satz: 'Die Schichten folgen nicht aufeinander, sie bestehen nebeneinander. Hier bestimmst du, wie weit die tiefste zurückreicht.', zitat: '«Le passé ne succède pas au présent qu’il n’est plus, il coexiste avec le présent qu’il a été.»', quelle: 'Deleuze, Le bergsonisme, PUF 1966, Kap. 3' },
@@ -50,6 +51,7 @@ const TEXTE = {
     kamera: 'Camera', video: 'Video or photos', beispiel: 'Example',
     tiefe: 'Depth of time', schichten: 'Sheets', fluss: 'Flow', lesart: 'Reading',
     rand: 'Edge', rand4: 'Ornament', rand1: 'Relief', rand2: 'Kintsugi', rand3: 'Fringe',
+    stoff: 'Matter', stoff3: 'Agate', stoff1: 'Glaze',
     glossen: {
       graben: { begriff: 'les nappes de passé', satz: 'The past is not over, it lies beneath the present, in sheets. Whoever digs finds no single memory but a whole region of time.', zitat: '“He who seeks to approach his own buried past must conduct himself like a man digging.”', quelle: 'Walter Benjamin, Excavation and Memory, c. 1932' },
       tiefe: { begriff: 'la coexistence', satz: 'The sheets do not follow one another, they coexist. Here you decide how far back the deepest one reaches.', zitat: '« Le passé ne succède pas au présent qu’il n’est plus, il coexiste avec le présent qu’il a été. »', quelle: 'Deleuze, Le bergsonisme, PUF 1966, ch. 3 (original)' },
@@ -86,6 +88,7 @@ const TEXTE = {
     kamera: 'Caméra', video: 'Vidéo ou photos', beispiel: 'Exemple',
     tiefe: 'Profondeur du temps', schichten: 'Nappes', fluss: 'Flux', lesart: 'Lecture',
     rand: 'Bord', rand4: 'Ornement', rand1: 'Relief', rand2: 'Kintsugi', rand3: 'Frange',
+    stoff: 'Matière', stoff3: 'Agate', stoff1: 'Glacis',
     glossen: {
       graben: { begriff: 'les nappes de passé', satz: 'Le passé n’est pas fini, il gît sous le présent, en nappes. Qui fouille ne trouve pas un souvenir isolé, mais toute une région du temps.', zitat: '« Wer sich der eigenen verschütteten Vergangenheit zu nähern trachtet, muss sich verhalten wie ein Mann, der gräbt. »', quelle: 'Walter Benjamin, Ausgraben und Erinnern, vers 1932 (original)' },
       tiefe: { begriff: 'la coexistence', satz: 'Les nappes ne se suivent pas, elles coexistent. Ici tu décides jusqu’où remonte la plus profonde.', zitat: '« Le passé ne succède pas au présent qu’il n’est plus, il coexiste avec le présent qu’il a été. »', quelle: 'Deleuze, Le bergsonisme, PUF 1966, ch. 3' },
@@ -225,6 +228,8 @@ uniform float uSprung;
 uniform int uRand;      // Gestalt der Ränder in der Grabung
 uniform int uKegel;     // Entwurf des Kegels: 1 Schnitte, 2 Abgrund
 uniform float uPxH;     // ein Bildpunkt, in Bildhöhen
+uniform int uUeber;     // Stoff der Überschiebung: 3 Achat, 1 Lasur (0 und 2 nur als Entwurf)
+uniform vec4 uRahmen;   // wo das Bild auf der Leinwand steht (Rest Saalschwarz)
 
 float hs(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float rausch(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.-2.*f);
@@ -398,10 +403,13 @@ vec3 kegelAbgrund(vec2 u){
 vec3 kegel(vec2 u){ return uKegel == 2 ? kegelAbgrund(u) : kegelSchnitte(u); }
 
 // ---- Überschiebung (Resnais, Frankenthaler): ein fliessendes Feld, in Schichten geschnitten; ältere liegen oben ----
+// steht das Bild mit Saalschwarz daneben (Rechner, Hochformat), bleiben verschobene Schichten in seinem Rahmen: gespiegelt statt schwarz
+vec2 imR(vec2 q){ vec2 a = uRahmen.xy, b = uRahmen.zw; return a + (b - a) * (1.0 - abs(mod((q - a) / (b - a), 2.0) - 1.0)); }
+float imMaske(vec2 u){ vec2 d = min(u - uRahmen.xy, uRahmen.zw - u) / vec2(uPxH * uSeite, uPxH); return smoothstep(-0.5, 0.5, min(d.x, d.y)); }
 vec3 lage(vec2 u, float k){
   vec2 schub = vec2(cos(k * 2.4), sin(k * 2.4)) * 0.012 * k + uGleit * k / uS;
   float ak = k / max(1.0, uS - 1.0);
-  vec3 c = alt(schicht(u + schub, lagVon(k)), ak * 0.8);
+  vec3 c = alt(schicht(imR(u + schub), lagVon(k)), ak * 0.8);
   // kaum getönt, wie verdünnte Farbe in roher Leinwand: Ocker, Rosé, Blaugrau, Gelb; die Gegenwart bleibt neutral
   float m = mod(k, 4.0);
   vec3 ton = m < 1. ? vec3(1.07,.98,.88) : m < 2. ? vec3(1.06,.94,.96) : m < 3. ? vec3(.93,.98,1.07) : vec3(1.06,1.03,.9);
@@ -425,8 +433,127 @@ vec3 ueberschiebung(vec2 u){
   return mix(unten, oben, smoothstep(-0.75, 0.75, s));
 }
 
+// ---- Entwürfe für eine feinere Überschiebung (?ueber=1 Lasur, 2 Marmorierung, 3 Achat) ----
+float feld(vec2 u){   // das fliessende Feld der Überschiebung, x zählt die Schichten
+  vec2 p = (u + uSchub) * vec2(uSeite, 1.0) * 1.1;
+  vec2 wq = vec2(fbm(p + vec2(1.7, 0.0) + uFT * 0.05), fbm(p + vec2(9.2, 3.1) - uFT * 0.04));
+  return fbm(p + 2.1 * wq + vec2(uFT * 0.03, 0.0)) * 8.0 + uFT * 0.05;
+}
+// 1 Lasur (Frankenthaler, soak-stain): jede ältere Zeit ist verdünnte Farbe in roher Leinwand; die Lachen liegen
+// durchscheinend übereinander, am Rand sammelt sich das Pigment, die Fasern saugen es in feinen Härchen nach aussen
+vec3 lasur(vec2 u){
+  vec2 p = u * vec2(uSeite, 1.0);
+  float x0 = feld(u), fx0 = max(fwidth(x0), 1e-5);
+  // die Fasern: quer gestrecktes, feines Rauschen verschiebt den Rand um einige Bildpunkte
+  float faser = (rausch(p * vec2(520.0, 70.0)) - 0.5) * 0.7 + (rausch(p * vec2(80.0, 610.0)) - 0.5) * 0.5;
+  float x = x0 + faser * fx0 * 4.0;
+  float S = uS, k = floor(x), w = x - k, fx = fx0;
+  vec3 leinwand = vec3(0.94, 0.91, 0.85) * (0.985 + 0.015 * sin(p.x * 1400.0) * sin(p.y * 1400.0));
+  // unten die Gegenwart, von der Leinwand gedämpft; darüber zwei ältere Lachen
+  vec3 c = mix(leinwand, schicht(u, 0.0), 0.74);
+  vec3 tonOben = vec3(1.0);
+  for (int j = 1; j >= 0; j--) {
+    float kk = k - float(j);
+    if (kk < 0.5) continue;
+    float km = mod(kk, S);
+    vec2 schub = vec2(cos(km * 2.4), sin(km * 2.4)) * 0.01 * km + uGleit * km / S;
+    vec3 bild = schicht(imR(u + schub), lagVon(km));
+    float m = mod(km, 5.0);
+    vec3 ton = m < 1. ? vec3(0.95,0.72,0.42) : m < 2. ? vec3(0.9,0.56,0.6) : m < 3. ? vec3(0.55,0.7,0.85) : m < 4. ? vec3(0.68,0.76,0.55) : vec3(0.98,0.86,0.5);
+    // die Lasur färbt, statt zu decken: das ältere Bild als Helligkeit, getönt, die Gegenwart scheint durch
+    vec3 lasurF = mix(vec3(1.0), ton, 0.75) * (0.55 + 0.6 * lum(bild));
+    float a = (j == 0 ? 0.62 : 0.32);
+    c = mix(c, c * lasurF * 1.2, a);
+    c = mix(c, bild * ton * 1.1, 0.18 * a);
+    if (j == 0) tonOben = ton;
+  }
+  if (k >= 0.5) {
+    // am Rand der Lache sammelt sich das Pigment: ein dunklerer Saum, der nach innen ausläuft
+    float innen = w / fx;                                     // Bildpunkte vom Rand ins Innere
+    c *= mix(vec3(1.0), tonOben * 0.78, 0.55 * exp(-innen / 7.0));
+    c *= 1.0 - 0.35 * exp(-pow(innen / 1.1, 2.0));             // die haarfeine Linie, wo das Wasser stehen blieb
+  }
+  c *= 1.0 + 0.05 * exp(-(1.0 - w) / fx / 12.0);              // davor hell: das Wasser ist weiter gelaufen als die Farbe
+  return c;
+}
+// 2 Marmorierung (Ebru): die Schichten liegen als Farbtropfen auf dem Wasser und werden mit einem Kamm gezogen;
+// jede Linie ist eine Grenze zwischen zwei Zeiten
+vec2 kamm(vec2 q, vec2 richtung, float abstand, float weg, float lambda){
+  // ein Zinken je Abstand quer zur Richtung, der die Farbe mitnimmt (Jaffer, mathematisches Marmorieren); rückwärts gerechnet
+  vec2 quer = vec2(-richtung.y, richtung.x);
+  float s = dot(q, quer), d = abs(fract(s / abstand + 0.5) - 0.5) * abstand;
+  return q - richtung * weg * lambda / (d + lambda);
+}
+vec3 marmor(vec2 u){
+  vec2 q = (u + uSchub) * vec2(uSeite, 1.0);
+  float t = uFT * 0.15;
+  // zwei Kammzüge, der zweite hin und zurück (gel-git), dazu ein langsamer Wirbel
+  q = kamm(q, vec2(0.0, 1.0), 0.06, 0.06 + 0.02 * sin(t), 0.012);
+  q = kamm(q + vec2(0.03, 0.0), vec2(1.0, 0.0), 0.12, 0.09 * sin(t * 0.7 + 1.0), 0.02);
+  vec2 m = vec2(0.5 * uSeite, 0.5); float r = length(q - m); float wi = 0.6 * exp(-r * 3.0);
+  q = m + mat2(cos(wi), sin(wi), -sin(wi), cos(wi)) * (q - m);
+  // die Tropfen: konzentrische Ringe, einer in den anderen gesetzt
+  float x = 0.0;
+  for (int i = 0; i < 4; i++) {
+    vec2 c0 = vec2(hs(vec2(float(i), 3.1)) * uSeite, hs(vec2(float(i), 7.7)));
+    x = max(x, (0.42 - length(q - c0)) * 22.0);
+  }
+  x = max(x, q.y * 3.0 + 0.5);
+  float S = uS, fx = max(fwidth(x), 1e-5), k = floor(x), w = x - k;
+  float km = mod(k, S);
+  vec2 schub = uGleit * km / S;
+  vec3 c = alt(schicht(imR(u + schub), lagVon(km)), km / max(1.0, S - 1.0) * 0.8);
+  float mm = mod(km, 4.0);
+  vec3 ton = mm < 1. ? vec3(1.0) : mm < 2. ? vec3(1.06,.95,.9) : mm < 3. ? vec3(.92,.97,1.06) : vec3(1.05,1.0,.88);
+  c *= ton;
+  // die Grenzen: dunkel und haarfein, mit einem lichten Hof, wie Farbe, die das Öl verdrängt
+  float d = min(w, 1.0 - w) / fx;
+  c *= 1.0 - 0.55 * exp(-pow(d / 0.9, 2.0));
+  c = mix(c, vec3(0.97, 0.94, 0.88), 0.18 * exp(-pow((d - 2.2) / 0.9, 2.0)));
+  return c;
+}
+// 3 Achat: wo eine Schicht über die andere geschoben ist, entsteht ein Band aus feinen Lagen, jede eine Zwischenzeit,
+// durchscheinend wie Chalzedon, einzelne Lagen rot wie Karneol (Rot ist Zeit), poliert
+vec3 achat(vec2 u){
+  vec2 p = u * vec2(uSeite, 1.0);
+  float x = feld(u), fx = max(fwidth(x), 1e-5);
+  float S = uS, k = floor(x), w = x - k;
+  float km = mod(k, S);
+  vec2 schub = vec2(cos(km * 2.4), sin(km * 2.4)) * 0.01 * km + uGleit * km / S;
+  vec3 c = alt(schicht(imR(u + schub), lagVon(km)), km / max(1.0, S - 1.0) * 0.8);
+  // das Band: im letzten Teil jeder Schicht viele feine Lagen, nach aussen dichter, ungleich breit wie im Stein
+  float b = smoothstep(0.5, 1.0, w);
+  float n = 8.0 + 3.0 * mod(km, 3.0);
+  float lz = pow(b, 1.5) * n + 0.7 * (rausch(p * 2.3 + km) - 0.5) * b;
+  float lf = fract(lz), li = floor(lz);
+  float zw = km + b;                                         // die Zwischenzeit dieser Lage
+  vec2 schub2 = vec2(cos(zw * 2.4), sin(zw * 2.4)) * 0.01 * zw + uGleit * zw / S;
+  vec3 zwischen = alt(schicht(imR(u + schub2), lagVon(zw)), zw / max(1.0, S - 1.0) * 0.8);
+  float h = hs(vec2(li, km));
+  vec3 kuehl = zwischen * vec3(0.8, 0.84, 0.9) + vec3(0.03, 0.035, 0.045);
+  vec3 milch = mix(zwischen, vec3(0.88, 0.9, 0.92), 0.36);
+  vec3 karneol = mix(zwischen, zwischen * vec3(1.06, 0.7, 0.6) + vec3(0.04, 0.0, 0.0), 0.7);
+  vec3 chalz = h < 0.12 ? karneol : mod(li, 2.0) < 1.0 ? kuehl : milch;
+  // innerhalb jeder Lage ein leichter Verlauf, wie Licht, das in den Stein dringt
+  chalz *= 0.9 + 0.14 * smoothstep(0.0, 1.0, lf);
+  float lfw = max(fwidth(lz), 1e-4);
+  float linie = 1.0 - smoothstep(0.0, lfw * 1.3, min(lf, 1.0 - lf));
+  chalz *= 1.0 - 0.3 * linie;
+  c = mix(c, chalz, smoothstep(0.0, 0.1, b) * 0.9);
+  // Politur: ein weicher Glanz quer über die Bänder
+  vec2 g = vec2(dFdx(x), dFdy(x)) / fx;
+  float glanz = pow(max(0.0, dot(normalize(g + 1e-5), normalize(vec2(-0.6, 0.8)))), 8.0) * b;
+  c += vec3(0.09, 0.09, 0.1) * glanz;
+  // die Grenze zur älteren Schicht: scharf, dunkel, darüber ein lichter Hauch
+  float d = (1.0 - w) / fx;
+  c *= 1.0 - 0.6 * exp(-pow(d / 0.9, 2.0));
+  c = mix(c, vec3(0.95, 0.94, 0.92), 0.12 * exp(-pow(w / fx / 1.6, 2.0)));
+  return c;
+}
+
 void main(){
-  vec3 c = uLesart == 0 ? kegel(v) : uLesart == 1 ? grabung(v) : ueberschiebung(v);
+  vec3 c = uLesart == 0 ? kegel(v) : uLesart == 1 ? grabung(v) : uUeber == 1 ? lasur(v) : uUeber == 2 ? marmor(v) : uUeber == 3 ? achat(v) : ueberschiebung(v);
+  if (uLesart == 2) c = mix(vec3(0.039, 0.039, 0.043), c, imMaske(v));
   vec2 sc = v * 2.0 - 1.0;
   c *= mix(0.62, 1.0, smoothstep(1.7, 0.4, length(sc * vec2(uSeite * 0.8, 1.0))));
   o = vec4(c, 1.0);
@@ -527,7 +654,7 @@ if (gl) {
   const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
   gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
-  ort = orte(prog, ['uZeit', 'uScharf', 'uGrube', 'uKopf', 'uN', 'uSpanne', 'uS', 'uSeite', 'uT', 'uFT', 'uLesart', 'uSpitze', 'uSchub', 'uGleit', 'uSprung', 'uRand', 'uKegel', 'uPxH']);
+  ort = orte(prog, ['uZeit', 'uScharf', 'uGrube', 'uKopf', 'uN', 'uSpanne', 'uS', 'uSeite', 'uT', 'uFT', 'uLesart', 'uSpitze', 'uSchub', 'uGleit', 'uSprung', 'uRand', 'uKegel', 'uPxH', 'uUeber', 'uRahmen']);
   ortG = orte(progGrube, ['uAlt', 'uPx', 'uStempel', 'uStempelR', 'uN', 'uAb', 'uSeite']);
   ortH = orte(progHell, ['uQ', 'uPx']); ortW = orte(progWeich, ['uQ', 'uRichtung']);
   ortZ = orte(progZusammen, ['uSzene', 'uGlow', 'uPx', 'uGlowStaerke', 'uT']);
@@ -705,6 +832,7 @@ function fotoMalen(t) {
   c.globalAlpha = 1;
 }
 
+let rahmen = [0, 0, 1, 1];   // wo das Bild steht, in Anteilen der Leinwand
 function malenIn(ctx, B, H) {
   const q = quelle; if (!q) return false;
   const qb = q.videoWidth || q.width, qh = q.videoHeight || q.height;
@@ -714,9 +842,10 @@ function malenIn(ctx, B, H) {
   // weicht das Format stark ab, steht das ganze Bild in der Mitte, daneben Saalschwarz (wie im Kristall)
   const deck = Math.max(B / qb, H / qh), ganz = Math.min(B / qb, H / qh);
   if (deck / ganz > 1.7) {
+    const rb = qb * ganz / B, rh = qh * ganz / H; rahmen = [(1 - rb) / 2, (1 - rh) / 2, (1 + rb) / 2, (1 + rh) / 2];
     ctx.fillStyle = '#0a0a0b'; ctx.fillRect(0, 0, B, H);
     ctx.drawImage(q, (B - qb * ganz) / 2, (H - qh * ganz) / 2, qb * ganz, qh * ganz);
-  } else ctx.drawImage(q, (B - qb * deck) / 2, (H - qh * deck) / 2, qb * deck, qh * deck);
+  } else { rahmen = [0, 0, 1, 1]; ctx.drawImage(q, (B - qb * deck) / 2, (H - qh * deck) / 2, qb * deck, qh * deck); }
   ctx.restore();
   return true;
 }
@@ -737,7 +866,8 @@ function lesartWaehlen(nr, still) {
   lesart = nr;
   document.querySelectorAll('[data-lesart]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.lesart === nr)));
   $('r-lesart').value = String(nr);
-  document.querySelector('.raender').hidden = nr !== 1;
+  document.querySelector('.raender:not(.stoffe)').hidden = nr !== 1;
+  document.querySelector('.stoffe').hidden = nr !== 2;
   lesartText();
   if (still) return;
   const z = TEXTE[sprache].lesarten[nr], g = $('geste');
@@ -799,6 +929,19 @@ let geisterZug = 0;
 const VORSPANN = new URLSearchParams(location.search).has('vorspann');   // für den vorgerechneten Film der Schwelle
 // der Rand der Grabung: 4 Ornament mit Relief-Licht, 1 Relief, 2 Kintsugi, 3 Spektralsaum (0, die Haarlinie, nur mit ?rand=0)
 const KEGEL = Math.max(1, Math.min(2, +(new URLSearchParams(location.search).get('kegel') ?? 2) || 2));   // Entwürfe für den Kegel
+// der Stoff der Überschiebung: 3 Achat (Standard), 1 Lasur; ?ueber=0 der frühere Stand, 2 die Marmorierung (Entwürfe)
+let ueber = 3;
+try { const r = localStorage.getItem('schichten.ueber'); if (r === '1' || r === '3') ueber = +r; } catch {}
+if (new URLSearchParams(location.search).has('ueber')) ueber = Math.max(0, Math.min(3, Math.round(+new URLSearchParams(location.search).get('ueber')) || 0));
+function stoffWaehlen(nr, still) {
+  ueber = nr;
+  document.querySelectorAll('[data-stoff]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.stoff === nr)));
+  if (still) return;
+  try { localStorage.setItem('schichten.ueber', String(nr)); } catch {}
+  spur('Stoff ' + nr);
+}
+document.querySelectorAll('[data-stoff]').forEach((b) => b.addEventListener('click', () => stoffWaehlen(+b.dataset.stoff)));
+stoffWaehlen(ueber, true);
 let rand = 4;
 try { const r = localStorage.getItem('schichten.rand'); if (r) rand = +r; } catch {}
 if (new URLSearchParams(location.search).has('rand')) rand = +new URLSearchParams(location.search).get('rand');
@@ -992,7 +1135,7 @@ function bild(ms) {
   gl.uniform1f(ort.uKopf, kopf); gl.uniform1f(ort.uN, SCHICHTEN);
   gl.uniform1f(ort.uSpanne, Math.min(SCHICHTEN - 1, tiefe / intervall)); gl.uniform1f(ort.uS, schichtZahl);
   gl.uniform1f(ort.uSeite, innerWidth / innerHeight); gl.uniform1f(ort.uT, t % 100); gl.uniform1f(ort.uFT, ft % 1000);
-  gl.uniform1i(ort.uLesart, lesart); gl.uniform2f(ort.uSpitze, spitze.x, spitze.y); gl.uniform2f(ort.uSchub, schub.x, schub.y); gl.uniform2f(ort.uGleit, gleit.x, gleit.y); gl.uniform1f(ort.uSprung, sprung); gl.uniform1i(ort.uRand, rand); gl.uniform1i(ort.uKegel, KEGEL); gl.uniform1f(ort.uPxH, 1 / leinwand.height);
+  gl.uniform1i(ort.uLesart, lesart); gl.uniform2f(ort.uSpitze, spitze.x, spitze.y); gl.uniform2f(ort.uSchub, schub.x, schub.y); gl.uniform2f(ort.uGleit, gleit.x, gleit.y); gl.uniform1f(ort.uSprung, sprung); gl.uniform1i(ort.uRand, rand); gl.uniform1i(ort.uKegel, KEGEL); gl.uniform1f(ort.uPxH, 1 / leinwand.height); gl.uniform1i(ort.uUeber, ueber); gl.uniform4f(ort.uRahmen, rahmen[0], rahmen[1], rahmen[2], rahmen[3]);
   zeichneFlaeche();
   nachbearbeiten(t);
   if (standbildWunsch) { standbildWunsch = false; leinwand.toBlob((b) => b && zeigen(b, 'schichten-' + zeitstempel() + '.png')); }
