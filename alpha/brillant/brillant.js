@@ -13,11 +13,11 @@ const leinwand = $('leinwand');
 // Tippt man im Menü auf den Namen, öffnet sich die Vitrine (unten): Bild oder Film, Name, ein Satz, «Öffnen».
 const BEREICHE = [
   { name: 'the deleuzian scheme', kopf: 'im Entstehen · Bild, Film, Ton', satz: 'Begriffe von Deleuze als Verfahren: Kristallbild, Schichten der Zeit, Dauer, Wahrnehmung, Diagramm, Figur – angewandt auf eigenes Material.',
-    href: '/alpha/deleuze/start/', sprachen: ['de', 'en', 'fr'], bild: 'vorschau/deleuzian-scheme.jpg', ton: [228, 92, 96] },
+    href: '/alpha/deleuze/start/', sprachen: ['de', 'en', 'fr'], bild: 'vorschau/deleuzian-scheme.jpg?v=3', ton: [228, 92, 96] },
   { name: 'Das Dritte Rad', kopf: 'Zeit · Form · Farbe', satz: 'Zeit, Form und Farbe drehen gegeneinander. Jede Drehung zieht einen Zettel, eine Begegnung aus ORNA und eine Übung aus OMNA COLOR.',
     href: '/beta/drittes-rad/', sprachen: ['de'], schau: 'rad', ton: [232, 150, 80] },
   { name: 'Animations', kopf: 'Bild · Bewegung', satz: 'Ein Bild, 24 Effekte, bis zu drei Ebenen: das Mischpult für eigene Animationen.',
-    href: '/animations/', sprachen: ['de', 'en', 'es'], adressen: { en: '/animations/en/', es: '/animations/es/' }, bild: 'vorschau/animations.jpg', film: 'vorschau/animations.mp4', ton: [124, 108, 255] }
+    href: '/animations/', sprachen: ['de', 'en', 'es'], adressen: { en: '/animations/en/', es: '/animations/es/' }, bild: 'vorschau/animations.jpg?v=2', film: 'vorschau/animations.mp4?v=2', ton: [124, 108, 255] }
 ];
 // Die Farben der Schichten: Rot (Godard), Orange (das Rad), Violett.
 
@@ -1066,7 +1066,8 @@ function vitrineBild(jetzt) {
     k.glanz.style.backgroundPosition = `${(50 + ry * 1.6 + vz.neig.x * 30).toFixed(1)}% ${(50 + rx * 3).toFixed(1)}%`;
     k.glanz.style.opacity = (0.35 + Math.min(0.65, Math.abs(ry) / 30 + Math.hypot(vz.neig.x, vz.neig.y) * 0.4)).toFixed(3);
     // Parallaxe: das Bild liegt hinter dem Glas und verschiebt sich gegen die Drehung
-    k.bild.style.transform = `translate3d(${(-ry * 0.45).toFixed(1)}px, ${(rx * 0.6).toFixed(1)}px, 0) scale(1.09)`;
+    // 0.26: nur noch ein Hauch Parallaxe und keine Vergrösserung, damit das Motiv ganz im Ausschnitt bleibt
+    k.bild.style.transform = `translate3d(${(-ry * 0.12).toFixed(1)}px, ${(rx * 0.15).toFixed(1)}px, 0)`;
     // Schatten auf dem Boden: je höher die Karte schwebt, desto weicher und leiser
     const hoehe = Math.sin(t * 0.9 + ph) * atmen;
     k.schatten.style.transform = `translateY(${(26 + hoehe * 4).toFixed(1)}px) scale(${(0.86 - hoehe * 0.04).toFixed(3)}, 1)`;
@@ -1184,7 +1185,7 @@ function grundMalenSchau(x, w, h, ton, mitte) {
   x.fillStyle = g; x.fillRect(0, 0, w, h);
 }
 function radMalen(x, w, h, t, [zeit, form, farbe, kern], ton) {
-  const cx = w / 2, cy = h * 0.5, R = Math.min(h * 0.84, w * 0.52) / 2;
+  const cx = w / 2, cy = h * 0.49, R = Math.min(h * 0.74, w * 0.46) / 2;   // mit Luft rundum (Christian: «passt nicht ganz in den Ausschnitt»)
   grundMalenSchau(x, w, h, ton, [cx, cy]);
   // Schatten unter dem schwebenden Rad
   x.save(); x.translate(cx, cy + R * 1.04); x.scale(1, 0.12);
