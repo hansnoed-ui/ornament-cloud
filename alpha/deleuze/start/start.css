@@ -32,7 +32,9 @@
 .folge .name { grid-column: 2; font-family: var(--schmal); font-size: 0.86rem; letter-spacing: 0.06em; color: var(--blanc); margin-top: 4px; }
 .folge .name i { font-family: var(--didone); color: var(--bleu); letter-spacing: 0; margin-left: 0.3em; }
 .folge .status { font-family: var(--schmal); font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gris); margin-left: 0.6em; white-space: nowrap; }
+.folge .zu { width: 100%; background: none; border: 0; margin: 0; text-align: left; font: inherit; color: inherit; cursor: pointer; }
 .folge .zu .wort { opacity: 0.5; }
+.folge .zu:hover .wort, .folge .zu:focus-visible .wort { opacity: 0.75; }
 .folge a .status { color: var(--rouge); }
 .folge li.hell .wort, .folge a:hover .wort, .folge a:focus-visible .wort { text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 6px; }
 .folge li:target .tc, .folge li.hell .tc { color: var(--rouge); }
@@ -41,6 +43,45 @@
 
 .meldung { position: fixed; left: var(--rand); right: var(--rand-r); bottom: max(16px, env(safe-area-inset-bottom)); z-index: 4; cursor: pointer; margin: 0;
   padding: 12px 14px; background: var(--noir); border-left: 3px solid var(--rouge); font-family: var(--schmal); font-size: 0.95rem; line-height: 1.35; box-shadow: 0 0 0 1px var(--linie); }
+
+/* Tafel eines kommenden Begriffs: vom rechten Rand auf halbtransparenter Saalfläche, nie auf dem Bild selbst geschrieben.
+   Gleiche Haut wie die Glosse der Operatoren (kristall.css), × und Wischen aus tafeln.js. */
+.tafel { position: fixed; z-index: 3; right: 0; top: calc(max(16px, env(safe-area-inset-top)) + 40px); width: min(330px, 84vw); margin: 0;
+  max-height: calc(100svh - 120px); overflow-y: auto; overscroll-behavior: contain;
+  padding: 14px max(18px, env(safe-area-inset-right)) 14px 18px;
+  background: rgba(10, 10, 11, 0.7); -webkit-backdrop-filter: blur(14px) saturate(1.15); backdrop-filter: blur(14px) saturate(1.15);
+  border-left: 2px solid var(--bleu-tief); box-shadow: -1px 0 0 0 var(--linie);
+  transform: translateX(104%); transition: transform .6s cubic-bezier(.2, .75, .2, 1); touch-action: pan-y; }
+.tafel.da { transform: none; }
+.tafel p { margin: 0 0 8px; }
+.tafel p:last-child { margin-bottom: 0; }
+.tafel .glosse-begriff { margin-right: 26px; font-family: var(--schmal); font-size: 0.7rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--rouge); }
+.tafel-name { font-family: var(--didone); font-weight: 700; text-transform: uppercase; font-size: 1.5rem; line-height: 0.98; letter-spacing: -0.01em; }
+.tafel-name i { display: block; font-weight: 400; text-transform: none; color: var(--bleu); font-size: 0.72em; letter-spacing: 0; margin-top: 3px; }
+.tafel .glosse-satz { font-family: var(--schmal); font-size: 1.04rem; line-height: 1.35; color: var(--blanc); }
+.tafel .glosse-quelle { font-family: var(--schmal); font-size: 0.66rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gris); }
+.glosse-zu { position: absolute; top: 3px; right: calc(max(18px, env(safe-area-inset-right)) - 17px); width: 40px; height: 40px; padding: 0;
+  background: none; border: 0; font-size: 0; color: var(--gris); cursor: pointer; }
+.glosse-zu::before, .glosse-zu::after { content: ""; position: absolute; left: 50%; top: 50%; width: 12px; height: 1.25px;
+  margin: -0.625px 0 0 -6px; background: currentColor; transform: rotate(45deg); }
+.glosse-zu::after { transform: rotate(-45deg); }
+.glosse-zu:hover, .glosse-zu:focus-visible { color: var(--blanc); }
+
+/* Abspann: Rollen rechtsbündig grau, Namen linksbündig weiss, an einer Mittelachse wie im Kino */
+.abspann { margin-top: 40px; padding: 72px var(--rand-r) max(56px, env(safe-area-inset-bottom)) var(--rand); border-top: 1px solid var(--linie);
+  display: grid; justify-items: center; gap: 56px; text-align: center; }
+.rollen { display: grid; grid-template-columns: 1fr 1fr; column-gap: 18px; row-gap: 22px; margin: 0; width: min(100%, 520px); }
+.rollen dt { text-align: right; font-family: var(--schmal); font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gris); padding-top: 0.32em; }
+.rollen dd { margin: 0; text-align: left; font-family: var(--schmal); font-weight: 500; font-size: 1.02rem; letter-spacing: 0.04em; line-height: 1.35; color: var(--blanc); }
+.rollen dd i { font-family: var(--didone); font-weight: 400; letter-spacing: 0; }
+.rollen small { font-weight: 400; font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gris); }
+.naechste { display: grid; justify-items: center; gap: 4px; max-width: 30em; }
+.naechste .zt-kennung { margin-bottom: 6px; }
+.naechste-namen { margin: 0; font-family: var(--didone); font-size: 1.35rem; line-height: 1.25; }
+.naechste-mit { margin: 6px 0 0; font-family: var(--schmal); font-size: 0.9rem; letter-spacing: 0.05em; line-height: 1.45; color: var(--gris); text-wrap: balance; }
+.suivre { font-size: clamp(2.2rem, 11vw, 4.6rem); text-wrap: balance; }
+.suivre i { margin-top: 6px; }
+.jahr { margin: -30px 0 0; font-family: var(--schmal); font-size: 0.68rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gris-dunkel); }
 
 /* Telefon im Hochformat: Der erste Bildschirm ist eine ruhige Tafel (Christian, 20.11.2026). Kristall und Beschriftung stehen
    mittig, unten schliesst er mit «Phase 1» und dem ersten Eintrag ab, nichts ist angeschnitten. Die Höhe des Eingangs ist das
@@ -61,6 +102,9 @@
 /* Grosser Bildschirm: alles auf einen Blick, genau so hoch wie das Fenster.
    Links der Kristall, rechts die Schnittfolge; beide richten sich nach der Fensterhöhe. */
 @media (min-width: 900px) {
+  .tafel { top: auto; bottom: 48px; width: min(400px, 40vw); padding: 20px 26px 18px 24px; }
+  .tafel-name { font-size: 2rem; }
+  .abspann { margin-top: 0; padding-top: 96px; }
   .seite { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; max-width: 1500px; margin: 0 auto; }
   .eingang { position: sticky; top: 64px; align-self: start; }
   .kristall-huelle { width: min(100%, 580px, calc(100vh - 250px)); min-width: 320px; }
@@ -69,7 +113,7 @@
   .folge .wort { font-size: clamp(3rem, 6.2vw, 6.4rem); }
 }
 @media (min-width: 900px) and (min-height: 560px) {
-  body { height: 100vh; display: flex; flex-direction: column; }
+  .vorne { height: 100vh; display: flex; flex-direction: column; }
   .seite { flex: 1 1 auto; min-height: 0; width: 100%; padding-bottom: 18px; align-items: stretch; }
   .eingang { position: static; align-self: stretch; display: flex; flex-direction: column; justify-content: center; min-height: 0; }
   .kristall-huelle { width: min(100%, calc(100vh - 175px)); min-width: 0; margin: 0 auto; }

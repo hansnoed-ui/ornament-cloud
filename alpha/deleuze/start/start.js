@@ -7,14 +7,24 @@ const $ = (id) => document.getElementById(id);
 
 // ---------- Katalog der Phase 1 ----------
 const OPS = [
-  { nr: 'I', jahr: 1985, href: '../kristall/', name: { de: 'Kristallbild', en: 'Crystal-image', fr: 'L’image-cristal' }, wort: { de: 'Kristall', en: 'Crystal', fr: 'Cristal' }, begriff: 'l’image-cristal' },
-  { nr: 'II', jahr: 1985, href: '../schichten/', name: { de: 'Schichten der Zeit', en: 'Sheets of the past', fr: 'Les nappes de passé' }, wort: { de: 'Schichten', en: 'Sheets', fr: 'Nappes' }, begriff: 'les nappes de passé' },
-  { nr: 'III', jahr: 1966, href: '../dauer/', name: { de: 'Dauer', en: 'Duration', fr: 'La durée' }, wort: { de: 'Dauer', en: 'Duration', fr: 'Durée' }, begriff: 'la durée' },
-  { nr: 'IV', jahr: 1983, name: { de: 'Wahrnehmung als Auswahl', en: 'Perception as selection', fr: 'La perception comme sélection' }, wort: { de: 'Auswahl', en: 'Selection', fr: 'Perception' }, begriff: 'la perception' },
-  { nr: 'V', jahr: 1981, name: { de: 'Diagramm', en: 'Diagram', fr: 'Le diagramme' }, wort: { de: 'Diagramm', en: 'Diagram', fr: 'Diagramme' }, begriff: 'le diagramme' },
-  { nr: 'VI', jahr: 1981, name: { de: 'Figur und Fläche', en: 'Figure and field', fr: 'La Figure et l’aplat' }, wort: { de: 'Figur', en: 'Figure', fr: 'Figure' }, begriff: 'la Figure et l’aplat' },
-  { nr: 'VII', jahr: 1980, name: { de: 'Ritornell', en: 'Refrain', fr: 'La ritournelle' }, wort: { de: 'Ritornell', en: 'Refrain', fr: 'Ritournelle' }, begriff: 'la ritournelle' },
-  { nr: 'VIII', jahr: 1988, name: { de: 'Falte', en: 'Fold', fr: 'Le pli' }, wort: { de: 'Falte', en: 'Fold', fr: 'Pli' }, begriff: 'le pli' }
+  { nr: 'I', jahr: 1985, href: '../kristall/', film: 'kristall', name: { de: 'Kristallbild', en: 'Crystal-image', fr: 'L’image-cristal' }, wort: { de: 'Kristall', en: 'Crystal', fr: 'Cristal' }, begriff: 'l’image-cristal' },
+  { nr: 'II', jahr: 1985, href: '../schichten/', film: 'schichten', name: { de: 'Schichten der Zeit', en: 'Sheets of the past', fr: 'Les nappes de passé' }, wort: { de: 'Schichten', en: 'Sheets', fr: 'Nappes' }, begriff: 'les nappes de passé' },
+  { nr: 'III', jahr: 1966, href: '../dauer/', film: 'dauer', name: { de: 'Dauer', en: 'Duration', fr: 'La durée' }, wort: { de: 'Dauer', en: 'Duration', fr: 'Durée' }, begriff: 'la durée' },
+  { nr: 'IV', jahr: 1983, name: { de: 'Wahrnehmung als Auswahl', en: 'Perception as selection', fr: 'La perception comme sélection' }, wort: { de: 'Auswahl', en: 'Selection', fr: 'Perception' }, begriff: 'la perception',
+    satz: { de: 'Wahrnehmen heisst weglassen: Vom Bild bleibt, was uns angeht.', en: 'To perceive is to subtract: what remains of the image is what concerns us.', fr: 'Percevoir, c’est soustraire : de l’image ne reste que ce qui nous intéresse.' },
+    quelle: 'Cinéma 1. L’image-mouvement, 1983' },
+  { nr: 'V', jahr: 1981, name: { de: 'Diagramm', en: 'Diagram', fr: 'Le diagramme' }, wort: { de: 'Diagramm', en: 'Diagram', fr: 'Diagramme' }, begriff: 'le diagramme',
+    satz: { de: 'Zufällige Striche der Hand stören das Klischee, und aus dem Chaos taucht die Figur auf.', en: 'Chance marks of the hand disturb the cliché, and the Figure rises out of the chaos.', fr: 'Des traits au hasard de la main brouillent le cliché, et la Figure surgit du chaos.' },
+    quelle: 'Francis Bacon. Logique de la sensation, 1981' },
+  { nr: 'VI', jahr: 1981, name: { de: 'Figur und Fläche', en: 'Figure and field', fr: 'La Figure et l’aplat' }, wort: { de: 'Figur', en: 'Figure', fr: 'Figure' }, begriff: 'la Figure et l’aplat',
+    satz: { de: 'Die Figur wird isoliert, der Grund wird zur flachen, gleichmässigen Farbfläche.', en: 'The Figure is isolated; the ground becomes a flat, even field of colour.', fr: 'La Figure est isolée ; le fond devient un aplat de couleur uniforme.' },
+    quelle: 'Francis Bacon. Logique de la sensation, 1981' },
+  { nr: 'VII', jahr: 1980, name: { de: 'Ritornell', en: 'Refrain', fr: 'La ritournelle' }, wort: { de: 'Ritornell', en: 'Refrain', fr: 'Ritournelle' }, begriff: 'la ritournelle',
+    satz: { de: 'Ein kleiner Refrain zieht einen Kreis um das Ungewisse und macht daraus ein Zuhause.', en: 'A little refrain draws a circle around the uncertain and makes a home of it.', fr: 'Une petite ritournelle trace un cercle autour de l’incertain et en fait un chez-soi.' },
+    quelle: 'Deleuze, Guattari, Mille plateaux, 1980' },
+  { nr: 'VIII', jahr: 1988, name: { de: 'Falte', en: 'Fold', fr: 'Le pli' }, wort: { de: 'Falte', en: 'Fold', fr: 'Pli' }, begriff: 'le pli',
+    satz: { de: 'Die Materie faltet sich ins Unendliche, und jede Falte birgt eine weitere.', en: 'Matter folds to infinity, and every fold holds another.', fr: 'La matière se plie à l’infini, et chaque pli en contient un autre.' },
+    quelle: 'Le Pli. Leibniz et le baroque, 1988' }
 ];
 
 const TEXTE = {
@@ -22,19 +32,19 @@ const TEXTE = {
     folgeTitel: 'Phase 1 · acht Begriffe',
     kristallAria: 'Kristall mit acht Facetten; jede zeigt das Bild durch einen anderen Begriff. Die Liste darunter führt zu denselben Seiten.',
     laeuft: 'läuft', dreh: 'Dreharbeiten',
-    letzterLauf: 'Der letzte Besuch endete unerwartet: ', tafel: 'das Bild, wie es ist'
+    letzterLauf: 'Der letzte Besuch endete unerwartet: ', tafel: 'das Bild, wie es ist', nach: 'nach Deleuze'
   },
   en: {
     folgeTitel: 'Phase 1 · eight concepts',
     kristallAria: 'Crystal with eight facets; each shows the image through a different concept. The list below leads to the same pages.',
     laeuft: 'now showing', dreh: 'in production',
-    letzterLauf: 'The last visit ended unexpectedly: ', tafel: 'the image as it is'
+    letzterLauf: 'The last visit ended unexpectedly: ', tafel: 'the image as it is', nach: 'after Deleuze'
   },
   fr: {
     folgeTitel: 'Phase 1 · huit concepts',
     kristallAria: 'Cristal à huit facettes ; chacune montre l’image à travers un autre concept. La liste ci-dessous mène aux mêmes pages.',
     laeuft: 'à l’affiche', dreh: 'en tournage',
-    letzterLauf: 'La dernière visite s’est terminée de façon inattendue : ', tafel: 'l’image telle qu’elle est'
+    letzterLauf: 'La dernière visite s’est terminée de façon inattendue : ', tafel: 'l’image telle qu’elle est', nach: 'd’après Deleuze'
   }
 };
 
@@ -45,6 +55,8 @@ let sprache = (() => {
   return TEXTE[n] ? n : 'de';
 })();
 
+let tafelK = -1; // die offene Tafel eines kommenden Begriffs
+
 function folgeBauen() {
   const t = TEXTE[sprache];
   $('folge').innerHTML = OPS.map((o, k) => {
@@ -52,13 +64,14 @@ function folgeBauen() {
       + `<span class="name">${o.nr} · ${o.name[sprache]}${sprache !== 'fr' ? `<i>${o.begriff}</i>` : ''}<span class="status">${o.href ? t.laeuft : t.dreh}</span></span>`;
     return o.href
       ? `<li id="${o.nr}" data-k="${k}"><a href="${o.href}">${inhalt}</a></li>`
-      : `<li id="${o.nr}" data-k="${k}"><div class="zu" aria-disabled="true">${inhalt}</div></li>`;
+      : `<li id="${o.nr}" data-k="${k}"><button type="button" class="zu" aria-controls="glosse">${inhalt}</button></li>`;
   }).join('');
   $('folge').querySelectorAll('li').forEach((li) => {
     const k = +li.dataset.k;
     li.addEventListener('pointerenter', () => { hell = k; ruhe = performance.now(); untertitelZeigen(k); });
     li.addEventListener('pointerleave', () => { hell = -1; });
-    li.querySelector('a')?.addEventListener('focus', () => { hell = k; untertitelZeigen(k); });
+    li.querySelector('a, button')?.addEventListener('focus', () => { hell = k; untertitelZeigen(k); });
+    li.querySelector('button')?.addEventListener('click', () => { hell = k; ruhe = performance.now(); untertitelZeigen(k); tafelZeigen(k); });
   });
 }
 
@@ -69,6 +82,7 @@ function uebersetzen() {
   document.querySelectorAll('[data-t-aria]').forEach((el) => el.setAttribute('aria-label', t[el.dataset.tAria]));
   document.querySelectorAll('[data-lang]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === sprache)));
   folgeBauen();
+  if (tafelK >= 0 && !$('glosse').hidden) tafelZeigen(tafelK);
 }
 document.querySelectorAll('[data-lang]').forEach((b) => b.addEventListener('click', () => {
   sprache = b.dataset.lang;
@@ -105,6 +119,20 @@ video.muted = true; video.loop = true; video.playsInline = true; video.setAttrib
 const bild = null, spiegeln = false, fokusY = 0.36;
 function beispiel() { spur('Beispiel'); video.src = '../kristall/beispiel.mp4?v=1'; video.play().catch(() => {}); }
 video.addEventListener('error', () => spur('Beispielvideo fehlt'));
+
+// ---------- Vorspanne der fertigen Operatoren ----------
+// Die Facetten der laufenden Operatoren zeigen deren echten Vorspann (Christian, 20.11.2026), klein gerechnet:
+// facetten/*.mp4 sind 320 × 320, aus dem jeweiligen vorspann.mp4 geschnitten (tools/facetten.sh im Deleuze-Repo).
+const FILME = OPS.map((o) => {
+  if (!o.film) return null;
+  const v = document.createElement('video');
+  v.muted = true; v.loop = true; v.playsInline = true; v.setAttribute('playsinline', ''); v.preload = 'auto';
+  v.src = `facetten/${o.film}.mp4?v=1`;
+  v.addEventListener('error', () => spur('Facette ' + o.nr + ' fehlt'));
+  return v;
+});
+const filmBereit = (v) => v && v.readyState >= 2 && v.videoWidth > 0;
+function filmeLaufen(an) { FILME.forEach((v) => { if (!v) return; if (an) v.play().catch(() => {}); else v.pause(); }); }
 
 // ---------- Gedächtnis: die letzten Bilder, quadratisch und klein ----------
 const SEITE = 220, TIEFE = 48;
@@ -153,6 +181,13 @@ function decken(q, box, filter = 'none') {
   ctx.filter = filter;
   ctx.drawImage(q, x * k, y * k, w * k, h * k, x, y, w, h);
   ctx.filter = 'none';
+}
+
+// Ein Vorspann füllt die Facette ganz (wie object-fit: cover), mit dem Gesicht in der Mitte
+function film(v, box) {
+  const [x, y, w, h] = box, s = Math.max(w, h), n = v.videoWidth;
+  const sw = n * (w / s), sh = n * (h / s);
+  ctx.drawImage(v, (n - sw) / 2, (n - sh) * 0.45, sw, sh, x, y, w, h);
 }
 
 const MALER = [
@@ -206,8 +241,9 @@ function zeichnen(t) {
   // Solange das Video lädt, steht schon der Schliff: Kanten ohne Bild
   if (gefuellt) facetten.forEach((f, k) => {
     ctx.save(); pfad(f.poly); ctx.clip();
-    MALER[k](f, t);
-    if (!OPS[k].href) { ctx.fillStyle = 'rgba(10,10,11,0.18)'; ctx.fillRect(...f.box); }
+    if (filmBereit(FILME[k])) film(FILME[k], f.box); else MALER[k](f, t);
+    // Was noch gedreht wird, liegt etwas im Schatten
+    if (!OPS[k].href) { ctx.fillStyle = 'rgba(10,10,11,0.34)'; ctx.fillRect(...f.box); }
     ctx.restore();
   });
   if (gefuellt) { ctx.save(); pfad(tisch); ctx.clip(); decken(frame(0), [tisch[7][0] - 2, tisch[0][1] - 2, tisch[2][0] - tisch[7][0] + 4, tisch[4][1] - tisch[0][1] + 4]); ctx.restore(); }
@@ -233,6 +269,26 @@ function untertitelZeigen(k) {
   el.replaceChildren(kennung, name); el.classList.add('da');
 }
 
+// Ein kommender Begriff öffnet seine Tafel vom rechten Rand: Begriff, ein Satz, Quelle mit Jahr (Christian, 20.11.2026).
+// Der Satz ist eine Lesart in eigenen Worten, kein Zitat; darum «nach Deleuze».
+function tafelZeigen(k) {
+  const o = OPS[k], t = TEXTE[sprache], g = $('glosse');
+  if (!o.satz) return;
+  tafelK = k;
+  $('tafel-kennung').textContent = `${o.nr} · ${o.jahr} · ${t.dreh}`;
+  const name = document.createElement('span'); name.textContent = o.name[sprache];
+  const teile = [name];
+  if (sprache !== 'fr') { const i = document.createElement('i'); i.textContent = o.begriff; teile.push(i); }
+  $('tafel-name').replaceChildren(...teile);
+  $('tafel-satz').textContent = o.satz[sprache];
+  $('tafel-quelle').textContent = `${t.nach} · ${o.quelle}`;
+  const zu = g.querySelector('.glosse-zu'); if (zu) zu.setAttribute('aria-label', ({ de: 'Schliessen', en: 'Close', fr: 'Fermer' })[sprache]);
+  if (g.hidden) { g.hidden = false; g.classList.remove('da'); requestAnimationFrame(() => requestAnimationFrame(() => g.classList.add('da'))); }
+  else g.classList.add('da');
+  spur('Tafel ' + o.nr);
+}
+addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('glosse').hidden) $('glosse').querySelector('.glosse-zu')?.click(); });
+
 // ---------- Berühren ----------
 function facetteUnter(e) {
   const r = lw.getBoundingClientRect(), x = (e.clientX - r.left) * dpr, y = (e.clientY - r.top) * dpr;
@@ -242,17 +298,18 @@ lw.addEventListener('pointermove', (e) => { if (e.pointerType !== 'mouse') retur
 lw.addEventListener('pointerleave', () => { hell = -1; });
 lw.addEventListener('click', (e) => {
   if (video.paused && !bild) video.play().catch(() => {});
+  filmeLaufen(true);
   const k = facetteUnter(e); ruhe = performance.now();
   if (k < 0) return;
   hell = k; untertitelZeigen(k);
   if (OPS[k].href) { spur('→ ' + OPS[k].nr); setTimeout(() => { location.href = OPS[k].href; }, 380); }
-  else document.getElementById(OPS[k].nr)?.scrollIntoView({ behavior: bewegungRuhig ? 'auto' : 'smooth', block: 'center' });
+  else tafelZeigen(k);
 });
 
 // ---------- Lauf ----------
 let sichtbar = true, letzte = 0, letzterWechsel = 0;
-new IntersectionObserver((es) => { sichtbar = es[0].isIntersecting; if (sichtbar && !bild) video.play().catch(() => {}); else if (!sichtbar) video.pause(); }).observe(lw);
-document.addEventListener('visibilitychange', () => { if (document.hidden) { video.pause(); spur('Pause'); } else { spur('zurück'); if (sichtbar && !bild) video.play().catch(() => {}); } });
+new IntersectionObserver((es) => { sichtbar = es[0].isIntersecting; if (sichtbar && !bild) video.play().catch(() => {}); else if (!sichtbar) video.pause(); filmeLaufen(sichtbar); }).observe(lw);
+document.addEventListener('visibilitychange', () => { if (document.hidden) { video.pause(); filmeLaufen(false); spur('Pause'); } else { spur('zurück'); if (sichtbar && !bild) video.play().catch(() => {}); filmeLaufen(sichtbar); } });
 
 function lauf(ms) {
   requestAnimationFrame(lauf);
