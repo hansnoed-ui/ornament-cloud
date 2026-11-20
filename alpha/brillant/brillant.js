@@ -480,7 +480,7 @@ function satzspiegel(c) {
   const sw = Math.min(W - (hoch ? 28 : 80), 620), pad = hoch ? 34 : 48;
   const scheibe = { x: (W - sw) / 2, y: y - fs * 0.95 - pad, w: sw, h: pad * 2 + fs * 0.95 + satz * 6.2 + 40 };
   // offenes Menü: der Stein gross über der Mitte, die Bereiche darunter
-  const menuGem = { x: W / 2, y: Math.round(H * (hoch ? 0.39 : 0.36)), r: Math.min(W, H) * (hoch ? 0.2 : 0.13) };
+  const menuGem = { x: W / 2, y: Math.round(H * 0.382), r: Math.min(W, H) * (hoch ? 0.2 : 0.13) };
   return { hoch, fs, gemR, satz, saetze, scheibe, menuGem };
 }
 // eine Glasscheibe ohne Kanten: weich auslaufend, was darunter liegt erscheint verschwommen und getönt
@@ -795,7 +795,7 @@ function projizierenGlas(zustand, soll, f, mu, gx, gy, rr) {
   // 0.9: keine Strahlen, keine Scheibe. Das Werk zeigt sich im Stein; darunter stehen nur Name, Satz und Verweis.
   if (soll) glasK = zustand;
   const ps = sanft(praes), el = flaechen[glasK - 1];
-  const pw = el.offsetWidth, ph = el.offsetHeight, ruheY = gy + rr * 1.38 + ph / 2 + 6;
+  const pw = el.offsetWidth, ph = el.offsetHeight, ruheY = Math.max(gy + rr * 1.3 + ph / 2, H * 0.618);   // goldener Schnitt: Stein auf 0.382, Name auf 0.618
   glasZ.strahl = 0; glasZ.praes = 0;
   flaechen.forEach((e, i) => {
     const da = i + 1 === glasK ? ps * Math.max(0, (mu - 0.5) / 0.5) : 0, aktiv = da > 0.95;
