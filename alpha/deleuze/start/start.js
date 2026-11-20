@@ -13,7 +13,7 @@ const OPS = [
   { nr: 'IV', jahr: 1983, href: '../wahrnehmung/', film: 'wahrnehmung', name: { de: 'Wahrnehmung als Auswahl', en: 'Perception as selection', fr: 'La perception comme sélection' }, wort: { de: 'Auswahl', en: 'Selection', fr: 'Perception' }, begriff: 'la perception',
     satz: { de: 'Wahrnehmen heisst weglassen: Vom Bild bleibt, was uns angeht.', en: 'To perceive is to subtract: what remains of the image is what concerns us.', fr: 'Percevoir, c’est soustraire : de l’image ne reste que ce qui nous intéresse.' },
     quelle: 'Cinéma 1. L’image-mouvement, 1983' },
-  { nr: 'V', jahr: 1981, name: { de: 'Diagramm', en: 'Diagram', fr: 'Le diagramme' }, wort: { de: 'Diagramm', en: 'Diagram', fr: 'Diagramme' }, begriff: 'le diagramme',
+  { nr: 'V', jahr: 1981, href: '../diagramm/', film: 'diagramm', name: { de: 'Diagramm', en: 'Diagram', fr: 'Le diagramme' }, wort: { de: 'Diagramm', en: 'Diagram', fr: 'Diagramme' }, begriff: 'le diagramme',
     satz: { de: 'Zufällige Striche der Hand stören das Klischee, und aus dem Chaos taucht die Figur auf.', en: 'Chance marks of the hand disturb the cliché, and the Figure rises out of the chaos.', fr: 'Des traits au hasard de la main brouillent le cliché, et la Figure surgit du chaos.' },
     quelle: 'Francis Bacon. Logique de la sensation, 1981' },
   { nr: 'VI', jahr: 1981, name: { de: 'Figur und Fläche', en: 'Figure and field', fr: 'La Figure et l’aplat' }, wort: { de: 'Figur', en: 'Figure', fr: 'Figure' }, begriff: 'la Figure et l’aplat',
