@@ -27,7 +27,7 @@ const TEXTE = {
       figure: { begriff: 'la Figure', satz: 'Aus dem Chaos taucht die Figur auf, nicht mehr als Abbild, sondern gemalt. Hier bestimmst du, wie schnell.', zitat: '', quelle: 'Deleuze, Logique de la sensation, 1981, Kap. XII, sinngemäss' },
       strahl: { begriff: 'le dripping', satz: 'Pollock lässt die Farbe vom Stock fliessen, ohne die Leinwand zu berühren. Ein dicker Strahl gibt Lachen, ein dünner Haarlinien.', zitat: '', quelle: 'Herczyński, Cernuschi, Mahadevan, Physics Today, 2011, sinngemäss' },
       hoehe: { begriff: 'la corde liquide', satz: 'Je höher die Hand, desto mehr schlingt sich der Faden zu Schlaufen, bevor er landet. Langsame Hand, enge Kreise.', zitat: '', quelle: 'Herczyński, Cernuschi, Mahadevan, Physics Today, 2011, sinngemäss' },
-      fond: { begriff: 'le fond', satz: 'Wie weit das Diagramm das Bild frisst: Unter den Fäden wird der Grund zur rohen Leinwand, in die das Bild nur noch einsickert.', zitat: '', quelle: 'Deleuze, Logique de la sensation, 1981, Kap. XII, sinngemäss' },
+      fond: { begriff: 'le fond', satz: 'Wie lange die Farbe nass bleibt: Unter den Fäden liegt rohe Leinwand, das Bild sickert nur als Hof ein. Trocknet die Farbe, kehrt das Klischee zurück.', zitat: '', quelle: 'Deleuze, Logique de la sensation, 1981, Kap. XII, sinngemäss' },
       force: { begriff: 'le rapport de forces', satz: 'Eine Kraft ist nie allein, sie ist immer schon ein Verhältnis zu anderen Kräften. Lege zwei Finger auf, und die Linien dazwischen geraten in Spannung.', zitat: '', quelle: 'Deleuze, Foucault, 1986, sinngemäss' },
       ligne: { begriff: 'la ligne abstraite', satz: 'Die Linien folgen den Kräften im Bild, nicht seinen Umrissen. Je länger sie sind, desto weiter reicht die Karte.', zitat: '', quelle: 'Deleuze, Foucault, 1986, sinngemäss' },
       forces: { begriff: 'peindre les forces', satz: 'Nicht Formen wiedergeben, sondern Kräfte sichtbar machen, die man nicht sieht: die Bewegung im Bild treibt die Linien.', zitat: '«Kunst gibt nicht das Sichtbare wieder, sondern macht sichtbar.»', quelle: 'Klee, Schöpferische Konfession, 1920; Deleuze, Logique de la sensation, Kap. VIII' }
@@ -36,7 +36,7 @@ const TEXTE = {
     reglerGlosse: [['hand', 'matiere', 'figure'], ['strahl', 'hoehe', 'fond'], ['force', 'ligne', 'forces']],
     lesarten: [
       { kurz: 'Wischen', titel: 'Der Wisch', wer: 'Bacon', geste: 'Mit dem Daumen durchs Bild fegen. Halten verreibt.', text: 'Bevor Bacon zu malen beginnt, ist die Leinwand nicht leer. Sie ist voller Klischees: Photographien, Bilder, die man schon gesehen hat. Darum setzt er zufällige Spuren hinein, er wischt mit dem Lappen, fegt mit der Bürste, reibt, wirft Farbe. Deleuze nennt diese Spuren das Diagramm. Es ist eine Katastrophe für das Bild, aber auch ein Keim: Aus ihm taucht die Figur auf, die kein Abbild mehr ist. Hier liegt das Bild zuerst glatt da, als Klischee. Dein Daumen fegt hindurch, das Gesicht wird mitgerissen und lebt in der Farbe weiter. Halten verreibt und verdreht es. Dann kehrt die Figur zurück, gemalt.' },
-      { kurz: 'Fäden', titel: 'Das All-over', wer: 'Pollock, Frankenthaler', geste: 'Ziehen: die Farbe fliesst. Langsam ziehen gibt Schlaufen.', text: 'Pollock legt die Leinwand auf den Boden und lässt die Farbe vom Stock fliessen. Die Hand berührt das Bild nicht mehr. Für Deleuze ist das ein zweiter Weg der modernen Malerei: Das Diagramm wird nicht örtlich gehalten wie bei Bacon, es breitet sich über das ganze Bild aus, in alle Richtungen, ohne Mitte. Die Linie umgrenzt nichts mehr. Hier fliesst die Farbe aus deinem Daumen. Der Faden schlingt sich bei langsamer Hand zu Schlaufen, bei schneller wird er gerade und dünn, ein Ruck spritzt. In den Fäden läuft das Bild weiter, darunter sickert der Grund in die rohe Leinwand wie bei Frankenthaler.' },
+      { kurz: 'Fäden', titel: 'Das All-over', wer: 'Pollock, Frankenthaler', geste: 'Ziehen: vier Strahlen fliessen. Langsam gibt Schlaufen, loslassen trocknet.', text: 'Pollock legt die Leinwand auf den Boden und lässt die Farbe vom Stock fliessen. Die Hand berührt das Bild nicht mehr. Für Deleuze ist das ein zweiter Weg der modernen Malerei: Das Diagramm wird nicht örtlich gehalten wie bei Bacon, es breitet sich über das ganze Bild aus, in alle Richtungen, ohne Mitte. Die Linie umgrenzt nichts mehr. Sobald du berührst, fällt das Klischee weg, und es bleibt rohe Leinwand. Von deinem Daumen fliessen mehrere Strahlen wie von einem Stock. Bei langsamer Hand schlingen sie sich zu Schlaufen, bei schneller werden sie gerade und dünn, ein Ruck spritzt. Das Gesicht lebt nur noch in den Fäden, und um sie herum sickert es als Hof in die Baumwolle wie bei Frankenthaler. Lässt du los, trocknet die Farbe, und das Klischee kehrt zurück.' },
       { kurz: 'Kräfte', titel: 'Die abstrakte Maschine', wer: 'Foucault, Deleuze', geste: 'Halten setzt eine Kraft. Ziehen lenkt die Linien.', text: '1986 schreibt Deleuze ein Buch über seinen Freund Michel Foucault. Dort bekommt das Diagramm einen zweiten Sinn: Es ist die Karte der Kräfteverhältnisse, eine abstrakte Maschine, die selbst noch keine Form hat, aber alle Formen verteilt. Foucaults Beispiel ist das Panoptikum, in dem alle gesehen werden, ohne den zu sehen, der sieht. Hier wird das Bild zu einer solchen Karte: Feine Linien folgen den Kräften im Bild, seinen Kanten und seinen Bewegungen. Dein Finger setzt eine neue Kraft, und alle Linien geraten in ihr Feld.' }
     ],
     wenden: 'Kamera wenden', tonAn: 'Ton an', tonAus: 'Ton aus',
@@ -70,7 +70,7 @@ const TEXTE = {
       figure: { begriff: 'la Figure', satz: 'The Figure rises out of the chaos, no longer as a likeness but painted. Here you decide how fast.', zitat: '', quelle: 'Deleuze, The Logic of Sensation, 1981, ch. XII, paraphrased' },
       strahl: { begriff: 'le dripping', satz: 'Pollock lets the paint run off a stick without touching the canvas. A thick jet makes pools, a thin one hairlines.', zitat: '', quelle: 'Herczyński, Cernuschi, Mahadevan, Physics Today, 2011, paraphrased' },
       hoehe: { begriff: 'la corde liquide', satz: 'The higher the hand, the more the thread coils into loops before it lands. A slow hand, tight circles.', zitat: '', quelle: 'Herczyński, Cernuschi, Mahadevan, Physics Today, 2011, paraphrased' },
-      fond: { begriff: 'le fond', satz: 'How far the diagram devours the image: beneath the threads the ground turns to raw canvas, into which the image only seeps.', zitat: '', quelle: 'Deleuze, The Logic of Sensation, 1981, ch. XII, paraphrased' },
+      fond: { begriff: 'le fond', satz: 'How long the paint stays wet: beneath the threads lies raw canvas, the image seeps in only as a halo. When the paint dries, the cliché returns.', zitat: '', quelle: 'Deleuze, The Logic of Sensation, 1981, ch. XII, paraphrased' },
       force: { begriff: 'le rapport de forces', satz: 'A force is never alone; it is always already a relation to other forces. Rest two fingers and the lines between them come under tension.', zitat: '', quelle: 'Deleuze, Foucault, 1986, paraphrased' },
       ligne: { begriff: 'la ligne abstraite', satz: 'The lines follow the forces in the image, not its outlines. The longer they are, the further the map reaches.', zitat: '', quelle: 'Deleuze, Foucault, 1986, paraphrased' },
       forces: { begriff: 'peindre les forces', satz: 'Not to render forms but to make visible forces that cannot be seen: the movement in the image drives the lines.', zitat: '« Kunst gibt nicht das Sichtbare wieder, sondern macht sichtbar. »', quelle: 'Klee, Creative Confession, 1920 (original); Deleuze, The Logic of Sensation, ch. VIII' }
@@ -79,7 +79,7 @@ const TEXTE = {
     reglerGlosse: [['hand', 'matiere', 'figure'], ['strahl', 'hoehe', 'fond'], ['force', 'ligne', 'forces']],
     lesarten: [
       { kurz: 'Wipe', titel: 'The wipe', wer: 'Bacon', geste: 'Sweep your thumb through the image. Holding rubs.', text: 'Before Bacon begins to paint, the canvas is not empty. It is full of clichés: photographs, images one has already seen. So he puts chance marks into it; he wipes with a rag, sweeps with a brush, rubs, throws paint. Deleuze calls these marks the diagram. It is a catastrophe for the image, but also a germ: out of it rises the Figure, which is no longer a likeness. Here the image first lies smooth, as a cliché. Your thumb sweeps through it, the face is dragged along and lives on in the paint. Holding rubs and twists it. Then the Figure returns, painted.' },
-      { kurz: 'Threads', titel: 'The all-over', wer: 'Pollock, Frankenthaler', geste: 'Drag: the paint flows. Drag slowly for loops.', text: 'Pollock lays the canvas on the floor and lets the paint run off a stick. The hand no longer touches the picture. For Deleuze this is a second way of modern painting: the diagram is not kept local as with Bacon, it spreads over the whole picture, in every direction, without a centre. The line no longer outlines anything. Here the paint flows from your thumb. The thread coils into loops when the hand is slow and turns straight and thin when it is fast; a jolt splatters. The image keeps running inside the threads, while beneath them the ground seeps into raw canvas as with Frankenthaler.' },
+      { kurz: 'Threads', titel: 'The all-over', wer: 'Pollock, Frankenthaler', geste: 'Drag: four jets flow. Slowly for loops, let go and it dries.', text: 'Pollock lays the canvas on the floor and lets the paint run off a stick. The hand no longer touches the picture. For Deleuze this is a second way of modern painting: the diagram is not kept local as with Bacon, it spreads over the whole picture, in every direction, without a centre. The line no longer outlines anything. As soon as you touch, the cliché falls away and raw canvas remains. Several jets flow from your thumb as from a stick. When the hand is slow they coil into loops, when it is fast they turn straight and thin; a jolt splatters. The face now lives only in the threads, and around them it seeps into the cotton as a halo, as with Frankenthaler. Let go, the paint dries and the cliché returns.' },
       { kurz: 'Forces', titel: 'The abstract machine', wer: 'Foucault, Deleuze', geste: 'Holding sets a force. Dragging steers the lines.', text: 'In 1986 Deleuze writes a book on his friend Michel Foucault. There the diagram takes on a second sense: it is the map of relations of force, an abstract machine that has no form of its own yet distributes all forms. Foucault’s example is the Panopticon, in which everyone is seen without seeing the one who sees. Here the image becomes such a map: fine lines follow the forces in the image, its edges and its movements. Your finger sets a new force, and all the lines enter its field.' }
     ],
     wenden: 'Flip camera', tonAn: 'Sound on', tonAus: 'Sound off',
@@ -113,7 +113,7 @@ const TEXTE = {
       figure: { begriff: 'la Figure', satz: 'La Figure surgit du chaos, non plus comme ressemblance, mais peinte. Ici tu décides à quelle vitesse.', zitat: '', quelle: 'Deleuze, Logique de la sensation, 1981, ch. XII, en substance' },
       strahl: { begriff: 'le dripping', satz: 'Pollock laisse couler la peinture d’un bâton sans toucher la toile. Un jet épais fait des flaques, un jet fin des lignes déliées.', zitat: '', quelle: 'Herczyński, Cernuschi, Mahadevan, Physics Today, 2011, en substance' },
       hoehe: { begriff: 'la corde liquide', satz: 'Plus la main est haute, plus le fil s’enroule en boucles avant de toucher la toile. Main lente, cercles serrés.', zitat: '', quelle: 'Herczyński, Cernuschi, Mahadevan, Physics Today, 2011, en substance' },
-      fond: { begriff: 'le fond', satz: 'Jusqu’où le diagramme dévore l’image : sous les fils, le fond devient toile brute, où l’image ne fait plus que s’imprégner.', zitat: '', quelle: 'Deleuze, Logique de la sensation, 1981, ch. XII, en substance' },
+      fond: { begriff: 'le fond', satz: 'Combien de temps la peinture reste humide : sous les fils, la toile brute ; l’image ne s’y imprègne qu’en auréole. Quand elle sèche, le cliché revient.', zitat: '', quelle: 'Deleuze, Logique de la sensation, 1981, ch. XII, en substance' },
       force: { begriff: 'le rapport de forces', satz: 'Une force n’est jamais seule, elle est toujours déjà en rapport avec d’autres forces. Pose deux doigts, et les lignes entre eux se tendent.', zitat: '', quelle: 'Deleuze, Foucault, 1986, en substance' },
       ligne: { begriff: 'la ligne abstraite', satz: 'Les lignes suivent les forces de l’image, non ses contours. Plus elles sont longues, plus la carte porte loin.', zitat: '', quelle: 'Deleuze, Foucault, 1986, en substance' },
       forces: { begriff: 'peindre les forces', satz: 'Non pas rendre des formes, mais rendre visibles des forces qui ne le sont pas : le mouvement de l’image pousse les lignes.', zitat: '« Kunst gibt nicht das Sichtbare wieder, sondern macht sichtbar. »', quelle: 'Klee, Credo du créateur, 1920 ; Deleuze, Logique de la sensation, ch. VIII' }
@@ -122,7 +122,7 @@ const TEXTE = {
     reglerGlosse: [['hand', 'matiere', 'figure'], ['strahl', 'hoehe', 'fond'], ['force', 'ligne', 'forces']],
     lesarten: [
       { kurz: 'Essuyer', titel: 'Le coup de chiffon', wer: 'Bacon', geste: 'Balaie l’image du pouce. Tenir frotte.', text: 'Avant que Bacon ne commence à peindre, la toile n’est pas vide. Elle est pleine de clichés : photographies, images déjà vues. Alors il y jette des marques au hasard ; il essuie au chiffon, balaie à la brosse, frotte, jette de la peinture. Deleuze appelle ces marques le diagramme. C’est une catastrophe pour l’image, mais aussi un germe : il en surgit la Figure, qui n’est plus une ressemblance. Ici l’image repose d’abord, lisse, comme un cliché. Ton pouce la balaie, le visage est entraîné et continue de vivre dans la peinture. Tenir le frotte et le tord. Puis la Figure revient, peinte.' },
-      { kurz: 'Fils', titel: 'L’all-over', wer: 'Pollock, Frankenthaler', geste: 'Glisse : la peinture coule. Lentement, elle fait des boucles.', text: 'Pollock pose la toile au sol et laisse couler la peinture d’un bâton. La main ne touche plus le tableau. Pour Deleuze, c’est une deuxième voie de la peinture moderne : le diagramme n’est pas gardé local comme chez Bacon, il s’étend à tout le tableau, dans toutes les directions, sans centre. La ligne ne cerne plus rien. Ici la peinture coule de ton pouce. Le fil s’enroule en boucles quand la main est lente, devient droit et fin quand elle est rapide ; un coup sec éclabousse. L’image continue de courir dans les fils, tandis que dessous le fond s’imprègne dans la toile brute comme chez Frankenthaler.' },
+      { kurz: 'Fils', titel: 'L’all-over', wer: 'Pollock, Frankenthaler', geste: 'Glisse : quatre jets coulent. Lentement, des boucles ; lâche, ça sèche.', text: 'Pollock pose la toile au sol et laisse couler la peinture d’un bâton. La main ne touche plus le tableau. Pour Deleuze, c’est une deuxième voie de la peinture moderne : le diagramme n’est pas gardé local comme chez Bacon, il s’étend à tout le tableau, dans toutes les directions, sans centre. La ligne ne cerne plus rien. Dès que tu touches, le cliché tombe et il reste la toile brute. Plusieurs jets coulent de ton pouce comme d’un bâton. Quand la main est lente, ils s’enroulent en boucles ; rapide, ils deviennent droits et fins ; un coup sec éclabousse. Le visage ne vit plus que dans les fils, et autour d’eux il s’imprègne dans le coton en auréole, comme chez Frankenthaler. Lâche : la peinture sèche et le cliché revient.' },
       { kurz: 'Forces', titel: 'La machine abstraite', wer: 'Foucault, Deleuze', geste: 'Tenir pose une force. Glisser oriente les lignes.', text: 'En 1986, Deleuze écrit un livre sur son ami Michel Foucault. Le diagramme y prend un second sens : c’est la carte des rapports de forces, une machine abstraite qui n’a pas encore de forme, mais qui distribue toutes les formes. L’exemple de Foucault est le Panoptique, où chacun est vu sans voir celui qui voit. Ici l’image devient une telle carte : des lignes fines suivent les forces de l’image, ses bords et ses mouvements. Ton doigt pose une force nouvelle, et toutes les lignes entrent dans son champ.' }
     ],
     wenden: 'Retourner', tonAn: 'Son activé', tonAus: 'Son coupé',
@@ -212,6 +212,7 @@ const MAX_DPR = leicht ? 0.6 : 2;                          // fein wie der Bilds
 const FLUSS_SEITE = leicht ? 110 : telefon ? 180 : 240;    // feinste Stufe des optischen Flusses
 const WISCH_SEITE = leicht ? 480 : telefon ? 1024 : 1400;  // Feld der Verschiebung: so fein, dass die Borsten einzeln ziehen
 const KRAFT_SEITE = leicht ? 200 : telefon ? 360 : 480;    // Feld der Kräfte
+const SAUG_SEITE = leicht ? 256 : telefon ? 560 : 720;     // nasser Hof der Fäden in der Baumwolle
 const LIC_SCHRITTE = leicht ? 8 : 16;                      // Schritte je Richtung entlang einer Kraftlinie
 if (leicht) spur('Leichte Fassung (ohne Grafikkarte)');
 if (!gl) { melden(TEXTE[sprache].keinGL); spur('kein WebGL2'); }
@@ -375,28 +376,44 @@ void main(){
   vec3 k = vW.z < 0.5 ? vec3(1.0, 0.0, 0.0) : vW.z < 1.5 ? vec3(0.0, 1.0, 0.0) : vec3(0.0, 0.0, 1.0);
   o = vec4(k * dk, dk);
 }`;
-const FS_FAEDEN = KOPF + `uniform sampler2D uScharf, uF; uniform vec2 uPx; uniform float uGrund, uTinte, uBeruehrt, uSeite, uT; uniform vec4 uRahmen;
+// Frankenthaler: die Farbe sickert als nasser Hof in die ungrundierte Baumwolle. Eine Front wächst aus jedem Faden,
+// entlang der Fasern schneller, und bleibt stehen, wenn das Wasser aufgebraucht ist (Wert = Wasser, das noch weiterwandert).
+const FS_SAUG = KOPF + `uniform sampler2D uAlt, uF; uniform vec2 uPx; uniform float uSeite, uAb, uLauf;
+void main(){
+  float s = texture(uAlt, v).r, nm = 0.0;
+  for (int k = 0; k < 8; k++) { float a = float(k) * 0.785398 + 0.39; nm = max(nm, texture(uAlt, v + vec2(cos(a), sin(a)) * uPx * 1.3).r); }
+  vec2 q = vec2(v.x * uSeite, v.y);
+  float faser = 0.6 * fbm(q * vec2(70.0, 9.0)) + 0.4 * fbm(q * vec2(11.0, 85.0) + 4.0);
+  float abfall = (0.012 + 0.045 * (1.0 - faser)) / uLauf;
+  float w = max(s, nm - abfall);
+  w = max(w, min(1.0, textureLod(uF, v, 1.5).a * 1.8));
+  o = vec4(w * uAb, 0.0, 0.0, 1.0);
+}`;
+const FS_FAEDEN = KOPF + `uniform sampler2D uScharf, uF, uS; uniform vec2 uPx; uniform float uNass, uSeite, uT; uniform vec4 uRahmen;
 void main(){
   vec3 bild = texture(uScharf, v).rgb;
   vec4 f = textureLod(uF, v, 0.0);
-  // Dichte der Fäden im weiten Umkreis: weich aus den kleinen Stufen der Deckung
-  float dichte = textureLod(uF, v, 5.0).a * 0.4;
-  for (int k = 0; k < 6; k++) { float a = float(k) * 1.0472 + 0.3; dichte += textureLod(uF, v + vec2(cos(a) / uSeite, sin(a)) * 0.045, 4.5).a * 0.1; }
   vec2 q = vec2(v.x * uSeite, v.y);
   // rohe Leinwand, ungrundiert: warmes Grau-Beige, Fasern ohne Gewebe
   float fa = fbm(q * 150.0) * 0.7 + (rauschen(q * vec2(640.0, 42.0)) - 0.5) * 0.3;
   vec3 lein = vec3(0.865, 0.82, 0.73) * (0.92 + 0.12 * fa);
-  // Frankenthaler: das Bild sickert als dünner Fleck in die Baumwolle
-  vec3 fleck = lein * mix(vec3(1.0), 0.42 + 0.78 * bild, 0.6);
-  // sobald die Farbe fliesst, beginnt das Klischee zu weichen; wo die Fäden dicht liegen, ganz
-  float auf = smoothstep(0.0, 1.0, clamp((dichte * 4.0 + uTinte * 1.2 + 0.45 * uBeruehrt) * uGrund, 0.0, 1.0));
+  // der nasse Hof: darin erscheint das laufende Bild wie ein Aquarell, am Rand ein feiner dunklerer Saum (die Flutlinie)
+  float w = texture(uS, v).r, ww = max(fwidth(w), 1e-4);
+  float hof = smoothstep(0.0, 0.35, w);
+  float saum = (smoothstep(0.0, ww * 1.5, w) - smoothstep(0.03, 0.11, w)) * smoothstep(0.0, 0.2, uNass);
+  float l0 = lu(bild);
+  vec3 farbstoff = clamp(mix(vec3(l0), bild, 1.7) * 1.05, 0.0, 1.0);
+  vec3 fleck = lein * mix(vec3(1.0), 0.18 + 0.9 * farbstoff, 0.85 * hof);
+  fleck *= 1.0 - 0.22 * saum;
+  // das Klischee weicht der Leinwand, solange die Farbe nass ist; trocknet sie, kehrt es zurück
+  float auf = smoothstep(0.0, 1.0, uNass);
   vec3 grund = mix(bild, fleck, auf);
   // die Fäden werfen einen kleinen Schatten nach rechts unten
   float sch = textureLod(uF, v + vec2(-1.4, 1.9) * uPx, 0.0).a;
-  grund *= 1.0 - 0.32 * sch * (1.0 - f.a);
-  float dk = f.a;
+  grund *= 1.0 - 0.32 * sch * (1.0 - f.a) * smoothstep(0.0, 0.45, uNass);
+  float dk = f.a * smoothstep(0.0, 0.45, uNass);
   if (dk < 0.002) { o = vec4(grund, 1.0); return; }
-  vec3 k = f.rgb / dk;
+  vec3 k = f.rgb / max(f.a, 1e-4);
   float l = lu(bild);
   vec3 lack = clamp(mix(vec3(l), bild, 1.55) * 1.1, 0.0, 1.0);
   vec3 silber = vec3(0.73, 0.745, 0.765) + 0.16 * (fbm(q * 7.0 + uT * 0.04) - 0.5);
@@ -430,8 +447,8 @@ void main(){
   vec4 alt = texture(uAlt, v);
   vec4 n4 = 0.25 * (texture(uAlt, v + vec2(uPx.x, 0)) + texture(uAlt, v - vec2(uPx.x, 0)) + texture(uAlt, v + vec2(0, uPx.y)) + texture(uAlt, v - vec2(0, uPx.y)));
   vec2 F = mix(alt.rg, n4.rg, 0.25) * uAb;
-  // die Karte breitet sich langsam aus, wo schon Kräfte waren
-  float zeig = max(alt.b, n4.b - 0.0025) * uAbZeig;
+  // die Karte bleibt, solange Kräfte wirken, und verblasst danach; dann ist das Klischee wieder da
+  float zeig = max(alt.b, n4.b - 0.03) * uAbZeig;
   vec2 q = vec2(v.x * uSeite, v.y);
   for (int k = 0; k < 16; k++) {
     if (k >= uN) break;
@@ -618,13 +635,13 @@ function rechne(prog, ziel, tex, setze) {
 
 const STUECKE_MAX = 6000;   // Stücke der Fäden je Bild
 let flussB = 0, scharfTex = null, scharfB = 0, scharfH = 0, arbeitB = 0, arbeitH = 0, wischB = 0, wischH = 0, kraftB = 0, kraftH = 0;
-let fadenB = 0, fadenH = 0, faedenLeeren = true, rauschTex = null, rauschB = 0, fadenVao = null, fadenPuffer = null;
+let saugB = 0, saugH = 0, fadenB = 0, fadenH = 0, faedenLeeren = true, rauschTex = null, rauschB = 0, fadenVao = null, fadenPuffer = null;
 if (gl) {
   halbFloat = !!gl.getExtension('EXT_color_buffer_float');
   gl.getExtension('OES_texture_half_float_linear');
   try {
     for (const [n, fs] of Object.entries({ kopie: FS_KOPIE, lum: FS_LUM, lk: FS_LK, fglatt: FS_FGLATT, wisch: FS_WISCH, wischen: FS_WISCHEN,
-      faeden: FS_FAEDEN, tensor: FS_TENSOR, kraft: FS_KRAFT, kfeld: FS_KFELD, kraefte: FS_KRAEFTE, hell: FS_HELL, weich: FS_WEICH, zusammen: FS_ZUSAMMEN })) P[n] = programm(fs);
+      faeden: FS_FAEDEN, saug: FS_SAUG, tensor: FS_TENSOR, kraft: FS_KRAFT, kfeld: FS_KFELD, kraefte: FS_KRAEFTE, hell: FS_HELL, weich: FS_WEICH, zusammen: FS_ZUSAMMEN })) P[n] = programm(fs);
     P.faden = programm(FS_FADEN, VS_FADEN);
   } catch (e) { spur('Shader: ' + String(e.message).slice(0, 140)); console.error(e); melden(TEXTE[sprache].keinGL); }
   const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
@@ -693,6 +710,8 @@ function groesse() {
   }
   const [wb, wh] = seitenMass(WISCH_SEITE);
   if (wb !== wischB || wh !== wischH) { wischB = wb; wischH = wh; paar('w', wb, wh); wischLeeren = true; }
+  const [gb, gh] = seitenMass(SAUG_SEITE);
+  if (gb !== saugB || gh !== saugH) { saugB = gb; saugH = gh; paar('s', gb, gh); saugLeeren = true; }
   const [kb, kh] = seitenMass(KRAFT_SEITE);
   if (kb !== kraftB || kh !== kraftH) { kraftB = kb; kraftH = kh; paar('k', kb, kh); zielBauen('kfeld', kb, kh); kraftLeeren = true; }
   // Fäden: so fein wie der Bildschirm, unabhängig von der anpassenden Auflösung (sonst gingen sie bei jedem Ruckeln verloren)
@@ -897,10 +916,12 @@ function lesartText() {
 document.querySelectorAll('[data-lesart]').forEach((b) => b.addEventListener('click', () => lesartWaehlen(+b.dataset.lesart)));
 $('r-lesart').addEventListener('input', (e) => { const nr = +e.target.value; if (nr !== lesart) lesartWaehlen(nr); });
 
+let nass = 0, trockenSeit = 0, saugLeeren = true;
 let wischLeeren = true, kraftLeeren = true, tinte = 0, menge = 0, tempoHand = 0, reiben = 0, kraftEnergie = 0;
 function leeren() {
-  wischLeeren = true; faedenLeeren = true; kraftLeeren = true; tinte = 0; menge = 0;
-  for (const f of finger.values()) f.jet = null;
+  wischLeeren = true; faedenLeeren = true; saugLeeren = true; kraftLeeren = true; tinte = 0; menge = 0;
+  for (const f of finger.values()) f.jets = null;
+  nass = 0; trockenSeit = 0;
 }
 
 // ---------- Stempel der Hand ----------
@@ -917,8 +938,7 @@ function stempeln(x0, y0, x, y, r, zug, art, same) {
 // (liquid rope coiling; Herczyński, Cernuschi, Mahadevan 2011 an Pollocks Bildern). Schnell gezogen wird er gerade und dünn,
 // ein Ruck lässt Spritzer vorausfliegen. Rechnung in Bildhöhen (x mal Seitenverhältnis), gezeichnet in Bildpunkten des Ziels.
 const stuecke = new Float32Array(STUECKE_MAX * 8); let stueckN = 0;
-const FARBFOLGE = [0, 1, 0, 2, 0, 1, 1, 0];   // Lack mit Bild, Schwarz, Aluminium: wie Pollocks Dosen
-let farbeNr = 0, zufall = 1;
+let zufall = 1;
 const zuf = () => { zufall = (zufall * 16807) % 2147483647; return (zufall - 1) / 2147483646; };   // wiederholbar (Vorspann)
 function stueck(x0, y0, x1, y1, r0, r1, art) {
   if (stueckN >= STUECKE_MAX) return;
@@ -926,24 +946,33 @@ function stueck(x0, y0, x1, y1, r0, r1, art) {
   stuecke.set([x0 / s, y0, x1 / s, y1, r0, r1, art, 0], stueckN * 8); stueckN++;
   tinte += Math.hypot((x1 - x0) * fadenH, (y1 - y0) * fadenH) * (r0 + r1) / (fadenB * fadenH) * 4;
 }
+// Pollocks Stock: aus einer Hand fliessen mehrere Strahlen nebeneinander, jeder mit eigener Schlaufe, Breite und Farbe.
+const STRAHLEN = [[-1.5, 0, 1.0], [-0.5, 1, 0.8], [0.5, 0, 1.2], [1.5, 2, 0.7]];   // Lage am Stock, Farbe, Stärke
 function strahl(f, x, y, dt, t) {
-  const s = innerWidth / innerHeight, X = x * s, Y = y;
+  const s = innerWidth / innerHeight, X = x * s, Y = y, W = WERTE[1];
+  if (!f.jets) f.jets = STRAHLEN.map(([lage, art, k]) => ({ lage, art, k, hx: 0, hy: 0, vx: 0, vy: 0, px: 0, py: 0, phi: zuf() * 6.283, dreh: zuf() < 0.5 ? -1 : 1, r: 0, umlauf: 0, neu: true }));
+  // der Stock liegt schräg in der Hand und dreht sich langsam
+  const th = 0.7 + 0.5 * Math.sin(t * 0.37 + f.same), breite = 0.009 + 0.012 * W[0];
+  let tempo = 0;
+  f.jets.forEach((j, i) => { tempo = Math.max(tempo, einStrahl(j, X + Math.cos(th) * j.lage * breite, Y + Math.sin(th) * j.lage * breite, dt, t, x, i === 0)); });
+  return tempo;
+}
+function einStrahl(j, X, Y, dt, t, x, spritzt) {
   const W = WERTE[1], skala = Math.max(0.8, fadenH / 1560);
-  let j = f.jet;
-  if (!j) { j = f.jet = { hx: X, hy: Y, vx: 0, vy: 0, px: X, py: Y, phi: zuf() * 6.283, dreh: zuf() < 0.5 ? -1 : 1, r: 0, art: FARBFOLGE[farbeNr++ % FARBFOLGE.length], umlauf: 0 }; }
+  if (j.neu) { j.neu = false; j.hx = j.px = X; j.hy = j.py = Y; }
   const hx0 = j.hx, hy0 = j.hy;
   const vx = (X - hx0) / dt, vy = (Y - hy0) / dt;
   const a = 1 - Math.exp(-dt / 0.08); j.vx += (vx - j.vx) * a; j.vy += (vy - j.vy) * a;
   const tempo = Math.hypot(j.vx, j.vy);
-  const U = 0.25 + 0.55 * W[1], R0 = 0.004 + 0.022 * W[1] + 0.004 * W[0];
-  const rMin = (0.8 + 1.8 * W[0]) * skala, rMax = (3 + 12 * W[0]) * skala;
+  const U = 0.25 + 0.55 * W[1], R0 = (0.004 + 0.022 * W[1] + 0.004 * W[0]) * (0.6 + 0.5 * j.k);
+  const rMin = (1.1 + 2.2 * W[0]) * skala * j.k, rMax = (4 + 14 * W[0]) * skala * j.k;
   const n = Math.max(6, Math.min(24, Math.ceil(Math.hypot(X - hx0, Y - hy0) / 0.004) + 4)), dts = dt / n;
   for (let i = 1; i <= n; i++) {
     const hx = hx0 + (X - hx0) * i / n, hy = hy0 + (Y - hy0) * i / n, ti = t - dt + dt * i / n;
-    const rc = R0 * Math.pow(Math.max(0, 1 - tempo / U), 0.8) * (0.82 + 0.18 * Math.sin(ti * 2.3 + j.dreh) + 0.12 * Math.sin(ti * 5.1));
+    const rc = R0 * Math.pow(Math.max(0, 1 - tempo / U), 0.8) * (0.82 + 0.18 * Math.sin(ti * 2.3 + j.dreh + j.lage) + 0.12 * Math.sin(ti * 5.1 + j.lage * 2));
     const omega = Math.min(70, (0.6 * U + 0.2) / Math.max(rc, 0.0015));
     const phiAlt = j.phi; j.phi += omega * dts * j.dreh;
-    if (Math.floor(j.phi / 6.2832) !== Math.floor(phiAlt / 6.2832) && rc > 0.002) { j.umlauf++; if (j.umlauf % 2 === 0) klangSchlaufe(rc / 0.03, x); }
+    if (spritzt && Math.floor(j.phi / 6.2832) !== Math.floor(phiAlt / 6.2832) && rc > 0.002) { j.umlauf++; if (j.umlauf % 2 === 0) klangSchlaufe(rc / 0.03, x); }
     const lag = 0.025 + 0.06 * W[1];
     const px = hx - j.vx * lag + rc * Math.cos(j.phi), py = hy - j.vy * lag + rc * Math.sin(j.phi);
     const vp = Math.hypot(px - j.px, py - j.py) / dts;
@@ -953,15 +982,15 @@ function strahl(f, x, y, dt, t) {
     j.px = px; j.py = py; j.r = r;
   }
   // Spritzer: ein Ruck wirft Tropfen voraus, länglich in Flugrichtung
-  if (tempo > 1.3 && zuf() < dt * tempo * 5) {
-    const ux = j.vx / tempo, uy = j.vy / tempo, k = 1 + Math.floor(zuf() * 4);
+  if (tempo > 1.3 && zuf() < dt * tempo * 3) {
+    const ux = j.vx / tempo, uy = j.vy / tempo, k = 1 + Math.floor(zuf() * 3);
     for (let i = 0; i < k; i++) {
       const w = 0.015 + zuf() * 0.09 * Math.min(2, tempo / 2), q = (zuf() - 0.5) * 0.06;
       const sx = X + ux * w - uy * q, sy = Y + uy * w + ux * q, l = 0.002 + zuf() * 0.012;
-      const r0 = (0.8 + zuf() * 2.2 * (0.4 + W[0])) * skala;
+      const r0 = (1 + zuf() * 2.6 * (0.4 + W[0])) * skala;
       stueck(sx, sy, sx + ux * l, sy + uy * l, r0, r0 * 0.35, j.art);
     }
-    klangSpritzer(k, x);
+    if (spritzt) klangSpritzer(k, x);
   }
   j.hx = X; j.hy = Y;
   return tempo;
@@ -1060,7 +1089,16 @@ function haende(t, dt) {
     f.lx = f.x; f.ly = f.y;
   }
   tempoHand = tempoMax; reiben = reibMax;
-  if (lesart === 1) menge = Math.min(1, tinte);
+  if (lesart === 1) {
+    // nass, solange die Hand malt; dann eine Weile stehen, dann trocknet alles weg und das Klischee kehrt zurück
+    if (finger.size) { nass += (1 - nass) * (1 - Math.exp(-dt / 0.3)); trockenSeit = 0; }
+    else if (nass > 0) {
+      trockenSeit += dt;
+      if (trockenSeit > 0.8) nass *= Math.exp(-dt / (0.4 + 2.6 * W[2]));
+      if (nass < 0.01) { nass = 0; faedenLeeren = true; saugLeeren = true; tinte = 0; }
+    }
+    menge = nass;
+  }
   else menge = finger.size ? Math.max(reiben, Math.min(1, menge + dt * tempoMax * 0.4)) : Math.max(0, menge - dt * 0.6);
   kraftEnergie = lesart === 2 ? Math.min(1, kraftEnergie * Math.exp(-dt / (1.2 + 3 * W[0])) + dt * finger.size * 0.9) : 0;
 }
@@ -1171,10 +1209,10 @@ function bild(ms) {
     // 2a. Wischen: das Feld der Verschiebung
     const Wf = ziele.w;
     if (wischLeeren) { zielLeeren(Wf.lesen()); zielLeeren(Wf.schreiben()); wischLeeren = false; }
-    const tau = 40 * Math.pow(2.5 / 40, W[2]);   // Figur: 0 bleibt fast, 1 kehrt in Sekunden zurück
+    const tau = 10 * Math.pow(0.6 / 10, W[2]);   // Figur: 0 bleibt lange (rund 30 s), Mitte rund 7 s, 1 kehrt in zwei Sekunden zurück
     rechne(P.wisch, Wf.schreiben(), { uAlt: Wf.lesen() }, (u) => {
       gl.uniform4fv(u.uS, stempel); gl.uniform4fv(u.uSR, stempelR); gl.uniform1i(u.uN, stempelN); gl.uniform1f(u.uSeite, seite);
-      gl.uniform1f(u.uRueck, finger.size ? 1 : Math.exp(-dt / tau)); gl.uniform1f(u.uRueckH, Math.exp(-dt / (tau * 1.8)));
+      gl.uniform1f(u.uRueck, finger.size ? 1 : Math.exp(-dt / tau)); gl.uniform1f(u.uRueckH, finger.size ? 1 : Math.exp(-dt / (tau * 1.3)));
       gl.uniform1f(u.uLast, 0.03 + 0.2 * W[1]); gl.uniform1f(u.uReib, dt * 1.1);
     });
     Wf.tauschen();
@@ -1197,8 +1235,17 @@ function bild(ms) {
       gl.bindTexture(gl.TEXTURE_2D, F.tex); gl.generateMipmap(gl.TEXTURE_2D);
       stueckN = 0;
     }
-    rechne(P.faeden, sz, { uScharf: scharfTex, uF: F }, (u) => {
-      gl.uniform2f(u.uPx, 1 / F.b, 1 / F.h); gl.uniform1f(u.uGrund, 0.15 + 1.1 * W[2]); gl.uniform1f(u.uTinte, Math.min(1, tinte)); gl.uniform1f(u.uBeruehrt, Math.min(1, tinte * 40));
+    const S = ziele.s;
+    if (saugLeeren) { zielLeeren(S.lesen()); zielLeeren(S.schreiben()); saugLeeren = false; }
+    if (nass > 0) {
+      rechne(P.saug, S.schreiben(), { uAlt: S.lesen(), uF: F }, (u) => {
+        gl.uniform2f(u.uPx, 1 / saugB, 1 / saugH); gl.uniform1f(u.uSeite, seite); gl.uniform1f(u.uAb, finger.size ? 1 : Math.exp(-dt / 6));
+        gl.uniform1f(u.uLauf, 0.6 + 1.2 * W[0]);
+      });
+      S.tauschen();
+    }
+    rechne(P.faeden, sz, { uScharf: scharfTex, uF: F, uS: S.lesen() }, (u) => {
+      gl.uniform2f(u.uPx, 1 / F.b, 1 / F.h); gl.uniform1f(u.uNass, nass);
       gl.uniform1f(u.uSeite, seite); gl.uniform1f(u.uT, t % 1000); gl.uniform4f(u.uRahmen, ...rahmenGL);
     });
   } else {
@@ -1207,7 +1254,7 @@ function bild(ms) {
     if (kraftLeeren) { zielLeeren(K.lesen()); zielLeeren(K.schreiben()); kraftLeeren = false; }
     rechne(P.kraft, K.schreiben(), { uAlt: K.lesen() }, (u) => {
       gl.uniform2f(u.uPx, 1 / kraftB, 1 / kraftH); gl.uniform4fv(u.uS, stempel); gl.uniform4fv(u.uSR, stempelR); gl.uniform1i(u.uN, stempelN);
-      gl.uniform1f(u.uSeite, seite); gl.uniform1f(u.uAb, Math.exp(-dt / (1.2 + 3 * W[0]))); gl.uniform1f(u.uAbZeig, Math.exp(-dt / 40));
+      gl.uniform1f(u.uSeite, seite); gl.uniform1f(u.uAb, Math.exp(-dt / (1.2 + 3 * W[0]))); gl.uniform1f(u.uAbZeig, finger.size ? 1 : Math.exp(-dt / (1.0 + 3.5 * W[1])));
     });
     K.tauschen();
     const KF = ziele.kfeld;
