@@ -333,12 +333,16 @@ void main(){
     vec3 n = uN[bi];
     float th = h(float(bi) + 3.0) * 0.72;
     m = smoothstep(th, th + 0.28, uF);
-    vec2 off = n.xy * uWirbel * 0.03 * vec2(uAufl.y / uAufl.x, 1.0);
-    col = vec3(seite(uv + off * 0.9, m).r, seite(uv + off, m).g, seite(uv + off * 1.1, m).b);
+    // 0.18 (Christian: «feiner, leicht irisierend»): kleinere Facetten, sanfterer Versatz, breiterer Farbsaum
+    vec2 off = n.xy * uWirbel * 0.017 * vec2(uAufl.y / uAufl.x, 1.0);
+    col = vec3(seite(uv + off * 0.7, m).r, seite(uv + off, m).g, seite(uv + off * 1.35, m).b);
+    // Dünnschicht: jede Facette schimmert in ihrer eigenen, leisen Spektralfarbe, dort wo Licht ist
+    vec3 iris = 0.5 + 0.5 * cos(6.2832 * (h(float(bi) * 1.7) + length(q) * 0.8 + vec3(0.0, 0.33, 0.67)));
+    col += iris * uWirbel * 0.07 * (0.25 + dot(col, vec3(0.33)));
     col *= 1.0 + uWirbel * 0.2 * (dot(n, normalize(vec3(0.35, 0.6, 0.72))) - 0.62);
     // keine Kanten: an den Facettengrenzen nur ein Hauch Licht, weich über viele Bildpunkte
-    float naht = 1.0 - smoothstep(0.0, 28.0 / uGross, zweit - best);
-    col += naht * uWirbel * vec3(0.035, 0.034, 0.045);
+    float naht = 1.0 - smoothstep(0.0, 9.0 / uGross, zweit - best);
+    col += naht * uWirbel * (0.03 + iris * 0.05);
     // in der Mitte der Drehung löst sich die Schrift ins Leere: das alte Wort geht, bevor das neue kommt
     col = mix(col, texture(uLeer, uv).rgb, pow(sin(3.14159 * uF), 2.0) * 0.4);
   } else {
@@ -999,7 +1003,7 @@ function bild(ms) {
   gl.uniform1f(ort.uF, fr); gl.uniform1f(ort.uWirbel, ruhig ? Math.min(wirbel, 0.4) : wirbel);
   gl.uniform1f(ort.uZeigen, zeigen); gl.uniform1f(ort.uBlitz, ruhig ? 0 : blitz);
   gl.uniform2f(ort.uGem, gx * D, (H - gy) * D); gl.uniform1f(ort.uGemR, rr * D);
-  gl.uniform2f(ort.uFeld, gx * D, (H - gy) * D); gl.uniform1f(ort.uGross, Math.max(W, H) * 0.55 * D); gl.uniform1f(ort.uDimm, sanft(menu));
+  gl.uniform2f(ort.uFeld, gx * D, (H - gy) * D); gl.uniform1f(ort.uGross, Math.max(W, H) * 0.34 * D); gl.uniform1f(ort.uDimm, sanft(menu));
   gl.uniform2f(ort.uAufl, Bw, Bh); gl.uniform1f(ort.uRad, huelle * 1.03); gl.uniform1f(ort.uT, t % 100); gl.uniform1f(ort.uFeuer, 2.3);
   const tonG = BEREICHE[glasK - 1].ton;
   gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, schriftTex[glasK - 1]); gl.uniform1i(ort.uSchrift, 3);
