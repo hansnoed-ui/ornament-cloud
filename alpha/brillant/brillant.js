@@ -470,7 +470,7 @@ function satzspiegel(c) {
   const sw = Math.min(W - (hoch ? 28 : 80), 620), pad = hoch ? 34 : 48;
   const scheibe = { x: (W - sw) / 2, y: y - fs * 0.95 - pad, w: sw, h: pad * 2 + fs * 0.95 + satz * 6.2 + 40 };
   // offenes Menü: der Stein gross über der Mitte, die Bereiche darunter
-  const menuGem = { x: W / 2, y: Math.round(H * (hoch ? 0.36 : 0.34)), r: Math.min(W, H) * (hoch ? 0.25 : 0.16) };
+  const menuGem = { x: W / 2, y: Math.round(H * (hoch ? 0.39 : 0.36)), r: Math.min(W, H) * (hoch ? 0.2 : 0.13) };
   return { hoch, fs, gemR, satz, saetze, scheibe, menuGem };
 }
 // eine Glasscheibe ohne Kanten: weich auslaufend, was darunter liegt erscheint verschwommen und getönt
@@ -545,8 +545,23 @@ function texAus(canvas, alt) {
   return t;
 }
 // Werke für das Fenster (vorerst aus ornament.cloud; Christian kann sie tauschen)
-const WERKE = ['/b/bilder/schau/kaiserbuehne.jpg', '/b/bilder/schau/drittes-rad.jpg', '/b/bilder/fotografie/turm-am-bild-800.jpg',
-  '/b/bilder/fotografie/turm-farben-800.jpg', '/b/bilder/fotografie/print-kopf-pink-800.jpg'];
+// 0.11 (Christian: «die Bilder im Innern passen grafisch nicht»): nur Bilder aus Licht und Dunkel, ohne Schrift,
+// und alle tonal angeglichen (siehe tonen), damit sie wie ein Abzug im Glas wirken.
+const WERKE = ['/b/bilder/schau/animations.jpg', '/b/bilder/fotografie/print-linien-800.jpg', '/b/bilder/fotografie/buehne-2-800.jpg',
+  '/b/bilder/fotografie/turm-leer-800.jpg', '/b/bilder/fotografie/hund-und-objektiv-800.jpg'];
+// Duoton von Nachtblau zu warmem Silber, ein Rest Farbe bleibt, Mitten leicht abgesenkt, Rand ins Dunkel
+function tonen(c, x0, S) {
+  const d = c.getImageData(x0, 0, S, S), p = d.data, m = S / 2;
+  for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+    const i = (y * S + x) * 4, r = p[i] / 255, g = p[i + 1] / 255, b = p[i + 2] / 255;
+    let l = Math.pow(0.2126 * r + 0.7152 * g + 0.0722 * b, 1.25);
+    const rx = (x - m) / m, ry = (y - m) / m, v = Math.max(0, 1 - Math.pow(Math.hypot(rx, ry) / 1.25, 3));
+    l *= v;
+    const duo = [0.035 + l * 0.93, 0.031 + l * 0.88, 0.08 + l * 0.80];
+    p[i] = 255 * (duo[0] * 0.82 + r * v * 0.18); p[i + 1] = 255 * (duo[1] * 0.82 + g * v * 0.18); p[i + 2] = 255 * (duo[2] * 0.82 + b * v * 0.18);
+  }
+  c.putImageData(d, x0, 0);
+}
 let werkTex = null;
 let werkAtlas = null, werkS = 0, werkeDa = false;     // dieselben Werke für die flache Fassung
 function werkeLaden() {
@@ -558,7 +573,7 @@ function werkeLaden() {
   const c = atlas.getContext('2d'); c.fillStyle = '#090814'; c.fillRect(0, 0, atlas.width, S);
   Promise.all(WERKE.map((src, i) => new Promise((ok) => {
     const im = new Image(); im.decoding = 'async';
-    im.onload = () => { const k = Math.min(im.width, im.height); c.drawImage(im, (im.width - k) / 2, (im.height - k) / 2, k, k, i * S, 0, S, S); ok(); };
+    im.onload = () => { const k = Math.min(im.width, im.height); c.drawImage(im, (im.width - k) / 2, (im.height - k) / 2, k, k, i * S, 0, S, S); tonen(c, i * S, S); ok(); };
     im.onerror = () => { spur('Werk fehlt: ' + src); ok(); };
     im.src = src;
   }))).then(() => { werkAtlas = atlas; werkS = S; werkeDa = true; if (gl) werkTex = texAus(atlas, werkTex); });
