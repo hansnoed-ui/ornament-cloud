@@ -20,6 +20,8 @@ const BEREICHE = [
     href: '/animations/', sprachen: ['de', 'en', 'es'], adressen: { en: '/animations/en/', es: '/animations/es/' }, bild: 'vorschau/animations.jpg?v=2', film: 'vorschau/animations.mp4?v=2', ton: [124, 108, 255] },
   { name: 'ornament.lab', kopf: 'Erzeugen · Beobachten · Weiterführen', satz: '',
     href: '/beta/lab/', sprachen: ['de', 'en', 'es', 'fr'], adressen: { de: '/beta/lab/?sprache=de', en: '/beta/lab/?sprache=en', es: '/beta/lab/?sprache=es', fr: '/beta/lab/?sprache=fr' },
+    // Am Telefon die eigene Handy-Fassung des Labs (alpha/lab/handy/), in der gewählten Sprache.
+    handy: '/alpha/lab/handy/',
     schau: 'lab', ton: [96, 140, 255] }
 ];
 // Die Farben der Schichten: Rot (Godard), Orange (das Rad), Violett.
@@ -113,6 +115,9 @@ document.addEventListener('visibilitychange', () => spur(document.hidden ? 'Paus
 
 const telefon = matchMedia('(pointer: coarse)').matches || Math.min(screen.width, screen.height) < 700;
 const ruhig = matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Wohin eine Anwendung führt: am Telefon die Handy-Fassung, sonst die Sprachadresse oder die Grundadresse.
+const zielVon = (b, l) => (telefon && b.handy) ? b.handy + (l ? '?sprache=' + l : '')
+  : (l && b.adressen && b.adressen[l]) || b.href;
 const MAX_DPR = telefon ? 2 : 2;
 const MAX_F = 60;
 
@@ -915,7 +920,7 @@ const flaechen = BEREICHE.map((b, i) => {
   const el = i ? vorlage.cloneNode(true) : vorlage; el.removeAttribute('id');
   if (i) vorlage.parentNode.insertBefore(el, vorlage.nextSibling);
   const hell = b.ton.map((v) => Math.min(255, Math.round(v * 0.5 + 125)));
-  el.href = b.href; el.style.setProperty('--ton', b.ton.join(',')); el.style.setProperty('--hell', `rgb(${hell.join(',')})`);
+  el.href = zielVon(b, SPRACHE); el.style.setProperty('--ton', b.ton.join(',')); el.style.setProperty('--hell', `rgb(${hell.join(',')})`);
   el.querySelector('.p-nr').textContent = `0${i + 1}`;
   el.querySelector('.p-name').textContent = b.name;
   el.querySelector('.p-satz').textContent = b.satz;
@@ -949,7 +954,7 @@ const vKarten = BEREICHE.map((b, i) => {
   k.style.setProperty('--ton', b.ton.join(',')); k.style.setProperty('--hell', `rgb(${hell.join(',')})`);
   k.innerHTML = `<div class="v-schatten" aria-hidden="true"></div><div class="v-koerper"><div class="v-buehne"><div class="v-bild"></div><div class="v-licht" aria-hidden="true"><i></i></div></div>
     <div class="v-text"><p class="v-kopf"></p><h2 class="v-name" id="v-name-${i}"></h2><p class="v-satz"></p>
-    <div class="v-zeile"><a class="v-oeffnen" href="${(b.adressen && b.adressen[offen]) || b.href}">${T.oeffnen} <span aria-hidden="true">›</span></a><span class="v-sprachen"></span></div></div>
+    <div class="v-zeile"><a class="v-oeffnen" href="${zielVon(b, offen)}">${T.oeffnen} <span aria-hidden="true">›</span></a><span class="v-sprachen"></span></div></div>
     <div class="v-glanz" aria-hidden="true"><i></i></div><div class="v-dunkel" aria-hidden="true"></div></div>`;
   k.querySelector('.v-kopf').textContent = b.kopf; k.querySelector('.v-name').textContent = b.name; k.querySelector('.v-satz').textContent = b.satz;
   k.querySelector('.v-oeffnen').setAttribute('aria-label', T.oeffnenAria(b.name));
@@ -959,7 +964,7 @@ const vKarten = BEREICHE.map((b, i) => {
   const vs = k.querySelector('.v-sprachen'), oe = k.querySelector('.v-oeffnen');
   let wahl = offen;
   const waehlen = (l) => {
-    wahl = l; oe.href = (b.adressen && b.adressen[l]) || b.href;
+    wahl = l; oe.href = zielVon(b, l);
     vs.querySelectorAll('button').forEach((x) => { const an = x.lang === l; x.classList.toggle('jetzt', an); x.setAttribute('aria-pressed', String(an)); });
   };
   for (const l of b.sprachen) {
@@ -1517,7 +1522,7 @@ function bild(ms) {
   if (zustand !== zustandGezeigt) {
     zustandGezeigt = zustand;
     knoepfe.forEach((k, i) => k.setAttribute('aria-current', String(i + 1 === zustand)));
-    if (zustand) { const b = BEREICHE[zustand - 1]; mehr.href = b.href; mehr.setAttribute('aria-label', `${b.name}: ${T.mehr}`); }
+    if (zustand) { const b = BEREICHE[zustand - 1]; mehr.href = zielVon(b, SPRACHE); mehr.setAttribute('aria-label', `${b.name}: ${T.mehr}`); }
   }
   const zeigeMehr = zustand > 0 && ruht && menu < 0.05;
   if (zeigeMehr !== mehr.classList.contains('da')) {
