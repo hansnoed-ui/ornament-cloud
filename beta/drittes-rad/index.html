@@ -261,10 +261,12 @@ document.body.classList.add("js");
   if (!l) { try { var g = localStorage.getItem(KEY); if (g === "de" || g === "en") l = g; } catch (e) {} }
   if (!l) l = /^de/i.test(navigator.language || "") ? "de" : (/^en/i.test(navigator.language || "") ? "en" : "de");
   window.drSprache = l;
+  // 21.11.2026 (Christian: «in der App auch englischer Titel»): auf Englisch heisst die App «The Third Wheel»
+  if (l === "en") document.title = "The Third Wheel – ornament.cloud · Beta";
   document.documentElement.lang = l === "en" ? "en" : "de-CH";
   window.TEXTE = {
     en: {
-      _titel: "Das Dritte Rad – ornament.cloud · Beta", heim: "← ornament.cloud", bereiche: "The three areas", sprache: "Language",
+      _titel: "The Third Wheel – ornament.cloud · Beta", name: "The Third Wheel", titel1: "The Third", titel2: "Wheel", heim: "← ornament.cloud", bereiche: "The three areas", sprache: "Language",
       sagt: "Time, form and colour turn against each other. Each spin draws a stanza from the Zettelkasten, an encounter from ORNA and an exercise from OMNA COLOR.",
       drehen: "Spin", bruecke: "Build a bridge",
       ladefehler: "The wheel could not be loaded. This sometimes happens shortly after the page has been updated. Please reload it, ideally with Ctrl+Shift+R (on a Mac Cmd+Shift+R).",
@@ -291,19 +293,20 @@ document.body.classList.add("js");
       <circle class="i-kern" r="15"></circle><circle class="i-kern-punkt" r="3.2"></circle>
       <path class="i-zeiger" d="M 0 -91 L 6 -100 L -6 -100 Z"></path>
     </svg>
-    <p class="i-name">Das Dritte Rad</p>
+    <p class="i-name" data-t="name">Das Dritte Rad</p>
   </div>
   <button type="button" tabindex="-1" data-t="intro">Intro überspringen</button>
 </div>
 <script>
 // Das Intro läuft sofort (ohne auf die Module zu warten): einmal je Sitzung, nur auf der leeren Startseite (oder mit ?intro), nie bei «weniger Bewegung» und nie mit ?intro=0.
 (function () {
-  var intro = document.getElementById("intro"), q = location.search.replace(/([?&])sprache=(de|en)(&|$)/, "$1").replace(/[?&]$/, "");
+  var intro = document.getElementById("intro"), iname = intro.querySelector(".i-name"), q = location.search.replace(/([?&])sprache=(de|en)(&|$)/, "$1").replace(/[?&]$/, "");
   var gesehen = false; try { gesehen = sessionStorage.getItem("drad-intro") === "1"; } catch (e) {}
   var ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
   // ?intro=0 schaltet es ab (Multiverse, 8. November 2026); vor \b stand hier ein Steuerzeichen, ?intro griff deshalb nie
   if (ruhig || /[?&]intro=0(&|$)/.test(q) || !(/[?&]intro\b/.test(q) || (!q && !gesehen))) { intro.remove(); return; }
   try { sessionStorage.setItem("drad-intro", "1"); } catch (e) {}
+  if (window.drSprache === "en") { iname.dataset.de = iname.textContent; iname.textContent = window.TEXTE.en.name; }
   // dieselben sieben Farben wie THEMEN in alpha/drittes-rad/daten.js (OMNA COLOR)
   var F = ["#b3304d", "#d9782d", "#e4b83c", "#4f8a5b", "#3f6ba8", "#4e4a94", "#85508f"];
   var pt = function (r, d) { var a = d * Math.PI / 180; return [(r * Math.sin(a)).toFixed(3), (-r * Math.cos(a)).toFixed(3)]; };
@@ -337,7 +340,7 @@ document.body.classList.add("js");
 <main>
   <section class="buehne" id="buehne" aria-labelledby="titel">
     <div class="text">
-      <h1 id="titel"><span>Das Dritte</span> <span>Rad</span></h1>
+      <h1 id="titel"><span data-t="titel1">Das Dritte</span> <span data-t="titel2">Rad</span></h1>
       <p class="sagt" data-t="sagt">Zeit, Form und Farbe drehen gegeneinander. Jede Drehung zieht eine Strophe aus dem Zettelkasten, eine Begegnung aus ORNA und eine Übung aus OMNA COLOR.</p>
       <div class="knoepfe"><button class="knopf" id="go" type="button" data-t="drehen">Drehen</button><button class="knopf zweit" id="bridge" type="button" data-t="bruecke">Brücke schlagen</button></div>
       <p class="notiz" id="ladefehler" role="alert" data-t="ladefehler" hidden>Das Rad konnte nicht geladen werden. Das passiert manchmal kurz nach einer Aktualisierung der Seite. Bitte lade sie neu, am besten mit Strg+Umschalt+R (am Mac Cmd+Umschalt+R).</p>
@@ -371,7 +374,7 @@ document.body.classList.add("js");
   <nav class="wege" id="wege" aria-label="Wie geht es weiter?" data-t-attr="aria-label=weiter" hidden></nav>
 </main>
 <footer class="schluss">
-  <p class="name">Das Dritte Rad</p>
+  <p class="name" data-t="name">Das Dritte Rad</p>
   <nav aria-label="Weiter auf ornament.cloud" data-t-attr="aria-label=weiterAuf">
     <a href="../../" data-t-href="../../|../../en/">ornament.cloud</a>
     <a href="../../zu-seiner-zeit/" data-t-href="../../zu-seiner-zeit/|../../zu-seiner-zeit/en/">Zettelkasten</a>
@@ -406,13 +409,15 @@ const T = {
     ganzBegegnung: "The whole encounter", farbeWo: (t) => `Colour · OMNA COLOR · ${t}`, goethe: (i) => `Goethe 1809: ${GOETHE_EN[i]}`, min: (d) => `${d} min`, material: "Material: ",
     ganzUebung: "The whole exercise", zkWo: (r, n) => `Zettelkasten · cycle ${r}, ${n}`, inOrna: "→ in ORNA", anklaenge: "Resonances", ornaWo: "ORNA · encounter", frage: "Question",
     weitere: "Further encounters", mit: (n) => `with ${n}`, imZ: "In the Zettelkasten", omnaWo: (id) => `OMNA COLOR · exercise ${id}`, thema: (t) => `Theme ${t}`, nachbar: (t) => `Neighbour ${t}`,
-    schluss: "At the end", weiter: "Where next?", karte: ["Das Dritte Rad", "Time", "Form", "Colour"], kopiert: "Copied", kopieren: "Copy card", nichtKopiert: "Copying not possible" },
+    schluss: "At the end", weiter: "Where next?", karte: ["The Third Wheel", "Time", "Form", "Colour"], kopiert: "Copied", kopieren: "Copy card", nichtKopiert: "Copying not possible" },
 };
 const t = () => T[SPR];
 /** feste Texte im HTML: data-t (Text), data-t-attr (Attribute), data-t-href (Adresse «de|en»); Deutsch steht im HTML und wird beim ersten Wechsel gemerkt */
 function texteSetzen() {
   const en = SPR === "en", E = window.TEXTE.en;
   document.documentElement.lang = en ? "en" : "de-CH";
+  if (window.drTitelDe == null) window.drTitelDe = document.title.replace(E._titel, "Das Dritte Rad – ornament.cloud · Beta");
+  document.title = en ? E._titel : window.drTitelDe;
   for (const el of document.querySelectorAll("[data-t]")) { if (el.dataset.de == null) el.dataset.de = el.textContent; el.textContent = en && E[el.dataset.t] ? E[el.dataset.t] : el.dataset.de; }
   for (const el of document.querySelectorAll("[data-t-attr]")) for (const p of el.dataset.tAttr.split(";")) {
     const [a, k] = p.split("="), alt = "data-de-" + a;
