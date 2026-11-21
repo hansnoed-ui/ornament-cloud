@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0a0a0b">
+<title>Falte · the deleuzian scheme</title>
+<link rel="stylesheet" href="../gemeinsam/zwischentitel.css?v=1">
+<link rel="stylesheet" href="falte.css?v=1">
+</head>
+<body>
+<!-- Gestaltung «Zwischentitel» (docs/GESTALTUNG.md), Aufbau wie das Ritornell. -->
+<main class="buehne" id="buehne">
+  <canvas id="leinwand" aria-label="Falte"></canvas>
+  <div class="daumen" id="daumen" hidden aria-hidden="true"><span class="daumen-zug"></span><span class="daumen-punkt"></span><span class="daumen-text" id="daumen-text">Daumen auflegen und halten</span></div>
+  <svg class="halt" id="halt" viewBox="0 0 100 100" aria-hidden="true"><circle class="halt-grund" cx="50" cy="50" r="44"/><circle class="halt-voll" id="halt-voll" cx="50" cy="50" r="44" pathLength="1"/></svg>
+
+  <!-- Schwelle: der Operator als Zwischentitel -->
+  <section class="auftakt" id="auftakt">
+    <div class="zt-band">
+      <a href="../start/">← the deleuzian scheme</a>
+      <nav class="zt-sprachen" aria-label="Sprache"><button data-lang="de">de</button><button data-lang="en">en</button><button data-lang="fr">fr</button></nav>
+    </div>
+    <video class="vorspann" data-vorspann src="vorspann.mp4?v=1" muted loop playsinline autoplay aria-hidden="true"></video>
+    <div class="schwelle">
+      <p class="zt-kennung">VIII · Le Pli · 1988</p>
+      <h1 class="zt-titel"><span data-t="titel">Falte</span><i>le pli</i></h1>
+      <p class="satz" data-t="satz">Aus unzähligen kleinen Wahrnehmungen, die keiner bemerkt, tritt eine Gestalt hervor. Die Materie faltet sich, und jede Falte birgt eine weitere.</p>
+      <div class="wahl">
+        <label class="zt-taste rot"><span data-t="video">Video oder Fotos</span><input type="file" id="datei" accept="video/*,image/*" multiple hidden></label>
+        <button class="zt-taste" id="kamera" data-t="kamera">Kamera</button>
+        <button class="zt-taste" id="beispiel" data-t="beispiel">Beispiel</button>
+      </div>
+    </div>
+  </section>
+
+  <header class="kopf zt-band" id="kopf" hidden>
+    <a href="../start/" class="marke">← VIII · <b data-t="titel">Falte</b></a>
+    <nav class="zt-sprachen" aria-label="Sprache"><button data-lang="de">de</button><button data-lang="en">en</button><button data-lang="fr">fr</button></nav>
+  </header>
+
+  <section class="regler" id="regler" hidden>
+    <nav class="zustaende zt-wahl" aria-label="Lesart" data-t-label="lesart">
+      <input type="range" id="r-lesart" class="zt" min="0" max="2" step="1" value="0" aria-label="Lesart"><button data-lesart="0" data-stelle="0">Rauschen</button><button data-lesart="1" data-stelle="1">Draperie</button><button data-lesart="2" data-stelle="2">Entfalten</button>
+    </nav>
+    <div class="zt-regler">
+      <label><span id="n-a">Meer</span><input type="range" id="r-a" min="0" max="1" step="0.01" value="0.5"></label>
+      <label><span id="n-b">Schwelle</span><input type="range" id="r-b" min="0" max="1" step="0.01" value="0.5"></label>
+      <label><span id="n-c">Bezirk</span><input type="range" id="r-c" min="0" max="1" step="0.01" value="0.5"></label>
+    </div>
+    <div class="knoepfe zt-tasten">
+      <button class="zt-taste" id="begriff-auf" data-t="begriff">Begriff</button>
+      <button class="zt-taste" id="standbild" data-t="standbild">Standbild</button>
+      <button class="zt-taste rot" id="aufnahme" data-t="aufnahme">Aufnahme</button>
+    </div>
+  </section>
+
+  <!-- Kamera wenden: das übliche Zeichen, feine Linie direkt auf dem Bild -->
+  <button class="wenden" id="wenden" hidden aria-label="Kamera wenden" data-t-label="wenden">
+    <svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <g class="kontur">
+        <path d="M4 11.5h5l2.2-3h9.6l2.2 3h5v14H4z"/>
+        <path d="M11.2 18.6a4.9 4.9 0 0 1 8.6-3.3"/><path d="M20.4 12.6v2.9h-2.9"/>
+        <path d="M20.8 18.4a4.9 4.9 0 0 1-8.6 3.3"/><path d="M11.6 24.4v-2.9h2.9"/>
+      </g>
+      <path d="M4 11.5h5l2.2-3h9.6l2.2 3h5v14H4z"/>
+      <path d="M11.2 18.6a4.9 4.9 0 0 1 8.6-3.3"/><path d="M20.4 12.6v2.9h-2.9"/>
+      <path d="M20.8 18.4a4.9 4.9 0 0 1-8.6 3.3"/><path d="M11.6 24.4v-2.9h2.9"/>
+    </svg>
+  </button>
+  <!-- alles lösen: ein offener Kreis mit Pfeil, neben dem Ton; erscheint, sobald Falten oder Farbe stehen -->
+  <button class="loesen" id="loesen" hidden aria-label="Alles lösen" data-t-label="loesen">
+    <svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <g class="kontur"><path d="M9.2 9.6A10.5 8.6 0 1 1 6.2 17.6"/><path d="M5.2 9.2l4 .4-.6 4"/></g>
+      <path d="M9.2 9.6A10.5 8.6 0 1 1 6.2 17.6"/><path d="M5.2 9.2l4 .4-.6 4"/>
+    </svg>
+  </button>
+  <!-- Ton an und aus: dasselbe feine Zeichen, unten links -->
+  <button class="ton" id="ton" hidden aria-pressed="true" aria-label="Ton aus" data-t-label="tonAus">
+    <svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <g class="kontur"><path d="M5 12.5h5l6-5v17l-6-5H5z"/><path class="wellen" d="M20 12.2a5.4 5.4 0 0 1 0 7.6M23.2 9a9.8 9.8 0 0 1 0 14"/><path class="strich" d="M20.5 12.5l7 7M27.5 12.5l-7 7"/></g>
+      <path d="M5 12.5h5l6-5v17l-6-5H5z"/><path class="wellen" d="M20 12.2a5.4 5.4 0 0 1 0 7.6M23.2 9a9.8 9.8 0 0 1 0 14"/><path class="strich" d="M20.5 12.5l7 7M27.5 12.5l-7 7"/>
+    </svg>
+  </button>
+  <!-- Glosse als Untertitel: Begriff, Satz, Zitat im Original, Quelle -->
+  <aside class="glosse" id="glosse" hidden aria-live="polite">
+    <p class="glosse-begriff" id="glosse-begriff"></p>
+    <p class="glosse-satz" id="glosse-satz"></p>
+    <p class="glosse-zitat" id="glosse-zitat"></p>
+    <p class="glosse-quelle" id="glosse-quelle"></p>
+  </aside>
+    <p class="geste weg" id="geste" hidden></p>
+</main>
+
+<!-- Lektüre: eine Folge von Texttafeln, seitlich wischbar -->
+<aside class="begriff" id="begriff" hidden aria-labelledby="begriff-titel">
+  <div class="zt-band lek-band">
+    <span class="familie" data-t="familie">Materie · Le Pli, 1988</span>
+    <button class="zu" id="begriff-zu" aria-label="Schliessen">×</button>
+  </div>
+  <div class="zt-tafeln" id="tafeln">
+    <section class="zt-tafel">
+      <h3><span data-sprache="de">Was ist eine <b>Falte</b> ?</span><span data-sprache="en">What is a <b>fold</b> ?</span><span data-sprache="fr">Qu’est-ce qu’un <b>pli</b> ?</span></h3>
+      <h2 class="unsichtbar" id="begriff-titel" data-t="b-titel">Falte</h2>
+      <div class="text" data-t="b-text"></div>
+    </section>
+    <section class="zt-tafel">
+      <p class="zt-kennung" data-t="lesart">Lesart</p>
+      <h3 id="b-lesart-titel"></h3>
+      <p id="b-lesart-text"></p>
+    </section>
+    <section class="zt-tafel gegen">
+      <h3>«La clameur de l’Être.»</h3>
+      <p class="klein"><span data-sprache="de">Alain Badiou, «Deleuze. La clameur de l’Être», 1997.</span><span data-sprache="en">Alain Badiou, “Deleuze: The Clamor of Being”, 1997.</span><span data-sprache="fr">Alain Badiou, « Deleuze. La clameur de l’Être », 1997.</span></p>
+      <p data-sprache="de">Gegenstimme, Badiou: Wenn alles Falte ist, gibt es keinen Bruch. Die Falte führt jede Gestalt stetig in die nächste über, das Neue ist dann immer schon im Alten eingefaltet. Badiou hält dagegen: Ein Ereignis wird nicht entfaltet, es <span class="zt-rature">folgt</span> keiner Falte, es reisst. Wer nur faltet, kennt Übergänge, aber keinen Anfang. Badiou las «Le Pli» genau und mit Bewunderung, und gerade darum fragt er, wo in diesem stetigen Gewebe noch eine Entscheidung möglich ist.</p>
+      <p data-sprache="en">Counter-voice, Badiou: if everything is fold, there is no break. The fold carries every form continuously into the next, so the new is always already folded into the old. Badiou objects: an event is not unfolded, it <span class="zt-rature">follows</span> no fold, it tears. Whoever only folds knows transitions but no beginning. Badiou read “The Fold” closely and with admiration, and precisely for that reason he asks where in this continuous fabric a decision is still possible.</p>
+      <p data-sprache="fr">Contre-voix, Badiou : si tout est pli, il n’y a pas de rupture. Le pli conduit chaque forme continûment dans la suivante, le nouveau est alors toujours déjà plié dans l’ancien. Badiou objecte : un événement ne se déplie pas, il ne <span class="zt-rature">suit</span> aucun pli, il déchire. Qui ne fait que plier connaît des passages, mais pas de commencement. Badiou a lu « Le Pli » de près et avec admiration, et c’est pourquoi il demande où, dans ce tissu continu, une décision reste possible.</p>
+      <p class="klein">Alain Badiou, <i>Deleuze. «La clameur de l’Être»</i>, Paris: Hachette 1997. <span data-sprache="de">Die Gegenstimme ist sinngemäss wiedergegeben.</span><span data-sprache="en">The counter-voice is paraphrased.</span><span data-sprache="fr">La contre-voix est rendue en substance.</span></p>
+    </section>
+    <section class="zt-tafel">
+      <h3><b>?</b></h3>
+      <p class="frage" data-t="b-frage"></p>
+    </section>
+    <section class="zt-tafel">
+      <p class="zt-kennung"><span data-sprache="de">Werke</span><span data-sprache="en">Works</span><span data-sprache="fr">Œuvres</span></p>
+      <p class="werke">Gian Lorenzo Bernini, <i>L’estasi di Santa Teresa</i>, 1647–1652<br>El Greco, <i>El Expolio</i>, 1577–1579<br>Simon Hantaï, <i>Mariales</i>, 1960–1962, und <i>Tabulas</i>, 1972–1982<br>Pierre Boulez, <i>Pli selon pli</i>, 1957–1962<br>G. W. Leibniz, <i>Monadologie</i>, 1714</p>
+      <p class="zt-kennung"><span data-sprache="de">Quelle</span><span data-sprache="en">Source</span><span data-sprache="fr">Source</span></p>
+      <p class="quelle klein" data-t="b-quelle"></p>
+      <p class="zt-kennung"><span data-sprache="de">Verwandt</span><span data-sprache="en">Related</span><span data-sprache="fr">Voisins</span></p>
+      <p class="verweise"><a href="../wahrnehmung/">IV <span data-sprache="de">Wahrnehmung als Auswahl</span><span data-sprache="en">Perception as selection</span><span data-sprache="fr">La perception comme sélection</span></a><br><a href="../figur/">VI <span data-sprache="de">Figur und Fläche</span><span data-sprache="en">Figure and field</span><span data-sprache="fr">La Figure et l’aplat</span></a><br><a href="../ritornell/">VII <span data-sprache="de">Ritornell</span><span data-sprache="en">Refrain</span><span data-sprache="fr">La ritournelle</span></a></p>
+    </section>
+  </div>
+  <div class="zt-band lek-fuss"><span class="zt-zaehler" id="zaehler">1 / 5</span><span class="zt-zaehler"><span data-sprache="de">wischen</span><span data-sprache="en">swipe</span><span data-sprache="fr">glisser</span> →</span></div>
+</aside>
+
+<aside class="ergebnis" id="ergebnis" hidden aria-label="Ergebnis">
+  <button class="zu" id="ergebnis-zu" aria-label="Schliessen">×</button>
+  <div class="ergebnis-bild" id="ergebnis-bild"></div>
+  <p class="ergebnis-mb" id="ergebnis-mb"></p>
+  <div class="ergebnis-knoepfe zt-tasten">
+    <button class="zt-taste" id="teilen" data-t="teilen">Teilen</button>
+    <button class="zt-taste" id="sichern" data-t="sichern">Sichern</button>
+  </div>
+  <p class="ergebnis-hinweis" id="ergebnis-hinweis" data-t="ergebnis-hinweis" hidden></p>
+</aside>
+
+<p class="meldung" id="meldung" hidden></p>
+<script type="module" src="falte.js?v=1"></script>
+<script src="../gemeinsam/tafeln.js?v=3"></script>
+</body>
+</html>

@@ -22,7 +22,7 @@ const OPS = [
   { nr: 'VII', jahr: 1980, href: '../ritornell/', film: 'ritornell', name: { de: 'Ritornell', en: 'Refrain', fr: 'La ritournelle' }, wort: { de: 'Ritornell', en: 'Refrain', fr: 'Ritournelle' }, begriff: 'la ritournelle',
     satz: { de: 'Ein kleiner Refrain zieht einen Kreis um das Ungewisse und macht daraus ein Zuhause.', en: 'A little refrain draws a circle around the uncertain and makes a home of it.', fr: 'Une petite ritournelle trace un cercle autour de l’incertain et en fait un chez-soi.' },
     quelle: 'Deleuze, Guattari, Mille plateaux, 1980' },
-  { nr: 'VIII', jahr: 1988, name: { de: 'Falte', en: 'Fold', fr: 'Le pli' }, wort: { de: 'Falte', en: 'Fold', fr: 'Pli' }, begriff: 'le pli',
+  { nr: 'VIII', jahr: 1988, href: '../falte/', film: 'falte', name: { de: 'Falte', en: 'Fold', fr: 'Le pli' }, wort: { de: 'Falte', en: 'Fold', fr: 'Pli' }, begriff: 'le pli',
     satz: { de: 'Die Materie faltet sich ins Unendliche, und jede Falte birgt eine weitere.', en: 'Matter folds to infinity, and every fold holds another.', fr: 'La matière se plie à l’infini, et chaque pli en contient un autre.' },
     quelle: 'Le Pli. Leibniz et le baroque, 1988' }
 ];
