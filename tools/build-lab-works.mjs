@@ -30,7 +30,7 @@ const nr = (i) => String(i + 1).padStart(2, "0");
 
 // Signet und Favicon wörtlich aus dem Neubau (tools/build-b.mjs schreibt sie), damit es nur eine Fassung gibt
 const neubau = readFileSync(join(ROOT, "b/werke/index.html"), "utf8");
-const SIGNET = neubau.match(/<a class="signet" href="\/"[^>]*>(<svg[\s\S]*?<\/svg>)/)?.[1];   // seit 16. November 2026 zeigt das Signet auf die Wurzel
+const SIGNET = neubau.match(/<a class="signet" href="\/(?:start\/)?"[^>]*>(<svg[\s\S]*?<\/svg>)/)?.[1];   // seit 16. November 2026 zeigt das Signet auf die Wurzel
 const ICON = neubau.match(/<link rel="icon" href="([^"]+)">/)?.[1];
 if (!SIGNET || !ICON) throw new Error("Signet oder Favicon nicht in b/werke/index.html gefunden (tools/build-b.mjs gelaufen?)");
 

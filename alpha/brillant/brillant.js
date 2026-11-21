@@ -93,6 +93,8 @@ function grundTexte() {
   document.documentElement.lang = SPRACHE;
   document.title = `${TITEL_KURZ} · ornament.cloud`;
   document.querySelector('h1').textContent = TITEL;
+  // 0.43: die Seite ist die Startseite; «ornament.cloud» oben führt zur bisherigen Startseite (der Neubau gibt es deutsch und englisch)
+  const kopfLink = document.querySelector('.kopf a'); if (kopfLink) kopfLink.href = SPRACHE === 'de' ? '/start/' : '/en/';
   document.getElementById('mehr').firstChild.textContent = T.mehr + ' ';
   document.getElementById('stein').setAttribute('aria-label', T.menu);
   document.getElementById('bereiche').setAttribute('aria-label', T.anwendungen);
@@ -930,7 +932,7 @@ function menuSchalten(auf) {
 }
 nav.inert = true;
 const mehr = $('mehr');
-mehr.addEventListener('click', (e) => { const k = zuZustand(phi); if (k) { e.preventDefault(); vitrineAuf(k - 1); } });
+mehr.addEventListener('click', (e) => { e.preventDefault(); const k = zuZustand(phi); if (k) vitrineAuf(k - 1); });   // 0.43: «#» zielte mit <base> auf /alpha/brillant/
 
 // ---------- Projektion (Christian, 20.11.2026: «3d aus dem Brillanten projiziert, nach einer Drehung präsentieren») ----------
 // Im offenen Menü wirft der Stein alle Bereiche als Glasflächen hinaus: sie stehen im Raum rund um seine Achse, jede

@@ -16,8 +16,15 @@ const seitenUnterB = (() => {
   gehe("b/"); return out;
 })();
 
-test("Wurzel: die Startseite ist der Neubau, die bisherige bleibt unter /?bisher", () => {
-  assert.deepEqual(anfrage("/"), { datei: "b/index.html" });
+test("Wurzel: die Startseite ist die Brillant-Seite (21. November 2026), der Neubau-Start heisst /start/, die ganz alte bleibt unter /?bisher", () => {
+  assert.deepEqual(anfrage("/"), { datei: "alpha/brillant/index.html" });
+  assert.deepEqual(anfrage("/?lang=fr"), { datei: "alpha/brillant/index.html" });
+  assert.deepEqual(anfrage("/alpha/brillant/"), { umleitung: "/", code: 301 });
+  assert.deepEqual(anfrage("/alpha/brillant/?lang=fr"), { umleitung: "/?lang=fr", code: 301 });
+  assert.deepEqual(anfrage("/alpha/brillant/brillant.js"), { datei: "alpha/brillant/brillant.js" });
+  assert.deepEqual(anfrage("/start/"), { datei: "b/index.html" });
+  assert.deepEqual(anfrage("/start"), { umleitung: "/start/", code: 301 });
+  assert.match(lies("alpha/brillant/index.html"), /<base href="\/alpha\/brillant\/">/);
   assert.deepEqual(anfrage("/en/"), { datei: "b/en/index.html" });
   assert.deepEqual(anfrage("/?bisher"), { datei: "index.html" });
   assert.deepEqual(anfrage("/angebot/webdesign/"), { datei: "b/angebot/webdesign/index.html" });
@@ -37,8 +44,7 @@ test("Wurzel: jede Seite unter /b/ leitet dauerhaft (301) auf dieselbe Seite ohn
     assert.deepEqual(anfrage(alt), { umleitung: neu, code: 301 }, alt);
     assert.deepEqual(anfrage(neu), { datei: p + "index.html" }, `${neu} liefert ${p}index.html`);
   }
-  assert.deepEqual(anfrage("/b/"), { umleitung: "/", code: 301 });
-  assert.deepEqual(anfrage("/b/?bisher"), { umleitung: "/?bisher", code: 301 });
+  assert.deepEqual(anfrage("/b/"), { umleitung: "/start/", code: 301 });
   for (const f of ["b/b.css", "b/b.js", "b/tafeln-leben.js", "b/bilder/signet/signet.svg"]) assert.deepEqual(anfrage("/" + f), { datei: f }, f);
 });
 
