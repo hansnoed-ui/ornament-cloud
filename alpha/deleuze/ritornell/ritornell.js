@@ -44,9 +44,9 @@ const TEXTE = {
     regler: [['Stimme', 'Milieu', 'Sand'], ['Tempo', 'Revier', 'Echo'], ['Linien', 'Spirale', 'Sterne']],
     reglerGlosse: [['voix', 'milieu', 'sable'], ['rythme', 'territoire', 'echo'], ['fuite', 'spirale', 'forces']],
     lesarten: [
-      { kurz: 'Summen', titel: 'Im Dunkeln', wer: 'Deleuze, Guattari, Chladni', geste: 'Den Daumen auflegen und halten.', text: 'Das Plateau über das Ritornell beginnt mit einem Kind, das im Dunkeln Angst hat und sich beruhigt, indem es vor sich hin singt. Das Lied ist ein erster stabiler Punkt im Chaos, zerbrechlich, aber er hält. Chaos heisst dabei nicht Unordnung schlechthin: Es ist das Milieu aller Milieus, Schwingung, Wechsel, aus dem jeder Rhythmus kommt. Hier fällt beim Berühren die Nacht über das Bild, die Momente der letzten Sekunden geraten durcheinander. Hältst du den Daumen, summt eine Stimme das alte Kinderlied, und um den Daumen ordnet der Klang das Bild wie Sand auf einer Klangplatte bei Chladni: Wo die Platte ruht, sammelt sich der Sand zu feinen Linien. Jede Note eine andere Figur.' },
+      { kurz: 'Summen', titel: 'Im Dunkeln', wer: 'Deleuze, Guattari, Chladni', geste: 'Den Daumen auflegen und halten.', text: 'Das Plateau über das Ritornell beginnt mit einem Kind, das im Dunkeln Angst hat und sich beruhigt, indem es vor sich hin singt. Das Lied ist ein erster stabiler Punkt im Chaos, zerbrechlich, aber er hält. Chaos heisst dabei nicht Unordnung schlechthin: Es ist das Milieu aller Milieus, Schwingung, Wechsel, aus dem jeder Rhythmus kommt. Hier fällt beim Berühren die Nacht über das Bild, die Momente der letzten Sekunden geraten durcheinander. Hältst du den Daumen, summt eine Stimme das alte Kinderlied, und um den Daumen zerfällt das Bild zu Sand auf einer Klangplatte wie bei Chladni: Wo die Platte schwingt, springen die Körner auf, wo sie ruht, sammeln sie sich zu Linien. Jede Note eine andere Figur, und jedes Korn trägt die Farbe der Stelle, von der es kam.' },
       { kurz: 'Revier', titel: 'Das Zuhause', wer: 'Deleuze, Guattari, Messiaen', geste: 'Im Takt auf das Bild tippen.', text: 'Das Zuhause gibt es nicht schon vorher. Man zieht einen Kreis um den unsicheren Punkt und richtet einen begrenzten Raum ein. Ein Revier entsteht, wenn Dinge des Milieus zu Marken werden: eine Farbe, ein Laut, eine Haltung, das helle Blatt des Vogels Scenopoeetes, der Gesang, den Messiaen aufschrieb. Und es entsteht durch Wiederholung. Hier setzt jedes Tippen eine Marke in den Takt. Der Refrain spielt sie immer wieder, jede Marke klingt und sendet einen Ring aus, der ein Echo des Bildes von eben trägt. Mit jeder Wiederholung wächst das Revier: innen klar und warm, draussen das Chaos. Tippst du auf eine Marke, verschwindet sie.' },
-      { kurz: 'Kosmos', titel: 'Hinaus', wer: 'Deleuze, Guattari, Klee', geste: 'Im Kreis auflegen und nach aussen ziehen.', text: 'Schliesslich öffnet man den Kreis einen Spalt, lässt jemanden herein, ruft jemanden, oder man bricht selbst auf, wagt eine Improvisation. Das Ritornell verbindet sich mit den Kräften des Kosmos. Für Deleuze und Guattari ist das die Aufgabe der Kunst, mit Klee: nicht das Sichtbare wiedergeben, sondern Kräfte sichtbar machen. Hier legst du einen Kreis um das Bild und ziehst ihn nach aussen auf. Durch die Öffnung strömt das Bild auf Linien hinaus, die sich zu einer Spirale winden, jede Windung ein früherer Moment. Darunter steigt die Obertonreihe eines tiefen Tones auf, der Refrain klingt wie Glas. Lässt du los, schliesst sich der Kreis langsam wieder.' }
+      { kurz: 'Kosmos', titel: 'Hinaus', wer: 'Deleuze, Guattari, Klee', geste: 'Im Kreis auflegen und nach aussen ziehen.', text: 'Schliesslich öffnet man den Kreis einen Spalt, lässt jemanden herein, ruft jemanden, oder man bricht selbst auf, wagt eine Improvisation. Das Ritornell verbindet sich mit den Kräften des Kosmos. Für Deleuze und Guattari ist das die Aufgabe der Kunst, mit Klee: nicht das Sichtbare wiedergeben, sondern Kräfte sichtbar machen. Hier legst du einen Kreis um das Bild. Draussen kreisen die Kräfte: Das Bild zieht als Langzeitbelichtung um den Kreis, wie die Sterne um den Pol. Ziehst du nach aussen, öffnet sich der Kreis. Durch die Öffnung strömt das Bild auf Linien hinaus, die sich zu einer Spirale winden, jede Windung ein früherer Moment. Darunter steigt die Obertonreihe eines tiefen Tones auf, der Refrain klingt wie Glas. Lässt du los, schliesst sich der Kreis langsam wieder.' }
     ],
     wenden: 'Kamera wenden', tonAn: 'Ton an', tonAus: 'Ton aus', loesen: 'Alles lösen',
     begriff: 'Begriff', standbild: 'Standbild', aufnahme: 'Aufnahme', stopp: 'Stopp',
@@ -89,9 +89,9 @@ const TEXTE = {
     regler: [['Voice', 'Milieu', 'Sand'], ['Tempo', 'Territory', 'Echo'], ['Lines', 'Spiral', 'Stars']],
     reglerGlosse: [['voix', 'milieu', 'sable'], ['rythme', 'territoire', 'echo'], ['fuite', 'spirale', 'forces']],
     lesarten: [
-      { kurz: 'Humming', titel: 'In the dark', wer: 'Deleuze, Guattari, Chladni', geste: 'Rest your thumb and hold.', text: 'The plateau on the refrain begins with a child who is afraid in the dark and calms itself by singing under its breath. The song is a first stable point in chaos, fragile, but it holds. Chaos does not simply mean disorder: it is the milieu of all milieus, vibration, alternation, from which every rhythm comes. Here, when you touch, night falls over the image and the moments of the last seconds are thrown together. Hold your thumb and a voice hums the old children’s tune, and around your thumb the sound orders the image like sand on Chladni’s sounding plate: where the plate is still, the sand gathers into fine lines. Each note another figure.' },
+      { kurz: 'Humming', titel: 'In the dark', wer: 'Deleuze, Guattari, Chladni', geste: 'Rest your thumb and hold.', text: 'The plateau on the refrain begins with a child who is afraid in the dark and calms itself by singing under its breath. The song is a first stable point in chaos, fragile, but it holds. Chaos does not simply mean disorder: it is the milieu of all milieus, vibration, alternation, from which every rhythm comes. Here, when you touch, night falls over the image and the moments of the last seconds are thrown together. Hold your thumb and a voice hums the old children’s tune, and around your thumb the image crumbles into sand on a sounding plate, as with Chladni: where the plate vibrates the grains leap, where it is still they gather into lines. Each note another figure, and each grain carries the colour of the place it came from.' },
       { kurz: 'Territory', titel: 'Home', wer: 'Deleuze, Guattari, Messiaen', geste: 'Tap the image in time.', text: 'Home does not exist beforehand. One draws a circle around the uncertain point and organises a limited space. A territory arises when things of the milieu become marks: a colour, a sound, a posture, the pale leaf of the bird Scenopoeetes, the song Messiaen wrote down. And it arises through repetition. Here every tap sets a mark into the beat. The refrain plays them again and again, each mark sounds and sends out a ring carrying an echo of the image a moment ago. With every repetition the territory grows: clear and warm inside, chaos outside. Tap a mark and it disappears.' },
-      { kurz: 'Cosmos', titel: 'Out', wer: 'Deleuze, Guattari, Klee', geste: 'Rest inside the circle and pull outwards.', text: 'Finally one opens the circle a crack, lets someone in, calls someone, or ventures out oneself, risks an improvisation. The refrain joins the forces of the cosmos. For Deleuze and Guattari this is the task of art, with Klee: not to render the visible, but to make forces visible. Here you lay a circle around the image and pull it open. Through the opening the image streams out on lines that wind into a spiral, each turn an earlier moment. Beneath it rises the overtone series of a deep tone, and the refrain sounds like glass. Let go and the circle slowly closes again.' }
+      { kurz: 'Cosmos', titel: 'Out', wer: 'Deleuze, Guattari, Klee', geste: 'Rest inside the circle and pull outwards.', text: 'Finally one opens the circle a crack, lets someone in, calls someone, or ventures out oneself, risks an improvisation. The refrain joins the forces of the cosmos. For Deleuze and Guattari this is the task of art, with Klee: not to render the visible, but to make forces visible. Here you lay a circle around the image. Outside, the forces turn: the image circles it like a long exposure, as the stars circle the pole. Pull outwards and the circle opens. Through the opening the image streams out on lines that wind into a spiral, each turn an earlier moment. Beneath it rises the overtone series of a deep tone, and the refrain sounds like glass. Let go and the circle slowly closes again.' }
     ],
     wenden: 'Flip camera', tonAn: 'Sound on', tonAus: 'Sound off', loesen: 'Release all',
     begriff: 'Concept', standbild: 'Still', aufnahme: 'Record', stopp: 'Stop',
@@ -134,9 +134,9 @@ const TEXTE = {
     regler: [['Voix', 'Milieu', 'Sable'], ['Tempo', 'Territoire', 'Écho'], ['Lignes', 'Spirale', 'Étoiles']],
     reglerGlosse: [['voix', 'milieu', 'sable'], ['rythme', 'territoire', 'echo'], ['fuite', 'spirale', 'forces']],
     lesarten: [
-      { kurz: 'Chantonner', titel: 'Dans le noir', wer: 'Deleuze, Guattari, Chladni', geste: 'Pose le pouce et tiens.', text: 'Le plateau de la ritournelle commence par un enfant qui a peur dans le noir et se rassure en chantonnant. Le chant est un premier point stable dans le chaos, fragile, mais il tient. Le chaos n’est pas simplement le désordre : c’est le milieu de tous les milieux, vibration, alternance, d’où vient tout rythme. Ici, quand tu touches, la nuit tombe sur l’image et les instants des dernières secondes se mêlent. Tiens le pouce : une voix chantonne la vieille comptine, et autour du pouce le son ordonne l’image comme le sable sur la plaque sonore de Chladni : là où la plaque est immobile, le sable se rassemble en lignes fines. Chaque note une autre figure.' },
+      { kurz: 'Chantonner', titel: 'Dans le noir', wer: 'Deleuze, Guattari, Chladni', geste: 'Pose le pouce et tiens.', text: 'Le plateau de la ritournelle commence par un enfant qui a peur dans le noir et se rassure en chantonnant. Le chant est un premier point stable dans le chaos, fragile, mais il tient. Le chaos n’est pas simplement le désordre : c’est le milieu de tous les milieux, vibration, alternance, d’où vient tout rythme. Ici, quand tu touches, la nuit tombe sur l’image et les instants des dernières secondes se mêlent. Tiens le pouce : une voix chantonne la vieille comptine, et autour du pouce l’image s’effrite en sable sur une plaque sonore, comme chez Chladni : là où la plaque vibre, les grains sautent, là où elle est immobile, ils se rassemblent en lignes. Chaque note une autre figure, et chaque grain garde la couleur de l’endroit d’où il vient.' },
       { kurz: 'Territoire', titel: 'Le chez-soi', wer: 'Deleuze, Guattari, Messiaen', geste: 'Tape l’image en mesure.', text: 'Le chez-soi ne préexiste pas. On trace un cercle autour du point incertain et on organise un espace limité. Un territoire naît quand des choses du milieu deviennent des marques : une couleur, un son, une posture, la feuille pâle de l’oiseau Scenopoeetes, le chant que Messiaen a noté. Et il naît de la répétition. Ici chaque tape pose une marque dans la mesure. La ritournelle les rejoue sans cesse, chaque marque sonne et émet un anneau qui porte un écho de l’image d’il y a un instant. À chaque reprise le territoire grandit : clair et chaud dedans, le chaos dehors. Tape une marque, elle disparaît.' },
-      { kurz: 'Cosmos', titel: 'Au large', wer: 'Deleuze, Guattari, Klee', geste: 'Pose le pouce dans le cercle et tire vers l’extérieur.', text: 'Enfin on entrouvre le cercle, on laisse entrer quelqu’un, on appelle quelqu’un, ou l’on s’élance soi-même, on hasarde une improvisation. La ritournelle rejoint les forces du cosmos. Pour Deleuze et Guattari, c’est la tâche de l’art, avec Klee : non pas rendre le visible, mais rendre visibles des forces. Ici tu poses un cercle autour de l’image et tu l’ouvres en tirant. Par l’ouverture, l’image s’écoule sur des lignes qui s’enroulent en spirale, chaque tour un instant plus ancien. Dessous monte la série des harmoniques d’un son grave, la ritournelle sonne comme du verre. Lâche, et le cercle se referme lentement.' }
+      { kurz: 'Cosmos', titel: 'Au large', wer: 'Deleuze, Guattari, Klee', geste: 'Pose le pouce dans le cercle et tire vers l’extérieur.', text: 'Enfin on entrouvre le cercle, on laisse entrer quelqu’un, on appelle quelqu’un, ou l’on s’élance soi-même, on hasarde une improvisation. La ritournelle rejoint les forces du cosmos. Pour Deleuze et Guattari, c’est la tâche de l’art, avec Klee : non pas rendre le visible, mais rendre visibles des forces. Ici tu poses un cercle autour de l’image. Dehors tournent les forces : l’image tourne autour du cercle comme en pose longue, comme les étoiles autour du pôle. Tire vers l’extérieur, et le cercle s’ouvre. Par l’ouverture, l’image s’écoule sur des lignes qui s’enroulent en spirale, chaque tour un instant plus ancien. Dessous monte la série des harmoniques d’un son grave, la ritournelle sonne comme du verre. Lâche, et le cercle se referme lentement.' }
     ],
     wenden: 'Retourner', tonAn: 'Son activé', tonAus: 'Son coupé', loesen: 'Tout défaire',
     begriff: 'Concept', standbild: 'Image', aufnahme: 'Enregistrer', stopp: 'Arrêter',
@@ -174,8 +174,8 @@ function uebersetzen() {
   document.querySelectorAll('[data-t-label]').forEach((el) => { const v = t[el.dataset.tLabel]; if (typeof v === 'string') { el.setAttribute('aria-label', v); el.title = v; } });
   if (aufnehmer) $('aufnahme').textContent = t.stopp;
   document.querySelectorAll('[data-lesart]').forEach((b) => { b.textContent = t.lesarten[+b.dataset.lesart].kurz; });
-  $('geste').textContent = t.lesarten[lesart].geste;
   $('daumen-text').textContent = t.daumen[lesart];
+  if (randJetzt && randJetzt.art === 'titel') { const z = t.lesarten[lesart]; $('geste').textContent = z.titel + ' · ' + z.wer; }
   reglerBeschriften();
   lesartText();
   document.querySelectorAll('[data-lang]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === sprache)));
@@ -232,7 +232,7 @@ const VS = `#version 300 es
 in vec2 a; out vec2 v;
 void main(){ v = a*0.5+0.5; gl_Position = vec4(a,0.,1.); }`;
 const KOPF = `#version 300 es
-precision highp float; precision highp sampler2DArray; in vec2 v; out vec4 o;
+precision highp float; precision highp sampler2D; precision highp sampler2DArray; in vec2 v; out vec4 o;
 #define PI 3.14159265
 float lu(vec3 c){ return dot(c, vec3(0.2126, 0.7152, 0.0722)); }
 float h21(vec2 p){ p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
@@ -246,6 +246,23 @@ vec3 hist(vec2 uv, float alter){
   alter = clamp(alter, 0.0, uN - 1.001); float a0 = floor(alter), f = alter - a0;
   float l0 = mod(uKopf - a0 + uN, uN), l1 = mod(uKopf - a0 - 1.0 + uN, uN);
   return mix(texture(uHist, vec3(uv, l0)).rgb, texture(uHist, vec3(uv, l1)).rgb, f);
+}
+`;
+const CHLADNI = `
+// Chladni: die klassische Figur einer gestrichenen Platte, cos(nπx)cos(mπy) − cos(mπx)cos(nπy), gedreht um den Daumen.
+// Wert und Steigung (in q), damit die Knotenlinie genau einen Bildpunkt breit wird.
+// uSk: Grösse der Platte in q, uVer: Lage (0.5: die ganze Platte liegt unter dem Daumen, wie bei Chladni eine Figur je Ton)
+uniform float uSk, uVer;
+vec3 chladni(vec2 p, float n, float m, float rot){
+  float cs = cos(rot), sn = sin(rot);
+  vec2 u = vec2(cs * p.x + sn * p.y, -sn * p.x + cs * p.y) / uSk + uVer;
+  // n negativ: die symmetrische Figur (ohne Diagonalen), sonst die gegenläufige
+  float sg = n < 0.0 ? 1.0 : -1.0; n = abs(n);
+  float a = n * PI, b = m * PI;
+  float P = cos(a * u.x) * cos(b * u.y) + sg * cos(b * u.x) * cos(a * u.y);
+  float du = (-a * sin(a * u.x) * cos(b * u.y) - sg * b * sin(b * u.x) * cos(a * u.y)) / uSk;
+  float dw = (-b * cos(a * u.x) * sin(b * u.y) - sg * a * cos(b * u.x) * sin(a * u.y)) / uSk;
+  return vec3(P, cs * du - sn * dw, sn * du + cs * dw);
 }
 `;
 const FS_KOPIE = KOPF + `uniform sampler2D uQ; void main(){ o = vec4(texture(uQ, v).rgb, 1.0); }`;
@@ -276,23 +293,10 @@ void main(){
 
 // ---------- die Szene: alle drei Lesarten in einem Durchgang ----------
 // q in Bildhöhen (x mal Seitenverhältnis), y nach oben. Abstände für Linien werden in Bildpunkten gerechnet: haarfein, nie treppig.
-const FS_SZENE = KOPF + `uniform sampler2D uScharf, uChaos; uniform float uSeite, uT, uHpx, uDpr, uNacht, uArt;
+const FS_SZENE = KOPF + CHLADNI + `uniform sampler2D uScharf, uChaos; uniform float uSeite, uT, uHpx, uDpr, uNacht, uArt, uKoerner;
 uniform vec4 uZ, uMode, uModeB, uPuls;
 uniform vec4 uMark[8]; uniform int uMarkN; uniform vec4 uRing[12]; uniform int uRingN; uniform vec4 uRev;
 uniform vec4 uKos, uKosB; uniform vec2 uKosC;
-// Chladni: die klassische Figur einer gestrichenen Platte, cos(nπx)cos(mπy) − cos(mπx)cos(nπy), gedreht um den Daumen.
-// Wert und Steigung (in q), damit die Knotenlinie genau einen Bildpunkt breit wird.
-vec3 chladni(vec2 p, float n, float m, float rot){
-  float cs = cos(rot), sn = sin(rot);
-  vec2 u = vec2(cs * p.x + sn * p.y, -sn * p.x + cs * p.y) / 0.2;
-  // n negativ: die symmetrische Figur (ohne Diagonalen), sonst die gegenläufige
-  float sg = n < 0.0 ? 1.0 : -1.0; n = abs(n);
-  float a = n * PI, b = m * PI;
-  float P = cos(a * u.x) * cos(b * u.y) + sg * cos(b * u.x) * cos(a * u.y);
-  float du = (-a * sin(a * u.x) * cos(b * u.y) - sg * b * sin(b * u.x) * cos(a * u.y)) / 0.2;
-  float dw = (-b * cos(a * u.x) * sin(b * u.y) - sg * a * cos(b * u.x) * sin(a * u.y)) / 0.2;
-  return vec3(P, cs * du - sn * dw, sn * du + cs * dw);
-}
 vec2 nachUV(vec2 qq){ return vec2(qq.x / uSeite, qq.y); }
 void main(){
   vec2 q = vec2(v.x * uSeite, v.y);
@@ -320,6 +324,18 @@ void main(){
       s += (texture(uScharf, v + nachUV(quer * amp)).rgb + texture(uScharf, v - nachUV(quer * amp)).rgb) * 0.1;
       vec3 geordnet = s * vec3(1.05, 1.0, 0.93);
       geordnet = mix(geordnet, geordnet * geordnet * (3.0 - 2.0 * geordnet), 0.25);
+      if (uKoerner > 0.5) {
+        // die Platte: dunkles Messing, in dem sich das Bild nur noch spiegelt; die Bäuche schimmern, wo sie schwingen.
+        // Den Sand streuen die Körner darüber (eigener Durchgang), aus dem Bild selbst.
+        float glanz = 0.5 + 0.5 * dot(normalize(vec3(-P.yz / gP, 1.6)), normalize(vec3(-0.5, 0.7, 0.6)));
+        vec3 platte = mix(vec3(0.016, 0.014, 0.012), vec3(0.07, 0.058, 0.044), glanz * smoothstep(0.0, 1.2, abs(P.x)) * uModeB.w);
+        platte += s * 0.085 * vec3(0.9, 0.95, 1.05);
+        float pr = abs(r - uPuls.x) * uHpx / uDpr;
+        platte += vec3(1.0, 0.92, 0.78) * (1.0 - smoothstep(0.3, 1.4, pr)) * uPuls.y * 0.22;
+        c = mix(c, platte, zone);
+        // der Rand der Platte: ein Hauch Licht, keine Linie
+        c += vec3(1.0, 0.94, 0.8) * 0.045 * uZ.w * exp(-pow((r - R * 0.8) * uHpx / (16.0 * uDpr), 2.0));
+      } else {
       // Sand: eine Linie auf dem Knoten. Ihre Stärke folgt der Platte wie echter Sand: wo die Platte flach schwingt,
       // liegt mehr Sand (breiter), wo sie steil ist, nur ein Haar. Daneben eine schmale Kerbe: der Sand wirft ein Relief.
       float lw = clamp(0.05 * uHpx / gP, 0.55 * uDpr, 1.25 * uDpr);
@@ -345,6 +361,7 @@ void main(){
       c = mix(c, geordnet, zone);
       // der Rand der Ordnung: ein Hauch Licht, keine Linie
       c += sand * 0.05 * uZ.w * exp(-pow((r - R * 0.8) * uHpx / (14.0 * uDpr), 2.0));
+      }
     }
   } else if (uArt < 1.5) {
     // ===== Revier: Marken, die im Takt klingen; aus ihrer Wiederholung wächst das Revier =====
@@ -411,22 +428,49 @@ void main(){
     float dth = abs(mod(th - phi + PI, 2.0 * PI) - PI);
     float spalt = offen * 1.1;
     float wand = smoothstep(spalt - 0.05, spalt + 0.02, dth);
-    // draussen: der Raum, dunkelblau, mit einem Nebel und Sternen
-    float neb = fbm(q * 1.3 + vec2(uKosC.y * 0.3, 0.0));
-    vec3 raum = vec3(0.010, 0.013, 0.034) + vec3(0.03, 0.035, 0.09) * smoothstep(0.35, 0.9, neb) + vec3(0.05, 0.02, 0.06) * smoothstep(0.6, 1.0, fbm(q * 2.7 - 3.0));
-    vec2 zelle = floor(gl_FragCoord.xy / (5.0 * uDpr));
-    vec2 jj = vec2(h21(zelle + 11.0), h21(zelle + 23.7));
-    float ds = length(gl_FragCoord.xy - (zelle + 0.2 + 0.6 * jj) * 5.0 * uDpr) / uDpr;
-    float gr = h21(zelle + 5.5);
-    // Sterne als weiche, runde Lichtpunkte (Gauss), nie kleiner als ein Bildpunkt: sonst werden sie zu Kreuzchen
-    float sr = 0.45 + 0.9 * jj.x * jj.x;
-    float stern = step(gr, 0.07 * uKosB.w) * exp(-ds * ds / (sr * sr)) * (0.55 + 0.45 * sin(uT * (1.0 + 3.0 * jj.x) + jj.y * 6.28));
-    raum += vec3(0.95, 0.93, 1.0) * stern;
-    // eine zweite, fernere Schicht, die sich langsamer dreht: Tiefe
-    vec2 fz = gl_FragCoord.xy + vec2(uKosC.y * 40.0 * uDpr, 0.0);
-    vec2 z2 = floor(fz / (9.0 * uDpr)); vec2 j2 = vec2(h21(z2 + 3.3), h21(z2 + 8.8));
-    float d2 = length(fz - (z2 + 0.2 + 0.6 * j2) * 9.0 * uDpr) / uDpr;
-    raum += vec3(0.75, 0.8, 1.0) * step(h21(z2 + 1.7), 0.1 * uKosB.w) * exp(-d2 * d2 / 0.3) * 0.4;
+    // draussen: der Kosmos als Langzeitbelichtung. Um den Kreis drehen sich die Kräfte, und das Bild zieht als Strichspur
+    // um ihn herum wie die Sterne um den Pol; jedes Stück einer Spur ist ein früherer Moment aus dem Gedächtnis.
+    // Öffnet sich der Kreis, wölben sich die Bahnen zur Öffnung hin aus: der Kosmos fliesst durch den Spalt hinaus.
+    float dsg = mod(th - phi + PI, 2.0 * PI) - PI;
+    float beule = pow(0.5 + 0.5 * cos(dsg), 5.0);
+    float hub = offen * (0.55 + 0.6 * uKosB.z) * beule;
+    float rr = r * exp(-hub);                                    // auf einer Bahn bleibt rr gleich
+    float kepler = 1.0 / (0.35 + rr / R);                         // innen kreist es schneller als aussen
+    float lauf = uKosC.y * 9.0 * kepler;
+    float aussen = smoothstep(-0.5, 1.5, rpx);
+    // 1. das ganze Bild, um den Kreis verwischt: ein Nebel aus dem Bild selbst, kalt und tief
+    vec3 neb = vec3(0.0);
+    float bogen = 0.12 + 0.3 * kepler;
+    float jit = h21(gl_FragCoord.xy + fract(uT * 7.0) * 31.0);         // versetzt, damit keine Geisterbilder stehen
+    for (int j = 0; j < 8; j++) {
+      float w = th - lauf * 0.02 - (float(j) + jit) * bogen / 8.0;
+      neb += texture(uScharf, clamp(nachUV(uKos.xy + r * vec2(cos(w), sin(w))), 0.002, 0.998)).rgb;
+    }
+    neb /= 8.0;
+    float nl = lu(neb);
+    vec3 raum = vec3(0.008, 0.010, 0.026) + mix(vec3(nl), neb, 0.5) * vec3(0.16, 0.2, 0.36) * (0.35 + 0.65 * smoothstep(0.05, 0.8, nl));
+    raum *= 0.8 + 0.4 * smoothstep(0.0, 1.0, fbm(vec2(rr * 4.0, dsg * 0.6) + uKosC.y * 0.1));
+    // 2. die Spuren: jede Bahn (gut ein Bildpunkt breit) ein Stern mit eigenem Bogen und eigener Helligkeit
+    float bahnF = rr * uHpx / (uDpr * 1.2);
+    float id = floor(bahnF), fb = fract(bahnF);
+    float hb = h21(vec2(id, 7.13)), hb2 = h21(vec2(id * 0.37, 3.31)), hb3 = h21(vec2(id * 1.91, 11.7));
+    float profil = 1.0 - smoothstep(0.18, 0.5, abs(fb - 0.5));       // weich im Querschnitt, nie treppig
+    float dicht = 0.12 + 0.3 * uKosB.w;                               // wie viele Bahnen einen Stern tragen
+    float hat = step(hb, dicht);
+    float lang = (0.35 + 1.6 * hb2 * hb2) * (0.6 + 0.6 * uKosB.z);    // Bogenlänge in Radiant
+    float a = mod(th - hb3 * 6.2832 - lauf, 6.2832);                  // vom Kopf der Spur rückwärts
+    float auf = 1.0 - smoothstep(lang * 0.92, lang, a);
+    float kopf = exp(-a * 6.0 / max(lang, 0.2));
+    float zug = auf * (0.25 + 0.75 * (1.0 - a / lang)) * hat * profil;
+    vec3 sternF = hist(clamp(v, 0.002, 0.998), clamp(a / max(lang, 0.01), 0.0, 1.0) * (uN - 1.0));
+    sternF = mix(vec3(lu(sternF)), sternF, 1.5) * 0.8 + vec3(0.36, 0.38, 0.5);
+    float hell = (0.45 + 0.9 * hb * hb / max(dicht, 0.02)) * (0.6 + 0.4 * sin(uT * 0.7 + id));
+    // jeder Stern hat seine Temperatur: einige warm wie Arktur, andere kühl wie Wega
+    vec3 temp = mix(vec3(1.0, 0.8, 0.6), vec3(0.72, 0.84, 1.0), smoothstep(0.2, 0.8, hb2));
+    raum += sternF * temp * zug * hell * 0.75 + temp * kopf * hat * profil * auf * 0.65;
+    // ganz feine Bahnen ohne Stern: der Staub der Langzeitbelichtung
+    raum += vec3(0.5, 0.56, 0.8) * profil * (h21(vec2(id, 1.7)) * 0.045) * (0.6 + nl);
+    raum *= aussen;
     // die Linien der Flucht: jede windet sich anders aus der Öffnung, trägt das Bild weiter weg und weiter zurück in der Zeit
     float L = log(r / R);
     vec3 strom = vec3(0.0); float stromA = 0.0;
@@ -437,7 +481,7 @@ void main(){
         float wind = mix(0.5, 2.6, uKosB.z) * (1.0 + 0.22 * fk);
         float ziel = phi + uKosC.y * (0.3 + 0.1 * fk) + sk * spalt * 0.5 / max(uKosB.y, 1.0) + L * wind * (mod(fk, 2.0) < 0.5 ? 1.0 : -1.0) * (fk < 0.5 ? 0.6 : 1.0);
         float du = mod(th - ziel + PI, 2.0 * PI) - PI;
-        float breite = (0.05 + 0.11 * spalt) * (1.0 + 0.45 * L) / (0.7 + 0.15 * uKosB.y);
+        float breite = (0.035 + 0.08 * spalt) * (1.0 + 0.45 * L) / (0.7 + 0.15 * uKosB.y);
         float m = exp(-du * du / (breite * breite)) * (1.0 - smoothstep(reich * 0.55, reich, L)) * smoothstep(-0.05, 0.08, L);
         float kern = exp(-du * du / pow(breite * 0.12 + 0.6 * px / r, 2.0));
         if (m > 0.002) {
@@ -451,7 +495,9 @@ void main(){
           bc = mix(bc, bc * vec3(1.0 + 0.4 * sin(du / breite * 2.0), 1.0, 1.0 + 0.4 * sin(du / breite * 2.0 + 2.5)), spek);
           // feine Fasern in jeder Linie, wie Glasfasern, die das Bild tragen
           float faser = 0.62 + 0.38 * sin(du / breite * 10.0 + L * 4.0 + fk);
-          strom += bc * m * 1.4 * faser + vec3(1.0, 0.97, 0.9) * kern * m * 0.45; stromA = max(stromA, m);
+          // die Linie ist ein Bündel feiner Spuren, wie draussen: hell im Kern, sonst die Farbe des Bildes von damals
+          float fein = 1.0 - smoothstep(0.15, 0.5, abs(fract(du / breite * 3.0 + L * 0.8 + fk * 0.37) - 0.5));
+          strom += bc * m * (0.35 + 0.75 * fein) * faser + vec3(1.0, 0.97, 0.9) * kern * m * 0.28; stromA = max(stromA, m);
         }
       }
     }
@@ -482,6 +528,65 @@ void main(){
   c += (h21(gl_FragCoord.xy + fract(uT) * 61.0) - 0.5) * (2.0 / 255.0);
   o = vec4(c, 1.0);
 }`;
+
+// ---------- Sand: Körner aus dem Bild, die zu den Knotenlinien wandern ----------
+// Jedes Korn hat seinen Ort im Bild, von dem es die Farbe nimmt. Wo die Platte schwingt, wird es hochgeworfen,
+// und es rutscht dorthin, wo sie ruht. So zeichnet das Bild selbst die Figur, und bei jeder neuen Note springt der Sand
+// auf und sucht die neuen Linien. Zustand je Korn (Ort relativ zum Daumen, Tempo) in einer HalfFloat-Textur.
+const FS_KORN = KOPF + CHLADNI + `uniform sampler2D uZustand; uniform vec4 uMode, uModeB; uniform float uDt, uT, uStimme, uWurf, uInit, uRmax;
+vec2 saat(vec2 ij){ float a = h21(ij + 0.37), b = h21(ij * 1.31 + 5.17); return sqrt(a) * vec2(cos(b * 6.2832), sin(b * 6.2832)); }
+void main(){
+  vec2 ij = floor(gl_FragCoord.xy);
+  if (uInit > 0.5) { o = vec4(saat(ij + 0.5) * uRmax, 0.0, 0.0); return; }
+  vec4 z = texelFetch(uZustand, ivec2(ij), 0);
+  vec2 p = z.xy, w = z.zw;
+  vec3 a = chladni(p, uMode.x, uMode.y, uModeB.y), b = chladni(p, uMode.z, uMode.w, uModeB.z);
+  vec3 P = mix(a, b, uModeB.x);
+  float g = max(length(P.yz), 0.5);
+  // zum Knoten: ein Newton-Schritt, gedeckelt, damit nichts über die Linie schiesst
+  // jedes Korn bleibt ein wenig neben dem Knoten liegen, so wird die Linie ein Sandwall; wo die Platte flach ist, ein breiter
+  float neben = (h21(ij * 0.91 + 1.7) + h21(ij * 1.37 + 4.1) - 1.0) * 0.15;
+  vec2 n = P.yz / g; float dist = (P.x - neben) / g;
+  float schritt = clamp(dist, -0.01, 0.01) * min(1.0, uDt * (1.5 + 4.5 * uStimme));
+  p -= n * schritt;
+  // die Platte wirft: zufällig, so stark, wie sie an der Stelle schwingt; beim Notenwechsel ein Sprung
+  float zt = floor(uT * 60.0);
+  vec2 r = vec2(h21(ij + zt * 0.731), h21(ij.yx + zt * 1.173 + 3.1)) * 2.0 - 1.0;
+  float amp = min(abs(P.x), 1.6);
+  w += r * amp * (0.07 * uStimme + 1.7 * uWurf) * uDt;
+  w += r * 0.02 * uDt;                        // ein Rest Unruhe: die Linie atmet
+  w *= exp(-uDt * 7.0);
+  p += w * uDt;
+  float l = length(p); if (l > uRmax) { p *= uRmax / l; w *= -0.3; }
+  o = vec4(p, w);
+}`;
+const VS_KORN = `#version 300 es
+precision highp float; precision highp sampler2D;
+uniform sampler2D uZustand, uScharf; uniform int uS; uniform vec4 uZ, uSaat; uniform float uSeite, uPunkt, uHell, uR;
+out vec3 vF;
+float h21(vec2 p){ p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
+vec2 saat(vec2 ij){ float a = h21(ij + 0.37), b = h21(ij * 1.31 + 5.17); return sqrt(a) * vec2(cos(b * 6.2832), sin(b * 6.2832)); }
+void main(){
+  ivec2 ij = ivec2(gl_VertexID % uS, gl_VertexID / uS);
+  vec4 z = texelFetch(uZustand, ij, 0);
+  vec2 q = uZ.xy + z.xy;
+  gl_Position = vec4((q.x / uSeite) * 2.0 - 1.0, q.y * 2.0 - 1.0, 0.0, 1.0);
+  gl_PointSize = uPunkt;
+  // die Farbe vom Ort, an dem das Korn lag, als der Sand gestreut wurde
+  vec2 her = uSaat.xy + saat(vec2(ij) + 0.5) * uSaat.z;
+  vec3 f = texture(uScharf, clamp(vec2(her.x / uSeite, her.y), 0.002, 0.998)).rgb;
+  float l = dot(f, vec3(0.2126, 0.7152, 0.0722));
+  f = mix(vec3(l), f, 1.6) * 1.1 + 0.05;
+  // Quarz: jedes Korn ein wenig anders
+  float k = h21(vec2(ij) * 0.71 + 2.3);
+  f = mix(f, vec3(1.0, 0.95, 0.84), 0.12 + 0.2 * k);
+  float flug = 1.0 / (1.0 + length(z.zw) * 22.0);
+  float zone = (1.0 - smoothstep(uR * 0.72, uR, length(z.xy))) * uZ.w;
+  vF = f * uHell * zone * (0.45 + 0.55 * flug) * (0.7 + 0.6 * k);
+}`;
+const FS_KORN_PUNKT = `#version 300 es
+precision highp float; in vec3 vF; out vec4 o;
+void main(){ vec2 d = gl_PointCoord * 2.0 - 1.0; float r2 = dot(d, d); if (r2 > 1.0) discard; o = vec4(vF * exp(-r2 * 2.6), 1.0); }`;
 
 // ---------- Nachbearbeitung: Leuchten, glatte Kanten, Filmkorn (wie in den anderen Operatoren) ----------
 const FS_HELL = KOPF + `uniform sampler2D uQ; uniform vec2 uPx; uniform float uAb;
@@ -575,6 +680,11 @@ if (gl) {
   try {
     for (const [n, fs] of Object.entries({ kopie: FS_KOPIE, chaos: FS_CHAOS, szene: FS_SZENE, hell: FS_HELL, weich: FS_WEICH, zusammen: FS_ZUSAMMEN })) P[n] = programm(fs);
   } catch (e) { spur('Shader: ' + String(e.message).slice(0, 140)); console.error(e); melden(TEXTE[sprache].keinGL); }
+  // Sand aus Körnern nur mit HalfFloat-Zielen und Grafikkarte; sonst die gezeichneten Linien wie bisher
+  if (halbFloat && !leicht && !Q.has('linien')) {
+    try { P.korn = programm(FS_KORN); P.kornPunkt = programm(FS_KORN_PUNKT, VS_KORN); }
+    catch (e) { spur('Sand: ' + String(e.message).slice(0, 140)); console.error(e); }
+  }
   const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
   gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
@@ -789,20 +899,19 @@ function reglerBeschriften() {
   regler.forEach((id, k) => { $(id).value = String(WERTE[lesart][k]); $(id).setAttribute('aria-label', t.regler[lesart][k]); });
 }
 regler.forEach((id, k) => $(id).addEventListener('input', (e) => { WERTE[lesart][k] = +e.target.value; }));
-let titelUhr = 0;
 function lesartWaehlen(nr, still) {
   lesart = nr;
   $('buehne').dataset.art = String(nr);
   document.querySelectorAll('[data-lesart]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.lesart === nr)));
   $('r-lesart').value = String(nr);
-  $('daumen-text').textContent = TEXTE[sprache].daumen[nr];
   reglerBeschriften();
   lesartText();
   loesenZeigen();
+  daumenZeigen();
   if (still) return;
-  const z = TEXTE[sprache].lesarten[nr], g = $('geste');
-  g.textContent = z.titel + ' · ' + z.wer; g.hidden = false; g.classList.remove('weg');
-  clearTimeout(titelUhr); titelUhr = setTimeout(() => { g.textContent = z.geste; setTimeout(() => g.classList.add('weg'), 2600); }, 1800);
+  randLeeren();
+  const z = TEXTE[sprache].lesarten[nr];
+  randZeigen({ art: 'titel', text: z.titel + ' · ' + z.wer, lesart: nr });
   glosse('trois');
   spur('Lesart ' + nr);
 }
@@ -836,7 +945,8 @@ const phaseImSchritt = (t) => Math.min(1, (t - schrittZeit) / schrittDauer());
 // ---------- Zustand der drei Lesarten ----------
 let nacht = 0, nachtZiel = 0;
 // Summen
-const sum = { x: 0.5, y: 0.5, R: 0.12, ordnung: 0, stimme: 0, halt: 0, k1: 2, m1: 5, k2: 2, m2: 5, rot1: 0, rot2: 0, mix: 1, puls: 9, pulsA: 0, aktiv: false };
+const sum = { x: 0.5, y: 0.5, R: 0.12, ordnung: 0, stimme: 0, halt: 0, k1: 2, m1: 5, k2: 2, m2: 5, rot1: 0, rot2: 0, mix: 1, puls: 9, pulsA: 0, aktiv: false, wurf: 0, streuen: true, saat: [0.5, 0.5, 0.3] };
+const KORN_S = telefon ? 256 : 384;   // 65 536 Körner am Telefon, 147 456 am grossen Bildschirm
 // Revier
 let marken = [], ringe = [], schlagGlut = 0, revierDa = 0;
 const RING_TEMPO = 0.2, RING_DAUER = 2.2;   // die Ringe laufen langsam und reichen nicht weit: ein Ruf, kein Netz
@@ -873,12 +983,13 @@ function markeSetzen(cx, cy) {
 leinwand.addEventListener('pointerdown', (e) => {
   const f = fingerNeu(e.clientX, e.clientY);
   finger.set(e.pointerId, f);
-  leinwand.setPointerCapture(e.pointerId); $('geste').classList.add('weg');
+  leinwand.setPointerCapture(e.pointerId);
+  if (!daumenGelernt[lesart]) $('daumen').classList.add('weg');
   haltZeigen(e.clientX, e.clientY);
   geisterStart = -1; finger.delete('geist');
   letzteBeruehrung = performance.now() / 1000;
   const p = inQ(e.clientX, e.clientY);
-  if (lesart === 0) { if (!sum.aktiv || sum.ordnung < 0.05) { sum.x = p.x; sum.y = p.y; sum.R = 0.06; } sum.aktiv = true; glosse('chantonner'); }
+  if (lesart === 0) { if (!sum.aktiv || sum.ordnung < 0.05) { sum.x = p.x; sum.y = p.y; sum.R = 0.06; sum.streuen = true; } sum.aktiv = true; glosse('chantonner'); }
   if (lesart === 1) f.marke = markeUnter(e.clientX, e.clientY);
   if (lesart === 2) {
     const d = Math.hypot(p.x - kos.x, p.y - kos.y);
@@ -904,7 +1015,7 @@ let nachUhr = 0;
 const loslassen = (e) => {
   const f = finger.get(e.pointerId);
   finger.delete(e.pointerId);
-  if (finger.size === 0) $('halt').classList.remove('da');
+  if (finger.size === 0) { $('halt').classList.remove('da'); if (!daumenGelernt[lesart]) setTimeout(daumenZeigen, 600); }
   letzteBeruehrung = performance.now() / 1000;
   if (lesart === 1 && f && f.bewegt < 14 && performance.now() - f.start < 450) {
     const k = markeUnter(f.x, f.y);
@@ -953,6 +1064,7 @@ function haende(t, dt) {
   if (sum.ordnung < 0.01 && !singt) sum.aktiv = false;
   sum.mix = Math.min(1, sum.mix + dt / 0.32);
   sum.puls += dt * 0.32; sum.pulsA = Math.max(0, sum.pulsA - dt * 0.9);
+  sum.wurf = Math.max(0, sum.wurf - dt * 7);
 
   // Revier: Marken glühen nach, Ringe laufen hinaus und verblassen; das Revier wächst mit jedem Treffer
   for (const m of marken) {
@@ -991,10 +1103,14 @@ function taktAusloesen(t) {
     if (f) {
       klangSummen(f, sum.stimme);
       const fig = FIGUREN[f] || [3, 2];
+      const k2 = fig[0] + Math.sign(fig[0]) * (durchgang % 3 === 2 ? 1 : 0), m2 = fig[1] + (durchgang % 4 === 3 ? 2 : 0);
+      // dieselbe Note: der Sand bleibt liegen und zittert nur; eine neue Note wirft ihn auf.
+      // Mit jedem Durchgang dreht sich die Platte ein wenig: die Wiederholung ist nie dieselbe.
+      const neu = k2 !== sum.k2 || m2 !== sum.m2 || schritt === 0;
       sum.k1 = sum.k2; sum.m1 = sum.m2; sum.rot1 = sum.rot2;
-      sum.k2 = fig[0] + Math.sign(fig[0]) * (durchgang % 3 === 2 ? 1 : 0); sum.m2 = fig[1] + (durchgang % 4 === 3 ? 2 : 0);
-      sum.rot2 = sum.rot2 + 0.21 + 0.07 * (durchgang % 5);
-      sum.mix = 0; sum.puls = 0; sum.pulsA = 1;
+      sum.k2 = k2; sum.m2 = m2;
+      if (schritt === 0) sum.rot2 += 0.3 + 0.1 * (durchgang % 5);
+      sum.mix = neu ? 0 : 1; sum.puls = 0; sum.pulsA = 1; sum.wurf = neu ? 1 : 0.3;
     }
   }
   if (lesart === 1) {
@@ -1021,19 +1137,30 @@ function geist(t) {
   const s = innerWidth / innerHeight;
   if (u < 7.5) {
     // summen: der Daumen ruht unter dem Gesicht und wandert ein wenig
-    if (!finger.has('geist')) { const f = fingerNeu(innerWidth * 0.5, innerHeight * 0.48); finger.set('geist', f); sum.x = 0.5 * s; sum.y = 0.52; sum.R = 0.06; sum.aktiv = true; letzteBeruehrung = t; }
+    if (!finger.has('geist')) { const f = fingerNeu(innerWidth * 0.5, innerHeight * 0.48); finger.set('geist', f); sum.x = 0.5 * s; sum.y = 0.52; sum.R = 0.06; sum.aktiv = true; sum.streuen = true; letzteBeruehrung = t; }
     const f = finger.get('geist'); f.x = innerWidth * (0.5 + 0.06 * Math.sin(u * 0.5)); f.y = innerHeight * (0.47 + 0.03 * Math.sin(u * 0.7)); letzteBeruehrung = t;
   } else finger.delete('geist');
 }
 
 // ---------- Daumen: wo auflegen, und ein Ring, der sich füllt ----------
-let daumenGelernt = false, haltZeit = 0;
+// Jede Lesart hat ihre eigene Geste; die Hilfe zeigt sie, bis sie einmal gelungen ist. Sie ist die einzige Anleitung auf dem Bild:
+// die Randfläche oben trägt nur Titel und Glossen, nie dieselbe Anweisung ein zweites Mal.
+const daumenGelernt = [false, false, false];
+let haltZeit = 0, daumenUhr = 0;
+function daumenZeigen() {
+  const d = $('daumen');
+  clearTimeout(daumenUhr);
+  if (!laeuft || VORSPANN || daumenGelernt[lesart]) { d.classList.add('weg'); daumenUhr = setTimeout(() => { d.hidden = true; }, 800); return; }
+  $('daumen-text').textContent = TEXTE[sprache].daumen[lesart];
+  d.hidden = false; requestAnimationFrame(() => d.classList.toggle('weg', finger.size > 0));
+}
 function haltZeigen(x, y) { const h = $('halt'); h.style.left = x + 'px'; h.style.top = y + 'px'; h.classList.add('da'); }
 function haltBild(dt) {
   if (finger.size && !finger.has('geist')) haltZeit += dt; else haltZeit = 0;
   const voll = lesart === 0 ? sum.ordnung : lesart === 2 ? kos.offen : Math.min(1, marken.length / 4);
   $('halt-voll').style.strokeDashoffset = String(1 - Math.min(1, voll));
-  if (!daumenGelernt && (haltZeit > 1.2 || marken.length >= 2 || kos.offen > 0.3)) { daumenGelernt = true; $('daumen').classList.add('weg'); setTimeout(() => { $('daumen').hidden = true; }, 800); }
+  const gelungen = lesart === 0 ? haltZeit > 1.2 : lesart === 1 ? marken.length >= 2 : kos.offen > 0.3;
+  if (!daumenGelernt[lesart] && gelungen) { daumenGelernt[lesart] = true; daumenZeigen(); }
 }
 
 // ---------- Geführter Einstieg: zuerst Bild und Finger, dann die Lesarten, dann die Regler, zuletzt die Tasten ----------
@@ -1084,12 +1211,10 @@ let laeuft = false;
 function starten() {
   einstiegBeginnen(); $('ton').hidden = false; tonZeigen();
   $('auftakt').hidden = true; $('kopf').hidden = false; $('regler').hidden = false;
-  $('geste').textContent = TEXTE[sprache].lesarten[lesart].geste; $('geste').hidden = false; $('geste').classList.remove('weg');
-  setTimeout(() => $('geste').classList.add('weg'), 5500);
-  if (!VORSPANN && !daumenGelernt) { $('daumen').hidden = false; $('daumen').classList.remove('weg'); }
   groesse();
   if (VORSPANN && geisterStart < 0) geisterStart = performance.now() / 1000 + 0.8;
   if (!laeuft && gl && P.szene) { laeuft = true; requestAnimationFrame(bild); }
+  daumenZeigen();
 }
 
 // ---------- Schleife ----------
@@ -1126,7 +1251,8 @@ function bild(ms) {
   const sumZone = sum.ordnung * (lesart === 0 ? 1 : 0);
   rechne(P.szene, sz, { uScharf: scharfTex, uChaos: CH }, (u) => {
     gl.uniform1f(u.uSeite, seite); gl.uniform1f(u.uT, t % 1000); gl.uniform1f(u.uHpx, sz.h); gl.uniform1f(u.uDpr, dpr); gl.uniform1f(u.uNacht, nacht); gl.uniform1f(u.uArt, lesart);
-    gl.uniform4f(u.uZ, sum.x, sum.y, sum.R, sumZone);
+    gl.uniform4f(u.uZ, sum.x, sum.y, sum.R, sumZone); const kn = P.kornPunkt && halbFloat; gl.uniform1f(u.uKoerner, kn ? 1 : 0);
+    gl.uniform1f(u.uSk, kn ? sum.saat[2] * 2 : 0.2); gl.uniform1f(u.uVer, kn ? 0.5 : 0);
     gl.uniform4f(u.uMode, sum.k1, sum.m1, sum.k2, sum.m2);
     const mixE = sum.mix * sum.mix * (3 - 2 * sum.mix);
     gl.uniform4f(u.uModeB, mixE, sum.rot1, sum.rot2, lesart === 0 ? (0.25 + 0.75 * sum.stimme) * (0.6 + 0.4 * Math.sin(t * 31)) : 0.55 + 0.45 * WERTE[1][2]);
@@ -1138,6 +1264,7 @@ function bild(ms) {
     gl.uniform4f(u.uKosB, kos.phi, 2 + Math.round(WERTE[2][0] * 5), WERTE[2][1], 0.2 + 1.8 * WERTE[2][2]);
     gl.uniform2f(u.uKosC, kos.zug, kos.dreh);
   });
+  if (P.kornPunkt && halbFloat && lesart === 0 && (sumZone > 0.002 || sum.streuen)) sandRechnen(t, dt, sz, seite, dpr, sumZone);
   nachbearbeiten(t, sz);
   haltBild(dt);
   const stumm = finger.has('geist') && finger.size === 1 && VORSPANN;
@@ -1146,6 +1273,41 @@ function bild(ms) {
   if (standbildWunsch) { standbildWunsch = false; leinwand.toBlob((b) => b && zeigen(b, 'ritornell-' + zeitstempel() + '.png')); }
   if (ersterLauf && bilderGezaehlt++ > 2) { ersterLauf = false; spur('✓ läuft'); }
   requestAnimationFrame(bild);
+}
+// der Sand: erst streuen (wenn der Daumen neu aufliegt), dann je Bild ein Schritt, dann die Körner als Punkte in die Szene
+let kornA = null, kornB = null;
+function sandRechnen(t, dt, sz, seite, dpr, zone) {
+  if (!kornA) { kornA = zielBauen('kornA', KORN_S, KORN_S); kornB = zielBauen('kornB', KORN_S, KORN_S); }
+  const Rmax = (0.12 + 0.36 * WERTE[0][0]) * 1.02;
+  const mixE = sum.mix * sum.mix * (3 - 2 * sum.mix);
+  const schritt = (init, h = dt) => {
+    rechne(P.korn, kornB, { uZustand: kornA }, (u) => {
+      gl.uniform4f(u.uMode, sum.k1, sum.m1, sum.k2, sum.m2); gl.uniform4f(u.uModeB, mixE, sum.rot1, sum.rot2, 0);
+      gl.uniform1f(u.uDt, Math.min(h, 1 / 30)); gl.uniform1f(u.uT, t % 1000); gl.uniform1f(u.uStimme, sum.stimme);
+      gl.uniform1f(u.uSk, sum.saat[2] * 2); gl.uniform1f(u.uVer, 0.5); gl.uniform1f(u.uWurf, sum.wurf); gl.uniform1f(u.uInit, init ? 1 : 0); gl.uniform1f(u.uRmax, Rmax);
+    });
+    [kornA, kornB] = [kornB, kornA];
+  };
+  if (sum.streuen) { schritt(true); sum.streuen = false; sum.saat = [sum.x, sum.y, Rmax]; }
+  // bei langsamen Bildern in kleinen Schritten rechnen, damit der Sand gleich schnell wandert
+  const n = Math.min(3, Math.ceil(dt / (1 / 40)));
+  for (let i = 0; i < n; i++) schritt(false, dt / n);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, sz.fb); gl.viewport(0, 0, sz.b, sz.h);
+  const pr = P.kornPunkt; gl.useProgram(pr);
+  gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, kornA.tex); gl.uniform1i(pr.u.uZustand, 2);
+  gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, scharfTex); gl.uniform1i(pr.u.uScharf, 3);
+  gl.uniform1i(pr.u.uS, KORN_S); gl.uniform4f(pr.u.uZ, sum.x, sum.y, sum.R, zone); gl.uniform1f(pr.u.uR, sum.R);
+  gl.uniform4f(pr.u.uSaat, sum.saat[0], sum.saat[1], sum.saat[2], 0); gl.uniform1f(pr.u.uSeite, seite);
+  const punkt = Math.max(1.5, 1.35 * dpr);
+  gl.uniform1f(pr.u.uPunkt, punkt);
+  // ein einzelnes Korn ist nur ein Schimmer, erst die Linie leuchtet; gleich hell bei jeder Kornzahl, Punktgrösse und Plattengrösse
+  const dichte = (65536 / (KORN_S * KORN_S)) * Math.pow(1.35 * dpr / punkt, 2) * Math.pow(Rmax / 0.32, 2);
+  gl.uniform1f(pr.u.uHell, (0.14 + 0.3 * WERTE[0][2]) * dichte);
+  gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
+  gl.disableVertexAttribArray(0);
+  gl.drawArrays(gl.POINTS, 0, KORN_S * KORN_S);
+  gl.enableVertexAttribArray(0);
+  gl.disable(gl.BLEND);
 }
 function nachbearbeiten(t, sz) {
   const B = leinwand.width, H = leinwand.height, b4 = Math.max(1, Math.round(B / 4)), h4 = Math.max(1, Math.round(H / 4));
@@ -1228,28 +1390,61 @@ function zeitstempel() {
 }
 
 // ---------- Glossen: einmal je Besuch von selbst, am Handy nur Begriff und Satz ----------
-let glosseUhr = 0, glosseSchluessel = '';
-const glosseGezeigt = new Set(), glosseDauer = () => (innerWidth <= 560 ? 4500 : 7000);
-function glosse(k) {
+// Die Randfläche zeigt immer nur eines: den Titel einer Lesart oder eine Glosse. Was dazukommt, wartet, bis das Vorige
+// hinausgefahren ist; nichts überdeckt etwas anderes, nichts verschwindet ungelesen hinter einer Glosse.
+let glosseSchluessel = '', randJetzt = null, randUhr = 0, randWechsel = 0;
+const randSchlange = [], glosseGezeigt = new Set();
+const randDauer = (art) => (art === 'titel' ? 2600 : innerWidth <= 560 ? 5200 : 7000);
+function randLeeren() { randSchlange.length = 0; }
+function randZeigen(e, sofort) {
   if (VORSPANN) return;
-  const g = TEXTE[sprache].glossen[k]; if (!g || glosseGezeigt.has(k)) return;
-  glosseGezeigt.add(k);
-  const el = $('glosse');
-  glosseSchluessel = k;
-  $('glosse-begriff').textContent = g.begriff;
-  $('glosse-satz').textContent = g.satz;
-  $('glosse-zitat').textContent = g.zitat; $('glosse-zitat').hidden = !g.zitat;
-  $('glosse-quelle').textContent = g.quelle; $('glosse-quelle').hidden = !g.quelle;
-  el.hidden = false; requestAnimationFrame(() => el.classList.add('da'));
-  clearTimeout(glosseUhr); glosseUhr = setTimeout(glosseWeg, glosseDauer());
+  if (sofort) { randSchlange.unshift(e); if (randJetzt) randWeg(); else if (!randWechsel) randNaechstes(); return; }
+  if (randSchlange.length >= 3) randSchlange.splice(1, 1);
+  randSchlange.push(e);
+  if (!randJetzt && !randWechsel) randNaechstes();
 }
-function glosseWeg() { const el = $('glosse'); el.classList.remove('da'); setTimeout(() => { if (!el.classList.contains('da')) el.hidden = true; }, 700); }
+function randNaechstes() {
+  randWechsel = 0;
+  let e;
+  while ((e = randSchlange.shift())) { if (e.lesart === lesart && !(e.art === 'glosse' && glosseGezeigt.has(e.k) && !e.wieder)) break; }
+  if (!e) { randJetzt = null; return; }
+  randJetzt = e;
+  if (e.art === 'titel') {
+    const g = $('geste'); g.textContent = e.text; g.hidden = false;
+    requestAnimationFrame(() => requestAnimationFrame(() => g.classList.remove('weg')));
+  } else {
+    const g = TEXTE[sprache].glossen[e.k]; glosseGezeigt.add(e.k); glosseSchluessel = e.k;
+    $('glosse-begriff').textContent = g.begriff;
+    $('glosse-satz').textContent = g.satz;
+    $('glosse-zitat').textContent = g.zitat; $('glosse-zitat').hidden = !g.zitat;
+    $('glosse-quelle').textContent = g.quelle; $('glosse-quelle').hidden = !g.quelle;
+    const el = $('glosse'); el.hidden = false; requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('da')));
+  }
+  clearTimeout(randUhr); randUhr = setTimeout(randWeg, randDauer(e.art));
+}
+// hinausfahren lassen, dann das Nächste
+function randWeg() {
+  clearTimeout(randUhr);
+  if (!randJetzt) return;
+  if (randJetzt.art === 'titel') $('geste').classList.add('weg'); else $('glosse').classList.remove('da');
+  randJetzt = null;
+  clearTimeout(randWechsel); randWechsel = setTimeout(() => { if (!$('glosse').classList.contains('da')) $('glosse').hidden = true; randNaechstes(); }, 650);
+}
+function glosse(k, sofort) {
+  if (VORSPANN || !TEXTE[sprache].glossen[k]) return;
+  if (!sofort && glosseGezeigt.has(k)) return;
+  if (randJetzt && randJetzt.k === k) { clearTimeout(randUhr); randUhr = setTimeout(randWeg, randDauer('glosse')); return; }
+  if (randSchlange.some((e) => e.k === k)) return;
+  randZeigen({ art: 'glosse', k, lesart, wieder: !!sofort }, sofort);
+}
+const glosseWeg = randWeg;
+// Regler: die Glosse zum Regler kommt sofort, auch ein zweites Mal, und bleibt, solange man schiebt
 regler.forEach((id, k) => {
   const g = () => TEXTE[sprache].reglerGlosse[lesart][k];
-  $(id).addEventListener('pointerdown', () => glosse(g()));
-  $(id).addEventListener('input', () => { if (glosseSchluessel !== g() || $('glosse').hidden) glosse(g()); else { clearTimeout(glosseUhr); glosseUhr = setTimeout(glosseWeg, glosseDauer()); } });
+  $(id).addEventListener('pointerdown', () => glosse(g(), !glosseGezeigt.has(g())));
+  $(id).addEventListener('input', () => { if (!randJetzt || randJetzt.k !== g()) glosse(g(), true); else { clearTimeout(randUhr); randUhr = setTimeout(randWeg, randDauer('glosse')); } });
 });
-$('glosse').addEventListener('click', () => { glosseWeg(); $('begriff').hidden = false; });
+$('glosse').addEventListener('click', () => { randWeg(); $('begriff').hidden = false; });
 
 // ---------- Begriffsebene ----------
 $('begriff-auf').addEventListener('click', () => { $('begriff').hidden = false; });
