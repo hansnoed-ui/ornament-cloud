@@ -93,5 +93,7 @@ Sitzung wissen muss, damit dieselben Fehler nicht zweimal passieren.
   Last im Browser messen (Worklet meldet `last`), veröffentlichte Plugins nur bitgleich beschleunigen (Fingerabdruck-Test).
 - Composer ist viersprachig (21.11.2026, `alpha/composer/sprache.js`): der Code schreibt deutsch, die Anzeige übersetzt aus
   `sprache-texte.js`. Neue sichtbare Texte dort mit EN/ES/FR nachtragen, sonst bleiben sie deutsch (`tests/composer-sprache.test.mjs`).
+- Fotos aus der Dateiwahl in den Deleuze-Operatoren nur über `alpha/deleuze/gemeinsam/fotos.js` lesen (21.11.2026): `createImageBitmap`
+  scheitert am Telefon an grossen Fotos (50–200 MP), das Bild-Element nicht; manche Dateiwähler geben keinen Typ mit.
 - Shaderfarben in Three.js-Szenen sind linear, der OutputPass macht sRGB:
   gewünschte sRGB-Farben vorher umrechnen.
