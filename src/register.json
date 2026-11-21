@@ -176,6 +176,15 @@
    "kurz": "Prototyp: den Daumen halten, und eine gesummte Stimme ordnet das eigene Bild wie Sand auf einer Klangplatte; im Takt Marken setzen, bis ein Revier wächst; den Kreis öffnen und das Bild als Spirale aus Zeit hinauslassen."
   },
   {
+   "id": "deleuze-falte",
+   "name": "Falte (the deleuzian scheme)",
+   "tuer": "spielen-denken",
+   "art": "App",
+   "status": "direktlink",
+   "adresse": "alpha/deleuze/falte/",
+   "kurz": "Prototyp: das eigene Bild zerfällt in kleine Wahrnehmungen und tritt über eine Schwelle als Gestalt hervor; es fällt in Falten wie ein schweres Tuch; es wird gefaltet, bemalt und wieder geöffnet wie bei Hantaï."
+  },
+  {
    "id": "deleuze-start",
    "name": "the deleuzian scheme (Masterseite)",
    "tuer": "spielen-denken",
