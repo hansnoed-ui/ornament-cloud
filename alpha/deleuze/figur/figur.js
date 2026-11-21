@@ -8,7 +8,7 @@
 
 import { klangStarten, klangBild, klangAn, klangIstAn, klangSpur, klangRund } from './klang.js?v=1';
 import { aufnahmeDatei } from '../gemeinsam/aufnahme.js?v=1';
-import { fotoLesen, istVideo, istFoto, istHeic, dateiMeldung } from '../gemeinsam/fotos.js?v=1';
+import { fotoLesen, istVideo, istFoto, istHeic, dateiMeldung, fotosMalen, fahrtSchalter, FAHRT_SVG } from '../gemeinsam/fotos.js?v=2';
 
 const $ = (id) => document.getElementById(id);
 const Q = new URLSearchParams(location.search);
@@ -886,22 +886,15 @@ async function fotosStarten(dateien) {
 }
 // Bei Fotos fährt die Kamera nur sanft, damit die Figur im Rund bleibt
 function fotoMalen(t) {
-  const c = fotoBuehne.getContext('2d'), W = fotoBuehne.width, H = fotoBuehne.height;
-  const zeit = t - fotoStart, n = fotos.length;
-  const nr = Math.floor(zeit / FOTO_DAUER), innen = zeit - nr * FOTO_DAUER;
-  const zeichne = (k, alpha) => {
-    const f = fotos[((k % n) + n) % n];
-    const z = 1.04 + 0.04 * Math.sin(zeit * 0.21);
-    const s = Math.max(W / f.width, H / f.height) * z, b = f.width * s, h = f.height * s;
-    c.globalAlpha = alpha;
-    c.drawImage(f, (W - b) / 2, (H - h) / 2, b, h);
-  };
-  c.globalAlpha = 1; c.fillStyle = '#050506'; c.fillRect(0, 0, W, H);
-  if (n === 1) { zeichne(0, 1); return; }
-  zeichne(nr, 1);
-  if (innen > FOTO_DAUER - FOTO_BLENDE) zeichne(nr + 1, (innen - (FOTO_DAUER - FOTO_BLENDE)) / FOTO_BLENDE);
-  c.globalAlpha = 1;
+  fotosMalen(fotoBuehne.getContext('2d'), fotos, fotoBuehne.width, fotoBuehne.height, t - fotoStart,
+    { dauer: FOTO_DAUER, blende: FOTO_BLENDE, art: 'still', mix: fahrt.schritt(t) });
 }
+// Fahrt durch das Foto an und aus (feines Zeichen unten rechts, nur bei Fotos); zuerst ruhig, das ganze Foto
+const fahrtKnopf = document.createElement('button');
+fahrtKnopf.className = 'fahrt'; fahrtKnopf.hidden = true; fahrtKnopf.innerHTML = FAHRT_SVG;
+$('wenden').after(fahrtKnopf);
+const fahrt = fahrtSchalter(fahrtKnopf, false);
+function fahrtSehen() { const weg = quelle !== fotoBuehne; if (fahrtKnopf.hidden !== weg) fahrtKnopf.hidden = weg; }
 
 let rahmen = [0, 0, 1, 1];   // wo das Bild steht, in Anteilen der Leinwand (y nach oben)
 function malenIn(ctx, B, H) {
@@ -1296,7 +1289,7 @@ function zielLeeren(z, wert = 0) { gl.bindFramebuffer(gl.FRAMEBUFFER, z.fb); gl.
 const lerp = (a, b, k) => a + (b - a) * k;
 function bild(ms) {
   const t = ms / 1000;
-  if (quelle === fotoBuehne) fotoMalen(performance.now() / 1000);
+  fahrtSehen(); if (quelle === fotoBuehne) fotoMalen(performance.now() / 1000);
   const dtMs = ms - (letzteMs || ms - 16.7), dt = Math.min(0.1, Math.max(0.004, dtMs / 1000)); letzteMs = ms;
   tempoMessen(ms, dtMs);
   if (!scharfFangen()) { requestAnimationFrame(bild); return; }
