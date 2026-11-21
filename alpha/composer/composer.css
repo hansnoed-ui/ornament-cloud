@@ -530,3 +530,29 @@ input[type="range"]:not(.dk-regler):focus-visible { outline: 2px solid var(--acc
 /* Kanalzug: leicht gewölbt wie ein Streifen im Pult */
 .kopfzelle { background: linear-gradient(90deg, #121210, #171715 60%, #121210); }
 .spur.gewaehlt .kopfzelle { background: linear-gradient(90deg, #1a1a18, #20201d 60%, #1a1a18); }
+
+/* Unterbrechungen und Bereiche kompakt (21. November 2026, Christian: «Hier wird noch viel Platz verspielt»): Drehknöpfe nebeneinander
+   wie auf einer Gerätefront, Wahl, an, hinhören und löschen in einer Zeile. */
+.ereignis .gruppen { grid-template-columns: repeat(auto-fill, minmax(74px, 1fr)); gap: 10px 4px; align-items: start; }
+.ereignis .gruppen > .param:not(.mit-drehknopf) { grid-column: span 3; display: flex; flex-direction: column; align-items: stretch; gap: 2px; margin: 0; }
+.ereignis .gruppen > .param:not(.mit-drehknopf) > span { font-size: 0.74rem; color: var(--muted); }
+.ereignis .gruppen > .param:not(.mit-drehknopf) > output:empty { display: none; }
+.ereignis .param.mit-drehknopf { display: grid; width: auto; margin: 0; }
+@media (max-width: 820px) {
+  .ereignisse { gap: 8px; }
+  .ereignis { padding: 8px 10px; border-radius: 8px; }
+  .ereignis-kopf { gap: 6px 8px; margin-bottom: 6px; }
+  .ereignis-kopf > b { flex: 1 1 100%; }
+  .ereignis-kopf > .feld { font-size: 0.85rem; flex: 1 1 40%; }
+  .ereignis-kopf > .feld input[type="number"] { flex: 1; min-width: 0; }
+  .ereignis-kopf select { flex: 1 1 5rem; min-width: 0; min-height: 32px; }
+  .ereignis-kopf .mini { height: 32px; min-height: 32px; padding: 0 8px; }
+  .ereignis .param:not(.mit-drehknopf) { margin-bottom: 0; }
+  .ereignis .param select { min-height: 32px; }
+  .ereignis .gruppen { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px 2px; }
+  .ereignis .gruppen > .param:not(.mit-drehknopf) { grid-column: span 2; }
+  .ereignis .drehknopf { width: 40px; height: 40px; }
+  .ereignis .param.mit-drehknopf > span { font-size: 0.7rem; }
+  .ereignis .param.mit-drehknopf > output { font-size: 0.68rem; }
+  .ereignis .klang-zeile { gap: 6px 8px; }
+}
