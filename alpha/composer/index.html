@@ -23,7 +23,7 @@
   <meta name="twitter:description" content="Spuren mischen mit eigenen, versionierten Plugins, vorher und nachher hören, gegen eine Referenz messen.">
   <meta name="twitter:image" content="https://ornament.cloud/alpha/composer/og-composer.png">
   <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
-  <link rel="stylesheet" href="composer.css?v=11">
+  <link rel="stylesheet" href="composer.css?v=13">
 </head>
 <body>
   <header class="kopf">
@@ -105,6 +105,7 @@
       <label class="feld">Dauer <select id="trackDauer"><option value="60">1 Minute</option><option value="90" selected>90 Sekunden</option><option value="120">2 Minuten</option><option value="180">3 Minuten</option></select></label>
       <label class="feld klein"><input type="checkbox" id="trackZiel" checked> etwa −14 LUFS</label>
       <button class="knopf voll" id="trackErzeugen" title="Stil oben: Drums, Bass, Synths, Fläche und ein Arrangement mit Übergängen; danach ist alles von Hand änderbar">Track erzeugen</button>
+      <button class="knopf" id="erzTrackLaden" disabled title="den fertigen Track als WAV herunterladen, 24 Bit, wie gemastert (wie «Track (WAV)» oben)">Track herunterladen</button>
       <span class="leise-text">Atmen, Stocken, Gas geben, Sich verlieren, Wiederfinden – der Ablauf kommt aus dem Startwert («neu würfeln» = anderer Ablauf). Stilmix mit Perkussion aus einem zweiten Stil, zwei Naturschichten. Ersetzt alle erzeugten Spuren.</span>
     </div>
     <div class="bass-zeile">
@@ -174,6 +175,6 @@
   <input type="file" id="ersatzDatei" accept="audio/*,.wav,.flac,.mp3,.ogg,.m4a,.aif,.aiff" hidden>
   <div class="meldung" id="meldung" role="status" hidden></div>
   <footer class="fuss"><p>ORNAMENT COMPOSER 0.1 · Drums, Perkussion, Bass, Synth 0.2.0 · Natur 0.3.0 · Unterbrechungen 0.2.0 · Arrangement 0.2.0 · Bereiche, Fassungen 0.1.0 · Kanalzug, Raum, Bassfett, Echo, Glanz, Grenze 0.1.0 · Tasten: Leertaste spielen, V vorher, R Referenz, L Schleife, 1–7 Varianten, A Schlag anhören, ↑ ↓ Spur wählen · Bereich ziehen (auf der Summe oder einer Spur), dann M stumm, − leiser, + lauter, E Effekt, Esc aufheben</p></footer>
-  <script type="module" src="app.js?v=20"></script>
+  <script type="module" src="app.js?v=21"></script>
 </body>
 </html>

@@ -668,6 +668,7 @@ async function erzeugen({ anzahlVorgabe = null, still = false } = {}) {
  * Arrangement aus Unterbrechungen (Abschnitte, Übergänge, Tape-Stop am Schluss). Danach ist alles wie von Hand angelegt: jede Spur, jedes
  * Ereignis, jeder Regler lässt sich ändern. Geladene Dateien bleiben, erzeugte Spuren werden ersetzt.
  */
+const MAX_TRACK_SPUREN = 10;   // Obergrenze für «Track erzeugen», damit Handy und langsame Rechner nicht überlasten (CLAUDE.md: 18 Spuren brachen weg)
 async function trackErzeugen() {
   const stil = stilVon($("stil").value), bpm = Number($("erzBpm").value) || stil.bpm, sek = Number($("trackDauer").value), seed = Math.max(1, Math.round(Number($("seed").value) || 1));
   await kontext(48000);
@@ -698,9 +699,24 @@ async function trackErzeugen() {
   for (const sp of z.projekt.spuren.filter((x) => istDrums(x) && (b.ohne ?? []).includes(x.quelle.stimme))) { post({ art: "weg", id: sp.id }); z.daten.delete(sp.id); }
   z.projekt.spuren = z.projekt.spuren.filter((x) => !(istDrums(x) && (b.ohne ?? []).includes(x.quelle.stimme)));
   for (const [s2, stimme] of b.mix ?? []) stilSpurDazu(s2, stimme, { anzahl: takte, bpm, seed, swing: stil.swing, abschnitte });
+  // höchstens MAX_TRACK_SPUREN Spuren je Track (20. November 2026, Christian: «nicht zu viele Spuren pro Track wegen Überlastung»).
+  // Es fallen in dieser Reihenfolge: weitere Drums (nach Kick, Snare, Hi-Hat), dann wechselnde Perkussion bis auf zwei, dann ein
+  // Naturklang. Bass und Synths bleiben.
+  const natur = naturWahl(b.natur, { seed });   // höchstens zwei Naturklänge
+  let zuViel = z.projekt.spuren.filter((x) => x.quelle).length + b.synths.length + natur.length - MAX_TRACK_SPUREN;
+  if (zuViel > 0) {
+    const wechselnd = (x) => (b.wechsel ?? []).includes(x.quelle.stimme);
+    const drums = z.projekt.spuren.filter(istDrums), schutz = new Set(drums.slice(0, 3));
+    const kandidaten = [...drums.filter((x) => !schutz.has(x) && !wechselnd(x)).reverse(), ...drums.filter((x) => !schutz.has(x) && wechselnd(x)).slice(2).reverse()];
+    const weg = new Set(kandidaten.slice(0, zuViel));
+    for (const sp of weg) { post({ art: "weg", id: sp.id }); z.daten.delete(sp.id); }
+    z.projekt.spuren = z.projekt.spuren.filter((x) => !weg.has(x));
+    zuViel -= weg.size;
+  }
+  while (zuViel > 0 && natur.length > 1) { natur.pop(); zuViel--; }
   const laufend = [];
   for (const syn of b.synths) laufend.push(synthDazu(syn));
-  for (const n of naturWahl(b.natur, { seed })) laufend.push(flaecheDazu(n));   // höchstens zwei Naturklänge
+  for (const n of natur) laufend.push(flaecheDazu(n));
   melde(`Track: Synths und Naturklänge werden gerechnet …`, 0);
   await Promise.all(laufend);
   // das Arrangement: Ereignisse je Spur, nach ihrer Funktion
@@ -710,8 +726,8 @@ async function trackErzeugen() {
   }
   // Ornament Style: die Perkussion wechselt je Abschnitt (nur ein oder zwei Instrumente spielen)
   if (b.wechsel?.length) {
-    const wechsel = wechselPerkussion(b.wechsel, abschnitte, { seed });
-    for (const sp of z.projekt.spuren.filter((x) => istDrums(x) && b.wechsel.includes(x.quelle.stimme))) { sp.ereignisse.push(...wechsel.get(sp.quelle.stimme)); spurSenden(sp); }
+    const da = b.wechsel.filter((st) => z.projekt.spuren.some((x) => istDrums(x) && x.quelle.stimme === st)), wechsel = wechselPerkussion(da, abschnitte, { seed });
+    for (const sp of z.projekt.spuren.filter((x) => istDrums(x) && da.includes(x.quelle.stimme))) { sp.ereignisse.push(...wechsel.get(sp.quelle.stimme)); spurSenden(sp); }
   }
   z.projekt.abschnitte = abschnitte;
   const L = takte * taktSek(bpm);
@@ -1501,7 +1517,7 @@ function knoepfeAuffrischen() {
   const hat = z.daten.size > 0;
   $("spielen").disabled = !hat; $("spielen").textContent = z.laeuft || z.startet ? "■" : "▶";
   for (const id of ["projektSpeichern"]) $(id).disabled = !z.projekt.spuren.length;
-  for (const id of ["exportieren", "trackLaden", "messenKnopf", "zielKnopf"]) $(id).disabled = !hat;
+  for (const id of ["exportieren", "trackLaden", "erzTrackLaden", "messenKnopf", "zielKnopf"]) $(id).disabled = !hat;
   $("schleifeAn").setAttribute("aria-pressed", String(z.schleifeAn)); $("allesVorher").setAttribute("aria-pressed", String(z.allesVorher));
   $("referenzAn").setAttribute("aria-pressed", String(z.referenzAn));
 }
@@ -1670,6 +1686,8 @@ $("projektDatei").onchange = (e) => { if (e.target.files[0]) projektOeffnen(e.ta
 $("projektSpeichern").onclick = projektSpeichern;
 $("exportieren").onclick = () => exportieren().catch((e) => melde(`Export: ${e.message}`, 8000));
 /** nur der fertige Track: die Summe als WAV 24 Bit (dieselbe Rechnung wie «Exportieren», ohne Einzelspuren) */
+// «Track herunterladen» bei Erzeugen (20. November 2026, Christian) macht dasselbe wie «Track (WAV)» oben
+$("erzTrackLaden").onclick = () => $("trackLaden").onclick();
 $("trackLaden").onclick = async () => {
   try {
     await bisFertig();
