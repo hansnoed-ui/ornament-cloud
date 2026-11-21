@@ -127,7 +127,7 @@ const FILME = OPS.map((o) => {
   if (!o.film) return null;
   const v = document.createElement('video');
   v.muted = true; v.loop = true; v.playsInline = true; v.setAttribute('playsinline', ''); v.preload = 'auto';
-  v.src = `facetten/${o.film}.mp4?v=3`;
+  v.src = `facetten/${o.film}.mp4?v=4`;
   v.addEventListener('error', () => spur('Facette ' + o.nr + ' fehlt'));
   return v;
 });

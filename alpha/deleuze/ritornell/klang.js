@@ -3,15 +3,19 @@
 //   gleitet von Ton zu Ton wie ein Kind, das sich Mut macht. Darunter das Milieu: ein dunkles Rauschen, das zurückweicht, wo gesungen wird.
 // Revier: jede Marke ein Schlag auf ein kleines Holz- oder Metallstück (Grundton, Obertöne, ein Klick), links und rechts im Raum,
 //   mit einem Echo im Takt: die Wiederholung, die das Revier macht.
-// Kosmos: die Obertonreihe über einem tiefen Grundton, langsam atmend, und der Refrain eine Oktave höher als Glas, weit im Hall.
+// Kosmos: die Obertonreihe über einem tiefen G. Aus ihr hebt ein Obertonsänger einzelne Teiltöne heraus und singt damit den Refrain
+//   (sol = 8., la = 9., mi wird zur Naturseptime, dem 7. Teilton); öffnet sich der Kreis weit, springt er eine Oktave höher.
+//   Dazu Klangschalen aus Glas und, wie die Sternspuren, ferne Funken aus den hohen Teiltönen, alles in einem sehr weiten Raum,
+//   langsam um den Kopf kreisend.
 
 let ctx = null, haupt = null, trocken = null, nass = null, hall = null, ziel = null, rausch = null, echo = null, echoRueck = null, echoGain = null;
 let stimme = null, stimme2 = null, stimmeGain = null, stimmeTief = null, vibrato = null, vibratoTiefe = null, formanten = [], atemGain = null;
 let milieuGain = null, milieuFilter = null, windGain = null, windFilter = null;
 let kosmos = [], kosmosGain = null, kosmosFilter = null, grundGain = null;
+let weite = null, oberBaender = [], oberGain = null, koerperGain = null;
 let an = true;
 
-function hallBauen(sek) {
+function hallBauen(sek, ziel = hall) {
   const n = Math.round(ctx.sampleRate * sek), ir = ctx.createBuffer(2, n, ctx.sampleRate);
   for (let k = 0; k < 2; k++) {
     const d = ir.getChannelData(k);
@@ -23,7 +27,7 @@ function hallBauen(sek) {
       d[i] = (z * Math.pow(1 - t, 3.0) + frueh) * 1.2;
     }
   }
-  hall.buffer = ir;
+  ziel.buffer = ir;
 }
 function rauschQuelle(rate = 1) {
   const q = ctx.createBufferSource(); q.buffer = rausch; q.loop = true; q.playbackRate.value = rate; q.start(0, Math.random() * 1.5); return q;
@@ -106,6 +110,52 @@ export function klangStarten() {
     o.start(); lfo.start();
     kosmos.push(g);
   }
+
+  // der weite Raum des Kosmos: ein eigener, sehr langer Hall
+  weite = ctx.createConvolver(); hallBauen(7.5, weite);
+  const weiteGain = ctx.createGain(); weiteGain.gain.value = 0.55; weite.connect(weiteGain); weiteGain.connect(haupt);
+  // der Obertonsänger: zwei leicht verstimmte Sägezähne auf G (49 Hz), zwei enge Bandpässe hintereinander heben einen Teilton heraus
+  const saege = ctx.createGain(); saege.gain.value = 0.5;
+  for (const d of [0, 5]) { const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = 49; o.detune.value = d; o.connect(saege); o.start(); }
+  // der Körper darunter: der Grundton selbst, tief und warm
+  const koerperFilter = ctx.createBiquadFilter(); koerperFilter.type = 'lowpass'; koerperFilter.frequency.value = 170; koerperFilter.Q.value = 0.9;
+  koerperGain = ctx.createGain(); koerperGain.gain.value = 0;
+  saege.connect(koerperFilter); koerperFilter.connect(koerperGain); koerperGain.connect(trocken); koerperGain.connect(weite);
+  let kette = saege;
+  for (let k = 0; k < 2; k++) {
+    const b = ctx.createBiquadFilter(); b.type = 'bandpass'; b.frequency.value = 392; b.Q.value = 26;
+    kette.connect(b); kette = b; oberBaender.push(b);
+  }
+  oberGain = ctx.createGain(); oberGain.gain.value = 0;
+  const kreisen = ctx.createStereoPanner ? ctx.createStereoPanner() : ctx.createGain();
+  if (kreisen.pan) { const l = ctx.createOscillator(); l.frequency.value = 0.06; const lg = ctx.createGain(); lg.gain.value = 0.55; l.connect(lg); lg.connect(kreisen.pan); l.start(); }
+  const oberWeit = ctx.createGain(); oberWeit.gain.value = 0.45;
+  kette.connect(oberGain); oberGain.connect(kreisen); kreisen.connect(trocken); kreisen.connect(oberWeit); oberWeit.connect(weite);
+}
+
+// der Obertonsänger gleitet zum n-ten Teilton von G (49 Hz), wie eine Stimme, die den Mund formt
+export function klangOberton(n, staerke = 1) {
+  if (!ctx || ctx.state !== 'running') return;
+  const t = ctx.currentTime;
+  for (const b of oberBaender) { b.frequency.cancelScheduledValues(t); b.frequency.setTargetAtTime(49 * n, t, 0.07); }
+  // ein kleiner Atemzug beim Ansatz
+  // im Sägezahn wird jeder Teilton leiser (1/n): so viel heben, dass jeder Ton gleich laut singt
+  const l = staerke * Math.min(2.2, n / 8);
+  const g = oberGain.gain; g.cancelScheduledValues(t); g.setValueAtTime(g.value, t);
+  g.linearRampToValueAtTime(1.15 * l, t + 0.06); g.setTargetAtTime(0.85 * l, t + 0.08, 0.25);
+}
+
+// ein Funke: ein hoher Teilton, kurz angeschlagen, fern im weiten Raum
+export function klangFunke(f, pan = 0, laut = 1) {
+  if (!ctx || ctx.state !== 'running' || !an) return;
+  const t = ctx.currentTime + 0.005;
+  const p = ctx.createStereoPanner ? ctx.createStereoPanner() : ctx.createGain();
+  if (p.pan) p.pan.value = Math.max(-1, Math.min(1, pan));
+  const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.018 * laut, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.4);
+  const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f; o.connect(g); g.connect(p);
+  const tr = ctx.createGain(); tr.gain.value = 0.25; p.connect(tr); tr.connect(trocken); p.connect(weite);
+  o.start(t); o.stop(t + 1.5);
+  setTimeout(() => { try { p.disconnect(); tr.disconnect(); } catch {} }, 2000);
 }
 
 export function klangAn(wert) {
@@ -153,19 +203,26 @@ export function klangSchlag(f, pan = 0, laut = 1, hell = 0.4) {
 }
 
 // eine Glasglocke für den Kosmos: reiner Ton mit leicht verstimmter Schwebung, sehr lang
-export function klangGlas(f, laut = 1) {
+// eine Klangschale aus Glas: die unharmonischen Teiltöne einer Schale (1, 2.32, 4.25, 6.63), jeder mit eigener Schwebung,
+// die hohen verklingen zuerst; weich angeschlagen, fern im weiten Raum
+export function klangGlas(f, laut = 1, pan = 0) {
   if (!ctx || ctx.state !== 'running' || !an) return;
   const t = ctx.currentTime + 0.005;
-  const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.06 * laut, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 4.5);
-  const n2 = ctx.createGain(); n2.gain.value = 1.4; g.connect(trocken); g.connect(n2); n2.connect(nass);
-  for (const [m, l] of [[1, 1], [1.0035, 0.8], [2.0, 0.25], [3.01, 0.08]]) {
-    const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f * m;
-    const gg = ctx.createGain(); gg.gain.value = l; o.connect(gg); gg.connect(g); o.start(t); o.stop(t + 4.6);
+  const p = ctx.createStereoPanner ? ctx.createStereoPanner() : ctx.createGain();
+  if (p.pan) p.pan.value = Math.max(-1, Math.min(1, pan));
+  const tr = ctx.createGain(); tr.gain.value = 0.45; p.connect(tr); tr.connect(trocken); p.connect(weite);
+  for (const [m, l, dauer, schwebung] of [[1, 1, 7, 0.9], [2.32, 0.42, 4.5, 1.7], [4.25, 0.18, 2.6, 2.6], [6.63, 0.07, 1.5, 3.4]]) {
+    for (const d of [0, schwebung]) {
+      const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f * m + d;
+      const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.032 * l * laut, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + dauer);
+      o.connect(g); g.connect(p); o.start(t); o.stop(t + dauer + 0.1);
+    }
   }
+  setTimeout(() => { try { p.disconnect(); tr.disconnect(); } catch {} }, 7600);
 }
 
 // je Bild: wie viel Stimme, Milieu, Kosmos; das Echo im Takt
-export function klangBild({ summen, nacht, ordnung, kosmos: kos, echoZeit, echoMenge, bewegung }) {
+export function klangBild({ summen, nacht, ordnung, kosmos: kos, kreis = 0, echoZeit, echoMenge, bewegung }) {
   if (!ctx || ctx.state !== 'running') return;
   const t = ctx.currentTime;
   if (summen <= 0.02) stimmeGain.gain.setTargetAtTime(0, t, 0.35);
@@ -177,8 +234,11 @@ export function klangBild({ summen, nacht, ordnung, kosmos: kos, echoZeit, echoM
   milieuFilter.frequency.setTargetAtTime(110 + 140 * m + 200 * bewegung, t, 0.3);
   windGain.gain.setTargetAtTime(0.05 * m * (0.4 + bewegung), t, 0.4);
   windFilter.frequency.setTargetAtTime(600 + 900 * m + 900 * bewegung, t, 0.4);
-  kosmosGain.gain.setTargetAtTime(0.12 * kos, t, 0.7);
-  kosmosFilter.frequency.setTargetAtTime(300 + 2600 * kos, t, 0.9);
+  // der Kreis allein: ein tiefer Grund, der atmet; geöffnet steigt die Obertonreihe auf, und der Sänger tritt hervor
+  kosmosGain.gain.setTargetAtTime(0.03 * kreis + 0.08 * kos, t, 0.7);
+  kosmosFilter.frequency.setTargetAtTime(240 + 2400 * kos, t, 0.9);
+  koerperGain.gain.setTargetAtTime(0.1 * kreis * (1 - 0.4 * kos), t, 0.8);
+  if (kos < 0.03) oberGain.gain.setTargetAtTime(0, t, 0.6);
   if (echoZeit) echo.delayTime.setTargetAtTime(Math.min(1.9, echoZeit), t, 0.2);
   echoGain.gain.setTargetAtTime(echoMenge, t, 0.3);
 }
