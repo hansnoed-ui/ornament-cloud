@@ -230,3 +230,9 @@ Christian: «Bitte räum das noch optimaler auf», «Spuren noch schmaler», «G
 - Spuren am Handy zweizeilig (Name, ersetzen, M, S · V, Fader, Panorama), Pegel als Strich unten: 65 statt 98 px.
 - Zeitleiste: Abschnittsnamen nur so lang, wie Platz bis zum nächsten ist (sonst gekürzt mit «…»).
 - Studio: Gerätefronten mit feinem Schliff und Schrauben, Displays mit Leuchten und Zeilenraster, Pegel als LED-Kette, farbiger Streifen je Spurtyp, Spielknopf mit grünem Ring beim Abspielen.
+
+## 21. November 2026: Unterbrechungen und Bereiche kompakt
+
+Christian (Screenshot Filterfahrt am Handy): «Hier wird noch viel Platz verspielt». Drehknöpfe stehen jetzt nebeneinander (am Handy vier pro Zeile),
+Wahl, an, hinhören und löschen in einer Zeile, Auswahlfelder (Filter, von, bis) halb breit nebeneinander. Eine Filterfahrt-Karte ist am Handy
+rund 270 statt rund 600 px hoch.
