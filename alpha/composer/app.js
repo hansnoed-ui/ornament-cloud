@@ -28,7 +28,7 @@ import { wavSpuren, abtastrateLesen, mono, tempoSchaetzen, einsaetzeFinden, wavS
 import * as BE from "./kern/bereiche.js";
 import * as FA from "./kern/fassungen.js";
 import { drehknoepfe } from "./drehknopf.js?v=3";
-import { handyAnsicht, bpmKnopf } from "./handy.js?v=3";
+import { handyAnsicht, bpmKnopf } from "./handy.js?v=4";
 import { VORLAGEN, STIL_ZYKLEN, zyklusTakte, matraAuto } from "./kern/zyklen.js";
 import { grooveErzeugen, FAMILIEN as GROOVE_FAMILIEN, STIL_GROOVES } from "./kern/grooves.js";
 const PERK_NEU = "perkussion@0.2.0";
@@ -292,6 +292,7 @@ function spurenAufbauen() {
     feld.ondragleave = () => feld.classList.remove("ziel");
     feld.ondrop = (e) => { e.preventDefault(); e.stopPropagation(); feld.classList.remove("ziel"); const f = e.dataTransfer?.files?.[0]; if (f) spurErsetzen(sp, f).catch((x) => melde(`Ersetzen: ${x.message}`, 8000)); };
     const zeile = el("div", { className: `spur${z.gewaehlt === sp.id ? " gewaehlt" : ""}${still ? " still" : ""}` }, kopf, feld);
+    zeile.dataset.typ = sp.typ;
     kopf.onclick = () => waehle(sp.id);
     liste.append(zeile);
   }
@@ -1391,10 +1392,18 @@ function zeichnen() {
   schleife(g, w, h); linien(g, w, h, "rgba(244,241,234,0.25)");
   g.fillStyle = "#8a8784"; g.font = "11px Instrument Sans, system-ui"; const pxTakt = (takt / L) * w, jeder = pxTakt < 6 ? 16 : pxTakt < 14 ? 8 : pxTakt < 30 ? 4 : 1;
   for (let t = 0; ; t += jeder) { const s = tempo.beginn + t * takt; if (s > L) break; g.fillText(String(t + 1), (s / L) * w + 3, 18); }
-  for (const a of z.projekt.abschnitte ?? []) {
-    const x = ((tempo.beginn + a.von * takt) / L) * w; if (x > w) break;
-    g.fillStyle = "#f0a070"; g.fillRect(x, 0, 2, h); g.font = "500 11px Instrument Sans, system-ui"; g.fillText(a.name, x + 5, 10); g.fillStyle = "#8a8784"; g.font = "11px Instrument Sans, system-ui";
-  }
+  // Abschnittsnamen nur so weit, wie Platz bis zum nächsten Abschnitt ist (am Handy sonst übereinander): gekürzt mit «…», sonst weggelassen
+  const abs = z.projekt.abschnitte ?? [];
+  g.font = "500 11px Instrument Sans, system-ui";
+  abs.forEach((a, i) => {
+    const x = ((tempo.beginn + a.von * takt) / L) * w; if (x > w) return;
+    const naechst = i + 1 < abs.length ? ((tempo.beginn + abs[i + 1].von * takt) / L) * w : w, platz = Math.min(naechst, w) - x - 8;
+    g.fillStyle = "#f0a070"; g.fillRect(x, 0, 2, h);
+    let name = a.name;
+    if (g.measureText(name).width > platz) { while (name.length > 1 && g.measureText(name + "…").width > platz) name = name.slice(0, -1); name = name.length > 1 ? name.trimEnd() + "…" : ""; }
+    if (name) g.fillText(name, x + 5, 10);
+  });
+  g.fillStyle = "#8a8784"; g.font = "11px Instrument Sans, system-ui";
   // Wellen
   for (const c of document.querySelectorAll("canvas.welle")) {
     const d = z.daten.get(c.dataset.id), [g2, w2, h2] = vorbereiten(c);
@@ -1515,7 +1524,7 @@ async function spielen() {
 }
 function knoepfeAuffrischen() {
   const hat = z.daten.size > 0;
-  $("spielen").disabled = !hat; $("spielen").textContent = z.laeuft || z.startet ? "■" : "▶";
+  $("spielen").disabled = !hat; $("spielen").textContent = z.laeuft || z.startet ? "■" : "▶"; $("spielen").classList.toggle("laeuft", !!(z.laeuft || z.startet));
   for (const id of ["projektSpeichern"]) $(id).disabled = !z.projekt.spuren.length;
   for (const id of ["exportieren", "trackLaden", "erzTrackLaden", "messenKnopf", "zielKnopf"]) $(id).disabled = !hat;
   $("schleifeAn").setAttribute("aria-pressed", String(z.schleifeAn)); $("allesVorher").setAttribute("aria-pressed", String(z.allesVorher));

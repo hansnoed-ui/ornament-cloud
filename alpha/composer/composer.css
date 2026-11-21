@@ -436,3 +436,97 @@ input[type="range"]:not(.dk-regler):focus-visible { outline: 2px solid var(--acc
   .wellen-feld { min-height: 64px; }
   .summe-kopf { padding: 4px 8px; gap: 4px; }
 }
+
+/* Handy aufgeräumt (21. November 2026, Christian: «noch optimaler aufräumen», «Spuren noch schmaler»).
+   Kopf in zwei Zeilen ohne Abschneiden, Erzeugen-Tasten nebeneinander, Spuren zweizeilig (rund 60 px hoch). */
+#kopfMehr { display: none; }
+@media (max-width: 820px) {
+  .kopf { padding: 8px 16px; gap: 8px 10px; flex-wrap: wrap; align-items: center; }
+  .heimzeile { flex: none; }
+  .heim { min-height: 30px; min-width: 30px; padding: 2px 10px; justify-content: center; }
+  .heim .heim-text { display: none; }
+  .marke { flex: 1 1 0; min-width: 0; }
+  /* Kopftasten: die drei zum Laden, der Rest hinter «mehr» */
+  .aktionen { flex-wrap: wrap; overflow: visible; gap: 6px; }
+  .aktionen .knopf { flex: 1 1 auto; justify-content: center; min-height: 34px; padding: 4px 10px; font-size: 0.84rem; }
+  .aktionen:not(.offen) > .leise, .aktionen:not(.offen) > #trackLaden { display: none; }
+  #kopfMehr { display: inline-flex; flex: 0 0 auto; }
+  /* Erzeugen zu: Stil; BPM und Tonart in einer Zeile; drei Tasten in einer Zeile */
+  .erzeugen:not(.offen) { gap: 8px; }
+  .erzeugen:not(.offen) .tonart-wahl { flex: 1 1 55%; }
+  .erzeugen .tonart-wahl select { min-width: 0; }
+  .erzeugen .tonart-wahl #tonart { flex: none; }
+  .erzeugen:not(.offen) .track-zeile { display: contents; }
+  .erzeugen:not(.offen) #erzeugen, .erzeugen:not(.offen) #trackErzeugen, .erzeugen:not(.offen) #erzTrackLaden {
+    flex: 1 1 28%; min-width: 0; min-height: 40px; padding: 4px 6px; gap: 5px; font-size: 0.8rem; line-height: 1.15; justify-content: center; text-align: center; white-space: normal;
+  }
+  /* Spuren zweizeilig: Name, ersetzen, M, S · V, Fader, Panorama; Pegelanzeige als feiner Strich unten */
+  .spur .kopfzelle {
+    position: relative; grid-template-columns: 24px minmax(0, 1fr) 24px 24px 24px;
+    grid-template-areas: "name name x m s" "v fader fader fader pan"; gap: 3px; padding: 4px 6px 5px; align-content: center;
+  }
+  .spur .kopfzelle > .spur-knoepfe { display: contents; }
+  .spur .kopfzelle > .spur-name { grid-area: name; align-self: center; min-width: 0; }
+  .spur .spur-name b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .spur .spur-knoepfe > .m { grid-area: m; }
+  .spur .spur-knoepfe > .s { grid-area: s; }
+  .spur .spur-knoepfe > .v { grid-area: v; }
+  .spur .spur-knoepfe > :nth-child(5) { grid-area: x; }
+  .spur .spur-knoepfe > .variante, .spur .spur-knoepfe > .leise-text { display: none; }
+  .spur .kopfzelle > .regler:not(.pan) { grid-area: fader; align-self: center; }
+  .spur .kopfzelle > .regler.pan { grid-area: pan; justify-self: center; }
+  .spur .mini { width: 24px; min-width: 24px; height: 24px; padding: 0; font-size: 0.74rem; }
+  .spur .regler.pan .drehknopf { width: 24px; height: 24px; }
+  .spur input[type="range"]:not(.dk-regler) { height: 24px; }
+  .spur .pegelbalken { position: absolute; left: 6px; right: 6px; bottom: 1px; height: 2px; }
+  .wellen-feld { min-height: 52px; }
+  :root { --kopfbreite: 156px; }
+  .summe-kopf { grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 4px 8px; padding: 4px 6px; }
+  .summe-kopf > .spur-knoepfe { display: contents; }
+  .summe-kopf .spur-knoepfe > span { font-size: 0.72rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .summe-kopf .mini { height: 26px; }
+  .summe-kopf > .regler { grid-column: 1 / -1; }
+  .summe-kopf input[type="range"]:not(.dk-regler) { height: 22px; }
+}
+
+/* Mehr Studio (21. November 2026, Christian: «Gib dem Ganzen noch etwas mehr Studio-Design»). Im Nachtpult bleiben: Gerätefronten
+   mit feinem Schliff und vier Schrauben, Displays mit leichtem Leuchten und Zeilenraster, LED-Ketten als Pegel, Spurfarben wie im Studio,
+   ein gummierter Spielknopf mit grünem Lämpchen, solange es läuft. Ruhig, keine grellen Farben. */
+.erzeugen, .plugin, .messung, .urteile {
+  --schraube: radial-gradient(circle, #3a3935 0 1.6px, #0c0c0b 2.2px 2.9px, transparent 3.4px);
+  background:
+    var(--schraube) left 7px top 7px / 8px 8px no-repeat, var(--schraube) right 7px top 7px / 8px 8px no-repeat,
+    var(--schraube) left 7px bottom 7px / 8px 8px no-repeat, var(--schraube) right 7px bottom 7px / 8px 8px no-repeat,
+    repeating-linear-gradient(90deg, rgba(255,255,255,.012) 0 1px, transparent 1px 3px),
+    linear-gradient(#191917, #121210);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05), inset 0 -1px 0 rgba(0,0,0,.6);
+}
+.transport { background: repeating-linear-gradient(90deg, rgba(255,255,255,.012) 0 1px, transparent 1px 3px), linear-gradient(#171715, #0f0f0e);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 1px 0 #262522; }
+.kopf { background: linear-gradient(#10100f, #0b0b0a); }
+/* Displays: grünliches Leuchten und ein feines Zeilenraster */
+.stelle, .anzeige { background: repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0 1px, transparent 1px 3px), var(--display); }
+.stelle #takt, .anzeige b, .erzeugen .bpm-knopf > b { text-shadow: 0 0 6px rgba(200,240,210,.35); }
+/* Spielknopf: gummiert, beim Abspielen ein grünes Lämpchen im Ring */
+.knopf.spielen, .knopf.spielen:hover { background: radial-gradient(circle at 50% 35%, #f4f1ea, #c9c5bb 70%, #a8a49b); color: #111; border: 1px solid #000;
+  box-shadow: 0 2px 4px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.6); }
+.knopf.spielen.laeuft { box-shadow: 0 0 0 2px #0b0b0a, 0 0 0 4px var(--pegel2), 0 0 14px rgba(156,204,133,.45); }
+/* Pegel als LED-Kette */
+.pegelbalken { position: relative; overflow: hidden; }
+.pegelbalken::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 4px, #050505 4px 5px); pointer-events: none; }
+/* Spurfarben: ein farbiger Streifen links am Kanalzug (blau, wenn gewählt), eine feine Linie oben an der Welle */
+.spur { --spurfarbe: #8d8a83; }
+.spur[data-typ="drums"] { --spurfarbe: #d08a5a; }
+.spur[data-typ="perkussion"] { --spurfarbe: #c9a54a; }
+.spur[data-typ="bass"] { --spurfarbe: #9a8ad6; }
+.spur[data-typ="stimme"] { --spurfarbe: #d07f9a; }
+.spur[data-typ="flaeche"] { --spurfarbe: #6fb0a0; }
+.spur[data-typ="melodie"] { --spurfarbe: #9ccc85; }
+.spur .kopfzelle { position: relative; }
+.spur .kopfzelle::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--spurfarbe); opacity: .85; }
+.spur.gewaehlt .kopfzelle::before { background: var(--accent); opacity: 1; }
+.spur .wellen-feld { box-shadow: inset 0 2px 0 color-mix(in srgb, var(--spurfarbe) 45%, transparent); }
+.spur.still .kopfzelle::before { opacity: 0.3; }
+/* Kanalzug: leicht gewölbt wie ein Streifen im Pult */
+.kopfzelle { background: linear-gradient(90deg, #121210, #171715 60%, #121210); }
+.spur.gewaehlt .kopfzelle { background: linear-gradient(90deg, #1a1a18, #20201d 60%, #1a1a18); }

@@ -220,3 +220,13 @@ Christian: «Track Herunterladen würde ich hier gerade bei Spuren erzeugen, Tra
 - «Track herunterladen» neben «Track erzeugen», gleiche Wirkung wie «Track (WAV)» oben.
 - Tasten bei Erzeugen mit Rand statt heller Fläche; die beiden Hauptaktionen mit hellerem Rand und blauem Punkt.
 - «Track erzeugen» legt höchstens `MAX_TRACK_SPUREN = 10` Spuren an (vorher bis 15). Es fallen zuerst weitere Drums nach Kick, Snare und Hi-Hat, dann wechselnde Perkussion bis auf zwei, dann ein Naturklang; Bass und Synths bleiben. Die wechselnde Perkussion verteilt sich auf die verbliebenen Instrumente.
+
+## 21. November 2026: Handy aufgeräumt, Spuren schmaler, mehr Studio
+
+Christian: «Bitte räum das noch optimaler auf», «Spuren noch schmaler», «Gib dem Ganzen noch etwas mehr Studio-Design».
+
+- Handy-Kopf: Zurück-Pfeil neben dem Namen, Kopftasten umbrechen statt abgeschnitten; Projekt öffnen und speichern, Track (WAV) und ZIP hinter «mehr» (`#kopfMehr`).
+- Erzeugen zugeklappt: BPM und Tonart in einer Zeile, die drei Tasten nebeneinander.
+- Spuren am Handy zweizeilig (Name, ersetzen, M, S · V, Fader, Panorama), Pegel als Strich unten: 65 statt 98 px.
+- Zeitleiste: Abschnittsnamen nur so lang, wie Platz bis zum nächsten ist (sonst gekürzt mit «…»).
+- Studio: Gerätefronten mit feinem Schliff und Schrauben, Displays mit Leuchten und Zeilenraster, Pegel als LED-Kette, farbiger Streifen je Spurtyp, Spielknopf mit grünem Ring beim Abspielen.
