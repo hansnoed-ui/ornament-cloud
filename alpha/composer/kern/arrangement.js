@@ -1,4 +1,4 @@
-// Arrangement 0.2.1 (20.11.2026: weniger Dropouts, höchstens zwei Naturklänge) – aus Spuren, die als Schleifen laufen, einen ganzen Track machen. Der Track soll «atmen, stocken, Gas geben, sich
+// Arrangement 0.2.2 (21.11.2026: kürzere Pausen in Intro und Outro, nochmals weniger Dropouts; 0.2.1: höchstens zwei Naturklänge) – aus Spuren, die als Schleifen laufen, einen ganzen Track machen. Der Track soll «atmen, stocken, Gas geben, sich
 // verlieren und wiederfinden», «wirbeln, wummen» (Christian, 9. November 2026). Der Ablauf wird aus dem Startwert gewählt:
 //   Intro → Aufbau → (Mittelteile in wechselnder Folge: Hauptteil, Stocken, Atmen, Gas geben, Sich verlieren, Wiederfinden) → Outro
 // Alles sind gewöhnliche Unterbrechungen (kern/unterbrechungen.js) mit der Markierung «arr»: Sie stehen in der Liste jeder Spur und lassen
@@ -27,10 +27,10 @@ export function funktionVon(q) {
 const SPIELT = {
   //              kick backbeat oben perk bass pad melodie natur fremd mix naturklang
   intro:        [0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1],
-  aufbau:       [0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0],
+  aufbau:       [0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],   // Bass seit 21.11.2026 schon im Aufbau
   haupt:        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
   stocken:      [1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-  atmen:        [0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1],
+  atmen:        [0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1],   // Melodie seit 21.11.2026 auch im Atmen
   gas:          [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
   verlieren:    [0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1],
   wiederfinden: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
@@ -49,7 +49,7 @@ const FOLGEN = [
 /** Länge in Takten (ein Vielfaches von 4) und die Abschnitte für eine Dauer in Sekunden; der Ablauf aus dem Startwert */
 export function abschnitte(sekunden, bpm, { seed = 1 } = {}) {
   const takt = taktSek(bpm), takte = Math.max(16, Math.round(sekunden / takt / 4) * 4), rnd = zufall(seed * 7 + 3);
-  const intro = takte >= 48 ? 8 : 4, aufbau = 4, outro = 4;
+  const intro = 4, aufbau = 4, outro = 4;   // Intro bis 21.11.2026 bei langen Tracks 8 Takte («kürzen», Christian)
   let mitte = takte - intro - aufbau - outro;
   const folge = [...FOLGEN[Math.floor(rnd() * FOLGEN.length)]];
   // zu lang: zuerst Hauptteil, Stocken, Atmen oder Gas weglassen; wer sich verliert, findet sich auch wieder
@@ -76,15 +76,15 @@ export function ereignisseFuer(funktion, abschn, { seed = 1, takte } = {}) {
   for (let i = 0; i < abschn.length; i++) {
     if (spielt(abschn[i])) continue;
     let j = i; while (j + 1 < abschn.length && !spielt(abschn[j + 1])) j++;
-    let bis = abschn[j].bis;
+    let von = abschn[i].von, bis = abschn[j].bis;
+    // im Outro laufen Drums und Bass noch zwei Takte weiter und fallen erst dann weg (seit 21.11.2026)
+    if (abschn[i].typ === "outro" && bis - von > 2) von += 2;
     // die Kick kehrt in den letzten zwei Takten vor dem Wiederfinden zurück (mit Hochpass, der sich öffnet)
-    if (f === "kick" && abschn[j + 1]?.typ === "wiederfinden" && bis - abschn[i].von > 4) bis -= 2;
-    out.push(E("dropout", abschn[i].von, (bis - abschn[i].von) * 16, { rest: 0, kante: 12 }));
+    if (f === "kick" && abschn[j + 1]?.typ === "wiederfinden" && bis - von > 4) bis -= 2;
+    out.push(E("dropout", von, (bis - von) * 16, { rest: 0, kante: 12 }));
     i = j;
   }
-  // die Mischperkussion setzt auch in ihren Abschnitten aus: seit 20.11.2026 nur noch jeden vierten statt jeden zweiten Viertakt
-  // («weniger Dropouts», Christian)
-  if (f === "mix") for (const a of abschn) if (spielt(a)) for (let t = a.von + 12; t < a.bis; t += 16) out.push(E("dropout", t, Math.min(4, a.bis - t) * 16, { rest: 0, kante: 20 }));
+  // die Mischperkussion setzte bis 20.11.2026 auch in ihren Abschnitten jeden zweiten, dann jeden vierten Viertakt aus; seit 21.11.2026 nicht mehr
   abschn.forEach((a, idx) => {
     const L = a.bis - a.von, gem = zufall(seed * 131 + idx * 17), naechster = abschn[idx + 1];
     if (a.typ === "intro") {
@@ -108,9 +108,9 @@ export function ereignisseFuer(funktion, abschn, { seed = 1, takte } = {}) {
       if (f === "oben") out.push(E("filter", a.von, L * 16, { typ: "hoch", von: 2500, bis: 200, resonanz: 30 }));
     }
     if (a.typ === "stocken" && !["natur", "naturklang"].includes(f)) {
-      // alle Spuren halten gemeinsam an: je vier Takte ein kurzes Loch (ein bis zwei Schläge; bis 20.11.2026 zwei), dazu am Ende ein
-      // Tape-Stop der Drums
-      for (let g = 0; g < L; g += 4) for (const takt of [a.von + g + 3]) {
+      // alle Spuren halten gemeinsam an: je acht Takte ein kurzes Loch (ein bis zwei Schläge; bis 20.11.2026 zwei je vier Takte, bis
+      // 21.11.2026 eines je vier Takte), dazu am Ende ein Tape-Stop der Drums
+      for (let g = 0; g < L; g += 8) for (const takt of [a.von + g + 3]) {
         const schlag = Math.floor(gem() * 4), lang = 4 + 4 * Math.floor(gem() * 2);
         if (takt < a.bis) out.push(E("dropout", takt + schlag / 4, lang, { rest: 0, kante: 3 }));
       }
@@ -127,7 +127,7 @@ export function ereignisseFuer(funktion, abschn, { seed = 1, takte } = {}) {
       if (f === "pad") out.push(E("knarz", a.von, L * 16, { dichte: 60, laenge: 260, staerke: 80, farbe: "mix" }));
       if (f === "melodie") out.push(E("rueckwaerts", a.von + 1, 16, { kante: 10 }));
       // im letzten Takt fallen Drums und Bass weg (die Kick kehrt hier schon zurück); Flächen, Melodie und Natur tragen seit 20.11.2026 durch
-      if ([...DRUMS, "bass", "mix", "fremd"].includes(f) && f !== "kick" && L >= 2) out.push(E("dropout", a.bis - 1, 16, { rest: 0, kante: 40 }));
+      if ([...DRUMS, "bass", "mix", "fremd"].includes(f) && f !== "kick" && L >= 2) out.push(E("dropout", a.bis - 0.5, 8, { rest: 0, kante: 40 }));   // seit 21.11.2026 ein halber Takt
     }
     if (a.typ === "outro" && f === "pad") out.push(E("filter", a.von, L * 16, { typ: "tief", von: 14000, bis: 250, resonanz: 20 }));
   });
@@ -142,8 +142,8 @@ export function ereignisseFuer(funktion, abschn, { seed = 1, takte } = {}) {
  * helles «Na» lief als nervendes Dauergeräusch durch DnB, ECM und Goa), keine Pflanzentextur als Natur (Glocken sind keine Naturgeräusche).
  */
 /**
- * Wechselnde Perkussion (Ornament Style): je Abschnitt spielen nur zwei der Stimmen, in «Gas geben» und «Wiederfinden» drei (aus dem
- * Startwert, nie zweimal dieselbe Auswahl hintereinander); die übrigen schweigen dort. Bis 20.11.2026 waren es eine bzw. zwei; Christian
+ * Wechselnde Perkussion (Ornament Style): je Abschnitt schweigt eine der Stimmen, in «Gas geben» und «Wiederfinden» spielen alle (aus dem
+ * Startwert, nie zweimal dieselbe Auswahl hintereinander). Bis 20.11.2026 spielten eine bzw. zwei, bis 21.11.2026 zwei bzw. drei; Christian
  * wollte weniger Dropouts. Wo die Perkussion ohnehin schweigt (Intro), kommt kein zweites Dropout dazu, und aufeinanderfolgende Pausen
  * derselben Stimme werden zu einem Dropout zusammengefasst. Gibt Map stimme → [Dropout-Ereignisse].
  */
@@ -155,7 +155,7 @@ export function wechselPerkussion(stimmen, abschn, { seed = 1 } = {}) {
     if (!(SPIELT[a.typ]?.[spalte] ?? 1)) { offen.clear(); continue; }
     let wahl;
     for (let v = 0; v < 6; v++) {
-      const n = ["gas", "wiederfinden"].includes(a.typ) ? 3 : 2, rest = [...stimmen];
+      const n = ["gas", "wiederfinden"].includes(a.typ) ? stimmen.length : Math.max(1, stimmen.length - 1), rest = [...stimmen];
       wahl = Array.from({ length: Math.min(n, rest.length) }, () => rest.splice(Math.floor(rnd() * rest.length), 1)[0]).sort();
       if (wahl.join() !== vorher || stimmen.length <= n) break;
     }
