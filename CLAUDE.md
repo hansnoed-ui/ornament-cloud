@@ -89,5 +89,7 @@ Sitzung wissen muss, damit dieselben Fehler nicht zweimal passieren.
 - Composer-Motor (`alpha/composer/kern/motor.js`) rechnet jede Spur samt Kette live im AudioWorklet. Mehr Arbeit je Abtastwert
   auf jeder Spur (Messer, Hall) überlastet langsame Rechner: der Ton bricht weg (11.11.2026, 18 Spuren, acht Hallräume).
   Last im Browser messen (Worklet meldet `last`), veröffentlichte Plugins nur bitgleich beschleunigen (Fingerabdruck-Test).
+- Composer ist viersprachig (21.11.2026, `alpha/composer/sprache.js`): der Code schreibt deutsch, die Anzeige übersetzt aus
+  `sprache-texte.js`. Neue sichtbare Texte dort mit EN/ES/FR nachtragen, sonst bleiben sie deutsch (`tests/composer-sprache.test.mjs`).
 - Shaderfarben in Three.js-Szenen sind linear, der OutputPass macht sRGB:
   gewünschte sRGB-Farben vorher umrechnen.

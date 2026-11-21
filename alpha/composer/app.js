@@ -29,6 +29,7 @@ import * as BE from "./kern/bereiche.js";
 import * as FA from "./kern/fassungen.js";
 import { drehknoepfe } from "./drehknopf.js?v=3";
 import { handyAnsicht, bpmKnopf } from "./handy.js?v=4";
+import { spracheStarten, t } from "./sprache.js?v=1";
 import { VORLAGEN, STIL_ZYKLEN, zyklusTakte, matraAuto } from "./kern/zyklen.js";
 import { grooveErzeugen, FAMILIEN as GROOVE_FAMILIEN, STIL_GROOVES } from "./kern/grooves.js";
 const PERK_NEU = "perkussion@0.2.0";
@@ -1049,7 +1050,7 @@ function unterAufbauen(box, sp, wahl) {
     const weg = (alle) => {
       const a = artWahl.value, n = zaehlen(a, alle);
       if (!n) { melde(`Keine ${UNTER[a].name} ${alle ? "im Projekt" : "auf dieser Spur"}.`); return; }
-      if (n > 1 && !confirm(`${n} × ${UNTER[a].name} ${alle ? "auf allen Spuren" : "auf dieser Spur"} löschen? Das lässt sich nicht rückgängig machen (Projekt vorher speichern, wenn du zurück willst).`)) return;
+      if (n > 1 && !confirm(t(`${n} × ${UNTER[a].name} ${alle ? "auf allen Spuren" : "auf dieser Spur"} löschen? Das lässt sich nicht rückgängig machen (Projekt vorher speichern, wenn du zurück willst).`))) return;
       for (const s of alle ? z.projekt.spuren : [sp]) { const vor = s.ereignisse?.length ?? 0; s.ereignisse = (s.ereignisse ?? []).filter((e) => e.art !== a); if (s.ereignisse.length !== vor) spurSenden(s); }
       spurenAufbauen(); pluginAufbauen();
       melde(`${n} × ${UNTER[a].name} gelöscht${alle ? " (alle Spuren)" : ""}.`, 3000);
@@ -1332,7 +1333,7 @@ async function bereichAlsWav() {
  */
 async function neuerTrackAusBereich() {
   const w = auswahlTakte(); if (!w || w.bis <= w.von) return;
-  if (!confirm(`Neuer Track aus Takt ${taktText(w.von)}–${taktText(w.bis)}.\n\nDas jetzige Projekt wird dabei geschlossen und vorher als Projektdatei gespeichert (Download). Weiter?`)) return;
+  if (!confirm(t(`Neuer Track aus Takt ${taktText(w.von)}–${taktText(w.bis)}.\n\nDas jetzige Projekt wird dabei geschlossen und vorher als Projektdatei gespeichert (Download). Weiter?`))) return;
   await bisFertig();
   if (z.laeuft) await spielen();
   const alt = z.projekt, a = Math.round(z.schleife.a * z.rate), b = Math.round(z.schleife.b * z.rate), n = b - a;
@@ -1399,7 +1400,7 @@ function zeichnen() {
     const x = ((tempo.beginn + a.von * takt) / L) * w; if (x > w) return;
     const naechst = i + 1 < abs.length ? ((tempo.beginn + abs[i + 1].von * takt) / L) * w : w, platz = Math.min(naechst, w) - x - 8;
     g.fillStyle = "#f0a070"; g.fillRect(x, 0, 2, h);
-    let name = a.name;
+    let name = t(a.name);
     if (g.measureText(name).width > platz) { while (name.length > 1 && g.measureText(name + "…").width > platz) name = name.slice(0, -1); name = name.length > 1 ? name.trimEnd() + "…" : ""; }
     if (name) g.fillText(name, x + 5, 10);
   });
@@ -1408,7 +1409,7 @@ function zeichnen() {
   for (const c of document.querySelectorAll("canvas.welle")) {
     const d = z.daten.get(c.dataset.id), [g2, w2, h2] = vorbereiten(c);
     schleife(g2, w2, h2); linien(g2, w2, h2, "rgba(244,241,234,0.16)");
-    if (!d) { g2.fillStyle = "#8a8784"; g2.fillText("Datei fehlt: mit «Spuren laden» dieselbe Datei wählen", 10, h2 / 2); continue; }
+    if (!d) { g2.fillStyle = "#8a8784"; g2.fillText(t("Datei fehlt: mit «Spuren laden» dieselbe Datei wählen"), 10, h2 / 2); continue; }
     const { min, max } = d.wellen, m = h2 / 2;
     g2.fillStyle = c.closest(".spur")?.classList.contains("gewaehlt") ? "#f4f1ea" : "#c9c3b6";
     const dauerAnteil = d.kanaele[0].length / z.rate / L;
@@ -1425,7 +1426,7 @@ function zeichnen() {
         if (a > w2) break;
         g2.fillStyle = "rgba(240,160,112,0.28)"; g2.fillRect(a, 0, Math.max(2, b - a), h2);
         g2.fillStyle = "#f0a070"; g2.fillRect(a, 0, Math.max(2, b - a), 3);
-        if (r === 0 && b - a > 30) { g2.font = "10px Instrument Sans, system-ui"; g2.fillText(UNTER[e.art].name, a + 3, 14); }
+        if (r === 0 && b - a > 30) { g2.font = "10px Instrument Sans, system-ui"; g2.fillText(t(UNTER[e.art].name), a + 3, 14); }
       }
     }
     let zeile = 0;
@@ -1434,7 +1435,7 @@ function zeichnen() {
       const a = ((tempo.beginn + b.von * takt) / L) * w2, e = ((tempo.beginn + b.bis * takt) / L) * w2, farbe = b.art === "stumm" ? "#d05050" : b.art === "effekt" ? "#9ccc85" : "#8fb0ff";
       g2.globalAlpha = b.art === "stumm" ? 0.3 : 0.18; g2.fillStyle = farbe; g2.fillRect(a, 0, Math.max(2, e - a), h2); g2.globalAlpha = 1;
       g2.fillRect(a, h2 - 3, Math.max(2, e - a), 3);
-      if (e - a > 30) { g2.font = "10px Instrument Sans, system-ui"; g2.fillText(BE.beschreibung(b), a + 3, h2 - 7 - 11 * (zeile++ % 4)); }
+      if (e - a > 30) { g2.font = "10px Instrument Sans, system-ui"; g2.fillText(t(BE.beschreibung(b)), a + 3, h2 - 7 - 11 * (zeile++ % 4)); }
     }
   }
 }
@@ -1665,7 +1666,7 @@ async function exportieren() {
 
 // ---------- Projekt ----------
 function projektSpeichern() {
-  const titel = prompt("Titel des Projekts", z.projekt.titel); if (titel === null) return;
+  const titel = prompt(t("Titel des Projekts"), z.projekt.titel); if (titel === null) return;
   z.projekt.titel = titel.trim() || z.projekt.titel;
   herunterladen(new Blob([PR.schreiben(z.projekt)], { type: "application/json" }), `${dateiname(z.projekt.titel)}.composer.json`);
 }
@@ -1806,3 +1807,6 @@ requestAnimationFrame(anzeigen);
 drehknoepfe();
 handyAnsicht();
 bpmKnopf();
+// Sprachwahl DE, EN, ES, FR (21. November 2026): übersetzt alles beim Anzeigen, die Zeitleiste wird bei einem Wechsel neu gezeichnet
+spracheStarten();
+document.addEventListener("sprache", () => zeichnen());
