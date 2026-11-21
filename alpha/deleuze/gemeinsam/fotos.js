@@ -70,9 +70,9 @@ export function fotosMalen(c, fotos, W, H, zeit, { dauer = 3.2, blende = 1.1, ar
   const zeichne = (k, alpha) => {
     const f = fotos[((k % n) + n) % n], fw = f.width, fh = f.height;
     const deck = Math.max(W / fw, H / fh), ganz = Math.min(W / fw, H / fh);
-    // ruhig
+    // ruhig: ganz; fast Passendes füllt (die Bühne hat bei Fotos ohnehin das Format des ersten Fotos, siehe rahmen)
     const s0 = deck / ganz < 1.15 ? deck : ganz;
-    let x0 = (W - fw * s0) / 2, y0 = (H - fh * s0) / 2;
+    const x0 = (W - fw * s0) / 2, y0 = (H - fh * s0) / 2;
     // bewegt
     let z, dx = 0, dy = 0;
     if (art === 'fahrt') {
@@ -118,3 +118,43 @@ export const FAHRT_SVG = `<svg viewBox="0 0 32 32" width="30" height="30" aria-h
   <g class="kontur"><rect x="5" y="8" width="22" height="16" rx="0.5"/><path class="bahn" d="M9.5 20.5l11-9"/><path class="bahn" d="M16.4 11.5h4.1v4"/></g>
   <rect x="5" y="8" width="22" height="16" rx="0.5"/><path class="bahn" d="M9.5 20.5l11-9"/><path class="bahn" d="M16.4 11.5h4.1v4"/>
 </svg>`;
+
+// Rahmen der Bühne (Wunsch vom 21.11.2026: «das ganze 4:5-Foto ohne Rand bearbeiten»). Ohne Foto ist die Bühne der ganze
+// Schirm. Mit Fotos nimmt sie das Format des ersten Fotos an und sitzt so gross wie möglich im freien Fenster zwischen
+// Kopfband und Reglern; der Operator rechnet nur auf dieser Fläche, Standbild und Aufnahme kommen im Format des Fotos.
+// Die Operatoren lesen rahmen.b/.h statt innerWidth/innerHeight und ziehen rahmen.x/.y von den Fingerorten ab.
+export const rahmen = { x: 0, y: 0, b: innerWidth, h: innerHeight, seite: 0 };
+let rahmenLeinwand = null, eigenesResize = false;
+function rahmenRechnen() {
+  let x = 0, y = 0, b = innerWidth, h = innerHeight;
+  if (rahmen.seite > 0) {
+    const kopf = document.getElementById('kopf'), regler = document.getElementById('regler');
+    const oben = kopf && !kopf.hidden ? Math.max(0, kopf.getBoundingClientRect().bottom) : 0;
+    let unten = regler && !regler.hidden ? Math.min(innerHeight, regler.getBoundingClientRect().top) : innerHeight;
+    if (unten - oben < innerHeight * 0.3) unten = innerHeight;
+    const fb = innerWidth, fh = unten - oben;
+    if (fb / fh > rahmen.seite) { h = fh; b = fh * rahmen.seite; } else { b = fb; h = fb / rahmen.seite; }
+    b = Math.round(b); h = Math.round(h); x = Math.round((fb - b) / 2); y = Math.round(oben + (fh - h) / 2);
+  }
+  const neu = x !== rahmen.x || y !== rahmen.y || b !== rahmen.b || h !== rahmen.h;
+  Object.assign(rahmen, { x, y, b, h });
+  if (rahmenLeinwand) {
+    const st = rahmenLeinwand.style;
+    if (rahmen.seite > 0) { st.left = x + 'px'; st.top = y + 'px'; st.width = b + 'px'; st.height = h + 'px'; st.right = 'auto'; st.bottom = 'auto'; }
+    else st.left = st.top = st.width = st.height = st.right = st.bottom = '';
+  }
+  return neu;
+}
+function rahmenMelden() { if (rahmenRechnen() && !eigenesResize) { eigenesResize = true; dispatchEvent(new Event('resize')); eigenesResize = false; } }
+addEventListener('resize', () => { if (!eigenesResize) rahmenRechnen(); });
+// seite: Breite durch Höhe des Fotos, 0 für den ganzen Schirm
+export function rahmenSetzen(leinwand, seite) {
+  rahmenLeinwand = leinwand;
+  if (seite === rahmen.seite) return;
+  rahmen.seite = seite;
+  if (!rahmenSetzen.beob && typeof ResizeObserver !== 'undefined') {
+    rahmenSetzen.beob = new ResizeObserver(() => rahmenMelden());
+    for (const id of ['kopf', 'regler']) { const el = document.getElementById(id); if (el) rahmenSetzen.beob.observe(el); }
+  }
+  rahmenMelden();
+}

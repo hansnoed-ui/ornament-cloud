@@ -6,7 +6,7 @@
 
 import { klangStarten, klangBild, klangAn, klangIstAn, klangSpur, klangTakt, klangBruch } from './klang.js?v=2';
 import { aufnahmeDatei } from '../gemeinsam/aufnahme.js?v=1';
-import { fotoLesen, istVideo, istFoto, istHeic, dateiMeldung, fotosMalen, fahrtSchalter, FAHRT_SVG } from '../gemeinsam/fotos.js?v=2';
+import { fotoLesen, istVideo, istFoto, istHeic, dateiMeldung, fotosMalen, fahrtSchalter, FAHRT_SVG, rahmen as fotoRahmen, rahmenSetzen } from '../gemeinsam/fotos.js?v=4';
 
 const $ = (id) => document.getElementById(id);
 const Q = new URLSearchParams(location.search);
@@ -876,13 +876,13 @@ function tempoMessen(ms, dt) {
   else if (mitte < 17.5 && aufloesung < 1) neu = Math.min(1, aufloesung * 1.12);
   if (neu !== aufloesung) { aufloesung = neu; letzteAnpassung = ms; groesse(); spur('Auflösung ' + aufloesung.toFixed(2)); }
 }
-const seitenMass = (lang) => { const s = innerWidth / innerHeight; return s >= 1 ? [lang, Math.round(lang / s)] : [Math.round(lang * s), lang]; };
+const seitenMass = (lang) => { const s = fotoRahmen.b / fotoRahmen.h; return s >= 1 ? [lang, Math.round(lang / s)] : [Math.round(lang * s), lang]; };
 function groesse() {
   const dpr = Math.min(devicePixelRatio || 1, MAX_DPR) * aufloesung;
-  const b = Math.round(innerWidth * dpr), hh = Math.round(innerHeight * dpr);
+  const b = Math.round(fotoRahmen.b * dpr), hh = Math.round(fotoRahmen.h * dpr);
   if (leinwand.width !== b || leinwand.height !== hh) { leinwand.width = b; leinwand.height = hh; }
   if (!gl) return;
-  const lang = Math.min(SCHARF_SEITE, Math.max(ARBEIT, Math.round(Math.max(innerWidth, innerHeight) * Math.min(devicePixelRatio || 1, 2))));
+  const lang = Math.min(SCHARF_SEITE, Math.max(ARBEIT, Math.round(Math.max(fotoRahmen.b, fotoRahmen.h) * Math.min(devicePixelRatio || 1, 2))));
   const [sb, sh] = seitenMass(lang);
   if (sb !== scharfB || sh !== scharfH) {
     scharfB = sb; scharfH = sh; scharf.width = sb; scharf.height = sh;
@@ -994,7 +994,7 @@ const fotoBuehne = document.createElement('canvas');
 let fotos = [], fotoStart = 0;
 const FOTO_DAUER = 3.2, FOTO_BLENDE = 1.1;
 function fotoBuehneGroesse() {
-  const b = scharfB || 960, h = scharfH || Math.round(960 * innerHeight / Math.max(innerWidth, 1));
+  const b = scharfB || 960, h = scharfH || Math.round(960 * fotoRahmen.h / Math.max(fotoRahmen.b, 1));
   if (fotoBuehne.width !== b || fotoBuehne.height !== h) { fotoBuehne.width = b; fotoBuehne.height = h; }
 }
 async function fotosStarten(dateien) {
@@ -1013,6 +1013,7 @@ async function fotosStarten(dateien) {
   $('wenden').hidden = true; quelle = fotoBuehne; spiegelnQuelle = false; fotoStart = performance.now() / 1000; starten();
 }
 function fotoMalen(t) {
+  fotoBuehneGroesse();
   fotosMalen(fotoBuehne.getContext('2d'), fotos, fotoBuehne.width, fotoBuehne.height, t - fotoStart,
     { dauer: FOTO_DAUER, blende: FOTO_BLENDE, art: 'fahrt', mix: fahrt.schritt(t) });
 }
@@ -1021,7 +1022,11 @@ const fahrtKnopf = document.createElement('button');
 fahrtKnopf.className = 'fahrt'; fahrtKnopf.hidden = true; fahrtKnopf.innerHTML = FAHRT_SVG;
 $('wenden').after(fahrtKnopf);
 const fahrt = fahrtSchalter(fahrtKnopf, true);
-function fahrtSehen() { const weg = quelle !== fotoBuehne; if (fahrtKnopf.hidden !== weg) fahrtKnopf.hidden = weg; }
+function fahrtSehen() {
+  const weg = quelle !== fotoBuehne; if (fahrtKnopf.hidden !== weg) fahrtKnopf.hidden = weg;
+  // bei Fotos nimmt die Bühne das Format des ersten Fotos an (rahmen in gemeinsam/fotos.js)
+  rahmenSetzen(leinwand, !weg && fotos.length ? fotos[0].width / fotos[0].height : 0);
+}
 
 let rahmen = [0, 0, 1, 1];   // wo das Bild steht, in Anteilen der Leinwand (y nach oben)
 function malenIn(ctx, B, H) {
@@ -1094,7 +1099,7 @@ $('r-lesart').addEventListener('input', (e) => { const nr = +e.target.value; if 
 const stempel = new Float32Array(16 * 4), stempelR = new Float32Array(16 * 4); let stempelN = 0;
 const wisch = new Float32Array(8 * 4), wischR = new Float32Array(8 * 4); let wischN = 0;
 const ruehr = new Float32Array(8 * 4); let ruehrN = 0, ruehrRadius = 0.1;
-const pinselRadius = () => 0.12 * (innerWidth < innerHeight ? 1 : 1.3);   // in Bildhöhen
+const pinselRadius = () => 0.12 * (fotoRahmen.b < fotoRahmen.h ? 1 : 1.3);   // in Bildhöhen
 // r0, r1: Breite am Anfang und am Ende des Stücks; haar ≥ 0 zeichnet die Bahnen der Pinselhaare (Phase je Zug)
 function stempeln(x, y, menge, x0 = x, y0 = y, r = pinselRadius(), r0 = r, haar = -1) {
   if (stempelN < 16) { stempel.set([x0, y0, x, y], stempelN * 4); stempelR.set([r0, r, menge, haar], stempelN * 4); stempelN++; }
@@ -1120,7 +1125,7 @@ function geisterWarten(t, dt) {
 
 // ---------- Daumen: wo auflegen, und ein Ring, der sich füllt, so lange gewartet wird ----------
 let daumenGelernt = false, haltZeit = 0;
-function haltZeigen(x, y) { const h = $('halt'); h.style.left = x + 'px'; h.style.top = y + 'px'; h.classList.add('da'); }
+function haltZeigen(x, y) { const h = $('halt'); h.style.left = (x + fotoRahmen.x) + 'px'; h.style.top = (y + fotoRahmen.y) + 'px'; h.classList.add('da'); }
 function haltBild(dt) {
   if (finger.size) haltZeit += dt; else haltZeit = 0;
   $('halt-voll').style.strokeDashoffset = String(1 - Math.min(1, wartenMenge * 1.15));
@@ -1132,19 +1137,19 @@ function haltBild(dt) {
 // In allen Lesarten: der ruhende Finger füllt Dauer ein (halten = warten), ziehen verteilt sie dünner.
 // Im Zucker rührt das Ziehen zusätzlich die Strömung um.
 const finger = new Map();
-const aufLeinwand = (cx, cy) => ({ x: cx / innerWidth, y: 1 - cy / innerHeight });
+const aufLeinwand = (cx, cy) => ({ x: cx / fotoRahmen.b, y: 1 - cy / fotoRahmen.h });
 leinwand.addEventListener('pointerdown', (e) => {
-  finger.set(e.pointerId, { x: e.clientX, y: e.clientY, t: performance.now(), vx: 0, vy: 0, bewegt: 0, k: 1, r: 0, haar: Math.random() * 60 });
+  finger.set(e.pointerId, { x: (e.clientX - fotoRahmen.x), y: (e.clientY - fotoRahmen.y), t: performance.now(), vx: 0, vy: 0, bewegt: 0, k: 1, r: 0, haar: Math.random() * 60 });
   leinwand.setPointerCapture(e.pointerId); $('geste').classList.add('weg');
-  haltZeigen(e.clientX, e.clientY);
+  haltZeigen((e.clientX - fotoRahmen.x), (e.clientY - fotoRahmen.y));
   geisterStart = -1;
   glosse('warten');
 });
 leinwand.addEventListener('pointermove', (e) => {
   const f = finger.get(e.pointerId); if (!f) return;
   const jetzt = performance.now(), dt = Math.max(8, jetzt - f.t) / 1000;
-  const dx = e.clientX - f.x, dy = e.clientY - f.y;
-  const a = aufLeinwand(f.x, f.y), p = aufLeinwand(e.clientX, e.clientY);
+  const dx = (e.clientX - fotoRahmen.x) - f.x, dy = (e.clientY - fotoRahmen.y) - f.y;
+  const a = aufLeinwand(f.x, f.y), p = aufLeinwand((e.clientX - fotoRahmen.x), (e.clientY - fotoRahmen.y));
   // entlang des Wegs wie ein Pinsel: langsam breit und satt, schnell schmal; der Zug beginnt spitz
   const tempo = Math.hypot(dx, dy) / dt;
   f.k += (Math.max(0.16, Math.min(1, 1.12 - tempo / 1500)) - f.k) * 0.3;
@@ -1153,14 +1158,14 @@ leinwand.addEventListener('pointermove', (e) => {
   stempeln(p.x, p.y, 0.09 + 0.07 * (1 - f.k), a.x, a.y, r1, r0, f.haar);
   f.r = r1;
   if (lesart === 1) {
-    const s = STROM_SEITE / innerHeight;   // Bildpunkte je Sekunde → Gitterpunkte je Sekunde
+    const s = STROM_SEITE / fotoRahmen.h;   // Bildpunkte je Sekunde → Gitterpunkte je Sekunde
     ruehren(p.x, p.y, dx / dt * s * 0.55, -dy / dt * s * 0.55);
     ruehrRadius = 0.035 + 0.075 * f.k;
     if (wischN < 8) { wisch.set([a.x, a.y, p.x, p.y], wischN * 4); wischR.set([r0 * 0.9, r1 * 0.9, 0.9, f.haar], wischN * 4); wischN++; }
   }
   f.vx = dx / dt; f.vy = dy / dt; f.bewegt += Math.hypot(dx, dy);
-  f.x = e.clientX; f.y = e.clientY; f.t = jetzt;
-  haltZeigen(e.clientX, e.clientY);
+  f.x = (e.clientX - fotoRahmen.x); f.y = (e.clientY - fotoRahmen.y); f.t = jetzt;
+  haltZeigen((e.clientX - fotoRahmen.x), (e.clientY - fotoRahmen.y));
 });
 const loslassen = (e) => {
   const f = finger.get(e.pointerId);
@@ -1297,7 +1302,7 @@ function bild(ms) {
     const Z = ziele.punkte;
     rechne(P.punkte, Z.schreiben(), { uZ: Z.lesen(), uFl: fluss, uJetzt: jetzt, uGrund: G.lesen() }, (u) => {
       gl.uniform1f(u.uNeu, neuesBild ? 1 : 0); gl.uniform1f(u.uTakt, taktJetzt ? 1 : 0); gl.uniform1f(u.uTaktNr, taktNr % 997);
-      gl.uniform1f(u.uLaenge, 0.13); gl.uniform1f(u.uSeite, innerWidth / innerHeight); gl.uniform1f(u.uStart, punkteNeu ? 1 : 0);
+      gl.uniform1f(u.uLaenge, 0.13); gl.uniform1f(u.uSeite, fotoRahmen.b / fotoRahmen.h); gl.uniform1f(u.uStart, punkteNeu ? 1 : 0);
     });
     Z.tauschen(); punkteNeu = false;
     if (taktJetzt) {
@@ -1321,7 +1326,7 @@ function bild(ms) {
   const halten = bruch ? 1.0 : lesart === 0 ? 0.6 + 6 * WERTE[0][2] : lesart === 1 ? 1.5 + 14 * WERTE[1][0] : 3;
   rechne(P.warten, Wp.schreiben(), { uAlt: Wp.lesen() }, (u) => {
     gl.uniform2f(u.uPx, 1 / wb, 1 / wh); gl.uniform4fv(u.uStempel, stempel); gl.uniform4fv(u.uStempelR, stempelR);
-    gl.uniform1i(u.uN, stempelN); gl.uniform1f(u.uAb, dt / halten); gl.uniform1f(u.uSchritt, WARTEN_SEITE / 256); gl.uniform1f(u.uSeite, innerWidth / innerHeight);
+    gl.uniform1i(u.uN, stempelN); gl.uniform1f(u.uAb, dt / halten); gl.uniform1f(u.uSchritt, WARTEN_SEITE / 256); gl.uniform1f(u.uSeite, fotoRahmen.b / fotoRahmen.h);
   });
   Wp.tauschen();
   let summe = 0; for (let i = 0; i < stempelN; i++) summe += stempelR[i * 4 + 2];
@@ -1335,7 +1340,7 @@ function bild(ms) {
     const wirbel = WERTE[1][1];
     rechne(P.vAdvekt, V.schreiben(), { uV: V.lesen(), uFl: fluss, uW: W }, (u) => {
       gl.uniform2f(u.uPx, pxS[0], pxS[1]); gl.uniform1f(u.uDt, dt);
-      gl.uniform1f(u.uHalt, 1 / (1 + (0.15 + 0.9 * (1 - wirbel)) * dt)); gl.uniform1f(u.uBewegt, 0.6 * (0.3 + wirbel)); gl.uniform1f(u.uSeite, innerWidth / innerHeight);
+      gl.uniform1f(u.uHalt, 1 / (1 + (0.15 + 0.9 * (1 - wirbel)) * dt)); gl.uniform1f(u.uBewegt, 0.6 * (0.3 + wirbel)); gl.uniform1f(u.uSeite, fotoRahmen.b / fotoRahmen.h);
       gl.uniform4fv(u.uRuehr, ruehr); gl.uniform1i(u.uRN, ruehrN); gl.uniform1f(u.uRuehrR, ruehrRadius);
     });
     V.tauschen();
@@ -1361,7 +1366,7 @@ function bild(ms) {
     // Uhr: ohne Warten kurzes Gedächtnis (0,3 s), im Warten bis 1,5 bis 5 s; Zucker: ohne Warten die Gegenwart, im Warten 2 bis 20 s
     const langsam = uhr ? 1.5 + 3.5 * WERTE[0][2] : 2 + 18 * WERTE[1][0];
     rechne(P.dauer, D.schreiben(), { uD: D.lesen(), uJetzt: jetzt, uGrund: G.lesen(), uW: W, uV: V.lesen(), uFl: fluss }, (u) => {
-      gl.uniform1f(u.uHaltW, uhr ? 0.85 : 0.3); gl.uniform1f(u.uSeite, innerWidth / innerHeight);
+      gl.uniform1f(u.uHaltW, uhr ? 0.85 : 0.3); gl.uniform1f(u.uSeite, fotoRahmen.b / fotoRahmen.h);
       gl.uniform4fv(u.uWisch, wisch); gl.uniform4fv(u.uWischR, wischR); gl.uniform1i(u.uWN, uhr ? 0 : wischN);
       gl.uniform1f(u.uSchmier, uhr ? 1.6 : 0.5); gl.uniform1f(u.uSchmelz, uhr ? 0.5 : 0); gl.uniform1f(u.uZufall, Math.random());
       gl.uniform2f(u.uPx, pxA[0], pxA[1]); gl.uniform2f(u.uPxS, pxS[0], pxS[1]); gl.uniform1f(u.uDt, dt);
@@ -1400,16 +1405,16 @@ function bild(ms) {
   if (lesart === 0) {
     rechne(P.uhr, sz, { uScharf: scharfTex, uJetzt: jetzt, uGrund: G.lesen(), uD: D.lesen(), uSp: ziele.spitze.lesen(), uW: W, uRing: { array: ringTex } }, (u) => {
       gl.uniform1f(u.uKopf, kopf); gl.uniform1f(u.uN, MOMENTE_MAX); gl.uniform1f(u.uM, momentZahl());
-      gl.uniform1f(u.uLinie, 1.1 * Math.max(1, leinwand.height / 1400)); gl.uniform1f(u.uT, t % 100); gl.uniform1f(u.uSeite, innerWidth / innerHeight);
+      gl.uniform1f(u.uLinie, 1.1 * Math.max(1, leinwand.height / 1400)); gl.uniform1f(u.uT, t % 100); gl.uniform1f(u.uSeite, fotoRahmen.b / fotoRahmen.h);
       gl.uniform4f(u.uRahmen, ...rahmenGL);
-      gl.uniform1f(u.uBruch, bruch ? Math.min(1, bruchT * 12) * Math.min(1, bruchMenge * 3) : 0); gl.uniform1f(u.uBruchT, Math.max(0, bruchT)); gl.uniform2f(u.uBM, bruchOrt.x * innerWidth / innerHeight, bruchOrt.y);
+      gl.uniform1f(u.uBruch, bruch ? Math.min(1, bruchT * 12) * Math.min(1, bruchMenge * 3) : 0); gl.uniform1f(u.uBruchT, Math.max(0, bruchT)); gl.uniform2f(u.uBM, bruchOrt.x * fotoRahmen.b / fotoRahmen.h, bruchOrt.y);
       gl.uniform1f(u.uPlatte, linienAn ? 0.78 : 1);
     });
     if (linienAn) linienZeichnen(sz, W);
   } else if (lesart === 1) {
     rechne(P.zucker, sz, { uScharf: scharfTex, uD: D.lesen(), uW: W, uV: V.lesen() }, (u) => {
       gl.uniform2f(u.uPxD, pxA[0], pxA[1]); gl.uniform2f(u.uPxW, WARTEN_SEITE / 256 / wb, WARTEN_SEITE / 256 / wh); gl.uniform1f(u.uSchlieren, 0.2 + 1.6 * WERTE[1][2]);
-      gl.uniform1f(u.uSeite, innerWidth / innerHeight); gl.uniform4f(u.uRahmen, ...rahmenGL);
+      gl.uniform1f(u.uSeite, fotoRahmen.b / fotoRahmen.h); gl.uniform4f(u.uRahmen, ...rahmenGL);
     });
   } else {
     rechne(P.spannung, sz, { uScharf: scharfTex, uE1: ziele.e1.lesen(), uE2: ziele.e2.lesen(), uE3: ziele.e3.lesen(), uE4: ziele.e4.lesen(), uW: W }, (u) => {
@@ -1425,7 +1430,7 @@ function bild(ms) {
 }
 // Mareys Linien über die Platte: Glieder, Bahnen, Knöpfe; mit Vormultiplikation über das Bild gelegt
 function linienZeichnen(sz, W) {
-  const p = P.linie, M = Math.min(momentZahl(), MOMENTE_MAX - 1), PK = 4, dpr = leinwand.height / innerHeight;
+  const p = P.linie, M = Math.min(momentZahl(), MOMENTE_MAX - 1), PK = 4, dpr = leinwand.height / fotoRahmen.h;
   gl.bindFramebuffer(gl.FRAMEBUFFER, sz.fb); gl.viewport(0, 0, sz.b, sz.h);
   gl.useProgram(p);
   gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, ziele.hist.tex); gl.uniform1i(p.u.uHist, 1);
@@ -1523,7 +1528,7 @@ function zeitstempel() {
 
 // ---------- Glossen: einmal je Besuch von selbst, am Handy nur Begriff und Satz (wie im Kristall) ----------
 let glosseUhr = 0, glosseSchluessel = '';
-const glosseGezeigt = new Set(), glosseDauer = () => (innerWidth <= 560 ? 4500 : 7000);
+const glosseGezeigt = new Set(), glosseDauer = () => (fotoRahmen.b <= 560 ? 4500 : 7000);
 function glosse(k) {
   const g = TEXTE[sprache].glossen[k]; if (!g || glosseGezeigt.has(k)) return;
   glosseGezeigt.add(k);

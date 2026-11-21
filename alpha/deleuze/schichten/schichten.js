@@ -5,7 +5,7 @@
 
 import { klangStarten, klangBild, klangAn, klangIstAn, klangSpur, klangGraben, klangSchwelle, klangRing, klangSprung } from './klang.js?v=1';
 import { aufnahmeDatei } from '../gemeinsam/aufnahme.js?v=1';
-import { fotoLesen, istVideo, istFoto, istHeic, dateiMeldung, fotosMalen, fahrtSchalter, FAHRT_SVG } from '../gemeinsam/fotos.js?v=2';
+import { fotoLesen, istVideo, istFoto, istHeic, dateiMeldung, fotosMalen, fahrtSchalter, FAHRT_SVG, rahmen as fotoRahmen, rahmenSetzen } from '../gemeinsam/fotos.js?v=4';
 
 const $ = (id) => document.getElementById(id);
 
@@ -942,10 +942,10 @@ function texParameter(ziel) {
 }
 function groesse() {
   const dpr = Math.min(devicePixelRatio || 1, MAX_DPR) * aufloesung;
-  const b = Math.round(innerWidth * dpr), hh = Math.round(innerHeight * dpr);
+  const b = Math.round(fotoRahmen.b * dpr), hh = Math.round(fotoRahmen.h * dpr);
   if (leinwand.width !== b || leinwand.height !== hh) { leinwand.width = b; leinwand.height = hh; }
   if (!gl) return;
-  const seite = innerWidth / innerHeight;
+  const seite = fotoRahmen.b / fotoRahmen.h;
   const pb = seite >= 1 ? LANGE_SEITE : Math.round(LANGE_SEITE * seite);
   const ph = seite >= 1 ? Math.round(LANGE_SEITE / seite) : LANGE_SEITE;
   if (pb !== pufferB || ph !== pufferH) {
@@ -957,7 +957,7 @@ function groesse() {
     texParameter(gl.TEXTURE_2D_ARRAY);
     gefuellt = false;
   }
-  const lang = Math.min(SCHARF_SEITE, Math.max(LANGE_SEITE, Math.round(Math.max(innerWidth, innerHeight) * Math.min(devicePixelRatio || 1, 2))));
+  const lang = Math.min(SCHARF_SEITE, Math.max(LANGE_SEITE, Math.round(Math.max(fotoRahmen.b, fotoRahmen.h) * Math.min(devicePixelRatio || 1, 2))));
   const sb = seite >= 1 ? lang : Math.round(lang * seite), sh = seite >= 1 ? Math.round(lang / seite) : lang;
   if (sb !== scharfB || sh !== scharfH) {
     scharfB = sb; scharfH = sh; scharf.width = sb; scharf.height = sh;
@@ -1048,7 +1048,7 @@ const fotoBuehne = document.createElement('canvas');
 let fotos = [], fotoStart = 0;
 const FOTO_DAUER = 3.2, FOTO_BLENDE = 1.1;
 function fotoBuehneGroesse() {
-  const b = scharfB || 960, h = scharfH || Math.round(960 * innerHeight / Math.max(innerWidth, 1));
+  const b = scharfB || 960, h = scharfH || Math.round(960 * fotoRahmen.h / Math.max(fotoRahmen.b, 1));
   if (fotoBuehne.width !== b || fotoBuehne.height !== h) { fotoBuehne.width = b; fotoBuehne.height = h; }
 }
 async function fotosStarten(dateien) {
@@ -1067,6 +1067,7 @@ async function fotosStarten(dateien) {
   $('wenden').hidden = true; quelle = fotoBuehne; spiegelnQuelle = false; fotoStart = performance.now() / 1000; starten();
 }
 function fotoMalen(t) {
+  fotoBuehneGroesse();
   fotosMalen(fotoBuehne.getContext('2d'), fotos, fotoBuehne.width, fotoBuehne.height, t - fotoStart,
     { dauer: FOTO_DAUER, blende: FOTO_BLENDE, art: 'fahrt', mix: fahrt.schritt(t) });
 }
@@ -1075,7 +1076,11 @@ const fahrtKnopf = document.createElement('button');
 fahrtKnopf.className = 'fahrt'; fahrtKnopf.hidden = true; fahrtKnopf.innerHTML = FAHRT_SVG;
 $('wenden').after(fahrtKnopf);
 const fahrt = fahrtSchalter(fahrtKnopf, true);
-function fahrtSehen() { const weg = quelle !== fotoBuehne; if (fahrtKnopf.hidden !== weg) fahrtKnopf.hidden = weg; }
+function fahrtSehen() {
+  const weg = quelle !== fotoBuehne; if (fahrtKnopf.hidden !== weg) fahrtKnopf.hidden = weg;
+  // bei Fotos nimmt die Bühne das Format des ersten Fotos an (rahmen in gemeinsam/fotos.js)
+  rahmenSetzen(leinwand, !weg && fotos.length ? fotos[0].width / fotos[0].height : 0);
+}
 
 let rahmen = [0, 0, 1, 1];   // wo das Bild steht, in Anteilen der Leinwand
 function malenIn(ctx, B, H) {
@@ -1134,7 +1139,7 @@ $('r-lesart').addEventListener('input', (e) => { const nr = +e.target.value; if 
 // ---------- Die Grube: Stempel des Fingers, auf der Grafikkarte und als grobes Abbild für Klang und Anzeige ----------
 const stempel = new Float32Array(16 * 4), stempelR = new Float32Array(16 * 2); let stempelN = 0;
 const AB_B = 48, AB_H = 96, abbild = new Float32Array(AB_B * AB_H);   // grob genügt: Klang und die Zeitanzeige
-const pinselRadius = () => 0.085 * (innerWidth < innerHeight ? 1 : 1.25);   // in Bildhöhen
+const pinselRadius = () => 0.085 * (fotoRahmen.b < fotoRahmen.h ? 1 : 1.25);   // in Bildhöhen
 function stempeln(x, y, menge, x0 = x, y0 = y) {
   // eine Strecke von (x0, y0) nach (x, y), in 0…1 (Leinwand, y nach oben); weiches Profil (1 − r²)²
   const r = pinselRadius();
@@ -1143,7 +1148,7 @@ function stempeln(x, y, menge, x0 = x, y0 = y) {
     // zu viele Züge in einem Bild: der letzte wird verlängert, statt dass einer verloren geht
     const k = 15 * 4; stempel[k + 2] = x; stempel[k + 3] = y; stempelR[15 * 2 + 1] = Math.max(stempelR[15 * 2 + 1], menge);
   }
-  const seite = innerWidth / innerHeight, ax = x0 * seite, bx = x * seite, abx = bx - ax, aby = y - y0, l2 = Math.max(1e-8, abx * abx + aby * aby);
+  const seite = fotoRahmen.b / fotoRahmen.h, ax = x0 * seite, bx = x * seite, abx = bx - ax, aby = y - y0, l2 = Math.max(1e-8, abx * abx + aby * aby);
   for (let j = 0; j < AB_H; j++) for (let i = 0; i < AB_B; i++) {
     const qx = (i + 0.5) / AB_B * seite, qy = (j + 0.5) / AB_H;
     const h = Math.min(1, Math.max(0, ((qx - ax) * abx + (qy - y0) * aby) / l2));
@@ -1159,7 +1164,7 @@ function grubeRechnen(dt) {
   gl.useProgram(progGrube);
   gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D, alt.tex);
   gl.uniform1i(ortG.uAlt, 4); gl.uniform2f(ortG.uPx, 1 / grubeB, 1 / grubeH);
-  gl.uniform4fv(ortG.uStempel, stempel); gl.uniform2fv(ortG.uStempelR, stempelR); gl.uniform1i(ortG.uN, stempelN); gl.uniform1f(ortG.uAb, ab); gl.uniform1f(ortG.uSeite, innerWidth / innerHeight);
+  gl.uniform4fv(ortG.uStempel, stempel); gl.uniform2fv(ortG.uStempelR, stempelR); gl.uniform1i(ortG.uN, stempelN); gl.uniform1f(ortG.uAb, ab); gl.uniform1f(ortG.uSeite, fotoRahmen.b / fotoRahmen.h);
   zeichneFlaeche();
   gl.activeTexture(gl.TEXTURE0);
   grubeNr = 1 - grubeNr; stempelN = 0;
@@ -1236,9 +1241,9 @@ function geisterGraben(t, dt) {
 const finger = new Map();
 let spitze = { x: 0.5, y: 0.55 }, spitzeZiel = { x: 0.5, y: 0.55 }, sprung = 0;
 let schub = { x: 0, y: 0 }, schubV = { x: 0, y: 0 }, gleit = { x: 0, y: 0 }, grabStaerke = 0, letzteSchicht = 0, zittern = 0;
-const aufLeinwand = (e) => ({ x: e.clientX / innerWidth, y: 1 - e.clientY / innerHeight });
+const aufLeinwand = (e) => ({ x: (e.clientX - fotoRahmen.x) / fotoRahmen.b, y: 1 - (e.clientY - fotoRahmen.y) / fotoRahmen.h });
 leinwand.addEventListener('pointerdown', (e) => {
-  finger.set(e.pointerId, { x: e.clientX, y: e.clientY, t: performance.now() });
+  finger.set(e.pointerId, { x: (e.clientX - fotoRahmen.x), y: (e.clientY - fotoRahmen.y), t: performance.now() });
   leinwand.setPointerCapture(e.pointerId); $('geste').classList.add('weg');
   const p = aufLeinwand(e);
   if (lesart === 0) { spitzeZiel = p; sprung = 1; klangSprung(); glosse('sprung'); }
@@ -1246,17 +1251,17 @@ leinwand.addEventListener('pointerdown', (e) => {
 });
 leinwand.addEventListener('pointermove', (e) => {
   const f = finger.get(e.pointerId); if (!f) return;
-  const dx = e.clientX - f.x, dy = e.clientY - f.y, jetzt = performance.now(), dt = Math.max(8, jetzt - f.t);
-  f.x = e.clientX; f.y = e.clientY; f.t = jetzt;
+  const dx = (e.clientX - fotoRahmen.x) - f.x, dy = (e.clientY - fotoRahmen.y) - f.y, jetzt = performance.now(), dt = Math.max(8, jetzt - f.t);
+  f.x = (e.clientX - fotoRahmen.x); f.y = (e.clientY - fotoRahmen.y); f.t = jetzt;
   const p = aufLeinwand(e);
   if (lesart === 0) spitzeZiel = p;
   else if (lesart === 1) {
     // entlang des Wegs stempeln, damit schnelle Züge keine Lücken lassen
-    const weg = Math.hypot(dx / innerHeight, dy / innerHeight);
-    stempeln(p.x, p.y, 0.035 * Math.min(3, Math.max(1, weg / (pinselRadius() * 0.3))), p.x - dx / innerWidth, p.y + dy / innerHeight);
+    const weg = Math.hypot(dx / fotoRahmen.h, dy / fotoRahmen.h);
+    stempeln(p.x, p.y, 0.035 * Math.min(3, Math.max(1, weg / (pinselRadius() * 0.3))), p.x - dx / fotoRahmen.b, p.y + dy / fotoRahmen.h);
     grabStaerke = Math.min(1, grabStaerke + weg * 12);
   } else {
-    schubV.x -= (dx / innerWidth) * 2.2; schubV.y += (dy / innerHeight) * 2.2;
+    schubV.x -= (dx / fotoRahmen.b) * 2.2; schubV.y += (dy / fotoRahmen.h) * 2.2;
   }
 });
 const loslassen = (e) => { finger.delete(e.pointerId); };
@@ -1265,17 +1270,17 @@ leinwand.addEventListener('pointercancel', loslassen);
 
 // Antippen ohne Ziehen: welche Zeit liegt hier frei?
 let tippStart = null, zeitUhr = 0;
-leinwand.addEventListener('pointerdown', (e) => { tippStart = finger.size <= 1 ? { x: e.clientX, y: e.clientY, t: performance.now() } : null; }, true);
+leinwand.addEventListener('pointerdown', (e) => { tippStart = finger.size <= 1 ? { x: (e.clientX - fotoRahmen.x), y: (e.clientY - fotoRahmen.y), t: performance.now() } : null; }, true);
 leinwand.addEventListener('pointerup', (e) => {
   const s0 = tippStart; tippStart = null;
-  if (!s0 || performance.now() - s0.t > 300 || Math.hypot(e.clientX - s0.x, e.clientY - s0.y) > 8 || lesart === 2) return;
+  if (!s0 || performance.now() - s0.t > 300 || Math.hypot((e.clientX - fotoRahmen.x) - s0.x, (e.clientY - fotoRahmen.y) - s0.y) > 8 || lesart === 2) return;
   const T = TEXTE[sprache], p = aufLeinwand(e), el = $('schichtzeit');
   let sek = 0;
   if (lesart === 1) { const k = Math.min(schichtZahl - 1, Math.floor(abbildLesen(p.x, p.y) * schichtZahl)); sek = k / Math.max(1, schichtZahl - 1) * tiefe; }
   else return;   // im Kegel springt man, die Anzeige gehört der Grabung
   el.textContent = sek < 0.15 ? T.schichtJetzt : T.schichtVor.replace('{s}', sek.toFixed(1).replace('.', T.komma2));
-  el.style.left = Math.min(innerWidth - 150, Math.max(12, e.clientX - 60)) + 'px';
-  el.style.top = Math.max(70, e.clientY - 48) + 'px';
+  el.style.left = (fotoRahmen.x + Math.min(fotoRahmen.b - 150, Math.max(12, (e.clientX - fotoRahmen.x) - 60))) + 'px';
+  el.style.top = (fotoRahmen.y + Math.max(70, (e.clientY - fotoRahmen.y) - 48)) + 'px';
   el.hidden = false; el.classList.remove('weg');
   clearTimeout(zeitUhr); zeitUhr = setTimeout(() => el.classList.add('weg'), 1800);
 });
@@ -1374,7 +1379,7 @@ function bild(ms) {
   // Klang: Körner beim Graben, ein Stein an jeder Schichtgrenze unter dem Finger
   const f0 = [...finger.values()][0];
   if (lesart === 1 && f0) {
-    const d = abbildLesen(f0.x / innerWidth, 1 - f0.y / innerHeight), k = Math.min(schichtZahl - 1, Math.floor(d * schichtZahl));
+    const d = abbildLesen(f0.x / fotoRahmen.b, 1 - f0.y / fotoRahmen.h), k = Math.min(schichtZahl - 1, Math.floor(d * schichtZahl));
     klangGraben(grabStaerke, d);
     if (k !== letzteSchicht) { if (k > letzteSchicht) klangSchwelle(k); letzteSchicht = k; }
   } else letzteSchicht = 0;
@@ -1395,7 +1400,7 @@ function bild(ms) {
   gl.activeTexture(gl.TEXTURE0);
   gl.uniform1f(ort.uKopf, kopf); gl.uniform1f(ort.uN, SCHICHTEN);
   gl.uniform1f(ort.uSpanne, Math.min(SCHICHTEN - 1, tiefe / intervall)); gl.uniform1f(ort.uS, schichtZahl);
-  gl.uniform1f(ort.uSeite, innerWidth / innerHeight); gl.uniform1f(ort.uT, t % 100); gl.uniform1f(ort.uFT, ft % 1000);
+  gl.uniform1f(ort.uSeite, fotoRahmen.b / fotoRahmen.h); gl.uniform1f(ort.uT, t % 100); gl.uniform1f(ort.uFT, ft % 1000);
   gl.uniform1i(ort.uLesart, lesart); gl.uniform2f(ort.uSpitze, spitze.x, spitze.y); gl.uniform2f(ort.uSchub, schub.x, schub.y); gl.uniform2f(ort.uGleit, gleit.x, gleit.y); gl.uniform1f(ort.uSprung, sprung); gl.uniform1i(ort.uRand, rand); gl.uniform1i(ort.uKegel, kegelForm); gl.uniform1f(ort.uPxH, 1 / leinwand.height); gl.uniform1i(ort.uUeber, ueber); gl.uniform4f(ort.uRahmen, rahmen[0], rahmen[1], rahmen[2], rahmen[3]); gl.uniform1f(ort.uZitter, zittern);
   zeichneFlaeche();
   nachbearbeiten(t);
@@ -1474,7 +1479,7 @@ function zeitstempel() {
 
 // ---------- Glossen: einmal je Besuch von selbst, am Handy nur Begriff und Satz (wie im Kristall) ----------
 let glosseUhr = 0, glosseSchluessel = '';
-const glosseGezeigt = new Set(), glosseDauer = () => (innerWidth <= 560 ? 4500 : 7000);
+const glosseGezeigt = new Set(), glosseDauer = () => (fotoRahmen.b <= 560 ? 4500 : 7000);
 function glosse(k) {
   const g = TEXTE[sprache].glossen[k]; if (!g || glosseGezeigt.has(k)) return;
   glosseGezeigt.add(k);

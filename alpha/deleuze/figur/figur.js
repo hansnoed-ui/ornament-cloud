@@ -8,7 +8,7 @@
 
 import { klangStarten, klangBild, klangAn, klangIstAn, klangSpur, klangRund } from './klang.js?v=1';
 import { aufnahmeDatei } from '../gemeinsam/aufnahme.js?v=1';
-import { fotoLesen, istVideo, istFoto, istHeic, dateiMeldung, fotosMalen, fahrtSchalter, FAHRT_SVG } from '../gemeinsam/fotos.js?v=2';
+import { fotoLesen, istVideo, istFoto, istHeic, dateiMeldung, fotosMalen, fahrtSchalter, FAHRT_SVG, rahmen as fotoRahmen, rahmenSetzen } from '../gemeinsam/fotos.js?v=4';
 
 const $ = (id) => document.getElementById(id);
 const Q = new URLSearchParams(location.search);
@@ -747,17 +747,17 @@ function tempoMessen(ms, dt) {
   else if (mitte < 17.5 && aufloesung < 1) neu = Math.min(1, aufloesung * 1.12);
   if (neu !== aufloesung) { aufloesung = neu; letzteAnpassung = ms; groesse(); spur('Auflösung ' + aufloesung.toFixed(2)); }
 }
-const seitenMass = (lang) => { const s = innerWidth / innerHeight; return s >= 1 ? [lang, Math.round(lang / s)] : [Math.round(lang * s), lang]; };
+const seitenMass = (lang) => { const s = fotoRahmen.b / fotoRahmen.h; return s >= 1 ? [lang, Math.round(lang / s)] : [Math.round(lang * s), lang]; };
 function texParam(filter = gl.LINEAR, min = filter) {
   for (const [k, w] of [[gl.TEXTURE_MIN_FILTER, min], [gl.TEXTURE_MAG_FILTER, filter], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]]) gl.texParameteri(gl.TEXTURE_2D, k, w);
 }
 let flutLeeren = true, federLeeren = true, fleischLeeren = true;
 function groesse() {
   const dpr = Math.min(devicePixelRatio || 1, MAX_DPR) * aufloesung;
-  const b = Math.round(innerWidth * dpr), hh = Math.round(innerHeight * dpr);
+  const b = Math.round(fotoRahmen.b * dpr), hh = Math.round(fotoRahmen.h * dpr);
   if (leinwand.width !== b || leinwand.height !== hh) { leinwand.width = b; leinwand.height = hh; }
   if (!gl) return;
-  const lang = Math.min(SCHARF_SEITE, Math.max(ARBEIT, Math.round(Math.max(innerWidth, innerHeight) * Math.min(devicePixelRatio || 1, 2))));
+  const lang = Math.min(SCHARF_SEITE, Math.max(ARBEIT, Math.round(Math.max(fotoRahmen.b, fotoRahmen.h) * Math.min(devicePixelRatio || 1, 2))));
   const [sb, sh] = seitenMass(lang);
   if (sb !== scharfB || sh !== scharfH) {
     scharfB = sb; scharfH = sh; scharf.width = sb; scharf.height = sh;
@@ -782,7 +782,7 @@ function groesse() {
   if (mb !== fleischB || mh !== fleischH) { fleischB = mb; fleischH = mh; paar('fleisch', mb, mh); fleischLeeren = true; }
   // Rauschen für die Fasern, so fein wie der Bildschirm (etwas gröber, damit die Fasern glatt sind)
   const fdpr = Math.min(devicePixelRatio || 1, MAX_DPR);
-  const nb = Math.round(innerWidth * fdpr), nh = Math.round(innerHeight * fdpr);
+  const nb = Math.round(fotoRahmen.b * fdpr), nh = Math.round(fotoRahmen.h * fdpr);
   if (nb !== bildB || nh !== bildH) {
     bildB = nb; bildH = nh;
     const rb = Math.max(64, Math.round(nb / 1.5)), rh = Math.max(64, Math.round(nh / 1.5));
@@ -866,7 +866,7 @@ const fotoBuehne = document.createElement('canvas');
 let fotos = [], fotoStart = 0;
 const FOTO_DAUER = 3.2, FOTO_BLENDE = 1.1;
 function fotoBuehneGroesse() {
-  const b = scharfB || 960, h = scharfH || Math.round(960 * innerHeight / Math.max(innerWidth, 1));
+  const b = scharfB || 960, h = scharfH || Math.round(960 * fotoRahmen.h / Math.max(fotoRahmen.b, 1));
   if (fotoBuehne.width !== b || fotoBuehne.height !== h) { fotoBuehne.width = b; fotoBuehne.height = h; }
 }
 async function fotosStarten(dateien) {
@@ -886,6 +886,7 @@ async function fotosStarten(dateien) {
 }
 // Bei Fotos fährt die Kamera nur sanft, damit die Figur im Rund bleibt
 function fotoMalen(t) {
+  fotoBuehneGroesse();
   fotosMalen(fotoBuehne.getContext('2d'), fotos, fotoBuehne.width, fotoBuehne.height, t - fotoStart,
     { dauer: FOTO_DAUER, blende: FOTO_BLENDE, art: 'still', mix: fahrt.schritt(t) });
 }
@@ -894,7 +895,11 @@ const fahrtKnopf = document.createElement('button');
 fahrtKnopf.className = 'fahrt'; fahrtKnopf.hidden = true; fahrtKnopf.innerHTML = FAHRT_SVG;
 $('wenden').after(fahrtKnopf);
 const fahrt = fahrtSchalter(fahrtKnopf, false);
-function fahrtSehen() { const weg = quelle !== fotoBuehne; if (fahrtKnopf.hidden !== weg) fahrtKnopf.hidden = weg; }
+function fahrtSehen() {
+  const weg = quelle !== fotoBuehne; if (fahrtKnopf.hidden !== weg) fahrtKnopf.hidden = weg;
+  // bei Fotos nimmt die Bühne das Format des ersten Fotos an (rahmen in gemeinsam/fotos.js)
+  rahmenSetzen(leinwand, !weg && fotos.length ? fotos[0].width / fotos[0].height : 0);
+}
 
 let rahmen = [0, 0, 1, 1];   // wo das Bild steht, in Anteilen der Leinwand (y nach oben)
 function malenIn(ctx, B, H) {
@@ -1056,7 +1061,7 @@ function ringSetzen(r, zeichnen = true) {
 }
 function ellipseAus(punkte) {
   // gleichmässig entlang der Spur neu verteilen, sonst zählen langsame Stellen mehr
-  const qs = punkte.map(([x, y]) => [x / innerHeight, 1 - y / innerHeight]);
+  const qs = punkte.map(([x, y]) => [x / fotoRahmen.h, 1 - y / fotoRahmen.h]);
   let L = 0; const acc = [0];
   for (let i = 1; i < qs.length; i++) { L += Math.hypot(qs[i][0] - qs[i - 1][0], qs[i][1] - qs[i - 1][1]); acc.push(L); }
   const n = 72, pts = [];
@@ -1082,7 +1087,7 @@ function ellipseAus(punkte) {
 }
 // das Rund von selbst: um die Figur, aus Mitte und Streuung der Matte
 function ringVonSelbst(nahe) {
-  const z = ziele.mklein, s = innerWidth / innerHeight;
+  const z = ziele.mklein, s = fotoRahmen.b / fotoRahmen.h;
   let r = { cx: s * 0.5, cy: 0.56, rx: Math.min(0.42 * s, 0.32), ry: 0.34, w: 0 };
   if (z && P.mklein) {
     rechne(P.mklein, z, { uM: ziele.matte.lesen() });
@@ -1106,7 +1111,7 @@ function ringVonSelbst(nahe) {
 
 // ---------- Hände ----------
 const finger = new Map();
-const aufLeinwand = (cx, cy) => ({ x: cx / innerWidth, y: 1 - cy / innerHeight });
+const aufLeinwand = (cx, cy) => ({ x: cx / fotoRahmen.b, y: 1 - cy / fotoRahmen.h });
 let samen = 0;
 function fingerNeu(cx, cy) {
   samen++;
@@ -1120,24 +1125,24 @@ function stempeln(x0, y0, x, y, r, menge, same) {
 }
 
 leinwand.addEventListener('pointerdown', (e) => {
-  const f = fingerNeu(e.clientX, e.clientY);
+  const f = fingerNeu((e.clientX - fotoRahmen.x), (e.clientY - fotoRahmen.y));
   finger.set(e.pointerId, f);
   leinwand.setPointerCapture(e.pointerId); $('geste').classList.add('weg');
-  haltZeigen(e.clientX, e.clientY);
+  haltZeigen((e.clientX - fotoRahmen.x), (e.clientY - fotoRahmen.y));
   geisterStart = -1; finger.delete('geist');
-  if (lesart === 0 && finger.size === 1) { spurPunkte = [[e.clientX, e.clientY]]; spurAlpha = 1; }
+  if (lesart === 0 && finger.size === 1) { spurPunkte = [[(e.clientX - fotoRahmen.x), (e.clientY - fotoRahmen.y)]]; spurAlpha = 1; }
   // Schrei und Fleisch brauchen eine Figur im Rund: fehlt es, legt die Seite es von selbst um die Figur
-  if (lesart > 0 && !ring) ringSetzen(ringVonSelbst(aufLeinwand(e.clientX, e.clientY)), true);
+  if (lesart > 0 && !ring) ringSetzen(ringVonSelbst(aufLeinwand((e.clientX - fotoRahmen.x), (e.clientY - fotoRahmen.y))), true);
   glosse(['rond', 'cri', 'viande'][lesart]);
 });
 leinwand.addEventListener('pointermove', (e) => {
   const f = finger.get(e.pointerId); if (!f) return;
-  f.bewegt += Math.hypot(e.clientX - f.x, e.clientY - f.y);
-  f.x = e.clientX; f.y = e.clientY;
-  haltZeigen(e.clientX, e.clientY);
+  f.bewegt += Math.hypot((e.clientX - fotoRahmen.x) - f.x, (e.clientY - fotoRahmen.y) - f.y);
+  f.x = (e.clientX - fotoRahmen.x); f.y = (e.clientY - fotoRahmen.y);
+  haltZeigen((e.clientX - fotoRahmen.x), (e.clientY - fotoRahmen.y));
   if (lesart === 0 && spurPunkte.length && finger.size === 1) {
     const l = spurPunkte[spurPunkte.length - 1];
-    if (Math.hypot(e.clientX - l[0], e.clientY - l[1]) > 1.5 && spurPunkte.length < SPUR_MAX) spurPunkte.push([e.clientX, e.clientY]);
+    if (Math.hypot((e.clientX - fotoRahmen.x) - l[0], (e.clientY - fotoRahmen.y) - l[1]) > 1.5 && spurPunkte.length < SPUR_MAX) spurPunkte.push([(e.clientX - fotoRahmen.x), (e.clientY - fotoRahmen.y)]);
   }
 });
 let nachUhr = 0;
@@ -1156,7 +1161,7 @@ leinwand.addEventListener('pointercancel', loslassen);
 function rundAusSpur(f) {
   const p = spurPunkte; spurPunkte = [];
   let L = 0; for (let i = 1; i < p.length; i++) L += Math.hypot(p[i][0] - p[i - 1][0], p[i][1] - p[i - 1][1]);
-  if (p.length >= 8 && L > innerHeight * 0.22) { if (ring) glosse('elements'); ringSetzen(ellipseAus(p)); spurAus = p; spurAlpha = 1; }
+  if (p.length >= 8 && L > fotoRahmen.h * 0.22) { if (ring) glosse('elements'); ringSetzen(ellipseAus(p)); spurAus = p; spurAlpha = 1; }
   // nur getippt: das Rund von selbst, um die Figur nahe der Stelle
   else if (L < 24) ringSetzen(ringVonSelbst(aufLeinwand(f.x, f.y)));
 }
@@ -1166,12 +1171,12 @@ let spurAus = null;
 let tempoHand = 0, haltMax = 0, menge = 0, schreiEnergie = 0, vorhang = 0;
 const fa = new Float32Array(16), fb = new Float32Array(16), mund = new Float32Array(16); let fn = 0;
 function haende(t, dt) {
-  const W = WERTE[lesart], s = innerWidth / innerHeight;
+  const W = WERTE[lesart], s = fotoRahmen.b / fotoRahmen.h;
   let tempoMax = 0, hm = 0;
   fn = 0;
   for (const f of finger.values()) {
     const a = aufLeinwand(f.lx, f.ly), b = aufLeinwand(f.x, f.y);
-    const px = Math.hypot(f.x - f.lx, f.y - f.ly), tempo = px / innerHeight / dt;
+    const px = Math.hypot(f.x - f.lx, f.y - f.ly), tempo = px / fotoRahmen.h / dt;
     f.tempo += (tempo - f.tempo) * (1 - Math.exp(-dt / 0.1)); tempoMax = Math.max(tempoMax, f.tempo);
     f.zeit += dt;
     if (px > 2.5) f.ruhe = 0; else f.ruhe += dt;
@@ -1207,9 +1212,9 @@ function geist(t) {
   const u = t - geisterStart;
   // ein Oval um den Kopf ziehen, in 2,2 Sekunden
   if (u < 2.2 && !geistRingGesetzt) {
-    const s = innerWidth / innerHeight, k = u / 2.2, e = k * k * (3 - 2 * k);
+    const s = fotoRahmen.b / fotoRahmen.h, k = u / 2.2, e = k * k * (3 - 2 * k);
     const w = Math.PI * 0.5 + e * Math.PI * 2.08;
-    const cx = (0.5 * s + Math.cos(w) * 0.27) * innerHeight, cy = (1 - (0.56 + Math.sin(w) * 0.33)) * innerHeight;
+    const cx = (0.5 * s + Math.cos(w) * 0.27) * fotoRahmen.h, cy = (1 - (0.56 + Math.sin(w) * 0.33)) * fotoRahmen.h;
     if (!spurPunkte.length) spurAlpha = 1;
     spurPunkte.push([cx, cy]);
   } else if (!geistRingGesetzt) { geistRingGesetzt = true; rundAusSpur({ x: 0, y: 0 }); }
@@ -1219,7 +1224,7 @@ function geist(t) {
 
 // ---------- Daumen: wo auflegen, und ein Ring, der sich füllt ----------
 let daumenGelernt = false, haltZeit = 0;
-function haltZeigen(x, y) { const h = $('halt'); h.style.left = x + 'px'; h.style.top = y + 'px'; h.classList.add('da'); }
+function haltZeigen(x, y) { const h = $('halt'); h.style.left = (x + fotoRahmen.x) + 'px'; h.style.top = (y + fotoRahmen.y) + 'px'; h.classList.add('da'); }
 function haltBild(dt) {
   if (finger.size) haltZeit += dt; else haltZeit = 0;
   $('halt-voll').style.strokeDashoffset = String(1 - Math.min(1, lesart === 0 ? ringZug : menge));
@@ -1293,7 +1298,7 @@ function bild(ms) {
   const dtMs = ms - (letzteMs || ms - 16.7), dt = Math.min(0.1, Math.max(0.004, dtMs / 1000)); letzteMs = ms;
   tempoMessen(ms, dtMs);
   if (!scharfFangen()) { requestAnimationFrame(bild); return; }
-  const seite = innerWidth / innerHeight, W = WERTE[lesart];
+  const seite = fotoRahmen.b / fotoRahmen.h, W = WERTE[lesart];
   nr++;
   if (!paletteDa || nr % 20 === 0) paletteLesen();
 
@@ -1437,10 +1442,10 @@ function spurZeichnen() {
   const p = spurPunkte.length > 1 ? spurPunkte : spurAus;
   if (!p || p.length < 2 || spurAlpha <= 0.01 || !spurVao) { if (spurAlpha <= 0.01) spurAus = null; return; }
   const n = Math.min(SPUR_MAX, p.length - 1), d = new Float32Array(n * 4);
-  for (let i = 0; i < n; i++) d.set([p[i][0] / innerWidth, 1 - p[i][1] / innerHeight, p[i + 1][0] / innerWidth, 1 - p[i + 1][1] / innerHeight], i * 4);
+  for (let i = 0; i < n; i++) d.set([p[i][0] / fotoRahmen.b, 1 - p[i][1] / fotoRahmen.h, p[i + 1][0] / fotoRahmen.b, 1 - p[i + 1][1] / fotoRahmen.h], i * 4);
   gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, leinwand.width, leinwand.height);
   gl.useProgram(P.spur); gl.uniform2f(P.spur.u.uZiel, leinwand.width, leinwand.height);
-  gl.uniform1f(P.spur.u.uBreite, Math.max(0.7, 0.9 * leinwand.height / Math.max(1, innerHeight))); gl.uniform1f(P.spur.u.uAlpha, spurAlpha);
+  gl.uniform1f(P.spur.u.uBreite, Math.max(0.7, 0.9 * leinwand.height / Math.max(1, fotoRahmen.h))); gl.uniform1f(P.spur.u.uAlpha, spurAlpha);
   gl.bindVertexArray(spurVao);
   gl.bindBuffer(gl.ARRAY_BUFFER, spurPuffer); gl.bufferSubData(gl.ARRAY_BUFFER, 0, d);
   gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
@@ -1529,7 +1534,7 @@ function zeitstempel() {
 
 // ---------- Glossen: einmal je Besuch von selbst, am Handy nur Begriff und Satz ----------
 let glosseUhr = 0, glosseSchluessel = '';
-const glosseGezeigt = new Set(), glosseDauer = () => (innerWidth <= 560 ? 4500 : 7000);
+const glosseGezeigt = new Set(), glosseDauer = () => (fotoRahmen.b <= 560 ? 4500 : 7000);
 function glosse(k) {
   const g = TEXTE[sprache].glossen[k]; if (!g || glosseGezeigt.has(k)) return;
   glosseGezeigt.add(k);

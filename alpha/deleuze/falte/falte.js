@@ -11,7 +11,7 @@ import { klangStarten, klangBild, klangAn, klangIstAn, klangSpur, klangSprung, k
 import { aufnahmeDatei } from '../gemeinsam/aufnahme.js?v=1';
 import { tuchBauen } from './tuch.js?v=2';
 import { stueckeBauen, blattDreiecke } from './blatt.js?v=1';
-import { fotoLesen, istVideo, istFoto, istHeic, dateiMeldung, fotosMalen, fahrtSchalter, FAHRT_SVG } from '../gemeinsam/fotos.js?v=2';
+import { fotoLesen, istVideo, istFoto, istHeic, dateiMeldung, fotosMalen, fahrtSchalter, FAHRT_SVG, rahmen as fotoRahmen, rahmenSetzen } from '../gemeinsam/fotos.js?v=4';
 
 const $ = (id) => document.getElementById(id);
 const Q = new URLSearchParams(location.search);
@@ -662,16 +662,16 @@ function tempoMessen(ms, dt) {
   else if (mitte < 17.5 && aufloesung < 1) neu = Math.min(1, aufloesung * 1.12);
   if (neu !== aufloesung) { aufloesung = neu; letzteAnpassung = ms; groesse(); spur('Auflösung ' + aufloesung.toFixed(2)); }
 }
-const seitenMass = (lang) => { const s = innerWidth / innerHeight; return s >= 1 ? [lang, Math.round(lang / s)] : [Math.round(lang * s), lang]; };
+const seitenMass = (lang) => { const s = fotoRahmen.b / fotoRahmen.h; return s >= 1 ? [lang, Math.round(lang / s)] : [Math.round(lang * s), lang]; };
 function texParam(ziel = gl.TEXTURE_2D) {
   for (const [k, w] of [[gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]]) gl.texParameteri(ziel, k, w);
 }
 function groesse() {
   const dpr = Math.min(devicePixelRatio || 1, MAX_DPR) * aufloesung;
-  const b = Math.round(innerWidth * dpr), hh = Math.round(innerHeight * dpr);
+  const b = Math.round(fotoRahmen.b * dpr), hh = Math.round(fotoRahmen.h * dpr);
   if (leinwand.width !== b || leinwand.height !== hh) { leinwand.width = b; leinwand.height = hh; }
   if (!gl) return;
-  const lang = Math.min(SCHARF_SEITE, Math.max(640, Math.round(Math.max(innerWidth, innerHeight) * Math.min(devicePixelRatio || 1, 2))));
+  const lang = Math.min(SCHARF_SEITE, Math.max(640, Math.round(Math.max(fotoRahmen.b, fotoRahmen.h) * Math.min(devicePixelRatio || 1, 2))));
   const [sb, sh] = seitenMass(lang);
   if (sb !== scharfB || sh !== scharfH) {
     scharfB = sb; scharfH = sh; scharf.width = sb; scharf.height = sh;
@@ -755,7 +755,7 @@ const fotoBuehne = document.createElement('canvas');
 let fotos = [], fotoStart = 0;
 const FOTO_DAUER = 3.2, FOTO_BLENDE = 1.1;
 function fotoBuehneGroesse() {
-  const b = scharfB || 960, h = scharfH || Math.round(960 * innerHeight / Math.max(innerWidth, 1));
+  const b = scharfB || 960, h = scharfH || Math.round(960 * fotoRahmen.h / Math.max(fotoRahmen.b, 1));
   if (fotoBuehne.width !== b || fotoBuehne.height !== h) { fotoBuehne.width = b; fotoBuehne.height = h; }
 }
 async function fotosStarten(dateien) {
@@ -774,6 +774,7 @@ async function fotosStarten(dateien) {
   $('wenden').hidden = true; quelle = fotoBuehne; spiegelnQuelle = false; fotoStart = performance.now() / 1000; starten();
 }
 function fotoMalen(t) {
+  fotoBuehneGroesse();
   fotosMalen(fotoBuehne.getContext('2d'), fotos, fotoBuehne.width, fotoBuehne.height, t - fotoStart,
     { dauer: FOTO_DAUER, blende: FOTO_BLENDE, art: 'atmen', mix: fahrt.schritt(t) });
 }
@@ -782,7 +783,11 @@ const fahrtKnopf = document.createElement('button');
 fahrtKnopf.className = 'fahrt'; fahrtKnopf.hidden = true; fahrtKnopf.innerHTML = FAHRT_SVG;
 $('wenden').after(fahrtKnopf);
 const fahrt = fahrtSchalter(fahrtKnopf, false);
-function fahrtSehen() { const weg = quelle !== fotoBuehne; if (fahrtKnopf.hidden !== weg) fahrtKnopf.hidden = weg; }
+function fahrtSehen() {
+  const weg = quelle !== fotoBuehne; if (fahrtKnopf.hidden !== weg) fahrtKnopf.hidden = weg;
+  // bei Fotos nimmt die Bühne das Format des ersten Fotos an (rahmen in gemeinsam/fotos.js)
+  rahmenSetzen(leinwand, !weg && fotos.length ? fotos[0].width / fotos[0].height : 0);
+}
 
 function malenIn(ctx, B, H) {
   const q = quelle; if (!q) return false;
@@ -845,7 +850,7 @@ $('r-lesart').addEventListener('input', (e) => { const nr = +e.target.value; if 
 // ---------- Zustand der drei Lesarten ----------
 const lerp = (a, b, k) => a + (b - a) * k;
 const naeher = (a, b, dt, tau) => a + (b - a) * (1 - Math.exp(-dt / tau));
-const inQ = (cx, cy) => ({ x: cx / innerHeight, y: 1 - cy / innerHeight });   // in Bildhöhen, y nach oben
+const inQ = (cx, cy) => ({ x: cx / fotoRahmen.h, y: 1 - cy / fotoRahmen.h });   // in Bildhöhen, y nach oben
 
 // Rauschen: I sammelt die kleinen Wahrnehmungen, solange der Daumen liegt; bei 1 ist die Schwelle erreicht
 const rau = { x: 0.5, y: 0.5, I: 0, klar: 0, Rk: 0.05, meer: 0, ruhe: 1, ueber: false, seitSprung: 0, sprungR: 9, sprungA: 0, streuen: true, aktiv: false };
@@ -855,7 +860,7 @@ const KORN_S = telefon ? 384 : 576;   // 147 456 Körner am Telefon, 331 776 am 
 let tuch = null, tuchDa = 0, tuchGriffe = 0;
 const TUCH_PUNKTE = leicht ? 2000 : telefon ? 3000 : 4800;
 function tuchHolen() {
-  const s = innerWidth / innerHeight;
+  const s = fotoRahmen.b / fotoRahmen.h;
   if (!tuch || (Math.abs(tuch.seite - s) > 1e-3 && !tuch.aktiv)) tuch = tuchBauen(s, TUCH_PUNKTE);
   return tuch;
 }
@@ -875,7 +880,7 @@ function leinwandLeeren() {
 }
 // dieselbe Rechnung wie stapel() im Shader, für die Frage: liegt unter dem Finger überhaupt Papier?
 function papierUnter(p, falten) {
-  const s = innerWidth / innerHeight, n = falten.length;
+  const s = fotoRahmen.b / fotoRahmen.h, n = falten.length;
   for (let m = 0; m < (1 << n); m++) {
     let x = p.x, y = p.y, ok = true;
     for (let k = n - 1; k >= 0; k--) {
@@ -962,8 +967,8 @@ function loslassen(id) {
     nachUhr = setTimeout(() => { if (!finger.size && lesart === 0) glosse(rau.ueber || rau.klar > 0.1 ? 'fenetres' : 'mer'); }, 2200);
   }
 }
-leinwand.addEventListener('pointerdown', (e) => { leinwand.setPointerCapture(e.pointerId); beruehren(e.pointerId, e.clientX, e.clientY); });
-leinwand.addEventListener('pointermove', (e) => bewegen(e.pointerId, e.clientX, e.clientY));
+leinwand.addEventListener('pointerdown', (e) => { leinwand.setPointerCapture(e.pointerId); beruehren(e.pointerId, (e.clientX - fotoRahmen.x), (e.clientY - fotoRahmen.y)); });
+leinwand.addEventListener('pointermove', (e) => bewegen(e.pointerId, (e.clientX - fotoRahmen.x), (e.clientY - fotoRahmen.y)));
 leinwand.addEventListener('pointerup', (e) => loslassen(e.pointerId));
 leinwand.addEventListener('pointercancel', (e) => loslassen(e.pointerId));
 
@@ -984,7 +989,7 @@ function loesenZeigen() {
 function haende(t, dt) {
   const W = WERTE[lesart];
   let tempo = 0;
-  for (const f of finger.values()) { tempo = Math.max(tempo, Math.hypot(f.x - f.lx, f.y - f.ly) / innerHeight / dt); f.lx = f.x; f.ly = f.y; f.zeit += dt; }
+  for (const f of finger.values()) { tempo = Math.max(tempo, Math.hypot(f.x - f.lx, f.y - f.ly) / fotoRahmen.h / dt); f.lx = f.x; f.ly = f.y; f.zeit += dt; }
   bewegungHand = naeher(bewegungHand, Math.min(1, tempo / 2), dt, 0.15);
   const ruhe = t - letzteBeruehrung;
   const daumen = finger.size > 0 ? [...finger.values()][0] : null;
@@ -1058,7 +1063,7 @@ const VORSPANN = Q.has('vorspann');
 let geisterStart = -1;
 const geistZug = (u, a, b, x0, y0, x1, y1) => {
   // zwischen a und b vom ersten zum zweiten Ort, sanft an- und auslaufend
-  const W = innerWidth, H = innerHeight, s = W / H;
+  const W = fotoRahmen.b, H = fotoRahmen.h, s = W / H;
   const k = Math.max(0, Math.min(1, (u - a) / (b - a))), e = k * k * (3 - 2 * k);
   return [lerp(x0, x1, e) * H, (1 - lerp(y0, y1, e)) * H];
 };
@@ -1066,7 +1071,7 @@ let geistPhase = '';
 function geist(t) {
   if (geisterStart < 0 || t < geisterStart) return;
   const u = (t - geisterStart) % 20;
-  const s = innerWidth / innerHeight;
+  const s = fotoRahmen.b / fotoRahmen.h;
   const halten = (pos) => { if (!finger.has('geist')) beruehren('geist', pos[0], pos[1]); else bewegen('geist', pos[0], pos[1]); letzteBeruehrung = t; };
   const lassen = () => { if (finger.has('geist')) loslassen('geist'); };
   const phase = u < 7 ? 'r' : u < 12.5 ? 'd' : 'e';
@@ -1097,11 +1102,11 @@ function daumenZeigen() {
   $('daumen-text').textContent = TEXTE[sprache].daumen[lesart];
   d.hidden = false; requestAnimationFrame(() => d.classList.toggle('weg', finger.size > 0));
 }
-function haltZeigen(x, y) { const h = $('halt'); h.style.left = x + 'px'; h.style.top = y + 'px'; h.classList.add('da'); }
+function haltZeigen(x, y) { const h = $('halt'); h.style.left = (x + fotoRahmen.x) + 'px'; h.style.top = (y + fotoRahmen.y) + 'px'; h.classList.add('da'); }
 function haltBild(dt) {
   if (finger.size && !finger.has('geist')) haltZeit += dt; else haltZeit = 0;
   const g = [...finger.values()][0];
-  const voll = lesart === 0 ? Math.min(1, rau.I) : lesart === 1 ? (g && g.tuch ? Math.min(1, Math.hypot(g.x - g.x0, g.y - g.y0) / innerHeight / 0.3) : 0) : (fz.falten.length + (fz.aktiv ? 1 : 0)) / FALTEN_MAX;
+  const voll = lesart === 0 ? Math.min(1, rau.I) : lesart === 1 ? (g && g.tuch ? Math.min(1, Math.hypot(g.x - g.x0, g.y - g.y0) / fotoRahmen.h / 0.3) : 0) : (fz.falten.length + (fz.aktiv ? 1 : 0)) / FALTEN_MAX;
   $('halt-voll').style.strokeDashoffset = String(1 - Math.min(1, voll));
   const gelungen = lesart === 0 ? rau.klar > 0.5 : lesart === 1 ? !!tuch && tuch.stauchung > 0.04 : fz.falten.length >= 1;
   if (!daumenGelernt[lesart] && gelungen) { daumenGelernt[lesart] = true; daumenZeigen(); }
@@ -1168,7 +1173,7 @@ function faltenListe() { return fz.aktiv ? [...fz.falten, fz.aktiv] : fz.falten;
 function falzSetzen(u, liste) {
   falzU.fill(0);
   liste.slice(0, FALTEN_MAX).forEach((F, i) => falzU.set([F.nx, F.ny, F.c, F.w], i * 4));
-  gl.uniform4fv(u.uFalz, falzU); gl.uniform1i(u.uFalzN, Math.min(FALTEN_MAX, liste.length)); gl.uniform1f(u.uBlatt, innerWidth / innerHeight);
+  gl.uniform4fv(u.uFalz, falzU); gl.uniform1i(u.uFalzN, Math.min(FALTEN_MAX, liste.length)); gl.uniform1f(u.uBlatt, fotoRahmen.b / fotoRahmen.h);
 }
 function bild(ms) {
   const t = ms / 1000;
@@ -1176,13 +1181,13 @@ function bild(ms) {
   const dtMs = ms - (letzteMs || ms - 16.7), dt = Math.min(0.1, Math.max(0.004, dtMs / 1000)); letzteMs = ms;
   tempoMessen(ms, dtMs);
   if (!scharfFangen()) { requestAnimationFrame(bild); return; }
-  const seite = innerWidth / innerHeight, W = WERTE[lesart];
+  const seite = fotoRahmen.b / fotoRahmen.h, W = WERTE[lesart];
 
   if (geisterStart > 0) geist(t);
   haende(t, dt);
 
   const sz = zielBauen('szene', leinwand.width, leinwand.height, false);
-  const dpr = leinwand.height / innerHeight;
+  const dpr = leinwand.height / fotoRahmen.h;
 
   // Hantaï: während des Giessens die neue Leinwand rechnen
   if (fz.phase === 'giessen') {
@@ -1472,7 +1477,7 @@ function zeitstempel() {
 // Die Randfläche zeigt immer nur eines: den Titel einer Lesart oder eine Glosse. Was dazukommt, wartet.
 let randJetzt = null, randUhr = 0, randWechsel = 0;
 const randSchlange = [], glosseGezeigt = new Set();
-const randDauer = (art) => (art === 'titel' ? 2600 : innerWidth <= 560 ? 5200 : 7000);
+const randDauer = (art) => (art === 'titel' ? 2600 : fotoRahmen.b <= 560 ? 5200 : 7000);
 function randLeeren() { randSchlange.length = 0; }
 function randZeigen(e, sofort) {
   if (VORSPANN) return;
