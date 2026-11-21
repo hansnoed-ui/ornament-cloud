@@ -6,10 +6,10 @@
 // wieder geöffnet; es bleibt, was aussen lag, und jede Runde giesst eine andere Farbe).
 // WebGL2, ohne Bibliotheken, ohne CDN. Aufbau, Quellen, Aufnahme, Glossen und Einstieg wie im Ritornell.
 
-import { TEXTE } from './texte.js?v=2';
+import { TEXTE } from './texte.js?v=3';
 import { klangStarten, klangBild, klangAn, klangIstAn, klangSpur, klangSprung, klangKnick, klangGiessen, klangAuf, klangFall, klangHeben } from './klang.js?v=2';
 import { aufnahmeDatei } from '../gemeinsam/aufnahme.js?v=1';
-import { tuchBauen } from './tuch.js?v=1';
+import { tuchBauen } from './tuch.js?v=2';
 import { stueckeBauen, blattDreiecke } from './blatt.js?v=1';
 
 const $ = (id) => document.getElementById(id);
@@ -1032,6 +1032,8 @@ function haende(t, dt) {
     // zu langsam? dann weniger Durchgänge (das Telefon soll flüssig bleiben)
     const ms = performance.now() - t0;
     if (!FEST) { tuchZeit = tuchZeit * 0.9 + ms * 0.1; if (tuchZeit > 9 && tuchStufe < 3) { tuchStufe++; tuchZeit = 6; spur('Tuch Stufe ' + tuchStufe); } else if (tuchZeit < 3 && tuchStufe > 0) { tuchStufe--; tuchZeit = 6; } }
+    // ein Weilchen nach dem Loslassen glättet sich der Stoff von selbst wieder (Christian, 21.11.2026)
+    if (!finger.size && !tuch.heim && t - letzteBeruehrung > 1.8) { tuch.loesen(0.7); loesenZeigen(); }
     if (!tuch.aktiv) loesenZeigen();
   }
   tuchDa = naeher(tuchDa, tuch && tuch.aktiv ? 1 : 0, dt, 0.3);
