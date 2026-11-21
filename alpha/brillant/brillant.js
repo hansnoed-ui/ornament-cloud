@@ -871,6 +871,11 @@ const loslassen = (e) => {
   // Tippen: auf den Stein öffnet und schliesst das Menü; daneben schliesst es nur
   if (tipp && Math.hypot(e.clientX - tipp.x, e.clientY - tipp.y) < 10 && performance.now() - tipp.t < 400) {
     if (warGezogen) phi = zugStart;
+    // 0.42: wer den Namen antippt, solange er noch einblendet, öffnet die Karten (vorher fiel der Tipp durch und schloss das Menü)
+    if (menuAuf && glasK > 0) {
+      const el = flaechen[glasK - 1], r = el.getBoundingClientRect();
+      if (+el.style.opacity > 0.12 && e.clientX > r.left - 16 && e.clientX < r.right + 16 && e.clientY > r.top - 16 && e.clientY < r.bottom + 16) { vitrineAuf(glasK - 1); return; }
+    }
     const treffer = trifftStein(e.clientX, e.clientY);
     ziel = Math.round(phi / SCHRITT) * SCHRITT;
     // Christian: im Menü nicht mehr zurückklickbar; Tippen daneben führt zurück zu «Brillante Ideen.»
@@ -1069,12 +1074,13 @@ function vitrineAuf(i) {
 }
 // lädt die Seite neu (nicht aus dem Zwischenspeicher), ist die Vitrine zu: einen alten Verlaufseintrag dafür vergessen
 try { if (history.state && history.state.vitrine) history.replaceState(null, ''); } catch {}
-addEventListener('popstate', () => { if (vitrineOffen && vz.aufZiel) vitrineZu(true); });
+let vEigenesZurueck = false;   // 0.42: das history.back() aus vitrineZu meldet sich später; es darf eine neu geöffnete Vitrine nicht schliessen
+addEventListener('popstate', () => { if (vEigenesZurueck) { vEigenesZurueck = false; if (vitrineOffen && vz.aufZiel) try { history.pushState({ vitrine: 1 }, ''); } catch {} return; } if (vitrineOffen && vz.aufZiel) vitrineZu(true); });
 // 0.38: kommt man aus einer Anwendung zurück (Seite aus dem Zwischenspeicher des Browsers), läuft der Film der Karte weiter
 addEventListener('pageshow', (e) => { if (e.persisted && vitrineOffen) { vKarten.forEach((k) => k.film && k.film.play().catch(() => {})); wecken(); } });
 function vitrineZu(ausVerlauf) {
   if (!vitrineOffen || !vz.aufZiel) return;
-  if (!ausVerlauf) { try { if (history.state && history.state.vitrine) history.back(); } catch {} }
+  if (!ausVerlauf) { try { if (history.state && history.state.vitrine) { vEigenesZurueck = true; history.back(); } } catch {} }
   vz.aufZiel = 0; vz.t0 = performance.now(); vitrine.classList.remove('auf'); wecken();
   if (vZuletzt && vZuletzt.focus) vZuletzt.focus({ preventScroll: true });
 }
@@ -1431,7 +1437,7 @@ function projizierenGlas(zustand, soll, f, mu, gx, gy, rr) {
   const pw = el.offsetWidth, ph = el.offsetHeight, ruheY = Math.max(gy + rr * 1.3 + ph / 2, H * 0.618);   // goldener Schnitt: Stein auf 0.382, Name auf 0.618
   glasZ.strahl = 0; glasZ.praes = 0;
   flaechen.forEach((e, i) => {
-    const da = i + 1 === glasK ? ps * Math.max(0, (mu - 0.5) / 0.5) : 0, aktiv = da > 0.95;
+    const da = i + 1 === glasK ? ps * Math.max(0, (mu - 0.5) / 0.5) : 0, aktiv = da > 0.3;
     e.style.opacity = String(da); e.style.pointerEvents = aktiv ? 'auto' : 'none'; e.tabIndex = aktiv ? 0 : -1; e.setAttribute('aria-hidden', String(!aktiv));
     if (da > 0) e.style.transform = `translate(${gx - pw / 2}px, ${ruheY - ph / 2 + (1 - da) * 10}px)`;
   });
