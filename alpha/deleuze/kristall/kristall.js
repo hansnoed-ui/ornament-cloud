@@ -5,7 +5,7 @@
 import { SCHLIFFE, schliffEbenen } from './schliffe.js?v=8';
 import { klangStarten, klangBild, klangAn, klangIstAn, klangSpur } from './klang.js?v=1';
 import { aufnahmeDatei } from '../gemeinsam/aufnahme.js?v=1';
-import { fotoLesen, istVideo, istFoto, istHeic, dateiMeldung, fotosMalen, fahrtSchalter, FAHRT_SVG } from '../gemeinsam/fotos.js?v=4';
+import { fotoLesen, istVideo, istFoto, istHeic, dateiMeldung, fotosMalen, fahrtSchalter, FAHRT_SVG, neuesBildKnopf } from '../gemeinsam/fotos.js?v=6';
 
 const $ = (id) => document.getElementById(id);
 
@@ -774,6 +774,7 @@ function fotoMalen(t) {
 const fahrtKnopf = document.createElement('button');
 fahrtKnopf.className = 'fahrt'; fahrtKnopf.hidden = true; fahrtKnopf.innerHTML = FAHRT_SVG;
 $('wenden').after(fahrtKnopf);
+neuesBildKnopf();
 const fahrt = fahrtSchalter(fahrtKnopf, false);
 function fahrtSehen() { const weg = quelle !== fotoBuehne; if (fahrtKnopf.hidden !== weg) fahrtKnopf.hidden = weg; }
 

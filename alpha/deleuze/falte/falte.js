@@ -11,7 +11,7 @@ import { klangStarten, klangBild, klangAn, klangIstAn, klangSpur, klangSprung, k
 import { aufnahmeDatei } from '../gemeinsam/aufnahme.js?v=1';
 import { tuchBauen } from './tuch.js?v=2';
 import { stueckeBauen, blattDreiecke } from './blatt.js?v=1';
-import { fotoLesen, istVideo, istFoto, istHeic, dateiMeldung, fotosMalen, fahrtSchalter, FAHRT_SVG, rahmen as fotoRahmen, rahmenSetzen } from '../gemeinsam/fotos.js?v=4';
+import { fotoLesen, istVideo, istFoto, istHeic, dateiMeldung, fotosMalen, fahrtSchalter, FAHRT_SVG, rahmen as fotoRahmen, rahmenSetzen, neuesBildKnopf } from '../gemeinsam/fotos.js?v=6';
 
 const $ = (id) => document.getElementById(id);
 const Q = new URLSearchParams(location.search);
@@ -782,11 +782,14 @@ function fotoMalen(t) {
 const fahrtKnopf = document.createElement('button');
 fahrtKnopf.className = 'fahrt'; fahrtKnopf.hidden = true; fahrtKnopf.innerHTML = FAHRT_SVG;
 $('wenden').after(fahrtKnopf);
+neuesBildKnopf();
 const fahrt = fahrtSchalter(fahrtKnopf, false);
 function fahrtSehen() {
   const weg = quelle !== fotoBuehne; if (fahrtKnopf.hidden !== weg) fahrtKnopf.hidden = weg;
-  // bei Fotos nimmt die Bühne das Format des ersten Fotos an (rahmen in gemeinsam/fotos.js)
-  rahmenSetzen(leinwand, !weg && fotos.length ? fotos[0].width / fotos[0].height : 0);
+  // bei Fotos und eigenen Videos nimmt die Bühne das Format des Materials an (rahmen in gemeinsam/fotos.js);
+  // Kamera und Beispiel bleiben auf dem ganzen Schirm
+  const eigenesVideo = quelle === videoEl && videoUrl && videoEl.videoWidth && videoEl.videoHeight;
+  rahmenSetzen(leinwand, !weg && fotos.length ? fotos[0].width / fotos[0].height : eigenesVideo ? videoEl.videoWidth / videoEl.videoHeight : 0);
 }
 
 function malenIn(ctx, B, H) {
