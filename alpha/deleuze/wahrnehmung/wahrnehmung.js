@@ -6,7 +6,7 @@
 
 import { klangStarten, klangBild, klangAn, klangIstAn, klangSpur, klangTropfen } from './klang.js?v=2';
 import { aufnahmeDatei } from '../gemeinsam/aufnahme.js?v=1';
-import { fotoLesen, istVideo, istFoto, istHeic, dateiMeldung, fotosMalen, fahrtSchalter, FAHRT_SVG } from '../gemeinsam/fotos.js?v=2';
+import { fotoLesen, istVideo, istFoto, istHeic, dateiMeldung, fotosMalen, fahrtSchalter, FAHRT_SVG, rahmen as fotoRahmen, rahmenSetzen } from '../gemeinsam/fotos.js?v=4';
 
 const $ = (id) => document.getElementById(id);
 const Q = new URLSearchParams(location.search);
@@ -731,13 +731,13 @@ function tempoMessen(ms, dt) {
   else if (mitte < 17.5 && aufloesung < 1) neu = Math.min(1, aufloesung * 1.12);
   if (neu !== aufloesung) { aufloesung = neu; letzteAnpassung = ms; groesse(); spur('Auflösung ' + aufloesung.toFixed(2)); }
 }
-const seitenMass = (lang) => { const s = innerWidth / innerHeight; return s >= 1 ? [lang, Math.round(lang / s)] : [Math.round(lang * s), lang]; };
+const seitenMass = (lang) => { const s = fotoRahmen.b / fotoRahmen.h; return s >= 1 ? [lang, Math.round(lang / s)] : [Math.round(lang * s), lang]; };
 function groesse() {
   const dpr = Math.min(devicePixelRatio || 1, MAX_DPR) * aufloesung;
-  const b = Math.round(innerWidth * dpr), hh = Math.round(innerHeight * dpr);
+  const b = Math.round(fotoRahmen.b * dpr), hh = Math.round(fotoRahmen.h * dpr);
   if (leinwand.width !== b || leinwand.height !== hh) { leinwand.width = b; leinwand.height = hh; }
   if (!gl) return;
-  const lang = Math.min(SCHARF_SEITE, Math.max(ARBEIT, Math.round(Math.max(innerWidth, innerHeight) * Math.min(devicePixelRatio || 1, 2))));
+  const lang = Math.min(SCHARF_SEITE, Math.max(ARBEIT, Math.round(Math.max(fotoRahmen.b, fotoRahmen.h) * Math.min(devicePixelRatio || 1, 2))));
   const [sb, sh] = seitenMass(lang);
   if (sb !== scharfB || sh !== scharfH) {
     scharfB = sb; scharfH = sh; scharf.width = sb; scharf.height = sh;
@@ -763,7 +763,7 @@ function groesse() {
   const [hb, hh2] = seitenMass(WELLE_SEITE);
   if (hb !== welleB || hh2 !== welleH) { welleB = hb; welleH = hh2; paar('h', hb, hh2); }
   // Körner: ein Raster im Seitenverhältnis des Bildschirms, Zustand in voller Genauigkeit (Orte dürfen nicht wandern)
-  const gy = Math.round(Math.sqrt(KOERNER * innerHeight / innerWidth)), gx = Math.round(KOERNER / gy);
+  const gy = Math.round(Math.sqrt(KOERNER * fotoRahmen.h / fotoRahmen.b)), gx = Math.round(KOERNER / gy);
   if (gx !== kornGx || gy !== kornGy) {
     kornGx = gx; kornGy = gy;
     const a = ziel32('korn0', gx, gy), c = ziel32('korn1', gx, gy);
@@ -841,7 +841,7 @@ const fotoBuehne = document.createElement('canvas');
 let fotos = [], fotoStart = 0;
 const FOTO_DAUER = 3.2, FOTO_BLENDE = 1.1;
 function fotoBuehneGroesse() {
-  const b = scharfB || 960, h = scharfH || Math.round(960 * innerHeight / Math.max(innerWidth, 1));
+  const b = scharfB || 960, h = scharfH || Math.round(960 * fotoRahmen.h / Math.max(fotoRahmen.b, 1));
   if (fotoBuehne.width !== b || fotoBuehne.height !== h) { fotoBuehne.width = b; fotoBuehne.height = h; }
 }
 async function fotosStarten(dateien) {
@@ -860,6 +860,7 @@ async function fotosStarten(dateien) {
   $('wenden').hidden = true; quelle = fotoBuehne; spiegelnQuelle = false; fotoStart = performance.now() / 1000; starten();
 }
 function fotoMalen(t) {
+  fotoBuehneGroesse();
   fotosMalen(fotoBuehne.getContext('2d'), fotos, fotoBuehne.width, fotoBuehne.height, t - fotoStart,
     { dauer: FOTO_DAUER, blende: FOTO_BLENDE, art: 'fahrt', mix: fahrt.schritt(t) });
 }
@@ -868,7 +869,11 @@ const fahrtKnopf = document.createElement('button');
 fahrtKnopf.className = 'fahrt'; fahrtKnopf.hidden = true; fahrtKnopf.innerHTML = FAHRT_SVG;
 $('wenden').after(fahrtKnopf);
 const fahrt = fahrtSchalter(fahrtKnopf, true);
-function fahrtSehen() { const weg = quelle !== fotoBuehne; if (fahrtKnopf.hidden !== weg) fahrtKnopf.hidden = weg; }
+function fahrtSehen() {
+  const weg = quelle !== fotoBuehne; if (fahrtKnopf.hidden !== weg) fahrtKnopf.hidden = weg;
+  // bei Fotos nimmt die Bühne das Format des ersten Fotos an (rahmen in gemeinsam/fotos.js)
+  rahmenSetzen(leinwand, !weg && fotos.length ? fotos[0].width / fotos[0].height : 0);
+}
 
 let rahmen = [0, 0, 1, 1];   // wo das Bild steht, in Anteilen der Leinwand (y nach oben)
 function malenIn(ctx, B, H) {
@@ -941,7 +946,7 @@ $('r-lesart').addEventListener('input', (e) => { const nr = +e.target.value; if 
 // ---------- Stempel des Fingers ----------
 // fest und gasförmig: Menge, die ins Feld fliesst; flüssig: Tiefe des Tropfens
 const stempel = new Float32Array(16 * 4), stempelR = new Float32Array(16 * 4); let stempelN = 0;
-const pinselRadius = () => 0.11 * (innerWidth < innerHeight ? 1 : 1.3);   // in Bildhöhen
+const pinselRadius = () => 0.11 * (fotoRahmen.b < fotoRahmen.h ? 1 : 1.3);   // in Bildhöhen
 function stempeln(x, y, menge, x0 = x, y0 = y, r = pinselRadius(), r0 = r) {
   if (stempelN < 16) { stempel.set([x0, y0, x, y], stempelN * 4); stempelR.set([r0, r, menge, 0], stempelN * 4); stempelN++; }
   else { const k = 15 * 4; stempel[k + 2] = x; stempel[k + 3] = y; stempelR[k + 1] = r; stempelR[k + 2] = Math.max(stempelR[k + 2], menge); }
@@ -983,7 +988,7 @@ function geist(t, dt) {
 
 // ---------- Daumen: wo auflegen, und ein Ring, der sich füllt ----------
 let daumenGelernt = false, haltZeit = 0;
-function haltZeigen(x, y) { const h = $('halt'); h.style.left = x + 'px'; h.style.top = y + 'px'; h.classList.add('da'); }
+function haltZeigen(x, y) { const h = $('halt'); h.style.left = (x + fotoRahmen.x) + 'px'; h.style.top = (y + fotoRahmen.y) + 'px'; h.classList.add('da'); }
 function haltBild(dt) {
   if (finger.size) haltZeit += dt; else haltZeit = 0;
   $('halt-voll').style.strokeDashoffset = String(1 - Math.min(1, menge * 1.15));
@@ -996,7 +1001,7 @@ function haltBild(dt) {
 // gasförmig: halten löst die Körner, wischen nimmt sie mit.
 const finger = new Map();
 let fingerFeld = [];
-const aufLeinwand = (cx, cy) => ({ x: cx / innerWidth, y: 1 - cy / innerHeight });
+const aufLeinwand = (cx, cy) => ({ x: cx / fotoRahmen.b, y: 1 - cy / fotoRahmen.h });
 function tropfen(x, y, tiefe) {
   const r = pinselRadius() * 0.3;
   stempeln(x, y, tiefe * 1.8, x, y, r, r);
@@ -1004,19 +1009,19 @@ function tropfen(x, y, tiefe) {
 }
 leinwand.addEventListener('pointerdown', (e) => {
   const t = performance.now() / 1000;
-  finger.set(e.pointerId, { x: e.clientX, y: e.clientY, t: performance.now(), vx: 0, vy: 0, bewegt: 0, tropfen: t });
+  finger.set(e.pointerId, { x: (e.clientX - fotoRahmen.x), y: (e.clientY - fotoRahmen.y), t: performance.now(), vx: 0, vy: 0, bewegt: 0, tropfen: t });
   leinwand.setPointerCapture(e.pointerId); $('geste').classList.add('weg');
-  haltZeigen(e.clientX, e.clientY);
+  haltZeigen((e.clientX - fotoRahmen.x), (e.clientY - fotoRahmen.y));
   geisterStart = -1;
-  if (lesart === 1) { const p = aufLeinwand(e.clientX, e.clientY); tropfen(p.x, p.y, 1.0); }
+  if (lesart === 1) { const p = aufLeinwand((e.clientX - fotoRahmen.x), (e.clientY - fotoRahmen.y)); tropfen(p.x, p.y, 1.0); }
   glosse(['ecran', 'eau', 'gaz', 'courbure'][lesart]);
-  if (lesart === 3 && finger.size === 1) { const p = aufLeinwand(e.clientX, e.clientY); if (kraft < 0.05) { kz[0] = p.x; kz[1] = p.y; } }
+  if (lesart === 3 && finger.size === 1) { const p = aufLeinwand((e.clientX - fotoRahmen.x), (e.clientY - fotoRahmen.y)); if (kraft < 0.05) { kz[0] = p.x; kz[1] = p.y; } }
 });
 leinwand.addEventListener('pointermove', (e) => {
   const f = finger.get(e.pointerId); if (!f) return;
   const jetzt = performance.now(), dt = Math.max(8, jetzt - f.t) / 1000;
-  const dx = e.clientX - f.x, dy = e.clientY - f.y;
-  const a = aufLeinwand(f.x, f.y), p = aufLeinwand(e.clientX, e.clientY);
+  const dx = (e.clientX - fotoRahmen.x) - f.x, dy = (e.clientY - fotoRahmen.y) - f.y;
+  const a = aufLeinwand(f.x, f.y), p = aufLeinwand((e.clientX - fotoRahmen.x), (e.clientY - fotoRahmen.y));
   const tempo = Math.hypot(dx, dy) / dt;
   if (lesart === 1) {
     // Bugwelle: viele kleine Tropfen entlang des Wegs, schneller gezogen flacher
@@ -1027,8 +1032,8 @@ leinwand.addEventListener('pointermove', (e) => {
     stempeln(p.x, p.y, 0.08 + 0.05 * (lesart === 2 ? 1 : 0), a.x, a.y, r1, r1);
   }
   f.vx = dx / dt; f.vy = dy / dt; f.bewegt += Math.hypot(dx, dy);
-  f.x = e.clientX; f.y = e.clientY; f.t = jetzt;
-  haltZeigen(e.clientX, e.clientY);
+  f.x = (e.clientX - fotoRahmen.x); f.y = (e.clientY - fotoRahmen.y); f.t = jetzt;
+  haltZeigen((e.clientX - fotoRahmen.x), (e.clientY - fotoRahmen.y));
 });
 const loslassen = (e) => {
   finger.delete(e.pointerId);
@@ -1100,7 +1105,7 @@ function bild(ms) {
   const dtMs = ms - (letzteMs || ms - 16.7), dt = Math.min(0.1, Math.max(0.004, dtMs / 1000)); letzteMs = ms;
   tempoMessen(ms, dtMs);
   if (!scharfFangen()) { requestAnimationFrame(bild); return; }
-  const seite = innerWidth / innerHeight;
+  const seite = fotoRahmen.b / fotoRahmen.h;
 
   // 1. die Gegenwart in Arbeitsgrösse; die vorige bleibt für die Bewegung
   const J = ziele.jetzt;
@@ -1152,7 +1157,7 @@ function bild(ms) {
       // gehalten: ein Tropfen im Takt, wie ein Herzschlag auf dem Wasser
       if (t - f.tropfen > 0.5) { f.tropfen = t; tropfen(p.x, p.y, 0.55 + 0.25 * ruhig); }
     } else if (lesart !== 3) stempeln(p.x, p.y, (0.3 + 0.9 * ruhig) * dt);
-    if (lesart === 2) fingerFeld.push([p.x, p.y, f.vx / innerHeight * 0.35, -f.vy / innerHeight * 0.35]);
+    if (lesart === 2) fingerFeld.push([p.x, p.y, f.vx / fotoRahmen.h * 0.35, -f.vy / fotoRahmen.h * 0.35]);
     f.vx *= Math.pow(0.02, dt); f.vy *= Math.pow(0.02, dt);
   }
   if (geisterStart > 0) geist(t, dt);
@@ -1350,7 +1355,7 @@ function zeitstempel() {
 
 // ---------- Glossen: einmal je Besuch von selbst, am Handy nur Begriff und Satz (wie im Kristall) ----------
 let glosseUhr = 0, glosseSchluessel = '';
-const glosseGezeigt = new Set(), glosseDauer = () => (innerWidth <= 560 ? 4500 : 7000);
+const glosseGezeigt = new Set(), glosseDauer = () => (fotoRahmen.b <= 560 ? 4500 : 7000);
 function glosse(k) {
   const g = TEXTE[sprache].glossen[k]; if (!g || glosseGezeigt.has(k)) return;
   glosseGezeigt.add(k);

@@ -5,7 +5,7 @@
 import { SCHLIFFE, schliffEbenen } from './schliffe.js?v=8';
 import { klangStarten, klangBild, klangAn, klangIstAn, klangSpur } from './klang.js?v=1';
 import { aufnahmeDatei } from '../gemeinsam/aufnahme.js?v=1';
-import { fotoLesen, istVideo, istFoto, istHeic, dateiMeldung, fotosMalen, fahrtSchalter, FAHRT_SVG } from '../gemeinsam/fotos.js?v=2';
+import { fotoLesen, istVideo, istFoto, istHeic, dateiMeldung, fotosMalen, fahrtSchalter, FAHRT_SVG } from '../gemeinsam/fotos.js?v=4';
 
 const $ = (id) => document.getElementById(id);
 

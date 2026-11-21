@@ -9,7 +9,7 @@
 
 import { klangStarten, klangBild, klangAn, klangIstAn, klangSpur, klangSummen, klangSchlag, klangGlas, klangOberton, klangFunke } from './klang.js?v=3';
 import { aufnahmeDatei } from '../gemeinsam/aufnahme.js?v=1';
-import { fotoLesen, istVideo, istFoto, istHeic, dateiMeldung, fotosMalen, fahrtSchalter, FAHRT_SVG } from '../gemeinsam/fotos.js?v=2';
+import { fotoLesen, istVideo, istFoto, istHeic, dateiMeldung, fotosMalen, fahrtSchalter, FAHRT_SVG, rahmen as fotoRahmen, rahmenSetzen } from '../gemeinsam/fotos.js?v=4';
 
 const $ = (id) => document.getElementById(id);
 const Q = new URLSearchParams(location.search);
@@ -722,16 +722,16 @@ function tempoMessen(ms, dt) {
   else if (mitte < 17.5 && aufloesung < 1) neu = Math.min(1, aufloesung * 1.12);
   if (neu !== aufloesung) { aufloesung = neu; letzteAnpassung = ms; groesse(); spur('Auflösung ' + aufloesung.toFixed(2)); }
 }
-const seitenMass = (lang) => { const s = innerWidth / innerHeight; return s >= 1 ? [lang, Math.round(lang / s)] : [Math.round(lang * s), lang]; };
+const seitenMass = (lang) => { const s = fotoRahmen.b / fotoRahmen.h; return s >= 1 ? [lang, Math.round(lang / s)] : [Math.round(lang * s), lang]; };
 function texParam(ziel = gl.TEXTURE_2D) {
   for (const [k, w] of [[gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]]) gl.texParameteri(ziel, k, w);
 }
 function groesse() {
   const dpr = Math.min(devicePixelRatio || 1, MAX_DPR) * aufloesung;
-  const b = Math.round(innerWidth * dpr), hh = Math.round(innerHeight * dpr);
+  const b = Math.round(fotoRahmen.b * dpr), hh = Math.round(fotoRahmen.h * dpr);
   if (leinwand.width !== b || leinwand.height !== hh) { leinwand.width = b; leinwand.height = hh; }
   if (!gl) return;
-  const lang = Math.min(SCHARF_SEITE, Math.max(640, Math.round(Math.max(innerWidth, innerHeight) * Math.min(devicePixelRatio || 1, 2))));
+  const lang = Math.min(SCHARF_SEITE, Math.max(640, Math.round(Math.max(fotoRahmen.b, fotoRahmen.h) * Math.min(devicePixelRatio || 1, 2))));
   const [sb, sh] = seitenMass(lang);
   if (sb !== scharfB || sh !== scharfH) {
     scharfB = sb; scharfH = sh; scharf.width = sb; scharf.height = sh;
@@ -837,7 +837,7 @@ const fotoBuehne = document.createElement('canvas');
 let fotos = [], fotoStart = 0;
 const FOTO_DAUER = 3.2, FOTO_BLENDE = 1.1;
 function fotoBuehneGroesse() {
-  const b = scharfB || 960, h = scharfH || Math.round(960 * innerHeight / Math.max(innerWidth, 1));
+  const b = scharfB || 960, h = scharfH || Math.round(960 * fotoRahmen.h / Math.max(fotoRahmen.b, 1));
   if (fotoBuehne.width !== b || fotoBuehne.height !== h) { fotoBuehne.width = b; fotoBuehne.height = h; }
 }
 async function fotosStarten(dateien) {
@@ -857,6 +857,7 @@ async function fotosStarten(dateien) {
 }
 // Bei Fotos fährt die Kamera sanft: so hat auch ein Foto eine Vergangenheit, aus der das Gedächtnis schöpft
 function fotoMalen(t) {
+  fotoBuehneGroesse();
   fotosMalen(fotoBuehne.getContext('2d'), fotos, fotoBuehne.width, fotoBuehne.height, t - fotoStart,
     { dauer: FOTO_DAUER, blende: FOTO_BLENDE, art: 'atmen', mix: fahrt.schritt(t) });
 }
@@ -865,7 +866,11 @@ const fahrtKnopf = document.createElement('button');
 fahrtKnopf.className = 'fahrt'; fahrtKnopf.hidden = true; fahrtKnopf.innerHTML = FAHRT_SVG;
 $('wenden').after(fahrtKnopf);
 const fahrt = fahrtSchalter(fahrtKnopf, false);
-function fahrtSehen() { const weg = quelle !== fotoBuehne; if (fahrtKnopf.hidden !== weg) fahrtKnopf.hidden = weg; }
+function fahrtSehen() {
+  const weg = quelle !== fotoBuehne; if (fahrtKnopf.hidden !== weg) fahrtKnopf.hidden = weg;
+  // bei Fotos nimmt die Bühne das Format des ersten Fotos an (rahmen in gemeinsam/fotos.js)
+  rahmenSetzen(leinwand, !weg && fotos.length ? fotos[0].width / fotos[0].height : 0);
+}
 
 function malenIn(ctx, B, H) {
   const q = quelle; if (!q) return false;
@@ -961,7 +966,7 @@ const RING_TEMPO = 0.2, RING_DAUER = 2.2;   // die Ringe laufen langsam und reic
 const kos = { x: 0.5, y: 0.5, R: 0.26, offen: 0, offenZiel: 0, phi: Math.PI / 2, zug: 0, aktiv: false, dreh: 0, seit: 0, greif: 0, zwei: null };
 // der Kreis folgt der Hand, bleibt aber ganz im Bild
 function kreisSchieben(x, y, dt, tau) {
-  const s = innerWidth / innerHeight, r = kos.R * 0.7;
+  const s = fotoRahmen.b / fotoRahmen.h, r = kos.R * 0.7;
   x = Math.max(r, Math.min(s - r, x)); y = Math.max(0.2, Math.min(0.82, y));
   kos.x = tau ? naeher(kos.x, x, dt, tau) : x; kos.y = tau ? naeher(kos.y, y, dt, tau) : y;
   kos.zx = kos.mx = kos.x; kos.zy = kos.my = kos.y;   // wer schiebt, hält den Kreis selbst: kein Nachgleiten
@@ -976,14 +981,14 @@ function kreisGleiten(dt) {
 
 // ---------- Hände ----------
 const finger = new Map();
-const inQ = (cx, cy) => ({ x: cx / innerHeight, y: 1 - cy / innerHeight });   // in Bildhöhen, y nach oben
+const inQ = (cx, cy) => ({ x: cx / fotoRahmen.h, y: 1 - cy / fotoRahmen.h });   // in Bildhöhen, y nach oben
 let samen = 0, letzteBeruehrung = -99;
 function fingerNeu(cx, cy) {
   samen++;
   return { x: cx, y: cy, x0: cx, y0: cy, lx: cx, ly: cy, bewegt: 0, zeit: 0, marke: -1, start: performance.now() };
 }
 function markeUnter(cx, cy) {
-  const p = inQ(cx, cy); let best = -1, bd = 34 / innerHeight;
+  const p = inQ(cx, cy); let best = -1, bd = 34 / fotoRahmen.h;
   marken.forEach((m, i) => { const d = Math.hypot(m.x - p.x, m.y - p.y); if (d < bd) { bd = d; best = i; } });
   return best;
 }
@@ -992,9 +997,9 @@ function markeSetzen(cx, cy) {
   // auf den nächsten Schritt gelegt: wer im Takt tippt, bekommt seinen Rhythmus
   const slot = schritt < 0 ? 0 : (schritt + (phaseImSchritt(t) > 0.5 ? 1 : 0)) % 8;
   const stufe = Math.max(0, Math.min(LEITER.length - 1, Math.round(p.y * (LEITER.length - 1))));
-  const m = { x: p.x, y: p.y, slot, f: 196 * Math.pow(2, LEITER[stufe] / 12), pan: (cx / innerWidth) * 2 - 1, treffer: 0, glut: 1, r: 0 };
+  const m = { x: p.x, y: p.y, slot, f: 196 * Math.pow(2, LEITER[stufe] / 12), pan: (cx / fotoRahmen.b) * 2 - 1, treffer: 0, glut: 1, r: 0 };
   marken.push(m); if (marken.length > 8) marken.shift();
-  klangSchlag(m.f, m.pan, 1, 0.2 + 0.6 * (cx / innerWidth));
+  klangSchlag(m.f, m.pan, 1, 0.2 + 0.6 * (cx / fotoRahmen.b));
   ringe.push({ x: m.x, y: m.y, t0: t, a: 1 }); if (ringe.length > 12) ringe.shift();
   if (marken.length === 1) glosse('chezsoi');
   loesenZeigen();
@@ -1002,21 +1007,21 @@ function markeSetzen(cx, cy) {
 }
 
 leinwand.addEventListener('pointerdown', (e) => {
-  const f = fingerNeu(e.clientX, e.clientY);
+  const f = fingerNeu((e.clientX - fotoRahmen.x), (e.clientY - fotoRahmen.y));
   finger.set(e.pointerId, f);
   leinwand.setPointerCapture(e.pointerId);
   if (!daumenGelernt[lesart]) $('daumen').classList.add('weg');
-  haltZeigen(e.clientX, e.clientY);
+  haltZeigen((e.clientX - fotoRahmen.x), (e.clientY - fotoRahmen.y));
   geisterStart = -1; finger.delete('geist');
   letzteBeruehrung = performance.now() / 1000;
-  const p = inQ(e.clientX, e.clientY);
+  const p = inQ((e.clientX - fotoRahmen.x), (e.clientY - fotoRahmen.y));
   if (lesart === 0) { if (!sum.aktiv || sum.ordnung < 0.05) { sum.x = p.x; sum.y = p.y; sum.R = 0.06; sum.streuen = true; } sum.aktiv = true; glosse('chantonner'); }
-  if (lesart === 1) f.marke = markeUnter(e.clientX, e.clientY);
+  if (lesart === 1) f.marke = markeUnter((e.clientX - fotoRahmen.x), (e.clientY - fotoRahmen.y));
   if (lesart === 2) {
     const d = Math.hypot(p.x - kos.x, p.y - kos.y);
     if (!kos.aktiv || kos.zug < 0.2 || d > kos.R * 1.4) {
       // ein neuer Kreis um die Stelle, nie ganz am Rand
-      const s = innerWidth / innerHeight;
+      const s = fotoRahmen.b / fotoRahmen.h;
       kos.R = Math.min(0.26, 0.4 * s);
       const zx = Math.max(kos.R * 0.7, Math.min(s - kos.R * 0.7, p.x)), zy = Math.max(0.3, Math.min(0.75, p.y));
       if (kos.aktiv && kos.zug > 0.2) { kos.zx = zx; kos.zy = zy; }   // sichtbar: hingleiten
@@ -1029,9 +1034,9 @@ leinwand.addEventListener('pointerdown', (e) => {
 });
 leinwand.addEventListener('pointermove', (e) => {
   const f = finger.get(e.pointerId); if (!f) return;
-  f.bewegt += Math.hypot(e.clientX - f.x, e.clientY - f.y);
-  f.x = e.clientX; f.y = e.clientY;
-  haltZeigen(e.clientX, e.clientY);
+  f.bewegt += Math.hypot((e.clientX - fotoRahmen.x) - f.x, (e.clientY - fotoRahmen.y) - f.y);
+  f.x = (e.clientX - fotoRahmen.x); f.y = (e.clientY - fotoRahmen.y);
+  haltZeigen((e.clientX - fotoRahmen.x), (e.clientY - fotoRahmen.y));
   if (lesart === 1 && f.marke >= 0 && marken[f.marke] && f.bewegt > 8) { const p = inQ(f.x, f.y); marken[f.marke].x = p.x; marken[f.marke].y = p.y; }
 });
 let nachUhr = 0;
@@ -1068,7 +1073,7 @@ let bewegungHand = 0;
 function haende(t, dt) {
   const W = WERTE[lesart];
   let tempo = 0;
-  for (const f of finger.values()) { tempo = Math.max(tempo, Math.hypot(f.x - f.lx, f.y - f.ly) / innerHeight / dt); f.lx = f.x; f.ly = f.y; f.zeit += dt; }
+  for (const f of finger.values()) { tempo = Math.max(tempo, Math.hypot(f.x - f.lx, f.y - f.ly) / fotoRahmen.h / dt); f.lx = f.x; f.ly = f.y; f.zeit += dt; }
   bewegungHand = naeher(bewegungHand, Math.min(1, tempo / 2), dt, 0.15);
   const ruhe = t - letzteBeruehrung;
   const daumen = finger.size > 0 ? [...finger.values()][0] : null;
@@ -1181,7 +1186,7 @@ let geisterStart = -1;
 function geist(t) {
   if (geisterStart < 0 || t < geisterStart) return;
   const u = (t - geisterStart) % 16;
-  const s = innerWidth / innerHeight, W = innerWidth, H = innerHeight;
+  const s = fotoRahmen.b / fotoRahmen.h, W = fotoRahmen.b, H = fotoRahmen.h;
   if (u < 6.5) {
     // Summen: der Daumen pflügt in einer langsamen Schleife durch den Sand
     if (lesart !== 0) { lesartWaehlen(0, true); kos.aktiv = false; kos.offenZiel = 0; }
@@ -1224,7 +1229,7 @@ function daumenZeigen() {
   $('daumen-text').textContent = TEXTE[sprache].daumen[lesart];
   d.hidden = false; requestAnimationFrame(() => d.classList.toggle('weg', finger.size > 0));
 }
-function haltZeigen(x, y) { const h = $('halt'); h.style.left = x + 'px'; h.style.top = y + 'px'; h.classList.add('da'); }
+function haltZeigen(x, y) { const h = $('halt'); h.style.left = (x + fotoRahmen.x) + 'px'; h.style.top = (y + fotoRahmen.y) + 'px'; h.classList.add('da'); }
 function haltBild(dt) {
   if (finger.size && !finger.has('geist')) haltZeit += dt; else haltZeit = 0;
   const voll = lesart === 0 ? sum.ordnung : lesart === 2 ? kos.offen : Math.min(1, marken.length / 4);
@@ -1296,7 +1301,7 @@ function bild(ms) {
   const dtMs = ms - (letzteMs || ms - 16.7), dt = Math.min(0.1, Math.max(0.004, dtMs / 1000)); letzteMs = ms;
   tempoMessen(ms, dtMs);
   if (!scharfFangen()) { requestAnimationFrame(bild); return; }
-  const seite = innerWidth / innerHeight, W = WERTE[lesart];
+  const seite = fotoRahmen.b / fotoRahmen.h, W = WERTE[lesart];
 
   if (geisterStart > 0) geist(t);
   haende(t, dt);
@@ -1312,7 +1317,7 @@ function bild(ms) {
 
   // 2. die Szene
   const sz = zielBauen('szene', leinwand.width, leinwand.height, false);
-  const dpr = leinwand.height / innerHeight;
+  const dpr = leinwand.height / fotoRahmen.h;
   let mn = 0; markU.fill(0);
   for (const m of marken) { markU.set([m.x, m.y, m.r || 0.02, m.glut], mn * 4); mn++; }
   let rn = 0; ringU.fill(0);
@@ -1475,7 +1480,7 @@ function zeitstempel() {
 // hinausgefahren ist; nichts überdeckt etwas anderes, nichts verschwindet ungelesen hinter einer Glosse.
 let glosseSchluessel = '', randJetzt = null, randUhr = 0, randWechsel = 0;
 const randSchlange = [], glosseGezeigt = new Set();
-const randDauer = (art) => (art === 'titel' ? 2600 : innerWidth <= 560 ? 5200 : 7000);
+const randDauer = (art) => (art === 'titel' ? 2600 : fotoRahmen.b <= 560 ? 5200 : 7000);
 function randLeeren() { randSchlange.length = 0; }
 function randZeigen(e, sofort) {
   if (VORSPANN) return;
