@@ -9,7 +9,7 @@ const $ = (id) => document.getElementById(id);
 const leinwand = $('leinwand');
 
 // ---------- Inhalt: drei Anwendungen von ornament.cloud (Christian, 20.11.2026; ersetzt Webdesign, Apps, Vermittlung, Kuration, Editionen;
-// Composer und Multiverse wieder heraus; ORNAMENT LAB seit 0.31 dabei, Christian: «Das Lab gibts jetzt auch d/e/s/f») ----------
+// Composer und Multiverse wieder heraus; ORNAMENT LAB seit 0.31 dabei, Christian: «Das Lab gibts jetzt auch d/e/s/f»; Composer seit 0.39 wieder dabei) ----------
 // Tippt man im Menü auf den Namen, öffnet sich die Vitrine (unten): Bild oder Film, Name, ein Satz, «Öffnen».
 const BEREICHE = [
   { name: 'the deleuzian scheme', kopf: 'im Entstehen · Bild, Film, Ton', satz: 'Begriffe von Deleuze als Verfahren: Kristallbild, Schichten der Zeit, Dauer, Wahrnehmung, Diagramm, Figur – angewandt auf eigenes Material.',
@@ -22,7 +22,11 @@ const BEREICHE = [
     href: '/beta/lab/', sprachen: ['de', 'en', 'es', 'fr'], adressen: { de: '/beta/lab/?sprache=de', en: '/beta/lab/?sprache=en', es: '/beta/lab/?sprache=es', fr: '/beta/lab/?sprache=fr' },
     // Am Telefon die eigene Handy-Fassung des Labs (alpha/lab/handy/), in der gewählten Sprache.
     handy: '/alpha/lab/handy/',
-    schau: 'lab', ton: [96, 140, 255] }
+    schau: 'lab', ton: [96, 140, 255] },
+  // 0.39 (Christian, 21.11.2026: «Der Composer kann jetzt auch auf der Seite präsentiert werden»): vorerst nur deutsch;
+  // bekommt er weitere Sprachen, hier in sprachen und adressen nachtragen
+  { name: 'Composer', kopf: 'Ton · Spuren · Mischen', satz: '',
+    href: '/alpha/composer/', sprachen: ['de'], bild: 'vorschau/composer.jpg?v=1', ton: [86, 196, 172] }
 ];
 // Die Farben der Schichten: Rot (Godard), Orange (das Rad), Violett.
 
@@ -47,28 +51,32 @@ const TEXTE = {
       { kopf: 'im Entstehen · Bild, Film, Ton', satz: 'Begriffe von Deleuze als Verfahren: Kristallbild, Schichten der Zeit, Dauer, Wahrnehmung, Diagramm, Figur – angewandt auf eigenes Material.' },
       { name: 'Das Dritte Rad', kopf: 'Theorie · Kunstpraxis · Impuls', satz: 'Drei Ringe drehen gegeneinander. Jede Drehung verbindet einen Gedanken aus der Theorie mit einer künstlerischen Praxis und gibt einen Impuls für die eigene Arbeit.' },
       { kopf: 'Bild · Bewegung', satz: 'Ein Bild, 24 Effekte, bis zu drei Ebenen: das Mischpult für eigene Animationen.' },
-      { kopf: 'Erzeugen · Beobachten · Weiterführen', satz: 'Ein Bild wird Material. Operationen verändern es, Varianten stehen nebeneinander, jede lässt sich weiterführen.' }] },
+      { kopf: 'Erzeugen · Beobachten · Weiterführen', satz: 'Ein Bild wird Material. Operationen verändern es, Varianten stehen nebeneinander, jede lässt sich weiterführen.' },
+      { kopf: 'Ton · Spuren · Mischen', satz: 'Spuren erzeugen, schneiden und mischen: Synthesizer, Perkussion, Naturklänge und eigene Plugins, im Browser gerechnet.' }] },
   en: { titel: 'brilliant ideas.', iBei: 2, menu: 'Menu', anwendungen: 'Applications', mehr: 'Learn more', oeffnen: 'Open', oeffnenAria: (n) => `Open ${n}`,
     nurIn: { de: 'in German', en: 'in English', fr: 'in French', es: 'in Spanish' }, vor: 'Previous application', nach: 'Next application', zu: 'Close', sprache: 'Language',
     anw: [
       { kopf: 'in progress · image, film, sound', satz: 'Concepts of Deleuze as procedures: crystal-image, sheets of time, duration, perception, diagram, figure – applied to your own material.' },
       { name: 'The Third Wheel', kopf: 'theory · art practice · impulse', satz: 'Three rings turn against each other. Every turn joins a thought from theory with an artistic practice and gives an impulse for your own work.' },
       { kopf: 'image · motion', satz: 'One image, 24 effects, up to three layers: the mixing desk for your own animations.' },
-      { kopf: 'generate · observe · continue', satz: 'An image becomes material. Operations change it, variants stand side by side, each one can be taken further.' }] },
+      { kopf: 'generate · observe · continue', satz: 'An image becomes material. Operations change it, variants stand side by side, each one can be taken further.' },
+      { kopf: 'sound · tracks · mixing', satz: 'Generate, cut and mix tracks: synthesizers, percussion, nature sounds and custom plugins, computed in the browser.' }] },
   fr: { titel: 'idées brillantes.', iBei: 8, menu: 'Menu', anwendungen: 'Applications', mehr: 'En savoir plus', oeffnen: 'Ouvrir', oeffnenAria: (n) => `Ouvrir ${n}`,
     nurIn: { de: 'en allemand', en: 'en anglais', fr: 'en français', es: 'en espagnol' }, vor: 'Application précédente', nach: 'Application suivante', zu: 'Fermer', sprache: 'Langue',
     anw: [
       { kopf: 'en cours · image, film, son', satz: `Les concepts de Deleuze comme procédés${NBSP}: image-cristal, nappes de passé, durée, perception, diagramme, Figure – appliqués à votre propre matériau.` },
       { name: 'Das Dritte Rad', kopf: 'théorie · pratique artistique · impulsion', satz: 'Trois anneaux tournent l’un contre l’autre. Chaque tour relie une pensée théorique à une pratique artistique et donne une impulsion pour votre propre travail.' },
       { kopf: 'image · mouvement', satz: `Une image, 24 effets, jusqu’à trois calques${NBSP}: la table de mixage pour vos propres animations.` },
-      { kopf: 'produire · observer · poursuivre', satz: 'Une image devient matière. Des opérations la transforment, des variantes se tiennent côte à côte, chacune peut être poursuivie.' }] },
+      { kopf: 'produire · observer · poursuivre', satz: 'Une image devient matière. Des opérations la transforment, des variantes se tiennent côte à côte, chacune peut être poursuivie.' },
+      { kopf: 'son · pistes · mixage', satz: `Créer, couper et mixer des pistes${NBSP}: synthétiseurs, percussions, sons de la nature et plugins propres, calculés dans le navigateur.` }] },
   es: { titel: 'ideas brillantes.', iBei: 8, menu: 'Menú', anwendungen: 'Aplicaciones', mehr: 'Saber más', oeffnen: 'Abrir', oeffnenAria: (n) => `Abrir ${n}`,
     nurIn: { de: 'en alemán', en: 'en inglés', fr: 'en francés', es: 'en español' }, vor: 'Aplicación anterior', nach: 'Aplicación siguiente', zu: 'Cerrar', sprache: 'Idioma',
     anw: [
       { kopf: 'en desarrollo · imagen, cine, sonido', satz: 'Conceptos de Deleuze como procedimientos: imagen-cristal, capas del pasado, duración, percepción, diagrama, figura – aplicados a tu propio material.' },
       { name: 'Das Dritte Rad', kopf: 'teoría · práctica artística · impulso', satz: 'Tres anillos giran unos contra otros. Cada giro une un pensamiento de la teoría con una práctica artística y da un impulso para tu propio trabajo.' },
       { kopf: 'imagen · movimiento', satz: 'Una imagen, 24 efectos, hasta tres capas: la mesa de mezclas para tus propias animaciones.' },
-      { kopf: 'generar · observar · continuar', satz: 'Una imagen se vuelve material. Las operaciones la transforman, las variantes quedan una al lado de otra y cada una puede continuar.' }] }
+      { kopf: 'generar · observar · continuar', satz: 'Una imagen se vuelve material. Las operaciones la transforman, las variantes quedan una al lado de otra y cada una puede continuar.' },
+      { kopf: 'sonido · pistas · mezcla', satz: 'Generar, cortar y mezclar pistas: sintetizadores, percusión, sonidos de la naturaleza y plugins propios, calculados en el navegador.' }] }
 };
 let T, TITEL, TITEL_KURZ;
 // feste Texte der Seite; 0.32: auch später aufrufbar, wenn man auf einer Karte die Sprache wechselt
