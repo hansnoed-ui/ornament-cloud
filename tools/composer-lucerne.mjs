@@ -77,9 +77,14 @@ function herkunftVon(ordner, name) {
   return existsSync(f) ? JSON.parse(readFileSync(f, "utf8")) : null;
 }
 
-function materialLaden(ordner, s) {
+/**
+ * Quellen laden. Ohne «nur» alle (wie bisher); als Map mit «nur» (Menge von Quell-IDs) werden nur diese geladen – spart Arbeitsspeicher,
+ * seit die Sammlung viele lange Quellen hat (12.11.2026). Beim Track wird erst geplant, dann nur das Verwendete geladen.
+ */
+function materialLaden(ordner, s, nur = null) {
   const m = new Map();
   for (const q of s.quellen) {
+    if (nur && !nur.has(q.id)) continue;
     const pfad = join(ordner, q.name);
     if (!existsSync(pfad)) { console.log(`! fehlt: ${q.name} (${q.id})`); continue; }
     const bytes = readFileSync(pfad);
@@ -151,6 +156,21 @@ function spurenAnpassen(plan) {
     for (const kl of Object.values(sp.quelle.klaenge ?? {})) {
       if (a.ohneWaerme) kl.schritte = kl.schritte.filter((x) => x.art !== "waerme");
       if (a.schritteDazu) kl.schritte = [...kl.schritte, ...a.schritteDazu];
+    }
+    // Remix (11. November 2026, «Meditation»): Klangwerte und Nachbearbeitung erzeugter Spuren, Breite, Legato und Intonation der Sampler-Spuren
+    if (a.werte) sp.quelle.werte = { ...(sp.quelle.werte ?? {}), ...a.werte };      // Kick, Snare, Bass …: Parameter des Erzeugers
+    if (a.nach) sp.quelle.nach = a.nach;                                               // ersetzt die Nachbearbeitung der Spur ([] = keine)
+    if (a.nachMenge && sp.quelle.nach) sp.quelle.nach = sp.quelle.nach.map((x) => (x.menge != null && a.nachMenge[x.art] != null ? { ...x, menge: a.nachMenge[x.art] } : x));
+    if (sp.quelle.ereignisse && (a.breite || a.legato || a.cent != null)) {
+      // breite 0–1: die Ereignisse abwechselnd links und rechts (mit kleiner fester Streuung); legato: Faktor auf Dauer und Ausklang;
+      // cent: Faktor auf die Verstimmung je Ereignis (0 = rein)
+      sp.quelle.ereignisse = sp.quelle.ereignisse.map((e, i) => {
+        const z = { ...e };
+        if (a.breite) z.pan = +((i % 2 ? 1 : -1) * a.breite * (0.65 + 0.35 * (((i * 7919) % 97) / 96))).toFixed(3);
+        if (a.legato) { if (z.d != null) z.d *= a.legato; if (z.aus != null) z.aus *= a.legato; }
+        if (a.cent != null && z.cent != null) z.cent = Math.round(z.cent * a.cent);
+        return z;
+      });
     }
     // «stumm»: [[vonTakt1, bisTakt1], …] (Zählung ab 1, bis einschliesslich) – Ereignisse in diesen Takten fallen weg, der Rest bleibt
     if (a.stumm && sp.quelle.ereignisse) {
@@ -225,12 +245,32 @@ if (modus === "sammlung") {
   }
   writeFileSync(join(ziel, "studie.json"), JSON.stringify(ergebnis, null, 1));
 } else if (modus === "track") {
-  const s = sammlungAktualisieren(ordner), m = materialLaden(ordner, s); mkdirSync(ziel, { recursive: true });
+  const s = sammlungAktualisieren(ordner); mkdirSync(ziel, { recursive: true });
   const auswahl = process.env.LUC_QUELLEN ? s.quellen.filter((q) => q.name.startsWith(process.env.LUC_QUELLEN)).map((q) => q.id) : null;
   // LUC_MATERIAL='{"rolle": ["Name oder Teil davon", …], …}' legt das Material je Rolle ausdrücklich fest
   const ersetze = process.env.LUC_MATERIAL ? Object.fromEntries(Object.entries(JSON.parse(process.env.LUC_MATERIAL)).map(([r, namen]) => [r, namen.map((n) => { const c = s.ausschnitte.find((x) => x.name === n) ?? s.ausschnitte.find((x) => (x.name ?? "").includes(n)); if (!c) throw new Error(`kein Ausschnitt «${n}»`); return c.id; })])) : null;
-  const plan = LU.planen({ sammlung: s, seed, auswahl, ersetze, bpm: process.env.LUC_BPM ? Number(process.env.LUC_BPM) : undefined, variieren: !!process.env.LUC_VARIIEREN, makros: process.env.LUC_MAKROS ? JSON.parse(process.env.LUC_MAKROS) : undefined, geruest: process.env.LUC_GERUEST ? JSON.parse(process.env.LUC_GERUEST) : undefined, groove: process.env.LUC_GROOVE ? JSON.parse(process.env.LUC_GROOVE) : undefined, timing: process.env.LUC_TIMING ? JSON.parse(process.env.LUC_TIMING) : undefined });
+  // LUC_SCHNIPSEL='[{"takt": 12, "name": "…", "staerke": 0.8}]' (Namen wie in LUC_MATERIAL), LUC_BASSSTIMME='{"erzeuger","stimme","variante"}'
+  const ausschnittVon = (n) => { const c = s.ausschnitte.find((x) => x.name === n) ?? s.ausschnitte.find((x) => (x.name ?? "").includes(n)); if (!c) throw new Error(`kein Ausschnitt «${n}»`); return c.id; };
+  const schnipsel = process.env.LUC_SCHNIPSEL ? JSON.parse(process.env.LUC_SCHNIPSEL).map(({ name, ...x }) => ({ ...x, id: ausschnittVon(name) })) : undefined;
+  // LUC_STIL=gestreut (Schritt 2, 14.11.2026): Groove, Aufbau, Drums, Makros, Geräusche, Flächen aus dem Startwert (lucerne-streuung.js);
+  // LUC_GEWICHTE='{"piano":1.5}' verschiebt die Vorlagen sanft. Ohne LUC_STIL (oder «klassisch») plant Lucerne wie bisher. Jede
+  // ausdrücklich gesetzte LUC_*-Angabe gewinnt gegen die Streuung.
+  let streu = {};
+  if (process.env.LUC_STIL === "gestreut") {
+    const { streuen } = await imp("composer/kern/lucerne-streuung.js");
+    const frag = (ersetze?.fragment ?? []).map((id) => s.ausschnitte.find((x) => x.id === id)).filter(Boolean);
+    const akk = (ersetze?.harmonic_layer ?? []).map((id) => s.ausschnitte.find((x) => x.id === id)?.akkord).filter(Boolean);
+    const loop = !!process.env.LUC_FRAGMENTLOOP;
+    const material = { loop, quelleBpm: loop ? frag.find((x) => x.quelleBpm)?.quelleBpm : undefined, nurMoll: akk.length > 0 && akk.every((a) => [a, ...(a.auch ?? [])].every((x) => x.art !== "dur")) };
+    const r = streuen(seed, { gewichte: process.env.LUC_GEWICHTE ? JSON.parse(process.env.LUC_GEWICHTE) : undefined, material });
+    streu = r.eingaben;
+    console.log(`Streuung (Startwert ${seed}): ${JSON.stringify(r.beschreibung)}`);
+    if (process.env.LUC_LAUT) console.log(JSON.stringify(streu, null, 1));
+  }
+  const plan = LU.planen({ ...Object.fromEntries(Object.entries(streu).filter(([, v]) => v !== undefined)), ...Object.fromEntries(Object.entries({ sammlung: s, seed, auswahl, ersetze, bpm: process.env.LUC_BPM ? Number(process.env.LUC_BPM) : undefined, variieren: !!process.env.LUC_VARIIEREN, makros: process.env.LUC_MAKROS ? JSON.parse(process.env.LUC_MAKROS) : undefined, geruest: process.env.LUC_GERUEST ? JSON.parse(process.env.LUC_GERUEST) : undefined, groove: process.env.LUC_GROOVE ? JSON.parse(process.env.LUC_GROOVE) : undefined, timing: process.env.LUC_TIMING ? JSON.parse(process.env.LUC_TIMING) : undefined, harmonie: process.env.LUC_HARMONIE ? JSON.parse(process.env.LUC_HARMONIE) : undefined, zelle: process.env.LUC_ZELLE ? JSON.parse(process.env.LUC_ZELLE) : undefined, drumSchichten: process.env.LUC_DRUMSCHICHTEN ? JSON.parse(process.env.LUC_DRUMSCHICHTEN) : undefined, drumVarianten: process.env.LUC_DRUMVARIANTEN ? JSON.parse(process.env.LUC_DRUMVARIANTEN) : undefined, einstieg: process.env.LUC_EINSTIEG ? JSON.parse(process.env.LUC_EINSTIEG) : undefined, fragmentBeat: process.env.LUC_FRAGMENTBEAT ? JSON.parse(process.env.LUC_FRAGMENTBEAT) : undefined, bassWerte: process.env.LUC_BASSWERTE ? JSON.parse(process.env.LUC_BASSWERTE) : undefined, fragmentLoop: process.env.LUC_FRAGMENTLOOP ? JSON.parse(process.env.LUC_FRAGMENTLOOP) : undefined, drumKlaenge: process.env.LUC_DRUMS ? Object.fromEntries(Object.entries(JSON.parse(process.env.LUC_DRUMS)).map(([k, namen]) => [k, namen.map((n) => { const c = s.ausschnitte.find((x) => x.name === n) ?? s.ausschnitte.find((x) => (x.name ?? "").includes(n)); if (!c) throw new Error(`kein Ausschnitt «${n}»`); return c.id; })])) : undefined , schnipsel, schnipselPegel: process.env.LUC_SCHNIPSELPEGEL ? Number(process.env.LUC_SCHNIPSELPEGEL) : undefined, bassStimme: process.env.LUC_BASSSTIMME ? JSON.parse(process.env.LUC_BASSSTIMME) : undefined , flaechen: process.env.LUC_FLAECHEN ? JSON.parse(process.env.LUC_FLAECHEN) : undefined, geraeusche: process.env.LUC_GERAEUSCHE ? JSON.parse(process.env.LUC_GERAEUSCHE) : undefined }).filter(([, v]) => v !== undefined)) });
+  if (Object.keys(streu).length) plan.streuung = { stil: "gestreut", seed };
   spurenAnpassen(plan);
+  const m = materialLaden(ordner, s, new Set(plan.spuren.flatMap((x) => Object.values(x.quelle.klaenge ?? {}).map((kl) => kl.quelle))));
   console.log(`Tonart ${plan.grundton} ${plan.leiter} (${plan.tonartGrund}), ${plan.bpm} BPM, ${plan.takte} Takte + ${LU.AUSKLANG} Ausklang, ${plan.spuren.length} Spuren`);
   for (const h of plan.hinweise) console.log(`  Hinweis: ${h}`);
   console.log(herkunftTabelle(plan, s));
