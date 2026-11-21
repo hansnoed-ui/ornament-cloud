@@ -556,3 +556,8 @@ input[type="range"]:not(.dk-regler):focus-visible { outline: 2px solid var(--acc
   .ereignis .param.mit-drehknopf > output { font-size: 0.68rem; }
   .ereignis .klang-zeile { gap: 6px 8px; }
 }
+
+/* Sprachwahl neben dem Heimknopf (21. November 2026): klein wie der Heimknopf, am Handy in derselben Zeile wie die Marke */
+.heimzeile { display: inline-flex; align-items: center; gap: 8px; }
+.sprache { min-height: 30px; padding: 2px 8px; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--muted); font-size: 0.8rem; letter-spacing: 0.06em; cursor: pointer; }
+.sprache:hover, .sprache:focus-visible { color: var(--text); border-color: var(--rand-hell); outline: none; }
