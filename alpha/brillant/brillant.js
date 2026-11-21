@@ -17,7 +17,7 @@ const BEREICHE = [
   { name: 'Das Dritte Rad', kopf: 'Zeit · Form · Farbe', satz: 'Zeit, Form und Farbe drehen gegeneinander. Jede Drehung zieht einen Zettel, eine Begegnung aus ORNA und eine Übung aus OMNA COLOR.',
     href: '/beta/drittes-rad/', sprachen: ['de', 'en'], adressen: { de: '/beta/drittes-rad/?sprache=de', en: '/beta/drittes-rad/?sprache=en' }, schau: 'rad', ton: [232, 150, 80] },
   { name: 'Animations', kopf: 'Bild · Bewegung', satz: 'Ein Bild, 24 Effekte, bis zu drei Ebenen: das Mischpult für eigene Animationen.',
-    href: '/animations/', sprachen: ['de', 'en', 'es'], adressen: { en: '/animations/en/', es: '/animations/es/' }, bild: 'vorschau/animations.jpg?v=2', film: 'vorschau/animations.mp4?v=2', ton: [124, 108, 255] },
+    href: '/animations/', sprachen: ['de', 'en', 'es'], adressen: { en: '/animations/en/', es: '/animations/es/' }, bild: 'vorschau/animations.jpg?v=2', film: 'vorschau/animations.mp4?v=3', ton: [124, 108, 255] },
   { name: 'ornament.lab', kopf: 'Erzeugen · Beobachten · Weiterführen', satz: '',
     href: '/beta/lab/', sprachen: ['de', 'en', 'es', 'fr'], adressen: { de: '/beta/lab/?sprache=de', en: '/beta/lab/?sprache=en', es: '/beta/lab/?sprache=es', fr: '/beta/lab/?sprache=fr' },
     // Am Telefon die eigene Handy-Fassung des Labs (alpha/lab/handy/), in der gewählten Sprache.
@@ -1039,7 +1039,7 @@ vMarken.addEventListener('click', (e) => {
   vz.ziel = Math.round(vz.pos) + Math.round(umlauf(i - vz.pos)); wecken();
 });
 const vz = { pos: 0, ziel: 0, v: 0, auf: 0, aufZiel: 0, t0: 0, lauf: 0, aktiv: -1,
-  zug: null, neig: { x: 0, y: 0 }, neigZiel: { x: 0, y: 0 }, kreisel: null, kreiselNull: null };
+  zug: null, neig: { x: 0, y: 0 }, neigZiel: { x: 0, y: 0 }, kreisel: null, kreiselNull: null, ruht: true };
 let vZuletzt = null, vitrineVoll = false;
 const umlauf = (d) => ((d % N) + N + N / 2) % N - N / 2;   // kürzester Weg im Kreis, -2.5 … 2.5
 
@@ -1189,6 +1189,8 @@ function vitrineBild(jetzt) {
   // 0.30 (Christian: «ruckelig»): der Stein rechnet nicht mit, solange die Vitrine offen ist oder aufgeht; er ruht unter dem Schleier
   vitrineVoll = vz.aufZiel === 1;
   const bewegt = vz.zug || fliegt || vz.pos !== vz.ziel || Math.abs(vz.v) > 0 || Math.abs(vz.neigZiel.x - vz.neig.x) + Math.abs(vz.neigZiel.y - vz.neig.y) > 0.002;
+  // 0.40: Schaubilder malen nur, wenn die Karten weder fliegen noch gezogen werden (die Neigung zur Maus zählt nicht)
+  vz.ruht = !(vz.zug || fliegt || vz.pos !== vz.ziel || Math.abs(vz.v) > 0);
   if (!bewegt) { vz.neig.x = vz.neigZiel.x; vz.neig.y = vz.neigZiel.y; }
   // 0.29 (Christian: «mal gehts, mal nicht»): Chrome rastert eine Karte in dem Massstab, den sie beim Entstehen ihrer Ebene
   // hatte, und behält ihn, solange sich die Transformation Bild für Bild ändert. Darum: unterwegs will-change (ruhig, ohne
@@ -1290,7 +1292,9 @@ function schauBild(src) {
 }
 const SCHAU = {
   rad: { bilder: ['zeit', 'form', 'farbe', 'kern'].map((n) => `vorschau/rad-${n}.png`), malen: radMalen },
-  lab: { bilder: [0, 1, 2, 3, 4, 5, 6].map((n) => `vorschau/lab-${n}.jpg`), malen: labMalen }
+  // 0.40: zwischen zwei Nähten steht das Lab-Bild still; dann wird nicht neu gemalt (schluessel bleibt gleich)
+  lab: { bilder: [0, 1, 2, 3, 4, 5, 6].map((n) => `vorschau/lab-${n}.jpg`), malen: labMalen,
+    schluessel: (t) => { if (t < 0) return 's'; const k = Math.floor(t / 3.6); return t - k * 3.6 >= 1.5 ? 'r' + k : null; } }
 };
 // ornament.lab (0.31): «Ein Bild wird Material». Das Porträt aus dem Lab steht als Tafel im Dunkel; eine haarfeine Naht zieht
 // langsam von links nach rechts darüber und hinterlässt den nächsten Zustand (Raster, Glitch, Teilung, Punkte, Sortierung,
@@ -1321,19 +1325,32 @@ function labMalen(x, w, h, t, bilder, ton) {
   // Fassung: eine feine, kühle Haarlinie um die Tafel
   x.lineWidth = 1; x.strokeStyle = `rgba(${ton.join(',')},0.45)`; x.strokeRect(bx + 0.5, by + 0.5, s - 1, s - 1);
 }
+// 0.40 (Christian: «macht die animierte Vorschaukarte das Ganze holpriger?» – ja: das Rad belegte am Handy rund die Hälfte
+// der Rechenzeit, das Lab ein Viertel). Darum: höchstens 24 Bilder je Sekunde (die Ringe drehen langsam, man sieht keinen
+// Unterschied; die Pixeldichte bleibt bei 2, damit die Haarlinien scharf bleiben), und solange die Karten fliegen oder gezogen werden, steht das
+// Schaubild still – die Uhr läuft dann nicht weiter, es geht ohne Sprung dort weiter, wo es stand.
+const SCHAU_TAKT = 1000 / 24;
 function schauZeichnen(c, b, laufend) {
   const art = SCHAU[b.schau], bilder = art.bilder.map(schauBild), x = c.getContext('2d');
-  const dpr = Math.min(2, devicePixelRatio || 1), t0 = performance.now() - 4000;
-  let lauf = 0, an = true;
-  const schritt = () => {
+  const dpr = Math.min(2, devicePixelRatio || 1);
+  let lauf = 0, an = true, zeit = 4, zuletzt = 0, gemalt = '';
+  const schritt = (jetzt) => {
     if (!an) return;
     const w = c.clientWidth, h = c.clientHeight;
     const fertig = w > 0 && bilder.every((im) => im.complete && im.naturalWidth);
-    if (fertig) {
-      if (c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)) { c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); }
-      x.setTransform(dpr, 0, 0, dpr, 0, 0);
-      art.malen(x, w, h, ruhig || !laufend ? -1 : (performance.now() - t0) / 1000, bilder, b.ton);   // -1: Standbild
-      if (!laufend || ruhig) { an = false; return; }
+    const still = ruhig || !laufend;
+    if (fertig && (still || jetzt - zuletzt >= SCHAU_TAKT - 2)) {
+      const dt = zuletzt ? Math.min(0.1, (jetzt - zuletzt) / 1000) : 0; zuletzt = jetzt;
+      if (vz.ruht) zeit += dt;
+      const t = still ? -1 : zeit, sch = art.schluessel ? art.schluessel(t) : null;   // -1: Standbild
+      const neu = c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr);
+      if (neu) { c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); }
+      if (neu || !gemalt || (vz.ruht && (sch === null || sch !== gemalt))) {
+        x.setTransform(dpr, 0, 0, dpr, 0, 0);
+        art.malen(x, w, h, t, bilder, b.ton);
+        gemalt = sch === null ? '-' : sch;
+      }
+      if (still) { an = false; return; }
     }
     lauf = requestAnimationFrame(schritt);
   };
