@@ -8,7 +8,7 @@
 let ctx = null, haupt = null, trocken = null, nass = null, hall = null, ziel = null, rausch = null, echo = null, echoRueck = null, echoGain = null;
 let stimme = null, stimme2 = null, stimmeGain = null, stimmeTief = null, vibrato = null, vibratoTiefe = null, formanten = [], atemGain = null;
 let milieuGain = null, milieuFilter = null, windGain = null, windFilter = null;
-let kosmos = [], kosmosGain = null, kosmosFilter = null;
+let kosmos = [], kosmosGain = null, kosmosFilter = null, grundGain = null;
 let an = true;
 
 function hallBauen(sek) {
@@ -82,6 +82,15 @@ export function klangStarten() {
   stimmeTief.connect(stimmeGain); stimmeGain.connect(trocken); stimmeGain.connect(nass);
   const sEcho = ctx.createGain(); sEcho.gain.value = 0.35; stimmeGain.connect(sEcho); sEcho.connect(echoGain);
   stimme.start(); stimme2.start();
+
+  // unter der Stimme ein leiser Grund aus G und D, der warm wird, je mehr Ordnung ist
+  grundGain = ctx.createGain(); grundGain.gain.value = 0;
+  const grundFilter = ctx.createBiquadFilter(); grundFilter.type = 'lowpass'; grundFilter.frequency.value = 420;
+  grundFilter.connect(grundGain); grundGain.connect(trocken); grundGain.connect(nass);
+  for (const [f, l] of [[98, 0.5], [146.83, 0.3], [196.4, 0.16]]) {
+    const o = ctx.createOscillator(); o.type = 'triangle'; o.frequency.value = f;
+    const g = ctx.createGain(); g.gain.value = l; o.connect(g); g.connect(grundFilter); o.start();
+  }
 
   // der Kosmos: Obertonreihe über G (49 Hz), jeder Teilton atmet in seinem eigenen Takt
   kosmosFilter = ctx.createBiquadFilter(); kosmosFilter.type = 'lowpass'; kosmosFilter.frequency.value = 600; kosmosFilter.Q.value = 0.4;
@@ -160,6 +169,7 @@ export function klangBild({ summen, nacht, ordnung, kosmos: kos, echoZeit, echoM
   if (!ctx || ctx.state !== 'running') return;
   const t = ctx.currentTime;
   if (summen <= 0.02) stimmeGain.gain.setTargetAtTime(0, t, 0.35);
+  grundGain.gain.setTargetAtTime(0.05 * summen * ordnung, t, 0.8);
   atemGain.gain.setTargetAtTime(0.18 + 0.2 * summen, t, 0.2);
   vibratoTiefe.gain.setTargetAtTime(2.5 + 3.5 * summen, t, 0.3);
   const m = nacht * (1 - 0.8 * ordnung);
