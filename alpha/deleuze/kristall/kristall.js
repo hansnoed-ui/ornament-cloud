@@ -2,7 +2,7 @@
 // Live-Bild und verzögerte Schichten als Facetten eines Kristalls.
 // WebGL2, ohne Bibliotheken, ohne CDN. Alles bleibt im Browser.
 
-import { SCHLIFFE, schliffEbenen } from './schliffe.js?v=8';
+import { SCHLIFFE, schliffEbenen } from './schliffe.js?v=9';
 import { klangStarten, klangBild, klangAn, klangIstAn, klangSpur } from './klang.js?v=1';
 import { aufnahmeDatei } from '../gemeinsam/aufnahme.js?v=1';
 import { fotoLesen, istVideo, istFoto, istHeic, dateiMeldung, fotosMalen, fahrtSchalter, FAHRT_SVG, neuesBildKnopf } from '../gemeinsam/fotos.js?v=6';
@@ -32,7 +32,7 @@ const TEXTE = {
       { kurz: 'im Zerfall', titel: 'Der Kristall im Zerfall', wer: 'Visconti', text: 'Bei Luchino Visconti zerfällt der Kristall von innen. Eine Welt geht unter, und die Einsicht kommt zu spät. Alles im Stein ist schon tief vergangen, es vergilbt, trübt sich, und die Facetten verlieren ihren Halt. «Der Leopard», «Ludwig».' }
     ],
     zustand: 'Zustand',
-    stein: 'Stein', brillant: 'Brillant', oval: 'Saphir', smaragd: 'Smaragd', bergkristall: 'Bergkristall', formen: 'Schliff',
+    stein: 'Stein', brillant: 'Brillant', oval: 'Saphir', rubin: 'Rubin', smaragd: 'Smaragd', bergkristall: 'Bergkristall', formen: 'Schliff',
     wenden: 'Kamera wenden', tonAn: 'Ton an', tonAus: 'Ton aus',
     begriff: 'Begriff', standbild: 'Standbild', aufnahme: 'Aufnahme', stopp: 'Stopp',
     teilen: 'Teilen', sichern: 'Sichern', komma: '.', 'ergebnis-hinweis': 'Gesichert im Ordner «Downloads». «Teilen» legt es direkt in die Galerie oder eine App.',
@@ -72,7 +72,7 @@ const TEXTE = {
       { kurz: 'decomposing', titel: 'The crystal in decomposition', wer: 'Visconti', text: 'In Luchino Visconti the crystal decays from within. A world goes under, and understanding comes too late. Everything in the stone is already deeply past; it yellows, clouds over, and the facets lose their hold. “The Leopard”, “Ludwig”.' }
     ],
     zustand: 'State',
-    stein: 'Stone', brillant: 'Brilliant', oval: 'Sapphire', smaragd: 'Emerald', bergkristall: 'Quartz', formen: 'Cut',
+    stein: 'Stone', brillant: 'Brilliant', oval: 'Sapphire', rubin: 'Ruby', smaragd: 'Emerald', bergkristall: 'Quartz', formen: 'Cut',
     wenden: 'Flip camera', tonAn: 'Sound on', tonAus: 'Sound off',
     begriff: 'Concept', standbild: 'Still', aufnahme: 'Record', stopp: 'Stop',
     teilen: 'Share', sichern: 'Save', komma: '.', 'ergebnis-hinweis': 'Saved to your “Downloads” folder. “Share” sends it straight to your gallery or an app.',
@@ -112,7 +112,7 @@ const TEXTE = {
       { kurz: 'en décomposition', titel: 'Le cristal en décomposition', wer: 'Visconti', text: 'Chez Luchino Visconti, le cristal se décompose de l’intérieur. Un monde s’effondre, et la révélation arrive trop tard. Tout dans la pierre est déjà profondément passé : cela jaunit, se trouble, et les facettes perdent prise. « Le Guépard », « Ludwig ».' }
     ],
     zustand: 'État',
-    stein: 'Pierre', brillant: 'Brillant', oval: 'Saphir', smaragd: 'Émeraude', bergkristall: 'Cristal de roche', formen: 'Taille',
+    stein: 'Pierre', brillant: 'Brillant', oval: 'Saphir', rubin: 'Rubis', smaragd: 'Émeraude', bergkristall: 'Cristal de roche', formen: 'Taille',
     wenden: 'Retourner', tonAn: 'Son activé', tonAus: 'Son coupé',
     begriff: 'Concept', standbild: 'Image', aufnahme: 'Enregistrer', stopp: 'Arrêter',
     teilen: 'Partager', sichern: 'Télécharger', komma: ',', 'ergebnis-hinweis': 'Enregistré dans le dossier « Téléchargements ». « Partager » l’envoie directement dans la galerie ou une app.',
@@ -257,7 +257,7 @@ uniform vec4 uE[MAX_K];        // Ebenen des Kristalls: xyz Normale (schon gedre
 uniform vec2 uZA[MAX_K];       // je Facette: x Zeitschicht, y Alter (0 = jetzt, 1 = tief vergangen)
 uniform int uK;
 uniform float uKante;          // Stärke des Kantenlichts
-uniform vec3 uTon;             // Färbung im Stein (Absorption je Weglänge)
+uniform vec4 uTon;             // Färbung im Stein (Absorption je Weglänge), w: rotes Leuchten aus dem Inneren (Rubin)
 uniform vec2 uLage;            // Lage des Kristalls im Bild
 uniform float uSeite, uBrech, uT, uJetzt;
 const float AUGE = 3.2, WAND = -2.0, TAN = 0.5;
@@ -443,6 +443,7 @@ void main(){
     float sch = uZA[iz].x;
     if (jenseits > 0.5) sch = uJetzt;      // jenseits des Risses: nichts Vergangenes mehr, nur das Jetzt
     vec3 innen = vec3(0.0), summe = vec3(0.0);
+    float glut = 0.0;
     for (int w = 0; w < WELLEN; w++) {
       float l = mix(410.0, 690.0, (float(w) + 0.5) / float(WELLEN));
       float ior = A + B / pow(l / 1000.0, 2.0);
@@ -458,14 +459,20 @@ void main(){
       vec3 gew = spektrum(l);
       // Feuer: wo ein Strahl den Stein Richtung Licht verlässt, blitzt seine Farbe auf
       float feuer = pow(max(dot(d, L1), 0.0), 260.0) + pow(max(dot(d, L2), 0.0), 260.0) + pow(max(dot(d, L3), 0.0), 260.0);
-      innen += (holen(wand(p + welt, d), sch) + feuer * uFeuer) * gew * exp(-uTon * weg * 2.0);
+      vec3 c = holen(wand(p + welt, d), sch);
+      innen += (c + feuer * uFeuer) * gew * exp(-uTon.xyz * weg * 2.0);
+      // Rubin: das Chrom schluckt grünes und blaues Licht und gibt es als tiefes Rot wieder ab, je länger der Weg, desto mehr
+      glut += (dot(c, vec3(0.15, 0.55, 0.3)) + feuer * uFeuer * 0.5) * (1.0 - exp(-weg * 1.8));
       summe += gew;
     }
     innen /= summe;
+    glut /= float(WELLEN);
     float alter = uZA[iz].y;
     float lum = dot(innen, vec3(0.299, 0.587, 0.114));
     innen = mix(innen, vec3(lum) * vec3(0.9, 0.96, 1.08), alter * 0.4) * (1.0 - alter * 0.22);
     innen *= vec3(1.02, 1.0, 0.98) * 1.08;
+    // das innere Feuer des Rubins: rot, nicht grell, mit einem Hauch Karmin im Tiefen
+    innen += uTon.w * glut * mix(vec3(0.95, 0.03, 0.06), vec3(0.72, 0.015, 0.11), alter) * 0.42;
     // Kristall im Zerfall (Visconti): die Vergangenheit vergilbt und trübt sich
     if (uZustand == 3) {
       float l2 = dot(innen, vec3(0.299, 0.587, 0.114));
@@ -1192,7 +1199,7 @@ function bild(ms) {
     zeitPack[i * 2] = schicht[i]; zeitPack[i * 2 + 1] = alterAkt[i];
   }
   gl.uniform4fv(ort.uE, ebenePack); gl.uniform2fv(ort.uZA, zeitPack);
-  gl.uniform1i(ort.uK, anzahl); gl.uniform1f(ort.uKante, SCHLIFFE[form].kante); gl.uniform3fv(ort.uTon, SCHLIFFE[form].ton); gl.uniform1f(ort.uFeuer, SCHLIFFE[form].feuer); gl.uniform1f(ort.uVer, milieu());
+  gl.uniform1i(ort.uK, anzahl); gl.uniform1f(ort.uKante, SCHLIFFE[form].kante); { const t = SCHLIFFE[form].ton; gl.uniform4f(ort.uTon, t[0], t[1], t[2], t[3] || 0); } gl.uniform1f(ort.uFeuer, SCHLIFFE[form].feuer); gl.uniform1f(ort.uVer, milieu());
   gl.uniform1i(ort.uZustand, zustand); gl.uniform1f(ort.uUnschaerfe, 0.0025); gl.uniform1f(ort.uRad, huelle * zoom * 1.03 * (zustand === 2 ? ENTSTEHEN.vor : 1)); gl.uniform3fv(ort.uRiss, rissW.subarray(0, 3)); gl.uniform3fv(ort.uRissA, rissW.subarray(3, 6)); gl.uniform3fv(ort.uRissB, rissW.subarray(6, 9)); const spalt = rissSetzen(t); gl.uniform1f(ort.uSeite, innerWidth / innerHeight);
   gl.uniform2f(ort.uLage, (gegenwart.x - 0.5) * 1.2, (gegenwart.y - 0.5) * 0.9); gl.uniform1f(ort.uJetzt, kopf);
   gl.uniform1f(ort.uBrech, brech); gl.uniform1f(ort.uT, t % 100);

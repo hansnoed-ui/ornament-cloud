@@ -41,6 +41,27 @@ function oval() {
   return { ebenen, mitte: [0, b.mitte[1] * 0.98, 0], gross: 0.8 };
 }
 
+// Kissenschliff wie bei alten Rubinen aus Burma: Brillant-Facetten auf einem gerundeten Quadrat.
+// Die Ebenen liegen am Rand einer Superellipse (Exponent 4): ihre Stützfunktion gibt je Richtung den Abstand.
+// Krone etwas steiler, Pavillon tief und bauchig, damit das Rot lange Wege im Stein findet.
+function kissen() {
+  const g = 0.014, q = 4 / 3, krone = 36, pav = 42;
+  const stuetz = (a) => Math.pow(Math.pow(Math.abs(Math.cos(a * GRAD)), q) + Math.pow(Math.abs(Math.sin(a * GRAD)), q), 1 / q) / 1.12;
+  const tafelY = g + (1 - 0.55) * Math.tan(krone * GRAD);
+  const e = [[0, 1, 0, tafelY]];                                                       // Tafel
+  for (let k = 0; k < 8; k++) {
+    const stern = k * 45, haupt = k * 45 + 22.5;
+    e.push(geneigt(haupt, krone, true, stuetz(haupt), g));                              // Hauptfacetten der Krone
+    e.push(geneigt(stern, 22, true, 0.51 * stuetz(stern), tafelY));                     // Sterne an der Tafel
+    e.push(geneigt(stern, 44, true, stuetz(stern), g));                                 // obere Rundistenfacetten
+    e.push(geneigt(haupt, pav, false, stuetz(haupt), -g));                              // Hauptfacetten des Pavillons
+    e.push(geneigt(stern, 46, false, stuetz(stern), -g));                               // untere Rundistenfacetten, bauchig
+  }
+  for (let k = 0; k < 16; k++) { const a = k * 22.5 + 11.25; e.push(senkrecht(a, stuetz(a))); }   // Rundiste
+  const tiefe = Math.tan(pav * GRAD) * 0.95;
+  return { ebenen: e, mitte: [0, (tafelY - tiefe) / 2, 0], gross: 1.08 };
+}
+
 // Smaragdschliff (Treppenschliff): Rechteck mit abgeschrägten Ecken, Stufen auf Krone und Pavillon
 function smaragd() {
   const ex = 1, ez = 0.68, g = 0.015;
@@ -76,11 +97,13 @@ function bergkristall() {
   return { ebenen: e, mitte: [0, 0, 0], gross: 1.1 };
 }
 
-// Material: Brechung (Reglerwert), Färbung im Stein (Absorption je Weglänge, RGB), Kantenlicht, Feuer (farbige Blitze)
+// Material: Brechung (Reglerwert), Färbung im Stein (Absorption je Weglänge, RGB, dazu w = rotes Leuchten aus dem
+// Inneren wie das Chrom im Rubin), Kantenlicht, Feuer (farbige Blitze)
 export const SCHLIFFE = {
   stein:        { bau: null,         brechung: 0.35, ton: [0, 0, 0],          kante: 0.65, feuer: 0.6 },
   brillant:     { bau: brillant,     brechung: 0.95, ton: [0, 0, 0],          kante: 0.16, feuer: 1.6 },
   oval:         { bau: oval,         brechung: 0.62, ton: [0.75, 0.38, 0.03], kante: 0.2,  feuer: 0.7 },   // Saphir: tiefblau, Brechzahl 1.77, wenig Feuer
+  rubin:        { bau: kissen,       brechung: 0.62, ton: [0.06, 1.7, 1.05, 1]  , kante: 0.18, feuer: 0.55 }, // Taubenblut: Chrom schluckt Grün und Gelb, lässt Rot und ein wenig Blau durch, leuchtet rot
   smaragd:      { bau: smaragd,      brechung: 0.22, ton: [0.45, 0.04, 0.3],  kante: 0.22, feuer: 0.5 },
   bergkristall: { bau: bergkristall, brechung: 0.12, ton: [0.02, 0.02, 0],    kante: 0.3,  feuer: 0.4 },
 };

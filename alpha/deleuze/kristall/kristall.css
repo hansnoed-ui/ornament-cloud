@@ -41,6 +41,12 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 #aufnahme.laeuft { animation: blinken 1s steps(2, start) infinite; }
 #aufnahme.laeuft::before { content: "● "; }
 @keyframes blinken { to { opacity: 0.35; } }
+/* sechs Steine passen am Telefon auf eine Zeile, wenn sie etwas enger stehen (Rubin, 21.11.2026) */
+@media (max-width: 759px) {
+  .regler .formen:not(.zustaende) { gap: 2px 12px; }
+  .regler .formen:not(.zustaende) button { letter-spacing: 0.1em; }
+}
+@media (max-width: 380px) { .regler .formen:not(.zustaende) { gap: 2px 8px; } }
 @media (min-width: 760px) {
   .regler { grid-template-columns: 1fr 1fr; column-gap: 40px; }
   .regler .formen { grid-column: 1; }
