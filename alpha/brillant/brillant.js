@@ -585,10 +585,10 @@ const SPERREN = (fs) => `${-0.022 * fs}px`;
 // Viel Leere, eine Zeile, die Schrift nicht grösser als nötig.
 function satzspiegel(c) {
   const hoch = W / H < 0.9 || W < 640;
-  c.font = `600 100px ${SCHRIFT}`; if ('letterSpacing' in c) c.letterSpacing = SPERREN(100);
+  c.font = `500 100px ${SCHRIFT}`; if ('letterSpacing' in c) c.letterSpacing = SPERREN(100);
   const ref = c.measureText(TITEL_KURZ).width + 30;
   const fs = Math.round(Math.min(hoch ? 46 : 84, (W * (hoch ? 0.76 : 0.6)) / ref * 100));
-  c.font = `600 ${fs}px ${SCHRIFT}`; if ('letterSpacing' in c) c.letterSpacing = SPERREN(fs);
+  c.font = `500 ${fs}px ${SCHRIFT}`; if ('letterSpacing' in c) c.letterSpacing = SPERREN(fs);
   const gemR = fs * 0.27, luecke = fs * 0.06, y = Math.round(H * 0.47 + fs * 0.35);
   const satz = Math.round(hoch ? 16 : 19);
   const saetze = [TITEL, ...BEREICHE.map((b) => b.name)].map((t, k) => {
@@ -639,7 +639,7 @@ function scheibeMalen(c, unscharf, ton) {
 function satzMalen(c, k) {
   const z = lay.saetze[k], fs = z.fs || lay.fs;
   c.save();
-  c.font = `600 ${fs}px ${SCHRIFT}`; if ('letterSpacing' in c) c.letterSpacing = SPERREN(fs);
+  c.font = `500 ${fs}px ${SCHRIFT}`; if ('letterSpacing' in c) c.letterSpacing = SPERREN(fs);
   c.textBaseline = 'alphabetic';
   const g = c.createLinearGradient(0, z.y - fs * 0.75, 0, z.y + fs * 0.05);
   g.addColorStop(0, '#fbfaff'); g.addColorStop(0.65, '#e6e2f0'); g.addColorStop(1, '#bdb7cf');
@@ -1716,7 +1716,7 @@ function flachZeichnen(A, B, fr, zeigen, gx, gy, rr, gier, neig, roll, blitz, di
 
 // Erst die Schrift, dann die Seiten (sonst stünde der Titel in einer Ersatzschrift im Bild)
 groesse();
-Promise.all([document.fonts.load(`600 100px ${SCHRIFT}`), document.fonts.load(`500 16px ${SCHRIFT}`)])
+Promise.all([document.fonts.load(`500 16px ${SCHRIFT}`)])
   .catch(() => spur('Schrift fehlt'))
   .finally(() => {
     schriftDa = true; groesse();
