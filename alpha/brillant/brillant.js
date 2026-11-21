@@ -13,7 +13,12 @@ const leinwand = $('leinwand');
 // Tippt man im Menü auf den Namen, öffnet sich die Vitrine (unten): Bild oder Film, Name, ein Satz, «Öffnen».
 const BEREICHE = [
   { name: 'the deleuzian scheme', kopf: 'im Entstehen · Bild, Film, Ton', satz: 'Begriffe von Deleuze als Verfahren: Kristallbild, Schichten der Zeit, Dauer, Wahrnehmung, Diagramm, Figur – angewandt auf eigenes Material.',
-    href: '/alpha/deleuze/start/', sprachen: ['de', 'en', 'fr'], bild: 'vorschau/deleuzian-scheme.jpg?v=3', ton: [228, 92, 96] },
+    href: '/alpha/deleuze/start/', sprachen: ['de', 'en', 'fr'], ton: [228, 92, 96],
+    // 0.41 (Christian: «Vorschaukarte für den deleuzian scheme»): ein Film der Masterseite statt des Standbilds – der Kristall
+    // geht seine acht Facetten durch, rechts die Zwischentitel; je Sprache ein eigener Film (Spanisch zeigt Englisch).
+    // Ein Film kostet das Handy kaum Rechenzeit (eigener Dekoder), anders als ein gemaltes Schaubild.
+    bild: { de: 'vorschau/deleuzian-scheme-de.jpg?v=1', en: 'vorschau/deleuzian-scheme-en.jpg?v=1', fr: 'vorschau/deleuzian-scheme-fr.jpg?v=1' },
+    film: { de: 'vorschau/deleuzian-scheme-de.mp4?v=1', en: 'vorschau/deleuzian-scheme-en.mp4?v=1', fr: 'vorschau/deleuzian-scheme-fr.mp4?v=1' } },
   { name: 'Das Dritte Rad', kopf: 'Zeit · Form · Farbe', satz: 'Zeit, Form und Farbe drehen gegeneinander. Jede Drehung zieht einen Zettel, eine Begegnung aus ORNA und eine Übung aus OMNA COLOR.',
     href: '/beta/drittes-rad/', sprachen: ['de', 'en'], adressen: { de: '/beta/drittes-rad/?sprache=de', en: '/beta/drittes-rad/?sprache=en' }, schau: 'rad', ton: [232, 150, 80] },
   { name: 'Animations', kopf: 'Bild · Bewegung', satz: 'Ein Bild, 24 Effekte, bis zu drei Ebenen: das Mischpult für eigene Animationen.',
@@ -25,8 +30,9 @@ const BEREICHE = [
     schau: 'lab', ton: [96, 140, 255] },
   // 0.39 (Christian, 21.11.2026: «Der Composer kann jetzt auch auf der Seite präsentiert werden»): vorerst nur deutsch;
   // bekommt er weitere Sprachen, hier in sprachen und adressen nachtragen
+  // 0.41: der Composer spricht jetzt vier Sprachen (PR 906); er liest sie aus «composer-sprache» auf dem Gerät, nicht aus der Adresse
   { name: 'Composer', kopf: 'Ton · Spuren · Mischen', satz: '',
-    href: '/alpha/composer/', sprachen: ['de'], bild: 'vorschau/composer.jpg?v=1', ton: [86, 196, 172] }
+    href: '/alpha/composer/', sprachen: ['de', 'en', 'es', 'fr'], speicher: 'composer-sprache', bild: 'vorschau/composer.jpg?v=1', ton: [86, 196, 172] }
 ];
 // Die Farben der Schichten: Rot (Godard), Orange (das Rad), Violett.
 
@@ -123,6 +129,8 @@ document.addEventListener('visibilitychange', () => spur(document.hidden ? 'Paus
 
 const telefon = matchMedia('(pointer: coarse)').matches || Math.min(screen.width, screen.height) < 700;
 const ruhig = matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Bild oder Film einer Karte: eine Adresse, oder je Sprache eine (fehlt die Sprache, Englisch)
+const jeSprache = (x) => (x && typeof x === 'object' ? x[SPRACHE] || x.en : x);
 // Wohin eine Anwendung führt: am Telefon die Handy-Fassung, sonst die Sprachadresse oder die Grundadresse.
 const zielVon = (b, l) => (telefon && b.handy) ? b.handy + (l ? '?sprache=' + l : '')
   : (l && b.adressen && b.adressen[l]) || b.href;
@@ -990,10 +998,10 @@ const vKarten = BEREICHE.map((b, i) => {
   };
   beschriften(offen);
   // the deleuzian scheme liest seine Sprache aus demselben Speicher, so reist die Wahl mit
-  oe.addEventListener('click', () => { try { localStorage.setItem('kristall.sprache', wahl); } catch {} });
+  oe.addEventListener('click', () => { try { localStorage.setItem('kristall.sprache', wahl); if (b.speicher) localStorage.setItem(b.speicher, wahl); } catch {} });
   const bild = k.querySelector('.v-bild');
   if (b.schau) bild.append(document.createElement('canvas'));
-  else { const im = new Image(); im.alt = ''; im.decoding = 'async'; im.src = b.bild; bild.append(im); }
+  else { const im = new Image(); im.alt = ''; im.decoding = 'async'; im.src = jeSprache(b.bild); bild.append(im); }
   if (b.hoch) bild.classList.add('hoch');
   vRaum.append(k);
   return { el: k, koerper: k.querySelector('.v-koerper'), bild, licht: k.querySelector('.v-licht i'), glanz: k.querySelector('.v-glanz'), glanzI: k.querySelector('.v-glanz i'),
@@ -1020,6 +1028,12 @@ function spracheWechseln(l, karte) {
     vKarten.forEach((k, j) => k.beschriften(j === karte ? l : null));
     navKnoepfe.forEach((n, j) => { n.textContent = j ? BEREICHE[j - 1].name : TITEL_KURZ; });
     flaechen.forEach((el, j) => { el.querySelector('.p-name').textContent = BEREICHE[j].name; el.querySelector('.p-satz').textContent = BEREICHE[j].satz; el.href = zielVon(BEREICHE[j], l); });
+    // Bilder und Filme, die es je Sprache gibt (the deleuzian scheme), auf die neue Sprache stellen
+    vKarten.forEach((k, j) => {
+      const b = BEREICHE[j];
+      if (typeof b.bild === 'object') { const im = k.bild.querySelector('img'); if (im) im.src = jeSprache(b.bild); }
+      if (typeof b.film === 'object' && k.film) { const v = k.film; v.poster = jeSprache(b.bild); v.src = jeSprache(b.film); v.play().catch(() => {}); }
+    });
     seitenNeu = true;   // die Bilder der Seite erst neu rechnen, wenn die Vitrine zu ist (das Rechnen hielte sonst die Karten an)
     if (vorne) requestAnimationFrame(() => vorne.text.classList.remove('wechsel'));
   }, ruhig || !vorne ? 0 : 210);
@@ -1070,8 +1084,8 @@ function wecken() { if (vitrineOffen && !vz.lauf) { vz.letzt = 0; vz.lauf = requ
 
 function filmAn(k, b) {
   const v = document.createElement('video');
-  Object.assign(v, { muted: true, loop: true, playsInline: true, autoplay: true, poster: b.bild, preload: 'auto' });
-  v.setAttribute('muted', ''); v.setAttribute('playsinline', ''); v.src = b.film;
+  Object.assign(v, { muted: true, loop: true, playsInline: true, autoplay: true, poster: jeSprache(b.bild), preload: 'auto' });
+  v.setAttribute('muted', ''); v.setAttribute('playsinline', ''); v.src = jeSprache(b.film);
   if (b.zoom) { v.style.transform = `scale(${b.zoom})`; v.style.transformOrigin = '50% 12%'; }   // die Bedienknöpfe am unteren Rand des Films bleiben ausserhalb
   v.addEventListener('playing', () => v.classList.add('laeuft'), { once: true });
   k.bild.append(v); k.film = v; v.play().catch(() => {});
