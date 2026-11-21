@@ -972,6 +972,14 @@ function kreisSchieben(x, y, dt, tau) {
   const s = innerWidth / innerHeight, r = kos.R * 0.7;
   x = Math.max(r, Math.min(s - r, x)); y = Math.max(0.2, Math.min(0.82, y));
   kos.x = tau ? naeher(kos.x, x, dt, tau) : x; kos.y = tau ? naeher(kos.y, y, dt, tau) : y;
+  kos.zx = kos.mx = kos.x; kos.zy = kos.my = kos.y;   // wer schiebt, hält den Kreis selbst: kein Nachgleiten
+}
+// ein neu gesetzter Kreis springt nicht, er gleitet hin: zweifach geglättet, also sanft an- und auslaufend
+function kreisGleiten(dt) {
+  if (kos.zx === undefined) return;
+  const tau = 0.22;
+  kos.mx = naeher(kos.mx, kos.zx, dt, tau); kos.my = naeher(kos.my, kos.zy, dt, tau);
+  kos.x = naeher(kos.x, kos.mx, dt, tau); kos.y = naeher(kos.y, kos.my, dt, tau);
 }
 
 // ---------- Hände ----------
@@ -1018,7 +1026,9 @@ leinwand.addEventListener('pointerdown', (e) => {
       // ein neuer Kreis um die Stelle, nie ganz am Rand
       const s = innerWidth / innerHeight;
       kos.R = Math.min(0.26, 0.4 * s);
-      kos.x = Math.max(kos.R * 0.7, Math.min(s - kos.R * 0.7, p.x)); kos.y = Math.max(0.3, Math.min(0.75, p.y));
+      const zx = Math.max(kos.R * 0.7, Math.min(s - kos.R * 0.7, p.x)), zy = Math.max(0.3, Math.min(0.75, p.y));
+      if (kos.aktiv && kos.zug > 0.2) { kos.zx = zx; kos.zy = zy; }   // sichtbar: hingleiten
+      else { kos.x = kos.mx = kos.zx = zx; kos.y = kos.my = kos.zy = zy; }   // unsichtbar: dort erscheinen
       kos.zug = kos.aktiv ? kos.zug : 0; kos.aktiv = true; kos.offenZiel = 0;
       f.neuerKreis = true;
     } else if (d < kos.R * 0.5) f.greifbar = true;
@@ -1107,6 +1117,7 @@ function haende(t, dt) {
   // Kosmos: ziehen öffnet, loslassen schliesst langsam. Den Kreis verschieben: den Daumen in der Mitte kurz still halten
   // und dann schieben, oder mit zwei Fingern schieben.
   let greift = false;
+  kreisGleiten(dt);
   if (lesart === 2 && kos.aktiv && finger.size >= 2) {
     const [a, b] = [...finger.values()], m = inQ((a.x + b.x) / 2, (a.y + b.y) / 2);
     if (kos.zwei) kreisSchieben(kos.x + m.x - kos.zwei.x, kos.y + m.y - kos.zwei.y, dt, 0);
@@ -1177,13 +1188,36 @@ const VORSPANN = Q.has('vorspann');
 let geisterStart = -1;
 function geist(t) {
   if (geisterStart < 0 || t < geisterStart) return;
-  const u = (t - geisterStart) % 12;
-  const s = innerWidth / innerHeight;
-  if (u < 7.5) {
-    // summen: der Daumen ruht unter dem Gesicht und wandert ein wenig
-    if (!finger.has('geist')) { const f = fingerNeu(innerWidth * 0.5, innerHeight * 0.48); finger.set('geist', f); sum.x = 0.5 * s; sum.y = 0.52; sum.R = 0.06; sum.aktiv = true; sum.streuen = true; letzteBeruehrung = t; }
-    const f = finger.get('geist'); f.x = innerWidth * (0.5 + 0.06 * Math.sin(u * 0.5)); f.y = innerHeight * (0.47 + 0.03 * Math.sin(u * 0.7)); letzteBeruehrung = t;
-  } else finger.delete('geist');
+  const u = (t - geisterStart) % 16;
+  const s = innerWidth / innerHeight, W = innerWidth, H = innerHeight;
+  if (u < 6.5) {
+    // Summen: der Daumen pflügt in einer langsamen Schleife durch den Sand
+    if (lesart !== 0) { lesartWaehlen(0, true); kos.aktiv = false; kos.offenZiel = 0; }
+    if (!finger.has('geist')) { const f = fingerNeu(W * 0.5, H * 0.48); finger.set('geist', f); sum.x = 0.5 * s; sum.y = 0.52; sum.R = 0.06; sum.aktiv = true; sum.streuen = true; }
+    const f = finger.get('geist'), w = u * 0.95;
+    f.x = W * (0.5 + 0.17 * Math.sin(w) * Math.min(1, u / 1.5)); f.y = H * (0.47 + 0.07 * Math.sin(2 * w + 0.6) * Math.min(1, u / 1.5)); letzteBeruehrung = t;
+  } else if (u < 8.6) {
+    // loslassen: die Körner fliegen heim, das Bild fügt sich
+    finger.delete('geist');
+  } else if (u < 14.4) {
+    // Kosmos: ein Kreis um das Gesicht, der Daumen zieht ihn auf und wandert um ihn herum
+    if (lesart !== 2) {
+      lesartWaehlen(2, true);
+      kos.R = Math.min(0.26, 0.4 * s); kos.x = kos.mx = kos.zx = 0.5 * s; kos.y = kos.my = kos.zy = 0.55;
+      kos.zug = 0; kos.aktiv = true; kos.offenZiel = 0; kos.phi = Math.PI * 0.35;
+    }
+    const k = u - 8.6;
+    if (k > 0.9 && k < 4.6) {
+      if (!finger.has('geist')) finger.set('geist', fingerNeu(W * 0.5, H * 0.45));
+      const f = finger.get('geist'), r = Math.min(1, (k - 0.9) / 1.6), wi = Math.PI * 0.35 - 0.55 * (k - 0.9);
+      const px = 0.5 * s + (0.06 + 0.3 * r) * Math.cos(wi), py = 0.55 + (0.06 + 0.3 * r) * Math.sin(wi);
+      f.x = px * H; f.y = (1 - py) * H; f.bewegt = 99; letzteBeruehrung = t;
+    } else finger.delete('geist');
+  } else {
+    // der Kreis vergeht, der Kehrreim beginnt von vorn
+    finger.delete('geist'); kos.aktiv = false; kos.offenZiel = 0;
+    if (lesart !== 0) lesartWaehlen(0, true);
+  }
 }
 
 // ---------- Daumen: wo auflegen, und ein Ring, der sich füllt ----------
