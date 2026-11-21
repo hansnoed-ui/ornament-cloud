@@ -45,28 +45,28 @@ const TEXTE = {
     nurIn: { de: 'auf Deutsch', en: 'auf Englisch', fr: 'auf Französisch', es: 'auf Spanisch' }, vor: 'Vorherige Anwendung', nach: 'Nächste Anwendung', zu: 'Schliessen', sprache: 'Sprache',
     anw: [
       { kopf: 'im Entstehen · Bild, Film, Ton', satz: 'Begriffe von Deleuze als Verfahren: Kristallbild, Schichten der Zeit, Dauer, Wahrnehmung, Diagramm, Figur – angewandt auf eigenes Material.' },
-      { kopf: 'Theorie · Kunstpraxis · Impuls', satz: 'Drei Ringe drehen gegeneinander. Jede Drehung verbindet einen Gedanken aus der Theorie mit einer künstlerischen Praxis und gibt einen Impuls für die eigene Arbeit.' },
+      { name: 'Das Dritte Rad', kopf: 'Theorie · Kunstpraxis · Impuls', satz: 'Drei Ringe drehen gegeneinander. Jede Drehung verbindet einen Gedanken aus der Theorie mit einer künstlerischen Praxis und gibt einen Impuls für die eigene Arbeit.' },
       { kopf: 'Bild · Bewegung', satz: 'Ein Bild, 24 Effekte, bis zu drei Ebenen: das Mischpult für eigene Animationen.' },
       { kopf: 'Erzeugen · Beobachten · Weiterführen', satz: 'Ein Bild wird Material. Operationen verändern es, Varianten stehen nebeneinander, jede lässt sich weiterführen.' }] },
   en: { titel: 'brilliant ideas.', iBei: 2, menu: 'Menu', anwendungen: 'Applications', mehr: 'Learn more', oeffnen: 'Open', oeffnenAria: (n) => `Open ${n}`,
     nurIn: { de: 'in German', en: 'in English', fr: 'in French', es: 'in Spanish' }, vor: 'Previous application', nach: 'Next application', zu: 'Close', sprache: 'Language',
     anw: [
       { kopf: 'in progress · image, film, sound', satz: 'Concepts of Deleuze as procedures: crystal-image, sheets of time, duration, perception, diagram, figure – applied to your own material.' },
-      { kopf: 'theory · art practice · impulse', satz: 'Three rings turn against each other. Every turn joins a thought from theory with an artistic practice and gives an impulse for your own work.' },
+      { name: 'The Third Wheel', kopf: 'theory · art practice · impulse', satz: 'Three rings turn against each other. Every turn joins a thought from theory with an artistic practice and gives an impulse for your own work.' },
       { kopf: 'image · motion', satz: 'One image, 24 effects, up to three layers: the mixing desk for your own animations.' },
       { kopf: 'generate · observe · continue', satz: 'An image becomes material. Operations change it, variants stand side by side, each one can be taken further.' }] },
   fr: { titel: 'idées brillantes.', iBei: 8, menu: 'Menu', anwendungen: 'Applications', mehr: 'En savoir plus', oeffnen: 'Ouvrir', oeffnenAria: (n) => `Ouvrir ${n}`,
     nurIn: { de: 'en allemand', en: 'en anglais', fr: 'en français', es: 'en espagnol' }, vor: 'Application précédente', nach: 'Application suivante', zu: 'Fermer', sprache: 'Langue',
     anw: [
       { kopf: 'en cours · image, film, son', satz: `Les concepts de Deleuze comme procédés${NBSP}: image-cristal, nappes de passé, durée, perception, diagramme, Figure – appliqués à votre propre matériau.` },
-      { kopf: 'théorie · pratique artistique · impulsion', satz: 'Trois anneaux tournent l’un contre l’autre. Chaque tour relie une pensée théorique à une pratique artistique et donne une impulsion pour votre propre travail.' },
+      { name: 'Das Dritte Rad', kopf: 'théorie · pratique artistique · impulsion', satz: 'Trois anneaux tournent l’un contre l’autre. Chaque tour relie une pensée théorique à une pratique artistique et donne une impulsion pour votre propre travail.' },
       { kopf: 'image · mouvement', satz: `Une image, 24 effets, jusqu’à trois calques${NBSP}: la table de mixage pour vos propres animations.` },
       { kopf: 'produire · observer · poursuivre', satz: 'Une image devient matière. Des opérations la transforment, des variantes se tiennent côte à côte, chacune peut être poursuivie.' }] },
   es: { titel: 'ideas brillantes.', iBei: 8, menu: 'Menú', anwendungen: 'Aplicaciones', mehr: 'Saber más', oeffnen: 'Abrir', oeffnenAria: (n) => `Abrir ${n}`,
     nurIn: { de: 'en alemán', en: 'en inglés', fr: 'en francés', es: 'en español' }, vor: 'Aplicación anterior', nach: 'Aplicación siguiente', zu: 'Cerrar', sprache: 'Idioma',
     anw: [
       { kopf: 'en desarrollo · imagen, cine, sonido', satz: 'Conceptos de Deleuze como procedimientos: imagen-cristal, capas del pasado, duración, percepción, diagrama, figura – aplicados a tu propio material.' },
-      { kopf: 'teoría · práctica artística · impulso', satz: 'Tres anillos giran unos contra otros. Cada giro une un pensamiento de la teoría con una práctica artística y da un impulso para tu propio trabajo.' },
+      { name: 'Das Dritte Rad', kopf: 'teoría · práctica artística · impulso', satz: 'Tres anillos giran unos contra otros. Cada giro une un pensamiento de la teoría con una práctica artística y da un impulso para tu propio trabajo.' },
       { kopf: 'imagen · movimiento', satz: 'Una imagen, 24 efectos, hasta tres capas: la mesa de mezclas para tus propias animaciones.' },
       { kopf: 'generar · observar · continuar', satz: 'Una imagen se vuelve material. Las operaciones la transforman, las variantes quedan una al lado de otra y cada una puede continuar.' }] }
 };
@@ -954,7 +954,7 @@ const vKarten = BEREICHE.map((b, i) => {
   k.style.setProperty('--ton', b.ton.join(',')); k.style.setProperty('--hell', `rgb(${hell.join(',')})`);
   k.innerHTML = `<div class="v-schatten" aria-hidden="true"></div><div class="v-koerper"><div class="v-buehne"><div class="v-bild"></div><div class="v-licht" aria-hidden="true"><i></i></div></div>
     <div class="v-text"><p class="v-kopf"></p><h2 class="v-name" id="v-name-${i}"></h2><p class="v-satz"></p>
-    <div class="v-zeile"><a class="v-oeffnen" href="${zielVon(b, offen)}">${T.oeffnen} <span aria-hidden="true">›</span></a><span class="v-sprachen"></span></div></div>
+    <div class="v-zeile"><a class="v-oeffnen" href="${zielVon(b, offen)}"><span class="v-oe-text">${T.oeffnen}</span> <span aria-hidden="true">›</span></a><span class="v-sprachen"></span></div></div>
     <div class="v-glanz" aria-hidden="true"><i></i></div><div class="v-dunkel" aria-hidden="true"></div></div>`;
   k.querySelector('.v-kopf').textContent = b.kopf; k.querySelector('.v-name').textContent = b.name; k.querySelector('.v-satz').textContent = b.satz;
   k.querySelector('.v-oeffnen').setAttribute('aria-label', T.oeffnenAria(b.name));
@@ -974,8 +974,8 @@ const vKarten = BEREICHE.map((b, i) => {
   }
   // Texte der Karte in der Sprache der Seite; die Wahl der Fassung folgt ihr, ausser man hat für diese Karte eben eine gewählt
   const beschriften = (fassung) => {
-    k.querySelector('.v-kopf').textContent = b.kopf; k.querySelector('.v-satz').textContent = b.satz;
-    oe.firstChild.textContent = T.oeffnen + ' '; oe.setAttribute('aria-label', T.oeffnenAria(b.name));
+    k.querySelector('.v-kopf').textContent = b.kopf; k.querySelector('.v-name').textContent = b.name; k.querySelector('.v-satz').textContent = b.satz;
+    oe.querySelector('.v-oe-text').textContent = T.oeffnen; oe.setAttribute('aria-label', T.oeffnenAria(b.name));
     vs.setAttribute('role', 'group'); vs.setAttribute('aria-label', T.sprache);
     vs.querySelectorAll('button').forEach((x) => x.setAttribute('aria-label', `${T.oeffnen} ${T.nurIn[x.lang]}`));
     waehlen(fassung || offenFuer(SPRACHE));
@@ -1001,16 +1001,24 @@ function spracheWechseln(l, karte) {
   if (!SPRACHEN.includes(l)) return;
   try { localStorage.setItem('brillant.sprache', l); } catch {}
   try { const u = new URL(location.href); u.searchParams.set('lang', l); history.replaceState(null, '', u.pathname + u.search + u.hash); } catch {}
+  // 0.35 (Christian: «noch nicht flüssig»): die Schrift sinkt weich ins Unscharfe, die Karte hält ihre Höhe,
+  // dann gleitet die Höhe zur neuen Länge, und die neue Schrift taucht Zeile um Zeile auf, statt zu springen.
   const texte = vKarten.map((k) => k.text);
-  texte.forEach((t) => t.classList.add('wechsel'));
-  setTimeout(() => {
+  clearTimeout(spracheWechseln.uhr);
+  // die Höhe gleitet nur, wo die Schrift unter dem Bild steht (am grossen Bildschirm steht sie daneben und füllt die Karte)
+  const gleiten = !ruhig && !matchMedia('(min-width: 820px)').matches;
+  texte.forEach((t) => { if (gleiten) { t.style.height = t.offsetHeight + 'px'; t.classList.add('hoehe'); } t.classList.add('wechsel'); });
+  spracheWechseln.uhr = setTimeout(() => {
     SPRACHE = l; grundTexte(); zustandGezeigt = -1;
     vKarten.forEach((k, j) => k.beschriften(j === karte ? l : null));
-    navKnoepfe[0].textContent = TITEL_KURZ;
-    flaechen.forEach((el, j) => { el.querySelector('.p-satz').textContent = BEREICHE[j].satz; });
+    navKnoepfe.forEach((n, j) => { n.textContent = j ? BEREICHE[j - 1].name : TITEL_KURZ; });
+    flaechen.forEach((el, j) => { el.querySelector('.p-name').textContent = BEREICHE[j].name; el.querySelector('.p-satz').textContent = BEREICHE[j].satz; el.href = zielVon(BEREICHE[j], l); });
     seitenNeu = true;   // die Bilder der Seite erst neu rechnen, wenn die Vitrine zu ist (das Rechnen hielte sonst die Karten an)
+    // neue Höhe messen, ohne dass man es sieht, dann von der alten dorthin gleiten
+    if (gleiten) texte.forEach((t) => { const alt = t.style.height; t.style.height = 'auto'; const neu = t.offsetHeight; t.style.height = alt; t.offsetHeight; t.style.height = neu + 'px'; });
     requestAnimationFrame(() => texte.forEach((t) => t.classList.remove('wechsel')));
-  }, ruhig ? 0 : 260);
+    spracheWechseln.uhr = setTimeout(() => texte.forEach((t) => { t.classList.remove('hoehe'); t.style.height = ''; }), ruhig ? 0 : 900);
+  }, ruhig ? 0 : 320);
 }
 const N = BEREICHE.length;
 // 0.31: Bilder der Karten früh laden und dekodieren, damit beim Öffnen nichts nachpoppt
