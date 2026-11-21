@@ -1,13 +1,16 @@
 // Falte – Operator VIII von the deleuzian scheme (Gilles Deleuze, Le Pli. Leibniz et le baroque, 1988).
 // Drei Lesarten: Rauschen (die kleinen Wahrnehmungen: das Bild zerfällt in ein Meer aus Körnchen, und über eine Schwelle
 // tritt die Gestalt hervor, klar nur in einem kleinen Bezirk wie in der Monade), Draperie (die Falten der Materie: das Bild
-// als schweres Tuch, das man greift und zieht, Falte in Falte), Entfalten (Hantaïs «pliage»: das Bild als Blatt, gefaltet,
-// über das Paket gegossen und Falte um Falte wieder geöffnet; es bleibt, was aussen lag).
+// als schweres Tuch auf einem Tisch, simuliert in tuch.js: man greift und zieht, die Falten entstehen von selbst),
+// Entfalten (Hantaïs «pliage»: das Bild als Blatt im Raum, blatt.js; gefaltet, mit Farbe übergossen und Klappe um Klappe
+// wieder geöffnet; es bleibt, was aussen lag, und jede Runde giesst eine andere Farbe).
 // WebGL2, ohne Bibliotheken, ohne CDN. Aufbau, Quellen, Aufnahme, Glossen und Einstieg wie im Ritornell.
 
-import { TEXTE } from './texte.js?v=1';
-import { klangStarten, klangBild, klangAn, klangIstAn, klangSpur, klangSprung, klangKnick, klangGiessen, klangAuf, klangFall } from './klang.js?v=1';
+import { TEXTE } from './texte.js?v=2';
+import { klangStarten, klangBild, klangAn, klangIstAn, klangSpur, klangSprung, klangKnick, klangGiessen, klangAuf, klangFall, klangHeben } from './klang.js?v=2';
 import { aufnahmeDatei } from '../gemeinsam/aufnahme.js?v=1';
+import { tuchBauen } from './tuch.js?v=1';
+import { stueckeBauen, blattDreiecke } from './blatt.js?v=1';
 
 const $ = (id) => document.getElementById(id);
 const Q = new URLSearchParams(location.search);
@@ -96,6 +99,20 @@ const KOPF = `#version 300 es
 precision highp float; precision highp sampler2D; in vec2 v; out vec4 o;
 ` + HILFE;
 
+// rohe Baumwolle: warmes Weiss, die Fasern nie feiner als drei Bildpunkte (sonst Moiré)
+const LEINEN = `
+vec3 leinen(vec2 s, float hpx){
+  float f1 = fbm(vec2(s.x * hpx / 3.4, s.y * hpx / 11.0)), f2 = fbm(vec2(s.x * hpx / 13.0 + 7.0, s.y * hpx / 3.6));
+  return vec3(0.93, 0.912, 0.868) * (0.955 + 0.045 * f1 + 0.03 * f2);
+}
+// wie weit die Farbe an einer Stelle schon gelaufen ist (> 0: nass): sie fällt oben über das Paket und läuft in Rinnsalen
+// hinunter, die einander überholen
+float gussVor(vec2 x, float g){
+  float rinn = pow(rauschen(vec2(x.x * 26.0, 3.1)), 3.0) * 0.16 + pow(rauschen(vec2(x.x * 61.0, 8.7)), 4.0) * 0.07;
+  return g * 1.4 - (1.0 - x.y) - 0.08 * fbm(x * 5.0) + rinn * smoothstep(0.0, 0.3, g);
+}
+`;
+
 // ---------- das gefaltete Blatt ----------
 // Jede Falte ist eine Gerade (n · x = c); was auf ihrer Seite n · x > c liegt, klappt um die Gerade, um den Winkel w
 // (PI: flach umgelegt, 0: offen). Für einen Punkt auf dem Tisch gehen wir alle Möglichkeiten durch, welche Lagen über ihm
@@ -129,48 +146,14 @@ vec4 stapel(vec2 p, out float kante, out float neig){
   }
   return r;
 }
-// rohe Baumwolle: warmes Weiss, die Fasern nie feiner als drei Bildpunkte (sonst Moiré)
-vec3 leinen(vec2 s, float hpx){
-  float f1 = fbm(vec2(s.x * hpx / 3.4, s.y * hpx / 11.0)), f2 = fbm(vec2(s.x * hpx / 13.0 + 7.0, s.y * hpx / 3.6));
-  return vec3(0.93, 0.912, 0.868) * (0.955 + 0.045 * f1 + 0.03 * f2);
-}
-`;
+` + LEINEN;
 
 // ---------- die Szene: alle drei Lesarten in einem Durchgang ----------
 // q in Bildhöhen (x mal Seitenverhältnis), y nach oben. Linien werden in Bildpunkten gerechnet: haarfein, nie treppig.
 const FS_SZENE = KOPF + FALZ + `uniform sampler2D uScharf, uLein; uniform float uSeite, uT, uHpx, uDpr, uArt, uKoerner, uMeer;
 uniform vec4 uRau, uRauB;
-uniform vec4 uGriff[6], uGriffB[6]; uniform int uGriffN; uniform vec4 uTuch;
 uniform vec4 uFalt; uniform float uGuss;
 vec2 nachUV(vec2 qq){ return vec2(qq.x / uSeite, qq.y); }
-// ein Faltenprofil: runde Grate, scharfe Täler, wie schwerer Stoff
-float profil(float ph){ return pow(0.5 + 0.5 * cos(ph) + 0.012, 0.62); }
-// das Tuch: Höhe, wie weit der Stoff mit der Hand gewandert ist, und wie tief die Stelle in einer Falte liegt
-float tuch(vec2 q, out vec2 zug, out float tal){
-  float h = 0.0; zug = vec2(0.0); tal = 0.0;
-  for (int i = 0; i < 6; i++) { if (i >= uGriffN) break;
-    vec2 P = uGriff[i].xy, D = uGriff[i].zw; float L = length(D); if (L < 1e-4) continue;
-    vec2 e = D / L, n = vec2(-e.y, e.x), r = q - P;
-    float a = dot(r, -e), b = dot(r, n), sd = uGriffB[i].x, seed = uGriffB[i].y;
-    // der Stoff folgt der Hand: am Griff ganz, nach hinten lange, zur Seite rasch weniger
-    float ap = max(a, 0.0), am = min(a, 0.0);
-    zug += D * exp(-(ap * ap / (sd * sd * (3.0 + 26.0 * L)) + am * am / (sd * sd * 0.6) + b * b / (sd * sd * (1.0 + 5.0 * L))));
-    // die Falten strahlen vom Griff nach hinten aus, wie ein Fächer
-    float th = atan(b, ap + 0.055);
-    float len = 0.05 + 1.7 * L;
-    float env = smoothstep(-0.025, 0.02, a) * exp(-ap * ap / (len * len)) * exp(-th * th * 1.3) * (1.0 - exp(-L * 16.0));
-    if (env < 0.002) continue;
-    float ph = th * uTuch.x + seed + 1.2 * fbm(vec2(th * 1.6 + seed, a * 4.5 + seed));
-    float amp = min(L, 0.42) * 0.24 * uTuch.z;
-    float fein = smoothstep(0.03, 0.22, L);
-    float p1 = profil(ph);
-    float p2 = profil(ph * 2.6 + 1.3 + 1.4 * fbm(vec2(a * 9.0, th * 5.0 + seed)));
-    float p3 = profil(ph * 6.7 + 0.4 + 2.0 * fbm(vec2(a * 17.0 + seed, th * 11.0)));
-    h += amp * env * (p1 + fein * (0.26 * p2 + 0.07 * p3));
-    tal += env * (1.0 - p1) * smoothstep(0.0, 0.06, L);
-  }
-  return h;
-}
 void main(){
   vec2 q = vec2(v.x * uSeite, v.y);
   vec3 bild = texture(uScharf, v).rgb;
@@ -182,7 +165,8 @@ void main(){
     vec2 d = q - uRau.xy; float r = length(d);
     float wob = 1.0 + 0.14 * (fbm(d / max(r, 1e-4) * 1.4 + vec2(uT * 0.17, 0.0)) - 0.5);
     float rw = r / wob;
-    float kl = (1.0 - smoothstep(uRau.z * 0.7, uRau.z, rw)) * uRau.w;
+    float kl = (1.0 - smoothstep(uRau.z * 0.42, uRau.z * 1.05, rw)) * uRau.w;
+    kl = kl * kl * (3.0 - 2.0 * kl);
     // der dunkle Grund (le fond sombre): fast nichts, nur ein Hauch des Bildes
     vec3 dunkel = bild * 0.035 + vec3(0.006, 0.008, 0.014);
     if (uKoerner < 0.5) {
@@ -199,40 +183,12 @@ void main(){
     c = mix(bild, dunkel, uMeer);
     c = mix(c, bild, kl);
     // an der Schwelle: ein Hauch Licht, keine Linie
-    c += vec3(1.0, 0.95, 0.86) * 0.05 * uRau.w * exp(-pow((rw - uRau.z * 0.86) * uHpx / (11.0 * uDpr), 2.0));
+    c += vec3(1.0, 0.95, 0.86) * 0.015 * uRau.w * exp(-pow((rw - uRau.z * 0.86) * uHpx / (16.0 * uDpr), 2.0));
     // der Sprung: ein feiner Lichtring, der hinausläuft
     c += vec3(1.0, 0.93, 0.8) * uRauB.w * (1.0 - smoothstep(0.4, 1.5, abs(r - uRauB.z) * uHpx / uDpr)) * 0.55;
   } else if (uArt < 1.5) {
-    // ===== Draperie: das Bild als schweres Tuch =====
-    if (uTuch.w > 0.001) {
-      vec2 zug; float tal;
-      float h = tuch(q, zug, tal);
-      float e = 1.25 * uDpr * px;
-      vec2 z1, z2; float t1, t2;
-      float hx = tuch(q + vec2(e, 0.0), z1, t1), hy = tuch(q + vec2(0.0, e), z2, t2);
-      vec2 g = vec2(hx - h, hy - h) / e;
-      vec3 N = normalize(vec3(-g * 2.8, 1.0));
-      // der Druck folgt dem Stoff: er wandert mit der Hand und sinkt in die Falten
-      vec2 quelle = q - zug - g * 0.012;
-      vec3 stoff = texture(uScharf, clamp(nachUV(quelle), 0.002, 0.998)).rgb;
-      vec3 L = normalize(vec3(-0.45, 0.62, 0.64));
-      float wrap = (dot(N, L) + 0.3) / 1.3, flach = (L.z + 0.3) / 1.3;
-      // Hell-Dunkel: die Grate fangen das Licht, die Täler versinken im dunklen Grund
-      float licht = (0.08 + 1.05 * wrap) / (0.08 + 1.05 * flach);
-      float tief = clamp(tal, 0.0, 1.0);
-      licht *= 1.0 - 0.78 * pow(tief, 1.25);
-      licht = mix(1.0, licht, uTuch.w);
-      vec3 col = stoff * licht;
-      // Seide oder Samt: Seide glänzt auf den Graten, Samt leuchtet an den Flanken
-      vec3 H = normalize(L + vec3(0.0, 0.0, 1.0));
-      float glanz = uTuch.y;
-      float ex = mix(6.0, 36.0, glanz);
-      float sp = max(0.0, pow(max(dot(N, H), 0.0), ex) - pow(H.z, ex));
-      col += mix(vec3(1.0, 0.95, 0.86), stoff * 1.4 + 0.15, 0.35) * sp * mix(0.08, 0.55, glanz) * uTuch.w;
-      float rand = pow(clamp(1.0 - N.z, 0.0, 1.0), 1.3);
-      col += stoff * rand * 0.8 * (1.0 - glanz) * uTuch.w * (0.3 + 0.7 * smoothstep(0.0, 0.6, lu(stoff)));
-      c = col;
-    }
+    // ===== Draperie: solange niemand das Tuch berührt, liegt das Bild glatt (das Tuch selbst zeichnet zeichneTuch)
+    c = bild;
   } else {
     // ===== Entfalten: das Bild als Blatt, gefaltet, bemalt, wieder geöffnet =====
     float ka, ng; vec4 st = stapel(q, ka, ng);
@@ -271,7 +227,7 @@ void main(){
       }
       if (uGuss > 0.0 && uGuss < 1.0) {
         // die Farbe läuft: eine nasse, glänzende Front, dahinter ein feuchter Schimmer
-        float vor = uGuss * 1.3 - (1.0 - q.y) - 0.1 * fbm(q * 6.0);
+        float vor = gussVor(q, uGuss);
         float front = exp(-pow((vor - 0.05) / 0.03, 2.0));
         f = mix(f, f * 0.8 + vec3(0.32, 0.31, 0.3), front * 0.6);
         f *= 1.0 + 0.1 * smoothstep(0.0, 0.16, vor) * (1.0 - uGuss);
@@ -288,7 +244,7 @@ void main(){
 // Gerechnet auf dem Blatt (v = Ort auf dem Blatt): Wohin kam dieser Punkt beim Falten, und lag er dort obenauf?
 // Dann nimmt er die Farbe des Bildes an der Stelle, an der er lag. Was innen lag, bleibt rohe Leinwand.
 // a: unter 0.25 unbemalt, sonst 0.5 + 0.5 · Falz
-const FS_MALEN = KOPF + FALZ + `uniform sampler2D uAlt, uScharf; uniform float uSeite, uGuss, uDeck, uFarbe, uHpx;
+const FS_MALEN = KOPF + FALZ + `uniform sampler2D uAlt, uScharf; uniform float uSeite, uGuss, uDeck, uFarbe, uHpx; uniform vec3 uTinteD, uTinteH;
 void main(){
   vec2 s = vec2(v.x * uSeite, v.y);
   vec4 alt = texture(uAlt, v);
@@ -306,14 +262,14 @@ void main(){
   vec3 grund = leer ? (oben ? texture(uScharf, v).rgb : roh) : alt.rgb;
   float altCr = leer ? 0.0 : clamp((alt.a - 0.5) * 2.0, 0.0, 1.0);
   vec3 b = texture(uScharf, vec2(x.x / uSeite, x.y)).rgb;
-  // eine einzige Farbe: Godards Blau, dunkel, wo das Bild dunkel ist
   float l = lu(b);
-  vec3 tinte = mix(vec3(0.02, 0.07, 0.3), vec3(0.2, 0.42, 0.95), smoothstep(0.05, 0.9, l));
+  // wie bei einem Abzug in einer einzigen Farbe: dunkel ist dichte Farbe, hell lässt das Papier durchscheinen
+  vec3 tinte = mix(uTinteD, uTinteH, pow(smoothstep(0.03, 0.95, l), 0.85));
   vec3 farbe = mix(mix(vec3(l), b, 1.12) * 1.02, tinte, uFarbe);
   // die Farbe sitzt im Gewebe: sie nimmt die Fasern der Leinwand an
   farbe *= 0.93 + 0.07 * (roh.r / 0.93);
   // sie läuft von oben über das Paket
-  float front = smoothstep(0.0, 0.16, uGuss * 1.3 - (1.0 - x.y) - 0.1 * fbm(x * 6.0));
+  float front = smoothstep(0.0, 0.09, gussVor(x, uGuss));
   float auftrag = oben ? uDeck * front : 0.0;
   vec3 neu = mix(grund, farbe, auftrag);
   float neuCr = max(altCr * 0.82, cr * smoothstep(0.6, 1.0, uGuss));
@@ -372,7 +328,8 @@ void main(){
   vec3 f = texture(uScharf, clamp(vec2(h.x / uSeite, h.y), 0.002, 0.998)).rgb;
   float r = length(p - uRau.xy);
   float k = (1.0 - smoothstep(uRauB.y * 0.3, uRauB.y, r)) * uRauB.x;
-  float kl = (1.0 - smoothstep(uRau.z * 0.6, uRau.z, r)) * uRau.w;
+  float kl = (1.0 - smoothstep(uRau.z * 0.42, uRau.z * 1.05, r)) * uRau.w;
+  kl = kl * kl * (3.0 - 2.0 * kl);
   float sel = h21(vec2(ij) * 0.37 + 9.1);
   // Glitzern auf dem Wasser: ab und zu fängt eine kleine Wahrnehmung das Licht
   float glitz = step(0.996, h21(vec2(ij) + floor(uT * 7.0 + sel * 7.0)));
@@ -382,11 +339,206 @@ void main(){
   // kühl im Dunkeln, warm, wo sich die Wahrnehmung verdichtet
   vF *= mix(vec3(0.8, 0.9, 1.15), vec3(1.05, 1.0, 0.94), k);
   // an der Schwelle leuchten die Körner auf
-  vF += f * uHell * 0.25 * uRau.w * exp(-pow((r - uRau.z * 0.86) / 0.02, 2.0)) * uMeer;
+  vF += f * uHell * 0.06 * uRau.w * exp(-pow((r - uRau.z * 0.9) / 0.03, 2.0)) * uMeer;
 }`;
 const FS_KORN_PUNKT = `#version 300 es
 precision highp float; in vec3 vF; out vec4 o;
 void main(){ vec2 d = gl_PointCoord * 2.0 - 1.0; float r2 = dot(d, d); if (r2 > 1.0) discard; o = vec4(vF * exp(-r2 * 2.6), 1.0); }`;
+
+// ---------- das Tuch: ein feines Netz über dem Gitter der Simulation ----------
+// Die Simulation liefert je Gitterpunkt Verschiebung, Höhe, Normale und Höhle; das Netz ist dreimal feiner und liest sie
+// mit Catmull-Rom (glatte Falten, keine Facetten). Licht von oben links, flach über den Tisch: der Stoff wirft Schatten.
+const TUCH_LESEN = `
+uniform sampler2D uLage, uNorm; uniform vec2 uGitter, uMasche; uniform float uSeite; uniform vec3 uLicht;
+vec4 cr(sampler2D tx, vec2 g){
+  vec2 b = floor(g), f = g - b;
+  vec2 f2 = f * f, f3 = f2 * f;
+  vec2 w0 = -0.5 * f3 + f2 - 0.5 * f, w1 = 1.5 * f3 - 2.5 * f2 + 1.0, w2 = -1.5 * f3 + 2.0 * f2 + 0.5 * f, w3 = 0.5 * f3 - 0.5 * f2;
+  ivec2 m = ivec2(uGitter) - 1;
+  vec4 s = vec4(0.0);
+  for (int j = 0; j < 4; j++) {
+    float wy = j == 0 ? w0.y : j == 1 ? w1.y : j == 2 ? w2.y : w3.y;
+    int yy = clamp(int(b.y) + j - 1, 0, m.y);
+    vec4 r = texelFetch(tx, ivec2(clamp(int(b.x) - 1, 0, m.x), yy), 0) * w0.x + texelFetch(tx, ivec2(clamp(int(b.x), 0, m.x), yy), 0) * w1.x
+           + texelFetch(tx, ivec2(clamp(int(b.x) + 1, 0, m.x), yy), 0) * w2.x + texelFetch(tx, ivec2(clamp(int(b.x) + 2, 0, m.x), yy), 0) * w3.x;
+    s += r * wy;
+  }
+  return s;
+}
+// Ort im Raum: Ruhelage plus Verschiebung; z über dem Tisch
+vec3 ort(vec2 g, out vec4 lg){ lg = cr(uLage, g); return vec3(g * uMasche + lg.xy, max(lg.z, 0.0)); }
+// wohin der Schatten eines Punktes auf den Tisch fällt
+vec2 schattenOrt(vec3 p){ return p.xy - uLicht.xy / uLicht.z * p.z; }
+float tiefeAus(float z){ return 0.5 - z * 1.4; }
+`;
+const VS_TUCH = `#version 300 es
+precision highp float; precision highp sampler2D;
+in vec2 aG; out vec3 vP; out vec3 vN; out vec2 vUV; out float vHoehle; out float vStau;
+` + TUCH_LESEN + `
+void main(){
+  vec4 lg; vec3 p = ort(aG, lg);
+  vec4 nn = cr(uNorm, aG);
+  vP = p; vN = nn.xyz; vHoehle = nn.w; vStau = lg.w;
+  vUV = clamp(aG / (uGitter - 1.0), 0.0, 1.0);
+  gl_Position = vec4(p.x / uSeite * 2.0 - 1.0, p.y * 2.0 - 1.0, tiefeAus(p.z), 1.0);
+}`;
+const VS_TUCH_SCHATTEN = `#version 300 es
+precision highp float; precision highp sampler2D;
+in vec2 aG;
+` + TUCH_LESEN + `
+void main(){
+  vec4 lg; vec3 p = ort(aG, lg);
+  vec2 s = schattenOrt(p);
+  gl_Position = vec4(s.x / uSeite * 2.0 - 1.0, s.y * 2.0 - 1.0, tiefeAus(p.z), 1.0);
+}`;
+const FS_LEER = `#version 300 es
+precision highp float; out vec4 o; void main(){ o = vec4(1.0); }`;
+// der Schatten, weich: je höher der Stoff über der Stelle, desto breiter der Halbschatten
+const TUCH_SCHATTEN = `
+uniform sampler2D uSchatten; uniform vec2 uSchattenPx; uniform float uBias;
+float schatten(vec3 p){
+  vec2 s = schattenOrt(p); vec2 uv = vec2(s.x / uSeite, s.y);
+  float ich = tiefeAus(p.z) * 0.5 + 0.5;
+  float block = texture(uSchatten, uv).r;
+  float ab = max(0.0, ich - block);
+  float r = 1.5 + 260.0 * ab;
+  float sum = 0.0;
+  for (int i = 0; i < 12; i++) {
+    float a = float(i) * 2.39996 + 0.7, rr = r * sqrt((float(i) + 0.5) / 12.0);
+    float b = texture(uSchatten, uv + vec2(cos(a), sin(a)) * rr * uSchattenPx).r;
+    sum += step(b, ich - uBias);
+  }
+  return sum / 12.0;
+}
+`;
+const FS_TISCH = KOPF + `uniform float uSeite, uHpx, uT; uniform vec3 uLicht;
+vec2 schattenOrt(vec3 p){ return p.xy - uLicht.xy / uLicht.z * p.z; }
+float tiefeAus(float z){ return 0.5 - z * 1.4; }
+` + TUCH_SCHATTEN + `
+void main(){
+  vec2 q = vec2(v.x * uSeite, v.y);
+  // der Tisch: schwarzer Samt, kaum sichtbar, ein Hauch Licht von oben links
+  vec3 c = vec3(0.016, 0.015, 0.018) * (0.85 + 0.3 * fbm(q * vec2(300.0, 40.0) * uHpx / 1400.0));
+  c *= 0.8 + 0.4 * smoothstep(1.4, 0.0, length(q - vec2(0.0, 1.0)));
+  c *= 1.0 - 0.75 * schatten(vec3(q, 0.0));
+  o = vec4(c, 1.0);
+}`;
+const FS_TUCH = `#version 300 es
+precision highp float; precision highp sampler2D;
+in vec3 vP; in vec3 vN; in vec2 vUV; in float vHoehle; in float vStau; out vec4 o;
+uniform sampler2D uScharf; uniform float uHpx, uDpr, uGlanz, uSchwer, uDa;
+` + HILFE + TUCH_LESEN + TUCH_SCHATTEN + `
+void main(){
+  vec3 N = normalize(vN);
+  // liegt die Rückseite oben (der Stoff hat sich umgeschlagen), dann leuchtet der Druck nur durch
+  bool rueck = N.z < 0.0; if (rueck) N = -N;
+  vec3 stoff = texture(uScharf, vUV).rgb;
+  if (rueck) stoff = mix(vec3(lu(stoff)), stoff, 0.4) * 0.55 + vec3(0.05, 0.048, 0.045);
+  vec3 L = normalize(uLicht);
+  // Hell-Dunkel, so geeicht, dass glatt liegender Stoff das Bild genau so zeigt, wie es ist
+  float wrap = (dot(N, L) + 0.25) / 1.25, flach = (L.z + 0.25) / 1.25;
+  float licht = (0.06 + wrap) / (0.06 + flach);
+  // die Täler versinken im dunklen Grund, die Grate fangen das Licht
+  float hoehle = 1.0 - exp(-vHoehle * (60.0 + 40.0 * uSchwer));
+  licht *= 1.0 - 0.72 * hoehle;
+  float sch = schatten(vP);
+  licht *= 1.0 - 0.7 * sch;
+  vec3 col = stoff * mix(1.0, licht, uDa);
+  // Seide oder Samt: Seide glänzt auf den Graten, Samt leuchtet an den Flanken
+  vec3 H = normalize(L + vec3(0.0, 0.0, 1.0));
+  float ex = mix(8.0, 48.0, uGlanz);
+  float sp = max(0.0, pow(max(dot(N, H), 0.0), ex) - pow(H.z, ex)) * (1.0 - sch);
+  col += mix(vec3(1.0, 0.95, 0.88), stoff * 1.3 + 0.12, 0.3) * sp * mix(0.1, 0.75, uGlanz) * uDa;
+  float rand = pow(clamp(1.0 - N.z, 0.0, 1.0), 1.4);
+  col += stoff * rand * 0.9 * (1.0 - uGlanz) * uDa * (0.3 + 0.7 * smoothstep(0.0, 0.6, lu(stoff))) * (1.0 - 0.5 * sch);
+  // der Rand des Tuchs: eine feine Kante, das Gewebe hat eine Dicke
+  vec2 rd = min(vUV, 1.0 - vUV) * vec2(uSeite, 1.0) * uHpx / uDpr;
+  float kante = 1.0 - smoothstep(0.0, 1.6, min(rd.x, rd.y));
+  col = mix(col, col * 0.55, kante * uDa);
+  o = vec4(col, 1.0);
+}`;
+
+// ---------- Entfalten im Raum: die Stücke des Blattes, von oben gesehen, mit etwas Perspektive ----------
+// Die Kamera steht uHc Bildhöhen über der Mitte: flach liegendes Papier deckt sich genau mit dem Bildschirm, eine Klappe,
+// die sich hebt, kommt auf einen zu. Die Papierdicke (aus der Lage) zählt nur für Tiefe und Schatten.
+const BLATT_RAUM = `
+uniform float uSeite, uHc, uDicke; uniform vec3 uLicht;
+vec2 schattenOrt(vec3 p){ return p.xy - uLicht.xy / uLicht.z * p.z; }
+float tiefeAus(float z){ return 0.5 - z * 1.4; }
+float dick(float lage){ return uDicke * sqrt(lage + 1.0); }
+`;
+const VS_BLATT = `#version 300 es
+precision highp float;
+layout(location = 1) in vec3 aP; layout(location = 2) in vec2 aS; layout(location = 3) in vec3 aN; layout(location = 4) in float aL;
+out vec3 vP; out vec2 vS; out vec3 vN; out float vL;
+` + BLATT_RAUM + `
+void main(){
+  vec3 p = aP; p.z += dick(aL) * 0.02;
+  vP = vec3(aP.xy, aP.z + dick(aL)); vS = aS; vN = aN; vL = aL;
+  vec2 c = vec2(uSeite * 0.5, 0.5);
+  float w = (uHc - max(aP.z, -0.5 * uHc)) / uHc;
+  vec2 s = c + (aP.xy - c) / w;
+  gl_Position = vec4(vec2(s.x / uSeite, s.y) * 2.0 - 1.0, tiefeAus(aP.z + dick(aL)), 1.0) * w;
+}`;
+const VS_BLATT_SCHATTEN = `#version 300 es
+precision highp float;
+layout(location = 1) in vec3 aP; layout(location = 4) in float aL;
+` + BLATT_RAUM + `
+void main(){
+  vec3 p = vec3(aP.xy, aP.z + dick(aL));
+  vec2 s = schattenOrt(p);
+  gl_Position = vec4(s.x / uSeite * 2.0 - 1.0, s.y * 2.0 - 1.0, tiefeAus(p.z), 1.0);
+}`;
+const FS_BLATT = `#version 300 es
+precision highp float; precision highp sampler2D;
+in vec3 vP; in vec2 vS; in vec3 vN; in float vL; out vec4 o;
+uniform sampler2D uScharf, uLein; uniform float uHpx, uDpr, uGuss, uFalzRelief, uT;
+` + HILFE + BLATT_RAUM + TUCH_SCHATTEN + LEINEN + `
+void main(){
+  vec3 N = normalize(vN);
+  bool rueck = N.z < 0.0; if (rueck) N = -N;
+  vec2 s = vS, suv = vec2(s.x / uSeite, s.y);
+  float hpx = uHpx / uDpr;
+  vec4 lw = texture(uLein, suv);
+  vec3 roh = leinen(s, hpx);
+  vec3 f;
+  float relief = 0.0;
+  if (lw.a < 0.25) {
+    vec3 b = texture(uScharf, suv).rgb;
+    // die Rückseite: rohes Papier, durch das das Bild schwach scheint
+    f = rueck ? roh * mix(vec3(0.86), vec3(lu(b)) * 0.5 + 0.55, 0.35) : b;
+  } else {
+    f = lw.rgb;
+    if (rueck) f = mix(f, roh, 0.16) * 0.95;
+    // die Falze früherer Faltungen: ein feines Tal; die Kante zum Licht hin hell, die andere dunkel
+    float e = 1.6 / hpx;
+    float cr = clamp((lw.a - 0.5) * 2.0, 0.0, 1.0);
+    float cx = clamp((texture(uLein, suv + vec2(e / uSeite, 0.0)).a - 0.5) * 2.0, 0.0, 1.0) - clamp((texture(uLein, suv - vec2(e / uSeite, 0.0)).a - 0.5) * 2.0, 0.0, 1.0);
+    float cy = clamp((texture(uLein, suv + vec2(0.0, e)).a - 0.5) * 2.0, 0.0, 1.0) - clamp((texture(uLein, suv - vec2(0.0, e)).a - 0.5) * 2.0, 0.0, 1.0);
+    relief = dot(vec2(cx, cy), normalize(uLicht.xy)) * uFalzRelief;
+    f *= 1.0 - 0.22 * cr * uFalzRelief;
+  }
+  // Licht: so geeicht, dass flach liegendes Papier das Bild zeigt, wie es ist
+  vec3 L = normalize(uLicht);
+  float wrap = (dot(N, L) + 0.35) / 1.35, flach = (L.z + 0.35) / 1.35;
+  float licht = (0.1 + wrap) / (0.1 + flach);
+  licht *= 1.0 - 0.6 * schatten(vP);
+  licht *= 1.0 + 0.55 * relief;
+  vec3 col = f * licht;
+  // Papier glänzt kaum, nur wenn eine Klappe das Licht spiegelt
+  vec3 H = normalize(L + vec3(0.0, 0.0, 1.0));
+  col += vec3(1.0, 0.97, 0.92) * max(0.0, pow(max(dot(N, H), 0.0), 18.0) - pow(H.z, 18.0)) * 0.25;
+  if (uGuss > 0.0 && uGuss < 1.0) {
+    // die Farbe läuft: eine nasse, glänzende Front, dahinter ein feuchter Schimmer
+    float vor = gussVor(vP.xy, uGuss);
+    float front = exp(-pow((vor - 0.03) / 0.025, 2.0));
+    col = mix(col, col * 0.8 + vec3(0.2, 0.2, 0.2), front * 0.35);
+    float nass = smoothstep(0.0, 0.1, vor) * (1.0 - uGuss);
+    col *= 1.0 + 0.12 * nass;
+    col += vec3(1.0) * nass * 0.35 * pow(max(dot(N, normalize(vec3(-0.3, 0.5, 1.0))), 0.0), 60.0) * (0.6 + 0.4 * fbm(vP.xy * 40.0 + uT));
+  }
+  o = vec4(col, 1.0);
+}`;
 
 // ---------- Nachbearbeitung: Leuchten, glatte Kanten, Filmkorn (wie in den anderen Operatoren) ----------
 const FS_HELL = KOPF + `uniform sampler2D uQ; uniform vec2 uPx; uniform float uAb;
@@ -427,7 +579,7 @@ void main(){
 function programm(fs, vs = VS) {
   const mk = (typ, src) => { const s = gl.createShader(typ); gl.shaderSource(s, src); gl.compileShader(s);
     if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
-  const p = gl.createProgram(); gl.attachShader(p, mk(gl.VERTEX_SHADER, vs)); gl.attachShader(p, mk(gl.FRAGMENT_SHADER, fs)); gl.bindAttribLocation(p, 0, 'a');
+  const p = gl.createProgram(); gl.attachShader(p, mk(gl.VERTEX_SHADER, vs)); gl.attachShader(p, mk(gl.FRAGMENT_SHADER, fs)); gl.bindAttribLocation(p, 0, 'a'); gl.bindAttribLocation(p, 1, 'aG');
   gl.linkProgram(p); if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
   p.u = {};
   const n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS);
@@ -478,6 +630,10 @@ if (gl) {
   try {
     for (const [n, fs] of Object.entries({ szene: FS_SZENE, malen: FS_MALEN, hell: FS_HELL, weich: FS_WEICH, zusammen: FS_ZUSAMMEN })) P[n] = programm(fs);
   } catch (e) { spur('Shader: ' + String(e.message).slice(0, 140)); console.error(e); melden(TEXTE[sprache].keinGL); }
+  try { P.tisch = programm(FS_TISCH); P.tuch = programm(FS_TUCH, VS_TUCH); P.tuchSchatten = programm(FS_LEER, VS_TUCH_SCHATTEN); }
+  catch (e) { spur('Tuch: ' + String(e.message).slice(0, 140)); console.error(e); }
+  try { P.blatt = programm(FS_BLATT, VS_BLATT); P.blattSchatten = programm(FS_LEER, VS_BLATT_SCHATTEN); }
+  catch (e) { spur('Blatt: ' + String(e.message).slice(0, 140)); console.error(e); }
   // die Körner nur mit HalfFloat-Zielen und Grafikkarte; sonst das Rauschen im Bild selbst
   if (halbFloat && !leicht && !Q.has('flach')) {
     try { P.korn = programm(FS_KORN); P.kornPunkt = programm(FS_KORN_PUNKT, VS_KORN); }
@@ -661,7 +817,7 @@ function scharfFangen() {
 
 // ---------- Regler und Lesarten ----------
 // Je Lesart drei Regler mit eigenem Sinn; die Werte bleiben je Lesart erhalten.
-const WERTE = [[0.5, 0.45, 0.5], [0.55, 0.5, 0.55], [0.0, 0.85, 0.6]];
+const WERTE = [[0.5, 0.45, 0.5], [0.55, 0.5, 0.55], [0.7, 0.85, 0.6]];
 let lesart = 0;
 const regler = ['r-a', 'r-b', 'r-c'];
 function reglerBeschriften() {
@@ -703,12 +859,19 @@ const inQ = (cx, cy) => ({ x: cx / innerHeight, y: 1 - cy / innerHeight });   //
 const rau = { x: 0.5, y: 0.5, I: 0, klar: 0, Rk: 0.05, meer: 0, ruhe: 1, ueber: false, seitSprung: 0, sprungR: 9, sprungA: 0, streuen: true, aktiv: false };
 const KORN_S = telefon ? 384 : 576;   // 147 456 Körner am Telefon, 331 776 am grossen Bildschirm
 
-// Draperie: jeder Griff hält das Tuch an einer Stelle; der Zug folgt der Hand mit dem Gewicht des Stoffs (gedämpfte Feder)
-let griffe = [], tuchDa = 0, tuchFaellt = false;
-const GRIFF_MAX = 6;
+// Draperie: das Bild liegt als Tuch auf einem Tisch (Simulation in tuch.js); jede Hand fasst es an einer Stelle
+let tuch = null, tuchDa = 0, tuchGriffe = 0;
+const TUCH_PUNKTE = leicht ? 2000 : telefon ? 3000 : 4800;
+function tuchHolen() {
+  const s = innerWidth / innerHeight;
+  if (!tuch || (Math.abs(tuch.seite - s) > 1e-3 && !tuch.aktiv)) tuch = tuchBauen(s, TUCH_PUNKTE);
+  return tuch;
+}
 
 // Entfalten: bis zu fünf Falten, dann giesst sich das Bild über das Paket und das Blatt öffnet sich wieder
-const fz = { falten: [], aktiv: null, phase: 'flach', zeit: 0, guss: 0, bemalt: false };
+const fz = { falten: [], aktiv: null, phase: 'flach', zeit: 0, guss: 0, bemalt: false, runde: 0 };
+// jede neue Runde giesst eine andere Farbe, wie Hantaï, der dieselbe Leinwand mehrmals faltete: Blau, Rot, Sepia
+const TINTEN = [[[0.02, 0.045, 0.2], [0.7, 0.78, 0.93]], [[0.42, 0.035, 0.02], [0.96, 0.8, 0.72]], [[0.09, 0.06, 0.04], [0.9, 0.86, 0.78]]];
 const FALTEN_MAX = 5;
 const lein = [null, null];   // [0]: die Leinwand, wie sie ist; [1]: während des Giessens die neue
 
@@ -755,17 +918,8 @@ function beruehren(id, cx, cy) {
     rau.aktiv = true; glosse('petites');
   }
   if (lesart === 1) {
-    // einen alten Griff wieder fassen, sonst einen neuen setzen
-    let best = -1, bd = 0.07;
-    griffe.forEach((g, i) => { const d = Math.hypot(g.gx + g.dx - p.x, g.gy + g.dy - p.y); if (d < bd) { bd = d; best = i; } });
-    if (best < 0) {
-      griffe.push({ gx: p.x, gy: p.y, dx: 0, dy: 0, tx: 0, ty: 0, vx: 0, vy: 0, seed: Math.random() * 40, sd: 0.07 + 0.04 * Math.random() });
-      if (griffe.length > GRIFF_MAX) griffe.shift();
-      best = griffe.length - 1;
-    }
-    const g = griffe[best];
-    f.griff = g; f.ox = g.gx + g.dx - p.x; f.oy = g.gy + g.dy - p.y;
-    tuchFaellt = false;
+    // die Hand fasst das Tuch dort, wo es jetzt liegt
+    if (tuchHolen().fassen(id, p.x, p.y, 0.03)) { f.tuch = true; tuchGriffe++; }
     glosse('matiere'); loesenZeigen();
   }
   if (lesart === 2) {
@@ -778,22 +932,29 @@ function bewegen(id, cx, cy) {
   f.x = cx; f.y = cy;
   if (id !== 'geist') haltZeigen(cx, cy);
   const p = inQ(cx, cy);
-  if (lesart === 1 && f.griff) { f.griff.tx = p.x + f.ox - f.griff.gx; f.griff.ty = p.y + f.oy - f.griff.gy; }
-  if (lesart === 2 && f.falz) fz.aktiv = falteAus(f.falz.x, f.falz.y, p.x, p.y);
+  if (lesart === 1 && f.tuch && tuch) tuch.ziehen(id, p.x, p.y);
+  if (lesart === 2 && f.falz) {
+    // die Klappe schwebt noch über dem Paket, solange die Hand sie hält
+    fz.aktiv = falteAus(f.falz.x, f.falz.y, p.x, p.y);
+    if (fz.aktiv) fz.aktiv.w = Math.PI - 0.5 * Math.min(1, Math.hypot(p.x - f.falz.x, p.y - f.falz.y) / 0.1);
+  }
 }
 let nachUhr = 0;
+// Takt und Durchgänge der Simulation; wird es zu langsam, rechnet das Tuch gröber
+const TUCH_STUFEN = [[240, 4], [180, 3], [120, 3], [120, 2]];
+let tuchStufe = telefon || leicht ? 1 : 0, tuchZeit = 4;
 function loslassen(id) {
   const f = finger.get(id);
   finger.delete(id);
   if (id !== 'geist' && finger.size === 0) { $('halt').classList.remove('da'); if (!daumenGelernt[lesart]) setTimeout(daumenZeigen, 600); }
   letzteBeruehrung = performance.now() / 1000;
   if (!f) return;
-  if (lesart === 1 && f.griff) {
-    // der Stoff sinkt ein wenig, wenn die Hand ihn loslässt
-    const g = f.griff; g.tx *= 0.86; g.ty = g.ty * 0.86 - 0.012 * (0.5 + WERTE[1][0]);
-    klangFall(Math.min(1, Math.hypot(g.dx, g.dy) * 3));
+  if (f.tuch && tuch) {
+    // der Stoff fällt zurück auf den Tisch
+    klangFall(Math.min(1, tuch.hoehe * 14));
+    tuch.lassen(id);
     clearTimeout(nachUhr);
-    nachUhr = setTimeout(() => { if (!finger.size && lesart === 1) glosse(griffe.length >= 3 ? 'infini' : 'draperie'); }, 2400);
+    nachUhr = setTimeout(() => { if (!finger.size && lesart === 1) glosse(tuchGriffe >= 3 ? 'infini' : 'draperie'); }, 2400);
   }
   if (lesart === 2 && f.falz) {
     if (fz.aktiv) {
@@ -816,14 +977,15 @@ leinwand.addEventListener('pointercancel', (e) => loslassen(e.pointerId));
 
 // alles lösen: das Tuch fällt glatt, das Blatt wird wieder Bild, das Meer beruhigt sich
 function allesLoesen() {
-  for (const g of griffe) { g.tx = 0; g.ty = 0; }
-  tuchFaellt = true;
-  fz.falten = []; fz.aktiv = null; fz.phase = 'flach'; leinwandLeeren();
+  // in der Draperie fällt das Tuch sichtbar zurück, sonst liegt es sofort wieder glatt
+  if (tuch) { if (lesart === 1) tuch.loesen(); else tuch.ruhe(); }
+  tuchGriffe = 0;
+  fz.falten = []; fz.aktiv = null; fz.phase = 'flach'; fz.runde = 0; leinwandLeeren();
   rau.aktiv = false;
   loesenZeigen(); spur('gelöst');
 }
 function loesenZeigen() {
-  const da = (lesart === 1 && griffe.length > 0 && !tuchFaellt) || (lesart === 2 && (fz.bemalt || fz.falten.length > 0));
+  const da = (lesart === 1 && !!tuch && tuch.aktiv && !tuch.heim) || (lesart === 2 && (fz.bemalt || fz.falten.length > 0));
   $('loesen').hidden = !da;
 }
 
@@ -862,19 +1024,21 @@ function haende(t, dt) {
   rau.ruhe = naeher(rau.ruhe, meerZiel ? 0 : 1, dt, 0.5);
   if (rau.meer < 0.01 && !meerZiel) rau.aktiv = false;
 
-  // ----- Draperie: jede Feder einzeln, in zwei kleinen Schritten -----
-  const k = 30 / (0.35 + 1.7 * WERTE[1][0]), daempf = 2 * Math.sqrt(k) * 0.3;
-  for (let s = 0; s < 2; s++) {
-    const h = dt / 2;
-    for (const g of griffe) {
-      const ax = (g.tx - g.dx) * k - g.vx * daempf, ay = (g.ty - g.dy) * k - g.vy * daempf;
-      g.vx += ax * h; g.vy += ay * h; g.dx += g.vx * h; g.dy += g.vy * h;
-    }
+  // ----- Draperie: die Welt des Tuchs, nur solange man sie sieht -----
+  if (tuch && tuch.aktiv && lesart === 1) {
+    const W1 = WERTE[1], t0 = performance.now();
+    const [takt, iter] = TUCH_STUFEN[tuchStufe];
+    tuch.schritt(dt, { gewicht: W1[0], falten: W1[1], hub: 0.045 + 0.035 * W1[1], takt, iter });
+    // zu langsam? dann weniger Durchgänge (das Telefon soll flüssig bleiben)
+    const ms = performance.now() - t0;
+    if (!FEST) { tuchZeit = tuchZeit * 0.9 + ms * 0.1; if (tuchZeit > 9 && tuchStufe < 3) { tuchStufe++; tuchZeit = 6; spur('Tuch Stufe ' + tuchStufe); } else if (tuchZeit < 3 && tuchStufe > 0) { tuchStufe--; tuchZeit = 6; } }
+    if (!tuch.aktiv) loesenZeigen();
   }
-  if (tuchFaellt && griffe.every((g) => Math.hypot(g.dx, g.dy) < 0.002 && Math.hypot(g.vx, g.vy) < 0.01)) { griffe = []; tuchFaellt = false; loesenZeigen(); }
-  tuchDa = naeher(tuchDa, griffe.length ? 1 : 0, dt, 0.3);
+  tuchDa = naeher(tuchDa, tuch && tuch.aktiv ? 1 : 0, dt, 0.3);
 
   // ----- Entfalten -----
+  // eine losgelassene Klappe fällt flach auf das Paket
+  if (fz.phase !== 'oeffnen') for (const F of fz.falten) if (F.w < Math.PI) { F.w = naeher(F.w, Math.PI + 0.02, dt, 0.06); if (F.w >= Math.PI - 0.002) F.w = Math.PI; }
   if (fz.phase === 'warten' && !finger.size && t - fz.zeit > 1.3 && fz.falten.length) {
     fz.phase = 'giessen'; fz.guss = 0; fz.zeit = t; klangGiessen(); spur('giessen');
   }
@@ -884,12 +1048,13 @@ function haende(t, dt) {
   }
   if (fz.phase === 'oeffnen' && t > fz.zeit) {
     const F = fz.falten[fz.falten.length - 1];
-    const u = Math.min(1, (t - fz.zeit) / 0.72), e = u * u * (3 - 2 * u);
+    if (!F.hebt) { F.hebt = true; klangHeben(); }
+    const u = Math.min(1, (t - fz.zeit) / 0.95), e = u * u * u * (u * (u * 6 - 15) + 10);
     F.w = Math.PI * (1 - e);
     if (u >= 1) {
       fz.falten.pop(); klangAuf(fz.falten.length, fz.falten.length === 0);
       fz.zeit = t + 0.12;
-      if (!fz.falten.length) { fz.phase = 'flach'; glosse('deplier'); }
+      if (!fz.falten.length) { fz.phase = 'flach'; fz.runde++; glosse('deplier'); }
     }
   }
 }
@@ -941,10 +1106,10 @@ function daumenZeigen() {
 function haltZeigen(x, y) { const h = $('halt'); h.style.left = x + 'px'; h.style.top = y + 'px'; h.classList.add('da'); }
 function haltBild(dt) {
   if (finger.size && !finger.has('geist')) haltZeit += dt; else haltZeit = 0;
-  const g = [...finger.values()][0]?.griff;
-  const voll = lesart === 0 ? Math.min(1, rau.I) : lesart === 1 ? (g ? Math.min(1, Math.hypot(g.dx, g.dy) / 0.3) : 0) : (fz.falten.length + (fz.aktiv ? 1 : 0)) / FALTEN_MAX;
+  const g = [...finger.values()][0];
+  const voll = lesart === 0 ? Math.min(1, rau.I) : lesart === 1 ? (g && g.tuch ? Math.min(1, Math.hypot(g.x - g.x0, g.y - g.y0) / innerHeight / 0.3) : 0) : (fz.falten.length + (fz.aktiv ? 1 : 0)) / FALTEN_MAX;
   $('halt-voll').style.strokeDashoffset = String(1 - Math.min(1, voll));
-  const gelungen = lesart === 0 ? rau.klar > 0.5 : lesart === 1 ? griffe.some((x) => Math.hypot(x.dx, x.dy) > 0.08) : fz.falten.length >= 1;
+  const gelungen = lesart === 0 ? rau.klar > 0.5 : lesart === 1 ? !!tuch && tuch.stauchung > 0.04 : fz.falten.length >= 1;
   if (!daumenGelernt[lesart] && gelungen) { daumenGelernt[lesart] = true; daumenZeigen(); }
 }
 
@@ -1004,7 +1169,7 @@ function starten() {
 
 // ---------- Schleife ----------
 let standbildWunsch = false, ersterLauf = true, letzteMs = 0, bilderGezaehlt = 0;
-const griffU = new Float32Array(24), griffBU = new Float32Array(24), falzU = new Float32Array(20);
+const falzU = new Float32Array(20);
 function faltenListe() { return fz.aktiv ? [...fz.falten, fz.aktiv] : fz.falten; }
 function falzSetzen(u, liste) {
   falzU.fill(0);
@@ -1031,11 +1196,10 @@ function bild(ms) {
       falzSetzen(u, fz.falten);
       gl.uniform1f(u.uSeite, seite); gl.uniform1f(u.uGuss, fz.guss); gl.uniform1f(u.uDeck, 0.35 + 0.65 * WERTE[2][1]);
       gl.uniform1f(u.uFarbe, WERTE[2][0]); gl.uniform1f(u.uHpx, lein[1].h);
+      const [d, h] = TINTEN[fz.runde % TINTEN.length]; gl.uniform3f(u.uTinteD, ...d); gl.uniform3f(u.uTinteH, ...h);
     });
   }
 
-  let gn = 0; griffU.fill(0); griffBU.fill(0);
-  for (const g of griffe) { griffU.set([g.gx + g.dx, g.gy + g.dy, g.dx, g.dy], gn * 4); griffBU.set([g.sd, g.seed, 0, 0], gn * 4); gn++; }
   const mitKoernern = !!(P.kornPunkt && halbFloat);
   const zug = Math.min(1, rau.I);
   const rauR = rau.Rk * 1.7 + 0.05 * (0.4 + 0.6 * zug);
@@ -1043,22 +1207,21 @@ function bild(ms) {
     gl.uniform1f(u.uSeite, seite); gl.uniform1f(u.uT, t % 1000); gl.uniform1f(u.uHpx, sz.h); gl.uniform1f(u.uDpr, dpr); gl.uniform1f(u.uArt, lesart);
     gl.uniform1f(u.uKoerner, mitKoernern ? 1 : 0); gl.uniform1f(u.uMeer, lesart === 0 ? rau.meer : 0);
     gl.uniform4f(u.uRau, rau.x, rau.y, rau.Rk, rau.klar); gl.uniform4f(u.uRauB, zug * zug * (3 - 2 * zug), rauR, rau.sprungR, rau.sprungA);
-    gl.uniform4fv(u.uGriff, griffU); gl.uniform4fv(u.uGriffB, griffBU); gl.uniform1i(u.uGriffN, gn);
-    gl.uniform4f(u.uTuch, 3 + 7 * WERTE[1][1], WERTE[1][2], 0.7 + 0.6 * WERTE[1][0], lesart === 1 ? tuchDa : 0);
     falzSetzen(u, lesart === 2 ? faltenListe() : []);
     gl.uniform4f(u.uFalt, WERTE[2][0], WERTE[2][1], WERTE[2][2], fz.bemalt ? 1 : 0); gl.uniform1f(u.uGuss, fz.phase === 'giessen' ? fz.guss : 0);
   });
   if (mitKoernern && lesart === 0 && (rau.meer > 0.003 || rau.streuen)) koernerRechnen(t, dt, sz, seite, dpr, zug, rauR);
+  if (lesart === 1 && tuch && tuch.aktiv && P.tuch) zeichneTuch(sz, seite, dpr, t);
+  if (lesart === 2 && P.blatt) zeichneBlatt(sz, seite, dpr, t);
   nachbearbeiten(t, sz);
   haltBild(dt);
 
   // Ton
-  let rascheln = 0, tiefe = 0;
-  for (const g of griffe) { rascheln += Math.hypot(g.vx, g.vy); tiefe += Math.min(0.4, Math.hypot(g.dx, g.dy)); }
+  const rascheln = tuch && tuch.aktiv ? Math.min(1, tuch.energie * 9) : 0, tiefe = tuch && tuch.aktiv ? Math.min(1, tuch.stauchung * 5) : 0;
   const papier = lesart === 2 && fz.aktiv ? bewegungHand : 0;
   const stumm = VORSPANN;
   klangBild({ meer: stumm ? 0 : lesart === 0 ? rau.meer : 0, zug: zug, klar: lesart === 0 ? rau.klar : 0, welle: WERTE[0][0],
-    rascheln: lesart === 1 ? Math.min(1, rascheln * 1.6) : 0, tiefe: lesart === 1 ? Math.min(1, tiefe * 1.4) * tuchDa : 0,
+    rascheln: lesart === 1 ? rascheln : 0, tiefe: lesart === 1 ? tiefe * tuchDa : 0, glanz: WERTE[1][2],
     papier, t });
   if (standbildWunsch) { standbildWunsch = false; leinwand.toBlob((b) => b && zeigen(b, 'falte-' + zeitstempel() + '.png')); }
   if (ersterLauf && bilderGezaehlt++ > 2) { ersterLauf = false; spur('✓ läuft'); }
@@ -1101,6 +1264,135 @@ function koernerRechnen(t, dt, sz, seite, dpr, zug, rauR) {
   gl.enableVertexAttribArray(0);
   gl.disable(gl.BLEND);
 }
+// das Tuch: Schatten aus dem Licht, dann der Tisch, dann der Stoff (mit Tiefe, damit Falten einander verdecken)
+const TUCH_LICHT = (() => { const l = [-0.5, 0.62, 0.4], n = Math.hypot(...l); return l.map((x) => x / n); })();
+// Tiefe für die Szene und eine Schattenkarte aus der Richtung des Lichts (halbe Grösse genügt, der Schatten ist weich)
+const rz = {};
+function raumZiele(sz) {
+  // Tiefe für die Szene, und die Schattenkarte (halbe Grösse genügt, der Schatten ist weich)
+  if (!rz.rb) { rz.rb = gl.createRenderbuffer(); rz.sTex = gl.createTexture(); rz.sFb = gl.createFramebuffer(); }
+  if (rz.b !== sz.b || rz.h !== sz.h || rz.fb !== sz.fb) {
+    rz.b = sz.b; rz.h = sz.h; rz.fb = sz.fb;
+    gl.bindRenderbuffer(gl.RENDERBUFFER, rz.rb); gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, sz.b, sz.h);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, sz.fb); gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, rz.rb);
+    rz.sb = Math.max(256, Math.round(sz.b / 2)); rz.sh = Math.max(256, Math.round(sz.h / 2));
+    gl.bindTexture(gl.TEXTURE_2D, rz.sTex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT24, rz.sb, rz.sh, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
+    for (const [k, w] of [[gl.TEXTURE_MIN_FILTER, gl.NEAREST], [gl.TEXTURE_MAG_FILTER, gl.NEAREST], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]]) gl.texParameteri(gl.TEXTURE_2D, k, w);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, rz.sFb); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, rz.sTex, 0);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  }
+  return rz;
+}
+let tg = null;
+function tuchGL(T, sz) {
+  if (!tg || tg.T !== T) {
+    if (tg) { gl.deleteTexture(tg.lage); gl.deleteTexture(tg.norm); gl.deleteBuffer(tg.buf); gl.deleteBuffer(tg.idx); gl.deleteVertexArray(tg.vao); }
+    const tex = () => { const x = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, x);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, T.NX, T.NY, 0, gl.RGBA, gl.FLOAT, null);
+      for (const [k, w] of [[gl.TEXTURE_MIN_FILTER, gl.NEAREST], [gl.TEXTURE_MAG_FILTER, gl.NEAREST], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]]) gl.texParameteri(gl.TEXTURE_2D, k, w);
+      return x; };
+    // das Netz: dreimal feiner als das Gitter der Simulation
+    const R = leicht ? 2 : 3, MX = (T.NX - 1) * R + 1, MY = (T.NY - 1) * R + 1;
+    const ecken = new Float32Array(MX * MY * 2);
+    for (let j = 0; j < MY; j++) for (let i = 0; i < MX; i++) { ecken[(j * MX + i) * 2] = i / R; ecken[(j * MX + i) * 2 + 1] = j / R; }
+    const idx = new Uint32Array((MX - 1) * (MY - 1) * 6); let n = 0;
+    for (let j = 0; j < MY - 1; j++) for (let i = 0; i < MX - 1; i++) { const k = j * MX + i; idx.set([k, k + 1, k + MX, k + 1, k + MX + 1, k + MX], n); n += 6; }
+    const vao = gl.createVertexArray(); gl.bindVertexArray(vao);
+    const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, ecken, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(1); gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 0, 0);
+    const ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, idx, gl.STATIC_DRAW);
+    gl.bindVertexArray(null);
+    tg = { ...(tg || {}), T, lage: tex(), norm: tex(), buf, idx: ib, vao, n };
+    spur('Tuch ' + T.NX + '×' + T.NY + ', Netz ' + MX + '×' + MY);
+  }
+  raumZiele(sz);
+  return tg;
+}
+function schattenBinden(pr, e, bias) {
+  gl.activeTexture(gl.TEXTURE0 + e); gl.bindTexture(gl.TEXTURE_2D, rz.sTex); gl.uniform1i(pr.u.uSchatten, e);
+  gl.uniform2f(pr.u.uSchattenPx, 1 / rz.sb, 1 / rz.sh); gl.uniform1f(pr.u.uBias, bias);
+}
+// das Blatt im Raum: Schatten, Tisch, Papier
+const BLATT_HC = 2.6, BLATT_DICKE = 0.0022;
+let bg = null;
+function zeichneBlatt(sz, seite, dpr, t) {
+  if (!bg) {
+    bg = { daten: new Float32Array(9 * 60000), vao: gl.createVertexArray(), buf: gl.createBuffer() };
+    gl.bindVertexArray(bg.vao); gl.bindBuffer(gl.ARRAY_BUFFER, bg.buf); gl.bufferData(gl.ARRAY_BUFFER, bg.daten.byteLength, gl.DYNAMIC_DRAW);
+    for (const [ort, n, ab] of [[1, 3, 0], [2, 2, 3], [3, 3, 5], [4, 1, 8]]) { gl.enableVertexAttribArray(ort); gl.vertexAttribPointer(ort, n, gl.FLOAT, false, 36, ab * 4); }
+    gl.bindVertexArray(null);
+  }
+  const liste = faltenListe().slice(0, FALTEN_MAX);
+  const st = stueckeBauen(liste, seite);
+  const n = blattDreiecke(st, liste, liste.map((F) => F.w), bg.daten);
+  gl.bindBuffer(gl.ARRAY_BUFFER, bg.buf); gl.bufferSubData(gl.ARRAY_BUFFER, 0, bg.daten, 0, n * 9);
+  raumZiele(sz);
+  const raum = (pr) => { gl.useProgram(pr); gl.uniform1f(pr.u.uSeite, seite); gl.uniform1f(pr.u.uHc, BLATT_HC); gl.uniform1f(pr.u.uDicke, BLATT_DICKE); gl.uniform3f(pr.u.uLicht, ...TUCH_LICHT); };
+  // 1. Schattenkarte
+  gl.bindFramebuffer(gl.FRAMEBUFFER, rz.sFb); gl.viewport(0, 0, rz.sb, rz.sh);
+  gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LESS); gl.depthMask(true); gl.clearDepth(1); gl.clear(gl.DEPTH_BUFFER_BIT);
+  gl.colorMask(false, false, false, false);
+  raum(P.blattSchatten);
+  gl.bindVertexArray(bg.vao); gl.drawArrays(gl.TRIANGLES, 0, n); gl.bindVertexArray(null);
+  gl.colorMask(true, true, true, true);
+  // 2. der Tisch
+  gl.disable(gl.DEPTH_TEST);
+  rechne(P.tisch, sz, {}, (u) => {
+    gl.uniform1f(u.uSeite, seite); gl.uniform1f(u.uHpx, sz.h); gl.uniform1f(u.uT, t % 1000); gl.uniform3f(u.uLicht, ...TUCH_LICHT);
+    schattenBinden(P.tisch, 6, 0.00025);
+  });
+  // 3. das Papier
+  gl.enable(gl.DEPTH_TEST); gl.clear(gl.DEPTH_BUFFER_BIT);
+  const pr = P.blatt; raum(pr);
+  gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, scharfTex); gl.uniform1i(pr.u.uScharf, 2);
+  gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, (fz.phase === 'giessen' ? lein[1] : lein[0]).tex); gl.uniform1i(pr.u.uLein, 3);
+  schattenBinden(pr, 6, 0.00025);
+  gl.uniform1f(pr.u.uHpx, sz.h); gl.uniform1f(pr.u.uDpr, dpr); gl.uniform1f(pr.u.uT, t % 1000);
+  gl.uniform1f(pr.u.uGuss, fz.phase === 'giessen' ? fz.guss : 0); gl.uniform1f(pr.u.uFalzRelief, WERTE[2][2]);
+  gl.bindVertexArray(bg.vao); gl.drawArrays(gl.TRIANGLES, 0, n); gl.bindVertexArray(null);
+  gl.disable(gl.DEPTH_TEST);
+}
+function zeichneTuch(sz, seite, dpr, t) {
+  const T = tuch, G = tuchGL(T, sz);
+  T.ausgeben();
+  gl.bindTexture(gl.TEXTURE_2D, G.lage); gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, T.NX, T.NY, gl.RGBA, gl.FLOAT, T.lage);
+  gl.bindTexture(gl.TEXTURE_2D, G.norm); gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, T.NX, T.NY, gl.RGBA, gl.FLOAT, T.normale);
+  const gemeinsam = (pr) => {
+    gl.useProgram(pr);
+    gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, G.lage); gl.uniform1i(pr.u.uLage, 2);
+    gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, G.norm); gl.uniform1i(pr.u.uNorm, 3);
+    gl.uniform2f(pr.u.uGitter, T.NX, T.NY); gl.uniform2f(pr.u.uMasche, T.hx, T.hy); gl.uniform1f(pr.u.uSeite, seite);
+    gl.uniform3f(pr.u.uLicht, ...TUCH_LICHT);
+  };
+  const schattenGeben = (pr, e) => {
+    schattenBinden(pr, e, 0.004);
+  };
+  // 1. Schattenkarte: aus der Richtung des Lichts, nur die Tiefe
+  gl.bindFramebuffer(gl.FRAMEBUFFER, rz.sFb); gl.viewport(0, 0, rz.sb, rz.sh);
+  gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LESS); gl.depthMask(true);
+  gl.clearDepth(1); gl.clear(gl.DEPTH_BUFFER_BIT);
+  gl.colorMask(false, false, false, false);
+  gemeinsam(P.tuchSchatten);
+  gl.bindVertexArray(G.vao); gl.drawElements(gl.TRIANGLES, G.n, gl.UNSIGNED_INT, 0); gl.bindVertexArray(null);
+  gl.colorMask(true, true, true, true);
+  // 2. der Tisch
+  gl.disable(gl.DEPTH_TEST);
+  rechne(P.tisch, sz, {}, (u) => {
+    gl.uniform1f(u.uSeite, seite); gl.uniform1f(u.uHpx, sz.h); gl.uniform1f(u.uT, t % 1000); gl.uniform3f(u.uLicht, ...TUCH_LICHT);
+    schattenGeben(P.tisch, 6);
+  });
+  // 3. der Stoff
+  gl.enable(gl.DEPTH_TEST); gl.clear(gl.DEPTH_BUFFER_BIT);
+  gemeinsam(P.tuch);
+  gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D, scharfTex); gl.uniform1i(P.tuch.u.uScharf, 4);
+  schattenGeben(P.tuch, 6);
+  const W1 = WERTE[1];
+  gl.uniform1f(P.tuch.u.uHpx, sz.h); gl.uniform1f(P.tuch.u.uDpr, dpr); gl.uniform1f(P.tuch.u.uGlanz, W1[2]); gl.uniform1f(P.tuch.u.uSchwer, W1[0]);
+  gl.uniform1f(P.tuch.u.uDa, Math.min(1, tuchDa * 1.5));
+  gl.bindVertexArray(G.vao); gl.drawElements(gl.TRIANGLES, G.n, gl.UNSIGNED_INT, 0); gl.bindVertexArray(null);
+  gl.disable(gl.DEPTH_TEST);
+}
 function nachbearbeiten(t, sz) {
   const B = leinwand.width, H = leinwand.height, b4 = Math.max(1, Math.round(B / 4)), h4 = Math.max(1, Math.round(H / 4));
   const gA = zielBauen('glowA', b4, h4), gB = zielBauen('glowB', b4, h4);
@@ -1109,7 +1401,7 @@ function nachbearbeiten(t, sz) {
   rechne(P.weich, gA, { uQ: gB }, (u) => gl.uniform2f(u.uRichtung, 0, 1.6 / h4));
   const tief = lesart === 0 ? rau.meer : lesart === 1 ? tuchDa : fz.falten.length ? 1 : 0;
   rechne(P.zusammen, null, { uSzene: sz, uGlow: gA }, (u) => {
-    gl.uniform2f(u.uPx, 1 / B, 1 / H); gl.uniform1f(u.uGlowStaerke, [0.2, 0.22, 0.16][lesart] * (0.3 + 0.7 * tief));
+    gl.uniform2f(u.uPx, 1 / B, 1 / H); gl.uniform1f(u.uGlowStaerke, [0.12, 0.2, 0.14][lesart] * (0.3 + 0.7 * tief));
     gl.uniform1f(u.uT, t % 100); gl.uniform1f(u.uKorn, 0.024 + 0.012 * tief);
   });
 }
@@ -1272,4 +1564,4 @@ uebersetzen();
 if (Q.has('lesart')) lesartWaehlen(Math.max(0, Math.min(2, +Q.get('lesart') || 0)), true);
 if (Q.has('beispiel')) beispielStarten();
 // für Prüfungen: Werte setzen, Finger von aussen führen
-window.__falte = { WERTE, beruehren, bewegen, loslassen, lesartWaehlen, allesLoesen, rau, fz, griffe: () => griffe, zustand: () => ({ lesart, phase: fz.phase, falten: fz.falten.length, I: rau.I, klar: rau.klar }) };
+window.__falte = { WERTE, beruehren, bewegen, loslassen, lesartWaehlen, allesLoesen, rau, fz, tuch: () => tuch, zustand: () => ({ lesart, phase: fz.phase, falten: fz.falten.length, I: rau.I, klar: rau.klar }) };

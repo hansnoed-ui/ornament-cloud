@@ -4,7 +4,7 @@
 //   rein hervor. Lässt man los, sinkt er ins Rauschen zurück.
 // Draperie: das Rascheln von schwerem Stoff, so laut, wie er sich bewegt; darunter ein tiefer Continuo-Grund (Gambe auf D und A),
 //   der mit der Tiefe der Falten wächst; ein weicher Fall, wenn die Hand loslässt.
-// Entfalten: Papier knistert beim Falten, jeder Falz ein Knick; das Bild giesst sich als Rauschen über das Paket;
+// Entfalten: Papier knistert beim Falten, jeder Falz ein Knick; die Farbe giesst sich als Schwall über das Paket und tropft;
 //   jede Falte, die sich öffnet, ein Cembaloton, aufsteigend, zuletzt ein Akkord.
 
 let ctx = null, haupt = null, trocken = null, nass = null, hall = null, ziel = null, rausch = null;
@@ -167,13 +167,28 @@ export function klangGiessen() {
   const t = ctx.currentTime + 0.005;
   stoss(t, { typ: 'lowpass', f: 220, q: 0.8, laut: 0.12, an: 0.35, dauer: 1.1, rate: 0.9, fBis: 1800 });
   stoss(t + 0.2, { typ: 'bandpass', f: 1400, q: 0.6, laut: 0.04, an: 0.3, dauer: 0.9, rate: 1.2, pan: 0.4 });
+  // die Farbe tropft vom Paket: kleine Blasen, deren Ton steigt (so klingt ein Tropfen, der ins Nasse fällt)
+  for (let i = 0; i < 11; i++) tropfen(t + 0.35 + Math.pow(Math.random(), 0.7) * 1.3, 700 + Math.random() * 900, 0.5 + 0.5 * Math.random(), Math.random() * 1.4 - 0.7);
+}
+function tropfen(t, f, laut, pan) {
+  const o = ctx.createOscillator(); o.type = 'sine';
+  o.frequency.setValueAtTime(f, t); o.frequency.exponentialRampToValueAtTime(f * 2.2, t + 0.05);
+  const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.035 * laut, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.07);
+  const p = panner(pan); o.connect(g); g.connect(p); p.connect(trocken); p.connect(nass);
+  o.start(t); o.stop(t + 0.1);
+  setTimeout(() => { try { p.disconnect(); } catch {} }, (t - ctx.currentTime) * 1000 + 600);
+}
+// eine Klappe hebt sich: ein Luftzug, so lange sie steht
+export function klangHeben() {
+  if (!ctx || ctx.state !== 'running' || !an) return;
+  const t = ctx.currentTime + 0.005;
+  stoss(t, { typ: 'bandpass', f: 400, q: 0.7, laut: 0.05, an: 0.3, dauer: 0.6, rate: 0.9, fBis: 1500 });
 }
 // eine Falte öffnet sich: ein Wisch Papier und ein Cembaloton; zuletzt ein Akkord
 const AUF = [587.33, 493.88, 440.0, 369.99, 293.66];
 export function klangAuf(rest = 0, letzte = false) {
   if (!ctx || ctx.state !== 'running' || !an) return;
   const t = ctx.currentTime + 0.005;
-  stoss(t, { typ: 'bandpass', f: 3000, q: 0.5, laut: 0.05, an: 0.05, dauer: 0.22, rate: 1.2, pan: rest % 2 ? 0.4 : -0.4 });
   const toene = letzte ? [146.83, 220.0, 293.66, 369.99, 440.0] : [AUF[Math.min(AUF.length - 1, rest)]];
   toene.forEach((f, i) => cembalo(t + (letzte ? i * 0.045 : 0), f, letzte ? 0.75 : 1, letzte ? (i - 2) * 0.25 : 0));
 }
@@ -193,7 +208,7 @@ function cembalo(t, f, laut = 1, pan = 0) {
 }
 
 // je Bild: Meer, Resonanz, reiner Klang; Stoff und Gambe; Papier
-export function klangBild({ meer = 0, zug = 0, klar = 0, welle = 0.5, rascheln = 0, tiefe = 0, papier = 0, t: zeit = 0 }) {
+export function klangBild({ meer = 0, zug = 0, klar = 0, welle = 0.5, rascheln = 0, tiefe = 0, glanz = 0.5, papier = 0, t: zeit = 0 }) {
   if (!ctx || ctx.state !== 'running') return;
   const t = ctx.currentTime;
   // die Dünung: Wellen von ungleicher Länge, jede bricht und verebbt
@@ -209,8 +224,10 @@ export function klangBild({ meer = 0, zug = 0, klar = 0, welle = 0.5, rascheln =
   resoGain.gain.setTargetAtTime(meer * zug * (1 - 0.7 * klar) * 0.12 * Math.sqrt(Q / 3) * 0.55, t, 0.3);
   reinGain.gain.setTargetAtTime(0.32 * klar * meer, t, klar > 0.5 ? 0.25 : 0.9);
   // Stoff
-  stoffGain.gain.setTargetAtTime(0.09 * Math.pow(rascheln, 0.8), t, 0.06);
-  stoffFilter.frequency.setTargetAtTime(1800 + 1800 * rascheln, t, 0.1);
+  // Seide raschelt hell und knisternd, Samt dumpf und weich
+  stoffGain.gain.setTargetAtTime(0.09 * Math.pow(rascheln, 0.8) * (0.6 + 0.6 * glanz), t, 0.06);
+  stoffFilter.frequency.setTargetAtTime((900 + 2600 * glanz) * (0.8 + 0.5 * rascheln), t, 0.1);
+  stoffFilter.Q.setTargetAtTime(0.5 + 1.2 * glanz, t, 0.2);
   stoffTiefGain.gain.setTargetAtTime(0.12 * rascheln, t, 0.08);
   gambeGain.gain.setTargetAtTime(0.5 * tiefe, t, 0.9);
   gambeFilter.frequency.setTargetAtTime(220 + 700 * tiefe, t, 0.8);
