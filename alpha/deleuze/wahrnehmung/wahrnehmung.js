@@ -6,6 +6,7 @@
 
 import { klangStarten, klangBild, klangAn, klangIstAn, klangSpur, klangTropfen } from './klang.js?v=2';
 import { aufnahmeDatei } from '../gemeinsam/aufnahme.js?v=1';
+import { fotoLesen, istVideo, istFoto, istHeic, dateiMeldung } from '../gemeinsam/fotos.js?v=1';
 
 const $ = (id) => document.getElementById(id);
 const Q = new URLSearchParams(location.search);
@@ -808,7 +809,7 @@ function videoStarten(datei) {
   const alt = videoEl.srcObject; if (alt) alt.getTracks().forEach((t) => t.stop());
   videoEl.srcObject = null; $('wenden').hidden = true; videoFrei();
   videoUrl = URL.createObjectURL(datei); videoEl.src = videoUrl;
-  videoEl.play().then(() => { quelle = videoEl; spiegelnQuelle = false; starten(); }).catch(() => melden(TEXTE[sprache].keineKamera));
+  videoEl.play().then(() => { quelle = videoEl; spiegelnQuelle = false; starten(); }).catch(() => { spur('Video unlesbar'); melden(dateiMeldung(sprache, 'video')); });
 }
 
 // Beispiele: Christians Porträt «Wan, Pendel» und «Infinite Mantra» (liegen beim Kristall); jedes Tippen nimmt das nächste
@@ -828,10 +829,11 @@ $('kamera').addEventListener('click', kameraStarten);
 $('beispiel').addEventListener('click', beispielStarten);
 $('datei').addEventListener('change', (e) => {
   const alle = [...e.target.files]; e.target.value = '';
-  const film = alle.find((f) => f.type.startsWith('video/'));
+  const film = alle.find(istVideo);
   if (film) return videoStarten(film);
-  const bilder = alle.filter((f) => f.type.startsWith('image/'));
+  const bilder = alle.filter(istFoto);
   if (bilder.length) fotosStarten(bilder);
+  else if (alle.length) { spur('Datei unbekannt: ' + (alle[0].type || alle[0].name)); melden(dateiMeldung(sprache, 'nichts')); }
 });
 
 // Fotos: ein Foto hat keine Dauer, also bekommt es eine. Eine langsame Fahrt durch das Foto, mehrere lösen einander ab.
@@ -847,14 +849,11 @@ async function fotosStarten(dateien) {
   for (const f of fotos) f.close?.();
   fotos = [];
   for (const d of dateien.slice(0, 24)) {
-    try {
-      const roh = await createImageBitmap(d);
-      const s = Math.min(1, 2400 / Math.max(roh.width, roh.height));   // Telefonregel: höchstens 2400 Punkte
-      fotos.push(s < 1 ? await createImageBitmap(roh, { resizeWidth: Math.round(roh.width * s), resizeHeight: Math.round(roh.height * s), resizeQuality: 'high' }) : roh);
-      if (s < 1) roh.close();
-    } catch { spur('Foto unlesbar'); }
+    // Telefonregel: höchstens 2400 Punkte (fotoLesen in gemeinsam/fotos.js)
+    try { fotos.push(await fotoLesen(d)); }
+    catch (e) { spur('Foto unlesbar: ' + String(e.message || e).slice(0, 140)); }
   }
-  if (!fotos.length) return melden(TEXTE[sprache].keineKamera);
+  if (!fotos.length) return melden(dateiMeldung(sprache, dateien.some(istHeic) ? 'heic' : 'foto'));
   const alt = videoEl.srcObject; if (alt) alt.getTracks().forEach((t) => t.stop());
   videoEl.pause(); videoFrei();
   fotoBuehneGroesse();

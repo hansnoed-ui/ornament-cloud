@@ -5,6 +5,7 @@
 import { SCHLIFFE, schliffEbenen } from './schliffe.js?v=8';
 import { klangStarten, klangBild, klangAn, klangIstAn, klangSpur } from './klang.js?v=1';
 import { aufnahmeDatei } from '../gemeinsam/aufnahme.js?v=1';
+import { fotoLesen, istVideo, istFoto, istHeic, dateiMeldung } from '../gemeinsam/fotos.js?v=1';
 
 const $ = (id) => document.getElementById(id);
 
@@ -690,7 +691,7 @@ $('wenden').addEventListener('click', () => { blick = blick === 'user' ? 'enviro
 function videoStarten(datei) {
   spur('Video gewählt');
   videoEl.srcObject = null; $('wenden').hidden = true; videoEl.src = URL.createObjectURL(datei);
-  videoEl.play().then(() => { quelle = videoEl; spiegelnQuelle = false; starten(); }).catch(() => melden(TEXTE[sprache].keineKamera));
+  videoEl.play().then(() => { quelle = videoEl; spiegelnQuelle = false; starten(); }).catch(() => { spur('Video unlesbar'); melden(dateiMeldung(sprache, 'video')); });
 }
 
 // Beispiel ohne Kamera: eine kleine Choreografie aus Figur, Licht und Schrift
@@ -734,10 +735,11 @@ $('kamera').addEventListener('click', kameraStarten);
 $('beispiel').addEventListener('click', beispielStarten);
 $('datei').addEventListener('change', (e) => {
   const alle = [...e.target.files]; e.target.value = '';
-  const film = alle.find((f) => f.type.startsWith('video/'));
+  const film = alle.find(istVideo);
   if (film) return videoStarten(film);
-  const fotos = alle.filter((f) => f.type.startsWith('image/'));
+  const fotos = alle.filter(istFoto);
   if (fotos.length) fotosStarten(fotos);
+  else if (alle.length) { spur('Datei unbekannt: ' + (alle[0].type || alle[0].name)); melden(dateiMeldung(sprache, 'nichts')); }
 });
 
 // Fotos: ein Foto hat keine Zeit, also bekommt es eine. Eines wandert langsam durch seinen eigenen Ausschnitt,
@@ -756,15 +758,11 @@ async function fotosStarten(dateien) {
   for (const f of fotos) f.close?.();
   fotos = [];
   for (const d of dateien.slice(0, 24)) {
-    try {
-      const roh = await createImageBitmap(d);
-      // Telefonregel: höchstens 2400 Punkte; so bleibt die Kamerafahrt durchs Foto auch am grossen Bildschirm scharf
-      const s = Math.min(1, 2400 / Math.max(roh.width, roh.height));
-      fotos.push(s < 1 ? await createImageBitmap(roh, { resizeWidth: Math.round(roh.width * s), resizeHeight: Math.round(roh.height * s), resizeQuality: 'high' }) : roh);
-      if (s < 1) roh.close();
-    } catch { spur('Foto unlesbar'); }
+    // Telefonregel: höchstens 2400 Punkte (fotoLesen in gemeinsam/fotos.js)
+    try { fotos.push(await fotoLesen(d)); }
+    catch (e) { spur('Foto unlesbar: ' + String(e.message || e).slice(0, 140)); }
   }
-  if (!fotos.length) return melden(TEXTE[sprache].keineKamera);
+  if (!fotos.length) return melden(dateiMeldung(sprache, dateien.some(istHeic) ? 'heic' : 'foto'));
   fotoBuehneGroesse();
   $('wenden').hidden = true; quelle = fotoBuehne; spiegelnQuelle = false; fotoStart = performance.now() / 1000; starten();
 }
