@@ -242,3 +242,9 @@ Christian zu 0.2.1: «Kürzen und insgesamt nochmals etwas runtergehen.»
 - Mischperkussion: keine Aussetzer mehr innerhalb ihrer Abschnitte.
 - Wechselnde Perkussion (Ornament): je Abschnitt schweigt nur eine Stimme, in «Gas geben» und «Wiederfinden» spielen alle.
 - Stille Spur-Takte je Track (90 s und 3 min gemittelt): Ornament 366 → 241, Drum and Bass 275 → 225; Dropouts Ornament 33 → 29, DnB 32 → 29.
+
+## 21. November 2026: Unterbrechungen und Bereiche kompakt
+
+Christian (Screenshot Filterfahrt am Handy): «Hier wird noch viel Platz verspielt». Drehknöpfe stehen jetzt nebeneinander (am Handy vier pro Zeile),
+Wahl, an, hinhören und löschen in einer Zeile, Auswahlfelder (Filter, von, bis) halb breit nebeneinander. Eine Filterfahrt-Karte ist am Handy
+rund 270 statt rund 600 px hoch.
