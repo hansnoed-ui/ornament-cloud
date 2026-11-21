@@ -132,6 +132,9 @@ function bau(sprache) {
   const kasten = ladeZettelkasten(sprache);
   const zettel = ladeZettel(sprache);
   const istDe = sprache === "de";
+  // 21. November 2026: an der Wurzel / steht die Brillant-Seite (alpha/brillant/); die deutsche Startseite des Neubaus heisst /start/
+  const S = istDe ? "/start/" : B;                       // Adresse der eigenen Startseite
+  const deAdr = (p) => (p === "" ? "start/" : p);       // deutsche Adresse einer Seite ohne führenden Schrägstrich
 
   /** umgekehrt: die Zettel, die zu einem Stück am besten passen */
   const zettelZu = (art, slug, n = 3) => zettel.map((z) => ({ z, w: jevZettel(z.number)[art]?.[slug] || 0 })).filter((x) => x.w > 0).sort((a, b) => b.w - a.w).slice(0, n).map((x) => x.z);
@@ -237,11 +240,11 @@ function bau(sprache) {
   }
 
   /** der Schalter d · e neben dem Signet: dieselbe Seite in der anderen Sprache (die Werkstatt gibt es nur deutsch) */
-  const sprachwahl = (pfad, nurDe = false) => `<nav class="sprache" aria-label="${attr(T.sprache.aria)}"><a href="/${pfad}" lang="de" hreflang="de" title="${T.sprache.de}"${istDe ? ' aria-current="true"' : ""}>d</a>${nurDe ? "" : `<a href="/en/${pfad}" lang="en" hreflang="en" title="${T.sprache.en}"${istDe ? "" : ' aria-current="true"'}>e</a>`}</nav>`;
+  const sprachwahl = (pfad, nurDe = false) => `<nav class="sprache" aria-label="${attr(T.sprache.aria)}"><a href="/${deAdr(pfad)}" lang="de" hreflang="de" title="${T.sprache.de}"${istDe ? ' aria-current="true"' : ""}>d</a>${nurDe ? "" : `<a href="/en/${pfad}" lang="en" hreflang="en" title="${T.sprache.en}"${istDe ? "" : ' aria-current="true"'}>e</a>`}</nav>`;
 
   /** Eine ganze Seite */
   function seite({ pfad, titel, beschreibung, body, aktiv, noindex = false, jsonld = [], typ = "website", bild, bildAlt, kopfTitel, module = [], nurDe = false, kopfMehr = "", skripte = [], zaehlen = true }) {
-    const url = `${BASIS}${B}${pfad}`;
+    const url = istDe ? `${BASIS}/${deAdr(pfad)}` : `${BASIS}${B}${pfad}`;
     const k = `${D}kacheln/${kachelName(pfad)}.png`;
     const og = bild || `${BASIS}${k}`;
     const ld = [{ "@context": "https://schema.org", "@type": "WebSite", name: "ornament.cloud", url: `${BASIS}${B}`, inLanguage: T.inLanguage, author: { "@type": "Person", name: SEITE.person.name } }, ...jsonld];
@@ -253,7 +256,7 @@ function bau(sprache) {
   <title>${esc(kopfTitel || (pfad ? `${titel} – ornament.cloud` : T.kopfTitelStart))}</title>
   <meta name="description" content="${attr(beschreibung)}">
   ${noindex ? '<meta name="robots" content="noindex">' : `<link rel="canonical" href="${attr(url)}">`}${kopfMehr ? `\n  ${kopfMehr}` : ""}
-  ${noindex || nurDe ? "" : `<link rel="alternate" hreflang="de" href="${BASIS}/${pfad}">\n  <link rel="alternate" hreflang="en" href="${BASIS}/en/${pfad}">\n  <link rel="alternate" hreflang="x-default" href="${BASIS}/${pfad}">`}
+  ${noindex || nurDe ? "" : `<link rel="alternate" hreflang="de" href="${BASIS}/${deAdr(pfad)}">\n  <link rel="alternate" hreflang="en" href="${BASIS}/en/${pfad}">\n  <link rel="alternate" hreflang="x-default" href="${BASIS}/${deAdr(pfad)}">`}
   <meta name="author" content="${attr(SEITE.person.name)}">
   <meta name="theme-color" content="#000000">
   <link rel="icon" href="${ICON}">
@@ -283,7 +286,7 @@ function bau(sprache) {
   <a class="sprung" href="#inhalt">${esc(T.sprung)}</a>
   <header class="kopf">
     <div class="spalte">
-      <div class="marke"><a class="signet" href="${B}"${pfad === "" ? ' aria-current="page"' : ""}>${SIGNET}<span>ornament.cloud</span></a>${sprachwahl(pfad, nurDe)}</div>
+      <div class="marke"><a class="signet" href="${S}"${pfad === "" ? ' aria-current="page"' : ""}>${SIGNET}<span>ornament.cloud</span></a>${sprachwahl(pfad, nurDe)}</div>
       <nav class="hauptnav" aria-label="${attr(T.hauptnav)}">${HAUPT.map((p) => `<a href="${B}${p}"${aktiv === p ? ' aria-current="page"' : ""}>${T.nav[p]}</a>`).join("")}<details class="beta ueber"><summary${UNTER_UEBER.includes(aktiv) ? ' class="aktiv"' : ""}>${T.nav["ueber/"]}</summary><span class="beta-liste">${UNTER_UEBER.map((p) => `<a href="${B}${p}"${aktiv === p ? ' aria-current="page"' : ""}>${T.nav[p]}</a>`).join("")}</span></details><a href="${B}werke/"${aktiv === "werke/" ? ' aria-current="page"' : ""}>${T.nav["werke/"]}</a><a class="atelier-link" href="${B}atelier/"${aktiv === "atelier/" ? ' aria-current="page"' : ""}>${T.nav["atelier/"]}</a><a href="${B}hoeren/"${aktiv === "hoeren/" ? ' aria-current="page"' : ""}>${T.nav["hoeren/"]}</a></nav>
     </div>
   </header>
@@ -314,7 +317,7 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
 
   function veroeffentliche(opts) {
     schreibe(opts.pfad, seite(opts));
-    if (!opts.noindex) { sitemapSeiten.push(`${B.slice(1)}${opts.pfad}`); kachelSeiten[sprache].push(opts.pfad); }
+    if (!opts.noindex) { sitemapSeiten.push(istDe ? deAdr(opts.pfad) : `${B.slice(1)}${opts.pfad}`); kachelSeiten[sprache].push(opts.pfad); }
   }
 
   /* ---------- Die Bühne: eine Web-Anwendung in der neuen Seite (20. Oktober 2026, Wunsch: «Wenn ich bei den Apps die Webanwendung öffne, lande ich immer noch
@@ -337,7 +340,7 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
 </head>
 <body class="buehne-seite">
   <div class="app-leiste">
-    <span class="app-name"><a class="signet" href="${B}" title="ornament.cloud">${SIGNET}</a><b>${esc(name)}</b></span>
+    <span class="app-name"><a class="signet" href="${S}" title="ornament.cloud">${SIGNET}</a><b>${esc(name)}</b></span>
     <span class="app-knoepfe">
       <button type="button" class="vollbild" title="${attr(T.buehne.vollbild)}">${zeichen("vollbild")}<span>${esc(T.buehne.vollbild)}</span></button>
       <a class="tab" href="/${attr(ziel)}?sprache=${sprache}" target="_blank" rel="noopener" title="${attr(T.buehne.tabTitel)}">${zeichen("tab")}<span>${esc(T.buehne.tab)}</span></a>

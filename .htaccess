@@ -25,11 +25,20 @@ AddDefaultCharset UTF-8
   # 1) Alte Adressen /b/… dauerhaft (301) auf die Wurzel. Nur Seiten (Adresse endet auf / oder index.html); Bilder, Skripte und
   #    Stylesheets bleiben unter /b/, die Seiten binden sie dort ein. THE_REQUEST ist, was der Browser verlangt hat: so greift die
   #    Regel nicht auf die internen Umschreibungen unten (sonst liefe es im Kreis). Die Abfrage (?…) bleibt dran.
+  #    Die Startseite des Neubaus heisst seit 21. November 2026 /start/ (siehe 2).
+  RewriteCond %{THE_REQUEST} \s/b/(index\.html)?[?\s]
+  RewriteRule ^b/(index\.html)?$ /start/ [R=301,L]
   RewriteCond %{THE_REQUEST} \s/b/
   RewriteRule ^b/(.*/)?(index\.html)?$ /$1 [R=301,L]
-  # 2) Die Startseite ist der Neubau; die bisherige Startseite (index.html) bleibt unter /?bisher.
+  # 2) Die Startseite ist seit 21. November 2026 die Brillant-Seite (Dateien in alpha/brillant/, <base> dort; noindex, Google sieht
+  #    weiter den Neubau). Der Neubau-Start heisst /start/ (canonical, Sitemap); die ganz alte Startseite (index.html) bleibt unter /?bisher.
+  #    Die alte Adresse /alpha/brillant/ leitet dauerhaft auf / um (die Abfrage, etwa ?lang=fr, bleibt dran).
+  RewriteCond %{THE_REQUEST} \s/alpha/brillant/(index\.html)?[?\s]
+  RewriteRule ^alpha/brillant/(index\.html)?$ / [R=301,L]
+  RewriteRule ^start$ /start/ [R=301,L]
   RewriteCond %{QUERY_STRING} !(^|&)bisher(&|=|$)
-  RewriteRule ^$ /b/index.html [L]
+  RewriteRule ^$ /alpha/brillant/index.html [L]
+  RewriteRule ^start/$ /b/index.html [L]
   RewriteRule ^en/$ /b/en/index.html [L]
   # 3) Die Bereiche des Neubaus, intern aus b/ (tests/wurzel.test.mjs prüft, dass die Liste zu den Ordnern unter b/ passt).
   #    Gleicher Name an der Wurzel: der Neubau gewinnt (apps/). werke/ nur die Übersicht; darunter liegen ältere Werke an der

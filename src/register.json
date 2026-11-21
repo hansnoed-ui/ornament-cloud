@@ -198,9 +198,9 @@
    "name": "Brillante Ideen (Titelsequenz)",
    "tuer": "spielen-denken",
    "art": "App",
-   "status": "direktlink",
+   "status": "verlinkt",
    "adresse": "alpha/brillant/",
-   "kurz": "Beispiel-Website: der i-Punkt in «Brillante Ideen» ist ein Brillant; im Menü zeigt er fünf Anwendungen (the deleuzian scheme, Das Dritte Rad, Animations, ornament.lab, Composer) als Karten im Raum."
+   "kurz": "Startseite an der Wurzel (seit 21.11.2026, noindex; «ornament.cloud» oben führt auf /start/):  der i-Punkt in «Brillante Ideen» ist ein Brillant; im Menü zeigt er fünf Anwendungen (the deleuzian scheme, Das Dritte Rad, Animations, ornament.lab, Composer) als Karten im Raum."
   },
   {
    "id": "kunsttheorie",
