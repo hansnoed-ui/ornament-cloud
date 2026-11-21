@@ -44,9 +44,9 @@ const TEXTE = {
     regler: [['Stimme', 'Milieu', 'Sand'], ['Tempo', 'Revier', 'Echo'], ['Linien', 'Spirale', 'Sterne']],
     reglerGlosse: [['voix', 'milieu', 'sable'], ['rythme', 'territoire', 'echo'], ['fuite', 'spirale', 'forces']],
     lesarten: [
-      { kurz: 'Summen', titel: 'Im Dunkeln', wer: 'Deleuze, Guattari, Chladni', geste: 'Den Daumen auflegen und halten.', text: 'Das Plateau über das Ritornell beginnt mit einem Kind, das im Dunkeln Angst hat und sich beruhigt, indem es vor sich hin singt. Das Lied ist ein erster stabiler Punkt im Chaos, zerbrechlich, aber er hält. Chaos heisst dabei nicht Unordnung schlechthin: Es ist das Milieu aller Milieus, Schwingung, Wechsel, aus dem jeder Rhythmus kommt. Hier fällt beim Berühren die Nacht über das Bild, die Momente der letzten Sekunden geraten durcheinander. Hältst du den Daumen, summt eine Stimme das alte Kinderlied, und um den Daumen zerfällt das Bild zu Sand auf einer Klangplatte wie bei Chladni: Wo die Platte schwingt, springen die Körner auf, wo sie ruht, sammeln sie sich zu Linien. Jede Note eine andere Figur, und jedes Korn trägt die Farbe der Stelle, von der es kam.' },
+      { kurz: 'Summen', titel: 'Im Dunkeln', wer: 'Deleuze, Guattari, Chladni', geste: 'Den Daumen auflegen und halten.', text: 'Das Plateau über das Ritornell beginnt mit einem Kind, das im Dunkeln Angst hat und sich beruhigt, indem es vor sich hin singt. Das Lied ist ein erster stabiler Punkt im Chaos, zerbrechlich, aber er hält. Chaos heisst dabei nicht Unordnung schlechthin: Es ist das Milieu aller Milieus, Schwingung, Wechsel, aus dem jeder Rhythmus kommt. Hier fällt beim Berühren die Nacht über das Bild, die Momente der letzten Sekunden geraten durcheinander. Hältst du den Daumen, summt eine Stimme das alte Kinderlied, und um den Daumen zerfällt das Bild zu Sand auf einer Klangplatte wie bei Chladni: Wo die Platte schwingt, springen die Körner auf, wo sie ruht, sammeln sie sich zu Linien. Jede Note eine andere Figur, und jedes Korn trägt die Farbe der Stelle, von der es kam. Ziehst du den Daumen, pflügt er durch den Sand; lässt du los, fliegt jedes Korn zurück, und das Bild fügt sich wieder zusammen.' },
       { kurz: 'Revier', titel: 'Das Zuhause', wer: 'Deleuze, Guattari, Messiaen', geste: 'Im Takt auf das Bild tippen.', text: 'Das Zuhause gibt es nicht schon vorher. Man zieht einen Kreis um den unsicheren Punkt und richtet einen begrenzten Raum ein. Ein Revier entsteht, wenn Dinge des Milieus zu Marken werden: eine Farbe, ein Laut, eine Haltung, das helle Blatt des Vogels Scenopoeetes, der Gesang, den Messiaen aufschrieb. Und es entsteht durch Wiederholung. Hier setzt jedes Tippen eine Marke in den Takt. Der Refrain spielt sie immer wieder, jede Marke klingt und sendet einen Ring aus, der ein Echo des Bildes von eben trägt. Mit jeder Wiederholung wächst das Revier: innen klar und warm, draussen das Chaos. Tippst du auf eine Marke, verschwindet sie.' },
-      { kurz: 'Kosmos', titel: 'Hinaus', wer: 'Deleuze, Guattari, Klee', geste: 'Im Kreis auflegen und nach aussen ziehen.', text: 'Schliesslich öffnet man den Kreis einen Spalt, lässt jemanden herein, ruft jemanden, oder man bricht selbst auf, wagt eine Improvisation. Das Ritornell verbindet sich mit den Kräften des Kosmos. Für Deleuze und Guattari ist das die Aufgabe der Kunst, mit Klee: nicht das Sichtbare wiedergeben, sondern Kräfte sichtbar machen. Hier legst du einen Kreis um das Bild. Draussen kreisen die Kräfte: Das Bild zieht als Langzeitbelichtung um den Kreis, wie die Sterne um den Pol. Ziehst du nach aussen, öffnet sich der Kreis. Durch die Öffnung strömt das Bild auf Linien hinaus, die sich zu einer Spirale winden, jede Windung ein früherer Moment. Darunter singt eine Stimme den Refrain in der Obertonreihe eines tiefen G, wie ein Obertonsänger, dazu Glasschalen und ferne Funken. Lässt du los, schliesst sich der Kreis langsam wieder.' }
+      { kurz: 'Kosmos', titel: 'Hinaus', wer: 'Deleuze, Guattari, Klee', geste: 'Im Kreis auflegen und nach aussen ziehen.', text: 'Schliesslich öffnet man den Kreis einen Spalt, lässt jemanden herein, ruft jemanden, oder man bricht selbst auf, wagt eine Improvisation. Das Ritornell verbindet sich mit den Kräften des Kosmos. Für Deleuze und Guattari ist das die Aufgabe der Kunst, mit Klee: nicht das Sichtbare wiedergeben, sondern Kräfte sichtbar machen. Hier legst du einen Kreis um das Bild. Draussen kreisen die Kräfte: Das Bild zieht als Langzeitbelichtung um den Kreis, wie die Sterne um den Pol. Ziehst du nach aussen, öffnet sich der Kreis. Durch die Öffnung strömt das Bild auf Linien hinaus, die sich zu einer Spirale winden, jede Windung ein früherer Moment. Darunter singt eine Stimme den Refrain in der Obertonreihe eines tiefen G, wie ein Obertonsänger, dazu Glasschalen und ferne Funken. Hältst du den Daumen in der Mitte kurz still, greifst du den Kreis und kannst ihn verschieben, auch mit zwei Fingern. Lässt du los, schliesst sich der Kreis langsam wieder.' }
     ],
     wenden: 'Kamera wenden', tonAn: 'Ton an', tonAus: 'Ton aus', loesen: 'Alles lösen',
     begriff: 'Begriff', standbild: 'Standbild', aufnahme: 'Aufnahme', stopp: 'Stopp',
@@ -89,9 +89,9 @@ const TEXTE = {
     regler: [['Voice', 'Milieu', 'Sand'], ['Tempo', 'Territory', 'Echo'], ['Lines', 'Spiral', 'Stars']],
     reglerGlosse: [['voix', 'milieu', 'sable'], ['rythme', 'territoire', 'echo'], ['fuite', 'spirale', 'forces']],
     lesarten: [
-      { kurz: 'Humming', titel: 'In the dark', wer: 'Deleuze, Guattari, Chladni', geste: 'Rest your thumb and hold.', text: 'The plateau on the refrain begins with a child who is afraid in the dark and calms itself by singing under its breath. The song is a first stable point in chaos, fragile, but it holds. Chaos does not simply mean disorder: it is the milieu of all milieus, vibration, alternation, from which every rhythm comes. Here, when you touch, night falls over the image and the moments of the last seconds are thrown together. Hold your thumb and a voice hums the old children’s tune, and around your thumb the image crumbles into sand on a sounding plate, as with Chladni: where the plate vibrates the grains leap, where it is still they gather into lines. Each note another figure, and each grain carries the colour of the place it came from.' },
+      { kurz: 'Humming', titel: 'In the dark', wer: 'Deleuze, Guattari, Chladni', geste: 'Rest your thumb and hold.', text: 'The plateau on the refrain begins with a child who is afraid in the dark and calms itself by singing under its breath. The song is a first stable point in chaos, fragile, but it holds. Chaos does not simply mean disorder: it is the milieu of all milieus, vibration, alternation, from which every rhythm comes. Here, when you touch, night falls over the image and the moments of the last seconds are thrown together. Hold your thumb and a voice hums the old children’s tune, and around your thumb the image crumbles into sand on a sounding plate, as with Chladni: where the plate vibrates the grains leap, where it is still they gather into lines. Each note another figure, and each grain carries the colour of the place it came from. Drag your thumb and it ploughs through the sand; let go and every grain flies home, and the image puts itself back together.' },
       { kurz: 'Territory', titel: 'Home', wer: 'Deleuze, Guattari, Messiaen', geste: 'Tap the image in time.', text: 'Home does not exist beforehand. One draws a circle around the uncertain point and organises a limited space. A territory arises when things of the milieu become marks: a colour, a sound, a posture, the pale leaf of the bird Scenopoeetes, the song Messiaen wrote down. And it arises through repetition. Here every tap sets a mark into the beat. The refrain plays them again and again, each mark sounds and sends out a ring carrying an echo of the image a moment ago. With every repetition the territory grows: clear and warm inside, chaos outside. Tap a mark and it disappears.' },
-      { kurz: 'Cosmos', titel: 'Out', wer: 'Deleuze, Guattari, Klee', geste: 'Rest inside the circle and pull outwards.', text: 'Finally one opens the circle a crack, lets someone in, calls someone, or ventures out oneself, risks an improvisation. The refrain joins the forces of the cosmos. For Deleuze and Guattari this is the task of art, with Klee: not to render the visible, but to make forces visible. Here you lay a circle around the image. Outside, the forces turn: the image circles it like a long exposure, as the stars circle the pole. Pull outwards and the circle opens. Through the opening the image streams out on lines that wind into a spiral, each turn an earlier moment. Beneath it a voice sings the refrain in the overtone series of a deep G, like an overtone singer, with glass bowls and distant sparks. Let go and the circle slowly closes again.' }
+      { kurz: 'Cosmos', titel: 'Out', wer: 'Deleuze, Guattari, Klee', geste: 'Rest inside the circle and pull outwards.', text: 'Finally one opens the circle a crack, lets someone in, calls someone, or ventures out oneself, risks an improvisation. The refrain joins the forces of the cosmos. For Deleuze and Guattari this is the task of art, with Klee: not to render the visible, but to make forces visible. Here you lay a circle around the image. Outside, the forces turn: the image circles it like a long exposure, as the stars circle the pole. Pull outwards and the circle opens. Through the opening the image streams out on lines that wind into a spiral, each turn an earlier moment. Beneath it a voice sings the refrain in the overtone series of a deep G, like an overtone singer, with glass bowls and distant sparks. Hold your thumb still in the middle for a moment and you grab the circle and can move it, also with two fingers. Let go and the circle slowly closes again.' }
     ],
     wenden: 'Flip camera', tonAn: 'Sound on', tonAus: 'Sound off', loesen: 'Release all',
     begriff: 'Concept', standbild: 'Still', aufnahme: 'Record', stopp: 'Stop',
@@ -134,9 +134,9 @@ const TEXTE = {
     regler: [['Voix', 'Milieu', 'Sable'], ['Tempo', 'Territoire', 'Écho'], ['Lignes', 'Spirale', 'Étoiles']],
     reglerGlosse: [['voix', 'milieu', 'sable'], ['rythme', 'territoire', 'echo'], ['fuite', 'spirale', 'forces']],
     lesarten: [
-      { kurz: 'Chantonner', titel: 'Dans le noir', wer: 'Deleuze, Guattari, Chladni', geste: 'Pose le pouce et tiens.', text: 'Le plateau de la ritournelle commence par un enfant qui a peur dans le noir et se rassure en chantonnant. Le chant est un premier point stable dans le chaos, fragile, mais il tient. Le chaos n’est pas simplement le désordre : c’est le milieu de tous les milieux, vibration, alternance, d’où vient tout rythme. Ici, quand tu touches, la nuit tombe sur l’image et les instants des dernières secondes se mêlent. Tiens le pouce : une voix chantonne la vieille comptine, et autour du pouce l’image s’effrite en sable sur une plaque sonore, comme chez Chladni : là où la plaque vibre, les grains sautent, là où elle est immobile, ils se rassemblent en lignes. Chaque note une autre figure, et chaque grain garde la couleur de l’endroit d’où il vient.' },
+      { kurz: 'Chantonner', titel: 'Dans le noir', wer: 'Deleuze, Guattari, Chladni', geste: 'Pose le pouce et tiens.', text: 'Le plateau de la ritournelle commence par un enfant qui a peur dans le noir et se rassure en chantonnant. Le chant est un premier point stable dans le chaos, fragile, mais il tient. Le chaos n’est pas simplement le désordre : c’est le milieu de tous les milieux, vibration, alternance, d’où vient tout rythme. Ici, quand tu touches, la nuit tombe sur l’image et les instants des dernières secondes se mêlent. Tiens le pouce : une voix chantonne la vieille comptine, et autour du pouce l’image s’effrite en sable sur une plaque sonore, comme chez Chladni : là où la plaque vibre, les grains sautent, là où elle est immobile, ils se rassemblent en lignes. Chaque note une autre figure, et chaque grain garde la couleur de l’endroit d’où il vient. Fais glisser le pouce : il laboure le sable ; lâche, et chaque grain retourne à sa place, l’image se recompose.' },
       { kurz: 'Territoire', titel: 'Le chez-soi', wer: 'Deleuze, Guattari, Messiaen', geste: 'Tape l’image en mesure.', text: 'Le chez-soi ne préexiste pas. On trace un cercle autour du point incertain et on organise un espace limité. Un territoire naît quand des choses du milieu deviennent des marques : une couleur, un son, une posture, la feuille pâle de l’oiseau Scenopoeetes, le chant que Messiaen a noté. Et il naît de la répétition. Ici chaque tape pose une marque dans la mesure. La ritournelle les rejoue sans cesse, chaque marque sonne et émet un anneau qui porte un écho de l’image d’il y a un instant. À chaque reprise le territoire grandit : clair et chaud dedans, le chaos dehors. Tape une marque, elle disparaît.' },
-      { kurz: 'Cosmos', titel: 'Au large', wer: 'Deleuze, Guattari, Klee', geste: 'Pose le pouce dans le cercle et tire vers l’extérieur.', text: 'Enfin on entrouvre le cercle, on laisse entrer quelqu’un, on appelle quelqu’un, ou l’on s’élance soi-même, on hasarde une improvisation. La ritournelle rejoint les forces du cosmos. Pour Deleuze et Guattari, c’est la tâche de l’art, avec Klee : non pas rendre le visible, mais rendre visibles des forces. Ici tu poses un cercle autour de l’image. Dehors tournent les forces : l’image tourne autour du cercle comme en pose longue, comme les étoiles autour du pôle. Tire vers l’extérieur, et le cercle s’ouvre. Par l’ouverture, l’image s’écoule sur des lignes qui s’enroulent en spirale, chaque tour un instant plus ancien. Dessous, une voix chante la ritournelle dans la série des harmoniques d’un sol grave, comme un chanteur diphonique, avec des bols de verre et des étincelles lointaines. Lâche, et le cercle se referme lentement.' }
+      { kurz: 'Cosmos', titel: 'Au large', wer: 'Deleuze, Guattari, Klee', geste: 'Pose le pouce dans le cercle et tire vers l’extérieur.', text: 'Enfin on entrouvre le cercle, on laisse entrer quelqu’un, on appelle quelqu’un, ou l’on s’élance soi-même, on hasarde une improvisation. La ritournelle rejoint les forces du cosmos. Pour Deleuze et Guattari, c’est la tâche de l’art, avec Klee : non pas rendre le visible, mais rendre visibles des forces. Ici tu poses un cercle autour de l’image. Dehors tournent les forces : l’image tourne autour du cercle comme en pose longue, comme les étoiles autour du pôle. Tire vers l’extérieur, et le cercle s’ouvre. Par l’ouverture, l’image s’écoule sur des lignes qui s’enroulent en spirale, chaque tour un instant plus ancien. Dessous, une voix chante la ritournelle dans la série des harmoniques d’un sol grave, comme un chanteur diphonique, avec des bols de verre et des étincelles lointaines. Garde le pouce immobile au centre un instant : tu saisis le cercle et peux le déplacer, aussi à deux doigts. Lâche, et le cercle se referme lentement.' }
     ],
     wenden: 'Retourner', tonAn: 'Son activé', tonAus: 'Son coupé', loesen: 'Tout défaire',
     begriff: 'Concept', standbild: 'Image', aufnahme: 'Enregistrer', stopp: 'Arrêter',
@@ -296,7 +296,7 @@ void main(){
 const FS_SZENE = KOPF + CHLADNI + `uniform sampler2D uScharf, uChaos; uniform float uSeite, uT, uHpx, uDpr, uNacht, uArt, uKoerner;
 uniform vec4 uZ, uMode, uModeB, uPuls;
 uniform vec4 uMark[8]; uniform int uMarkN; uniform vec4 uRing[12]; uniform int uRingN; uniform vec4 uRev;
-uniform vec4 uKos, uKosB; uniform vec2 uKosC;
+uniform vec4 uKos, uKosB; uniform vec2 uKosC; uniform float uGreif;
 vec2 nachUV(vec2 qq){ return vec2(qq.x / uSeite, qq.y); }
 void main(){
   vec2 q = vec2(v.x * uSeite, v.y);
@@ -332,6 +332,8 @@ void main(){
         platte += s * 0.085 * vec3(0.9, 0.95, 1.05);
         float pr = abs(r - uPuls.x) * uHpx / uDpr;
         platte += vec3(1.0, 0.92, 0.78) * (1.0 - smoothstep(0.3, 1.4, pr)) * uPuls.y * 0.22;
+        // heimgekehrt: unter dem Sand kommt das Bild selbst wieder hervor, der Sand geht in ihm auf
+        platte = mix(platte, bild, uPuls.w);
         c = mix(c, platte, zone);
         // der Rand der Platte: ein Hauch Licht, keine Linie
         c += vec3(1.0, 0.94, 0.8) * 0.045 * uZ.w * exp(-pow((r - R * 0.8) * uHpx / (16.0 * uDpr), 2.0));
@@ -517,7 +519,9 @@ void main(){
     drin += vec3(1.0, 0.95, 0.88) * pow(rn, 9.0) * 0.22;
     c = mix(bild, mix(draussen, drin, innen), uNacht * uKosC.x);
     // die Wand des Kreises: haarfein, zeichnet sich ein, offen, wo der Daumen zieht
-    float wl = (1.0 - smoothstep(0.3, 1.15, abs(rpx))) * wand * uKosC.x;
+    float wl = (1.0 - smoothstep(0.3, 1.15 + 0.8 * uGreif, abs(rpx))) * wand * uKosC.x * (1.0 + 0.6 * uGreif);
+    // gegriffen: der Rand glüht warm, wie ein Glas, das man in die Hand nimmt
+    c += vec3(1.0, 0.82, 0.55) * exp(-rpx * rpx / 90.0) * uGreif * 0.35 * uKosC.x;
     float wl2 = (1.0 - smoothstep(0.25, 0.95, abs(rpx + 4.5))) * wand * uKosC.x * 0.3;
     c = mix(c, vec3(1.0, 0.95, 0.86), clamp(wl + wl2, 0.0, 1.0));
     // die Ränder der Öffnung glühen leicht
@@ -533,13 +537,15 @@ void main(){
 // Jedes Korn hat seinen Ort im Bild, von dem es die Farbe nimmt. Wo die Platte schwingt, wird es hochgeworfen,
 // und es rutscht dorthin, wo sie ruht. So zeichnet das Bild selbst die Figur, und bei jeder neuen Note springt der Sand
 // auf und sucht die neuen Linien. Zustand je Korn (Ort relativ zum Daumen, Tempo) in einer HalfFloat-Textur.
-const FS_KORN = KOPF + CHLADNI + `uniform sampler2D uZustand; uniform vec4 uMode, uModeB; uniform float uDt, uT, uStimme, uWurf, uInit, uRmax;
+const FS_KORN = KOPF + CHLADNI + `uniform sampler2D uZustand; uniform vec4 uMode, uModeB; uniform float uDt, uT, uStimme, uWurf, uInit, uRmax, uHeim, uSaatR;
+uniform vec2 uVersatz, uHeimC;
 vec2 saat(vec2 ij){ float a = h21(ij + 0.37), b = h21(ij * 1.31 + 5.17); return sqrt(a) * vec2(cos(b * 6.2832), sin(b * 6.2832)); }
 void main(){
   vec2 ij = floor(gl_FragCoord.xy);
   if (uInit > 0.5) { o = vec4(saat(ij + 0.5) * uRmax, 0.0, 0.0); return; }
   vec4 z = texelFetch(uZustand, ivec2(ij), 0);
-  vec2 p = z.xy, w = z.zw;
+  // der Daumen wandert, der Sand bleibt liegen: so pflügt die Platte durch den Sand
+  vec2 p = z.xy - uVersatz, w = z.zw;
   vec3 a = chladni(p, uMode.x, uMode.y, uModeB.y), b = chladni(p, uMode.z, uMode.w, uModeB.z);
   vec3 P = mix(a, b, uModeB.x);
   float g = max(length(P.yz), 0.5);
@@ -547,17 +553,25 @@ void main(){
   // jedes Korn bleibt ein wenig neben dem Knoten liegen, so wird die Linie ein Sandwall; wo die Platte flach ist, ein breiter
   float neben = (h21(ij * 0.91 + 1.7) + h21(ij * 1.37 + 4.1) - 1.0) * 0.21;
   vec2 n = P.yz / g; float dist = (P.x - neben) / g;
-  float schritt = clamp(dist, -0.01, 0.01) * min(1.0, uDt * (1.5 + 4.5 * uStimme));
+  float schritt = clamp(dist, -0.01, 0.01) * min(1.0, uDt * (1.5 + 4.5 * uStimme)) * (1.0 - uHeim);
   p -= n * schritt;
+  // loslassen: jedes Korn fliegt zurück an den Ort, von dem es kam, in einem Bogen und jedes in seinem Tempo;
+  // so fügt sich das Bild aus dem Sand wieder zusammen
+  if (uHeim > 0.001) {
+    vec2 d = uHeimC + saat(ij + 0.5) * uSaatR - p;
+    float eigen = 0.55 + 0.9 * h21(ij * 1.73 + 0.4);
+    vec2 bogen = vec2(-d.y, d.x) * (h21(ij * 0.53 + 2.2) - 0.5) * 1.4 * min(1.0, length(d) * 6.0);
+    p += (d + bogen) * min(1.0, uDt * (0.8 + 2.4 * uHeim) * eigen) * uHeim;
+  }
   // die Platte wirft: zufällig, so stark, wie sie an der Stelle schwingt; beim Notenwechsel ein Sprung
   float zt = floor(uT * 60.0);
   vec2 r = vec2(h21(ij + zt * 0.731), h21(ij.yx + zt * 1.173 + 3.1)) * 2.0 - 1.0;
   float amp = min(abs(P.x), 1.6);
-  w += r * amp * (0.08 * uStimme + 2.3 * uWurf) * uDt;
+  w += r * amp * (0.16 * uStimme + 2.3 * uWurf) * uDt * (1.0 - uHeim);
   w += r * 0.02 * uDt;                        // ein Rest Unruhe: die Linie atmet
   w *= exp(-uDt * 7.0);
   p += w * uDt;
-  float l = length(p); if (l > uRmax) { p *= uRmax / l; w *= -0.3; }
+  float l = length(p); if (l > uRmax && uHeim < 0.5) { p *= uRmax / l; w *= -0.3; }
   o = vec4(p, w);
 }`;
 const VS_KORN = `#version 300 es
@@ -946,13 +960,19 @@ const phaseImSchritt = (t) => Math.min(1, (t - schrittZeit) / schrittDauer());
 // ---------- Zustand der drei Lesarten ----------
 let nacht = 0, nachtZiel = 0;
 // Summen
-const sum = { x: 0.5, y: 0.5, R: 0.12, ordnung: 0, stimme: 0, halt: 0, k1: 2, m1: 5, k2: 2, m2: 5, rot1: 0, rot2: 0, mix: 1, puls: 9, pulsA: 0, aktiv: false, wurf: 0, streuen: true, saat: [0.5, 0.5, 0.3] };
+const sum = { x: 0.5, y: 0.5, R: 0.12, ordnung: 0, stimme: 0, halt: 0, k1: 2, m1: 5, k2: 2, m2: 5, rot1: 0, rot2: 0, mix: 1, puls: 9, pulsA: 0, aktiv: false, wurf: 0, streuen: true, saat: [0.5, 0.5, 0.3], heim: 0, los: 9, vx: 0.5, vy: 0.5 };
 const KORN_S = telefon ? 320 : 448;   // 102 400 Körner am Telefon, 200 704 am grossen Bildschirm
 // Revier
 let marken = [], ringe = [], schlagGlut = 0, revierDa = 0;
 const RING_TEMPO = 0.2, RING_DAUER = 2.2;   // die Ringe laufen langsam und reichen nicht weit: ein Ruf, kein Netz
 // Kosmos
-const kos = { x: 0.5, y: 0.5, R: 0.26, offen: 0, offenZiel: 0, phi: Math.PI / 2, zug: 0, aktiv: false, dreh: 0, seit: 0 };
+const kos = { x: 0.5, y: 0.5, R: 0.26, offen: 0, offenZiel: 0, phi: Math.PI / 2, zug: 0, aktiv: false, dreh: 0, seit: 0, greif: 0, zwei: null };
+// der Kreis folgt der Hand, bleibt aber ganz im Bild
+function kreisSchieben(x, y, dt, tau) {
+  const s = innerWidth / innerHeight, r = kos.R * 0.7;
+  x = Math.max(r, Math.min(s - r, x)); y = Math.max(0.2, Math.min(0.82, y));
+  kos.x = tau ? naeher(kos.x, x, dt, tau) : x; kos.y = tau ? naeher(kos.y, y, dt, tau) : y;
+}
 
 // ---------- Hände ----------
 const finger = new Map();
@@ -1001,7 +1021,7 @@ leinwand.addEventListener('pointerdown', (e) => {
       kos.x = Math.max(kos.R * 0.7, Math.min(s - kos.R * 0.7, p.x)); kos.y = Math.max(0.3, Math.min(0.75, p.y));
       kos.zug = kos.aktiv ? kos.zug : 0; kos.aktiv = true; kos.offenZiel = 0;
       f.neuerKreis = true;
-    }
+    } else if (d < kos.R * 0.5) f.greifbar = true;
     glosse('cosmos');
   }
 });
@@ -1059,7 +1079,14 @@ function haende(t, dt) {
   } else sum.halt = Math.max(0, sum.halt - dt * 2);
   const singt = lesart === 0 && !!daumen;
   sum.stimme = naeher(sum.stimme, singt ? 1 : 0, dt, singt ? 0.35 : 1.1);
-  sum.ordnung = naeher(sum.ordnung, singt ? 1 : 0, dt, singt ? 0.5 : 2.8);
+  // mit Sand: nach dem Loslassen bleibt die Platte, bis die Körner heimgeflogen sind und das Bild wieder steht, dann weicht sie
+  const mitSand = !!(P.kornPunkt && halbFloat);
+  sum.los = singt ? 0 : sum.los + dt;
+  sum.heim = naeher(sum.heim, singt ? 0 : 1, dt, singt ? 0.12 : 0.3);
+  if (mitSand) sum.ordnung = naeher(sum.ordnung, singt ? 1 : sum.los < 2.2 ? sum.ordnung : 0, dt, singt ? 0.5 : 0.8);
+  else sum.ordnung = naeher(sum.ordnung, singt ? 1 : 0, dt, singt ? 0.5 : 2.8);
+  // solange gesungen wird, dreht sich die Platte langsam weiter: der Sand kommt nie ganz zur Ruhe
+  if (singt) { const dr = dt * (0.16 + 0.5 * bewegungHand); sum.rot1 += dr; sum.rot2 += dr; }
   const Rziel = (0.2 + 0.5 * W[0]) * (0.35 + 0.65 * Math.min(1, sum.halt / 2.2));
   sum.R = naeher(sum.R, singt ? Rziel : sum.R, dt, 0.6);
   if (sum.ordnung < 0.01 && !singt) sum.aktiv = false;
@@ -1077,10 +1104,22 @@ function haende(t, dt) {
   schlagGlut = Math.max(0, schlagGlut - dt * 2.5);
   revierDa = naeher(revierDa, marken.length ? 1 : 0, dt, 0.6);
 
-  // Kosmos: ziehen öffnet, loslassen schliesst langsam
-  if (lesart === 2 && daumen && kos.aktiv) {
+  // Kosmos: ziehen öffnet, loslassen schliesst langsam. Den Kreis verschieben: den Daumen in der Mitte kurz still halten
+  // und dann schieben, oder mit zwei Fingern schieben.
+  let greift = false;
+  if (lesart === 2 && kos.aktiv && finger.size >= 2) {
+    const [a, b] = [...finger.values()], m = inQ((a.x + b.x) / 2, (a.y + b.y) / 2);
+    if (kos.zwei) kreisSchieben(kos.x + m.x - kos.zwei.x, kos.y + m.y - kos.zwei.y, dt, 0);
+    kos.zwei = m; greift = true;
+  } else kos.zwei = null;
+  if (lesart === 2 && daumen && kos.aktiv && !greift) {
     const p = inQ(daumen.x, daumen.y), dx = p.x - kos.x, dy = p.y - kos.y, d = Math.hypot(dx, dy);
-    if (!daumen.neuerKreis || daumen.bewegt > 30) {
+    if (daumen.greifbar && !daumen.greift && daumen.zeit > 0.42 && daumen.bewegt < 12) {
+      daumen.greift = true; daumen.gx = kos.x - p.x; daumen.gy = kos.y - p.y;
+      klangGlas(98, 0.45); try { navigator.vibrate?.(8); } catch {}
+    }
+    if (daumen.greift) { kreisSchieben(p.x + daumen.gx, p.y + daumen.gy, dt, 0.07); greift = true; }
+    else if (!daumen.neuerKreis || daumen.bewegt > 30) {
       kos.offenZiel = Math.max(0, Math.min(1, (d - kos.R * 0.55) / 0.32));
       if (d > kos.R * 0.25) { let dw = Math.atan2(dy, dx) - kos.phi; while (dw > Math.PI) dw -= 2 * Math.PI; while (dw < -Math.PI) dw += 2 * Math.PI; kos.phi += dw * (1 - Math.exp(-dt / 0.12)); }
     }
@@ -1088,6 +1127,7 @@ function haende(t, dt) {
   kos.offen = naeher(kos.offen, kos.offenZiel, dt, kos.offenZiel > kos.offen ? 0.25 : 3.2);
   kos.zug = naeher(kos.zug, kos.aktiv && lesart === 2 ? 1 : 0, dt, kos.aktiv ? 0.5 : 1.0);
   kos.dreh += dt * 0.05 * (0.3 + kos.offen);
+  kos.greif = naeher(kos.greif, greift ? 1 : 0, dt, 0.12);
   if (kos.aktiv && !daumen && kos.offen < 0.02 && ruhe > 7) { kos.aktiv = false; loesenZeigen(); }
 
   // die Nacht: fällt mit der ersten Berührung, weicht, wenn nichts mehr singt (Rückkehr nach einigen Sekunden)
@@ -1260,13 +1300,13 @@ function bild(ms) {
     gl.uniform4f(u.uMode, sum.k1, sum.m1, sum.k2, sum.m2);
     const mixE = sum.mix * sum.mix * (3 - 2 * sum.mix);
     gl.uniform4f(u.uModeB, mixE, sum.rot1, sum.rot2, lesart === 0 ? (0.25 + 0.75 * sum.stimme) * (0.6 + 0.4 * Math.sin(t * 31)) : 0.55 + 0.45 * WERTE[1][2]);
-    gl.uniform4f(u.uPuls, sum.puls, sum.pulsA * sum.stimme, 0.25 + 0.75 * WERTE[0][2], 0);
+    gl.uniform4f(u.uPuls, sum.puls, sum.pulsA * sum.stimme, 0.25 + 0.75 * WERTE[0][2], heimBild());
     gl.uniform4fv(u.uMark, markU); gl.uniform1i(u.uMarkN, mn);
     gl.uniform4fv(u.uRing, ringU); gl.uniform1i(u.uRingN, rn);
     gl.uniform4f(u.uRev, schlagGlut, revierDa, ringTempo, HIST_DT);
     gl.uniform4f(u.uKos, kos.x, kos.y, kos.R, kos.offen);
     gl.uniform4f(u.uKosB, kos.phi, 2 + Math.round(WERTE[2][0] * 5), WERTE[2][1], 0.2 + 1.8 * WERTE[2][2]);
-    gl.uniform2f(u.uKosC, kos.zug, kos.dreh);
+    gl.uniform2f(u.uKosC, kos.zug, kos.dreh); gl.uniform1f(u.uGreif, kos.greif);
   });
   if (P.kornPunkt && halbFloat && lesart === 0 && (sumZone > 0.002 || sum.streuen)) sandRechnen(t, dt, sz, seite, dpr, sumZone);
   nachbearbeiten(t, sz);
@@ -1283,7 +1323,8 @@ function bild(ms) {
   requestAnimationFrame(bild);
 }
 // der Sand: erst streuen (wenn der Daumen neu aufliegt), dann je Bild ein Schritt, dann die Körner als Punkte in die Szene
-let kornA = null, kornB = null;
+let kornA = null, kornB = null, versatz = [0, 0];
+const heimBild = () => { const u = Math.min(1, Math.max(0, (sum.los - 0.9) / 1.3)); return sum.heim * u * u * (3 - 2 * u); };
 function sandRechnen(t, dt, sz, seite, dpr, zone) {
   if (!kornA) { kornA = zielBauen('kornA', KORN_S, KORN_S); kornB = zielBauen('kornB', KORN_S, KORN_S); }
   const Rmax = (0.2 + 0.5 * WERTE[0][0]) * 1.02;
@@ -1293,10 +1334,13 @@ function sandRechnen(t, dt, sz, seite, dpr, zone) {
       gl.uniform4f(u.uMode, sum.k1, sum.m1, sum.k2, sum.m2); gl.uniform4f(u.uModeB, mixE, sum.rot1, sum.rot2, 0);
       gl.uniform1f(u.uDt, Math.min(h, 1 / 30)); gl.uniform1f(u.uT, t % 1000); gl.uniform1f(u.uStimme, sum.stimme);
       gl.uniform1f(u.uSk, sum.saat[2] * 2); gl.uniform1f(u.uVer, 0.5); gl.uniform1f(u.uWurf, sum.wurf); gl.uniform1f(u.uInit, init ? 1 : 0); gl.uniform1f(u.uRmax, Rmax);
+      gl.uniform2f(u.uVersatz, versatz[0], versatz[1]); versatz = [0, 0];
+      gl.uniform1f(u.uHeim, sum.heim); gl.uniform2f(u.uHeimC, sum.saat[0] - sum.x, sum.saat[1] - sum.y); gl.uniform1f(u.uSaatR, sum.saat[2]);
     });
     [kornA, kornB] = [kornB, kornA];
   };
-  if (sum.streuen) { schritt(true); sum.streuen = false; sum.saat = [sum.x, sum.y, Rmax]; }
+  if (sum.streuen) { schritt(true); sum.streuen = false; sum.saat = [sum.x, sum.y, Rmax]; sum.vx = sum.x; sum.vy = sum.y; }
+  versatz = [sum.x - sum.vx, sum.y - sum.vy]; sum.vx = sum.x; sum.vy = sum.y;
   // bei langsamen Bildern in kleinen Schritten rechnen, damit der Sand gleich schnell wandert
   const n = Math.min(3, Math.ceil(dt / (1 / 40)));
   for (let i = 0; i < n; i++) schritt(false, dt / n);
@@ -1304,7 +1348,7 @@ function sandRechnen(t, dt, sz, seite, dpr, zone) {
   const pr = P.kornPunkt; gl.useProgram(pr);
   gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, kornA.tex); gl.uniform1i(pr.u.uZustand, 2);
   gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, scharfTex); gl.uniform1i(pr.u.uScharf, 3);
-  gl.uniform1i(pr.u.uS, KORN_S); gl.uniform4f(pr.u.uZ, sum.x, sum.y, sum.R, zone); gl.uniform1f(pr.u.uR, sum.R);
+  gl.uniform1i(pr.u.uS, KORN_S); gl.uniform4f(pr.u.uZ, sum.x, sum.y, sum.R, zone); gl.uniform1f(pr.u.uR, sum.R + sum.heim * 2.0);
   gl.uniform4f(pr.u.uSaat, sum.saat[0], sum.saat[1], sum.saat[2], 0); gl.uniform1f(pr.u.uSeite, seite);
   const punkt = Math.max(1.6, 1.7 * dpr);
   gl.uniform1f(pr.u.uPunkt, punkt);
@@ -1313,7 +1357,7 @@ function sandRechnen(t, dt, sz, seite, dpr, zone) {
   // Erst wenn er sich in den Linien sammelt, leuchtet er darüber hinaus.
   const dichte = (KORN_S * KORN_S) / (Math.PI * Rmax * Rmax * sz.h * sz.h);
   const flaeche = 1.12 * (punkt / 2) * (punkt / 2);
-  gl.uniform1f(pr.u.uHell, Math.min(2.6, (0.42 + 0.5 * WERTE[0][2]) / (dichte * flaeche)));
+  gl.uniform1f(pr.u.uHell, Math.min(2.6, (0.42 + 0.5 * WERTE[0][2]) / (dichte * flaeche)) * (1 - 0.85 * heimBild()));
   gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
   gl.disableVertexAttribArray(0);
   gl.drawArrays(gl.POINTS, 0, KORN_S * KORN_S);
