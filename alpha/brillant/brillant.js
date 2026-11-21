@@ -1000,7 +1000,7 @@ let seitenNeu = false;
 function spracheWechseln(l, karte) {
   if (!SPRACHEN.includes(l)) return;
   try { localStorage.setItem('brillant.sprache', l); } catch {}
-  try { const u = new URL(location.href); u.searchParams.set('lang', l); history.replaceState(null, '', u.pathname + u.search + u.hash); } catch {}
+  try { const u = new URL(location.href); u.searchParams.set('lang', l); history.replaceState(history.state, '', u.pathname + u.search + u.hash); } catch {}
   // 0.37 (Christian: «die Karten flackern sehr stark»): Unschärfe, Versatz und gleitende Höhe zwangen die schräg im Raum
   // stehenden Karten, jedes Bild neu zu rastern. Jetzt blendet nur die vordere Karte ihre Schrift über die Deckkraft aus und
   // wieder ein; die Nachbarn bekommen die neue Sprache unsichtbar im selben Augenblick.
@@ -1024,6 +1024,12 @@ const N = BEREICHE.length;
 });
 const vMarken = vitrine.querySelector('.v-marken');
 BEREICHE.forEach(() => vMarken.append(document.createElement('i')));
+// 0.38: die Rauten unten sind antippbar; ein Tipp holt die Karte nach vorn (die Fläche ist grösser als die kleine Raute)
+vMarken.addEventListener('click', (e) => {
+  const m = [...vMarken.children], x = e.clientX;
+  let i = 0, d = Infinity; m.forEach((el, j) => { const r = el.getBoundingClientRect(), dd = Math.abs(r.left + r.width / 2 - x); if (dd < d) { d = dd; i = j; } });
+  vz.ziel = Math.round(vz.pos) + Math.round(umlauf(i - vz.pos)); wecken();
+});
 const vz = { pos: 0, ziel: 0, v: 0, auf: 0, aufZiel: 0, t0: 0, lauf: 0, aktiv: -1,
   zug: null, neig: { x: 0, y: 0 }, neigZiel: { x: 0, y: 0 }, kreisel: null, kreiselNull: null };
 let vZuletzt = null, vitrineVoll = false;
@@ -1036,9 +1042,17 @@ function vitrineAuf(i) {
   vitrine.hidden = false; vz.breite = vKarten[0].el.offsetWidth || 320;
   vitrineOffen = true; vitrine.hidden = false; vitrine.classList.add('auf'); document.body.classList.add('vitrine-auf'); spur('Vitrine ' + BEREICHE[i].name);
   cancelAnimationFrame(vz.lauf); vz.lauf = requestAnimationFrame(vitrineBild);
+  // 0.38: die Zurück-Taste (Android) schliesst die Karten, statt die Seite zu verlassen
+  try { if (!(history.state && history.state.vitrine)) history.pushState({ vitrine: 1 }, ''); } catch {}
 }
-function vitrineZu() {
+// lädt die Seite neu (nicht aus dem Zwischenspeicher), ist die Vitrine zu: einen alten Verlaufseintrag dafür vergessen
+try { if (history.state && history.state.vitrine) history.replaceState(null, ''); } catch {}
+addEventListener('popstate', () => { if (vitrineOffen && vz.aufZiel) vitrineZu(true); });
+// 0.38: kommt man aus einer Anwendung zurück (Seite aus dem Zwischenspeicher des Browsers), läuft der Film der Karte weiter
+addEventListener('pageshow', (e) => { if (e.persisted && vitrineOffen) { vKarten.forEach((k) => k.film && k.film.play().catch(() => {})); wecken(); } });
+function vitrineZu(ausVerlauf) {
   if (!vitrineOffen || !vz.aufZiel) return;
+  if (!ausVerlauf) { try { if (history.state && history.state.vitrine) history.back(); } catch {} }
   vz.aufZiel = 0; vz.t0 = performance.now(); vitrine.classList.remove('auf'); wecken();
   if (vZuletzt && vZuletzt.focus) vZuletzt.focus({ preventScroll: true });
 }
@@ -1185,7 +1199,8 @@ vRaum.addEventListener('pointerdown', (e) => {
   if (e.button > 0) return;
   // 0.37: ein Tippen auf DE EN FR ES ist kein Zug. Sonst setzte es die Bühne in Bewegung: alle Karten bekamen will-change
   // und die vordere wieder ihre 3D-Transformation, Chrome rasterte sie neu – das war das starke Flackern beim Sprachwechsel.
-  if (e.target.closest && e.target.closest('.v-sprachen')) return;
+  // 0.38: ebenso «Öffnen» – das Tippen darauf soll die Karte nicht kurz in Bewegung setzen, bevor die Anwendung lädt
+  if (e.target.closest && e.target.closest('.v-sprachen, .v-oeffnen')) return;
   wecken();
   vz.zug = { x: e.clientX, y: e.clientY, pos: vz.pos, t: performance.now(), lx: e.clientX, lt: performance.now(), v: 0, bewegt: false, id: e.pointerId };
 });
@@ -1240,7 +1255,7 @@ vRaum.addEventListener('click', (e) => {
   if (i >= 0 && i !== vz.aktiv) e.preventDefault();
 }, true);
 vRaum.addEventListener('mouseleave', () => { vz.neigZiel.x = 0; vz.neigZiel.y = 0; wecken(); });
-vitrine.querySelector('.v-zu').addEventListener('click', vitrineZu);
+vitrine.querySelector('.v-zu').addEventListener('click', () => vitrineZu());
 addEventListener('keydown', (e) => {
   if (!vitrineOffen) return;
   if (e.key === 'Escape') { e.preventDefault(); vitrineZu(); }
