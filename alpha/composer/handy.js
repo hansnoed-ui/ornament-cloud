@@ -36,6 +36,13 @@ document.getElementById("transportMehr")?.addEventListener("click", (e) => {
   e.currentTarget.textContent = offen ? "weniger" : "mehr";
 });
 
+// Kopf: «mehr» zeigt Projekt öffnen und speichern, Track (WAV) und Exportieren (nur am Handy sichtbar, 21. November 2026)
+document.getElementById("kopfMehr")?.addEventListener("click", (e) => {
+  const offen = e.currentTarget.closest(".aktionen").classList.toggle("offen");
+  e.currentTarget.setAttribute("aria-expanded", String(offen));
+  e.currentTarget.textContent = offen ? "weniger" : "mehr";
+});
+
 // BPM-Knopf bei Erzeugen (20. November 2026, Christian: «Ein Knopf "bpm" … prominent bei Erzeugen»). Er ist mit dem Zahlenfeld
 // «Tempo» verbunden: Drehen setzt das Feld, ein neuer Stil oder eine Eingabe im Feld dreht den Knopf mit. Doppelt antippen = Tempo des Stils.
 export function bpmKnopf() {
