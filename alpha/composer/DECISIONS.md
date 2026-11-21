@@ -231,6 +231,18 @@ Christian: «Bitte räum das noch optimaler auf», «Spuren noch schmaler», «G
 - Zeitleiste: Abschnittsnamen nur so lang, wie Platz bis zum nächsten ist (sonst gekürzt mit «…»).
 - Studio: Gerätefronten mit feinem Schliff und Schrauben, Displays mit Leuchten und Zeilenraster, Pegel als LED-Kette, farbiger Streifen je Spurtyp, Spielknopf mit grünem Ring beim Abspielen.
 
+## 21. November 2026: kürzere Pausen, nochmals weniger Dropouts (Arrangement 0.2.2)
+
+Christian zu 0.2.1: «Kürzen und insgesamt nochmals etwas runtergehen.»
+
+- Intro immer vier Takte (bei langen Tracks waren es acht). Der Bass spielt schon im Aufbau, damit schweigt er nur noch im Intro.
+- Outro: Drums und Bass spielen noch zwei Takte weiter und fallen erst dann weg.
+- Melodie spielt auch im «Atmen».
+- Stocken: ein kurzes Loch je acht statt je vier Takte. «Sich verlieren»: die Drums fallen am Ende nur noch einen halben Takt weg.
+- Mischperkussion: keine Aussetzer mehr innerhalb ihrer Abschnitte.
+- Wechselnde Perkussion (Ornament): je Abschnitt schweigt nur eine Stimme, in «Gas geben» und «Wiederfinden» spielen alle.
+- Stille Spur-Takte je Track (90 s und 3 min gemittelt): Ornament 366 → 241, Drum and Bass 275 → 225; Dropouts Ornament 33 → 29, DnB 32 → 29.
+
 ## 21. November 2026: Unterbrechungen und Bereiche kompakt
 
 Christian (Screenshot Filterfahrt am Handy): «Hier wird noch viel Platz verspielt». Drehknöpfe stehen jetzt nebeneinander (am Handy vier pro Zeile),

@@ -421,7 +421,8 @@ test("Arrangement 0.2: Abschnitte füllen die Länge, wer sich verliert, findet 
   }
   const { takte, abschnitte } = A.abschnitte(90, 90, { seed: 1 });
   if (abschnitte.some((a) => a.typ === "stocken")) {
-    const loecher = (f) => A.ereignisseFuer(f, abschnitte, { seed: 1, takte }).filter((e) => e.art === "dropout" && e.schritte <= 8).map((e) => e.takt).join();
+    const st = abschnitte.filter((a) => a.typ === "stocken"), imStocken = (e) => st.some((a) => e.takt >= a.von && e.takt < a.bis);
+    const loecher = (f) => A.ereignisseFuer(f, abschnitte, { seed: 1, takte }).filter((e) => e.art === "dropout" && e.schritte <= 8 && imStocken(e)).map((e) => e.takt).join();
     assert.equal(loecher("bass"), loecher("pad"), "alle stocken an denselben Stellen");
   }
 });
@@ -484,10 +485,20 @@ test("Ornament Style: zuoberst, Pop und ECM ausgeblendet, Perkussion wechselt je
     if (a.typ === "intro") { assert.ok(stimmen.every((s) => !w.get(s).some((e) => e.takt < a.bis)), "im Intro kein zweites Dropout"); continue; }
     const still = stimmen.filter((s) => w.get(s).some((e) => e.takt < a.bis && e.takt + e.schritte / 16 > a.von));
     const spielen = stimmen.length - still.length;
-    assert.equal(spielen, ["gas", "wiederfinden"].includes(a.typ) ? 3 : 2, `${a.name}: ${spielen} Perkussionsstimmen`);
+    assert.equal(spielen, ["gas", "wiederfinden"].includes(a.typ) ? stimmen.length : stimmen.length - 1, `${a.name}: ${spielen} Perkussionsstimmen`);
   }
   // aufeinanderfolgende Pausen einer Stimme sind ein einziges Dropout
   for (const s of stimmen) { const d = w.get(s); for (let i = 1; i < d.length; i++) assert.ok(d[i].takt > d[i - 1].takt + d[i - 1].schritte / 16, `${s}: Pausen zusammengefasst`); }
+});
+
+test("Arrangement 0.2.2: Intro vier Takte, im Outro spielen Drums und Bass noch zwei Takte", () => {
+  for (const sek of [90, 180]) {
+    const { takte, abschnitte } = A.abschnitte(sek, 174, { seed: 3 });
+    assert.equal(abschnitte[0].bis, 4);
+    const outro = abschnitte.at(-1), d = A.ereignisseFuer("bass", abschnitte, { seed: 3, takte }).filter((e) => e.art === "dropout" && e.takt >= outro.von);
+    assert.deepEqual(d.map((e) => [e.takt, e.schritte]), [[outro.von + 2, (outro.bis - outro.von - 2) * 16]]);
+    assert.ok(!A.ereignisseFuer("mix", abschnitte, { seed: 3, takte }).some((e) => e.art === "dropout" && abschnitte.some((a) => ["haupt", "gas"].includes(a.typ) && e.takt >= a.von && e.takt < a.bis)), "Mischperkussion spielt im Hauptteil durch");
+  }
 });
 
 test("Arrangement 0.2.1: höchstens zwei Naturklänge je Track, aus dem Startwert", () => {
