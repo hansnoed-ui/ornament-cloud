@@ -71,7 +71,8 @@ export function tuchBauen(seite, punkte) {
     t.griffe = t.griffe.filter((q) => q !== g);
     for (const h of g.halt) if (!t.griffe.some((q) => q.halt.some((e) => e.k === h.k))) frei[h.k] = 1;
   };
-  t.loesen = () => { for (const g of [...t.griffe]) t.lassen(g.id); t.heim = 1; };
+  // tau: wie rasch der Stoff zurückgleitet (Sekunden)
+  t.loesen = (tau = 0.35) => { for (const g of [...t.griffe]) t.lassen(g.id); t.heim = tau; };
 
   // ein Schritt der Welt; p: { gewicht 0..1, falten 0..1, hub (Höhe der Hand) }
   t.schritt = (dt, p) => {
@@ -107,11 +108,6 @@ export function tuchBauen(seite, punkte) {
           z[k] = q.z0 + (p.hub * (0.35 + 0.65 * q.w)) * hb;
         }
       }
-      // zurück an den Platz (Lösen): jeder Punkt wird sanft heimgezogen
-      if (t.heim > 0) {
-        const kh = 1 - Math.exp(-h / 0.16);
-        for (let k = 0; k < N; k++) { x[k] += (rx[k] - x[k]) * kh; y[k] += (ry[k] - y[k]) * kh; z[k] += (0 - z[k]) * kh; }
-      }
       // Bindungen
       for (let it = 0; it < iter; it++) {
         for (let n = 0; n < nb; n++) {
@@ -140,6 +136,12 @@ export function tuchBauen(seite, punkte) {
           const f = v <= halt ? 1 : halt / v;
           x[k] -= vx * f; y[k] -= vy * f;
         }
+      }
+      // zurück an den Platz (Lösen, oder von selbst nach dem Loslassen): nach der Haftung, damit der Tisch es nicht
+      // aufhebt; der Stoff behält seine Reibung und glättet sich so gleichmässig, im Takt von tau
+      if (t.heim > 0) {
+        const kh = 1 - Math.exp(-h / t.heim);
+        for (let k = 0; k < N; k++) { if (!frei[k]) continue; const ax = (rx[k] - x[k]) * kh, ay = (ry[k] - y[k]) * kh; x[k] += ax; y[k] += ay; ox[k] += ax; oy[k] += ay; z[k] -= z[k] * kh * 0.3; }
       }
     }
     // Bewegung (für den Ton) und Höhe
