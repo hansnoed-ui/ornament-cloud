@@ -8,15 +8,18 @@ const MELDUNG = {
   de: { foto: 'Dieses Foto kann der Browser nicht lesen. Versuche ein anderes, als JPG, oder ein Video.',
         heic: 'HEIC-Fotos kann dieser Browser nicht lesen. Stelle die Kamera auf JPG um oder wähle ein anderes Foto.',
         nichts: 'Das ist weder Foto noch Video. Wähle ein Foto (JPG, PNG) oder ein Video (MP4, MOV, WebM).',
-        video: 'Dieses Video kann der Browser nicht abspielen. Versuche ein anderes, als MP4.' },
+        video: 'Dieses Video kann der Browser nicht abspielen. Versuche ein anderes, als MP4.',
+        fahrtAn: 'Fahrt durch das Foto anhalten', fahrtAus: 'Fahrt durch das Foto starten' },
   en: { foto: 'Your browser cannot read this photo. Try another one, as JPG, or a video.',
         heic: 'This browser cannot read HEIC photos. Set the camera to JPG or choose another photo.',
         nichts: 'This is neither a photo nor a video. Choose a photo (JPG, PNG) or a video (MP4, MOV, WebM).',
-        video: 'Your browser cannot play this video. Try another one, as MP4.' },
+        video: 'Your browser cannot play this video. Try another one, as MP4.',
+        fahrtAn: 'Stop moving through the photo', fahrtAus: 'Move slowly through the photo' },
   fr: { foto: 'Le navigateur ne peut pas lire cette photo. Essaie-en une autre, en JPG, ou une vidéo.',
         heic: 'Ce navigateur ne lit pas les photos HEIC. Règle l’appareil sur JPG ou choisis une autre photo.',
         nichts: 'Ce n’est ni une photo ni une vidéo. Choisis une photo (JPG, PNG) ou une vidéo (MP4, MOV, WebM).',
-        video: 'Le navigateur ne peut pas lire cette vidéo. Essaie-en une autre, en MP4.' },
+        video: 'Le navigateur ne peut pas lire cette vidéo. Essaie-en une autre, en MP4.',
+        fahrtAn: 'Arrêter le travelling dans la photo', fahrtAus: 'Lancer un travelling lent dans la photo' },
 };
 export const dateiMeldung = (sprache, art) => (MELDUNG[sprache] || MELDUNG.de)[art];
 
@@ -57,3 +60,61 @@ function verkleinern(q, s, w = q.width, h = q.height) {
   const x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(q, 0, 0, c.width, c.height);
   return c;
 }
+
+// Fotos auf die Bühne malen. Ruhig (Wunsch vom 21.11.2026): das ganze Foto, ohne Zoom und ohne Fahrt; nur wenn es fast
+// das Format der Bühne hat, füllt es sie. Bewegt: die Fahrt des Operators («fahrt» quer durchs Bild, «atmen» leicht
+// pendelnd, «still» nur ein Hauch Zoom). mix (0 ruhig … 1 bewegt) blendet weich zwischen beiden.
+export function fotosMalen(c, fotos, W, H, zeit, { dauer = 3.2, blende = 1.1, art = 'fahrt', mix = 1 } = {}) {
+  const n = fotos.length; if (!n) return;
+  const nr = Math.floor(zeit / dauer), innen = zeit - nr * dauer;
+  const zeichne = (k, alpha) => {
+    const f = fotos[((k % n) + n) % n], fw = f.width, fh = f.height;
+    const deck = Math.max(W / fw, H / fh), ganz = Math.min(W / fw, H / fh);
+    // ruhig
+    const s0 = deck / ganz < 1.15 ? deck : ganz;
+    let x0 = (W - fw * s0) / 2, y0 = (H - fh * s0) / 2;
+    // bewegt
+    let z, dx = 0, dy = 0;
+    if (art === 'fahrt') {
+      const lauf = (zeit - k * dauer) / (dauer + blende);
+      z = 1.08 + 0.14 * (n === 1 ? 0.5 + 0.5 * Math.sin(zeit * 0.21) : lauf);
+      const w = (n === 1 ? zeit * 0.13 : k * 2.4);
+      dx = Math.cos(w) * 0.5; dy = Math.sin(w * 1.3) * 0.5;
+    } else if (art === 'atmen') z = 1.05 + 0.05 * Math.sin(zeit * 0.31);
+    else z = 1.04 + 0.04 * Math.sin(zeit * 0.21);
+    const s1 = deck * z, b1 = fw * s1, h1 = fh * s1;
+    let x1 = (W - b1) / 2, y1 = (H - h1) / 2;
+    if (art === 'fahrt') { x1 += dx * (b1 - W); y1 += dy * (h1 - H); }
+    else if (art === 'atmen') x1 += Math.sin(zeit * 0.23) * W * 0.015;
+    const m = mix * mix * (3 - 2 * mix), s = s0 + (s1 - s0) * m;
+    c.globalAlpha = alpha;
+    c.drawImage(f, x0 + (x1 - x0) * m, y0 + (y1 - y0) * m, fw * s, fh * s);
+  };
+  c.globalAlpha = 1; c.fillStyle = '#050506'; c.fillRect(0, 0, W, H);
+  if (n === 1) { zeichne(0, 1); return; }
+  zeichne(nr, 1);
+  if (innen > dauer - blende) zeichne(nr + 1, (innen - (dauer - blende)) / blende);
+  c.globalAlpha = 1;
+}
+
+// Schalter «Fahrt» (feines Zeichen auf dem Bild): Zustand, weiches Umblenden, Beschriftung
+export function fahrtSchalter(knopf, anfang) {
+  const z = { an: anfang, mix: anfang ? 1 : 0, zuletzt: 0 };
+  let war = '';
+  const zeigen = () => {
+    const t = dateiMeldung(document.documentElement.lang, z.an ? 'fahrtAn' : 'fahrtAus');
+    if (t === war) return; war = t;
+    knopf.setAttribute('aria-pressed', String(z.an)); knopf.setAttribute('aria-label', t); knopf.title = t;
+  };
+  knopf.addEventListener('click', () => { z.an = !z.an; zeigen(); });
+  z.zeigen = zeigen;
+  z.schritt = (t) => { zeigen(); const dt = Math.min(0.1, Math.max(0, t - (z.zuletzt || t))); z.zuletzt = t; z.mix += ((z.an ? 1 : 0) - z.mix) * (1 - Math.exp(-dt / 0.45)); if (Math.abs(z.mix - (z.an ? 1 : 0)) < 0.002) z.mix = z.an ? 1 : 0; return z.mix; };
+  zeigen();
+  return z;
+}
+
+// Zeichen: ein Bildrahmen mit einer feinen Bahn, die schräg hindurchläuft (wie die Fahrt); aus: nur der Rahmen
+export const FAHRT_SVG = `<svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+  <g class="kontur"><rect x="5" y="8" width="22" height="16" rx="0.5"/><path class="bahn" d="M9.5 20.5l11-9"/><path class="bahn" d="M16.4 11.5h4.1v4"/></g>
+  <rect x="5" y="8" width="22" height="16" rx="0.5"/><path class="bahn" d="M9.5 20.5l11-9"/><path class="bahn" d="M16.4 11.5h4.1v4"/>
+</svg>`;
