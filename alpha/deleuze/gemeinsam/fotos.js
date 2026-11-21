@@ -9,17 +9,17 @@ const MELDUNG = {
         heic: 'HEIC-Fotos kann dieser Browser nicht lesen. Stelle die Kamera auf JPG um oder wähle ein anderes Foto.',
         nichts: 'Das ist weder Foto noch Video. Wähle ein Foto (JPG, PNG) oder ein Video (MP4, MOV, WebM).',
         video: 'Dieses Video kann der Browser nicht abspielen. Versuche ein anderes, als MP4.',
-        fahrtAn: 'Fahrt durch das Foto anhalten', fahrtAus: 'Fahrt durch das Foto starten' },
+        neu: 'Neues Bild', fahrtAn: 'Fahrt durch das Foto anhalten', fahrtAus: 'Fahrt durch das Foto starten' },
   en: { foto: 'Your browser cannot read this photo. Try another one, as JPG, or a video.',
         heic: 'This browser cannot read HEIC photos. Set the camera to JPG or choose another photo.',
         nichts: 'This is neither a photo nor a video. Choose a photo (JPG, PNG) or a video (MP4, MOV, WebM).',
         video: 'Your browser cannot play this video. Try another one, as MP4.',
-        fahrtAn: 'Stop moving through the photo', fahrtAus: 'Move slowly through the photo' },
+        neu: 'New image', fahrtAn: 'Stop moving through the photo', fahrtAus: 'Move slowly through the photo' },
   fr: { foto: 'Le navigateur ne peut pas lire cette photo. Essaie-en une autre, en JPG, ou une vidéo.',
         heic: 'Ce navigateur ne lit pas les photos HEIC. Règle l’appareil sur JPG ou choisis une autre photo.',
         nichts: 'Ce n’est ni une photo ni une vidéo. Choisis une photo (JPG, PNG) ou une vidéo (MP4, MOV, WebM).',
         video: 'Le navigateur ne peut pas lire cette vidéo. Essaie-en une autre, en MP4.',
-        fahrtAn: 'Arrêter le travelling dans la photo', fahrtAus: 'Lancer un travelling lent dans la photo' },
+        neu: 'Nouvelle image', fahrtAn: 'Arrêter le travelling dans la photo', fahrtAus: 'Lancer un travelling lent dans la photo' },
 };
 export const dateiMeldung = (sprache, art) => (MELDUNG[sprache] || MELDUNG.de)[art];
 
@@ -119,9 +119,10 @@ export const FAHRT_SVG = `<svg viewBox="0 0 32 32" width="30" height="30" aria-h
   <rect x="5" y="8" width="22" height="16" rx="0.5"/><path class="bahn" d="M9.5 20.5l11-9"/><path class="bahn" d="M16.4 11.5h4.1v4"/>
 </svg>`;
 
-// Rahmen der Bühne (Wunsch vom 21.11.2026: «das ganze 4:5-Foto ohne Rand bearbeiten»). Ohne Foto ist die Bühne der ganze
-// Schirm. Mit Fotos nimmt sie das Format des ersten Fotos an und sitzt so gross wie möglich im freien Fenster zwischen
-// Kopfband und Reglern; der Operator rechnet nur auf dieser Fläche, Standbild und Aufnahme kommen im Format des Fotos.
+// Rahmen der Bühne (Wunsch vom 21.11.2026: «das ganze 4:5-Foto ohne Rand bearbeiten», ebenso eigene Videos). Bei Kamera
+// und Beispiel ist die Bühne der ganze Schirm. Mit Fotos oder eigenem Video nimmt sie dessen Format an und sitzt so gross
+// wie möglich zwischen Kopfband und Reglern; der Operator rechnet nur auf dieser Fläche, Standbild und Aufnahme kommen im
+// Format des Materials.
 // Die Operatoren lesen rahmen.b/.h statt innerWidth/innerHeight und ziehen rahmen.x/.y von den Fingerorten ab.
 export const rahmen = { x: 0, y: 0, b: innerWidth, h: innerHeight, seite: 0 };
 let rahmenLeinwand = null, eigenesResize = false;
@@ -157,4 +158,20 @@ export function rahmenSetzen(leinwand, seite) {
     for (const id of ['kopf', 'regler']) { const el = document.getElementById(id); if (el) rahmenSetzen.beob.observe(el); }
   }
   rahmenMelden();
+}
+
+// «Neues Bild» oben im Kopfband (Wunsch vom 21.11.2026): öffnet dieselbe Dateiwahl wie der Vorspann, ohne Umweg über
+// das Hauptmenü; Lesart und Regler bleiben, wie sie sind. Beschriftung folgt der Sprache der Seite.
+export function neuesBildKnopf() {
+  const wahl = document.getElementById('datei'), kopf = document.getElementById('kopf');
+  const sprachen = kopf && kopf.querySelector('.zt-sprachen');
+  if (!wahl || !sprachen) return null;
+  const k = document.createElement('button');
+  k.className = 'zt-neu'; k.id = 'neues-bild'; k.type = 'button';
+  const beschriften = () => { k.textContent = dateiMeldung(document.documentElement.lang, 'neu'); };
+  beschriften();
+  new MutationObserver(beschriften).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+  k.addEventListener('click', () => wahl.click());
+  kopf.insertBefore(k, sprachen);
+  return k;
 }
