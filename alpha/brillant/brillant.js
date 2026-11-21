@@ -1001,24 +1001,20 @@ function spracheWechseln(l, karte) {
   if (!SPRACHEN.includes(l)) return;
   try { localStorage.setItem('brillant.sprache', l); } catch {}
   try { const u = new URL(location.href); u.searchParams.set('lang', l); history.replaceState(null, '', u.pathname + u.search + u.hash); } catch {}
-  // 0.35 (Christian: «noch nicht flüssig»): die Schrift sinkt weich ins Unscharfe, die Karte hält ihre Höhe,
-  // dann gleitet die Höhe zur neuen Länge, und die neue Schrift taucht Zeile um Zeile auf, statt zu springen.
-  const texte = vKarten.map((k) => k.text);
+  // 0.37 (Christian: «die Karten flackern sehr stark»): Unschärfe, Versatz und gleitende Höhe zwangen die schräg im Raum
+  // stehenden Karten, jedes Bild neu zu rastern. Jetzt blendet nur die vordere Karte ihre Schrift über die Deckkraft aus und
+  // wieder ein; die Nachbarn bekommen die neue Sprache unsichtbar im selben Augenblick.
+  const vorne = vKarten.find((k) => k.el.classList.contains('vorn'));
   clearTimeout(spracheWechseln.uhr);
-  // die Höhe gleitet nur, wo die Schrift unter dem Bild steht (am grossen Bildschirm steht sie daneben und füllt die Karte)
-  const gleiten = !ruhig && !matchMedia('(min-width: 820px)').matches;
-  texte.forEach((t) => { if (gleiten) { t.style.height = t.offsetHeight + 'px'; t.classList.add('hoehe'); } t.classList.add('wechsel'); });
+  if (vorne) vorne.text.classList.add('wechsel');
   spracheWechseln.uhr = setTimeout(() => {
     SPRACHE = l; grundTexte(); zustandGezeigt = -1;
     vKarten.forEach((k, j) => k.beschriften(j === karte ? l : null));
     navKnoepfe.forEach((n, j) => { n.textContent = j ? BEREICHE[j - 1].name : TITEL_KURZ; });
     flaechen.forEach((el, j) => { el.querySelector('.p-name').textContent = BEREICHE[j].name; el.querySelector('.p-satz').textContent = BEREICHE[j].satz; el.href = zielVon(BEREICHE[j], l); });
     seitenNeu = true;   // die Bilder der Seite erst neu rechnen, wenn die Vitrine zu ist (das Rechnen hielte sonst die Karten an)
-    // neue Höhe messen, ohne dass man es sieht, dann von der alten dorthin gleiten
-    if (gleiten) texte.forEach((t) => { const alt = t.style.height; t.style.height = 'auto'; const neu = t.offsetHeight; t.style.height = alt; t.offsetHeight; t.style.height = neu + 'px'; });
-    requestAnimationFrame(() => texte.forEach((t) => t.classList.remove('wechsel')));
-    spracheWechseln.uhr = setTimeout(() => texte.forEach((t) => { t.classList.remove('hoehe'); t.style.height = ''; }), ruhig ? 0 : 900);
-  }, ruhig ? 0 : 320);
+    if (vorne) requestAnimationFrame(() => vorne.text.classList.remove('wechsel'));
+  }, ruhig || !vorne ? 0 : 210);
 }
 const N = BEREICHE.length;
 // 0.31: Bilder der Karten früh laden und dekodieren, damit beim Öffnen nichts nachpoppt
@@ -1187,6 +1183,9 @@ function vitrineBild(jetzt) {
 // Ziehen: die Karten folgen dem Finger; loslassen mit Schwung zur nächsten Karte. Kurzes Tippen auf eine Nachbarkarte holt sie nach vorn.
 vRaum.addEventListener('pointerdown', (e) => {
   if (e.button > 0) return;
+  // 0.37: ein Tippen auf DE EN FR ES ist kein Zug. Sonst setzte es die Bühne in Bewegung: alle Karten bekamen will-change
+  // und die vordere wieder ihre 3D-Transformation, Chrome rasterte sie neu – das war das starke Flackern beim Sprachwechsel.
+  if (e.target.closest && e.target.closest('.v-sprachen')) return;
   wecken();
   vz.zug = { x: e.clientX, y: e.clientY, pos: vz.pos, t: performance.now(), lx: e.clientX, lt: performance.now(), v: 0, bewegt: false, id: e.pointerId };
 });
