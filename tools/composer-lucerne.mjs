@@ -152,6 +152,21 @@ function spurenAnpassen(plan) {
       if (a.ohneWaerme) kl.schritte = kl.schritte.filter((x) => x.art !== "waerme");
       if (a.schritteDazu) kl.schritte = [...kl.schritte, ...a.schritteDazu];
     }
+    // Remix (11. November 2026, «Meditation»): Klangwerte und Nachbearbeitung erzeugter Spuren, Breite, Legato und Intonation der Sampler-Spuren
+    if (a.werte) sp.quelle.werte = { ...(sp.quelle.werte ?? {}), ...a.werte };      // Kick, Snare, Bass …: Parameter des Erzeugers
+    if (a.nach) sp.quelle.nach = a.nach;                                               // ersetzt die Nachbearbeitung der Spur ([] = keine)
+    if (a.nachMenge && sp.quelle.nach) sp.quelle.nach = sp.quelle.nach.map((x) => (x.menge != null && a.nachMenge[x.art] != null ? { ...x, menge: a.nachMenge[x.art] } : x));
+    if (sp.quelle.ereignisse && (a.breite || a.legato || a.cent != null)) {
+      // breite 0–1: die Ereignisse abwechselnd links und rechts (mit kleiner fester Streuung); legato: Faktor auf Dauer und Ausklang;
+      // cent: Faktor auf die Verstimmung je Ereignis (0 = rein)
+      sp.quelle.ereignisse = sp.quelle.ereignisse.map((e, i) => {
+        const z = { ...e };
+        if (a.breite) z.pan = +((i % 2 ? 1 : -1) * a.breite * (0.65 + 0.35 * (((i * 7919) % 97) / 96))).toFixed(3);
+        if (a.legato) { if (z.d != null) z.d *= a.legato; if (z.aus != null) z.aus *= a.legato; }
+        if (a.cent != null && z.cent != null) z.cent = Math.round(z.cent * a.cent);
+        return z;
+      });
+    }
     // «stumm»: [[vonTakt1, bisTakt1], …] (Zählung ab 1, bis einschliesslich) – Ereignisse in diesen Takten fallen weg, der Rest bleibt
     if (a.stumm && sp.quelle.ereignisse) {
       const T = 240 / plan.bpm, takt = (e) => (sp.quelle.frei ? e.t / T : e.t) + 1, vorher = sp.quelle.ereignisse.length;
