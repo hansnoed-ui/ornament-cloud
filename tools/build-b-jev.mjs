@@ -45,7 +45,11 @@ async function frage(zustand, fragen) {
 // Leistungen mit `ohneJev: true` (seit 13. November 2026: «Fotografie») stehen noch nicht in der jev-Tabelle: Sie gehen weder in die Prüfsumme noch in die
 // Fragen ein, damit die bestehende Tabelle gültig bleibt (jev lässt sich aus der Cloud-Sitzung nicht aufrufen). Beim nächsten Lauf dieses Werkzeugs mit
 // Schlüssel: `ohneJev` in src/b/inhalt.mjs und inhalt.en.mjs streichen, dann wird die Leistung mit eingeschätzt.
-const JEV_ANGEBOTE = ANGEBOTE.filter((a) => !a.ohneJev);
+// Feste Reihenfolge für Prüfsumme und Fragen: die Reihenfolge auf der Seite darf sich ändern, ohne dass jev neu laufen muss
+// (22. November 2026: Produkte rückte an die zweite Stelle; die Einschätzungen in jev.json gelten je Angebot, nicht je Platz)
+const JEV_REIHE = ["webdesign", "vermittlung", "kuration", "produkte"];
+const platz = (a) => (JEV_REIHE.indexOf(a.slug) + 1 || 99);
+const JEV_ANGEBOTE = ANGEBOTE.filter((a) => !a.ohneJev).sort((x, y) => platz(x) - platz(y));
 
 /** Prüfsumme über alles, was die Fragen bestimmt: Zettel, Angebote, Apps, Raster, ORMA-Auswahl */
 export function pruefsumme(zettel, orma) {

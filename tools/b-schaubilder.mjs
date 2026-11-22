@@ -32,7 +32,7 @@ export const SCHAUBILDER = [
   { name: "multiverse", pfad: "multiverse/", warten: 6000 },
   // Spektralmenü als Website-Referenz (22. November 2026): nach der Runde durch die fünf Farben, wenn «Beauftragen» steht
   // Prints als Website-Referenz (22. November 2026): der Druckbogen, wenn alle vier Platten liegen
-  { name: "prints", pfad: "references/webdesign/prints/", warten: 5000 },
+  { name: "prints", pfad: "references/webdesign/prints/", warten: 3700 },
   { name: "spektralmenue", pfad: "references/webdesign/colorpicker/", warten: 7500 },
   // «Denken» im Atelier (13. November 2026, Christian: Zettelkasten «ins Atelier … in Zusammenhang mit dem Facebook-Hypertext», dann «so bauen»)
   { name: "zettelkasten", pfad: "b/zettel/", warten: 3000 },
