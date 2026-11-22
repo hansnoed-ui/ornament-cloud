@@ -159,7 +159,7 @@ export const ANGEBOTE = [
         text: "An entry page with almost no text: turning the ring around the prism puts another spectral colour on the screen, and with each colour another menu item. The refraction is computed, not drawn." },
       { name: "Prints", von: "entry page for prints", jahr: "2026", url: "/references/webdesign/prints/", adresse: "ornament.cloud/references/webdesign/prints", bild: "b/bilder/schau/prints.jpg",
         bildAlt: "Prints: a press sheet with a woman's head in four-colour halftone dots of yellow, magenta, cyan and black, with crop marks, registration marks and a colour bar",
-        text: "An entry page for prints: the first motif is built up as a four-colour halftone, plate by plate. Below, eight motifs, each with a loupe, a halftone print and a view on the wall." },
+        text: "An entry page for prints: the first motif is built up as a four-colour halftone, plate by plate. Below, eight motifs, each with a loupe and a view on the wall." },
       { name: "Kaiserbühne", von: "website of a theatre", jahr: "2026", url: "https://kaiserbuehne.ch/", adresse: "kaiserbuehne.ch", bild: "b/bilder/schau/kaiserbuehne.jpg", mass: [1165, 728],
         bildAlt: "Website of the Kaiserbühne: the programme of the 2026/27 season as coloured tiles with the titles of the plays, above it the header with news, tickets, programme, about and rental",
         text: "The website of the Kaiserbühne theatre with the programme as coloured tiles. In German." },
