@@ -545,12 +545,12 @@
   {
    "id": "spektralmenue",
    "name": "Spektralmenü (Prisma-Farbwähler)",
-   "tuer": "atelier",
+   "tuer": "beauftragen",
    "art": "Referenz Webdesign",
-   "status": "direktlink",
+   "status": "verlinkt",
    "adresse": "references/webdesign/colorpicker/",
    "kurz": "Einstiegsseite als Referenz: Die Drehung eines Glasprismas wählt eine Spektralfarbe und mit ihr einen von fünf Menüpunkten.",
-   "wartet": "Ansehen; entscheiden, ob und wo das Spektralmenü eingesetzt wird, und welche fünf Punkte es trägt."
+   "wartet": "Entscheiden, ob und wo das Spektralmenü als Einstieg eingesetzt wird, und welche fünf Punkte es trägt."
   }
  ]
 }
