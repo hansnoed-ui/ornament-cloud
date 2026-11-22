@@ -286,9 +286,13 @@ function anordnen() {
   for (const c of [cv, strahlCv]) { c.width = Math.round(st.W * st.dpr); c.height = Math.round(st.H * st.dpr); }
   bandCv.width = Math.max(1, Math.round(st.W / BAND_TEILER)); bandCv.height = Math.max(1, Math.round(st.H / BAND_TEILER));
   for (const b of bloom) { b.width = Math.max(1, Math.round(st.W / b.f)); b.height = Math.max(1, Math.round(st.H / b.f)); }
-  st.theta = thetaAus(st.phi); st.dirty = true;
+  st.theta = thetaSicht(st.phi); st.dirty = true;
 }
 const thetaAus = phi => { const l = lambdaAus(phi), i = clamp(l - 370, 0, THETA.length - 1), k = Math.floor(i), f = i - k; return THETA[k] + ((THETA[k + 1] ?? THETA[k]) - THETA[k]) * f; };
+// Sichtbare Drehung (22. November 2026, Christian: «das glas/kristall dreieck bewegt sich auch nur minimal»): zwischen zwei
+// Menüpunkten dreht das Prisma zusätzlich um eine Drittelumdrehung. Ein gleichseitiges Prisma ist nach 120° wieder dasselbe,
+// an jedem Rastpunkt stimmt die Optik also genau; dazwischen bricht und spiegelt das drehende Glas das Licht echt.
+const thetaSicht = phi => thetaAus(phi) + phi / SEKTOR * 120 * DEG;
 
 /* ---------- Zeichnen ---------- */
 const cv = $("buehne"), ctx = cv.getContext("2d");
@@ -302,7 +306,7 @@ const KERN_MAX = Math.max(...KERN.flat()), KERN_N = KERN.map(c => c.map(v => v /
 // Bandfarben dezenter (22. November 2026): etwas entsättigt, und Blau, Violett und Rot nicht ganz so dunkel wie das Auge sie sähe,
 // damit alle Töne von Violett über Blau, Grün und Orange bis Rot auf dem Schirm erscheinen
 const BAND = LAM.map(l => { const c = farbe(l), y = .2126 * c[0] + .7152 * c[1] + .0722 * c[2], e = .32 + .68 * Math.pow(HUELLE(l), .8);
-  return c.map(v => (v * .74 + y * .26) * e); });
+  return c.map(v => (v * .55 + y * .45) * e * .88); });
 const sicht = I => Math.pow(I, .55);
 let baeume = [], raender = [], fein = [], enden = [];
 function rechnen() {
@@ -352,7 +356,7 @@ function zeichneStrahlen(rev) {
     }
   }
   sx.setTransform(1, 0, 0, 1, 0, 0); sx.imageSmoothingEnabled = true; sx.imageSmoothingQuality = "high";
-  sx.globalAlpha = .74; sx.drawImage(bandCv, 0, 0, strahlCv.width, strahlCv.height); sx.globalAlpha = 1;
+  sx.globalAlpha = .6; sx.drawImage(bandCv, 0, 0, strahlCv.width, strahlCv.height); sx.globalAlpha = 1;
   sx.setTransform(d, 0, 0, d, 0, 0);
   sx.lineCap = "round"; sx.lineWidth = 1.2;   // Kernlinien: zusammen ergeben sie Weiss
   for (let i = 0; i < N_L; i++) for (const s of baeume[i].seg) {
@@ -465,10 +469,12 @@ function zeichneSchirm(zeit) {
     const c = farbe(f.l), e = HUELLE(f.l), p = f.info.hit.p, gr = ctx.createRadialGradient(p[0], p[1], 0, p[0], p[1], 9);
     gr.addColorStop(0, rgba(c, .32 * e)); gr.addColorStop(1, rgba(c, 0)); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(p[0], p[1], 9, 0, TAU); ctx.fill();
   }
-  const P = messpunkt(), l = lambdaAus(st.phi), c = farbe(l), an = HUELLE(l) > .08 && st.revealt > 1400;
+  const P = messpunkt(), l = lambdaAus(st.phi), c = farbe(l);
+  // Licht am Messpunkt nur nahe einem Rastpunkt; unterwegs dreht das Prisma das Spektrum vom Schirm weg
+  const rast = (1 - sm(6 * DEG, 24 * DEG, Math.abs(wickel(st.phi - PUNKTE[naechster(st.phi)].phi)))) * (1 - sm(1.5 * DEG, 8 * DEG, Math.abs(thetaSicht(st.phi) - st.theta))), an = HUELLE(l) > .08 && st.revealt > 1400 && rast > .05;
   if (an) {
     const puls = reduce ? 0 : Math.sin(zeit / 500) * .5 + .5, gr = ctx.createRadialGradient(P[0], P[1], 0, P[0], P[1], 50 + puls * 6);
-    gr.addColorStop(0, rgba(c, .5 * HUELLE(l) ** .3)); gr.addColorStop(.35, rgba(c, .13)); gr.addColorStop(1, rgba(c, 0));
+    gr.addColorStop(0, rgba(c, .5 * HUELLE(l) ** .3 * rast)); gr.addColorStop(.35, rgba(c, .13 * rast)); gr.addColorStop(1, rgba(c, 0));
     ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(P[0], P[1], 58, 0, TAU); ctx.fill();
   }
   ctx.globalCompositeOperation = "source-over";
@@ -495,7 +501,7 @@ function komponieren(zeit) {
   ctx.setTransform(d, 0, 0, d, 0, 0);
   zeichneTrommel(zeit);
   ctx.globalCompositeOperation = "lighter";
-  [0, .24, .28, .34, .4].forEach((a, k) => { if (a) { ctx.globalAlpha = a; ctx.drawImage(bloom[k], 0, 0, st.W, st.H); } });
+  [0, .16, .19, .23, .27].forEach((a, k) => { if (a) { ctx.globalAlpha = a; ctx.drawImage(bloom[k], 0, 0, st.W, st.H); } });
   ctx.globalAlpha = 1;
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(strahlCv, 0, 0); ctx.setTransform(d, 0, 0, d, 0, 0);
   zeichneStaub(zeit);
@@ -630,8 +636,8 @@ function schleife(zeit) {
   }
   if (zug && zug.typ === "dreh") { const z = gerastet(zug.roh), d = z - st.phi; if (Math.abs(d) > 1e-4) { st.phi += reduce ? d : d * .085; st.dirty = true; } }
   else if (st.phiZiel != null) { const d = st.phiZiel - st.phi; st.phi += d * .055; if (Math.abs(d) < 1e-3) { st.phi = st.phiZiel; st.phiZiel = null; } st.dirty = true; }
-  const thZiel = thetaAus(st.phi), dth = thZiel - st.theta;
-  if (Math.abs(dth) > 1e-6) { st.theta += reduce ? dth : dth * .12; st.dirty = true; }
+  const thZiel = thetaSicht(st.phi), dth = thZiel - st.theta;
+  if (Math.abs(dth) > 1e-6) { st.theta += reduce ? dth : dth * .1; st.dirty = true; }
   if (st.dirty) { st.dirty = false; rechnen(); zeichneStrahlen(st.revealt); zeigen(); }
   komponieren(zeit);
   requestAnimationFrame(schleife);
@@ -639,7 +645,7 @@ function schleife(zeit) {
 let rsTimer = 0;
 addEventListener("resize", () => { clearTimeout(rsTimer); rsTimer = setTimeout(anordnen, 80); });
 anordnen();
-st.theta = thetaAus(st.phi);
+st.theta = thetaSicht(st.phi);
 zeigen();
 requestAnimationFrame(schleife);
 })();
