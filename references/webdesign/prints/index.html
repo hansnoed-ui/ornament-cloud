@@ -12,7 +12,8 @@
 /* Referenz «Prints» (22. November 2026; Christian: «A find ich super. C würd ich dann für die einzelnen prints nehmen»).
    Oben ein Druckbogen: das Motiv als Vierfarbenraster (Rasterwinkel C 15°, M 75°, Y 0°, K 45°), die Platten fallen
    nacheinander ins Register, der Zeiger verschiebt sie leicht (Passer). Darunter die acht Motive als Bögen; beim
-   Darüberfahren werden sie gerastert. Jedes öffnet eine dunkle Ansicht mit drei Arten zu schauen: Lupe, Raster, Wand. */
+   Darüberfahren werden sie gerastert. Jedes öffnet eine dunkle Ansicht mit zwei Arten zu schauen: Lupe und Wand (das Raster dort seit 22. November 2026
+   heraus, Christian: «Das Raster kannst du als Möglichkeit rausnehmen bei der presentation der einzelnen prints»). */
 :root{
   --papier:#f4f4f1;
   --bogen:#fbfbf9;
@@ -80,7 +81,6 @@ button{font:inherit;color:inherit}
   opacity:0;visibility:hidden;transition:background-color .8s,color .8s,opacity .35s,visibility 0s .35s}
 .ansicht.offen{opacity:1;visibility:visible;transition:background-color .8s,color .8s,opacity .35s}
 .ansicht.wand{background:var(--wand);color:var(--tinte)}
-.ansicht.papier{background:#1a1a1c}
 .a-kopf,.a-fuss{display:flex;justify-content:space-between;align-items:center;gap:16px;padding-block:calc(18px + env(safe-area-inset-top,0px)) 0}
 .a-fuss{padding-block:0 calc(22px + env(safe-area-inset-bottom,0px))}
 .a-zahl{font-family:var(--mono);font-size:12px;letter-spacing:.06em;opacity:.7}
@@ -107,8 +107,6 @@ button{font:inherit;color:inherit}
 .lupe::after{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.16),transparent 38%)}
 .schein{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;background:radial-gradient(circle at var(--lx) var(--ly),rgba(255,236,220,.16),transparent calc(var(--lr) * 3))}
 .lupe-mass{position:absolute;left:var(--lx);top:var(--ly);transform:translate(calc(var(--lr) * .74),calc(var(--lr) * .74));font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;opacity:.6;pointer-events:none}
-/* Raster */
-.ebene canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 /* Wand */
 .rahmen{position:absolute;margin:0;box-sizing:border-box;border:10px solid #1c1d20;background:#fbfbf8;
   box-shadow:inset 0 0 0 1px rgba(0,0,0,.25),inset 0 2px 6px rgba(0,0,0,.12),0 3px 4px rgba(10,20,30,.22),0 22px 34px -6px rgba(10,20,30,.3),0 60px 90px -30px rgba(10,20,30,.35)}
@@ -148,7 +146,7 @@ button{font:inherit;color:inherit}
 </header>
 
 <main class="motive innen" id="motive">
-  <div class="motive-kopf"><h2>Acht Motive</h2><span>Antippen für Lupe, Raster und Wand</span></div>
+  <div class="motive-kopf"><h2>Acht Motive</h2><span>Antippen für Lupe und Wand</span></div>
   <ol class="raster-feld" id="feld"></ol>
 </main>
 <footer class="fuss innen"><a href="/start/">ornament.cloud</a><a href="mailto:hansnoed@gmail.com?subject=Prints">Prints anfragen</a></footer>
@@ -159,13 +157,12 @@ button{font:inherit;color:inherit}
     <div class="ebene an" id="e-lupe">
       <div class="tisch" id="tisch"><img id="l-bild" alt=""><div class="schein" aria-hidden="true"></div><div class="lupe" id="lupe" aria-hidden="true"></div><span class="lupe-mass" aria-hidden="true">× 2</span></div>
     </div>
-    <div class="ebene" id="e-raster"><canvas id="r-cv" aria-hidden="true"></canvas></div>
     <div class="ebene" id="e-wand"><div class="licht" aria-hidden="true"><i></i><i></i><i></i><i></i></div><figure class="rahmen" id="rahmen"><img id="w-bild" alt=""></figure></div>
   </div>
   <div class="a-fuss innen">
     <button type="button" class="rund" id="a-zurueck" aria-label="Vorheriges Motiv">←</button>
     <div class="modi" role="group" aria-label="Ansicht">
-      <button type="button" data-modus="lupe" aria-pressed="true">Lupe</button><button type="button" data-modus="raster" aria-pressed="false">Raster</button><button type="button" data-modus="wand" aria-pressed="false">Wand</button>
+      <button type="button" data-modus="lupe" aria-pressed="true">Lupe</button><button type="button" data-modus="wand" aria-pressed="false">Wand</button>
     </div>
     <button type="button" class="rund" id="a-vor" aria-label="Nächstes Motiv">→</button>
   </div>
@@ -370,7 +367,7 @@ function kachelnZeichnen(zeit) {
 }
 
 /* ---------- Ansicht eines Motivs ---------- */
-const ansicht = $("ansicht"), buehne = $("buehne"), tisch = $("tisch"), lupe = $("lupe"), lBild = $("l-bild"), wBild = $("w-bild"), rahmen = $("rahmen"), rCv = $("r-cv");
+const ansicht = $("ansicht"), buehne = $("buehne"), tisch = $("tisch"), lupe = $("lupe"), lBild = $("l-bild"), wBild = $("w-bild"), rahmen = $("rahmen");
 const A = { i: -1, modus: "lupe", bild: null, rect: null, lx: .5, ly: .45, zx: .5, zy: .45, r: 120, folgt: false, ruhe: 0, w: null, pl: null, t0: 0, z: [0, 0], weich: [0, 0], vorher: null };
 const ZOOM = 2;
 async function oeffnen(i, ohneVerlauf) {
@@ -388,7 +385,6 @@ async function oeffnen(i, ohneVerlauf) {
   try { A.bild = await laden(BILD(p.slug, 1600)); } catch (e) { return; }
   if (PRINTS[A.i] !== p) return;
   lBild.src = A.bild.src; wBild.src = A.bild.src; lupe.style.backgroundImage = `url("${A.bild.src}")`;
-  A.w = null; A.pl = null;
   wandfarbe(A.bild);
   ordnen(); modus(A.modus, true);
 }
@@ -423,26 +419,13 @@ function ordnen() {
   // Wand: kleiner, mit Passepartout
   const rb = b * .62, rh = h * .62, pad = Math.min(rb, rh) * .16 + 10;
   Object.assign(rahmen.style, { width: rb + pad * 2 + "px", height: rh + pad * 2 + "px", padding: pad + "px", left: (W - rb - pad * 2) / 2 + "px", top: (H - rh - pad * 2) / 2 - H * .03 + "px" });
-  const dpr = Math.min(2, devicePixelRatio || 1); rCv.width = Math.round(W * dpr); rCv.height = Math.round(H * dpr); A.dpr = dpr; A.W = W; A.H = H;
-  A.pl = null;
 }
 function modus(m, still) {
   A.modus = m;
   document.querySelectorAll(".modi button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.modus === m)));
-  for (const [n, el] of [["lupe", "e-lupe"], ["raster", "e-raster"], ["wand", "e-wand"]]) $(el).classList.toggle("an", n === m);
+  for (const [n, el] of [["lupe", "e-lupe"], ["wand", "e-wand"]]) $(el).classList.toggle("an", n === m);
   ansicht.classList.toggle("wand", m === "wand" && A.wandHell > .45);
-  ansicht.classList.toggle("papier", m === "raster");
   if (m === "wand" && A.wandHell <= .45) ansicht.style.background = "var(--wand)"; else ansicht.style.background = "";
-  if (m === "raster") {
-    if (!A.pl && A.bild) {
-      // Raster auf einem Bogen: Motiv auf 86 % der Fläche, damit der Papierrand Platz hat
-      const r = A.rect, s = .86, b = r.b * s, h = r.h * s;
-      A.prect = { x: (A.W - b) / 2, y: (A.H - h) / 2, b, h };
-      if (!A.w) A.w = trennen(A.bild);
-      A.pl = platten(A.w, b, h, A.dpr, Math.max(4, Math.min(b, h) / 95));
-    }
-    A.t0 = performance.now();
-  }
   los();
 }
 document.querySelectorAll(".modi button").forEach(b => b.addEventListener("click", () => modus(b.dataset.modus)));
@@ -473,7 +456,6 @@ buehne.addEventListener("pointerdown", e => { if (A.modus !== "lupe") wisch = [e
 buehne.addEventListener("pointerup", e => {
   if (!wisch) return; const dx = e.clientX - wisch[0], dy = e.clientY - wisch[1]; wisch = null;
   if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) oeffnen(A.i + (dx < 0 ? 1 : -1));
-  else if (A.modus === "raster" && Math.abs(dx) < 8 && Math.abs(dy) < 8) A.t0 = performance.now();   // Antippen druckt neu
 });
 function ansichtZeichnen(zeit) {
   if (!A.rect) return;
@@ -486,15 +468,6 @@ function ansichtZeichnen(zeit) {
     const px = A.lx * A.rect.b, py = A.ly * A.rect.h;
     tisch.style.setProperty("--lx", px + "px"); tisch.style.setProperty("--ly", py + "px");
     lupe.style.backgroundPosition = `${-(px * ZOOM - A.r)}px ${-(py * ZOOM - A.r)}px`;
-  } else if (A.modus === "raster" && A.pl) {
-    const x = rCv.getContext("2d"), r = A.prect, m = Math.min(r.b, r.h) * .07;
-    x.setTransform(A.dpr, 0, 0, A.dpr, 0, 0); x.globalCompositeOperation = "source-over"; x.globalAlpha = 1;
-    x.clearRect(0, 0, A.W, A.H);
-    x.save(); x.shadowColor = "rgba(0,0,0,.45)"; x.shadowBlur = 50; x.shadowOffsetY = 20; x.fillStyle = "#fbfbf9"; x.fillRect(r.x - m, r.y - m, r.b + 2 * m, r.h + 2 * m); x.restore();
-    A.weich[0] += (A.z[0] - A.weich[0]) * .08; A.weich[1] += (A.z[1] - A.weich[1]) * .08;
-    drucken(x, A.pl, r.x, r.y, r.b, r.h, zeit - A.t0, A.weich, 1, reduce ? 0 : 8, 420, .8);
-    schnittmarken(x, r.x, r.y, r.b, r.h, "rgba(20,20,22,.5)");
-    x.fillStyle = korn(x); x.globalCompositeOperation = "multiply"; x.fillRect(r.x - m, r.y - m, r.b + 2 * m, r.h + 2 * m); x.globalCompositeOperation = "source-over";
   }
 }
 

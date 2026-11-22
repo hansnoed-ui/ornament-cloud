@@ -181,7 +181,7 @@ export const ANGEBOTE = [
       // Prints an zweiter Stelle seit 22. November 2026 (Christian: «neben der 2. Stelle der webdesign-referenzen»)
       { name: "Prints", von: "Einstiegsseite für Prints", jahr: "2026", url: "/references/webdesign/prints/", adresse: "ornament.cloud/references/webdesign/prints", bild: "b/bilder/schau/prints.jpg",
         bildAlt: "Prints: ein Druckbogen mit einem Frauenkopf im Vierfarbenraster aus Punkten in Gelb, Magenta, Cyan und Schwarz, mit Schnittmarken, Passerkreuzen und Farbkontrollstreifen",
-        text: "Eine Einstiegsseite für Prints: Das erste Motiv entsteht als Vierfarbenraster, Platte um Platte. Darunter acht Motive, jedes mit Lupe, Rasterdruck und Ansicht an der Wand." },
+        text: "Eine Einstiegsseite für Prints: Das erste Motiv entsteht als Vierfarbenraster, Platte um Platte. Darunter acht Motive, jedes mit Lupe und Ansicht an der Wand." },
       { name: "Kaiserbühne", von: "Website eines Theaters", jahr: "2026", url: "https://kaiserbuehne.ch/", adresse: "kaiserbuehne.ch", bild: "b/bilder/schau/kaiserbuehne.jpg", mass: [1165, 728],
         bildAlt: "Website der Kaiserbühne: der Spielplan der Saison 2026/27 als farbige Kacheln mit den Titeln der Stücke, darüber die Kopfzeile mit Aktuell, Tickets, Spielplan, Über uns und Vermietung",
         text: "Die Website der Kaiserbühne mit dem Spielplan als farbigen Kacheln." },
