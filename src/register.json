@@ -551,6 +551,36 @@
    "adresse": "references/webdesign/colorpicker/",
    "kurz": "Einstiegsseite als Referenz: Die Drehung eines Glasprismas wählt eine Spektralfarbe und mit ihr einen von fünf Menüpunkten.",
    "wartet": "Entscheiden, ob und wo das Spektralmenü als Einstieg eingesetzt wird, und welche fünf Punkte es trägt."
+  },
+  {
+   "id": "prints-druck",
+   "name": "Prints – Druck",
+   "tuer": "beauftragen",
+   "art": "Referenz Webdesign",
+   "status": "direktlink",
+   "adresse": "references/webdesign/prints/druck/",
+   "kurz": "Einstiegsseite für Prints als Referenz: das Motiv als Vierfarbenraster, die Platten fallen nacheinander ins Register.",
+   "wartet": "Ansehen; wählen, welche Varianten bleiben und ob sie unter «Webdesign» verlinkt werden."
+  },
+  {
+   "id": "prints-wand",
+   "name": "Prints – Wand",
+   "tuer": "beauftragen",
+   "art": "Referenz Webdesign",
+   "status": "direktlink",
+   "adresse": "references/webdesign/prints/wand/",
+   "kurz": "Einstiegsseite für Prints als Referenz: ein gerahmter Print an einer Wand in seiner eigenen Grundfarbe, mit Fensterlicht.",
+   "wartet": "Ansehen; wählen, welche Varianten bleiben und ob sie unter «Webdesign» verlinkt werden."
+  },
+  {
+   "id": "prints-lupe",
+   "name": "Prints – Lupe",
+   "tuer": "beauftragen",
+   "art": "Referenz Webdesign",
+   "status": "direktlink",
+   "adresse": "references/webdesign/prints/lupe/",
+   "kurz": "Einstiegsseite für Prints als Referenz: ein Print im Dunkeln, eine Lupe wandert über die Oberfläche.",
+   "wartet": "Ansehen; wählen, welche Varianten bleiben und ob sie unter «Webdesign» verlinkt werden."
   }
  ]
 }
