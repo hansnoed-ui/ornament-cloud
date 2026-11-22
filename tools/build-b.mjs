@@ -454,7 +454,7 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
   <div class="spalte">
     <div class="abschnitt-kopf"><h2 id="spielen-titel">${zeichen("spielen")}${esc(T.start.spielen)}</h2><p>${esc(T.start.spielenText)}</p><a class="weiter" href="${B}apps/">${esc(T.start.alleApps)}</a></div>
     <div class="reihe zeilen">${APPS.map(appKachel).join("")}</div>
-    <p class="auch klein">${esc(T.start.auch)} ${register.arbeiten.filter((e) => e.atelier && e.tuer === "spielen-denken" && ![ZEIGEN_FILM.slug, ...ZEIGEN.map((z) => z.slug), ...DENKEN.map((d) => d.slug)].includes(e.id)).map((e) => `<a href="/${attr(zuAdresse(e.adresse))}" target="_blank" rel="noopener">${esc(e.name)}</a>`).join(" · ")} · <a href="${B}atelier/">${esc(T.start.atelier)}</a></p>
+    <p class="auch klein">${esc(T.start.auch)} ${register.arbeiten.filter((e) => e.atelier && e.tuer === "spielen-denken" && ![ZEIGEN_FILM.slug, ...ZEIGEN.map((z) => z.slug), ...DENKEN.map((d) => d.slug), "deleuze-start"].includes(e.id)).map((e) => `<a href="/${attr(zuAdresse(e.adresse))}" target="_blank" rel="noopener">${esc(e.name)}</a>`).join(" · ")} · <a href="${B}atelier/">${esc(T.start.atelier)}</a></p>
   </div>
 </section>
 
@@ -560,7 +560,7 @@ ${faeden([fApp(appVon("phorma-iii")), fZettel(zettel[32]), fZettel(zettel[28])])
   {
     // Reihenfolge unter «Werkzeuge und Proben» (14. November 2026, Christian: «animations, composer, lab, multiverse, gamma (3. rad und alte website
     // aus dem atelier raus)»); was hier fehlt, aber "atelier": true hat, kommt danach in der Folge des Registers
-    const FOLGE = ["animations", "composer", "lab", "multiverse", "gamma"], rang = (e) => (FOLGE.indexOf(e.id) + 1 || 99);
+    const FOLGE = ["animations", "deleuze-start", "drittes-rad", "composer", "lab", "multiverse", "gamma"], rang = (e) => (FOLGE.indexOf(e.id) + 1 || 99);
     const eintraege = register.arbeiten.filter((e) => e.atelier && !DENKEN.some((d) => d.slug === e.id)).sort((a, b) => rang(a) - rang(b));
     const body = `
 <section class="stueck-kopf"><div class="spalte">

@@ -8,33 +8,32 @@ import { schliffEbenen } from '../deleuze/kristall/schliffe.js?v=8';
 const $ = (id) => document.getElementById(id);
 const leinwand = $('leinwand');
 
-// ---------- Inhalt: drei Anwendungen von ornament.cloud (Christian, 20.11.2026; ersetzt Webdesign, Apps, Vermittlung, Kuration, Editionen;
-// Composer und Multiverse wieder heraus; ORNAMENT LAB seit 0.31 dabei, Christian: «Das Lab gibts jetzt auch d/e/s/f»; Composer seit 0.39 wieder dabei) ----------
-// Tippt man im Menü auf den Namen, öffnet sich die Vitrine (unten): Bild oder Film, Name, ein Satz, «Öffnen».
+// ---------- Inhalt: fünf Angebote von ornament.cloud (0.44, Christian, 22.11.2026: «Als Auswahl Website, App, Anwendung (im Browser),
+// Kuration & Vermittlung, Produkte»; ersetzt die fünf Anwendungen von 0.39–0.43). Unter dem Stein und im Menü steht der Bereich,
+// auf der Karte ein Beispiel daraus (werk) mit «Öffnen» und leisen Links zum Angebot. Die bisherigen Anwendungen (the deleuzian scheme,
+// Das Dritte Rad, ornament.lab, Composer) hängen als Links an der Karte «Anwendung», zusammen mit dem Atelier, wo sie auch stehen.
+// Tippt man im Menü auf den Namen, öffnet sich die Vitrine (unten): Bild, Name, ein Satz, «Öffnen», Links.
+const ANGEBOT = (seite) => ({ href: `/angebot/${seite}/`, adressen: { en: `/en/angebot/${seite}/` } });
 const BEREICHE = [
-  { name: 'the deleuzian scheme', kopf: 'im Entstehen · Bild, Film, Ton', satz: 'Begriffe von Deleuze als Verfahren: Kristallbild, Schichten der Zeit, Dauer, Wahrnehmung, Diagramm, Figur – angewandt auf eigenes Material.',
-    href: '/alpha/deleuze/start/', sprachen: ['de', 'en', 'fr'], ton: [228, 92, 96],
-    // 0.41 (Christian: «Vorschaukarte für den deleuzian scheme»): ein Film der Masterseite statt des Standbilds – der Kristall
-    // geht seine acht Facetten durch, rechts die Zwischentitel; je Sprache ein eigener Film (Spanisch zeigt Englisch).
-    // Ein Film kostet das Handy kaum Rechenzeit (eigener Dekoder), anders als ein gemaltes Schaubild.
-    bild: { de: 'vorschau/deleuzian-scheme-de.jpg?v=1', en: 'vorschau/deleuzian-scheme-en.jpg?v=1', fr: 'vorschau/deleuzian-scheme-fr.jpg?v=1' },
-    film: { de: 'vorschau/deleuzian-scheme-de.mp4?v=1', en: 'vorschau/deleuzian-scheme-en.mp4?v=1', fr: 'vorschau/deleuzian-scheme-fr.mp4?v=1' } },
-  { name: 'Das Dritte Rad', kopf: 'Zeit · Form · Farbe', satz: 'Zeit, Form und Farbe drehen gegeneinander. Jede Drehung zieht einen Zettel, eine Begegnung aus ORNA und eine Übung aus OMNA COLOR.',
-    href: '/beta/drittes-rad/', sprachen: ['de', 'en'], adressen: { de: '/beta/drittes-rad/?sprache=de', en: '/beta/drittes-rad/?sprache=en' }, schau: 'rad', ton: [232, 150, 80] },
-  { name: 'Animations', kopf: 'Bild · Bewegung', satz: 'Ein Bild, 24 Effekte, bis zu drei Ebenen: das Mischpult für eigene Animationen.',
-    href: '/animations/', sprachen: ['de', 'en', 'es'], adressen: { en: '/animations/en/', es: '/animations/es/' }, bild: 'vorschau/animations.jpg?v=2', film: 'vorschau/animations.mp4?v=3', ton: [124, 108, 255] },
-  { name: 'ornament.lab', kopf: 'Erzeugen · Beobachten · Weiterführen', satz: '',
-    href: '/beta/lab/', sprachen: ['de', 'en', 'es', 'fr'], adressen: { de: '/beta/lab/?sprache=de', en: '/beta/lab/?sprache=en', es: '/beta/lab/?sprache=es', fr: '/beta/lab/?sprache=fr' },
-    // Am Telefon die eigene Handy-Fassung des Labs (alpha/lab/handy/), in der gewählten Sprache.
-    handy: '/alpha/lab/handy/',
-    schau: 'lab', ton: [96, 140, 255] },
-  // 0.39 (Christian, 21.11.2026: «Der Composer kann jetzt auch auf der Seite präsentiert werden»): vorerst nur deutsch;
-  // bekommt er weitere Sprachen, hier in sprachen und adressen nachtragen
-  // 0.41: der Composer spricht jetzt vier Sprachen (PR 906); er liest sie aus «composer-sprache» auf dem Gerät, nicht aus der Adresse
-  { name: 'Composer', kopf: 'Ton · Spuren · Mischen', satz: '',
-    href: '/alpha/composer/', sprachen: ['de', 'en', 'es', 'fr'], speicher: 'composer-sprache', bild: 'vorschau/composer.jpg?v=1', ton: [86, 196, 172] }
+  { werk: 'Spektralmenü', href: '/references/webdesign/colorpicker/', sprachen: ['de'], bild: 'vorschau/website-spektral.jpg?v=1', ton: [150, 118, 255],
+    links: [{ wort: 'angebot', ...ANGEBOT('webdesign') }] },
+  { werk: 'PHORMA II', href: '/alpha/phorma-ii/', sprachen: ['de', 'en'], adressen: { de: '/alpha/phorma-ii/?sprache=de', en: '/alpha/phorma-ii/?sprache=en' },
+    bild: 'vorschau/phorma-ii.jpg?v=1', ton: [72, 176, 220],
+    links: [{ wort: 'angebot', ...ANGEBOT('webdesign') }, { wort: 'apps', href: '/apps/', adressen: { en: '/en/apps/' } }] },
+  { werk: 'Animations', href: '/animations/', sprachen: ['de', 'en', 'es'], adressen: { en: '/animations/en/', es: '/animations/es/' }, bild: 'vorschau/animations.jpg?v=2', ton: [86, 196, 150],
+    // weitere Anwendungen; jede öffnet in der Sprache der Seite, wenn es sie so gibt, sonst Englisch bzw. in ihrer ersten
+    links: [
+      { name: 'the deleuzian scheme', href: '/alpha/deleuze/start/', sprachen: ['de', 'en', 'fr'], speicher: 'kristall.sprache' },
+      { name: { de: 'Das Dritte Rad', en: 'The Third Wheel' }, href: '/beta/drittes-rad/', sprachen: ['de', 'en'], adressen: { de: '/beta/drittes-rad/?sprache=de', en: '/beta/drittes-rad/?sprache=en' } },
+      { name: 'ornament.lab', href: '/beta/lab/', sprachen: ['de', 'en', 'es', 'fr'], adressen: { de: '/beta/lab/?sprache=de', en: '/beta/lab/?sprache=en', es: '/beta/lab/?sprache=es', fr: '/beta/lab/?sprache=fr' }, handy: '/alpha/lab/handy/' },
+      { name: 'Composer', href: '/alpha/composer/', sprachen: ['de', 'en', 'es', 'fr'], speicher: 'composer-sprache' },
+      { wort: 'atelier', href: '/atelier/', adressen: { en: '/en/atelier/' } }] },
+  { werk: 'Supervisionen', knopf: 'angebot', ...ANGEBOT('kuration'), sprachen: ['de', 'en'], bild: 'vorschau/supervisionen.jpg?v=1', ton: [226, 170, 88],
+    links: [{ wort: 'vermittlung', ...ANGEBOT('vermittlung') }, { name: 'oberer-turm.ch', href: 'https://www.oberer-turm.ch/', aussen: true }] },
+  { werk: 'Prints', href: '/references/webdesign/prints/', sprachen: ['de'], bild: 'vorschau/prints.jpg?v=1', ton: [232, 104, 156],
+    links: [{ wort: 'angebot', ...ANGEBOT('produkte') }] }
 ];
-// Die Farben der Schichten: Rot (Godard), Orange (das Rad), Violett.
+// Die Farben der Schichten folgen dem Spektrum: Violett, Blau, Grün, Gold, Rosa.
 
 // ---------- Sprache (0.25, Christian, 20.11.2026: «komplett deutsch, englisch, spanisch, französisch») ----------
 // Gewählt wird nach der Sprache, die der Browser meldet (navigator.languages, dieselbe Angabe wie Accept-Language):
@@ -51,44 +50,48 @@ let SPRACHE = (() => {
 })();
 const NBSP = ' ';   // schmales Leerzeichen vor «:» im Französischen
 const TEXTE = {
-  de: { titel: 'Brillante Ideen.', iBei: 2, menu: 'Menü', anwendungen: 'Anwendungen', mehr: 'Mehr erfahren', oeffnen: 'Öffnen', oeffnenAria: (n) => `${n} öffnen`,
-    nurIn: { de: 'auf Deutsch', en: 'auf Englisch', fr: 'auf Französisch', es: 'auf Spanisch' }, vor: 'Vorherige Anwendung', nach: 'Nächste Anwendung', zu: 'Schliessen', sprache: 'Sprache',
+  de: { titel: 'Brillante Ideen.', iBei: 2, menu: 'Menü', anwendungen: 'Angebot', mehr: 'Mehr erfahren', oeffnen: 'Öffnen', oeffnenAria: (n) => `${n} öffnen`,
+    nurIn: { de: 'auf Deutsch', en: 'auf Englisch', fr: 'auf Französisch', es: 'auf Spanisch' }, vor: 'Vorheriges Angebot', nach: 'Nächstes Angebot', zu: 'Schliessen', sprache: 'Sprache',
+    worte: { angebot: 'Angebot', zumAngebot: 'Zum Angebot', apps: 'Alle Apps', atelier: 'Atelier', vermittlung: 'Vermittlung', weitere: 'Weitere' },
     anw: [
-      { kopf: 'im Entstehen · Bild, Film, Ton', satz: 'Begriffe von Deleuze als Verfahren: Kristallbild, Schichten der Zeit, Dauer, Wahrnehmung, Diagramm, Figur – angewandt auf eigenes Material.' },
-      { name: 'Das Dritte Rad', kopf: 'Theorie · Kunstpraxis · Impuls', satz: 'Drei Ringe drehen gegeneinander. Jede Drehung verbindet einen Gedanken aus der Theorie mit einer künstlerischen Praxis und gibt einen Impuls für die eigene Arbeit.' },
-      { kopf: 'Bild · Bewegung', satz: 'Ein Bild, 24 Effekte, bis zu drei Ebenen: das Mischpult für eigene Animationen.' },
-      { kopf: 'Erzeugen · Beobachten · Weiterführen', satz: 'Ein Bild wird Material. Operationen verändern es, Varianten stehen nebeneinander, jede lässt sich weiterführen.' },
-      { kopf: 'Ton · Spuren · Mischen', satz: 'Spuren erzeugen, schneiden und mischen: Synthesizer, Perkussion, Naturklänge und eigene Plugins, im Browser gerechnet.' }] },
-  en: { titel: 'brilliant ideas.', iBei: 2, menu: 'Menu', anwendungen: 'Applications', mehr: 'Learn more', oeffnen: 'Open', oeffnenAria: (n) => `Open ${n}`,
-    nurIn: { de: 'in German', en: 'in English', fr: 'in French', es: 'in Spanish' }, vor: 'Previous application', nach: 'Next application', zu: 'Close', sprache: 'Language',
+      { name: 'Website', kopf: 'Einstiegsseite mit Prisma · 2026', satz: 'Eine Einstiegsseite fast ohne Text: Wer den Ring um das Prisma dreht, legt eine andere Spektralfarbe auf den Schirm, mit jeder Farbe einen anderen Menüpunkt.' },
+      { name: 'App', kopf: 'Foto und Video · sechs Effekte', satz: 'Ein Schleimpilz findet die Formen des Bilds, es liegt unter bewegtem Wasser, weht als Seidentuch oder zerfällt im Takt in Rechtecke.' },
+      { name: 'Anwendung (im Browser)', kopf: 'Bild · Bewegung', satz: 'Ein Bild, 24 Effekte, bis zu drei Ebenen: das Mischpult für eigene Animationen.' },
+      { name: 'Kuration & Vermittlung', kopf: 'Oberer Turm Kaiserstuhl · 2026', satz: 'Sechs Monate, neun Künstler:innen, ein Turm als Ausstellungsraum: Auswahl, Hängung, Texte und Begleitprogramm.' },
+      { name: 'Produkte', kopf: 'Acht Motive · auf Anfrage', satz: 'Das erste Motiv entsteht als Vierfarbenraster, Platte um Platte. Darunter acht Motive, jedes mit Lupe und Ansicht an der Wand.' }] },
+  en: { titel: 'brilliant ideas.', iBei: 2, menu: 'Menu', anwendungen: 'Services', mehr: 'Learn more', oeffnen: 'Open', oeffnenAria: (n) => `Open ${n}`,
+    nurIn: { de: 'in German', en: 'in English', fr: 'in French', es: 'in Spanish' }, vor: 'Previous', nach: 'Next', zu: 'Close', sprache: 'Language',
+    worte: { angebot: 'Service', zumAngebot: 'To the service', apps: 'All apps', atelier: 'Studio', vermittlung: 'Education', weitere: 'More' },
     anw: [
-      { kopf: 'in progress · image, film, sound', satz: 'Concepts of Deleuze as procedures: crystal-image, sheets of time, duration, perception, diagram, figure – applied to your own material.' },
-      { name: 'The Third Wheel', kopf: 'theory · art practice · impulse', satz: 'Three rings turn against each other. Every turn joins a thought from theory with an artistic practice and gives an impulse for your own work.' },
-      { kopf: 'image · motion', satz: 'One image, 24 effects, up to three layers: the mixing desk for your own animations.' },
-      { kopf: 'generate · observe · continue', satz: 'An image becomes material. Operations change it, variants stand side by side, each one can be taken further.' },
-      { kopf: 'sound · tracks · mixing', satz: 'Generate, cut and mix tracks: synthesizers, percussion, nature sounds and custom plugins, computed in the browser.' }] },
-  fr: { titel: 'idées brillantes.', iBei: 8, menu: 'Menu', anwendungen: 'Applications', mehr: 'En savoir plus', oeffnen: 'Ouvrir', oeffnenAria: (n) => `Ouvrir ${n}`,
-    nurIn: { de: 'en allemand', en: 'en anglais', fr: 'en français', es: 'en espagnol' }, vor: 'Application précédente', nach: 'Application suivante', zu: 'Fermer', sprache: 'Langue',
+      { name: 'Website', werk: 'Spectral menu', kopf: 'landing page with a prism · 2026', satz: 'A landing page with almost no text: turn the ring around the prism and another spectral colour falls on the screen, each colour with its own menu item.' },
+      { name: 'App', kopf: 'photo and video · six effects', satz: 'A slime mould finds the shapes of the image, it lies under moving water, blows as a silk cloth or falls apart into rectangles on the beat.' },
+      { name: 'Application (in the browser)', kopf: 'image · motion', satz: 'One image, 24 effects, up to three layers: the mixing desk for your own animations.' },
+      { name: 'Curating & Education', werk: 'Supervisions', kopf: 'Oberer Turm Kaiserstuhl · 2026', satz: 'Six months, nine artists, a tower as exhibition space: selection, hanging, texts and accompanying programme.' },
+      { name: 'Products', kopf: 'eight motifs · on request', satz: 'The first motif appears as a four-colour screen, plate by plate. Below, eight motifs, each with a loupe and a view on the wall.' }] },
+  fr: { titel: 'idées brillantes.', iBei: 8, menu: 'Menu', anwendungen: 'Offre', mehr: 'En savoir plus', oeffnen: 'Ouvrir', oeffnenAria: (n) => `Ouvrir ${n}`,
+    nurIn: { de: 'en allemand', en: 'en anglais', fr: 'en français', es: 'en espagnol' }, vor: 'Précédent', nach: 'Suivant', zu: 'Fermer', sprache: 'Langue',
+    worte: { angebot: 'Offre', zumAngebot: 'Voir l’offre', apps: 'Toutes les apps', atelier: 'Atelier', vermittlung: 'Médiation', weitere: 'Aussi' },
     anw: [
-      { kopf: 'en cours · image, film, son', satz: `Les concepts de Deleuze comme procédés${NBSP}: image-cristal, nappes de passé, durée, perception, diagramme, Figure – appliqués à votre propre matériau.` },
-      { name: 'Das Dritte Rad', kopf: 'théorie · pratique artistique · impulsion', satz: 'Trois anneaux tournent l’un contre l’autre. Chaque tour relie une pensée théorique à une pratique artistique et donne une impulsion pour votre propre travail.' },
-      { kopf: 'image · mouvement', satz: `Une image, 24 effets, jusqu’à trois calques${NBSP}: la table de mixage pour vos propres animations.` },
-      { kopf: 'produire · observer · poursuivre', satz: 'Une image devient matière. Des opérations la transforment, des variantes se tiennent côte à côte, chacune peut être poursuivie.' },
-      { kopf: 'son · pistes · mixage', satz: `Créer, couper et mixer des pistes${NBSP}: synthétiseurs, percussions, sons de la nature et plugins propres, calculés dans le navigateur.` }] },
-  es: { titel: 'ideas brillantes.', iBei: 8, menu: 'Menú', anwendungen: 'Aplicaciones', mehr: 'Saber más', oeffnen: 'Abrir', oeffnenAria: (n) => `Abrir ${n}`,
-    nurIn: { de: 'en alemán', en: 'en inglés', fr: 'en francés', es: 'en español' }, vor: 'Aplicación anterior', nach: 'Aplicación siguiente', zu: 'Cerrar', sprache: 'Idioma',
+      { name: 'Site web', werk: 'Menu spectral', kopf: 'page d’accueil avec prisme · 2026', satz: `Une page d’accueil presque sans texte${NBSP}: qui tourne l’anneau autour du prisme pose une autre couleur spectrale sur l’écran, et avec chaque couleur une autre entrée du menu.` },
+      { name: 'App', kopf: 'photo et vidéo · six effets', satz: 'Un myxomycète trouve les formes de l’image, elle repose sous une eau mouvante, flotte comme un voile de soie ou se défait en rectangles au rythme.' },
+      { name: 'Application (dans le navigateur)', kopf: 'image · mouvement', satz: `Une image, 24 effets, jusqu’à trois calques${NBSP}: la table de mixage pour vos propres animations.` },
+      { name: 'Curation & médiation', werk: 'Supervisions', kopf: 'Oberer Turm Kaiserstuhl · 2026', satz: `Six mois, neuf artistes, une tour comme lieu d’exposition${NBSP}: choix, accrochage, textes et programme d’accompagnement.` },
+      { name: 'Produits', kopf: 'huit motifs · sur demande', satz: 'Le premier motif naît en trame quadrichromie, plaque après plaque. En dessous, huit motifs, chacun avec loupe et vue au mur.' }] },
+  es: { titel: 'ideas brillantes.', iBei: 8, menu: 'Menú', anwendungen: 'Oferta', mehr: 'Saber más', oeffnen: 'Abrir', oeffnenAria: (n) => `Abrir ${n}`,
+    nurIn: { de: 'en alemán', en: 'en inglés', fr: 'en francés', es: 'en español' }, vor: 'Anterior', nach: 'Siguiente', zu: 'Cerrar', sprache: 'Idioma',
+    worte: { angebot: 'Oferta', zumAngebot: 'Ver la oferta', apps: 'Todas las apps', atelier: 'Taller', vermittlung: 'Mediación', weitere: 'Más' },
     anw: [
-      { kopf: 'en desarrollo · imagen, cine, sonido', satz: 'Conceptos de Deleuze como procedimientos: imagen-cristal, capas del pasado, duración, percepción, diagrama, figura – aplicados a tu propio material.' },
-      { name: 'Das Dritte Rad', kopf: 'teoría · práctica artística · impulso', satz: 'Tres anillos giran unos contra otros. Cada giro une un pensamiento de la teoría con una práctica artística y da un impulso para tu propio trabajo.' },
-      { kopf: 'imagen · movimiento', satz: 'Una imagen, 24 efectos, hasta tres capas: la mesa de mezclas para tus propias animaciones.' },
-      { kopf: 'generar · observar · continuar', satz: 'Una imagen se vuelve material. Las operaciones la transforman, las variantes quedan una al lado de otra y cada una puede continuar.' },
-      { kopf: 'sonido · pistas · mezcla', satz: 'Generar, cortar y mezclar pistas: sintetizadores, percusión, sonidos de la naturaleza y plugins propios, calculados en el navegador.' }] }
+      { name: 'Sitio web', werk: 'Menú espectral', kopf: 'página de inicio con prisma · 2026', satz: 'Una página de inicio casi sin texto: quien gira el anillo alrededor del prisma pone otro color espectral en la pantalla y, con cada color, otro punto del menú.' },
+      { name: 'App', kopf: 'foto y vídeo · seis efectos', satz: 'Un moho mucilaginoso encuentra las formas de la imagen, que yace bajo agua en movimiento, ondea como un paño de seda o se deshace en rectángulos al compás.' },
+      { name: 'Aplicación (en el navegador)', kopf: 'imagen · movimiento', satz: 'Una imagen, 24 efectos, hasta tres capas: la mesa de mezclas para tus propias animaciones.' },
+      { name: 'Curaduría y mediación', werk: 'Supervisiones', kopf: 'Oberer Turm Kaiserstuhl · 2026', satz: 'Seis meses, nueve artistas, una torre como sala de exposición: selección, montaje, textos y programa de acompañamiento.' },
+      { name: 'Productos', kopf: 'ocho motivos · bajo pedido', satz: 'El primer motivo surge como trama de cuatro colores, plancha a plancha. Debajo, ocho motivos, cada uno con lupa y vista en la pared.' }] }
 };
 let T, TITEL, TITEL_KURZ;
 // feste Texte der Seite; 0.32: auch später aufrufbar, wenn man auf einer Karte die Sprache wechselt
 function grundTexte() {
   T = TEXTE[SPRACHE];
-  BEREICHE.forEach((b, i) => Object.assign(b, T.anw[i]));
+  BEREICHE.forEach((b, i) => { if (b.werkGrund === undefined) b.werkGrund = b.werk; Object.assign(b, { werk: b.werkGrund }, T.anw[i]); });
   TITEL = T.titel; TITEL_KURZ = TITEL.replace(/\.$/, '');
   document.documentElement.lang = SPRACHE;
   document.title = `${TITEL_KURZ} · ornament.cloud`;
@@ -975,17 +978,35 @@ const vitrine = $('vitrine'), vRaum = vitrine.querySelector('.v-raum');
 if (STILL) vitrine.classList.add('still');
 const vKarten = BEREICHE.map((b, i) => {
   // fehlt die gewählte Sprache, öffnet sich die Anwendung auf Englisch, wenn es sie so gibt, sonst in ihrer ersten Sprache
-  const offenFuer = (sp) => (b.sprachen.includes(sp) ? sp : (b.sprachen.includes('en') ? 'en' : b.sprachen[0]));
+  function offenFuer(sp) { const s = (this || b).sprachen; return s.includes(sp) ? sp : (s.includes('en') ? 'en' : s[0]); }
   const offen = offenFuer(SPRACHE);
   const hell = b.ton.map((v) => Math.min(255, Math.round(v * 0.5 + 125)));
   const k = document.createElement('article'); k.className = 'v-karte'; k.setAttribute('aria-roledescription', 'Karte');
   k.style.setProperty('--ton', b.ton.join(',')); k.style.setProperty('--hell', `rgb(${hell.join(',')})`);
   k.innerHTML = `<div class="v-schatten" aria-hidden="true"></div><div class="v-koerper"><div class="v-buehne"><div class="v-bild"></div><div class="v-licht" aria-hidden="true"><i></i></div></div>
     <div class="v-text"><p class="v-kopf"></p><h2 class="v-name" id="v-name-${i}"></h2><p class="v-satz"></p>
-    <div class="v-zeile"><a class="v-oeffnen" href="${zielVon(b, offen)}"><span class="v-oe-text">${T.oeffnen}</span> <span aria-hidden="true">›</span></a><span class="v-sprachen"></span></div></div>
+    <div class="v-zeile"><a class="v-oeffnen" href="${zielVon(b, offen)}"><span class="v-oe-text">${T.oeffnen}</span> <span aria-hidden="true">›</span></a><span class="v-sprachen"></span></div>
+    <p class="v-links"></p></div>
     <div class="v-glanz" aria-hidden="true"><i></i></div><div class="v-dunkel" aria-hidden="true"></div></div>`;
-  k.querySelector('.v-kopf').textContent = b.kopf; k.querySelector('.v-name').textContent = b.name; k.querySelector('.v-satz').textContent = b.satz;
-  k.querySelector('.v-oeffnen').setAttribute('aria-label', T.oeffnenAria(b.name));
+  k.querySelector('.v-kopf').textContent = b.kopf; k.querySelector('.v-name').textContent = b.werk || b.name; k.querySelector('.v-satz').textContent = b.satz;
+  k.querySelector('.v-oeffnen').setAttribute('aria-label', T.oeffnenAria(b.werk || b.name));
+  // 0.44: leise Links unter dem Knopf (zum Angebot, zu den Apps, zu weiteren Anwendungen und dem Atelier), in der Sprache der Seite
+  const vl = k.querySelector('.v-links');
+  const linksSetzen = () => {
+    vl.textContent = '';
+    if (!b.links) { vl.hidden = true; return; }
+    if (b.links.length > 2) { const w = document.createElement('span'); w.className = 'v-l-wort'; w.textContent = T.worte.weitere; vl.append(w); }
+    b.links.forEach((x, j) => {
+      if (j) vl.append(document.createTextNode('\u00a0· '));   // der Punkt bleibt beim vorigen Namen
+      const a = document.createElement('a'), sp = x.sprachen ? offenFuer.call(x, SPRACHE) : SPRACHE;
+      a.textContent = x.wort ? T.worte[x.wort] : jeSprache(x.name);
+      a.href = (telefon && x.handy) ? x.handy + '?sprache=' + sp : (x.adressen && (x.adressen[sp] || (sp !== 'de' && x.adressen.en))) || x.href;
+      if (x.aussen) { a.target = '_blank'; a.rel = 'noopener'; a.append(Object.assign(document.createElement('span'), { textContent: ' ↗', ariaHidden: 'true' })); }
+      if (x.speicher) a.addEventListener('click', () => { try { localStorage.setItem(x.speicher, sp); } catch {} });
+      vl.append(a);
+    });
+  };
+  linksSetzen();
   // 0.31 (Christian: «auf der Karte die Sprache auch einstellen»): die Sprachen der Anwendung sind Knöpfe. Vorgewählt ist die
   // Sprache der Seite oder, fehlt sie, Englisch bzw. die erste; ein Tippen wählt, in welcher Fassung «Öffnen» die Anwendung zeigt.
   // 0.32 (Christian: «ändert aber nicht den Text»): ein Tippen stellt zugleich die ganze Seite auf diese Sprache um (spracheWechseln).
@@ -995,6 +1016,7 @@ const vKarten = BEREICHE.map((b, i) => {
     wahl = l; oe.href = zielVon(b, l);
     vs.querySelectorAll('button').forEach((x) => { const an = x.lang === l; x.classList.toggle('jetzt', an); x.setAttribute('aria-pressed', String(an)); });
   };
+  if (b.sprachen.length < 2) vs.hidden = true;   // 0.44: eine einzige Fassung braucht keine Wahl
   for (const l of b.sprachen) {
     const kn = document.createElement('button'); kn.type = 'button'; kn.lang = l; kn.textContent = l.toUpperCase();
     kn.addEventListener('click', (e) => { e.stopPropagation(); if (l === wahl && l === SPRACHE) return; spracheWechseln(l, i); });
@@ -1002,8 +1024,9 @@ const vKarten = BEREICHE.map((b, i) => {
   }
   // Texte der Karte in der Sprache der Seite; die Wahl der Fassung folgt ihr, ausser man hat für diese Karte eben eine gewählt
   const beschriften = (fassung) => {
-    k.querySelector('.v-kopf').textContent = b.kopf; k.querySelector('.v-name').textContent = b.name; k.querySelector('.v-satz').textContent = b.satz;
-    oe.querySelector('.v-oe-text').textContent = T.oeffnen; oe.setAttribute('aria-label', T.oeffnenAria(b.name));
+    k.querySelector('.v-kopf').textContent = b.kopf; k.querySelector('.v-name').textContent = b.werk || b.name; k.querySelector('.v-satz').textContent = b.satz;
+    oe.querySelector('.v-oe-text').textContent = b.knopf === 'angebot' ? T.worte.zumAngebot : T.oeffnen; oe.setAttribute('aria-label', b.knopf === 'angebot' ? `${b.werk}: ${T.worte.zumAngebot}` : T.oeffnenAria(b.werk || b.name));
+    linksSetzen();
     vs.setAttribute('role', 'group'); vs.setAttribute('aria-label', T.sprache);
     vs.querySelectorAll('button').forEach((x) => x.setAttribute('aria-label', `${T.oeffnen} ${T.nurIn[x.lang]}`));
     waehlen(fassung || offenFuer(SPRACHE));
@@ -1040,6 +1063,7 @@ function spracheWechseln(l, karte) {
     vKarten.forEach((k, j) => k.beschriften(j === karte ? l : null));
     navKnoepfe.forEach((n, j) => { n.textContent = j ? BEREICHE[j - 1].name : TITEL_KURZ; });
     flaechen.forEach((el, j) => { el.querySelector('.p-name').textContent = BEREICHE[j].name; el.querySelector('.p-satz').textContent = BEREICHE[j].satz; el.href = zielVon(BEREICHE[j], l); });
+    namenEinpassen();
     // Bilder und Filme, die es je Sprache gibt (the deleuzian scheme), auf die neue Sprache stellen
     vKarten.forEach((k, j) => {
       const b = BEREICHE[j];
@@ -1054,7 +1078,7 @@ const N = BEREICHE.length;
 // 0.31: Bilder der Karten früh laden und dekodieren, damit beim Öffnen nichts nachpoppt
 (window.requestIdleCallback || ((f) => setTimeout(f, 1200)))(() => {
   vKarten.forEach((k) => { const im = k.bild.querySelector('img'); if (im && im.decode) im.decode().catch(() => {}); });
-  Object.values(SCHAU).forEach((a) => a.bilder.forEach((src) => { const im = schauBild(src); if (im.decode) im.decode().catch(() => {}); }));
+  BEREICHE.filter((b) => b.schau).map((b) => SCHAU[b.schau]).forEach((a) => a.bilder.forEach((src) => { const im = schauBild(src); if (im.decode) im.decode().catch(() => {}); }));
 });
 const vMarken = vitrine.querySelector('.v-marken');
 BEREICHE.forEach(() => vMarken.append(document.createElement('i')));

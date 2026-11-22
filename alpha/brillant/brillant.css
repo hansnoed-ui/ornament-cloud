@@ -32,7 +32,7 @@ body { font: 500 15px/1.4 'Brillant Display', system-ui, sans-serif; -webkit-fon
   -webkit-mask-image: linear-gradient(to right, transparent, #000 13%, #000 87%, transparent), linear-gradient(to bottom, transparent, #000 15%, #000 85%, transparent);
   -webkit-mask-composite: source-in; mask-image: linear-gradient(to right, transparent, #000 13%, #000 87%, transparent), linear-gradient(to bottom, transparent, #000 15%, #000 85%, transparent); mask-composite: intersect; }
 .p-nr { font-size: 12px; letter-spacing: 0.14em; color: var(--hell, #b7b0ff); }
-.p-name { font-weight: 500; font-size: 36px; line-height: 1.05; letter-spacing: -0.022em; }
+.p-name { font-weight: 500; font-size: 36px; line-height: 1.05; letter-spacing: -0.022em; white-space: nowrap; }   /* 0.44: lange Bereiche verkleinern statt umbrechen (namenEinpassen) */
 .p-satz { font-size: 15px; line-height: 1.45; color: rgba(214, 210, 228, 0.8); max-width: 26ch; }
 .p-mehr { margin-top: 6px; font-size: 15px; color: var(--hell, #b7b0ff); }
 /* der Lichtkegel vom Stein zur Fläche: weichgezeichnet, damit er keine Kanten hat */
@@ -113,6 +113,14 @@ body { font: 500 15px/1.4 'Brillant Display', system-ui, sans-serif; -webkit-fon
 .v-sprachen button.jetzt::after { opacity: 0.55; transform: none; }
 .v-sprachen button:focus-visible { outline: 1px solid var(--text); outline-offset: -4px; }
 .v-karte:not(.vorn) .v-sprachen { pointer-events: none; }
+/* 0.44: leise Links unter dem Knopf (Angebot, Apps, weitere Anwendungen, Atelier); Haarlinie erst beim Zeigen */
+.v-links { margin: 6px 0 0; font-size: 13px; line-height: 1.9; color: rgba(214, 210, 228, 0.34); text-wrap: pretty; }
+.v-links[hidden], .v-sprachen[hidden] { display: none; }
+.v-links a { color: rgba(226, 222, 238, 0.72); text-decoration: none; padding: 6px 0; white-space: nowrap; background: linear-gradient(currentColor, currentColor) 0 calc(100% - 3px) / 100% 1px no-repeat;
+  background-size: 0 1px; transition: color 0.3s, background-size 0.35s; -webkit-tap-highlight-color: transparent; }
+.v-links a:hover, .v-links a:focus-visible { color: #fbfaff; background-size: 100% 1px; outline: none; }
+.v-l-wort { font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--hell); opacity: 0.7; margin-right: 10px; }
+.v-karte:not(.vorn) .v-links { pointer-events: none; }
 /* 0.31: solange die Vitrine offen ist, tritt der Name unter dem Stein zurück (er schien sonst durch die erscheinende Karte) */
 .vitrine-auf .projektion { opacity: 0 !important; transition: opacity 0.35s; }
 .v-oeffnen { display: inline-flex; align-items: center; gap: 8px; padding: 11px 20px 11px 22px; border-radius: 999px; color: #fbfaff; text-decoration: none; font-size: 15px; letter-spacing: 0.02em;
