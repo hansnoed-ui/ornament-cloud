@@ -153,7 +153,12 @@ const HUELLE = l => Math.pow(clamp(cmf(l)[1], 0, 1), .3) * sm(388, 420, l) * (1 
 const rgba = (c, a) => `rgba(${Math.round(clamp(c[0], 0, 1) * 255)},${Math.round(clamp(c[1], 0, 1) * 255)},${Math.round(clamp(c[2], 0, 1) * 255)},${clamp(a, 0, 1).toFixed(4)})`;
 
 /* ---------- Schwerflint SF11 nach Sellmeier ---------- */
-const brechzahl = l => { const x = (l / 1000) ** 2; return Math.sqrt(1 + 1.73759695 * x / (x - .013188707) + .313747346 * x / (x - .0623068142) + 1.89878101 * x / (x - 155.23629)); };
+// Gestaltete Dispersion (22. November 2026, Christian: «Der Farbwechsel im Spektrumstrahl soll viel breiter und schöner überblenden»):
+// die Brechzahl um 555 nm bleibt die von SF11, die Abweichung je Wellenlänge wird verstärkt; das Spektrum fächert breiter auf.
+const DISPERSION = 2.6;
+const brechzahlGlas = l => { const x = (l / 1000) ** 2; return Math.sqrt(1 + 1.73759695 * x / (x - .013188707) + .313747346 * x / (x - .0623068142) + 1.89878101 * x / (x - 155.23629)); };
+const N555 = brechzahlGlas(555);
+const brechzahl = l => N555 + (brechzahlGlas(l) - N555) * DISPERSION;
 
 /* ---------- Strahlverfolgung ---------- */
 function schnitt(o, d, a, b) {
@@ -230,7 +235,7 @@ function grundstellung() {
   const i0 = Math.asin(brechzahl(555) * .5);
   const th0 = i0 - 30 * DEG + 8 * DEG;   // 8° über der minimalen Ablenkung: dort wandert das Spektrum gleichmässig
   const { info } = verfolgen(555, th0, false, { x: -1e5, y: -1e5, a: 0, len: 1 });
-  const P = info.aus.p, d = info.aus.d, len = clamp(st.s * 1.05, 110, 240);
+  const P = info.aus.p, d = info.aus.d, len = st.mobil ? clamp(st.s * 1.15, 120, 200) : clamp(st.s * 1.7, 160, 380);
   const b0 = st.mobil ? 16 : 56, mx = b0 + len * .5 * Math.abs(d[1]) + 10, my = b0 + len * .5 * Math.abs(d[0]) + 10;
   const unten = st.mobil ? st.H - 150 : st.H - 40;
   let t = 1e5;
@@ -264,12 +269,13 @@ function anordnen() {
     st.cx = st.W * .52; st.cy = st.H * .37;
   }
   st.strahlY = st.cy - st.s * .25;
-  st.breite = clamp(st.s * .065, 8, 17);
+  st.breite = clamp(st.s * .1, 12, 26);
   const th0 = grundstellung();
   THETA = [];
   let vor = th0;
   for (let l = 370; l <= 740; l++) { const th = loese(l, vor); THETA.push(th == null ? vor : th); if (th != null) vor = th; }
   for (const c of [cv, strahlCv]) { c.width = Math.round(st.W * st.dpr); c.height = Math.round(st.H * st.dpr); }
+  bandCv.width = Math.max(1, Math.round(st.W / BAND_TEILER)); bandCv.height = Math.max(1, Math.round(st.H / BAND_TEILER));
   for (const b of bloom) { b.width = Math.max(1, Math.round(st.W / b.f)); b.height = Math.max(1, Math.round(st.H / b.f)); }
   st.theta = thetaAus(st.phi); st.dirty = true;
 }
@@ -278,8 +284,9 @@ const thetaAus = phi => { const l = lambdaAus(phi), i = clamp(l - 370, 0, THETA.
 /* ---------- Zeichnen ---------- */
 const cv = $("buehne"), ctx = cv.getContext("2d");
 const strahlCv = document.createElement("canvas"), sx = strahlCv.getContext("2d");
+const BAND_TEILER = 3, bandCv = document.createElement("canvas"); bandCv.x = bandCv.getContext("2d");
 const bloom = [2, 4, 8, 16, 32].map(f => { const c = document.createElement("canvas"); return Object.assign(c, { f, x: c.getContext("2d") }); });
-const N_L = 64, LAM = Array.from({ length: N_L }, (_, i) => 392 + 310 * i / (N_L - 1));
+const N_L = 72, LAM = Array.from({ length: N_L }, (_, i) => 392 + 310 * i / (N_L - 1));
 // Weissabgleich: die Farben aller Wellenlängen ergeben zusammen genau Weiss; KERN_MAX hält jede einzelne unter 1, damit nichts abgeschnitten wird
 const KERN = (() => { const S = [0, 0, 0]; LAM.forEach(l => farbe(l).forEach((v, k) => S[k] += v * HUELLE(l))); return LAM.map(l => farbe(l).map((v, k) => v * HUELLE(l) * N_L / S[k])); })();
 const KERN_MAX = Math.max(...KERN.flat()), KERN_N = KERN.map(c => c.map(v => v / KERN_MAX));
@@ -289,9 +296,10 @@ let baeume = [], raender = [], fein = [], enden = [];
 function rechnen() {
   baeume = LAM.map(l => { const { seg, info } = verfolgen(l, st.theta, true); return { seg, m: new Map(seg.map(s => [s.id, s])), info }; });
   // Die beiden Ränder des Strahls: dazwischen liegt das Band jeder Wellenlänge, so hat der Strahl eine echte Breite
-  raender = LAM.map(l => [-.5, .5].map(f => new Map(verfolgen(l, st.theta, true, null, f * st.breite).seg.map(s => [s.id, s]))));
+  // (jede zweite Wellenlänge genügt dafür; ihr Anteil zählt doppelt)
+  raender = LAM.map((l, i) => i % 2 ? null : [-.5, .5].map(f => new Map(verfolgen(l, st.theta, true, null, f * st.breite).seg.map(s => [s.id, s]))));
   fein = [];
-  for (let l = 392; l <= 704; l += 2) fein.push({ l, info: verfolgen(l, st.theta, false).info });
+  for (let l = 392; l <= 704; l += 4) fein.push({ l, info: verfolgen(l, st.theta, false).info });
   enden = kanten(st.theta);
 }
 function zeichneStrahlen(rev) {
@@ -299,28 +307,40 @@ function zeichneStrahlen(rev) {
   sx.setTransform(1, 0, 0, 1, 0, 0); sx.globalCompositeOperation = "source-over"; sx.clearRect(0, 0, strahlCv.width, strahlCv.height);
   sx.setTransform(d, 0, 0, d, 0, 0); sx.globalCompositeOperation = "lighter";
   const kurz = s => { if (rev >= s.s1) return s.b; const f = clamp((rev - s.s0) / (s.s1 - s.s0), 0, 1); return [s.a[0] + (s.b[0] - s.a[0]) * f, s.a[1] + (s.b[1] - s.a[1]) * f]; };
-  for (let i = 0; i < N_L; i++) {   // Breite: je Wellenlänge ein Band zwischen den Randstrahlen, zusammen weiss
+  for (let i = 0; i < N_L; i += 2) {   // Breite: je Wellenlänge ein Band zwischen den Randstrahlen, zusammen weiss
     const [T, B] = raender[i];
     for (const [id, sa] of T) {
       if (sa.s0 >= rev) continue;
       const sb = B.get(id); if (!sb) continue;
-      const I = (sa.I + sb.I) / 2, a = Math.pow(I, .85) * .36 * KERN_MAX / N_L * (sa.innen ? .7 : 1); if (a < .0015) continue;
+      const I = (sa.I + sb.I) / 2, a = Math.pow(I, .85) * .36 * 2 * KERN_MAX / N_L * (sa.innen ? .7 : 1); if (a < .003) continue;
       const ea = kurz(sa), eb = kurz(sb);
       sx.fillStyle = rgba(KERN_N[i], a);
       sx.beginPath(); sx.moveTo(sa.a[0], sa.a[1]); sx.lineTo(ea[0], ea[1]); sx.lineTo(eb[0], eb[1]); sx.lineTo(sb.a[0], sb.a[1]); sx.closePath(); sx.fill();
     }
   }
-  for (let i = 0; i < N_L - 1; i++) {   // Bänder zwischen benachbarten Wellenlängen auf derselben Bahn
+  // Bänder zwischen benachbarten Wellenlängen auf derselben Bahn. Sie entstehen in einer Ebene mit einem Drittel der Auflösung;
+  // vergrössert gehen die Farben weich ineinander über (22. November 2026: «viel breiter und schöner überblenden»)
+  const bx = bandCv.x, f = 1 / BAND_TEILER;
+  bx.setTransform(1, 0, 0, 1, 0, 0); bx.globalCompositeOperation = "source-over"; bx.clearRect(0, 0, bandCv.width, bandCv.height);
+  bx.setTransform(f, 0, 0, f, 0, 0); bx.globalCompositeOperation = "lighter";
+  for (let i = 0; i < N_L - 1; i++) {
     const A = baeume[i], B = baeume[i + 1];
     for (const sa of A.seg) {
       if (sa.s0 >= rev) continue;
       const sb = B.m.get(sa.id); if (!sb) continue;
-      const a = sicht((sa.I + sb.I) / 2) * (sa.innen ? .3 : .62); if (a < .01) continue;
+      const a = sicht((sa.I + sb.I) / 2) * (sa.innen ? .3 : .7); if (a < .01) continue;
       const ea = kurz(sa), eb = kurz(sb);
-      sx.fillStyle = rgba(BAND[i], a);
-      sx.beginPath(); sx.moveTo(sa.a[0], sa.a[1]); sx.lineTo(ea[0], ea[1]); sx.lineTo(eb[0], eb[1]); sx.lineTo(sb.a[0], sb.a[1]); sx.closePath(); sx.fill();
+      // etwas über die Nachbarn hinaus, damit die Farbe in der kleinen Ebene breiter ausläuft
+      const ma = [(sa.a[0] + sb.a[0]) / 2, (sa.a[1] + sb.a[1]) / 2], me = [(ea[0] + eb[0]) / 2, (ea[1] + eb[1]) / 2], g = 1.6;
+      const w = (p, m) => [m[0] + (p[0] - m[0]) * g, m[1] + (p[1] - m[1]) * g];
+      const [p1, p2, p3, p4] = [w(sa.a, ma), w(ea, me), w(eb, me), w(sb.a, ma)];
+      bx.fillStyle = rgba(BAND[i], a / g);
+      bx.beginPath(); bx.moveTo(p1[0], p1[1]); bx.lineTo(p2[0], p2[1]); bx.lineTo(p3[0], p3[1]); bx.lineTo(p4[0], p4[1]); bx.closePath(); bx.fill();
     }
   }
+  sx.setTransform(1, 0, 0, 1, 0, 0); sx.imageSmoothingEnabled = true; sx.imageSmoothingQuality = "high";
+  sx.drawImage(bandCv, 0, 0, strahlCv.width, strahlCv.height);
+  sx.setTransform(d, 0, 0, d, 0, 0);
   sx.lineCap = "round"; sx.lineWidth = 1.2;   // Kernlinien: zusammen ergeben sie Weiss
   for (let i = 0; i < N_L; i++) for (const s of baeume[i].seg) {
     if (s.s0 >= rev) continue;
@@ -474,7 +494,9 @@ function komponieren(zeit) {
 const wortEl = $("wort"), wortText = $("wort-text"), massEl = $("mass");
 let aktiv = -1, wortTimer = 0;
 function zeigen() {
-  const l = lambdaAus(st.phi), an = HUELLE(l) > .08, k = naechster(st.phi), p = PUNKTE[k];
+  const l = lambdaAus(st.phi), an = HUELLE(l) > .08, kn = naechster(st.phi);
+  // Hysterese: das Wort wechselt erst, wenn die Trommel nahe beim nächsten Punkt steht
+  const k = aktiv < 0 || Math.abs(wickel(st.phi - PUNKTE[kn].phi)) < 22 * DEG ? kn : aktiv, p = PUNKTE[k];
   wortEl.classList.toggle("dunkel", !an);
   massEl.textContent = an ? `${Math.round(l)} nm · ${hex(farbe(l))}` : "";
   if (an) {
@@ -515,22 +537,28 @@ let zug = null;
 const stopTour = () => { st.tour = null; };
 const winkel = (x, y) => Math.atan2(y - st.cy, x - st.cx);
 function rasten(k) { stopTour(); const z = PUNKTE[((k % NP) + NP) % NP].phi; st.phiZiel = st.phi + wickel(z - st.phi); if (reduce) { st.phi = st.phiZiel; st.phiZiel = null; } st.dirty = true; }
+// Rastung beim Drehen (22. November 2026, «Die Bedienung des Kreises sollte wenig nervös funktionieren»): nahe einem Menüpunkt
+// bleibt die Trommel hängen und gibt erst nach, wenn man weiterdreht; dazwischen folgt sie dem Finger gedämpft.
+function gerastet(roh) {
+  const k = naechster(roh), d = wickel(roh - PUNKTE[k].phi), halt = 1 - sm(0, 24 * DEG, Math.abs(d));
+  return roh - d * .78 * halt;
+}
 const schritt = r => rasten(naechster(st.phiZiel ?? st.phi) + r);
 cv.addEventListener("pointerdown", e => {
   cv.setPointerCapture(e.pointerId); cv.focus({ preventScroll: true }); stopTour();
   const P = messpunkt();
   if (Math.hypot(e.clientX - P[0], e.clientY - P[1]) < 26) { zug = { typ: "punkt" }; return; }
-  zug = { typ: "dreh", a: winkel(e.clientX, e.clientY), weg: 0 }; st.phiZiel = null; cv.classList.add("zieht");
+  zug = { typ: "dreh", a: winkel(e.clientX, e.clientY), weg: 0, roh: st.phi }; st.phiZiel = null; cv.classList.add("zieht");
 });
 cv.addEventListener("pointermove", e => {
   if (!zug || zug.typ !== "dreh") return;
   const a = winkel(e.clientX, e.clientY), da = wickel(a - zug.a);
-  st.phi += da; zug.a = a; zug.weg += Math.abs(da); st.dirty = true;
+  zug.roh += da; zug.a = a; zug.weg += Math.abs(da); st.dirty = true;
 });
 const loslassen = e => {
   if (!zug) return;
   if (zug.typ === "punkt") { const P = messpunkt(); if (e && Math.hypot(e.clientX - P[0], e.clientY - P[1]) < 26) eintreten(); }
-  else rasten(naechster(st.phi));
+  else rasten(naechster(gerastet(zug.roh)));
   zug = null; cv.classList.remove("zieht");
 };
 cv.addEventListener("pointerup", loslassen);
@@ -540,7 +568,7 @@ addEventListener("wheel", e => {
   if (flut.classList.contains("an")) return;
   e.preventDefault(); radSumme += e.deltaY + e.deltaX;
   const jetzt = performance.now();
-  if (Math.abs(radSumme) > 40 && jetzt - radZeit > 260) { schritt(Math.sign(radSumme)); radSumme = 0; radZeit = jetzt; }
+  if (Math.abs(radSumme) > 40 && jetzt - radZeit > 480) { schritt(Math.sign(radSumme)); radSumme = 0; radZeit = jetzt; }
 }, { passive: false });
 document.addEventListener("keydown", e => {
   if (flut.classList.contains("an")) { if (e.key === "Escape") zurueck(); return; }
@@ -553,7 +581,9 @@ document.addEventListener("keydown", e => {
 PUNKTE.forEach((p, k) => {
   p.a.addEventListener("click", e => { e.preventDefault(); if (aktiv === k && naechster(st.phi) === k && st.phiZiel == null) eintreten(); else rasten(k); });
   p.a.addEventListener("focus", () => rasten(k));
-  p.a.addEventListener("pointerenter", e => { if (e.pointerType === "mouse") rasten(k); });
+  let verweilen = 0;   // die Maus muss kurz auf dem Punkt bleiben, sonst dreht ein Vorbeifahren die Trommel
+  p.a.addEventListener("pointerenter", e => { if (e.pointerType === "mouse") verweilen = setTimeout(() => rasten(k), 280); });
+  p.a.addEventListener("pointerleave", () => clearTimeout(verweilen));
 });
 wortEl.addEventListener("click", e => { e.preventDefault(); eintreten(); });
 
@@ -585,9 +615,10 @@ function schleife(zeit) {
     const T = st.tour, t = (zeit - st.t0 - 1500) / 3200;
     if (t > 0) { const f = clamp(t, 0, 1), e = f < .5 ? 4 * f * f * f : 1 - (-2 * f + 2) ** 3 / 2; st.phi = T.von + (T.nach - T.von) * e; st.dirty = true; if (f >= 1) { st.phi = PUNKTE[start].phi; st.tour = null; } }
   }
-  if (st.phiZiel != null) { const d = st.phiZiel - st.phi; st.phi += d * .14; if (Math.abs(d) < 1e-3) { st.phi = st.phiZiel; st.phiZiel = null; } st.dirty = true; }
+  if (zug && zug.typ === "dreh") { const z = gerastet(zug.roh), d = z - st.phi; if (Math.abs(d) > 1e-4) { st.phi += reduce ? d : d * .16; st.dirty = true; } }
+  else if (st.phiZiel != null) { const d = st.phiZiel - st.phi; st.phi += d * .09; if (Math.abs(d) < 1e-3) { st.phi = st.phiZiel; st.phiZiel = null; } st.dirty = true; }
   const thZiel = thetaAus(st.phi), dth = thZiel - st.theta;
-  if (Math.abs(dth) > 1e-6) { st.theta += reduce ? dth : dth * .3; st.dirty = true; }
+  if (Math.abs(dth) > 1e-6) { st.theta += reduce ? dth : dth * .2; st.dirty = true; }
   if (st.dirty) { st.dirty = false; rechnen(); zeichneStrahlen(st.revealt); zeigen(); }
   komponieren(zeit);
   requestAnimationFrame(schleife);
