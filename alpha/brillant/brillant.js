@@ -59,7 +59,7 @@ const TEXTE = {
       { name: 'Websites', kopf: 'Einstiegsseite mit Prisma · 2026', satz: 'Eine Einstiegsseite fast ohne Text: Wer den Ring um das Prisma dreht, legt eine andere Spektralfarbe auf den Schirm, mit jeder Farbe einen anderen Menüpunkt.' },
       { name: 'Apps', kopf: 'Bild · Werkbank · Film', satz: 'Leg ein Bild auf die Werkbank: Es zerfällt in seine Teile, ordnet sich neu, hinterlässt Spuren und setzt sich am Ende neu zusammen.' },
       { name: 'Anwendungen', kopf: 'Bild · Bewegung', satz: 'Ein Bild, 24 Effekte, bis zu drei Ebenen: das Mischpult für eigene Animationen.' },
-      { name: 'Produkte', kopf: 'Acht Motive · auf Anfrage', satz: 'Das erste Motiv entsteht als Vierfarbenraster, Platte um Platte. Darunter acht Motive, jedes mit Lupe und Ansicht an der Wand.' },
+      { name: 'Produkte', kopf: 'Werke · kleine Auflagen', satz: 'Acht Motive als Print in kleiner Auflage, Format und Papier nach Wunsch. Bestellt wird per Mail, der Versand in der Schweiz ist inbegriffen.' },
       { name: 'Vermittlung', kopf: 'Oberer Turm Kaiserstuhl · 2026', satz: 'Sechs Monate, neun Künstler:innen, ein Turm als Ausstellungsraum: Auswahl, Hängung, Texte und Begleitprogramm.' }] },
   en: { titel: 'brilliant ideas.', iBei: 2, menu: 'Menu', anwendungen: 'Services', mehr: 'Learn more', oeffnen: 'Open', oeffnenAria: (n) => `Open ${n}`,
     nurIn: { de: 'in German', en: 'in English', fr: 'in French', es: 'in Spanish' }, vor: 'Previous', nach: 'Next', zu: 'Close', sprache: 'Language',
@@ -68,7 +68,7 @@ const TEXTE = {
       { name: 'Websites', werk: 'Spectral menu', kopf: 'landing page with a prism · 2026', satz: 'A landing page with almost no text: turn the ring around the prism and another spectral colour falls on the screen, each colour with its own menu item.' },
       { name: 'Apps', kopf: 'image · workbench · film', satz: 'Put an image on the workbench: it falls apart into its pieces, rearranges itself, leaves traces and in the end reassembles.' },
       { name: 'Applications', kopf: 'image · motion', satz: 'One image, 24 effects, up to three layers: the mixing desk for your own animations.' },
-      { name: 'Products', kopf: 'eight motifs · on request', satz: 'The first motif appears as a four-colour screen, plate by plate. Below, eight motifs, each with a loupe and a view on the wall.' },
+      { name: 'Products', kopf: 'works · small editions', satz: 'Eight motifs as prints in small editions, format and paper as you wish. Orders by email, shipping within Switzerland included.' },
       { name: 'Education', werk: 'Supervisions', kopf: 'Oberer Turm Kaiserstuhl · 2026', satz: 'Six months, nine artists, a tower as exhibition space: selection, hanging, texts and accompanying programme.' }] },
   fr: { titel: 'idées brillantes.', iBei: 8, menu: 'Menu', anwendungen: 'Offre', mehr: 'En savoir plus', oeffnen: 'Ouvrir', oeffnenAria: (n) => `Ouvrir ${n}`,
     nurIn: { de: 'en allemand', en: 'en anglais', fr: 'en français', es: 'en espagnol' }, vor: 'Précédent', nach: 'Suivant', zu: 'Fermer', sprache: 'Langue',
@@ -77,7 +77,7 @@ const TEXTE = {
       { name: 'Sites web', werk: 'Menu spectral', kopf: 'page d’accueil avec prisme · 2026', satz: `Une page d’accueil presque sans texte${NBSP}: qui tourne l’anneau autour du prisme pose une autre couleur spectrale sur l’écran, et avec chaque couleur une autre entrée du menu.` },
       { name: 'Apps', kopf: 'image · établi · film', satz: `Pose une image sur l’établi${NBSP}: elle se défait en morceaux, se réordonne, laisse des traces et finit par se recomposer.` },
       { name: 'Applications', kopf: 'image · mouvement', satz: `Une image, 24 effets, jusqu’à trois calques${NBSP}: la table de mixage pour vos propres animations.` },
-      { name: 'Produits', kopf: 'huit motifs · sur demande', satz: 'Le premier motif naît en trame quadrichromie, plaque après plaque. En dessous, huit motifs, chacun avec loupe et vue au mur.' },
+      { name: 'Produits', kopf: 'œuvres · petites éditions', satz: `Huit motifs en tirages limités, format et papier au choix. Commande par e-mail, envoi en Suisse compris.` },
       { name: 'Médiation', werk: 'Supervisions', kopf: 'Oberer Turm Kaiserstuhl · 2026', satz: `Six mois, neuf artistes, une tour comme lieu d’exposition${NBSP}: choix, accrochage, textes et programme d’accompagnement.` }] },
   es: { titel: 'ideas brillantes.', iBei: 8, menu: 'Menú', anwendungen: 'Oferta', mehr: 'Saber más', oeffnen: 'Abrir', oeffnenAria: (n) => `Abrir ${n}`,
     nurIn: { de: 'en alemán', en: 'en inglés', fr: 'en francés', es: 'en español' }, vor: 'Anterior', nach: 'Siguiente', zu: 'Cerrar', sprache: 'Idioma',
@@ -86,7 +86,7 @@ const TEXTE = {
       { name: 'Sitios web', werk: 'Menú espectral', kopf: 'página de inicio con prisma · 2026', satz: 'Una página de inicio casi sin texto: quien gira el anillo alrededor del prisma pone otro color espectral en la pantalla y, con cada color, otro punto del menú.' },
       { name: 'Apps', kopf: 'imagen · banco de trabajo · película', satz: 'Pon una imagen en el banco de trabajo: se deshace en sus piezas, se reordena, deja huellas y al final se recompone.' },
       { name: 'Aplicaciones', kopf: 'imagen · movimiento', satz: 'Una imagen, 24 efectos, hasta tres capas: la mesa de mezclas para tus propias animaciones.' },
-      { name: 'Productos', kopf: 'ocho motivos · bajo pedido', satz: 'El primer motivo surge como trama de cuatro colores, plancha a plancha. Debajo, ocho motivos, cada uno con lupa y vista en la pared.' },
+      { name: 'Productos', kopf: 'obras · ediciones pequeñas', satz: 'Ocho motivos como impresiones en pequeñas ediciones, formato y papel a elegir. Pedidos por correo, envío en Suiza incluido.' },
       { name: 'Mediación', werk: 'Supervisiones', kopf: 'Oberer Turm Kaiserstuhl · 2026', satz: 'Seis meses, nueve artistas, una torre como sala de exposición: selección, montaje, textos y programa de acompañamiento.' }] }
 };
 let T, TITEL, TITEL_KURZ;
