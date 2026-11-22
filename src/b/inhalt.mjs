@@ -15,7 +15,7 @@ export const SEITE = {
   titel: "Theorie, die man anfassen kann.",
   lead: "Webdesign, Vermittlung, Kuration, Fotografie und Produkte von Christian Strickler. Dazu ein Zettelkasten, Apps, Bilder und Musik.",
   claimAlt: "Theorie, die man anfassen kann.",
-  beschreibung: "Theorie, die man anfassen kann: Fotografie, Musik, sieben Apps und 49 Zettel von Christian Strickler. Dazu Webdesign, Vermittlung, Kuration, Fotografie und Produkte.",
+  beschreibung: "Theorie, die man anfassen kann: Fotografie, Musik, sieben Apps und 49 Zettel von Christian Strickler. Dazu Webdesign, Vermittlung, Kuration und Produkte.",
   person: { name: "Christian Strickler", ort: "zwischen Zürich, Basel und Aarau", strasse: "Rheingasse 8b", plz: "CH-5466 Kaiserstuhl", mail: "hansnoed@gmail.com" },
   sprache: "de-CH",
 };
