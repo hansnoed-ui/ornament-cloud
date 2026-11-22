@@ -173,6 +173,11 @@ export const ANGEBOTE = [
     // Kaiserbühne seit 13. November 2026 (Christian: «nimm zu den referenzen website auch noch kaiserbuehne.ch auf, die habe ich auch gemacht»). Das Bild
     // ist ein Bildschirmfoto der Seite, das Christian am selben Tag geschickt hat (b/bilder/schau/kaiserbuehne.jpg; die Seite ist aus der Cloud-Sitzung nicht erreichbar).
     schau: [
+      // Spektralmenü seit 22. November 2026 (Christian: «Ich möchte dass du die seite als referenzseite für webdesign auf ornament.cloud verlinkst»),
+      // zuoberst seit demselben Tag («Kannst du die referenz zuoberst platzieren?»)
+      { name: "Spektralmenü", von: "Einstiegsseite mit Prisma", jahr: "2026", url: "/references/webdesign/colorpicker/", adresse: "ornament.cloud/references/webdesign/colorpicker", bild: "b/bilder/schau/spektralmenue.jpg",
+        bildAlt: "Spektralmenü: ein weisser Strahl fällt auf ein Glasprisma und fächert sich zum Spektrum auf, ein Farbring um das Prisma wählt die Farbe, unten steht gross der gewählte Menüpunkt",
+        text: "Eine Einstiegsseite fast ohne Text: Wer den Ring um das Prisma dreht, legt eine andere Spektralfarbe auf den Schirm, und mit jeder Farbe einen anderen Menüpunkt. Die Brechung ist gerechnet, nicht gezeichnet." },
       { name: "Kaiserbühne", von: "Website eines Theaters", jahr: "2026", url: "https://kaiserbuehne.ch/", adresse: "kaiserbuehne.ch", bild: "b/bilder/schau/kaiserbuehne.jpg", mass: [1165, 728],
         bildAlt: "Website der Kaiserbühne: der Spielplan der Saison 2026/27 als farbige Kacheln mit den Titeln der Stücke, darüber die Kopfzeile mit Aktuell, Tickets, Spielplan, Über uns und Vermietung",
         text: "Die Website der Kaiserbühne mit dem Spielplan als farbigen Kacheln." },
@@ -187,10 +192,6 @@ export const ANGEBOTE = [
       { name: "Das Dritte Rad", von: "Website als Anwendung", jahr: "2026", url: "/beta/drittes-rad/?sprache=de", adresse: "ornament.cloud/beta/drittes-rad", bild: "b/bilder/schau/drittes-rad.jpg", film: "b/bilder/schau/drittes-rad.mp4",
         bildAlt: "Das Dritte Rad im Film: das Zeichen des Rads baut sich langsam auf, ein Farbenkreis dreht über die ganze Fläche, dann erscheint die Anwendung mit den drei Ringen",
         text: "Eine Website, die man bedient statt liest: Drei Ringe drehen gegeneinander, jede Drehung zieht einen Zettel, eine Begegnung und eine Gestaltungsübung. Läuft im Browser, ohne Installation." },
-      // Spektralmenü seit 22. November 2026 (Christian: «Ich möchte dass du die seite als referenzseite für webdesign auf ornament.cloud verlinkst»)
-      { name: "Spektralmenü", von: "Einstiegsseite mit Prisma", jahr: "2026", url: "/references/webdesign/colorpicker/", adresse: "ornament.cloud/references/webdesign/colorpicker", bild: "b/bilder/schau/spektralmenue.jpg",
-        bildAlt: "Spektralmenü: ein weisser Strahl fällt auf ein Glasprisma und fächert sich zum Spektrum auf, ein Farbring um das Prisma wählt die Farbe, unten steht gross der gewählte Menüpunkt",
-        text: "Eine Einstiegsseite fast ohne Text: Wer den Ring um das Prisma dreht, legt eine andere Spektralfarbe auf den Schirm, und mit jeder Farbe einen anderen Menüpunkt. Die Brechung ist gerechnet, nicht gezeichnet." },
       { name: "Multiverse", von: "Website als Arbeitsfläche", jahr: "2026", url: "/multiverse/", adresse: "ornament.cloud/multiverse", bild: "b/bilder/schau/multiverse.jpg",
         bildAlt: "Multiverse: vier Anwendungen nebeneinander in Spalten, ORNA, PHORMA III, Das Dritte Rad und The Fictory, darüber eine Leiste zum Ein- und Ausschalten",
         text: "Neun Anwendungen, übersichtlich zum Ein- und Ausblenden nebeneinander. Diese Art, eine Website zu gestalten, ist bei den Kund:innen zurzeit besonders beliebt." },
