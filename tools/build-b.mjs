@@ -382,7 +382,7 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
       const [b, h] = fotoMass[f.slug], t = f.titel[sprache], k = 800 / Math.max(b, h);
       const bild = `<img src="${attr(mitMarke(`b/bilder/fotografie/${f.slug}-800.jpg`))}"${quadrat ? "" : ` srcset="${attr(mitMarke(`b/bilder/fotografie/${f.slug}-800.jpg`))} 800w, ${attr(mitMarke(`b/bilder/fotografie/${f.slug}-1600.jpg`))} 1600w" sizes="(max-width: 760px) 100vw, 360px"`} alt="${attr(f.alt[sprache])}" width="${Math.round(b * k)}" height="${Math.round(h * k)}" loading="lazy">`;
       return quadrat
-        ? `<a class="foto" href="${B}werke/#foto-${f.slug}" title="${attr(t)}">${bild}</a>`
+        ? `<a class="foto" href="${B}sehen/#foto-${f.slug}" title="${attr(t)}">${bild}</a>`
         : `<figure class="foto" id="foto-${f.slug}"><a href="${attr(mitMarke(`b/bilder/fotografie/${f.slug}-1600.jpg`))}" target="_blank" rel="noopener" title="${attr(T.werke.fotoGross(t))}">${bild}</a>${!ohneZeile && f.fuer ? `<figcaption>${esc(f.fuer[sprache].replace(/^./, (c) => c.toUpperCase()))}</figcaption>` : ""}</figure>`;
     }).join("")}</div>`;
   }
@@ -784,7 +784,7 @@ ${faeden([...zs.map((z) => fZettel(z)), r.slug === "nebeneinander-nacheinander" 
   <h2 id="ablauf-titel">${esc(T.angebot.soGeht)}</h2>
   <ol>${a.ablauf.map((s) => `<li><span>${esc(s)}</span></li>`).join("")}</ol>
 </div></section>
-${a.fotos ? `<section class="referenzen schau-abschnitt" aria-labelledby="schau-titel"><div class="spalte"><h2 id="schau-titel">${esc(T.angebot.schau)}</h2>${a.schau ? `<div class="schau" style="margin-bottom:32px">${a.schau.map(schauStueck).join("")}</div>` : ""}${a.fotosTitel ? `<p class="klein" style="margin:0 0 18px">${esc(a.fotosTitel)}</p>` : ""}${fotoGalerie([...FOTOS, ...AUSSTELLUNG].filter((f) => f.gruppe === a.fotos))}${a.fotos === "supervisionen" ? "" : `<p class="klein" style="margin-top:14px"><a href="${B}werke/#fotografie">${esc(T.start.wasKommt)}</a></p>`}</div></section>` : ""}
+${a.fotos ? `<section class="referenzen schau-abschnitt" aria-labelledby="schau-titel"><div class="spalte"><h2 id="schau-titel">${esc(T.angebot.schau)}</h2>${a.schau ? `<div class="schau" style="margin-bottom:32px">${a.schau.map(schauStueck).join("")}</div>` : ""}${a.fotosTitel ? `<p class="klein" style="margin:0 0 18px">${esc(a.fotosTitel)}</p>` : ""}${fotoGalerie([...FOTOS, ...AUSSTELLUNG].filter((f) => f.gruppe === a.fotos))}${a.fotos === "supervisionen" ? "" : `<p class="klein" style="margin-top:14px"><a href="${B}sehen/#sehen-foto-titel">${esc(T.start.wasKommt)}</a></p>`}</div></section>` : ""}
 ${a.schau && !a.fotos ? `<section class="referenzen schau-abschnitt" aria-labelledby="schau-titel"><div class="spalte"><h2 id="schau-titel">${esc(T.angebot.schau)}</h2><div class="schau">${a.schau.map(schauStueck).join("")}</div></div></section>` : ""}
 ${a.referenzen ? `<section class="referenzen" aria-labelledby="ref-titel"><div class="spalte"><h2 id="ref-titel">${esc(T.angebot.referenzen)}</h2><ol class="jahre">${a.referenzen.map(([j, t, url, adresse]) => `<li><span class="jahr">${esc(j)}</span><span>${esc(t)}${url ? ` <a class="ref-link" href="${attr(url)}" target="_blank" rel="noopener">${esc(adresse)} ↗</a>` : ""}</span></li>`).join("")}</ol></div></section>` : ""}
 <section class="briefing" id="briefing" aria-labelledby="briefing-titel"><div class="spalte">
@@ -804,6 +804,8 @@ ${faeden([...zs.map((z) => fZettel(z)), fApp(appVon(appTop)), fAngebot(ANGEBOTE[
   }
 
   /* ---------- Werke ---------- */
+  // Seit 22. November 2026 (Christian: «Bei den Werken die Prints und Editionen zuerst. Fotos raus (Fotografie ist ein Angebot)»): Prints, Editionen, Im Raum;
+  // die Fotografien stehen auf «Sehen» und unter der Leistung «Fotografie».
   // Nur Ankündigungen, keine Beispiele (Wunsch vom 20. Oktober 2026: «die Beispiel-Werke von der Seite Werke entfernen. Nur die Ankündigungen für
   // Prints und Originale, Im Raum, Editionen lassen»): Muster aus werke.json (muster: true) kommen nie in den Neubau; echte Werke erscheinen, sobald es sie gibt.
   {
@@ -812,24 +814,20 @@ ${faeden([...zs.map((z) => fZettel(z)), fApp(appVon(appTop)), fAngebot(ANGEBOTE[
 <section class="stueck-kopf"><div class="spalte">
   <h1 class="titel">${esc(T.werke.titel)}<small>${esc(T.werke.small)}</small></h1>
 </div></section>
-<section class="abschnitt" id="fotografie" aria-labelledby="fotografie-titel"><div class="spalte">
-  <div class="abschnitt-kopf"><h2 id="fotografie-titel">${esc(T.werke.fotografie)}</h2><p>${esc(T.werke.fotografieText)}</p><a class="weiter" href="${B}angebot/fotografie/">${esc(T.werke.fotoAuftrag)}</a></div>
-  ${fotoGalerie(FOTOS)}
-</div></section>
-<section class="abschnitt" aria-labelledby="prints-titel"><div class="spalte">
+<section class="abschnitt" id="prints" aria-labelledby="prints-titel"><div class="spalte">
   <div class="abschnitt-kopf"><h2 id="prints-titel">${esc(T.werke.prints)}</h2><p>${esc(PRINTS.length ? T.werke.printsText : ankuendigung)}</p>${PRINTS.length ? `<a class="weiter" href="mailto:${attr(SEITE.person.mail)}?subject=${encodeURIComponent(T.werke.prints)}">${esc(T.werke.printsAnfrage)}</a>` : ""}</div>
   ${PRINTS.length ? fotoGalerie(PRINTS, { ohneZeile: true }) : ""}
   ${echteWerke.length ? `<div class="reihe zeilen">${echteWerke.map((w) => `<article class="werk" id="${w.slug}"><a href="/art/${w.slug}/"><span class="bild"><img src="/art/bilder/${w.slug}-1-800.webp" alt="${attr(w.bilder[0].alt)}" loading="lazy" width="800" height="1067"></span></a><h3>${esc(w.titel)}</h3><p class="klein">${esc(w.technik)}, ${w.masse.b} × ${w.masse.h} cm, ${esc(T.werke.auflage(w.auflage.gesamt))}</p><p class="preis">CHF ${w.preis}.–</p><p><a href="/art/${w.slug}/">${esc(T.werke.bestellen)}</a></p></article>`).join("")}</div>` : ""}
 </div></section>
-<section class="abschnitt" aria-labelledby="raum-titel"><div class="spalte">
-  <div class="abschnitt-kopf"><h2 id="raum-titel">${esc(T.werke.raum)}</h2><p>${esc(T.werke.raumText)}</p></div>
-</div></section>
 <section class="abschnitt" aria-labelledby="editionen-titel"><div class="spalte">
+  <div class="abschnitt-kopf"><h2 id="editionen-titel">${esc(T.werke.editionen)}</h2><p>${esc(T.werke.editionenText)}</p></di<section class="abschnitt" id="editionen" aria-labelledby="editionen-titel"><div class="spalte">
   <div class="abschnitt-kopf"><h2 id="editionen-titel">${esc(T.werke.editionen)}</h2><p>${esc(T.werke.editionenText)}</p></div>
   <p class="knopfreihe"><a class="knopf" href="${attr(UEBER.liste.mailto)}">${esc(T.start.eintragen)}</a></p>
 </div></section>
-<section class="spalte">${teilen({ pfad: "werke/", titel: T.werke.teilenTitel, text: T.werke.teilenText })}</section>
-${faeden([fZettel(zettel[30]), fZettel(zettel[33]), fAngebot(angebotVon("produkte")), fApp(appVon("phorma-ii"))])}`;
+<section class="abschnitt" aria-labelledby="raum-titel"><div class="spalte">
+  <div class="abschnitt-kopf"><h2 id="raum-titel">${esc(T.werke.raum)}</h2><p>${esc(T.werke.raumText)}</p></div>
+</div></section>
+p(appVon("phorma-ii"))])}`;
     veroeffentliche({ pfad: "werke/", aktiv: "werke/", titel: T.werke.seitenTitel, beschreibung: T.werke.beschreibung, body, bildAlt: T.werke.bildAlt });
   }
 
