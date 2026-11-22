@@ -38,7 +38,7 @@
     "hinweis.1": "Everything stays in your browser: video and music are not uploaded, the video is made on your device.",
     "hinweis.2": "Format: portrait 4 : 5 (1080 × 1350, for the feed), or 9 : 16 (1080 × 1920, for reels and stories) or landscape 16 : 9 (1920 × 1080, for screens and websites); a video is cropped centrally if needed. On the computer, if you wish, at double resolution (2160 × 2700, 2160 × 3840 or 3840 × 2160): computed anew, not upscaled.",
     "hinweis.3": "Video: MP4 (H.264), 30 frames per second, with sound (AAC) if an audio file is chosen. PHORMA III needs WebGL 2.",
-    "hinweis.4a": "For photos there is ", "hinweis.4b": ": a slime mould finds the shapes, the photo becomes space and blows as a silk cloth.",   // der Link bleibt in der Seite (kein Pfad hier: ein Test verlangt, dass kein Skript aus PHORMA II lädt)
+    "hinweis.4a": "For photos there is ", "hinweis.4b": ": a growing network finds the shapes, the photo becomes space and blows as a silk cloth.",   // der Link bleibt in der Seite (kein Pfad hier: ein Test verlangt, dass kein Skript aus PHORMA II lädt)
     "fuss.fragen": "Questions and comments about the website: <a href=\"mailto:hansnoed@gmail.com\">hansnoed@gmail.com</a>", "fuss.impressum": "Imprint",
     // app.js
     "Das Video wird gelesen …": "Reading the video …", "Dieses Video kann der Browser nicht öffnen": "The browser cannot open this video", "Versuche MP4 (H.264) oder WebM.": "Try MP4 (H.264) or WebM.",

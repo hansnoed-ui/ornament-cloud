@@ -74,7 +74,7 @@ export const phorma2 = {
   version: "0.1.0",
   klasse: "zeitlich",
   herkunft: { art: "adapter", quelle: "PHORMA II", datei: "alpha/phorma-ii/buehne.js, film.js, ablauf.js, analyse.js und die Effekte (v=40, unverändert)", referenz: null },
-  beschreibung: "PHORMA II: Physarum (ein Schleimpilz findet die Formen), Tiefe (das Foto wird Relief), Wellenwanne, Tuch (das Foto fällt als Seide), Rasterdruck, Montage (verschachtelte Rechtecke) – einzeln oder als Kette. Eine ORNA-Konstellation kann den Ablauf wählen, ein Zettel gibt den Titel.",
+  beschreibung: "PHORMA II: Physarum (ein wachsendes Netz findet die Formen), Tiefe (das Foto wird Relief), Wellenwanne, Tuch (das Foto fällt als Seide), Rasterdruck, Montage (verschachtelte Rechtecke) – einzeln oder als Kette. Eine ORNA-Konstellation kann den Ablauf wählen, ein Zettel gibt den Titel.",
   eingaenge: EINGAENGE,
   ausgaenge: [{ name: "zustaende", typ: "IMAGE", mehrfach: 12 }],
   parameter: [

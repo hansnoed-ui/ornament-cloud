@@ -1149,7 +1149,7 @@ void punkt(int id, out vec2 pos, out vec4 col, out float size){
 
 
   geflecht: {
-    name: "Physarum-Struktur", herkunft: "PHORMA II weitergedacht: der Schleimpilz als Struktur statt als Spur – Netz, Adern, Zellen oder Membran, je dichter, wo das Bild Nahrung bietet",
+    name: "Physarum-Struktur", herkunft: "PHORMA II weitergedacht: das Netz als Struktur statt als Spur – Netz, Adern, Zellen oder Membran, je dichter, wo das Bild Nahrung bietet",
     // Wunsch vom 5. November 2026: «varianten der strukturbildung …, nicht nur diese leuchten spuren»; der Regler «Struktur» geht von Netz (0)
     // über Adern (⅓) und Zellen (⅔) zur Membran (1), dazwischen blenden zwei Strukturen ineinander
     regler: [r("Struktur", 0), r("Dichte", .5), r("Nahrung", .55), r("Dicke", .5), r("Fluss", .5), r("Bild", .3)],
