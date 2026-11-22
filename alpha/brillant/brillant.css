@@ -34,6 +34,7 @@ body { font: 500 15px/1.4 'Brillant Display', system-ui, sans-serif; -webkit-fon
 .p-nr { font-size: 12px; letter-spacing: 0.14em; color: var(--hell, #b7b0ff); }
 .p-name { font-weight: 500; font-size: 36px; line-height: 1.05; letter-spacing: -0.022em; white-space: nowrap; }   /* 0.44: lange Bereiche verkleinern statt umbrechen (namenEinpassen) */
 .p-satz { font-size: 15px; line-height: 1.45; color: rgba(214, 210, 228, 0.8); max-width: 26ch; }
+.p-satz:empty { display: none; }   /* 0.45: am Stein nur der Bereich */
 .p-mehr { margin-top: 6px; font-size: 15px; color: var(--hell, #b7b0ff); }
 /* der Lichtkegel vom Stein zur Fläche: weichgezeichnet, damit er keine Kanten hat */
 .strahl { position: fixed; inset: 0; pointer-events: none; opacity: 0; filter: blur(16px); }

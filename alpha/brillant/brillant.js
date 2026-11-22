@@ -13,6 +13,11 @@ const leinwand = $('leinwand');
 // auf der Karte ein Beispiel daraus (werk) mit «Öffnen» und leisen Links zum Angebot. Die bisherigen Anwendungen (the deleuzian scheme,
 // Das Dritte Rad, ornament.lab, Composer) hängen als Links an der Karte «Anwendung», zusammen mit dem Atelier, wo sie auch stehen.
 // Tippt man im Menü auf den Namen, öffnet sich die Vitrine (unten): Bild, Name, ein Satz, «Öffnen», Links.
+// 0.45 (Christian, 22.11.2026: «Der Kristall auf der Startseite sollte zeigen: Websites, Apps, Anwendungen, Produkte, Vermittlung»):
+// kurze Namen im Plural, Produkte vor Vermittlung; Supervisionen führt zum Angebot Vermittlung, Kuration als Link.
+// 0.45 (Christian: «Erst auf den Vorschaukarten dieser Titel soll dann ein Beispiel und ein Link zum Angebot bzw zu den weiteren
+// Referenzen gezeigt werden (bei Anwendungen → Atelier)»): am Stein nur der Name des Bereichs, kein Satz; true holt ihn zurück.
+const SATZ_AM_STEIN = false;
 const ANGEBOT = (seite) => ({ href: `/angebot/${seite}/`, adressen: { en: `/en/angebot/${seite}/` } });
 const BEREICHE = [
   { werk: 'Spektralmenü', href: '/references/webdesign/colorpicker/', sprachen: ['de'], bild: 'vorschau/website-spektral.jpg?v=1', ton: [150, 118, 255],
@@ -21,19 +26,14 @@ const BEREICHE = [
     bild: 'vorschau/phorma-ii.jpg?v=1', ton: [72, 176, 220],
     links: [{ wort: 'angebot', ...ANGEBOT('webdesign') }, { wort: 'apps', href: '/apps/', adressen: { en: '/en/apps/' } }] },
   { werk: 'Animations', href: '/animations/', sprachen: ['de', 'en', 'es'], adressen: { en: '/animations/en/', es: '/animations/es/' }, bild: 'vorschau/animations.jpg?v=2', ton: [86, 196, 150],
-    // weitere Anwendungen; jede öffnet in der Sprache der Seite, wenn es sie so gibt, sonst Englisch bzw. in ihrer ersten
     links: [
-      { name: 'the deleuzian scheme', href: '/alpha/deleuze/start/', sprachen: ['de', 'en', 'fr'], speicher: 'kristall.sprache' },
-      { name: { de: 'Das Dritte Rad', en: 'The Third Wheel' }, href: '/beta/drittes-rad/', sprachen: ['de', 'en'], adressen: { de: '/beta/drittes-rad/?sprache=de', en: '/beta/drittes-rad/?sprache=en' } },
-      { name: 'ornament.lab', href: '/beta/lab/', sprachen: ['de', 'en', 'es', 'fr'], adressen: { de: '/beta/lab/?sprache=de', en: '/beta/lab/?sprache=en', es: '/beta/lab/?sprache=es', fr: '/beta/lab/?sprache=fr' }, handy: '/alpha/lab/handy/' },
-      { name: 'Composer', href: '/alpha/composer/', sprachen: ['de', 'en', 'es', 'fr'], speicher: 'composer-sprache' },
-      { wort: 'atelier', href: '/atelier/', adressen: { en: '/en/atelier/' } }] },
-  { werk: 'Supervisionen', knopf: 'angebot', ...ANGEBOT('kuration'), sprachen: ['de', 'en'], bild: 'vorschau/supervisionen.jpg?v=1', ton: [226, 170, 88],
-    links: [{ wort: 'vermittlung', ...ANGEBOT('vermittlung') }, { name: 'oberer-turm.ch', href: 'https://www.oberer-turm.ch/', aussen: true }] },
+      { wort: 'imAtelier', href: '/atelier/', adressen: { en: '/en/atelier/' } }] },
   { werk: 'Prints', href: '/references/webdesign/prints/', sprachen: ['de'], bild: 'vorschau/prints.jpg?v=1', ton: [232, 104, 156],
-    links: [{ wort: 'angebot', ...ANGEBOT('produkte') }] }
+    links: [{ wort: 'angebot', ...ANGEBOT('produkte') }] },
+  { werk: 'Supervisionen', knopf: 'angebot', ...ANGEBOT('vermittlung'), sprachen: ['de', 'en'], bild: 'vorschau/supervisionen.jpg?v=1', ton: [226, 170, 88],
+    links: [{ wort: 'kuration', ...ANGEBOT('kuration') }, { name: 'oberer-turm.ch', href: 'https://www.oberer-turm.ch/', aussen: true }] }
 ];
-// Die Farben der Schichten folgen dem Spektrum: Violett, Blau, Grün, Gold, Rosa.
+// Die Farben der Schichten: Violett, Blau, Grün, Rosa (Prints), Gold (Turm).
 
 // ---------- Sprache (0.25, Christian, 20.11.2026: «komplett deutsch, englisch, spanisch, französisch») ----------
 // Gewählt wird nach der Sprache, die der Browser meldet (navigator.languages, dieselbe Angabe wie Accept-Language):
@@ -52,40 +52,40 @@ const NBSP = ' ';   // schmales Leerzeichen vor «:» im Französischen
 const TEXTE = {
   de: { titel: 'Brillante Ideen.', iBei: 2, menu: 'Menü', anwendungen: 'Angebot', mehr: 'Mehr erfahren', oeffnen: 'Öffnen', oeffnenAria: (n) => `${n} öffnen`,
     nurIn: { de: 'auf Deutsch', en: 'auf Englisch', fr: 'auf Französisch', es: 'auf Spanisch' }, vor: 'Vorheriges Angebot', nach: 'Nächstes Angebot', zu: 'Schliessen', sprache: 'Sprache',
-    worte: { angebot: 'Angebot', zumAngebot: 'Zum Angebot', apps: 'Alle Apps', atelier: 'Atelier', vermittlung: 'Vermittlung', weitere: 'Weitere' },
+    worte: { angebot: 'Angebot', zumAngebot: 'Zum Angebot', apps: 'Alle Apps', atelier: 'Atelier', imAtelier: 'Weitere im Atelier', vermittlung: 'Vermittlung', kuration: 'Kuration', weitere: 'Weitere' },
     anw: [
-      { name: 'Website', kopf: 'Einstiegsseite mit Prisma · 2026', satz: 'Eine Einstiegsseite fast ohne Text: Wer den Ring um das Prisma dreht, legt eine andere Spektralfarbe auf den Schirm, mit jeder Farbe einen anderen Menüpunkt.' },
-      { name: 'App', kopf: 'Foto und Video · sechs Effekte', satz: 'Ein Schleimpilz findet die Formen des Bilds, es liegt unter bewegtem Wasser, weht als Seidentuch oder zerfällt im Takt in Rechtecke.' },
-      { name: 'Anwendung (im Browser)', kopf: 'Bild · Bewegung', satz: 'Ein Bild, 24 Effekte, bis zu drei Ebenen: das Mischpult für eigene Animationen.' },
-      { name: 'Kuration & Vermittlung', kopf: 'Oberer Turm Kaiserstuhl · 2026', satz: 'Sechs Monate, neun Künstler:innen, ein Turm als Ausstellungsraum: Auswahl, Hängung, Texte und Begleitprogramm.' },
-      { name: 'Produkte', kopf: 'Acht Motive · auf Anfrage', satz: 'Das erste Motiv entsteht als Vierfarbenraster, Platte um Platte. Darunter acht Motive, jedes mit Lupe und Ansicht an der Wand.' }] },
+      { name: 'Websites', kopf: 'Einstiegsseite mit Prisma · 2026', satz: 'Eine Einstiegsseite fast ohne Text: Wer den Ring um das Prisma dreht, legt eine andere Spektralfarbe auf den Schirm, mit jeder Farbe einen anderen Menüpunkt.' },
+      { name: 'Apps', kopf: 'Foto und Video · sechs Effekte', satz: 'Ein Schleimpilz findet die Formen des Bilds, es liegt unter bewegtem Wasser, weht als Seidentuch oder zerfällt im Takt in Rechtecke.' },
+      { name: 'Anwendungen', kopf: 'Bild · Bewegung', satz: 'Ein Bild, 24 Effekte, bis zu drei Ebenen: das Mischpult für eigene Animationen.' },
+      { name: 'Produkte', kopf: 'Acht Motive · auf Anfrage', satz: 'Das erste Motiv entsteht als Vierfarbenraster, Platte um Platte. Darunter acht Motive, jedes mit Lupe und Ansicht an der Wand.' },
+      { name: 'Vermittlung', kopf: 'Oberer Turm Kaiserstuhl · 2026', satz: 'Sechs Monate, neun Künstler:innen, ein Turm als Ausstellungsraum: Auswahl, Hängung, Texte und Begleitprogramm.' }] },
   en: { titel: 'brilliant ideas.', iBei: 2, menu: 'Menu', anwendungen: 'Services', mehr: 'Learn more', oeffnen: 'Open', oeffnenAria: (n) => `Open ${n}`,
     nurIn: { de: 'in German', en: 'in English', fr: 'in French', es: 'in Spanish' }, vor: 'Previous', nach: 'Next', zu: 'Close', sprache: 'Language',
-    worte: { angebot: 'Service', zumAngebot: 'To the service', apps: 'All apps', atelier: 'Studio', vermittlung: 'Education', weitere: 'More' },
+    worte: { angebot: 'Service', zumAngebot: 'To the service', apps: 'All apps', atelier: 'Studio', imAtelier: 'More in the studio', vermittlung: 'Education', kuration: 'Curating', weitere: 'More' },
     anw: [
-      { name: 'Website', werk: 'Spectral menu', kopf: 'landing page with a prism · 2026', satz: 'A landing page with almost no text: turn the ring around the prism and another spectral colour falls on the screen, each colour with its own menu item.' },
-      { name: 'App', kopf: 'photo and video · six effects', satz: 'A slime mould finds the shapes of the image, it lies under moving water, blows as a silk cloth or falls apart into rectangles on the beat.' },
-      { name: 'Application (in the browser)', kopf: 'image · motion', satz: 'One image, 24 effects, up to three layers: the mixing desk for your own animations.' },
-      { name: 'Curating & Education', werk: 'Supervisions', kopf: 'Oberer Turm Kaiserstuhl · 2026', satz: 'Six months, nine artists, a tower as exhibition space: selection, hanging, texts and accompanying programme.' },
-      { name: 'Products', kopf: 'eight motifs · on request', satz: 'The first motif appears as a four-colour screen, plate by plate. Below, eight motifs, each with a loupe and a view on the wall.' }] },
+      { name: 'Websites', werk: 'Spectral menu', kopf: 'landing page with a prism · 2026', satz: 'A landing page with almost no text: turn the ring around the prism and another spectral colour falls on the screen, each colour with its own menu item.' },
+      { name: 'Apps', kopf: 'photo and video · six effects', satz: 'A slime mould finds the shapes of the image, it lies under moving water, blows as a silk cloth or falls apart into rectangles on the beat.' },
+      { name: 'Applications', kopf: 'image · motion', satz: 'One image, 24 effects, up to three layers: the mixing desk for your own animations.' },
+      { name: 'Products', kopf: 'eight motifs · on request', satz: 'The first motif appears as a four-colour screen, plate by plate. Below, eight motifs, each with a loupe and a view on the wall.' },
+      { name: 'Education', werk: 'Supervisions', kopf: 'Oberer Turm Kaiserstuhl · 2026', satz: 'Six months, nine artists, a tower as exhibition space: selection, hanging, texts and accompanying programme.' }] },
   fr: { titel: 'idées brillantes.', iBei: 8, menu: 'Menu', anwendungen: 'Offre', mehr: 'En savoir plus', oeffnen: 'Ouvrir', oeffnenAria: (n) => `Ouvrir ${n}`,
     nurIn: { de: 'en allemand', en: 'en anglais', fr: 'en français', es: 'en espagnol' }, vor: 'Précédent', nach: 'Suivant', zu: 'Fermer', sprache: 'Langue',
-    worte: { angebot: 'Offre', zumAngebot: 'Voir l’offre', apps: 'Toutes les apps', atelier: 'Atelier', vermittlung: 'Médiation', weitere: 'Aussi' },
+    worte: { angebot: 'Offre', zumAngebot: 'Voir l’offre', apps: 'Toutes les apps', atelier: 'Atelier', imAtelier: 'D’autres à l’atelier', vermittlung: 'Médiation', kuration: 'Curation', weitere: 'Aussi' },
     anw: [
-      { name: 'Site web', werk: 'Menu spectral', kopf: 'page d’accueil avec prisme · 2026', satz: `Une page d’accueil presque sans texte${NBSP}: qui tourne l’anneau autour du prisme pose une autre couleur spectrale sur l’écran, et avec chaque couleur une autre entrée du menu.` },
-      { name: 'App', kopf: 'photo et vidéo · six effets', satz: 'Un myxomycète trouve les formes de l’image, elle repose sous une eau mouvante, flotte comme un voile de soie ou se défait en rectangles au rythme.' },
-      { name: 'Application (dans le navigateur)', kopf: 'image · mouvement', satz: `Une image, 24 effets, jusqu’à trois calques${NBSP}: la table de mixage pour vos propres animations.` },
-      { name: 'Curation & médiation', werk: 'Supervisions', kopf: 'Oberer Turm Kaiserstuhl · 2026', satz: `Six mois, neuf artistes, une tour comme lieu d’exposition${NBSP}: choix, accrochage, textes et programme d’accompagnement.` },
-      { name: 'Produits', kopf: 'huit motifs · sur demande', satz: 'Le premier motif naît en trame quadrichromie, plaque après plaque. En dessous, huit motifs, chacun avec loupe et vue au mur.' }] },
+      { name: 'Sites web', werk: 'Menu spectral', kopf: 'page d’accueil avec prisme · 2026', satz: `Une page d’accueil presque sans texte${NBSP}: qui tourne l’anneau autour du prisme pose une autre couleur spectrale sur l’écran, et avec chaque couleur une autre entrée du menu.` },
+      { name: 'Apps', kopf: 'photo et vidéo · six effets', satz: 'Un myxomycète trouve les formes de l’image, elle repose sous une eau mouvante, flotte comme un voile de soie ou se défait en rectangles au rythme.' },
+      { name: 'Applications', kopf: 'image · mouvement', satz: `Une image, 24 effets, jusqu’à trois calques${NBSP}: la table de mixage pour vos propres animations.` },
+      { name: 'Produits', kopf: 'huit motifs · sur demande', satz: 'Le premier motif naît en trame quadrichromie, plaque après plaque. En dessous, huit motifs, chacun avec loupe et vue au mur.' },
+      { name: 'Médiation', werk: 'Supervisions', kopf: 'Oberer Turm Kaiserstuhl · 2026', satz: `Six mois, neuf artistes, une tour comme lieu d’exposition${NBSP}: choix, accrochage, textes et programme d’accompagnement.` }] },
   es: { titel: 'ideas brillantes.', iBei: 8, menu: 'Menú', anwendungen: 'Oferta', mehr: 'Saber más', oeffnen: 'Abrir', oeffnenAria: (n) => `Abrir ${n}`,
     nurIn: { de: 'en alemán', en: 'en inglés', fr: 'en francés', es: 'en español' }, vor: 'Anterior', nach: 'Siguiente', zu: 'Cerrar', sprache: 'Idioma',
-    worte: { angebot: 'Oferta', zumAngebot: 'Ver la oferta', apps: 'Todas las apps', atelier: 'Taller', vermittlung: 'Mediación', weitere: 'Más' },
+    worte: { angebot: 'Oferta', zumAngebot: 'Ver la oferta', apps: 'Todas las apps', atelier: 'Taller', imAtelier: 'Más en el taller', vermittlung: 'Mediación', kuration: 'Curaduría', weitere: 'Más' },
     anw: [
-      { name: 'Sitio web', werk: 'Menú espectral', kopf: 'página de inicio con prisma · 2026', satz: 'Una página de inicio casi sin texto: quien gira el anillo alrededor del prisma pone otro color espectral en la pantalla y, con cada color, otro punto del menú.' },
-      { name: 'App', kopf: 'foto y vídeo · seis efectos', satz: 'Un moho mucilaginoso encuentra las formas de la imagen, que yace bajo agua en movimiento, ondea como un paño de seda o se deshace en rectángulos al compás.' },
-      { name: 'Aplicación (en el navegador)', kopf: 'imagen · movimiento', satz: 'Una imagen, 24 efectos, hasta tres capas: la mesa de mezclas para tus propias animaciones.' },
-      { name: 'Curaduría y mediación', werk: 'Supervisiones', kopf: 'Oberer Turm Kaiserstuhl · 2026', satz: 'Seis meses, nueve artistas, una torre como sala de exposición: selección, montaje, textos y programa de acompañamiento.' },
-      { name: 'Productos', kopf: 'ocho motivos · bajo pedido', satz: 'El primer motivo surge como trama de cuatro colores, plancha a plancha. Debajo, ocho motivos, cada uno con lupa y vista en la pared.' }] }
+      { name: 'Sitios web', werk: 'Menú espectral', kopf: 'página de inicio con prisma · 2026', satz: 'Una página de inicio casi sin texto: quien gira el anillo alrededor del prisma pone otro color espectral en la pantalla y, con cada color, otro punto del menú.' },
+      { name: 'Apps', kopf: 'foto y vídeo · seis efectos', satz: 'Un moho mucilaginoso encuentra las formas de la imagen, que yace bajo agua en movimiento, ondea como un paño de seda o se deshace en rectángulos al compás.' },
+      { name: 'Aplicaciones', kopf: 'imagen · movimiento', satz: 'Una imagen, 24 efectos, hasta tres capas: la mesa de mezclas para tus propias animaciones.' },
+      { name: 'Productos', kopf: 'ocho motivos · bajo pedido', satz: 'El primer motivo surge como trama de cuatro colores, plancha a plancha. Debajo, ocho motivos, cada uno con lupa y vista en la pared.' },
+      { name: 'Mediación', werk: 'Supervisiones', kopf: 'Oberer Turm Kaiserstuhl · 2026', satz: 'Seis meses, nueve artistas, una torre como sala de exposición: selección, montaje, textos y programa de acompañamiento.' }] }
 };
 let T, TITEL, TITEL_KURZ;
 // feste Texte der Seite; 0.32: auch später aufrufbar, wenn man auf einer Karte die Sprache wechselt
@@ -678,13 +678,13 @@ function satzMalen(c, k) {
   } else { c.fillStyle = g; c.fillText(z.t, z.x, z.y); }
   c.restore();
   if (!k) return null;
-  // darunter, klein und leise: ein Satz zum Bereich
+  // darunter, klein und leise: ein Satz zum Bereich (seit 0.45 nicht mehr: am Stein nur der Bereich, das Beispiel erst auf der Karte)
   const b = BEREICHE[k - 1], ss = lay.satz;
   c.save();
   c.textAlign = 'center'; c.font = `500 ${ss}px ${SCHRIFT}`; if ('letterSpacing' in c) c.letterSpacing = '0px';
   c.fillStyle = 'rgba(210, 206, 226, 0.78)';
   let y = z.y + lay.fs * 0.5 + ss * 1.6;
-  for (const zeile of zeilenUmbruch(c, b.satz, Math.min(lay.scheibe.w - 60, lay.hoch ? 300 : 420))) { c.fillText(zeile, W / 2, y); y += ss * 1.45; }
+  if (SATZ_AM_STEIN) for (const zeile of zeilenUmbruch(c, b.satz, Math.min(lay.scheibe.w - 60, lay.hoch ? 300 : 420))) { c.fillText(zeile, W / 2, y); y += ss * 1.45; }
   c.restore();
   return { y: y + ss * 0.9, ton: b.ton.map((v) => Math.min(255, Math.round(v * 0.5 + 125))) };
 }
@@ -949,7 +949,7 @@ const flaechen = BEREICHE.map((b, i) => {
   el.href = zielVon(b, SPRACHE); el.style.setProperty('--ton', b.ton.join(',')); el.style.setProperty('--hell', `rgb(${hell.join(',')})`);
   el.querySelector('.p-nr').textContent = `0${i + 1}`;
   el.querySelector('.p-name').textContent = b.name;
-  el.querySelector('.p-satz').textContent = b.satz;
+  el.querySelector('.p-satz').textContent = SATZ_AM_STEIN ? b.satz : '';
   el.setAttribute('aria-hidden', 'true');
   return el;
 });
@@ -1062,7 +1062,7 @@ function spracheWechseln(l, karte) {
     SPRACHE = l; grundTexte(); zustandGezeigt = -1;
     vKarten.forEach((k, j) => k.beschriften(j === karte ? l : null));
     navKnoepfe.forEach((n, j) => { n.textContent = j ? BEREICHE[j - 1].name : TITEL_KURZ; });
-    flaechen.forEach((el, j) => { el.querySelector('.p-name').textContent = BEREICHE[j].name; el.querySelector('.p-satz').textContent = BEREICHE[j].satz; el.href = zielVon(BEREICHE[j], l); });
+    flaechen.forEach((el, j) => { el.querySelector('.p-name').textContent = BEREICHE[j].name; el.querySelector('.p-satz').textContent = SATZ_AM_STEIN ? BEREICHE[j].satz : ''; el.href = zielVon(BEREICHE[j], l); });
     namenEinpassen();
     // Bilder und Filme, die es je Sprache gibt (the deleuzian scheme), auf die neue Sprache stellen
     vKarten.forEach((k, j) => {
