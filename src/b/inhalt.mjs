@@ -173,6 +173,11 @@ export const ANGEBOTE = [
     // Kaiserbühne seit 13. November 2026 (Christian: «nimm zu den referenzen website auch noch kaiserbuehne.ch auf, die habe ich auch gemacht»). Das Bild
     // ist ein Bildschirmfoto der Seite, das Christian am selben Tag geschickt hat (b/bilder/schau/kaiserbuehne.jpg; die Seite ist aus der Cloud-Sitzung nicht erreichbar).
     schau: [
+      // Brillante Ideen zuoberst seit 22. November 2026 (Christian: «mach wieder die Beta Seite zur Einstiegsseite und präsentiere Brillant zuoberst
+      // bei den webdesign referenzen»); bis dahin war die Seite die Startseite von ornament.cloud. Bild: tools/b-schaubilder.mjs brillant
+      { name: "Brillante Ideen", von: "Einstiegsseite mit Brillant", jahr: "2026", url: "/alpha/brillant/?lang=de", adresse: "ornament.cloud/alpha/brillant", bild: "b/bilder/schau/brillant.jpg",
+        bildAlt: "Brillante Ideen: auf nachtblauem Grund der Schriftzug «Brillante Ideen.», der i-Punkt ist ein funkelnder Diamant, von dem feine Strahlen in Spektralfarben ausgehen",
+        text: "Eine Einstiegsseite, auf der ein Brillant der i-Punkt ist. In Ruhe dreht er sich langsam und wirft feine Spektralstrahlen; wer ihn antippt und dreht, blättert durch Websites, Apps, Anwendungen, Produkte und Vermittlung, jedes mit einem Beispiel. In vier Sprachen." },
       // Spektralmenü seit 22. November 2026 (Christian: «Ich möchte dass du die seite als referenzseite für webdesign auf ornament.cloud verlinkst»),
       // zuoberst seit demselben Tag («Kannst du die referenz zuoberst platzieren?»)
       { name: "Spektralmenü", von: "Einstiegsseite mit Prisma", jahr: "2026", url: "/references/webdesign/colorpicker/", adresse: "ornament.cloud/references/webdesign/colorpicker", bild: "b/bilder/schau/spektralmenue.jpg",
@@ -212,7 +217,7 @@ export const ANGEBOTE = [
   // geschickten Bildern geschrieben (Bühne, Raum, Landschaft) und knapp gehalten: was genau angeboten wird, zu welchem Preis und für wen, bestätigt Christian.
   // Produkte an zweiter Stelle, nach Webdesign, seit 22. November 2026 (Christian: zuerst «da vor den Fotografien», dann
   // «Nimm die produkte im Angebot an 2. Stelle nach Webdesign»);
-  // auf /start/ und /angebot/ führt «Produkte» zuerst auf die Prints-Seite (references/webdesign/prints/?von=angebot).
+  // auf der Startseite und /angebot/ führt «Produkte» zuerst auf die Prints-Seite (references/webdesign/prints/?von=angebot).
   { slug: "produkte", name: "Produkte", kurz: "Werke, Prints, Editionen und Auftragsarbeiten, klassisch und digital.",
     text: "Werke auf Papier und Leinwand, Prints in kleinen Auflagen, Installationen mit Bild, Bewegung und Ton, Arbeiten für Räume und Bildschirme. Dazu Editionen aus dem Zettelkasten: das Buch, das Kartenset, das Poster und die Notizbücher, gedruckt auf Bestellung. Bestellt wird per Mail, bezahlt per QR-Rechnung oder TWINT; Versand in der Schweiz inbegriffen. Auftragsarbeiten für Häuser, Firmen und Private nach Gespräch.",
     fuer: "Für Sammler:innen, Architekt:innen, Firmen, Gemeinden, Häuser und für alle, die ein Werk oder ein Buch für einen bestimmten Ort suchen.",

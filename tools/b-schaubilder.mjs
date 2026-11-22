@@ -33,6 +33,9 @@ export const SCHAUBILDER = [
   // Spektralmenü als Website-Referenz (22. November 2026): nach der Runde durch die fünf Farben, wenn «Beauftragen» steht
   // Prints als Website-Referenz (22. November 2026): der Druckbogen, wenn alle vier Platten liegen
   { name: "prints", pfad: "references/webdesign/prints/", warten: 3700 },
+  // Brillante Ideen als erste Website-Referenz (22. November 2026, Christian: «präsentiere Brillant zuoberst bei den webdesign referenzen»):
+  // der Schriftzug mit dem Brillanten als i-Punkt, in Ruhe (ohne Auftakt); näher aufgenommen wie Das Dritte Rad
+  { name: "brillant", pfad: "alpha/brillant/?direkt&gl&lang=de", warten: 15000, fenster: [800, 500], faktor: 1.6 },
   { name: "spektralmenue", pfad: "references/webdesign/colorpicker/", warten: 7500 },
   // «Denken» im Atelier (13. November 2026, Christian: Zettelkasten «ins Atelier … in Zusammenhang mit dem Facebook-Hypertext», dann «so bauen»)
   { name: "zettelkasten", pfad: "b/zettel/", warten: 3000 },

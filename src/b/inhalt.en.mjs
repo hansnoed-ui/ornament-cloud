@@ -154,6 +154,9 @@ export const ANGEBOTE = [
     fuer: "For artists, practices, associations, galleries, museums, schools and small businesses that need an address that lasts, or a tool that does not live in an app store.",
     ablauf: ["A conversation about what the site or the app should do, and for whom.", "A draft in the browser, to touch rather than a picture; for apps a working prototype within days.", "Build, texts, images, publication at your own address; afterwards everything stays in your hands."],
     schau: [
+      { name: "Brillante Ideen", von: "entry page with a brilliant", jahr: "2026", url: "/alpha/brillant/?lang=en", adresse: "ornament.cloud/alpha/brillant", bild: "b/bilder/schau/brillant.jpg",
+        bildAlt: "Brillante Ideen: on a night-blue ground the lettering «Brillante Ideen.», the dot on the i is a sparkling diamond sending out fine rays in spectral colours",
+        text: "An entry page where a brilliant-cut diamond is the dot on the i. At rest it turns slowly and casts fine spectral rays; tap it and turn it to leaf through websites, apps, applications, products and mediation, each with an example. In four languages." },
       { name: "Spectral menu", von: "entry page with a prism", jahr: "2026", url: "/references/webdesign/colorpicker/", adresse: "ornament.cloud/references/webdesign/colorpicker", bild: "b/bilder/schau/spektralmenue.jpg",
         bildAlt: "Spectral menu: a white beam strikes a glass prism and fans out into a spectrum, a colour ring around the prism picks the colour, the chosen menu item stands large below",
         text: "An entry page with almost no text: turning the ring around the prism puts another spectral colour on the screen, and with each colour another menu item. The refraction is computed, not drawn." },
