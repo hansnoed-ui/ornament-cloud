@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Prints</title>
+<meta name="robots" content="noindex">
+<meta name="description" content="Einstiegsseite für Prints als Referenz: ein Motiv als Vierfarbenraster auf dem Druckbogen, darunter acht Motive, jedes mit Lupe, Raster und Ansicht an der Wand.">
+<meta name="theme-color" content="#f4f4f1">
+<link rel="stylesheet" href="../../../vendor/fonts/animationen.css">
+<style>
+/* Referenz «Prints» (22. November 2026; Christian: «A find ich super. C würd ich dann für die einzelnen prints nehmen»).
+   Oben ein Druckbogen: das Motiv als Vierfarbenraster (Rasterwinkel C 15°, M 75°, Y 0°, K 45°), die Platten fallen
+   nacheinander ins Register, der Zeiger verschiebt sie leicht (Passer). Darunter die acht Motive als Bögen; beim
+   Darüberfahren werden sie gerastert. Jedes öffnet eine dunkle Ansicht mit drei Arten zu schauen: Lupe, Raster, Wand. */
+:root{
+  --papier:#f4f4f1;
+  --bogen:#fbfbf9;
+  --tinte:#141416;
+  --leise:rgba(20,20,22,.58);
+  --linie:rgba(20,20,22,.16);
+  --magenta:#e6007e;
+  --nacht:#0b0b0c;
+  --hell:#f1efe9;
+  --hell-leise:rgba(241,239,233,.6);
+  --hell-linie:rgba(241,239,233,.2);
+  --wand:#2a2a2c;
+  --sans:"Hanken Grotesk","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --mono:"Geist Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --rand:40px;
+  color-scheme:light;
+}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--papier);color:var(--tinte);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.innen{padding-left:max(var(--rand),env(safe-area-inset-left,0px));padding-right:max(var(--rand),env(safe-area-inset-right,0px))}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--magenta);outline-offset:4px;border-radius:3px}
+.nurleser{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- Bogen oben ---------- */
+.kopf{position:relative;height:100vh;height:100svh;min-height:560px}
+#bogen{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:pointer}
+.marke{position:absolute;left:max(var(--rand),env(safe-area-inset-left,0px));top:calc(30px + env(safe-area-inset-top,0px));font-weight:600;font-size:15px;text-decoration:none}
+.text{position:absolute;right:max(var(--rand),env(safe-area-inset-right,0px));bottom:var(--rand);width:min(380px,calc(100vw - 2 * var(--rand)));display:grid;gap:18px}
+.text h1{margin:0;font-weight:600;font-size:clamp(64px,9vw,150px);line-height:.86;letter-spacing:-.055em}
+.text h1 span{color:var(--magenta)}
+.text p{margin:0;font-size:16px;line-height:1.45;color:var(--leise);max-width:30ch}
+.wege{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center}
+.wege a{font-weight:600;font-size:16px;text-decoration:none;border-bottom:1.5px solid currentColor;padding-bottom:2px}
+.wege a.still{font-weight:400;color:var(--leise);border-bottom-color:var(--linie)}
+.schalter{position:absolute;display:flex;border:1px solid var(--linie);border-radius:999px;padding:3px;background:var(--bogen);transform:translateX(-50%);visibility:hidden}
+.schalter.da{visibility:visible}
+.schalter button,.modi button{appearance:none;border:0;background:none;border-radius:999px;padding:6px 13px;font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;color:var(--leise);cursor:pointer}
+.schalter button[aria-pressed="true"]{background:var(--tinte);color:var(--bogen)}
+
+/* ---------- Acht Motive ---------- */
+.motive{padding-block:120px 140px}
+.motive-kopf{display:flex;justify-content:space-between;align-items:baseline;gap:24px;flex-wrap:wrap;margin-bottom:48px;border-top:1px solid var(--linie);padding-top:18px}
+.motive-kopf h2{margin:0;font-family:var(--mono);font-weight:500;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.motive-kopf span{font-family:var(--mono);font-size:12px;color:var(--leise)}
+.raster-feld{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:56px 40px;align-items:end}
+.blatt{display:grid;gap:12px}
+.blatt button{appearance:none;border:0;padding:9%;background:var(--bogen);cursor:zoom-in;position:relative;display:block;width:100%;
+  box-shadow:0 1px 2px rgba(20,20,30,.08),0 14px 30px -12px rgba(20,20,30,.22);transition:transform .35s cubic-bezier(.2,.7,.2,1),box-shadow .35s}
+.blatt button:hover{transform:translateY(-4px) rotate(-.4deg);box-shadow:0 1px 2px rgba(20,20,30,.08),0 26px 44px -16px rgba(20,20,30,.3)}
+.blatt .flaeche{position:relative;display:block}
+.blatt img{display:block;width:100%;height:auto}
+.blatt canvas{position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity .25s;pointer-events:none}
+.blatt .zahl{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--leise);display:flex;justify-content:space-between}
+.fuss{padding-block:28px 40px;border-top:1px solid var(--linie);display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;font-size:14px;color:var(--leise)}
+.fuss a{text-decoration:none}
+
+/* ---------- Ansicht eines Motivs ---------- */
+.ansicht{position:fixed;inset:0;z-index:10;background:var(--nacht);color:var(--hell);display:grid;grid-template-rows:auto 1fr auto;
+  opacity:0;visibility:hidden;transition:background-color .8s,color .8s,opacity .35s,visibility 0s .35s}
+.ansicht.offen{opacity:1;visibility:visible;transition:background-color .8s,color .8s,opacity .35s}
+.ansicht.wand{background:var(--wand);color:var(--tinte)}
+.ansicht.papier{background:#1a1a1c}
+.a-kopf,.a-fuss{display:flex;justify-content:space-between;align-items:center;gap:16px;padding-block:calc(18px + env(safe-area-inset-top,0px)) 0}
+.a-fuss{padding-block:0 calc(22px + env(safe-area-inset-bottom,0px))}
+.a-zahl{font-family:var(--mono);font-size:12px;letter-spacing:.06em;opacity:.7}
+.rund{appearance:none;width:44px;height:44px;border-radius:50%;border:1px solid currentColor;background:none;cursor:pointer;font-size:18px;line-height:1;opacity:.75;display:grid;place-items:center}
+.rund:hover{opacity:1}
+.a-buehne{position:relative;overflow:hidden;touch-action:none}
+.modi{display:flex;border:1px solid var(--hell-linie);border-radius:999px;padding:3px}
+.ansicht.wand .modi{border-color:var(--linie)}
+.modi button{color:inherit;opacity:.65}
+.modi button[aria-pressed="true"]{opacity:1;background:var(--hell);color:var(--nacht)}
+.ansicht.wand .modi button[aria-pressed="true"]{background:var(--tinte);color:var(--bogen)}
+.a-kopf .rechts{display:flex;gap:20px;align-items:center}
+.a-kopf a{font-weight:600;font-size:15px;text-decoration:none;border-bottom:1.5px solid currentColor;padding-bottom:2px}
+.ebene{position:absolute;inset:0;opacity:0;transition:opacity .5s;pointer-events:none}
+.ebene.an{opacity:1}
+.ansicht.offen .ebene.an{pointer-events:auto}
+/* Lupe */
+.tisch{position:absolute;cursor:none}
+.tisch img{display:block;width:100%;height:100%;filter:brightness(.45) saturate(.75);transition:filter 1s}
+.tisch.wach img{filter:brightness(.55) saturate(.85)}
+.lupe{position:absolute;left:var(--lx);top:var(--ly);width:calc(var(--lr) * 2);height:calc(var(--lr) * 2);margin:calc(var(--lr) * -1) 0 0 calc(var(--lr) * -1);
+  border-radius:50%;pointer-events:none;background-repeat:no-repeat;
+  box-shadow:0 0 0 1px rgba(255,255,255,.55),0 0 0 7px rgba(255,255,255,.05),0 18px 50px rgba(0,0,0,.6),inset 0 0 30px rgba(0,0,0,.35)}
+.lupe::after{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.16),transparent 38%)}
+.schein{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;background:radial-gradient(circle at var(--lx) var(--ly),rgba(255,236,220,.16),transparent calc(var(--lr) * 3))}
+.lupe-mass{position:absolute;left:var(--lx);top:var(--ly);transform:translate(calc(var(--lr) * .74),calc(var(--lr) * .74));font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;opacity:.6;pointer-events:none}
+/* Raster */
+.ebene canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+/* Wand */
+.rahmen{position:absolute;margin:0;box-sizing:border-box;border:10px solid #1c1d20;background:#fbfbf8;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.25),inset 0 2px 6px rgba(0,0,0,.12),0 3px 4px rgba(10,20,30,.22),0 22px 34px -6px rgba(10,20,30,.3),0 60px 90px -30px rgba(10,20,30,.35)}
+.rahmen img{display:block;width:100%;height:100%;object-fit:contain}
+.rahmen::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 32%,rgba(255,255,255,.2) 40%,transparent 54%);mix-blend-mode:screen}
+.licht{position:absolute;left:-15%;top:-20%;width:75%;height:140%;pointer-events:none;mix-blend-mode:soft-light;filter:blur(18px);
+  display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:4%;transform:skewX(-22deg) rotate(-6deg);animation:wandern 60s ease-in-out infinite alternate}
+.licht i{background:rgba(255,250,232,.9)}
+@keyframes wandern{from{translate:-6% 0}to{translate:30% 2%}}
+
+@media (max-width:980px){ .raster-feld{grid-template-columns:repeat(2,minmax(0,1fr));gap:40px 22px} }
+@media (max-width:760px){
+  :root{--rand:20px}
+  .marke{top:calc(22px + env(safe-area-inset-top,0px))}
+  .text{left:max(var(--rand),env(safe-area-inset-left,0px));width:auto;gap:12px;bottom:28px}
+  .text h1{font-size:64px}
+  .text p{font-size:15px}
+  .motive{padding-block:80px 100px}
+  .modi button{padding:6px 10px}
+}
+@media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} .licht{animation:none} .blatt button,.ebene,.ansicht{transition:none} }
+</style>
+</head>
+<body>
+<header class="kopf" id="kopf">
+  <canvas id="bogen" role="img" aria-label="Ein Print im Vierfarbenraster: ein gerasterter Frauenkopf in Schwarz und Weiss vor zwei grossen Kreisen aus feinen Ringen in Pink und Gelb."></canvas>
+  <a class="marke" href="/start/">ornament.cloud</a>
+  <div class="schalter" id="schalter" role="group" aria-label="Darstellung des Motivs">
+    <button type="button" id="s-raster" aria-pressed="true">Raster</button><button type="button" id="s-bild" aria-pressed="false">Bild</button>
+  </div>
+  <section class="text">
+    <h1>Prints<span>.</span></h1>
+    <p>Acht Motive. Format, Papier und Preis auf Anfrage.</p>
+    <div class="wege"><a href="#motive">Alle Prints</a><a class="still" href="mailto:hansnoed@gmail.com?subject=Prints">Anfragen</a></div>
+  </section>
+</header>
+
+<main class="motive innen" id="motive">
+  <div class="motive-kopf"><h2>Acht Motive</h2><span>Antippen für Lupe, Raster und Wand</span></div>
+  <ol class="raster-feld" id="feld"></ol>
+</main>
+<footer class="fuss innen"><a href="/start/">ornament.cloud</a><a href="mailto:hansnoed@gmail.com?subject=Prints">Prints anfragen</a></footer>
+
+<div class="ansicht" id="ansicht" role="dialog" aria-modal="true" aria-labelledby="a-zahl" aria-hidden="true">
+  <div class="a-kopf innen"><span class="a-zahl" id="a-zahl">01 / 08</span><div class="rechts"><a id="a-anfrage" href="mailto:hansnoed@gmail.com?subject=Prints">Anfragen</a><button type="button" class="rund" id="a-zu" aria-label="Schliessen">×</button></div></div>
+  <div class="a-buehne" id="buehne">
+    <div class="ebene an" id="e-lupe">
+      <div class="tisch" id="tisch"><img id="l-bild" alt=""><div class="schein" aria-hidden="true"></div><div class="lupe" id="lupe" aria-hidden="true"></div><span class="lupe-mass" aria-hidden="true">× 2</span></div>
+    </div>
+    <div class="ebene" id="e-raster"><canvas id="r-cv" aria-hidden="true"></canvas></div>
+    <div class="ebene" id="e-wand"><div class="licht" aria-hidden="true"><i></i><i></i><i></i><i></i></div><figure class="rahmen" id="rahmen"><img id="w-bild" alt=""></figure></div>
+  </div>
+  <div class="a-fuss innen">
+    <button type="button" class="rund" id="a-zurueck" aria-label="Vorheriges Motiv">←</button>
+    <div class="modi" role="group" aria-label="Ansicht">
+      <button type="button" data-modus="lupe" aria-pressed="true">Lupe</button><button type="button" data-modus="raster" aria-pressed="false">Raster</button><button type="button" data-modus="wand" aria-pressed="false">Wand</button>
+    </div>
+    <button type="button" class="rund" id="a-vor" aria-label="Nächstes Motiv">→</button>
+  </div>
+</div>
+
+<script>
+(() => {
+"use strict";
+const $ = id => document.getElementById(id);
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const TAU = Math.PI * 2, DEG = Math.PI / 180;
+const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+const ease = t => 1 - Math.pow(1 - clamp(t, 0, 1), 3);
+const BILD = (slug, g) => `/b/bilder/fotografie/print-${slug}-${g}.jpg`;
+// Die acht Motive wie auf «Werke» (src/b/fotos.mjs, Bildbeschreibungen von dort)
+const PRINTS = [
+  ["kueste", "Geometrische Flächen in Orange, Blau und Braun: eine Küste mit Häusern, eine orange Sonne, in der blauen Mitte kleine Segel und ein Gesicht"],
+  ["linien", "Weisse Linien auf Schwarz: ein dichtes Geflecht aus Schraffuren, Spiralen und Bändern, aus dem ein Gesicht im Profil tritt"],
+  ["kopf-blau", "Ein gemalter Kopf mit blauem Gesicht, roten Lippen und zwei verschiedenen Augen vor hellblauem Grund, darüber zwei gelbe Scheiben an einem schwarzen Stab"],
+  ["fragmente", "Vier farbige Formen auf Schwarz, aus Feldern in Pink, Rot, Orange und Blau gefügt, mit feiner Schraffur"],
+  ["gruen", "Eine abstrakte Fläche: oben Grün in Flecken, zur Mitte hin hell, unten Blaugrün, wie ein Garten im Wasser gespiegelt"],
+  ["kopf-pink", "Ein grob gerasterter Frauenkopf in Schwarz und Weiss vor zwei grossen Kreisen aus feinen Ringen in Pink und Gelb"],
+  ["schwarzweiss", "Eine schwarze Form auf Weiss, von weissen Linien geteilt: Augen, ein Fisch, Zähne, Spiralen und Fächer greifen ineinander"],
+  ["raster", "Weiche Farbfelder in Rot, Gelb, Blau und Weiss hinter einem feinen Raster, wie durch geriffeltes Glas gesehen"],
+].map(([slug, alt], i) => ({ slug, alt, nr: String(i + 1).padStart(2, "0") }));
+const KOPF = PRINTS.findIndex(p => p.slug === "kopf-pink");
+
+/* ---------- Druckwerk: Farbtrennung und Rasterplatten ---------- */
+// Druckfarben (Euroskala), Rasterwinkel, Herkunft beim Einfliegen und Gewicht des Passerfehlers
+const PLATTEN = [
+  { k: "y", farbe: "rgb(255,236,0)", winkel: 0, von: [70, -30], passer: [1.0, -.5] },
+  { k: "m", farbe: "rgb(230,0,126)", winkel: 75, von: [-60, 40], passer: [-.8, .7] },
+  { k: "c", farbe: "rgb(0,158,224)", winkel: 15, von: [50, 60], passer: [.6, .9] },
+  { k: "k", farbe: "rgb(28,26,30)", winkel: 45, von: [0, -50], passer: [0, 0] },
+];
+function trennen(img, lang = 260) {
+  const v = img.naturalWidth / img.naturalHeight, nw = v >= 1 ? lang : Math.round(lang * v), nh = v >= 1 ? Math.round(lang / v) : lang;
+  const c = document.createElement("canvas"); c.width = nw; c.height = nh;
+  const x = c.getContext("2d"); x.drawImage(img, 0, 0, nw, nh);
+  const d = x.getImageData(0, 0, nw, nh).data, n = nw * nh, w = { nw, nh, c: new Float32Array(n), m: new Float32Array(n), y: new Float32Array(n), k: new Float32Array(n) };
+  for (let i = 0; i < n; i++) {
+    const r = d[i * 4] / 255, g = d[i * 4 + 1] / 255, b = d[i * 4 + 2] / 255, k = 1 - Math.max(r, g, b), q = 1 - k || 1;
+    w.c[i] = (1 - r - k) / q; w.m[i] = (1 - g - k) / q; w.y[i] = (1 - b - k) / q; w.k[i] = k;
+  }
+  return w;
+}
+function platten(w, B, H, dpr, zelle) {
+  const R = Math.hypot(B, H) * .56, cx = B / 2, cy = H / 2;
+  return PLATTEN.map(p => {
+    const c = document.createElement("canvas"); c.width = Math.max(1, Math.round(B * dpr)); c.height = Math.max(1, Math.round(H * dpr));
+    const x = c.getContext("2d"); x.scale(dpr, dpr); x.fillStyle = p.farbe; x.beginPath();
+    const ca = Math.cos(p.winkel * DEG), sa = Math.sin(p.winkel * DEG), a = w[p.k];
+    for (let v = -R; v <= R; v += zelle) for (let u = -R; u <= R; u += zelle) {
+      const px = cx + u * ca - v * sa, py = cy + u * sa + v * ca;
+      if (px < 0 || py < 0 || px >= B || py >= H) continue;
+      const deck = (a[Math.floor(py / H * w.nh) * w.nw + Math.floor(px / B * w.nw)] - .07) / .93;   // Papierweiss druckt nicht
+      if (deck <= .02) continue;
+      const r = zelle * .5 * Math.sqrt(deck) * 1.28;
+      x.moveTo(px + r, py); x.arc(px, py, r, 0, TAU);
+    }
+    x.fill();
+    return c;
+  });
+}
+// Platten auf den Bogen bringen: nacheinander einfliegen (t in ms seit Beginn), dann mit Passerfehler nach dem Zeiger
+function drucken(ctx, pl, x, y, B, H, t, z, alpha, fehler, takt = 650, flug = 1) {
+  ctx.globalCompositeOperation = "multiply";
+  const f = PLATTEN.map((p, i) => {
+    const e = reduce ? 1 : ease((t - 250 - i * takt) / (takt * 1.55));
+    if (e > 0) {
+      const ox = p.von[0] * (1 - e) * flug + p.passer[0] * z[0] * fehler, oy = p.von[1] * (1 - e) * flug + p.passer[1] * z[1] * fehler;
+      ctx.globalAlpha = e * alpha; ctx.drawImage(pl[i], x + ox, y + oy, B, H);
+    }
+    return e;
+  });
+  ctx.globalCompositeOperation = "source-over"; ctx.globalAlpha = 1;
+  return f;
+}
+let kornMuster = null;
+function korn(ctx) {
+  if (!kornMuster) {
+    const k = document.createElement("canvas"); k.width = k.height = 160; const kx = k.getContext("2d"), id = kx.createImageData(160, 160);
+    for (let i = 0; i < id.data.length; i += 4) { const v = 120 + Math.random() * 135; id.data[i] = id.data[i + 1] = id.data[i + 2] = v; id.data[i + 3] = 14; }
+    kx.putImageData(id, 0, 0); kornMuster = k;
+  }
+  return ctx.createPattern(kornMuster, "repeat");
+}
+function schnittmarken(ctx, x, y, B, H, farbe) {
+  ctx.strokeStyle = farbe; ctx.lineWidth = .8; ctx.beginPath();
+  for (const [cx, cy, sx, sy] of [[x, y, -1, -1], [x + B, y, 1, -1], [x, y + H, -1, 1], [x + B, y + H, 1, 1]]) {
+    ctx.moveTo(cx + sx * 8, cy); ctx.lineTo(cx + sx * 26, cy); ctx.moveTo(cx, cy + sy * 8); ctx.lineTo(cx, cy + sy * 26);
+  }
+  ctx.stroke();
+}
+const laden = src => new Promise((ok, nein) => { const i = new Image(); i.onload = () => ok(i); i.onerror = nein; i.src = src; });
+
+/* ---------- Bogen oben ---------- */
+const cv = $("bogen"), ctx = cv.getContext("2d"), kopfEl = $("kopf"), schalter = $("schalter");
+const B = { W: 0, H: 0, dpr: 1, x: 0, y: 0, S: 0, bild: null, werte: null, pl: [], t0: 0, z: [0, 0], weich: [0, 0], anteil: 0, ziel: 0, sichtbar: true };
+function bogenOrdnen() {
+  B.W = kopfEl.clientWidth; B.H = kopfEl.clientHeight; B.dpr = Math.min(2, devicePixelRatio || 1);
+  cv.width = Math.round(B.W * B.dpr); cv.height = Math.round(B.H * B.dpr);
+  const mobil = B.W < 760;
+  // Bogen = Motiv + 9 % Rand rundum + Farbstreifen (34 px); darunter der Schalter (46 px)
+  if (mobil) { B.S = Math.min((B.W - 40) / 1.18, (B.H - 420) / 1.18); B.x = (B.W - B.S) / 2; B.y = 76 + B.S * .09; }
+  else {
+    const textBreite = 420; B.S = Math.min((B.H - 190) / 1.18, (B.W - textBreite - 220) / 1.18);
+    const T = B.S * 1.18 + 34 + 46;
+    B.x = Math.max(80 + B.S * .09, (B.W - textBreite - B.S) / 2); B.y = Math.max(76, (B.H - T) / 2) + B.S * .09;
+  }
+  schalter.style.left = (B.x + B.S / 2) + "px"; schalter.style.top = (B.y + B.S + B.S * .09 + 34 + 18) + "px";
+  if (B.werte) { B.pl = platten(B.werte, B.S, B.S, B.dpr, Math.max(4.2, B.S / 120)); schalter.classList.add("da"); }
+}
+function passerkreuz(c, x, y, farbe) { c.strokeStyle = farbe; c.lineWidth = 1; c.beginPath(); c.arc(x, y, 7, 0, TAU); c.moveTo(x - 13, y); c.lineTo(x + 13, y); c.moveTo(x, y - 13); c.lineTo(x, y + 13); c.stroke(); }
+function bogenZeichnen(zeit) {
+  const d = B.dpr, { x, y, S } = B;
+  ctx.setTransform(d, 0, 0, d, 0, 0); ctx.globalCompositeOperation = "source-over"; ctx.globalAlpha = 1;
+  ctx.fillStyle = "#f4f4f1"; ctx.fillRect(0, 0, B.W, B.H);
+  if (!B.pl.length) return;
+  const b = S * .09, k = Math.min(30, S / 11.5), kw = k * .74;
+  ctx.save(); ctx.shadowColor = "rgba(30,30,40,.16)"; ctx.shadowBlur = 40; ctx.shadowOffsetY = 18;
+  ctx.fillStyle = "#fbfbf9"; ctx.fillRect(x - b, y - b, S + 2 * b, S + 2 * b + 34); ctx.restore();
+  B.weich[0] += (B.z[0] - B.weich[0]) * .08; B.weich[1] += (B.z[1] - B.weich[1]) * .08;
+  B.anteil += (B.ziel - B.anteil) * (reduce ? 1 : .1);
+  const t = zeit - B.t0, fehler = reduce ? 0 : 7;
+  const f = drucken(ctx, B.pl, x, y, S, S, t, B.weich, 1 - B.anteil * .95, fehler);
+  // Passerkreuze und Farbfelder druckt jede Platte mit
+  ctx.globalCompositeOperation = "multiply";
+  PLATTEN.forEach((p, i) => {
+    if (f[i] <= 0) return;
+    const e = f[i], ox = p.von[0] * (1 - e) * .6 + p.passer[0] * B.weich[0] * fehler * .6, oy = p.von[1] * (1 - e) * .6 + p.passer[1] * B.weich[1] * fehler * .6;
+    ctx.globalAlpha = e;
+    for (const [px, py] of [[x + S / 2, y - b / 2], [x - b / 2, y + S / 2], [x + S + b / 2, y + S / 2]]) passerkreuz(ctx, px + ox, py + oy, p.farbe);
+    const fx = x + i * k, fy = y + S + b + 6;
+    ctx.fillStyle = p.farbe; ctx.fillRect(fx + ox, fy + oy, kw, 14);
+    ctx.globalAlpha = e * .5; ctx.fillRect(fx + 4 * k + ox, fy + oy, kw, 14);
+  });
+  if (f[3] > 0) [[1, 0], [2, 0], [2, 1]].forEach(([a, c], j) => {
+    const fx = x + (8 + j) * k + k * .3, fy = y + S + b + 6;
+    ctx.globalAlpha = f[3]; ctx.fillStyle = PLATTEN[a].farbe; ctx.fillRect(fx, fy, kw, 14); ctx.fillStyle = PLATTEN[c].farbe; ctx.fillRect(fx, fy, kw, 14);
+  });
+  ctx.globalCompositeOperation = "source-over"; ctx.globalAlpha = 1;
+  if (B.anteil > .01) { ctx.globalAlpha = B.anteil; ctx.drawImage(B.bild, x, y, S, S); ctx.globalAlpha = 1; }
+  schnittmarken(ctx, x, y, S, S, "rgba(20,20,22,.55)");
+  ctx.fillStyle = korn(ctx); ctx.globalCompositeOperation = "multiply"; ctx.fillRect(x - b, y - b, S + 2 * b, S + 2 * b + 34);
+  ctx.globalCompositeOperation = "source-over";
+}
+function darstellung(bild) {
+  B.ziel = bild ? 1 : 0;
+  $("s-raster").setAttribute("aria-pressed", String(!bild)); $("s-bild").setAttribute("aria-pressed", String(bild));
+}
+$("s-raster").addEventListener("click", () => darstellung(false));
+$("s-bild").addEventListener("click", () => darstellung(true));
+cv.addEventListener("click", () => darstellung(!B.ziel));
+kopfEl.addEventListener("pointermove", e => { B.z = [clamp((e.clientX / B.W - .5) * 2, -1, 1), clamp((e.clientY / B.H - .5) * 2, -1, 1)]; });
+kopfEl.addEventListener("pointerleave", () => { B.z = [0, 0]; });
+new IntersectionObserver(es => { B.sichtbar = es[0].isIntersecting; }).observe(kopfEl);
+laden(BILD("kopf-pink", 1600)).then(img => { B.bild = img; B.werte = trennen(img); bogenOrdnen(); B.t0 = 0; }).catch(() => {});
+
+/* ---------- Acht Motive ---------- */
+const feld = $("feld"), aktive = new Set();
+PRINTS.forEach((p, i) => {
+  const li = document.createElement("li"); li.className = "blatt"; li.id = "print-" + p.slug;
+  li.innerHTML = `<button type="button" aria-label="Motiv ${p.nr} ansehen: ${p.alt}"><span class="flaeche"><img src="${BILD(p.slug, 800)}" alt="" loading="lazy"><canvas aria-hidden="true"></canvas></span></button><span class="zahl"><span>${p.nr}</span><span>Print</span></span>`;
+  const knopf = li.querySelector("button"), img = li.querySelector("img"), c = li.querySelector("canvas");
+  p.kachel = { knopf, img, c, pl: null, t0: 0, an: false, alpha: 0, z: [0, 0], weich: [0, 0] };
+  // Beim Darüberfahren: das Motiv wird zum Vierfarbenraster
+  knopf.addEventListener("pointerenter", e => {
+    if (e.pointerType !== "mouse" || !img.complete || !img.naturalWidth) return;
+    const k = p.kachel, r = img.getBoundingClientRect(), dpr = Math.min(2, devicePixelRatio || 1);
+    if (!k.pl || k.b !== Math.round(r.width)) {
+      k.b = Math.round(r.width); k.h = Math.round(r.height);
+      if (!k.w) k.w = trennen(img, 180);
+      k.pl = platten(k.w, k.b, k.h, dpr, Math.max(3.2, k.b / 70));
+      c.width = Math.round(k.b * dpr); c.height = Math.round(k.h * dpr); k.dpr = dpr;
+    }
+    k.an = true; k.t0 = performance.now(); aktive.add(k); c.style.opacity = 1; los();
+  });
+  knopf.addEventListener("pointermove", e => { const r = img.getBoundingClientRect(); p.kachel.z = [clamp(((e.clientX - r.left) / r.width - .5) * 2, -1, 1), clamp(((e.clientY - r.top) / r.height - .5) * 2, -1, 1)]; });
+  knopf.addEventListener("pointerleave", () => { p.kachel.an = false; c.style.opacity = 0; });
+  knopf.addEventListener("click", () => oeffnen(i));
+  feld.append(li);
+});
+function kachelnZeichnen(zeit) {
+  for (const k of aktive) {
+    if (!k.an && k.c.style.opacity === "0" && zeit - k.t0 > 400) { aktive.delete(k); continue; }
+    const x = k.c.getContext("2d");
+    x.setTransform(k.dpr, 0, 0, k.dpr, 0, 0); x.globalCompositeOperation = "source-over"; x.globalAlpha = 1;
+    x.fillStyle = "#fbfbf9"; x.fillRect(0, 0, k.b, k.h);
+    k.weich[0] += (k.z[0] - k.weich[0]) * .12; k.weich[1] += (k.z[1] - k.weich[1]) * .12;
+    drucken(x, k.pl, 0, 0, k.b, k.h, (zeit - k.t0) * 2.2, k.weich, 1, reduce ? 0 : 5, 650, .35);
+  }
+}
+
+/* ---------- Ansicht eines Motivs ---------- */
+const ansicht = $("ansicht"), buehne = $("buehne"), tisch = $("tisch"), lupe = $("lupe"), lBild = $("l-bild"), wBild = $("w-bild"), rahmen = $("rahmen"), rCv = $("r-cv");
+const A = { i: -1, modus: "lupe", bild: null, rect: null, lx: .5, ly: .45, zx: .5, zy: .45, r: 120, folgt: false, ruhe: 0, w: null, pl: null, t0: 0, z: [0, 0], weich: [0, 0], vorher: null };
+const ZOOM = 2;
+async function oeffnen(i, ohneVerlauf) {
+  A.vorher = A.vorher || document.activeElement;
+  A.i = (i + PRINTS.length) % PRINTS.length;
+  const p = PRINTS[A.i];
+  $("a-zahl").textContent = `${p.nr} / ${String(PRINTS.length).padStart(2, "0")}`;
+  $("a-anfrage").href = `mailto:hansnoed@gmail.com?subject=${encodeURIComponent("Prints – Motiv " + p.nr)}`;
+  lBild.alt = p.alt; wBild.alt = p.alt;
+  if (!ansicht.classList.contains("offen")) {
+    ansicht.classList.add("offen"); ansicht.setAttribute("aria-hidden", "false"); document.body.style.overflow = "hidden";
+    setTimeout(() => $("a-zu").focus(), 50);
+  }
+  if (!ohneVerlauf) history.replaceState(null, "", "#print-" + p.slug);
+  try { A.bild = await laden(BILD(p.slug, 1600)); } catch (e) { return; }
+  if (PRINTS[A.i] !== p) return;
+  lBild.src = A.bild.src; wBild.src = A.bild.src; lupe.style.backgroundImage = `url("${A.bild.src}")`;
+  A.w = null; A.pl = null;
+  wandfarbe(A.bild);
+  ordnen(); modus(A.modus, true);
+}
+function schliessen() {
+  ansicht.classList.remove("offen"); ansicht.setAttribute("aria-hidden", "true"); document.body.style.overflow = "";
+  history.replaceState(null, "", location.pathname + location.search);
+  const p = PRINTS[A.i]; (p && p.kachel.knopf || A.vorher)?.focus({ preventScroll: true }); A.vorher = null;
+}
+// Die Wand nimmt den Grundton des Motivs auf (Mittel der Randpixel, etwas gedämpft)
+function wandfarbe(img) {
+  const c = document.createElement("canvas"), n = 40; c.width = c.height = n; const x = c.getContext("2d"); x.drawImage(img, 0, 0, n, n);
+  const d = x.getImageData(0, 0, n, n).data; let r = 0, g = 0, b = 0, z = 0;
+  for (let i = 0; i < n; i++) for (const [px, py] of [[i, 0], [i, n - 1], [0, i], [n - 1, i]]) { const k = (py * n + px) * 4; r += d[k]; g += d[k + 1]; b += d[k + 2]; z++; }
+  r /= z; g /= z; b /= z;
+  const hell = (.2126 * r + .7152 * g + .0722 * b) / 255;
+  // Zu dunkle oder zu helle Ränder: ein ruhiges Grau aus derselben Richtung
+  const f = hell < .25 ? .25 / Math.max(hell, .02) * .6 + .4 : hell > .9 ? .86 : .93;
+  const m = v => Math.round(clamp(v * f, 40, 236));
+  ansicht.style.setProperty("--wand", `rgb(${m(r)},${m(g)},${m(b)})`);
+  A.wandHell = (.2126 * m(r) + .7152 * m(g) + .0722 * m(b)) / 255;
+}
+function ordnen() {
+  if (!A.bild) return;
+  const W = buehne.clientWidth, H = buehne.clientHeight, v = A.bild.naturalWidth / A.bild.naturalHeight, mobil = innerWidth < 760;
+  let h = H - (mobil ? 24 : 48), b = h * v;
+  if (b > W - (mobil ? 32 : 160)) { b = W - (mobil ? 32 : 160); h = b / v; }
+  A.rect = { x: (W - b) / 2, y: (H - h) / 2, b, h };
+  Object.assign(tisch.style, { left: A.rect.x + "px", top: A.rect.y + "px", width: b + "px", height: h + "px" });
+  A.r = mobil ? Math.min(84, b * .26) : Math.min(150, b * .22);
+  tisch.style.setProperty("--lr", A.r + "px");
+  lupe.style.backgroundSize = `${b * ZOOM}px ${h * ZOOM}px`;
+  // Wand: kleiner, mit Passepartout
+  const rb = b * .62, rh = h * .62, pad = Math.min(rb, rh) * .16 + 10;
+  Object.assign(rahmen.style, { width: rb + pad * 2 + "px", height: rh + pad * 2 + "px", padding: pad + "px", left: (W - rb - pad * 2) / 2 + "px", top: (H - rh - pad * 2) / 2 - H * .03 + "px" });
+  const dpr = Math.min(2, devicePixelRatio || 1); rCv.width = Math.round(W * dpr); rCv.height = Math.round(H * dpr); A.dpr = dpr; A.W = W; A.H = H;
+  A.pl = null;
+}
+function modus(m, still) {
+  A.modus = m;
+  document.querySelectorAll(".modi button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.modus === m)));
+  for (const [n, el] of [["lupe", "e-lupe"], ["raster", "e-raster"], ["wand", "e-wand"]]) $(el).classList.toggle("an", n === m);
+  ansicht.classList.toggle("wand", m === "wand" && A.wandHell > .45);
+  ansicht.classList.toggle("papier", m === "raster");
+  if (m === "wand" && A.wandHell <= .45) ansicht.style.background = "var(--wand)"; else ansicht.style.background = "";
+  if (m === "raster") {
+    if (!A.pl && A.bild) {
+      // Raster auf einem Bogen: Motiv auf 86 % der Fläche, damit der Papierrand Platz hat
+      const r = A.rect, s = .86, b = r.b * s, h = r.h * s;
+      A.prect = { x: (A.W - b) / 2, y: (A.H - h) / 2, b, h };
+      if (!A.w) A.w = trennen(A.bild);
+      A.pl = platten(A.w, b, h, A.dpr, Math.max(4, Math.min(b, h) / 95));
+    }
+    A.t0 = performance.now();
+  }
+  los();
+}
+document.querySelectorAll(".modi button").forEach(b => b.addEventListener("click", () => modus(b.dataset.modus)));
+$("a-zu").addEventListener("click", schliessen);
+$("a-vor").addEventListener("click", () => oeffnen(A.i + 1));
+$("a-zurueck").addEventListener("click", () => oeffnen(A.i - 1));
+document.addEventListener("keydown", e => {
+  if (!ansicht.classList.contains("offen")) return;
+  if (e.key === "Escape") schliessen();
+  else if (e.key === "ArrowRight") oeffnen(A.i + 1);
+  else if (e.key === "ArrowLeft") oeffnen(A.i - 1);
+  else if (e.key === "Tab") {   // Fokus bleibt in der Ansicht
+    const f = [...ansicht.querySelectorAll("button,a")]; const i = f.indexOf(document.activeElement);
+    if (e.shiftKey && i <= 0) { e.preventDefault(); f[f.length - 1].focus(); } else if (!e.shiftKey && i === f.length - 1) { e.preventDefault(); f[0].focus(); }
+  }
+});
+// Lupe: folgt Maus oder Finger, sonst wandert sie von selbst
+function lupenZiel(e) { const r = tisch.getBoundingClientRect(); A.zx = clamp((e.clientX - r.left) / r.width, 0, 1); A.zy = clamp((e.clientY - r.top) / r.height, 0, 1); }
+tisch.addEventListener("pointerenter", e => { A.folgt = true; tisch.classList.add("wach"); lupenZiel(e); });
+tisch.addEventListener("pointermove", e => { A.folgt = true; lupenZiel(e); });
+tisch.addEventListener("pointerdown", e => { tisch.setPointerCapture(e.pointerId); A.folgt = true; lupenZiel(e); });
+const lupeLos = () => { A.folgt = false; A.ruhe = performance.now() + 2500; tisch.classList.remove("wach"); };
+tisch.addEventListener("pointerleave", lupeLos); tisch.addEventListener("pointerup", e => { if (e.pointerType !== "mouse") lupeLos(); });
+buehne.addEventListener("pointermove", e => { const r = buehne.getBoundingClientRect(); A.z = [clamp(((e.clientX - r.left) / r.width - .5) * 2, -1, 1), clamp(((e.clientY - r.top) / r.height - .5) * 2, -1, 1)]; });
+// Wischen wechselt das Motiv (nicht in der Lupe, dort führt der Finger die Lupe)
+let wisch = null;
+buehne.addEventListener("pointerdown", e => { if (A.modus !== "lupe") wisch = [e.clientX, e.clientY]; });
+buehne.addEventListener("pointerup", e => {
+  if (!wisch) return; const dx = e.clientX - wisch[0], dy = e.clientY - wisch[1]; wisch = null;
+  if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) oeffnen(A.i + (dx < 0 ? 1 : -1));
+  else if (A.modus === "raster" && Math.abs(dx) < 8 && Math.abs(dy) < 8) A.t0 = performance.now();   // Antippen druckt neu
+});
+function ansichtZeichnen(zeit) {
+  if (!A.rect) return;
+  if (A.modus === "lupe") {
+    if (!A.folgt && !reduce && performance.now() > A.ruhe) {
+      const t = zeit / 1000;
+      A.zx = .5 + .34 * Math.sin(t * .23) + .06 * Math.sin(t * .71); A.zy = .5 + .34 * Math.sin(t * .17 + 1.3) + .05 * Math.cos(t * .53);
+    }
+    A.lx += (A.zx - A.lx) * (A.folgt ? .22 : .04); A.ly += (A.zy - A.ly) * (A.folgt ? .22 : .04);
+    const px = A.lx * A.rect.b, py = A.ly * A.rect.h;
+    tisch.style.setProperty("--lx", px + "px"); tisch.style.setProperty("--ly", py + "px");
+    lupe.style.backgroundPosition = `${-(px * ZOOM - A.r)}px ${-(py * ZOOM - A.r)}px`;
+  } else if (A.modus === "raster" && A.pl) {
+    const x = rCv.getContext("2d"), r = A.prect, m = Math.min(r.b, r.h) * .07;
+    x.setTransform(A.dpr, 0, 0, A.dpr, 0, 0); x.globalCompositeOperation = "source-over"; x.globalAlpha = 1;
+    x.clearRect(0, 0, A.W, A.H);
+    x.save(); x.shadowColor = "rgba(0,0,0,.45)"; x.shadowBlur = 50; x.shadowOffsetY = 20; x.fillStyle = "#fbfbf9"; x.fillRect(r.x - m, r.y - m, r.b + 2 * m, r.h + 2 * m); x.restore();
+    A.weich[0] += (A.z[0] - A.weich[0]) * .08; A.weich[1] += (A.z[1] - A.weich[1]) * .08;
+    drucken(x, A.pl, r.x, r.y, r.b, r.h, zeit - A.t0, A.weich, 1, reduce ? 0 : 8, 420, .8);
+    schnittmarken(x, r.x, r.y, r.b, r.h, "rgba(20,20,22,.5)");
+    x.fillStyle = korn(x); x.globalCompositeOperation = "multiply"; x.fillRect(r.x - m, r.y - m, r.b + 2 * m, r.h + 2 * m); x.globalCompositeOperation = "source-over";
+  }
+}
+
+/* ---------- Eine Schleife für alles ---------- */
+let laeuft = false;
+function los() { if (!laeuft) { laeuft = true; requestAnimationFrame(schleife); } }
+function schleife(zeit) {
+  if (!B.t0 && B.pl.length) B.t0 = zeit;
+  const offen = ansicht.classList.contains("offen");
+  if (B.sichtbar && !offen) bogenZeichnen(zeit);
+  if (aktive.size) kachelnZeichnen(zeit);
+  if (offen) ansichtZeichnen(zeit);
+  requestAnimationFrame(schleife);
+}
+los();
+
+let rs = 0; addEventListener("resize", () => { clearTimeout(rs); rs = setTimeout(() => { bogenOrdnen(); if (ansicht.classList.contains("offen")) { ordnen(); modus(A.modus, true); } }, 120); });
+bogenOrdnen();
+// Direkter Link auf ein Motiv: #print-<name>
+const start = PRINTS.findIndex(p => "#print-" + p.slug === location.hash);
+if (start >= 0) oeffnen(start, true);
+})();
+</script>
+</body>
+</html>
