@@ -125,7 +125,7 @@ const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
 const sm = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
 const wickel = a => { a %= TAU; if (a > Math.PI) a -= TAU; if (a < -Math.PI) a += TAU; return a; };
 
-/* ---------- Farbe: Wellenlänge -> CIE 1931 -> Rand des sRGB-Raums ---------- */
+/* ---------- Farbe: Wellenlänge -> Farbton (gestaltete Skala); Helligkeit nach CIE 1931 ---------- */
 function g(x, m, s1, s2) { const t = (x - m) / (x < m ? s1 : s2); return Math.exp(-.5 * t * t); }
 function cmf(l) {   // Näherung nach Wyman, Sloan, Shirley 2013
   return [
@@ -147,7 +147,16 @@ const RING = [];
 for (let i = 0; i < 1440; i++) { const lab = oklab(hsv(i / 4, 1, 1).map(toLin)); RING.push({ H: i / 4, h: Math.atan2(lab[2], lab[1]) }); }
 function ringFuer(h) { let best = RING[0], bd = 9; for (const r of RING) { let d = Math.abs(r.h - h); if (d > Math.PI) d = TAU - d; if (d < bd) { bd = d; best = r; } } return best.H; }
 const TAB = [];
-for (let l = 370; l <= 740; l++) { const lab = oklab(xyz2lin(cmf(l))); TAB.push(hsv(ringFuer(Math.atan2(lab[2], lab[1])), 1, 1)); }
+// Gestaltete Spektralskala (22. November 2026): Die Rechnung über CIE 1931 gab zwischen 490 und 540 nm nur Türkis, Grün fast nur
+// bei 550 nm und für Rot ein Pink. Christian: «andere (wie grün, dunkelblau, orange) werden gar nicht erst animiert». Darum Farbtöne
+// an festen Wellenlängen, dazwischen gleichmässig: Violett, Dunkelblau, Blau, Türkis, Grün, Gelbgrün, Gelb, Orange, Rot.
+const SKALA = [[380, 278], [410, 270], [440, 245], [465, 222], [485, 200], [497, 182], [506, 160], [518, 135], [538, 118], [556, 96], [568, 72], [580, 54], [592, 38], [606, 26], [622, 12], [645, 2], [740, 0]];
+function tonAus(l) {
+  if (l <= SKALA[0][0]) return SKALA[0][1];
+  for (let i = 1; i < SKALA.length; i++) if (l <= SKALA[i][0]) { const [l0, h0] = SKALA[i - 1], [l1, h1] = SKALA[i]; return h0 + (h1 - h0) * (l - l0) / (l1 - l0); }
+  return 0;
+}
+for (let l = 370; l <= 740; l++) TAB.push(hsv(tonAus(l), 1, 1));
 const farbe = l => TAB[clamp(Math.round(l), 370, 740) - 370];
 const HUELLE = l => Math.pow(clamp(cmf(l)[1], 0, 1), .3) * sm(388, 420, l) * (1 - sm(670, 706, l));
 const rgba = (c, a) => `rgba(${Math.round(clamp(c[0], 0, 1) * 255)},${Math.round(clamp(c[1], 0, 1) * 255)},${Math.round(clamp(c[2], 0, 1) * 255)},${clamp(a, 0, 1).toFixed(4)})`;
@@ -286,11 +295,14 @@ const cv = $("buehne"), ctx = cv.getContext("2d");
 const strahlCv = document.createElement("canvas"), sx = strahlCv.getContext("2d");
 const BAND_TEILER = 3, bandCv = document.createElement("canvas"); bandCv.x = bandCv.getContext("2d");
 const bloom = [2, 4, 8, 16, 32].map(f => { const c = document.createElement("canvas"); return Object.assign(c, { f, x: c.getContext("2d") }); });
-const N_L = 72, LAM = Array.from({ length: N_L }, (_, i) => 392 + 310 * i / (N_L - 1));
+const N_L = 72, LAM = Array.from({ length: N_L }, (_, i) => 402 + 300 * i / (N_L - 1));
 // Weissabgleich: die Farben aller Wellenlängen ergeben zusammen genau Weiss; KERN_MAX hält jede einzelne unter 1, damit nichts abgeschnitten wird
 const KERN = (() => { const S = [0, 0, 0]; LAM.forEach(l => farbe(l).forEach((v, k) => S[k] += v * HUELLE(l))); return LAM.map(l => farbe(l).map((v, k) => v * HUELLE(l) * N_L / S[k])); })();
 const KERN_MAX = Math.max(...KERN.flat()), KERN_N = KERN.map(c => c.map(v => v / KERN_MAX));
-const BAND = LAM.map(l => farbe(l).map(v => v * HUELLE(l)));
+// Bandfarben dezenter (22. November 2026): etwas entsättigt, und Blau, Violett und Rot nicht ganz so dunkel wie das Auge sie sähe,
+// damit alle Töne von Violett über Blau, Grün und Orange bis Rot auf dem Schirm erscheinen
+const BAND = LAM.map(l => { const c = farbe(l), y = .2126 * c[0] + .7152 * c[1] + .0722 * c[2], e = .32 + .68 * Math.pow(HUELLE(l), .8);
+  return c.map(v => (v * .74 + y * .26) * e); });
 const sicht = I => Math.pow(I, .55);
 let baeume = [], raender = [], fein = [], enden = [];
 function rechnen() {
@@ -312,7 +324,7 @@ function zeichneStrahlen(rev) {
     for (const [id, sa] of T) {
       if (sa.s0 >= rev) continue;
       const sb = B.get(id); if (!sb) continue;
-      const I = (sa.I + sb.I) / 2, a = Math.pow(I, .85) * .36 * 2 * KERN_MAX / N_L * (sa.innen ? .7 : 1); if (a < .003) continue;
+      const I = (sa.I + sb.I) / 2, a = Math.pow(I, .85) * .19 * 2 * KERN_MAX / N_L * (sa.innen ? .7 : 1); if (a < .003) continue;
       const ea = kurz(sa), eb = kurz(sb);
       sx.fillStyle = rgba(KERN_N[i], a);
       sx.beginPath(); sx.moveTo(sa.a[0], sa.a[1]); sx.lineTo(ea[0], ea[1]); sx.lineTo(eb[0], eb[1]); sx.lineTo(sb.a[0], sb.a[1]); sx.closePath(); sx.fill();
@@ -322,24 +334,25 @@ function zeichneStrahlen(rev) {
   // vergrössert gehen die Farben weich ineinander über (22. November 2026: «viel breiter und schöner überblenden»)
   const bx = bandCv.x, f = 1 / BAND_TEILER;
   bx.setTransform(1, 0, 0, 1, 0, 0); bx.globalCompositeOperation = "source-over"; bx.clearRect(0, 0, bandCv.width, bandCv.height);
-  bx.setTransform(f, 0, 0, f, 0, 0); bx.globalCompositeOperation = "lighter";
+  // Die Bänder liegen nebeneinander und decken sich (nicht additiv): so mischen sich Grün und Rot nicht zu Gelb, Blau und Grün nicht zu Hellblau
+  bx.setTransform(f, 0, 0, f, 0, 0); bx.globalCompositeOperation = "source-over";
   for (let i = 0; i < N_L - 1; i++) {
     const A = baeume[i], B = baeume[i + 1];
     for (const sa of A.seg) {
       if (sa.s0 >= rev) continue;
       const sb = B.m.get(sa.id); if (!sb) continue;
-      const a = sicht((sa.I + sb.I) / 2) * (sa.innen ? .3 : .7); if (a < .01) continue;
+      const a = sicht((sa.I + sb.I) / 2) * (sa.innen ? .35 : 1); if (a < .01) continue;
       const ea = kurz(sa), eb = kurz(sb);
       // etwas über die Nachbarn hinaus, damit die Farbe in der kleinen Ebene breiter ausläuft
-      const ma = [(sa.a[0] + sb.a[0]) / 2, (sa.a[1] + sb.a[1]) / 2], me = [(ea[0] + eb[0]) / 2, (ea[1] + eb[1]) / 2], g = 1.6;
+      const ma = [(sa.a[0] + sb.a[0]) / 2, (sa.a[1] + sb.a[1]) / 2], me = [(ea[0] + eb[0]) / 2, (ea[1] + eb[1]) / 2], g = 1.12;
       const w = (p, m) => [m[0] + (p[0] - m[0]) * g, m[1] + (p[1] - m[1]) * g];
       const [p1, p2, p3, p4] = [w(sa.a, ma), w(ea, me), w(eb, me), w(sb.a, ma)];
-      bx.fillStyle = rgba(BAND[i], a / g);
+      bx.fillStyle = rgba(BAND[i], a);
       bx.beginPath(); bx.moveTo(p1[0], p1[1]); bx.lineTo(p2[0], p2[1]); bx.lineTo(p3[0], p3[1]); bx.lineTo(p4[0], p4[1]); bx.closePath(); bx.fill();
     }
   }
   sx.setTransform(1, 0, 0, 1, 0, 0); sx.imageSmoothingEnabled = true; sx.imageSmoothingQuality = "high";
-  sx.drawImage(bandCv, 0, 0, strahlCv.width, strahlCv.height);
+  sx.globalAlpha = .74; sx.drawImage(bandCv, 0, 0, strahlCv.width, strahlCv.height); sx.globalAlpha = 1;
   sx.setTransform(d, 0, 0, d, 0, 0);
   sx.lineCap = "round"; sx.lineWidth = 1.2;   // Kernlinien: zusammen ergeben sie Weiss
   for (let i = 0; i < N_L; i++) for (const s of baeume[i].seg) {
@@ -540,8 +553,8 @@ function rasten(k) { stopTour(); const z = PUNKTE[((k % NP) + NP) % NP].phi; st.
 // Rastung beim Drehen (22. November 2026, «Die Bedienung des Kreises sollte wenig nervös funktionieren»): nahe einem Menüpunkt
 // bleibt die Trommel hängen und gibt erst nach, wenn man weiterdreht; dazwischen folgt sie dem Finger gedämpft.
 function gerastet(roh) {
-  const k = naechster(roh), d = wickel(roh - PUNKTE[k].phi), halt = 1 - sm(0, 24 * DEG, Math.abs(d));
-  return roh - d * .78 * halt;
+  const k = naechster(roh), d = wickel(roh - PUNKTE[k].phi), halt = 1 - sm(0, 27 * DEG, Math.abs(d));
+  return roh - d * .86 * halt;
 }
 const schritt = r => rasten(naechster(st.phiZiel ?? st.phi) + r);
 cv.addEventListener("pointerdown", e => {
@@ -553,7 +566,7 @@ cv.addEventListener("pointerdown", e => {
 cv.addEventListener("pointermove", e => {
   if (!zug || zug.typ !== "dreh") return;
   const a = winkel(e.clientX, e.clientY), da = wickel(a - zug.a);
-  zug.roh += da; zug.a = a; zug.weg += Math.abs(da); st.dirty = true;
+  zug.roh += da * .55; zug.a = a;   // Untersetzung: der Ring dreht halb so schnell wie der Finger zug.weg += Math.abs(da); st.dirty = true;
 });
 const loslassen = e => {
   if (!zug) return;
@@ -615,10 +628,10 @@ function schleife(zeit) {
     const T = st.tour, t = (zeit - st.t0 - 1500) / 3200;
     if (t > 0) { const f = clamp(t, 0, 1), e = f < .5 ? 4 * f * f * f : 1 - (-2 * f + 2) ** 3 / 2; st.phi = T.von + (T.nach - T.von) * e; st.dirty = true; if (f >= 1) { st.phi = PUNKTE[start].phi; st.tour = null; } }
   }
-  if (zug && zug.typ === "dreh") { const z = gerastet(zug.roh), d = z - st.phi; if (Math.abs(d) > 1e-4) { st.phi += reduce ? d : d * .16; st.dirty = true; } }
-  else if (st.phiZiel != null) { const d = st.phiZiel - st.phi; st.phi += d * .09; if (Math.abs(d) < 1e-3) { st.phi = st.phiZiel; st.phiZiel = null; } st.dirty = true; }
+  if (zug && zug.typ === "dreh") { const z = gerastet(zug.roh), d = z - st.phi; if (Math.abs(d) > 1e-4) { st.phi += reduce ? d : d * .085; st.dirty = true; } }
+  else if (st.phiZiel != null) { const d = st.phiZiel - st.phi; st.phi += d * .055; if (Math.abs(d) < 1e-3) { st.phi = st.phiZiel; st.phiZiel = null; } st.dirty = true; }
   const thZiel = thetaAus(st.phi), dth = thZiel - st.theta;
-  if (Math.abs(dth) > 1e-6) { st.theta += reduce ? dth : dth * .2; st.dirty = true; }
+  if (Math.abs(dth) > 1e-6) { st.theta += reduce ? dth : dth * .12; st.dirty = true; }
   if (st.dirty) { st.dirty = false; rechnen(); zeichneStrahlen(st.revealt); zeigen(); }
   komponieren(zeit);
   requestAnimationFrame(schleife);
