@@ -541,6 +541,16 @@
    "status": "direktlink",
    "adresse": "b/werkstatt/",
    "kurz": "Produkte aus dem Bestand für Print on Demand."
+  },
+  {
+   "id": "spektralmenue",
+   "name": "Spektralmenü (Prisma-Farbwähler)",
+   "tuer": "atelier",
+   "art": "Referenz Webdesign",
+   "status": "direktlink",
+   "adresse": "references/webdesign/colorpicker/",
+   "kurz": "Einstiegsseite als Referenz: Die Drehung eines Glasprismas wählt eine Spektralfarbe und mit ihr einen von fünf Menüpunkten.",
+   "wartet": "Ansehen; entscheiden, ob und wo das Spektralmenü eingesetzt wird, und welche fünf Punkte es trägt."
   }
  ]
 }
