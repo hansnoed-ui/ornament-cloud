@@ -208,6 +208,20 @@ export const ANGEBOTE = [
       { frage: "Was gibt es schon?", wahlen: ["nichts", "eine alte Seite", "Texte und Bilder", "ein Logo und Farben"] },
       { frage: "Wie gross?", wahlen: ["eine Seite oder ein Werkzeug", "fünf bis zehn Seiten", "mit Shop oder Datenbank", "offen"] },
     ] },
+  // Fünfte Leistung seit 13. November 2026 (Christian: «Nimm noch etwas zum Thema Fotographie: Angebote/Werke»). Der Text ist von Claude nach den
+  // geschickten Bildern geschrieben (Bühne, Raum, Landschaft) und knapp gehalten: was genau angeboten wird, zu welchem Preis und für wen, bestätigt Christian.
+  // Produkte an zweiter Stelle, nach Webdesign, seit 22. November 2026 (Christian: zuerst «da vor den Fotografien», dann
+  // «Nimm die produkte im Angebot an 2. Stelle nach Webdesign»);
+  // auf /start/ und /angebot/ führt «Produkte» zuerst auf die Prints-Seite (references/webdesign/prints/?von=angebot).
+  { slug: "produkte", name: "Produkte", kurz: "Werke, Prints, Editionen und Auftragsarbeiten, klassisch und digital.",
+    text: "Werke auf Papier und Leinwand, Prints in kleinen Auflagen, Installationen mit Bild, Bewegung und Ton, Arbeiten für Räume und Bildschirme. Dazu Editionen aus dem Zettelkasten: das Buch, das Kartenset, das Poster und die Notizbücher, gedruckt auf Bestellung. Bestellt wird per Mail, bezahlt per QR-Rechnung oder TWINT; Versand in der Schweiz inbegriffen. Auftragsarbeiten für Häuser, Firmen und Private nach Gespräch.",
+    fuer: "Für Sammler:innen, Architekt:innen, Firmen, Gemeinden, Häuser und für alle, die ein Werk oder ein Buch für einen bestimmten Ort suchen.",
+    ablauf: ["Aussuchen auf der Seite «Werke» oder ein Gespräch über den Ort und das, was er braucht.", "Bestellung per Mail, Bestätigung mit Rechnung; bei Auftragsarbeiten ein Entwurf als Skizze oder bewegte Vorschau.", "Versand versichert, oder Werk, Montage und Übergabe mit Zertifikat."],
+    dialog: [
+      { frage: "Was?", wahlen: ["ein Print oder Original", "ein Buch, Karten, ein Poster", "eine Auftragsarbeit", "etwas für einen Bildschirm"] },
+      { frage: "Für welchen Ort?", wahlen: ["eine Wohnung", "ein Büro oder Empfang", "einen öffentlichen Raum", "ein Geschenk"] },
+      { frage: "Wie viele?", wahlen: ["eines", "eine kleine Reihe", "eine Auflage", "offen"] },
+    ] },
   { slug: "vermittlung", name: "Vermittlung und Beratung", kurz: "Seminare, Workshops, Projekte mit Schulen und Teams; Beratung für Institutionen.",
     text: "Halbe Tage, ganze Tage, Projektwochen oder Reihen: Beobachten zweiter Ordnung, Systemtheorie ohne Hürden, Kunst als Werkzeug für Gruppen. Dazu Beratung für Wohnheime, Werkstätten, Stiftungen und Schulen, die Kunst zu einem Teil ihrer Arbeit machen wollen: ein Atelier aufbauen, Werke von Klient:innen zeigen, Maltherapie als Angebot einrichten. Der Hintergrund dafür sind 25 Jahre Soziale Arbeit in Institutionen und die Ausbildung in Maltherapie.",
     fuer: "Für Schulen, Museen, Unternehmen, Verwaltungen, Praxisteams, Weiterbildungen und für Institutionen mit Menschen, die mehr können, als man ihnen zutraut.",
@@ -230,19 +244,6 @@ export const ANGEBOTE = [
       { frage: "Welcher Raum?", wahlen: ["ein Haus mit Geschichte", "ein White Cube", "ein öffentlicher Ort", "ein Büro oder Betrieb"] },
       { frage: "Wer stellt aus?", wahlen: ["eine Person", "eine Gruppe", "eine Sammlung", "offen"] },
       { frage: "Wann?", wahlen: ["in drei Monaten", "in einem Jahr", "nächstes Jahr", "offen"] },
-    ] },
-  // Fünfte Leistung seit 13. November 2026 (Christian: «Nimm noch etwas zum Thema Fotographie: Angebote/Werke»). Der Text ist von Claude nach den
-  // geschickten Bildern geschrieben (Bühne, Raum, Landschaft) und knapp gehalten: was genau angeboten wird, zu welchem Preis und für wen, bestätigt Christian.
-  // Produkte vor Fotografie seit 22. November 2026 (Christian: Prints und Editionen «da vor den Fotografien»);
-  // auf /start/ und /angebot/ führt «Produkte» zuerst auf die Prints-Seite (references/webdesign/prints/?von=angebot).
-  { slug: "produkte", name: "Produkte", kurz: "Werke, Prints, Editionen und Auftragsarbeiten, klassisch und digital.",
-    text: "Werke auf Papier und Leinwand, Prints in kleinen Auflagen, Installationen mit Bild, Bewegung und Ton, Arbeiten für Räume und Bildschirme. Dazu Editionen aus dem Zettelkasten: das Buch, das Kartenset, das Poster und die Notizbücher, gedruckt auf Bestellung. Bestellt wird per Mail, bezahlt per QR-Rechnung oder TWINT; Versand in der Schweiz inbegriffen. Auftragsarbeiten für Häuser, Firmen und Private nach Gespräch.",
-    fuer: "Für Sammler:innen, Architekt:innen, Firmen, Gemeinden, Häuser und für alle, die ein Werk oder ein Buch für einen bestimmten Ort suchen.",
-    ablauf: ["Aussuchen auf der Seite «Werke» oder ein Gespräch über den Ort und das, was er braucht.", "Bestellung per Mail, Bestätigung mit Rechnung; bei Auftragsarbeiten ein Entwurf als Skizze oder bewegte Vorschau.", "Versand versichert, oder Werk, Montage und Übergabe mit Zertifikat."],
-    dialog: [
-      { frage: "Was?", wahlen: ["ein Print oder Original", "ein Buch, Karten, ein Poster", "eine Auftragsarbeit", "etwas für einen Bildschirm"] },
-      { frage: "Für welchen Ort?", wahlen: ["eine Wohnung", "ein Büro oder Empfang", "einen öffentlichen Raum", "ein Geschenk"] },
-      { frage: "Wie viele?", wahlen: ["eines", "eine kleine Reihe", "eine Auflage", "offen"] },
     ] },
   { slug: "fotografie", name: "Fotografie", kurz: "Foto-Aufträge aller Art, vom Porträt bis zur Landschaft.",
     text: "Foto-Aufträge aller Art: Menschen, Anlässe, Räume, Orte, Produkte, Werke, Bühne und Landschaft. In Farbe oder Schwarzweiss, für Website, Presse und Druck. Die Bühnenbilder hier sind für die Kaiserbühne entstanden.",

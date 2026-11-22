@@ -270,7 +270,7 @@ if (new URLSearchParams(location.search).get("von") === "angebot") {
 
 /* ---------- Bogen oben ---------- */
 const cv = $("bogen"), ctx = cv.getContext("2d"), kopfEl = $("kopf"), schalter = $("schalter");
-const B = { W: 0, H: 0, dpr: 1, x: 0, y: 0, S: 0, bild: null, werte: null, pl: [], t0: 0, z: [0, 0], weich: [0, 0], anteil: 0, ziel: 0, sichtbar: true };
+const B = { auto: true, W: 0, H: 0, dpr: 1, x: 0, y: 0, S: 0, bild: null, werte: null, pl: [], t0: 0, z: [0, 0], weich: [0, 0], anteil: 0, ziel: 0, sichtbar: true };
 function bogenOrdnen() {
   B.W = kopfEl.clientWidth; B.H = kopfEl.clientHeight; B.dpr = Math.min(2, devicePixelRatio || 1);
   cv.width = Math.round(B.W * B.dpr); cv.height = Math.round(B.H * B.dpr);
@@ -297,6 +297,8 @@ function bogenZeichnen(zeit) {
   B.weich[0] += (B.z[0] - B.weich[0]) * .08; B.weich[1] += (B.z[1] - B.weich[1]) * .08;
   B.anteil += (B.ziel - B.anteil) * (reduce ? 1 : .1);
   const t = zeit - B.t0, fehler = reduce ? 0 : 7;
+  // Nach der Raster-Animation (vier Platten, gut drei Sekunden) und einer Sekunde Ruhe steht das Bild selbst (Christian, 22. November 2026)
+  if (B.auto && t > 250 + 3 * 650 + 1000 + 1000) { B.auto = false; darstellung(true, false); }
   const f = drucken(ctx, B.pl, x, y, S, S, t, B.weich, 1 - B.anteil * .95, fehler);
   // Passerkreuze und Farbfelder druckt jede Platte mit
   ctx.globalCompositeOperation = "multiply";
@@ -319,7 +321,8 @@ function bogenZeichnen(zeit) {
   ctx.fillStyle = korn(ctx); ctx.globalCompositeOperation = "multiply"; ctx.fillRect(x - b, y - b, S + 2 * b, S + 2 * b + 34);
   ctx.globalCompositeOperation = "source-over";
 }
-function darstellung(bild) {
+function darstellung(bild, vonHand = true) {
+  if (vonHand) B.auto = false;
   B.ziel = bild ? 1 : 0;
   $("s-raster").setAttribute("aria-pressed", String(!bild)); $("s-bild").setAttribute("aria-pressed", String(bild));
 }
@@ -329,7 +332,7 @@ cv.addEventListener("click", () => darstellung(!B.ziel));
 kopfEl.addEventListener("pointermove", e => { B.z = [clamp((e.clientX / B.W - .5) * 2, -1, 1), clamp((e.clientY / B.H - .5) * 2, -1, 1)]; });
 kopfEl.addEventListener("pointerleave", () => { B.z = [0, 0]; });
 new IntersectionObserver(es => { B.sichtbar = es[0].isIntersecting; }).observe(kopfEl);
-laden(BILD("kopf-pink", 1600)).then(img => { B.bild = img; B.werte = trennen(img); bogenOrdnen(); B.t0 = 0; }).catch(() => {});
+laden(BILD("kopf-pink", 1600)).then(img => { B.bild = img; B.werte = trennen(img); bogenOrdnen(); B.t0 = 0; if (reduce) darstellung(true, false); }).catch(() => {});
 
 /* ---------- Acht Motive ---------- */
 const feld = $("feld"), aktive = new Set();
