@@ -515,7 +515,9 @@ let aktiv = -1, wortTimer = 0;
 function zeigen() {
   const l = lambdaAus(st.phi), an = HUELLE(l) > .08, kn = naechster(st.phi);
   // Hysterese: das Wort wechselt erst, wenn die Trommel nahe beim nächsten Punkt steht
-  const k = aktiv < 0 || Math.abs(wickel(st.phi - PUNKTE[kn].phi)) < 22 * DEG ? kn : aktiv, p = PUNKTE[k];
+  const k = zug && zug.typ === "dreh" ? naechster(zug.roh)   // beim Ziehen: der Punkt, bei dem der Ring einrasten wird
+    : st.phiZiel != null && !st.tour ? naechster(st.phiZiel)   // beim Einrasten: das Ziel, nicht was unterwegs vorbeizieht
+    : aktiv < 0 || Math.abs(wickel(st.phi - PUNKTE[kn].phi)) < 22 * DEG ? kn : aktiv, p = PUNKTE[k];
   wortEl.classList.toggle("dunkel", !an);
   massEl.textContent = an ? `${Math.round(l)} nm · ${hex(farbe(l))}` : "";
   if (an) {
@@ -556,12 +558,9 @@ let zug = null;
 const stopTour = () => { st.tour = null; };
 const winkel = (x, y) => Math.atan2(y - st.cy, x - st.cx);
 function rasten(k) { stopTour(); const z = PUNKTE[((k % NP) + NP) % NP].phi; st.phiZiel = st.phi + wickel(z - st.phi); if (reduce) { st.phi = st.phiZiel; st.phiZiel = null; } st.dirty = true; }
-// Rastung beim Drehen (22. November 2026, «Die Bedienung des Kreises sollte wenig nervös funktionieren»): nahe einem Menüpunkt
-// bleibt die Trommel hängen und gibt erst nach, wenn man weiterdreht; dazwischen folgt sie dem Finger gedämpft.
-function gerastet(roh) {
-  const k = naechster(roh), d = wickel(roh - PUNKTE[k].phi), halt = 1 - sm(0, 27 * DEG, Math.abs(d));
-  return roh - d * .86 * halt;
-}
+// Steuerung (22. November 2026, Christian: «die Menuwahl erscheint jetzt etwas zufällig bzw wenig steuerbar»): Der Ring folgt dem
+// Finger im gleichen Winkel, weich nachgeführt, und rastet erst beim Loslassen ein; Wort und Punkt zeigen beim Ziehen sofort, wo er
+// einrasten wird. Nahe der Mitte zählt der Winkel weniger, damit er nicht springt. Antippen eines Farbpunkts auf dem Ring wählt ihn.
 const schritt = r => rasten(naechster(st.phiZiel ?? st.phi) + r);
 cv.addEventListener("pointerdown", e => {
   cv.setPointerCapture(e.pointerId); cv.focus({ preventScroll: true }); stopTour();
@@ -572,12 +571,18 @@ cv.addEventListener("pointerdown", e => {
 cv.addEventListener("pointermove", e => {
   if (!zug || zug.typ !== "dreh") return;
   const a = winkel(e.clientX, e.clientY), da = wickel(a - zug.a);
-  zug.roh += da * .55; zug.a = a;   // Untersetzung: der Ring dreht halb so schnell wie der Finger zug.weg += Math.abs(da); st.dirty = true;
+  const abstand = Math.hypot(e.clientX - st.cx, e.clientY - st.cy), gewicht = clamp((abstand - st.s * .25) / (st.s * .6), 0, 1);
+  zug.roh += da * gewicht; zug.a = a; zug.weg += Math.abs(da) * gewicht; st.dirty = true;
 });
 const loslassen = e => {
   if (!zug) return;
   if (zug.typ === "punkt") { const P = messpunkt(); if (e && Math.hypot(e.clientX - P[0], e.clientY - P[1]) < 26) eintreten(); }
-  else rasten(naechster(gerastet(zug.roh)));
+  else if (zug.weg < 4 * DEG && e) {
+    // Antippen: nahe am Ring wählt den Farbpunkt unter dem Finger, sonst bleibt alles stehen
+    const R = st.s * 1.02, abstand = Math.hypot(e.clientX - st.cx, e.clientY - st.cy);
+    if (Math.abs(abstand - R) < 44) rasten(naechster(winkel(e.clientX, e.clientY) + Math.PI / 2)); else rasten(naechster(st.phi));
+  }
+  else rasten(naechster(zug.roh));
   zug = null; cv.classList.remove("zieht");
 };
 cv.addEventListener("pointerup", loslassen);
@@ -634,7 +639,7 @@ function schleife(zeit) {
     const T = st.tour, t = (zeit - st.t0 - 1500) / 3200;
     if (t > 0) { const f = clamp(t, 0, 1), e = f < .5 ? 4 * f * f * f : 1 - (-2 * f + 2) ** 3 / 2; st.phi = T.von + (T.nach - T.von) * e; st.dirty = true; if (f >= 1) { st.phi = PUNKTE[start].phi; st.tour = null; } }
   }
-  if (zug && zug.typ === "dreh") { const z = gerastet(zug.roh), d = z - st.phi; if (Math.abs(d) > 1e-4) { st.phi += reduce ? d : d * .085; st.dirty = true; } }
+  if (zug && zug.typ === "dreh") { const d = zug.roh - st.phi; if (Math.abs(d) > 1e-4) { st.phi += reduce ? d : d * .14; st.dirty = true; } }
   else if (st.phiZiel != null) { const d = st.phiZiel - st.phi; st.phi += d * .055; if (Math.abs(d) < 1e-3) { st.phi = st.phiZiel; st.phiZiel = null; } st.dirty = true; }
   const thZiel = thetaSicht(st.phi), dth = thZiel - st.theta;
   if (Math.abs(dth) > 1e-6) { st.theta += reduce ? dth : dth * .1; st.dirty = true; }
