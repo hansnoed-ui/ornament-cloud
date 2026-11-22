@@ -18,9 +18,6 @@ const seitenEn = walk("b/en/").filter((p) => !/\/(oeffnen|feld)\/$/.test(p));
 const meta = (html, name) => html.match(new RegExp(`<meta (?:name|property)="${name}" content="([^"]*)"`))?.[1];
 const pngMass = (buf) => [buf.readUInt32BE(16), buf.readUInt32BE(20)];
 
-// seit 21. November 2026 steht an der Wurzel die Brillant-Seite; die deutsche Startseite des Neubaus heisst /start/
-const de = (p) => (p === "" ? "start/" : p);
-
 test("b/: alle Seiten (seit 13. November 2026 mit «Hören», «Atelier», «Sehen» und der Leistung «Fotografie»), jede mit Titel, Beschreibung, Canonical oder noindex, Open Graph, X-Karte und JSON-LD", () => {
   assert.equal(seiten.length, 1 + 1 + 49 + 1 + APPS.length + 1 + RASTER.length + 1 + ANGEBOTE.length + 4 + 3);
   for (const p of seiten) {
@@ -32,8 +29,8 @@ test("b/: alle Seiten (seit 13. November 2026 mit «Hören», «Atelier», «Seh
     assert.ok(b && b.length >= 40 && b.length <= 200, `${p}: Beschreibung 40–200 Zeichen (${b?.length})`);
     const noindex = /<meta name="robots" content="noindex/.test(html);
     if (noindex) assert.ok(!/<link rel="canonical"/.test(html), `${p}: noindex ohne Canonical`);
-    else assert.equal(html.match(/<link rel="canonical" href="([^"]+)"/)?.[1], `https://ornament.cloud/${de(p)}`, `${p}: Canonical`);
-    assert.equal(meta(html, "og:url"), `https://ornament.cloud/${de(p)}`, `${p}: og:url`);
+    else assert.equal(html.match(/<link rel="canonical" href="([^"]+)"/)?.[1], `https://ornament.cloud/${p}`, `${p}: Canonical`);
+    assert.equal(meta(html, "og:url"), `https://ornament.cloud/${p}`, `${p}: og:url`);
     for (const k of ["og:title", "og:description", "og:image", "og:image:alt", "twitter:card", "twitter:title", "twitter:image"]) assert.ok(meta(html, k), `${p}: ${k}`);
     assert.equal(meta(html, "twitter:image"), meta(html, "og:image"), `${p}: X-Bild gleich OG-Bild`);
     for (const ld of html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)) assert.doesNotThrow(() => JSON.parse(ld[1]), `${p}: JSON-LD lesbar`);
@@ -150,7 +147,7 @@ test("b/werkstatt: noindex, nicht in der Sitemap, von keiner Seite verlinkt; all
     // die Prüfraster sind seit 13. November 2026 nicht öffentlich: noindex, nicht in der Sitemap, von keiner anderen Seite verlinkt
     if (p.startsWith("raster/")) { assert.match(html, /<meta name="robots" content="noindex">/, `${p}: gesperrt`); assert.ok(!sitemap.includes(`<loc>https://ornament.cloud/${p}</loc>`), `${p}: nicht in der Sitemap`); continue; }
     assert.ok(!/href="\/b\/(en\/)?raster\//.test(html), `${p}: kein Link zu den Prüfrastern`);
-    if (p !== "werkstatt/") { assert.ok(!/href="(\/b)?\/werkstatt\//.test(html), `${p}: kein Link zur Werkstatt`); assert.ok(sitemap.includes(`<loc>https://ornament.cloud/${de(p)}</loc>`), `${p}: in der Sitemap`); }
+    if (p !== "werkstatt/") { assert.ok(!/href="(\/b)?\/werkstatt\//.test(html), `${p}: kein Link zur Werkstatt`); assert.ok(sitemap.includes(`<loc>https://ornament.cloud/${p}</loc>`), `${p}: in der Sitemap`); }
   }
   for (const html of ["index.html", "apps/index.html", "zu-seiner-zeit/index.html"].map(lies)) assert.ok(!/href="(\/b)?\/werkstatt\//.test(html));
 });
@@ -285,7 +282,7 @@ test("b/: das Signet lebt auf Start und Über (Tafel «signet», zeichnet sich a
   assert.ok(js.includes('const QUELLE = "ornament"') && js.includes("/OR[NM]A|OMNA/i"), "nur die Namen aus der ornament-Familie");
 });
 
-test("Startseite: an der Wurzel die Brillant-Seite (21. November 2026), der Neubau-Start unter /start/; die bisherige Startseite bleibt unter /?bisher", () => {
+test("Startseite: wer auf ornament.cloud landet, kommt in den Neubau; die bisherige Startseite bleibt unter /?bisher", () => {
   const start = lies("index.html");
   assert.ok(start.includes('location.replace("/b/"+location.search+location.hash)'), "Skript leitet nach /b/ und nimmt die Abfrage mit");
   assert.ok(/if\(!\/\[\?&\]bisher/.test(start), "?bisher hält die bisherige Startseite");
@@ -294,7 +291,7 @@ test("Startseite: an der Wurzel die Brillant-Seite (21. November 2026), der Neub
   assert.ok(lies("b/index.html").includes('<a href="/?bisher">Zur bisherigen Website</a>'), "der Neubau verlinkt die bisherige Startseite mit ?bisher, nicht in die Schleife");
   const h = lies(".htaccess");
   // seit 16. November 2026 liefert Apache den Neubau direkt unter / aus (keine Weiterleitung mehr; tests/wurzel.test.mjs spielt die Regeln nach)
-  assert.ok(/RewriteCond %\{QUERY_STRING\} !\(\^\|&\)bisher[^\n]*\n\s*RewriteRule \^\$ \/alpha\/brillant\/index\.html \[L\]\n\s*RewriteRule \^start\/\$ \/b\/index\.html \[L\]/.test(h), ".htaccess bei Hostpoint liefert unter / die Brillant-Seite und unter /start/ den Neubau, ausser mit ?bisher");
+  assert.ok(/RewriteCond %\{QUERY_STRING\} !\(\^\|&\)bisher[^\n]*\n\s*RewriteRule \^\$ \/b\/index\.html \[L\]/.test(h), ".htaccess bei Hostpoint liefert unter / den Neubau, ausser mit ?bisher");
   assert.ok(!/RewriteRule \^\$ \/b\/ \[R=30[12]/.test(h), "keine Weiterleitung / → /b/ mehr");
 });
 
@@ -325,8 +322,8 @@ test("b/en/: jede Seite auch auf Englisch (ohne die Werkstatt), lang=en, hreflan
     assert.match(html, /<html lang="en">/, p);
     const gesperrt = p.startsWith("raster/");   // die Prüfraster sind seit 13. November 2026 nicht öffentlich: noindex, ohne Canonical und hreflang
     if (!gesperrt) assert.ok(html.includes(`<link rel="canonical" href="https://ornament.cloud/en/${p}">`), `${p}: canonical unter /en/`);
-    if (!gesperrt) assert.ok(html.includes(`<link rel="alternate" hreflang="de" href="https://ornament.cloud/${de(p)}">`) && html.includes(`<link rel="alternate" hreflang="en" href="https://ornament.cloud/en/${p}">`), `${p}: hreflang`);
-    assert.ok(html.includes(`<nav class="sprache" aria-label="Language"><a href="/${de(p)}" lang="de" hreflang="de" title="Deutsch">d</a><a href="/en/${p}" lang="en" hreflang="en" title="English" aria-current="true">e</a></nav>`), `${p}: Schalter`);
+    if (!gesperrt) assert.ok(html.includes(`<link rel="alternate" hreflang="de" href="https://ornament.cloud/${p}">`) && html.includes(`<link rel="alternate" hreflang="en" href="https://ornament.cloud/en/${p}">`), `${p}: hreflang`);
+    assert.ok(html.includes(`<nav class="sprache" aria-label="Language"><a href="/${p}" lang="de" hreflang="de" title="Deutsch">d</a><a href="/en/${p}" lang="en" hreflang="en" title="English" aria-current="true">e</a></nav>`), `${p}: Schalter`);
     for (const d of deutsch) assert.ok(!html.includes(d), `${p}: «${d}» ist nicht übersetzt`);
     // Seit 13. November 2026 («Künstler zuerst», Paket «Schaufenster»): Hören, Zettel, Apps, Raster, Angebot, Über (mit Werke und Zuletzt), Atelier.
     // Animations, Multiverse, Lab, Das 3. Rad und Gamma stehen auf der Seite «Atelier» statt im Menü; «Beta» gibt es im Menü nicht mehr.
@@ -337,7 +334,7 @@ test("b/en/: jede Seite auch auf Englisch (ohne die Werkstatt), lang=en, hreflan
   // die deutschen Seiten zeigen den Schalter mit d aktiv und verweisen auf /b/en/
   for (const p of seiten.filter((x) => x !== "werkstatt/")) {
     const html = lies(`b/${p}index.html`);
-    assert.ok(html.includes(`<a href="/${de(p)}" lang="de" hreflang="de" title="Deutsch" aria-current="true">d</a><a href="/en/${p}" lang="en" hreflang="en" title="English">e</a>`), `${p}: Schalter auf Deutsch`);
+    assert.ok(html.includes(`<a href="/${p}" lang="de" hreflang="de" title="Deutsch" aria-current="true">d</a><a href="/en/${p}" lang="en" hreflang="en" title="English">e</a>`), `${p}: Schalter auf Deutsch`);
     if (!p.startsWith("raster/")) assert.ok(html.includes(`<link rel="alternate" hreflang="en" href="https://ornament.cloud/en/${p}">`), `${p}: hreflang en`);
   }
   // die Zettel auf Englisch aus zu-seiner-zeit.en.json, mit denselben Adressen
@@ -419,7 +416,7 @@ test("Schaubilder: auf der Startseite Das Dritte Rad und OMNA COLOR vor der Musi
   for (const datei of ["b/angebot/webdesign/index.html", "b/en/angebot/webdesign/index.html"]) {
     const html = lies(datei), schau = html.match(/<section class="referenzen schau-abschnitt"[\s\S]*?<\/section>/)?.[0];
     assert.ok(schau, `${datei}: Abschnitt zum Anschauen`);
-    assert.deepEqual([...schau.matchAll(/<a class="schau-stueck" href="([^"]+)" target="_blank" rel="noopener"/g)].map((m) => m[1]), ["/references/webdesign/colorpicker/", "/references/webdesign/prints/", "https://kaiserbuehne.ch/", "https://www.oberer-turm.ch/", "https://principesse.ch/", `/beta/drittes-rad/?sprache=${datei.includes("/en/") ? "en" : "de"}`, "/multiverse/", "/gamma/"], `${datei}: Spektralmenü zuoberst, Prints an zweiter Stelle, dann Kaiserbühne, Supervisionen, Principesse, Das Dritte Rad, Multiverse und Gamma, in neuem Fenster`);
+    assert.deepEqual([...schau.matchAll(/<a class="schau-stueck" href="([^"]+)" target="_blank" rel="noopener"/g)].map((m) => m[1]), [`/alpha/brillant/?lang=${datei.includes("/en/") ? "en" : "de"}`, "/references/webdesign/colorpicker/", "/references/webdesign/prints/", "https://kaiserbuehne.ch/", "https://www.oberer-turm.ch/", "https://principesse.ch/", `/beta/drittes-rad/?sprache=${datei.includes("/en/") ? "en" : "de"}`, "/multiverse/", "/gamma/"], `${datei}: Brillante Ideen zuoberst (seit 22.11.2026), dann Spektralmenü, Prints, dann Kaiserbühne, Supervisionen, Principesse, Das Dritte Rad, Multiverse und Gamma, in neuem Fenster`);
     assert.ok(schau.includes("Katharina Strickler"), `${datei}: für wen die Seite gebaut ist`);
   }
   assert.ok(statSync(new URL("b/bilder/schau/animations.mp4", root)).size < 2_500_000, "der Film bleibt unter 2,5 MB");

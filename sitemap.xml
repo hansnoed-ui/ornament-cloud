@@ -484,7 +484,7 @@
   <!-- ART:START (erzeugt aus src/art/werke.json, tools/build-art.mjs) -->
   <!-- ART:END -->
   <!-- B:START (erzeugt aus tools/build-b.mjs, der Neubau unter / und /en/, die Dateien unter b/ und b/en/) -->
-  <url><loc>https://ornament.cloud/start/</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://ornament.cloud/</loc><lastmod>2026-11-22</lastmod></url>
   <url><loc>https://ornament.cloud/sehen/</loc><lastmod>2026-11-22</lastmod></url>
   <url><loc>https://ornament.cloud/hoeren/</loc><lastmod>2026-11-22</lastmod></url>
   <url><loc>https://ornament.cloud/atelier/</loc><lastmod>2026-11-22</lastmod></url>

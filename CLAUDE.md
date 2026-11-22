@@ -45,8 +45,8 @@ Sitzung wissen muss, damit dieselben Fehler nicht zweimal passieren.
   die Bereiche aus `b/` aus und leitet `/b/…`-Seiten per 301 um. Neuer Bereich unter `b/` → in die
   Liste in `.htaccess` eintragen (`tests/wurzel.test.mjs`). Seitenlinks nie mit `/b/` schreiben;
   Bilder, Skripte, Vorschaukarten bleiben unter `/b/`.
-- **Startseite (seit 21.11.2026):** an der Wurzel `/` steht die Brillant-Seite (Dateien in `alpha/brillant/`, `<base>` dort,
-  noindex); der Neubau-Start heisst `/start/` (canonical, Sitemap, Signet), `/alpha/brillant/` leitet per 301 auf `/` um.
+- **Startseite:** `/` ist der Neubau. Vom 21. bis 22.11.2026 stand dort die Brillant-Seite und der Neubau-Start hiess `/start/`;
+  `/start/` leitet seither per 301 auf `/`, die Brillant-Seite liegt wieder unter `/alpha/brillant/` (noindex, erste Webdesign-Referenz).
 - SEO: Gibt es eine Seite im Neubau und ältere Fassungen, zeigt das canonical der alten auf
   den Neubau, und die alte fällt aus der Sitemap (16. November 2026: Strophen).
 - **Register:** `src/register.json` führt jede Arbeit mit Tür und Status. Wer eine Seite

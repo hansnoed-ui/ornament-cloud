@@ -80,8 +80,7 @@ test("Teilen: The Fictory – die frühere Adresse der Vorschaukarte trägt dass
 test("Teilen: die Startseite steht in der Sitemap, Das Dritte Rad nicht und bleibt für Suchmaschinen gesperrt (die Vorschau holen die Dienste trotzdem)", () => {
   const sitemap = lies("sitemap.xml");
   // seit 16. November 2026 liegt der Neubau an der Wurzel: / ist seine Startseite, /b/ nur noch eine Weiterleitung (nicht in der Sitemap)
-  assert.ok(sitemap.includes("<loc>https://ornament.cloud/start/</loc>"), "seit 21. November 2026 heisst die Startseite des Neubaus /start/ (an der Wurzel die Brillant-Seite, noindex)");
-  assert.ok(!sitemap.includes("<loc>https://ornament.cloud/</loc>"), "die Brillant-Seite an der Wurzel ist noindex");
+  assert.ok(sitemap.includes("<loc>https://ornament.cloud/</loc>"));
   assert.ok(!sitemap.includes("<loc>https://ornament.cloud/b/</loc>"), "keine Weiterleitung in der Sitemap");
   assert.ok(!sitemap.includes("drittes-rad"));
   assert.match(lies("alpha/drittes-rad/index.html"), /<meta name="robots" content="noindex/);

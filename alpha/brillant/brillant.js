@@ -98,8 +98,8 @@ function grundTexte() {
   document.documentElement.lang = SPRACHE;
   document.title = `${TITEL_KURZ} · ornament.cloud`;
   document.querySelector('h1').textContent = TITEL;
-  // 0.43: die Seite ist die Startseite; «ornament.cloud» oben führt zur bisherigen Startseite (der Neubau gibt es deutsch und englisch)
-  const kopfLink = document.querySelector('.kopf a'); if (kopfLink) kopfLink.href = SPRACHE === 'de' ? '/start/' : '/en/';
+  // 0.43: «ornament.cloud» oben führt zur Startseite (den Neubau gibt es deutsch und englisch); seit 22.11.2026 wieder an der Wurzel /
+  const kopfLink = document.querySelector('.kopf a'); if (kopfLink) kopfLink.href = SPRACHE === 'de' ? '/' : '/en/';
   document.getElementById('mehr').firstChild.textContent = T.mehr + ' ';
   document.getElementById('stein').setAttribute('aria-label', T.menu);
   document.getElementById('bereiche').setAttribute('aria-label', T.anwendungen);
