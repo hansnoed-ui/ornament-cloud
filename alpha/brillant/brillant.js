@@ -30,7 +30,8 @@ const BEREICHE = [
     links: [
       { wort: 'imAtelier', href: '/atelier/', adressen: { en: '/en/atelier/' } }] },
   { werk: 'Prints', href: '/references/webdesign/prints/', sprachen: ['de'], bild: 'vorschau/prints.jpg?v=1', ton: [232, 104, 156],
-    links: [{ wort: 'angebot', ...ANGEBOT('produkte') }] },
+    // 0.47 (Christian: «Prints soll zu Werke verweisen und nicht zum Angebot»)
+    links: [{ wort: 'werke', href: '/werke/#prints', adressen: { en: '/en/werke/#prints' } }] },
   { werk: 'Supervisionen', knopf: 'angebot', ...ANGEBOT('vermittlung'), sprachen: ['de', 'en'], bild: 'vorschau/supervisionen.jpg?v=1', ton: [226, 170, 88],
     links: [{ wort: 'kuration', ...ANGEBOT('kuration') }, { name: 'oberer-turm.ch', href: 'https://www.oberer-turm.ch/', aussen: true }] }
 ];
@@ -53,7 +54,7 @@ const NBSP = ' ';   // schmales Leerzeichen vor «:» im Französischen
 const TEXTE = {
   de: { titel: 'Brillante Ideen.', iBei: 2, menu: 'Menü', anwendungen: 'Angebot', mehr: 'Mehr erfahren', oeffnen: 'Öffnen', oeffnenAria: (n) => `${n} öffnen`,
     nurIn: { de: 'auf Deutsch', en: 'auf Englisch', fr: 'auf Französisch', es: 'auf Spanisch' }, vor: 'Vorheriges Angebot', nach: 'Nächstes Angebot', zu: 'Schliessen', sprache: 'Sprache',
-    worte: { angebot: 'Angebot', zumAngebot: 'Zum Angebot', apps: 'Alle Apps', atelier: 'Atelier', imAtelier: 'Weitere im Atelier', vermittlung: 'Vermittlung', kuration: 'Kuration', weitere: 'Weitere' },
+    worte: { angebot: 'Angebot', zumAngebot: 'Zum Angebot', apps: 'Alle Apps', werke: 'Werke', atelier: 'Atelier', imAtelier: 'Weitere im Atelier', vermittlung: 'Vermittlung', kuration: 'Kuration', weitere: 'Weitere' },
     anw: [
       { name: 'Websites', kopf: 'Einstiegsseite mit Prisma · 2026', satz: 'Eine Einstiegsseite fast ohne Text: Wer den Ring um das Prisma dreht, legt eine andere Spektralfarbe auf den Schirm, mit jeder Farbe einen anderen Menüpunkt.' },
       { name: 'Apps', kopf: 'Bild · Werkbank · Film', satz: 'Leg ein Bild auf die Werkbank: Es zerfällt in seine Teile, ordnet sich neu, hinterlässt Spuren und setzt sich am Ende neu zusammen.' },
@@ -62,7 +63,7 @@ const TEXTE = {
       { name: 'Vermittlung', kopf: 'Oberer Turm Kaiserstuhl · 2026', satz: 'Sechs Monate, neun Künstler:innen, ein Turm als Ausstellungsraum: Auswahl, Hängung, Texte und Begleitprogramm.' }] },
   en: { titel: 'brilliant ideas.', iBei: 2, menu: 'Menu', anwendungen: 'Services', mehr: 'Learn more', oeffnen: 'Open', oeffnenAria: (n) => `Open ${n}`,
     nurIn: { de: 'in German', en: 'in English', fr: 'in French', es: 'in Spanish' }, vor: 'Previous', nach: 'Next', zu: 'Close', sprache: 'Language',
-    worte: { angebot: 'Service', zumAngebot: 'To the service', apps: 'All apps', atelier: 'Studio', imAtelier: 'More in the studio', vermittlung: 'Education', kuration: 'Curating', weitere: 'More' },
+    worte: { angebot: 'Service', zumAngebot: 'To the service', apps: 'All apps', werke: 'Works', atelier: 'Studio', imAtelier: 'More in the studio', vermittlung: 'Education', kuration: 'Curating', weitere: 'More' },
     anw: [
       { name: 'Websites', werk: 'Spectral menu', kopf: 'landing page with a prism · 2026', satz: 'A landing page with almost no text: turn the ring around the prism and another spectral colour falls on the screen, each colour with its own menu item.' },
       { name: 'Apps', kopf: 'image · workbench · film', satz: 'Put an image on the workbench: it falls apart into its pieces, rearranges itself, leaves traces and in the end reassembles.' },
@@ -71,7 +72,7 @@ const TEXTE = {
       { name: 'Education', werk: 'Supervisions', kopf: 'Oberer Turm Kaiserstuhl · 2026', satz: 'Six months, nine artists, a tower as exhibition space: selection, hanging, texts and accompanying programme.' }] },
   fr: { titel: 'idées brillantes.', iBei: 8, menu: 'Menu', anwendungen: 'Offre', mehr: 'En savoir plus', oeffnen: 'Ouvrir', oeffnenAria: (n) => `Ouvrir ${n}`,
     nurIn: { de: 'en allemand', en: 'en anglais', fr: 'en français', es: 'en espagnol' }, vor: 'Précédent', nach: 'Suivant', zu: 'Fermer', sprache: 'Langue',
-    worte: { angebot: 'Offre', zumAngebot: 'Voir l’offre', apps: 'Toutes les apps', atelier: 'Atelier', imAtelier: 'D’autres à l’atelier', vermittlung: 'Médiation', kuration: 'Curation', weitere: 'Aussi' },
+    worte: { angebot: 'Offre', zumAngebot: 'Voir l’offre', apps: 'Toutes les apps', werke: 'Œuvres', atelier: 'Atelier', imAtelier: 'D’autres à l’atelier', vermittlung: 'Médiation', kuration: 'Curation', weitere: 'Aussi' },
     anw: [
       { name: 'Sites web', werk: 'Menu spectral', kopf: 'page d’accueil avec prisme · 2026', satz: `Une page d’accueil presque sans texte${NBSP}: qui tourne l’anneau autour du prisme pose une autre couleur spectrale sur l’écran, et avec chaque couleur une autre entrée du menu.` },
       { name: 'Apps', kopf: 'image · établi · film', satz: `Pose une image sur l’établi${NBSP}: elle se défait en morceaux, se réordonne, laisse des traces et finit par se recomposer.` },
@@ -80,7 +81,7 @@ const TEXTE = {
       { name: 'Médiation', werk: 'Supervisions', kopf: 'Oberer Turm Kaiserstuhl · 2026', satz: `Six mois, neuf artistes, une tour comme lieu d’exposition${NBSP}: choix, accrochage, textes et programme d’accompagnement.` }] },
   es: { titel: 'ideas brillantes.', iBei: 8, menu: 'Menú', anwendungen: 'Oferta', mehr: 'Saber más', oeffnen: 'Abrir', oeffnenAria: (n) => `Abrir ${n}`,
     nurIn: { de: 'en alemán', en: 'en inglés', fr: 'en francés', es: 'en español' }, vor: 'Anterior', nach: 'Siguiente', zu: 'Cerrar', sprache: 'Idioma',
-    worte: { angebot: 'Oferta', zumAngebot: 'Ver la oferta', apps: 'Todas las apps', atelier: 'Taller', imAtelier: 'Más en el taller', vermittlung: 'Mediación', kuration: 'Curaduría', weitere: 'Más' },
+    worte: { angebot: 'Oferta', zumAngebot: 'Ver la oferta', apps: 'Todas las apps', werke: 'Obras', atelier: 'Taller', imAtelier: 'Más en el taller', vermittlung: 'Mediación', kuration: 'Curaduría', weitere: 'Más' },
     anw: [
       { name: 'Sitios web', werk: 'Menú espectral', kopf: 'página de inicio con prisma · 2026', satz: 'Una página de inicio casi sin texto: quien gira el anillo alrededor del prisma pone otro color espectral en la pantalla y, con cada color, otro punto del menú.' },
       { name: 'Apps', kopf: 'imagen · banco de trabajo · película', satz: 'Pon una imagen en el banco de trabajo: se deshace en sus piezas, se reordena, deja huellas y al final se recompone.' },

@@ -463,7 +463,7 @@ test("Kachelfilme der Bild-Apps: quadratisch 480, stumm, unter 1 MB, mit Standbi
 });
 
 // ---------- Fotografie (13. November 2026, Christian: «Nimm noch etwas zum Thema Fotographie: Angebote/Werke») ----------
-test("Fotografie: Galerie auf «Werke», Reihe auf der Startseite, fünfte Leistung mit den Bühnenbildern; jedes Bild in zwei Grössen, mit Beschreibung", async () => {
+test("Fotografie: Galerie auf «Sehen» (seit 22. November 2026 nicht mehr auf «Werke»), Reihe auf der Startseite, fünfte Leistung mit den Bühnenbildern; jedes Bild in zwei Grössen, mit Beschreibung", async () => {
   const { FOTOS } = await import("../src/b/fotos.mjs");
   const mass = JSON.parse(lies("src/b/fotos.json"));
   assert.ok(FOTOS.length >= 7);
@@ -473,15 +473,20 @@ test("Fotografie: Galerie auf «Werke», Reihe auf der Startseite, fünfte Leist
     assert.ok(Array.isArray(mass[f.slug]) && mass[f.slug].length === 2, `${f.slug}: Masse`);
     for (const l of ["de", "en"]) assert.ok(f.titel[l] && f.alt[l].length >= 30 && !f.alt[l].includes("ß"), `${f.slug}: Titel und Beschreibung (${l})`);
   }
-  for (const [datei, B, titel] of [["b/werke/index.html", "/", "Fotografie"], ["b/en/werke/index.html", "/en/", "Photography"]]) {
-    const html = lies(datei), teil = html.slice(html.indexOf('id="fotografie"'), html.indexOf('id="prints-titel"'));
-    assert.ok(teil.includes(`<h2 id="fotografie-titel">${titel}</h2>`), `${datei}: Abschnitt`);
+  for (const [datei, B] of [["b/sehen/index.html", "/"], ["b/en/sehen/index.html", "/en/"]]) {
+    const html = lies(datei), teil = html.slice(html.indexOf('id="sehen-foto-titel"'), html.indexOf('id="sehen-prints-titel"'));
+    assert.ok(teil.length > 100, `${datei}: Abschnitt`);
     assert.deepEqual([...teil.matchAll(/<figure class="foto" id="foto-([a-z0-9-]+)">/g)].map((m) => m[1]), FOTOS.map((f) => f.slug), `${datei}: alle Bilder in der Reihenfolge der Daten`);
     assert.match(teil, /<img src="\/b\/bilder\/fotografie\/[a-z0-9-]+-800\.jpg\?v=[0-9a-f]{10}" srcset="[^"]+ 800w, [^"]+ 1600w" sizes="[^"]+" alt="[^"]{30,}" width="\d+" height="\d+" loading="lazy">/, `${datei}: Bild mit zwei Grössen, Beschreibung und Massen`);
     assert.ok(teil.includes(`href="${B}angebot/fotografie/"`), `${datei}: Weg zur Leistung`);
   }
+  for (const datei of ["b/werke/index.html", "b/en/werke/index.html"]) {
+    const html = lies(datei);
+    assert.ok(!html.includes('id="fotografie"') && !html.includes("foto-buehne"), `${datei}: keine Fotografien (Fotografie ist eine Leistung)`);
+    assert.ok(html.indexOf('id="prints"') < html.indexOf('id="editionen"') && html.indexOf('id="editionen"') < html.indexOf('id="raum-titel"'), `${datei}: Prints, Editionen, Im Raum`);
+  }
   const start = lies("b/index.html");
-  assert.deepEqual([...start.matchAll(/<a class="foto" href="\/werke\/#foto-([a-z0-9-]+)"/g)].map((m) => m[1]), FOTOS.filter((f) => f.start).map((f) => f.slug), "Startseite: die Reihe");
+  assert.deepEqual([...start.matchAll(/<a class="foto" href="\/sehen\/#foto-([a-z0-9-]+)"/g)].map((m) => m[1]), FOTOS.filter((f) => f.start).map((f) => f.slug), "Startseite: die Reihe");
   const leistung = lies("b/angebot/fotografie/index.html");
   assert.deepEqual([...leistung.matchAll(/<figure class="foto" id="foto-([a-z0-9-]+)">/g)].map((m) => m[1]), FOTOS.filter((f) => f.gruppe === "buehne").map((f) => f.slug), "Leistung: die Bühnenbilder");
   assert.equal(ANGEBOTE.length, 5);
@@ -520,7 +525,7 @@ test("Prüfraster nicht öffentlich: erreichbar unter b/raster/, aber gesperrt, 
 test("Referenzen und Porträt (13. November 2026): Kuration nennt die Website von «Supervisionen», die Bühnenbilder tragen «für die Kaiserbühne», «Über» zeigt das Porträt", () => {
   for (const B of ["b/", "b/en/"]) {
     assert.ok(lies(`${B}angebot/kuration/index.html`).includes('<a class="ref-link" href="https://www.oberer-turm.ch/" target="_blank" rel="noopener">oberer-turm.ch ↗</a>'), `${B}: Supervisionen mit Website`);
-    assert.equal((lies(`${B}werke/index.html`).match(/Kaiserbühne<\/figcaption>/g) || []).length, 3, `${B}: drei Bühnenbilder mit Angabe`);
+    assert.equal((lies(`${B}sehen/index.html`).match(/Kaiserbühne<\/figcaption>/g) || []).length, 3, `${B}: drei Bühnenbilder mit Angabe`);
     assert.match(lies(`${B}ueber/index.html`), /<figure class="ueber-bild"><img src="\/b\/bilder\/ueber\/christian-strickler\.jpg\?v=[0-9a-f]{10}" alt="Christian Strickler [^"]{30,}" width="1080" height="720">/, `${B}: Porträt mit Beschreibung`);
   }
 });
