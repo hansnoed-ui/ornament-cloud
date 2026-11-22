@@ -395,7 +395,8 @@ ${occ}
       ${p.url ? `<h2 class="zsz-label zsz-abschnitt">${u.extern}</h2>\n      <p><a href="${esc(p.url)}" rel="noopener">${esc(p.url)} <span aria-hidden="true">↗</span></a></p>` : ""}
       <p class="zsz-weiter"><a href="../../spur/?p=${p.slug}">${u.inDerSpur} <span aria-hidden="true">→</span></a> · <a href="../">${u.alleVerweise}</a></p>
     </div>`;
-  return page(m, { depth: 2, title: `${p.name} – ${m.meta.title}`, description: `${p.name}: ${u.strophenZahl(p.occurrences.length)} ${u.in} ${m.meta.title}`, body, seite: "verweis", path: `verweis/${p.slug}/`, v });
+  return page(m, { depth: 2, title: `${p.name} – ${m.meta.title}`, description: `${p.name}: ${u.strophenZahl(p.occurrences.length)} ${u.in} ${m.meta.title}`, body, seite: "verweis", path: `verweis/${p.slug}/`, v,
+    noindex: true });   // 22. November 2026, SEO: rund 400 dünne Personenseiten (je ~90 Wörter, drei Sprachen) verwässerten die Sitemap; benutzbar bleiben sie
 }
 
 // Nachname zum Sortieren: letztes Wort ohne Zusätze in Klammern («Marilyn Strathern (Hg.)» → Strathern)

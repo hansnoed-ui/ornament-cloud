@@ -80,7 +80,7 @@ export const UI = {
       nenntAuch: (p) => `nennt auch ${p.join(" und ")}`, naechster: (z, anders) => `der nächste Zettel${anders ? `, Zyklus ${z.cycle.roman} ${z.cycle.name}` : ""}`,
       weiterdenken: "Weiterdenken", blaettern: "Blättern", dasFeld: "Das Feld",
       teilenTitel: (z) => `${z.title} – Zettelkasten`, derselbe: "Derselbe Zettel im Zettelkasten, auch auf Englisch und Spanisch: ", strophePfad: (slug) => `/zu-seiner-zeit/strophe/${slug}/`,
-      seitenTitel: (z) => `${z.title} – Zettel ${z.number}`, kopfTitel: (z) => `${z.title} – Zettelkasten, Zettel ${z.number} – ornament.cloud`,
+      seitenTitel: (z) => `${z.title} – Zettel ${z.number}`, kopfTitel: (z) => `${z.title} – Zettel ${z.number} · Systemtheorie und Kunst`,
       beschreibung: (z) => `${z.bottom_line} Zettel ${z.number} von 49 aus dem Zettelkasten, Zyklus ${z.cycle.roman} ${z.cycle.name}.`, bildAlt: (z) => `Zettel ${z.number}, ${z.title}: ${z.bottom_line}`,
     },
     apps: {
@@ -106,7 +106,7 @@ export const UI = {
       leistung: "Leistung", beginnen: "Briefing beginnen", anfrage: "Anfrage: ", schreiben: "Direkt schreiben", soGeht: "So geht es", referenzen: "Referenzen", schau: "Zum Anschauen", ansehen: "Ansehen",
       dein: "Dein Briefing", deinText: "Drei Fragen, je eine Wahl. Was dabei herauskommt, schickst du als Mail; alles Weitere besprechen wir.", leer: "Wähle oben, dann steht hier dein Briefing.",
       mail: "Per Mail schicken", kopieren: "Kopieren", ohne: "Die Mail öffnet sich in deinem Mailprogramm; nichts wird hier gespeichert oder gesendet.",
-      kopfTitel: (name) => `${name} – Christian Strickler, Zürich, Basel, Aarau – ornament.cloud`,
+      kopfTitel: (name) => `${name} – Christian Strickler, Aargau, Zürich, Basel`,
     },
     werke: {
       titel: "Werke", small: "Prints und Originale, dazu Editionen und Arbeiten im Raum, die in Vorbereitung sind.",
@@ -199,7 +199,7 @@ export const UI = {
       nenntAuch: (p) => `also names ${p.join(" and ")}`, naechster: (z, anders) => `the next note${anders ? `, cycle ${z.cycle.roman} ${z.cycle.name}` : ""}`,
       weiterdenken: "Further thinking", blaettern: "Browse", dasFeld: "The field",
       teilenTitel: (z) => `${z.title} – Zettelkasten`, derselbe: "The same note in the original Zettelkasten, in German, English and Spanish: ", strophePfad: (slug) => `/zu-seiner-zeit/en/strophe/${slug}/`,
-      seitenTitel: (z) => `${z.title} – note ${z.number}`, kopfTitel: (z) => `${z.title} – Zettelkasten, note ${z.number} – ornament.cloud`,
+      seitenTitel: (z) => `${z.title} – note ${z.number}`, kopfTitel: (z) => `${z.title} – note ${z.number} · systems theory and art`,
       beschreibung: (z) => `${z.bottom_line} Note ${z.number} of 49 from the Zettelkasten, cycle ${z.cycle.roman} ${z.cycle.name}.`, bildAlt: (z) => `Note ${z.number}, ${z.title}: ${z.bottom_line}`,
     },
     apps: {
@@ -225,7 +225,7 @@ export const UI = {
       leistung: "Service", beginnen: "Start the briefing", anfrage: "Enquiry: ", schreiben: "Write directly", soGeht: "How it works", referenzen: "References", schau: "Have a look", ansehen: "Visit",
       dein: "Your briefing", deinText: "Three questions, one choice each. Send what comes out as an email; we discuss everything else.", leer: "Choose above, and your briefing appears here.",
       mail: "Send by email", kopieren: "Copy", ohne: "The email opens in your mail program; nothing is stored or sent here.",
-      kopfTitel: (name) => `${name} – Christian Strickler, Zurich, Basel, Aarau – ornament.cloud`,
+      kopfTitel: (name) => `${name} – Christian Strickler, Aargau, Zurich, Basel`,
     },
     werke: {
       titel: "Works", small: "Prints and originals, plus editions and works in space, which are in preparation.",

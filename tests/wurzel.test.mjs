@@ -50,7 +50,7 @@ test("Wurzel: die Liste der Bereiche in .htaccess passt zu den Ordnern unter b/ 
 
 test("Wurzel: jede Adresse der Sitemap wird ausgeliefert (keine /b/-Seiten mehr darin), Neubau-Seiten mit passendem canonical", () => {
   const locs = [...lies("sitemap.xml").matchAll(/<loc>https:\/\/ornament\.cloud(\/[^<]*)<\/loc>/g)].map((m) => m[1]);
-  assert.ok(locs.length > 400, "Sitemap gelesen");
+  assert.ok(locs.length > 200, "Sitemap gelesen");   // seit 22. November 2026 ohne die rund 400 Verweis-Seiten des Zettelkastens (noindex)
   for (const p of locs) {
     assert.ok(!p.startsWith("/b/"), `${p}: noch mit /b/ in der Sitemap`);
     const a = anfrage(p);
