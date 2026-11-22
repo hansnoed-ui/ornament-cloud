@@ -186,12 +186,14 @@
   },
   {
    "id": "deleuze-start",
-   "name": "the deleuzian scheme (Masterseite)",
+   "name": "the deleuzian scheme",
    "tuer": "spielen-denken",
    "art": "App",
-   "status": "direktlink",
+   "status": "verlinkt",
    "adresse": "alpha/deleuze/start/",
-   "kurz": "Prototyp der Startseite: ein Kristall, dessen acht Facetten das eigene Material durch je einen Begriff von Deleuze zeigen."
+   "kurz": "Begriffe von Deleuze als Verfahren: ein Kristall, dessen acht Facetten das eigene Material durch je einen Begriff zeigen. Im Entstehen.",
+   "kurzEn": "Concepts of Deleuze as procedures: a crystal whose eight facets show your own material through one concept each. In progress.",
+   "atelier": true
   },
   {
    "id": "brillant-titel",
@@ -200,7 +202,7 @@
    "art": "App",
    "status": "verlinkt",
    "adresse": "alpha/brillant/",
-   "kurz": "Startseite an der Wurzel (seit 21.11.2026, noindex; «ornament.cloud» oben führt auf /start/):  der i-Punkt in «Brillante Ideen» ist ein Brillant; im Menü zeigt er fünf Anwendungen (the deleuzian scheme, Das Dritte Rad, Animations, ornament.lab, Composer) als Karten im Raum."
+   "kurz": "Startseite an der Wurzel (seit 21.11.2026, noindex; «ornament.cloud» oben führt auf /start/): der i-Punkt in «Brillante Ideen» ist ein Brillant; im Menü zeigt er seit 22.11.2026 das Angebot (Website, App, Anwendung im Browser, Kuration & Vermittlung, Produkte) als Karten im Raum, mit Links zum Angebot, zu weiteren Anwendungen und zum Atelier."
   },
   {
    "id": "kunsttheorie",
@@ -341,7 +343,8 @@
    "status": "verlinkt",
    "adresse": "beta/drittes-rad/",
    "kurz": "Zettelkasten und OMNA COLOR auf einem Rad.",
-   "kurzEn": "The Zettelkasten and OMNA COLOR on one wheel."
+   "kurzEn": "The Zettelkasten and OMNA COLOR on one wheel.",
+   "atelier": true
   },
   {
    "id": "konstellation",
