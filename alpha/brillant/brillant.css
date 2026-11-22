@@ -166,3 +166,6 @@ body { font: 500 15px/1.4 'Brillant Display', system-ui, sans-serif; -webkit-fon
 .vitrine-auf .kopf { opacity: 0 !important; pointer-events: none; transition: opacity 0.4s; }
 .vitrine-auf .kopf a { pointer-events: none; }
 .vitrine-auf .sprachen { opacity: 0 !important; pointer-events: none; transition: opacity 0.3s; }
+/* 0.43: Karten still (brillant.js STILL) – kein Lichtfleck, kein Glanz, kein Lichtzug, nur das Standbild */
+.vitrine.still .v-licht, .vitrine.still .v-glanz, .vitrine.still .v-buehne::before { display: none; }
+.vitrine.still .v-bild { inset: 0; }

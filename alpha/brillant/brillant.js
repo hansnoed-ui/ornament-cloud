@@ -967,7 +967,12 @@ document.fonts.ready.then(namenEinpassen);
 // kehren sie in ihn zurück. Die vordere Karte schwebt, neigt sich zum Finger (am Telefon zur Haltung des Geräts),
 // ein Licht gleitet über ihr Glas, das Bild liegt eine Ebene tiefer als die Schrift (Parallaxe).
 // Blättern: ziehen (die Karten folgen dem Finger mit Schwung), ‹ ›, Pfeiltasten oder eine Nachbarkarte antippen.
+// 0.43 (Christian, 22.11.2026: «animation und effekt bei den vorschaukarten weglassen, damit das laden und wischen sauberer wird»):
+// die Karten zeigen nur noch ihr Standbild – kein Film, kein bewegtes Schaubild, kein Lichtzug, kein Glanz, keine Neigung, keine
+// Parallaxe; sie erscheinen mit einem kurzen Einblenden. Das Blättern selbst bleibt. STILL = false holt das Frühere zurück.
+const STILL = true;
 const vitrine = $('vitrine'), vRaum = vitrine.querySelector('.v-raum');
+if (STILL) vitrine.classList.add('still');
 const vKarten = BEREICHE.map((b, i) => {
   // fehlt die gewählte Sprache, öffnet sich die Anwendung auf Englisch, wenn es sie so gibt, sonst in ihrer ersten Sprache
   const offenFuer = (sp) => (b.sprachen.includes(sp) ? sp : (b.sprachen.includes('en') ? 'en' : b.sprachen[0]));
@@ -1067,7 +1072,7 @@ const umlauf = (d) => ((d % N) + N + N / 2) % N - N / 2;   // kürzester Weg im 
 function vitrineAuf(i) {
   vZuletzt = document.activeElement;
   vz.pos = vz.ziel = i; vz.v = 0; vz.aufZiel = 1; vz.t0 = performance.now(); vz.aktiv = -1;
-  vKarten.forEach((k) => { k.flug = 0; });
+  vKarten.forEach((k) => { k.flug = 0; k.schauGemalt = false; });
   vitrine.hidden = false; vz.breite = vKarten[0].el.offsetWidth || 320;
   vitrineOffen = true; vitrine.hidden = false; vitrine.classList.add('auf'); document.body.classList.add('vitrine-auf'); spur('Vitrine ' + BEREICHE[i].name);
   cancelAnimationFrame(vz.lauf); vz.lauf = requestAnimationFrame(vitrineBild);
@@ -1105,8 +1110,9 @@ function aktivSetzen(i) {
   vKarten.forEach((k, j) => {
     const b = BEREICHE[j], vorn = j === i;
     k.el.classList.toggle('vorn', vorn); k.el.setAttribute('aria-hidden', String(!vorn)); k.oeffnen.tabIndex = vorn ? 0 : -1;
-    if (vorn) { vitrine.setAttribute('aria-labelledby', `v-name-${j}`); k.el.style.setProperty('--glanz-verz', `${Math.max(0.25, 2 - (performance.now() - vz.t0) / 1000).toFixed(2)}s`); k.el.classList.remove('glanzlauf'); void k.el.offsetWidth; k.el.classList.add('glanzlauf'); }
-    if (b.film && !ruhig) {
+    if (vorn) vitrine.setAttribute('aria-labelledby', `v-name-${j}`);
+    if (vorn && !STILL) { k.el.style.setProperty('--glanz-verz', `${Math.max(0.25, 2 - (performance.now() - vz.t0) / 1000).toFixed(2)}s`); k.el.classList.remove('glanzlauf'); void k.el.offsetWidth; k.el.classList.add('glanzlauf'); }
+    if (b.film && !ruhig && !STILL) {
       if (vorn && !k.film) {
         // 0.30: während des Flugs aus dem Stein noch kein Film (das Entpacken kostet Bilder), er kommt danach
         const warten = vz.aufZiel ? 2100 - (performance.now() - vz.t0) : 0;
@@ -1116,10 +1122,11 @@ function aktivSetzen(i) {
       } else if (!vorn && k.film) { const v = k.film; k.film = null; v.classList.remove('laeuft'); setTimeout(() => { v.pause(); v.removeAttribute('src'); v.load(); v.remove(); }, 400); }
     }
     if (b.schau) {
-      if (vorn && !k.schauStopp) k.schauStopp = schauZeichnen(k.bild.querySelector('canvas'), b, true);
+      if (STILL) { if (!k.schauGemalt) { k.schauGemalt = true; schauZeichnen(k.bild.querySelector('canvas'), b, false); } }
+      else if (vorn && !k.schauStopp) k.schauStopp = schauZeichnen(k.bild.querySelector('canvas'), b, true);
       else if (!vorn && k.schauStopp) { k.schauStopp(); k.schauStopp = null; }
       // hinten steht ein Standbild
-      if (!vorn && !k.schauStopp) schauZeichnen(k.bild.querySelector('canvas'), b, false);
+      if (!STILL && !vorn && !k.schauStopp) schauZeichnen(k.bild.querySelector('canvas'), b, false);
     }
   });
 }
@@ -1139,7 +1146,8 @@ function vitrineBild(jetzt) {
   vKarten.forEach((k, i) => {
     const d = Math.abs(umlauf(i - vz.pos));
     if (vz.aufZiel) {
-      const u = Math.max(0, Math.min(1, (seit - (ruhig ? 0 : 0.35 + d * 0.28)) / (ruhig ? 0.3 : 1.6)));
+      const kurz = ruhig || STILL;
+      const u = Math.max(0, Math.min(1, (seit - (kurz ? 0 : 0.35 + d * 0.28)) / (kurz ? 0.3 : 1.6)));
       k.flug = u * u * u * (u * (u * 6 - 15) + 10); alleZu = false;   // smootherstep: ruhiger Anfang, weiches Ende
     } else { const u = Math.max(0, Math.min(1, seit / (ruhig ? 0.2 : 0.6))); k.flug = Math.min(k.flug, 1 - u * u * (3 - 2 * u)); if (k.flug > 0.001) alleZu = false; }
   });
@@ -1182,13 +1190,14 @@ function vitrineBild(jetzt) {
     rx += -vz.neig.y * 9 * vornGrad; ry += vz.neig.x * 11 * vornGrad;
     // Erscheinen: aus etwas Tiefe und ein wenig von unten, ohne Drehung
     const fl = k.flug, gegen = 1 - fl;
-    y += gegen * 34; z -= gegen * 90;
+    if (!STILL) { y += gegen * 34; z -= gegen * 90; }
     const sichtbar = ad < 2.2 ? 1 : Math.max(0, 1 - (ad - 2.2) / 0.3);
     k.el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, ${z.toFixed(1)}px) rotateY(${ry.toFixed(2)}deg) rotateX(${rx.toFixed(2)}deg) scale(${sch.toFixed(3)})`;
     k.el.style.opacity = (fl * sichtbar).toFixed(3);
     k.el.style.zIndex = String(100 - Math.round(ad * 10));
     k.el.style.pointerEvents = fl > 0.9 && sichtbar > 0.5 ? 'auto' : 'none';
     k.dunkel.style.opacity = Math.min(0.72, ad * 0.5).toFixed(3);
+    if (!STILL) {
     // Licht: ein weicher Fleck, der gegen die Neigung über das Glas gleitet; dazu ein irisierendes Band
     const lx = 50 + (ry / 34) * -40 + vz.neig.x * 22, ly = 30 - rx * 3 - vz.neig.y * 18;
     // 0.30: Licht und Glanz sind feste Verläufe, die nur verschoben werden (Transformation statt Neumalen in jedem Bild: flüssig am Handy)
@@ -1199,6 +1208,7 @@ function vitrineBild(jetzt) {
     // Parallaxe: das Bild liegt hinter dem Glas und verschiebt sich gegen die Drehung
     // 0.26: nur noch ein Hauch Parallaxe und keine Vergrösserung, damit das Motiv ganz im Ausschnitt bleibt
     k.bild.style.transform = `translate3d(${(-ry * 0.12).toFixed(1)}px, ${(rx * 0.15).toFixed(1)}px, 0)`;
+    }
     // Schatten auf dem Boden: je höher die Karte schwebt, desto weicher und leiser
     const hoehe = Math.sin(t * 0.9 + ph) * atmen;
     k.schatten.style.transform = `translateY(${(26 + hoehe * 4).toFixed(1)}px) scale(${(0.86 - hoehe * 0.04).toFixed(3)}, 1)`;
@@ -1237,7 +1247,7 @@ vRaum.addEventListener('pointerdown', (e) => {
   vz.zug = { x: e.clientX, y: e.clientY, pos: vz.pos, t: performance.now(), lx: e.clientX, lt: performance.now(), v: 0, bewegt: false, id: e.pointerId };
 });
 addEventListener('pointermove', (e) => {
-  if (vitrineOffen && e.pointerType === 'mouse' && !vz.zug) {
+  if (vitrineOffen && e.pointerType === 'mouse' && !vz.zug && !STILL) {
     // Maus über der vorderen Karte: Neigung zum Zeiger
     const k = vKarten[vz.aktiv]; if (!k) return;
     const r = k.koerper.getBoundingClientRect();
@@ -1257,7 +1267,7 @@ addEventListener('pointermove', (e) => {
   const jetzt = performance.now(), dt = Math.max(1, jetzt - z.lt);
   z.v = z.v * 0.6 + (-(e.clientX - z.lx) / (breite * 0.9) / dt * 16.67) * 0.4; z.lx = e.clientX; z.lt = jetzt;
   // beim Ziehen neigt sich die vordere Karte mit
-  vz.neigZiel.x = Math.max(-1, Math.min(1, -z.v * 6));
+  if (!STILL) vz.neigZiel.x = Math.max(-1, Math.min(1, -z.v * 6));
 });
 const vLos = (e) => {
   const z = vz.zug; if (!z || z.id !== e.pointerId) return;
