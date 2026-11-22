@@ -157,6 +157,9 @@ export const ANGEBOTE = [
       { name: "Spectral menu", von: "entry page with a prism", jahr: "2026", url: "/references/webdesign/colorpicker/", adresse: "ornament.cloud/references/webdesign/colorpicker", bild: "b/bilder/schau/spektralmenue.jpg",
         bildAlt: "Spectral menu: a white beam strikes a glass prism and fans out into a spectrum, a colour ring around the prism picks the colour, the chosen menu item stands large below",
         text: "An entry page with almost no text: turning the ring around the prism puts another spectral colour on the screen, and with each colour another menu item. The refraction is computed, not drawn." },
+      { name: "Prints", von: "entry page for prints", jahr: "2026", url: "/references/webdesign/prints/", adresse: "ornament.cloud/references/webdesign/prints", bild: "b/bilder/schau/prints.jpg",
+        bildAlt: "Prints: a press sheet with a woman's head in four-colour halftone dots of yellow, magenta, cyan and black, with crop marks, registration marks and a colour bar",
+        text: "An entry page for prints: the first motif is built up as a four-colour halftone, plate by plate. Below, eight motifs, each with a loupe, a halftone print and a view on the wall." },
       { name: "Kaiserbühne", von: "website of a theatre", jahr: "2026", url: "https://kaiserbuehne.ch/", adresse: "kaiserbuehne.ch", bild: "b/bilder/schau/kaiserbuehne.jpg", mass: [1165, 728],
         bildAlt: "Website of the Kaiserbühne: the programme of the 2026/27 season as coloured tiles with the titles of the plays, above it the header with news, tickets, programme, about and rental",
         text: "The website of the Kaiserbühne theatre with the programme as coloured tiles. In German." },
@@ -203,6 +206,15 @@ export const ANGEBOTE = [
       { frage: "Who exhibits?", wahlen: ["one person", "a group", "a collection", "open"] },
       { frage: "When?", wahlen: ["in three months", "in a year", "next year", "open"] },
     ] },
+  { slug: "produkte", name: "Products", kurz: "Works, prints, editions and commissions, classic and digital.",
+    text: "Works on paper and canvas, prints in small editions, installations with image, motion and sound, works for rooms and screens. Plus editions from the Zettelkasten: the book, the card set, the poster and the notebooks, printed on demand. Orders by email, payment by QR invoice or TWINT; shipping within Switzerland included. Commissions for institutions, companies and private clients after a conversation.",
+    fuer: "For collectors, architects, companies, municipalities, institutions and for everyone looking for a work or a book for a particular place.",
+    ablauf: ["Choose on the «Works» page, or a conversation about the place and what it needs.", "Order by email, confirmation with invoice; for commissions a draft as a sketch or a moving preview.", "Insured shipping, or work, installation and handover with certificate."],
+    dialog: [
+      { frage: "What?", wahlen: ["a print or an original", "a book, cards, a poster", "a commission", "something for a screen"] },
+      { frage: "For which place?", wahlen: ["a home", "an office or reception", "a public space", "a gift"] },
+      { frage: "How many?", wahlen: ["one", "a small series", "an edition", "open"] },
+    ] },
   { slug: "fotografie", name: "Photography", kurz: "Photo commissions of every kind, from portrait to landscape.",
     text: "Photo commissions of every kind: people, events, spaces, places, products, artworks, stage and landscape. In colour or black and white, for website, press and print. The stage photographs shown here were made for the Kaiserbühne theatre.",
     fuer: "For companies, institutions, associations, theatres, artists and private clients: for anyone who needs good pictures.",
@@ -213,15 +225,7 @@ export const ANGEBOTE = [
       { frage: "What for?", wahlen: ["website", "press", "print", "archive"] },
       { frage: "How much?", wahlen: ["one session", "one day", "a series", "open"] },
     ] },
-  { slug: "produkte", name: "Products", kurz: "Works, prints, editions and commissions, classic and digital.",
-    text: "Works on paper and canvas, prints in small editions, installations with image, motion and sound, works for rooms and screens. Plus editions from the Zettelkasten: the book, the card set, the poster and the notebooks, printed on demand. Orders by email, payment by QR invoice or TWINT; shipping within Switzerland included. Commissions for institutions, companies and private clients after a conversation.",
-    fuer: "For collectors, architects, companies, municipalities, institutions and for everyone looking for a work or a book for a particular place.",
-    ablauf: ["Choose on the «Works» page, or a conversation about the place and what it needs.", "Order by email, confirmation with invoice; for commissions a draft as a sketch or a moving preview.", "Insured shipping, or work, installation and handover with certificate."],
-    dialog: [
-      { frage: "What?", wahlen: ["a print or an original", "a book, cards, a poster", "a commission", "something for a screen"] },
-      { frage: "For which place?", wahlen: ["a home", "an office or reception", "a public space", "a gift"] },
-      { frage: "How many?", wahlen: ["one", "a small series", "an edition", "open"] },
-    ] },
+
 ];
 
 export const UEBER = {

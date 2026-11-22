@@ -49,6 +49,10 @@ button{font:inherit;color:inherit}
 .wege{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center}
 .wege a{font-weight:600;font-size:16px;text-decoration:none;border-bottom:1.5px solid currentColor;padding-bottom:2px}
 .wege a.still{font-weight:400;color:var(--leise);border-bottom-color:var(--linie)}
+.zurueck{position:absolute;right:max(var(--rand),env(safe-area-inset-right,0px));top:calc(18px + env(safe-area-inset-top,0px));z-index:2;width:44px;height:44px;border-radius:50%;
+  border:1px solid var(--linie);background:var(--bogen);display:grid;place-items:center;text-decoration:none;font-size:20px;line-height:1;color:var(--tinte)}
+.zurueck:hover{border-color:var(--leise)}
+.zurueck[hidden]{display:none}
 .schalter{position:absolute;display:flex;border:1px solid var(--linie);border-radius:999px;padding:3px;background:var(--bogen);transform:translateX(-50%);visibility:hidden}
 .schalter.da{visibility:visible}
 .schalter button,.modi button{appearance:none;border:0;background:none;border-radius:999px;padding:6px 13px;font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;color:var(--leise);cursor:pointer}
@@ -132,13 +136,14 @@ button{font:inherit;color:inherit}
 <header class="kopf" id="kopf">
   <canvas id="bogen" role="img" aria-label="Ein Print im Vierfarbenraster: ein gerasterter Frauenkopf in Schwarz und Weiss vor zwei grossen Kreisen aus feinen Ringen in Pink und Gelb."></canvas>
   <a class="marke" href="/start/">ornament.cloud</a>
+  <a class="zurueck" id="zurueck" href="/angebot/" aria-label="Zurück zum Angebot" hidden>×</a>
   <div class="schalter" id="schalter" role="group" aria-label="Darstellung des Motivs">
     <button type="button" id="s-raster" aria-pressed="true">Raster</button><button type="button" id="s-bild" aria-pressed="false">Bild</button>
   </div>
   <section class="text">
     <h1>Prints<span>.</span></h1>
     <p>Acht Motive. Format, Papier und Preis auf Anfrage.</p>
-    <div class="wege"><a href="#motive">Alle Prints</a><a class="still" href="mailto:hansnoed@gmail.com?subject=Prints">Anfragen</a></div>
+    <div class="wege"><a href="#motive">Alle Prints</a><a class="still" href="mailto:hansnoed@gmail.com?subject=Prints">Anfragen</a><a class="still" id="briefing" href="/angebot/produkte/" hidden>Briefing</a></div>
   </section>
 </header>
 
@@ -256,6 +261,15 @@ function schnittmarken(ctx, x, y, B, H, farbe) {
   ctx.stroke();
 }
 const laden = src => new Promise((ok, nein) => { const i = new Image(); i.onload = () => ok(i); i.onerror = nein; i.src = src; });
+
+/* ---------- Aus dem Angebot geöffnet (?von=angebot): Kreuz zurück und Weg zum Briefing ---------- */
+if (new URLSearchParams(location.search).get("von") === "angebot") {
+  const zu = $("zurueck"); zu.hidden = false; $("briefing").hidden = false;
+  zu.addEventListener("click", e => {
+    let gleich = false; try { gleich = new URL(document.referrer).origin === location.origin; } catch (x) {}
+    if (gleich && history.length > 1) { e.preventDefault(); history.back(); }
+  });
+}
 
 /* ---------- Bogen oben ---------- */
 const cv = $("bogen"), ctx = cv.getContext("2d"), kopfEl = $("kopf"), schalter = $("schalter");

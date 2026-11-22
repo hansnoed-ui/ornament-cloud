@@ -178,6 +178,10 @@ export const ANGEBOTE = [
       { name: "Spektralmenü", von: "Einstiegsseite mit Prisma", jahr: "2026", url: "/references/webdesign/colorpicker/", adresse: "ornament.cloud/references/webdesign/colorpicker", bild: "b/bilder/schau/spektralmenue.jpg",
         bildAlt: "Spektralmenü: ein weisser Strahl fällt auf ein Glasprisma und fächert sich zum Spektrum auf, ein Farbring um das Prisma wählt die Farbe, unten steht gross der gewählte Menüpunkt",
         text: "Eine Einstiegsseite fast ohne Text: Wer den Ring um das Prisma dreht, legt eine andere Spektralfarbe auf den Schirm, und mit jeder Farbe einen anderen Menüpunkt. Die Brechung ist gerechnet, nicht gezeichnet." },
+      // Prints an zweiter Stelle seit 22. November 2026 (Christian: «neben der 2. Stelle der webdesign-referenzen»)
+      { name: "Prints", von: "Einstiegsseite für Prints", jahr: "2026", url: "/references/webdesign/prints/", adresse: "ornament.cloud/references/webdesign/prints", bild: "b/bilder/schau/prints.jpg",
+        bildAlt: "Prints: ein Druckbogen mit einem Frauenkopf im Vierfarbenraster aus Punkten in Gelb, Magenta, Cyan und Schwarz, mit Schnittmarken, Passerkreuzen und Farbkontrollstreifen",
+        text: "Eine Einstiegsseite für Prints: Das erste Motiv entsteht als Vierfarbenraster, Platte um Platte. Darunter acht Motive, jedes mit Lupe, Rasterdruck und Ansicht an der Wand." },
       { name: "Kaiserbühne", von: "Website eines Theaters", jahr: "2026", url: "https://kaiserbuehne.ch/", adresse: "kaiserbuehne.ch", bild: "b/bilder/schau/kaiserbuehne.jpg", mass: [1165, 728],
         bildAlt: "Website der Kaiserbühne: der Spielplan der Saison 2026/27 als farbige Kacheln mit den Titeln der Stücke, darüber die Kopfzeile mit Aktuell, Tickets, Spielplan, Über uns und Vermietung",
         text: "Die Website der Kaiserbühne mit dem Spielplan als farbigen Kacheln." },
@@ -229,6 +233,17 @@ export const ANGEBOTE = [
     ] },
   // Fünfte Leistung seit 13. November 2026 (Christian: «Nimm noch etwas zum Thema Fotographie: Angebote/Werke»). Der Text ist von Claude nach den
   // geschickten Bildern geschrieben (Bühne, Raum, Landschaft) und knapp gehalten: was genau angeboten wird, zu welchem Preis und für wen, bestätigt Christian.
+  // Produkte vor Fotografie seit 22. November 2026 (Christian: Prints und Editionen «da vor den Fotografien»);
+  // auf /start/ und /angebot/ führt «Produkte» zuerst auf die Prints-Seite (references/webdesign/prints/?von=angebot).
+  { slug: "produkte", name: "Produkte", kurz: "Werke, Prints, Editionen und Auftragsarbeiten, klassisch und digital.",
+    text: "Werke auf Papier und Leinwand, Prints in kleinen Auflagen, Installationen mit Bild, Bewegung und Ton, Arbeiten für Räume und Bildschirme. Dazu Editionen aus dem Zettelkasten: das Buch, das Kartenset, das Poster und die Notizbücher, gedruckt auf Bestellung. Bestellt wird per Mail, bezahlt per QR-Rechnung oder TWINT; Versand in der Schweiz inbegriffen. Auftragsarbeiten für Häuser, Firmen und Private nach Gespräch.",
+    fuer: "Für Sammler:innen, Architekt:innen, Firmen, Gemeinden, Häuser und für alle, die ein Werk oder ein Buch für einen bestimmten Ort suchen.",
+    ablauf: ["Aussuchen auf der Seite «Werke» oder ein Gespräch über den Ort und das, was er braucht.", "Bestellung per Mail, Bestätigung mit Rechnung; bei Auftragsarbeiten ein Entwurf als Skizze oder bewegte Vorschau.", "Versand versichert, oder Werk, Montage und Übergabe mit Zertifikat."],
+    dialog: [
+      { frage: "Was?", wahlen: ["ein Print oder Original", "ein Buch, Karten, ein Poster", "eine Auftragsarbeit", "etwas für einen Bildschirm"] },
+      { frage: "Für welchen Ort?", wahlen: ["eine Wohnung", "ein Büro oder Empfang", "einen öffentlichen Raum", "ein Geschenk"] },
+      { frage: "Wie viele?", wahlen: ["eines", "eine kleine Reihe", "eine Auflage", "offen"] },
+    ] },
   { slug: "fotografie", name: "Fotografie", kurz: "Foto-Aufträge aller Art, vom Porträt bis zur Landschaft.",
     text: "Foto-Aufträge aller Art: Menschen, Anlässe, Räume, Orte, Produkte, Werke, Bühne und Landschaft. In Farbe oder Schwarzweiss, für Website, Presse und Druck. Die Bühnenbilder hier sind für die Kaiserbühne entstanden.",
     fuer: "Für Firmen, Häuser, Vereine, Theater, Künstler:innen und Private: für alle, die gute Bilder brauchen.",
@@ -239,15 +254,7 @@ export const ANGEBOTE = [
       { frage: "Wofür?", wahlen: ["Website", "Presse", "Druck", "Archiv"] },
       { frage: "Wie viel?", wahlen: ["ein Termin", "ein Tag", "eine Reihe", "offen"] },
     ] },
-  { slug: "produkte", name: "Produkte", kurz: "Werke, Prints, Editionen und Auftragsarbeiten, klassisch und digital.",
-    text: "Werke auf Papier und Leinwand, Prints in kleinen Auflagen, Installationen mit Bild, Bewegung und Ton, Arbeiten für Räume und Bildschirme. Dazu Editionen aus dem Zettelkasten: das Buch, das Kartenset, das Poster und die Notizbücher, gedruckt auf Bestellung. Bestellt wird per Mail, bezahlt per QR-Rechnung oder TWINT; Versand in der Schweiz inbegriffen. Auftragsarbeiten für Häuser, Firmen und Private nach Gespräch.",
-    fuer: "Für Sammler:innen, Architekt:innen, Firmen, Gemeinden, Häuser und für alle, die ein Werk oder ein Buch für einen bestimmten Ort suchen.",
-    ablauf: ["Aussuchen auf der Seite «Werke» oder ein Gespräch über den Ort und das, was er braucht.", "Bestellung per Mail, Bestätigung mit Rechnung; bei Auftragsarbeiten ein Entwurf als Skizze oder bewegte Vorschau.", "Versand versichert, oder Werk, Montage und Übergabe mit Zertifikat."],
-    dialog: [
-      { frage: "Was?", wahlen: ["ein Print oder Original", "ein Buch, Karten, ein Poster", "eine Auftragsarbeit", "etwas für einen Bildschirm"] },
-      { frage: "Für welchen Ort?", wahlen: ["eine Wohnung", "ein Büro oder Empfang", "einen öffentlichen Raum", "ein Geschenk"] },
-      { frage: "Wie viele?", wahlen: ["eines", "eine kleine Reihe", "eine Auflage", "offen"] },
-    ] },
+
 ];
 
 /** Produkte der Werkstatt (Print on Demand). Die Dateien erzeugt tools/build-b-pod.mjs; die Angaben sind für Amazon KDP vorbereitet. */
