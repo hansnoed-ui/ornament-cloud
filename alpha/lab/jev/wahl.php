@@ -92,7 +92,7 @@ const BILD_EFFEKTE = [
   'bild.truchet' => 'Truchet: Felder mit Viertelbögen, deren Richtung der Ton wählt, sie drehen sich einzeln',
   'bild.gewebe' => 'Gewebe: die Umrisse des Bildes werden zu Flächen aus feinen Linien, die der Ton bewegt, bei kräftigen Einsätzen neue Bilder (PHORMA)',
   // PHORMA II (seit Lab 0.1.22, eine Operation mit Abläufen): die Grafikkarte rechnet jedes Bild aus der Zeit
-  'bild.physarum' => 'Physarum: ein Schleimpilz wächst aus den markanten Stellen und findet die Formen des Bildes als Netz (PHORMA II)',
+  'bild.physarum' => 'Physarum: ein Netz wächst aus den markanten Stellen und findet die Formen des Bildes als Netz (PHORMA II)',
   'bild.tiefe' => 'Tiefe: ein Lichtscan tastet das Bild ab, es bekommt Relief und wird Raum (PHORMA II)',
   'bild.welle' => 'Wellenwanne: das Bild liegt unter Wasser, Dünung und Ringe brechen es, helle Linien glänzen (PHORMA II)',
   'bild.druck' => 'Rasterdruck: das Bild wird zum Vierfarbendruck aus Punkten, die Platten rasten ein und bleiben versetzt (PHORMA II)',

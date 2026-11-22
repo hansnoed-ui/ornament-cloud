@@ -22,8 +22,9 @@ const ANGEBOT = (seite) => ({ href: `/angebot/${seite}/`, adressen: { en: `/en/a
 const BEREICHE = [
   { werk: 'Spektralmenü', href: '/references/webdesign/colorpicker/', sprachen: ['de'], bild: 'vorschau/website-spektral.jpg?v=1', ton: [150, 118, 255],
     links: [{ wort: 'angebot', ...ANGEBOT('webdesign') }] },
-  { werk: 'PHORMA II', href: '/alpha/phorma-ii/', sprachen: ['de', 'en'], adressen: { de: '/alpha/phorma-ii/?sprache=de', en: '/alpha/phorma-ii/?sprache=en' },
-    bild: 'vorschau/phorma-ii.jpg?v=1', ton: [72, 176, 220],
+  // 0.46 (Christian, 22.11.2026: «nimm The Fictory als Beispiel»)
+  { werk: 'The Fictory', href: '/alpha/the-fictory/', sprachen: ['de', 'en'], adressen: { de: '/alpha/the-fictory/?sprache=de', en: '/alpha/the-fictory/?sprache=en' },
+    bild: 'vorschau/the-fictory.jpg?v=1', ton: [72, 176, 220],
     links: [{ wort: 'angebot', ...ANGEBOT('webdesign') }, { wort: 'apps', href: '/apps/', adressen: { en: '/en/apps/' } }] },
   { werk: 'Animations', href: '/animations/', sprachen: ['de', 'en', 'es'], adressen: { en: '/animations/en/', es: '/animations/es/' }, bild: 'vorschau/animations.jpg?v=2', ton: [86, 196, 150],
     links: [
@@ -55,7 +56,7 @@ const TEXTE = {
     worte: { angebot: 'Angebot', zumAngebot: 'Zum Angebot', apps: 'Alle Apps', atelier: 'Atelier', imAtelier: 'Weitere im Atelier', vermittlung: 'Vermittlung', kuration: 'Kuration', weitere: 'Weitere' },
     anw: [
       { name: 'Websites', kopf: 'Einstiegsseite mit Prisma · 2026', satz: 'Eine Einstiegsseite fast ohne Text: Wer den Ring um das Prisma dreht, legt eine andere Spektralfarbe auf den Schirm, mit jeder Farbe einen anderen Menüpunkt.' },
-      { name: 'Apps', kopf: 'Foto und Video · sechs Effekte', satz: 'Ein Schleimpilz findet die Formen des Bilds, es liegt unter bewegtem Wasser, weht als Seidentuch oder zerfällt im Takt in Rechtecke.' },
+      { name: 'Apps', kopf: 'Bild · Werkbank · Film', satz: 'Leg ein Bild auf die Werkbank: Es zerfällt in seine Teile, ordnet sich neu, hinterlässt Spuren und setzt sich am Ende neu zusammen.' },
       { name: 'Anwendungen', kopf: 'Bild · Bewegung', satz: 'Ein Bild, 24 Effekte, bis zu drei Ebenen: das Mischpult für eigene Animationen.' },
       { name: 'Produkte', kopf: 'Acht Motive · auf Anfrage', satz: 'Das erste Motiv entsteht als Vierfarbenraster, Platte um Platte. Darunter acht Motive, jedes mit Lupe und Ansicht an der Wand.' },
       { name: 'Vermittlung', kopf: 'Oberer Turm Kaiserstuhl · 2026', satz: 'Sechs Monate, neun Künstler:innen, ein Turm als Ausstellungsraum: Auswahl, Hängung, Texte und Begleitprogramm.' }] },
@@ -64,7 +65,7 @@ const TEXTE = {
     worte: { angebot: 'Service', zumAngebot: 'To the service', apps: 'All apps', atelier: 'Studio', imAtelier: 'More in the studio', vermittlung: 'Education', kuration: 'Curating', weitere: 'More' },
     anw: [
       { name: 'Websites', werk: 'Spectral menu', kopf: 'landing page with a prism · 2026', satz: 'A landing page with almost no text: turn the ring around the prism and another spectral colour falls on the screen, each colour with its own menu item.' },
-      { name: 'Apps', kopf: 'photo and video · six effects', satz: 'A slime mould finds the shapes of the image, it lies under moving water, blows as a silk cloth or falls apart into rectangles on the beat.' },
+      { name: 'Apps', kopf: 'image · workbench · film', satz: 'Put an image on the workbench: it falls apart into its pieces, rearranges itself, leaves traces and in the end reassembles.' },
       { name: 'Applications', kopf: 'image · motion', satz: 'One image, 24 effects, up to three layers: the mixing desk for your own animations.' },
       { name: 'Products', kopf: 'eight motifs · on request', satz: 'The first motif appears as a four-colour screen, plate by plate. Below, eight motifs, each with a loupe and a view on the wall.' },
       { name: 'Education', werk: 'Supervisions', kopf: 'Oberer Turm Kaiserstuhl · 2026', satz: 'Six months, nine artists, a tower as exhibition space: selection, hanging, texts and accompanying programme.' }] },
@@ -73,7 +74,7 @@ const TEXTE = {
     worte: { angebot: 'Offre', zumAngebot: 'Voir l’offre', apps: 'Toutes les apps', atelier: 'Atelier', imAtelier: 'D’autres à l’atelier', vermittlung: 'Médiation', kuration: 'Curation', weitere: 'Aussi' },
     anw: [
       { name: 'Sites web', werk: 'Menu spectral', kopf: 'page d’accueil avec prisme · 2026', satz: `Une page d’accueil presque sans texte${NBSP}: qui tourne l’anneau autour du prisme pose une autre couleur spectrale sur l’écran, et avec chaque couleur une autre entrée du menu.` },
-      { name: 'Apps', kopf: 'photo et vidéo · six effets', satz: 'Un myxomycète trouve les formes de l’image, elle repose sous une eau mouvante, flotte comme un voile de soie ou se défait en rectangles au rythme.' },
+      { name: 'Apps', kopf: 'image · établi · film', satz: `Pose une image sur l’établi${NBSP}: elle se défait en morceaux, se réordonne, laisse des traces et finit par se recomposer.` },
       { name: 'Applications', kopf: 'image · mouvement', satz: `Une image, 24 effets, jusqu’à trois calques${NBSP}: la table de mixage pour vos propres animations.` },
       { name: 'Produits', kopf: 'huit motifs · sur demande', satz: 'Le premier motif naît en trame quadrichromie, plaque après plaque. En dessous, huit motifs, chacun avec loupe et vue au mur.' },
       { name: 'Médiation', werk: 'Supervisions', kopf: 'Oberer Turm Kaiserstuhl · 2026', satz: `Six mois, neuf artistes, une tour comme lieu d’exposition${NBSP}: choix, accrochage, textes et programme d’accompagnement.` }] },
@@ -82,7 +83,7 @@ const TEXTE = {
     worte: { angebot: 'Oferta', zumAngebot: 'Ver la oferta', apps: 'Todas las apps', atelier: 'Taller', imAtelier: 'Más en el taller', vermittlung: 'Mediación', kuration: 'Curaduría', weitere: 'Más' },
     anw: [
       { name: 'Sitios web', werk: 'Menú espectral', kopf: 'página de inicio con prisma · 2026', satz: 'Una página de inicio casi sin texto: quien gira el anillo alrededor del prisma pone otro color espectral en la pantalla y, con cada color, otro punto del menú.' },
-      { name: 'Apps', kopf: 'foto y vídeo · seis efectos', satz: 'Un moho mucilaginoso encuentra las formas de la imagen, que yace bajo agua en movimiento, ondea como un paño de seda o se deshace en rectángulos al compás.' },
+      { name: 'Apps', kopf: 'imagen · banco de trabajo · película', satz: 'Pon una imagen en el banco de trabajo: se deshace en sus piezas, se reordena, deja huellas y al final se recompone.' },
       { name: 'Aplicaciones', kopf: 'imagen · movimiento', satz: 'Una imagen, 24 efectos, hasta tres capas: la mesa de mezclas para tus propias animaciones.' },
       { name: 'Productos', kopf: 'ocho motivos · bajo pedido', satz: 'El primer motivo surge como trama de cuatro colores, plancha a plancha. Debajo, ocho motivos, cada uno con lupa y vista en la pared.' },
       { name: 'Mediación', werk: 'Supervisiones', kopf: 'Oberer Turm Kaiserstuhl · 2026', satz: 'Seis meses, nueve artistas, una torre como sala de exposición: selección, montaje, textos y programa de acompañamiento.' }] }
@@ -995,13 +996,14 @@ const vKarten = BEREICHE.map((b, i) => {
   const linksSetzen = () => {
     vl.textContent = '';
     if (!b.links) { vl.hidden = true; return; }
-    if (b.links.length > 2) { const w = document.createElement('span'); w.className = 'v-l-wort'; w.textContent = T.worte.weitere; vl.append(w); }
-    b.links.forEach((x, j) => {
-      if (j) vl.append(document.createTextNode('\u00a0· '));   // der Punkt bleibt beim vorigen Namen
+    b.links.forEach((x) => {
       const a = document.createElement('a'), sp = x.sprachen ? offenFuer.call(x, SPRACHE) : SPRACHE;
       a.textContent = x.wort ? T.worte[x.wort] : jeSprache(x.name);
       a.href = (telefon && x.handy) ? x.handy + '?sprache=' + sp : (x.adressen && (x.adressen[sp] || (sp !== 'de' && x.adressen.en))) || x.href;
-      if (x.aussen) { a.target = '_blank'; a.rel = 'noopener'; a.append(Object.assign(document.createElement('span'), { textContent: ' ↗', ariaHidden: 'true' })); }
+      if (x.aussen) { a.target = '_blank'; a.rel = 'noopener'; }
+      // 0.46: ein feiner Pfeil als Haarlinie, schräg für Seiten ausserhalb
+      a.insertAdjacentHTML('beforeend', x.aussen ? '<svg class="v-pfeil" viewBox="0 0 14 8" aria-hidden="true"><path d="M4 7 L10 1 M5 1 H10 V6"/></svg>'
+        : '<svg class="v-pfeil" viewBox="0 0 14 8" aria-hidden="true"><path d="M0 4 H13 M9.5 0.5 L13 4 L9.5 7.5"/></svg>');
       if (x.speicher) a.addEventListener('click', () => { try { localStorage.setItem(x.speicher, sp); } catch {} });
       vl.append(a);
     });

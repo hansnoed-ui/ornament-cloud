@@ -389,7 +389,7 @@ test("Hören: jede öffentliche Veröffentlichung (listen/<slug>/ep.json mit \"o
 test("Atelier: die Einträge mit \"atelier\": true aus src/register.json, jeder in neuem Fenster; nichts, was nur per Direktlink erreichbar sein soll", () => {
   const register = JSON.parse(lies("src/register.json"));
   const html = lies("b/atelier/index.html"), liste = html.match(/<ul class="liste-linien am-ende">[\s\S]*?<\/ul>/)[0];
-  const soll = ["animations", "composer", "lab", "multiverse", "gamma"].map((id) => register.arbeiten.find((e) => e.id === id));   // Folge vom 14. November 2026; Zettelkasten und Hypertext stehen oben unter «Denken»
+  const soll = ["animations", "deleuze-start", "drittes-rad", "composer", "lab", "multiverse", "gamma"].map((id) => register.arbeiten.find((e) => e.id === id));   // Folge vom 14. November 2026, seit 22. November mit the deleuzian scheme und dem 3. Rad; Zettelkasten und Hypertext stehen oben unter «Denken»
   assert.deepEqual(register.arbeiten.filter((e) => e.atelier && !["zettelkasten", "kunst-hypertext"].includes(e.id)).map((e) => e.id).sort(), soll.map((e) => e.id).sort(), "genau diese im Atelier");
   assert.deepEqual([...liste.matchAll(/<a href="\/([^"]*)" target="_blank" rel="noopener"/g)].map((m) => m[1]), soll.map((e) => e.adresse));
   for (const e of soll) assert.ok(["verlinkt", "oeffentlich"].includes(e.status) && e.kurz && e.kurzEn, `${e.id}: im Atelier nur Verlinktes, mit Text in beiden Sprachen`);

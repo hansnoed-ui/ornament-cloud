@@ -835,7 +835,7 @@ PHORMA III, Traube: glänzende rote Perlen in einer Kugel aus Fäden, Schnitte i
 
 ## PHORMA II: Szene (`phorma.ii`)
 
-PHORMA II: Physarum (ein Schleimpilz findet die Formen), Tiefe (das Foto wird Relief), Wellenwanne, Tuch (das Foto fällt als Seide), Rasterdruck, Montage (verschachtelte Rechtecke) – einzeln oder als Kette. Eine ORNA-Konstellation kann den Ablauf wählen, ein Zettel gibt den Titel.
+PHORMA II: Physarum (ein wachsendes Netz findet die Formen), Tiefe (das Foto wird Relief), Wellenwanne, Tuch (das Foto fällt als Seide), Rasterdruck, Montage (verschachtelte Rechtecke) – einzeln oder als Kette. Eine ORNA-Konstellation kann den Ablauf wählen, ein Zettel gibt den Titel.
 
 - **Herkunft:** Adapter, PHORMA II; Datei alpha/phorma-ii/buehne.js, film.js, ablauf.js, analyse.js und die Effekte (v=40, unverändert)
 - **Voraussetzungen:** Browser mit WebGL 2 (three.js aus vendor/, Importmap in index.html)

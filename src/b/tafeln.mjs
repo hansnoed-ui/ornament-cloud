@@ -212,7 +212,7 @@ function netz2() {
     const a = z() * Math.PI * 2, r = Math.sqrt(z()) * (R2 - 22), x = M + Math.cos(a) * r, y = M + Math.sin(a) * r;
     if (pts.every((q) => Math.hypot(q[0] - x, q[1] - y) >= 40)) pts.push([f(x), f(y)]);
   }
-  // Adern: jeder Punkt zu seinen drei nächsten Nachbarn, keine länger als 110; jede leicht gebogen (ein Schleimpilz zieht keine Geraden)
+  // Adern: jeder Punkt zu seinen drei nächsten Nachbarn, keine länger als 110; jede leicht gebogen (ein wachsendes Netz zieht keine Geraden)
   const kanten = new Map();
   pts.forEach((q, i) => {
     const nah = pts.map((w, j) => [Math.hypot(w[0] - q[0], w[1] - q[1]), j]).filter(([d, j]) => j !== i && d <= 110).sort((u, v) => u[0] - v[0]).slice(0, 3);

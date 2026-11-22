@@ -1,4 +1,4 @@
-// PHORMA II – Physarum: ein Schleimpilz aus bis zu 262 144 Agenten (Jones 2010) auf der GPU. Jeder Agent riecht mit drei Fühlern die Spur der anderen
+// PHORMA II – Physarum: ein Netz aus bis zu 262 144 Agenten (Jones 2010) auf der GPU. Jeder Agent riecht mit drei Fühlern die Spur der anderen
 // und die Nahrung (Kanten und Helligkeit des Fotos, analyse.js), dreht sich zum stärksten Geruch, geht einen Schritt und hinterlässt Spur; die Spur
 // verläuft und verblasst. So wächst aus den Keimen an den markantesten Stellen ein Netz, das die Formen des Fotos findet.
 //   01 Keime – die Agenten strömen sternförmig aus den Keimen; 02 Netz – die Nahrung zählt immer mehr, das Netz legt sich auf die Formen und nimmt
