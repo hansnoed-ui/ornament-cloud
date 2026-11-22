@@ -177,10 +177,10 @@ function kanten(theta) {
 function schirmEnden(S) { const ux = Math.cos(S.a), uy = Math.sin(S.a), h = S.len / 2; return [[S.x - ux * h, S.y - uy * h], [S.x + ux * h, S.y + uy * h]]; }
 const FERN = 4000;
 /* Ein Strahl durch das Prisma; Teilreflexionen nach Fresnel als eigene Äste (alle = true). Der Schirm schluckt das Licht. */
-function verfolgen(l, theta, alle, S) {
+function verfolgen(l, theta, alle, S, off = 0) {
   const E = kanten(theta), [SA, SB] = schirmEnden(S || st.schirm), n = brechzahl(l);
   const seg = [], info = { hit: null, aus: null };
-  const stapel = [{ o: [-60, st.strahlY], d: [1, 0], I: 1, innen: false, id: "", s: 0, tief: 0, haupt: true }];
+  const stapel = [{ o: [-60, st.strahlY + off], d: [1, 0], I: 1, innen: false, id: "", s: 0, tief: 0, haupt: true }];
   while (stapel.length) {
     const r = stapel.pop();
     let best = null;
@@ -264,6 +264,7 @@ function anordnen() {
     st.cx = st.W * .52; st.cy = st.H * .37;
   }
   st.strahlY = st.cy - st.s * .25;
+  st.breite = clamp(st.s * .065, 8, 17);
   const th0 = grundstellung();
   THETA = [];
   let vor = th0;
@@ -279,12 +280,16 @@ const cv = $("buehne"), ctx = cv.getContext("2d");
 const strahlCv = document.createElement("canvas"), sx = strahlCv.getContext("2d");
 const bloom = [2, 4, 8, 16, 32].map(f => { const c = document.createElement("canvas"); return Object.assign(c, { f, x: c.getContext("2d") }); });
 const N_L = 64, LAM = Array.from({ length: N_L }, (_, i) => 392 + 310 * i / (N_L - 1));
+// Weissabgleich: die Farben aller Wellenlängen ergeben zusammen genau Weiss; KERN_MAX hält jede einzelne unter 1, damit nichts abgeschnitten wird
 const KERN = (() => { const S = [0, 0, 0]; LAM.forEach(l => farbe(l).forEach((v, k) => S[k] += v * HUELLE(l))); return LAM.map(l => farbe(l).map((v, k) => v * HUELLE(l) * N_L / S[k])); })();
+const KERN_MAX = Math.max(...KERN.flat()), KERN_N = KERN.map(c => c.map(v => v / KERN_MAX));
 const BAND = LAM.map(l => farbe(l).map(v => v * HUELLE(l)));
 const sicht = I => Math.pow(I, .55);
-let baeume = [], fein = [], enden = [];
+let baeume = [], raender = [], fein = [], enden = [];
 function rechnen() {
   baeume = LAM.map(l => { const { seg, info } = verfolgen(l, st.theta, true); return { seg, m: new Map(seg.map(s => [s.id, s])), info }; });
+  // Die beiden Ränder des Strahls: dazwischen liegt das Band jeder Wellenlänge, so hat der Strahl eine echte Breite
+  raender = LAM.map(l => [-.5, .5].map(f => new Map(verfolgen(l, st.theta, true, null, f * st.breite).seg.map(s => [s.id, s]))));
   fein = [];
   for (let l = 392; l <= 704; l += 2) fein.push({ l, info: verfolgen(l, st.theta, false).info });
   enden = kanten(st.theta);
@@ -294,29 +299,40 @@ function zeichneStrahlen(rev) {
   sx.setTransform(1, 0, 0, 1, 0, 0); sx.globalCompositeOperation = "source-over"; sx.clearRect(0, 0, strahlCv.width, strahlCv.height);
   sx.setTransform(d, 0, 0, d, 0, 0); sx.globalCompositeOperation = "lighter";
   const kurz = s => { if (rev >= s.s1) return s.b; const f = clamp((rev - s.s0) / (s.s1 - s.s0), 0, 1); return [s.a[0] + (s.b[0] - s.a[0]) * f, s.a[1] + (s.b[1] - s.a[1]) * f]; };
+  for (let i = 0; i < N_L; i++) {   // Breite: je Wellenlänge ein Band zwischen den Randstrahlen, zusammen weiss
+    const [T, B] = raender[i];
+    for (const [id, sa] of T) {
+      if (sa.s0 >= rev) continue;
+      const sb = B.get(id); if (!sb) continue;
+      const I = (sa.I + sb.I) / 2, a = Math.pow(I, .85) * .36 * KERN_MAX / N_L * (sa.innen ? .7 : 1); if (a < .0015) continue;
+      const ea = kurz(sa), eb = kurz(sb);
+      sx.fillStyle = rgba(KERN_N[i], a);
+      sx.beginPath(); sx.moveTo(sa.a[0], sa.a[1]); sx.lineTo(ea[0], ea[1]); sx.lineTo(eb[0], eb[1]); sx.lineTo(sb.a[0], sb.a[1]); sx.closePath(); sx.fill();
+    }
+  }
   for (let i = 0; i < N_L - 1; i++) {   // Bänder zwischen benachbarten Wellenlängen auf derselben Bahn
     const A = baeume[i], B = baeume[i + 1];
     for (const sa of A.seg) {
       if (sa.s0 >= rev) continue;
       const sb = B.m.get(sa.id); if (!sb) continue;
-      const a = sicht((sa.I + sb.I) / 2) * (sa.innen ? .55 : .95); if (a < .01) continue;
+      const a = sicht((sa.I + sb.I) / 2) * (sa.innen ? .3 : .62); if (a < .01) continue;
       const ea = kurz(sa), eb = kurz(sb);
       sx.fillStyle = rgba(BAND[i], a);
       sx.beginPath(); sx.moveTo(sa.a[0], sa.a[1]); sx.lineTo(ea[0], ea[1]); sx.lineTo(eb[0], eb[1]); sx.lineTo(sb.a[0], sb.a[1]); sx.closePath(); sx.fill();
     }
   }
-  sx.lineCap = "round"; sx.lineWidth = 2.2;   // Kernlinien: zusammen ergeben sie Weiss
+  sx.lineCap = "round"; sx.lineWidth = 1.2;   // Kernlinien: zusammen ergeben sie Weiss
   for (let i = 0; i < N_L; i++) for (const s of baeume[i].seg) {
     if (s.s0 >= rev) continue;
     const e = kurz(s);
-    sx.strokeStyle = rgba(KERN[i], sicht(s.I) * 1.15 / N_L * (s.innen ? .9 : 1));
+    sx.strokeStyle = rgba(KERN_N[i], Math.pow(s.I, .85) * .2 * KERN_MAX / N_L * (s.innen ? .9 : 1));
     sx.beginPath(); sx.moveTo(s.a[0], s.a[1]); sx.lineTo(e[0], e[1]); sx.stroke();
   }
   let q = strahlCv;   // Leuchten über verkleinerte Kopien
   for (const b of bloom) { b.x.setTransform(1, 0, 0, 1, 0, 0); b.x.globalCompositeOperation = "copy"; b.x.drawImage(q, 0, 0, b.width, b.height); q = b; }
 }
 
-const STAUB = Array.from({ length: reduce ? 0 : 150 }, () => ({ i: Math.floor(Math.random() * N_L), j: -1, t: Math.random(), off: (Math.random() - .5) * 5, v: (Math.random() * .6 + .2) / 1000, ph: Math.random() * TAU, le: 0 }));
+const STAUB = Array.from({ length: reduce ? 0 : 150 }, () => ({ i: Math.floor(Math.random() * N_L), j: -1, t: Math.random(), off: Math.random() - .5, v: (Math.random() * .6 + .2) / 1000, ph: Math.random() * TAU, le: 0 }));
 function zeichneStaub(zeit) {
   if (!STAUB.length || st.revealt < 1200) return;
   for (const p of STAUB) {
@@ -329,7 +345,7 @@ function zeichneStaub(zeit) {
     p.le--; p.t += p.v * 1000 / Math.min(1500, s.s1 - s.s0); if (p.t > 1) p.t = 0;
     const t = p.t * Math.min(1, 1400 / (s.s1 - s.s0)), dx = s.b[0] - s.a[0], dy = s.b[1] - s.a[1], len = Math.hypot(dx, dy) || 1;
     ctx.fillStyle = rgba(farbe(LAM[p.i]), (.35 + .35 * Math.sin(zeit / 400 + p.ph)) * Math.min(1, p.le / 60));
-    ctx.fillRect(s.a[0] + dx * t - dy / len * p.off - .7, s.a[1] + dy * t + dx / len * p.off - .7, 1.4, 1.4);
+    const o = p.off * st.breite; ctx.fillRect(s.a[0] + dx * t - dy / len * o - .7, s.a[1] + dy * t + dx / len * o - .7, 1.4, 1.4);
   }
 }
 
@@ -395,8 +411,8 @@ function zeichnePrisma() {
   const mitte = baeume[N_L >> 1];
   if (mitte && st.revealt > 300) {
     const glanz = (p, r, a) => { const gr = ctx.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); gr.addColorStop(0, `rgba(255,255,255,${a})`); gr.addColorStop(1, "rgba(255,255,255,0)"); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(p[0], p[1], r, 0, TAU); ctx.fill(); };
-    const erst = mitte.seg.find(s => /^>[012]$/.test(s.id)); if (erst) glanz(erst.b, 26, .55);
-    if (mitte.info.aus && st.revealt > 900) glanz(mitte.info.aus.p, 20, .4);
+    const erst = mitte.seg.find(s => /^>[012]$/.test(s.id)); if (erst) glanz(erst.b, 30, .32);
+    if (mitte.info.aus && st.revealt > 900) glanz(mitte.info.aus.p, 24, .22);
   }
   ctx.restore();
 }
@@ -446,7 +462,7 @@ function komponieren(zeit) {
   ctx.setTransform(d, 0, 0, d, 0, 0);
   zeichneTrommel(zeit);
   ctx.globalCompositeOperation = "lighter";
-  [0, .55, .6, .7, .8].forEach((a, k) => { if (a) { ctx.globalAlpha = a; ctx.drawImage(bloom[k], 0, 0, st.W, st.H); } });
+  [0, .24, .28, .34, .4].forEach((a, k) => { if (a) { ctx.globalAlpha = a; ctx.drawImage(bloom[k], 0, 0, st.W, st.H); } });
   ctx.globalAlpha = 1;
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(strahlCv, 0, 0); ctx.setTransform(d, 0, 0, d, 0, 0);
   zeichneStaub(zeit);
