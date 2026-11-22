@@ -43,6 +43,7 @@ const AUSNAHMEN = [
   ["Hörseite der EP «directer» von the i, schlichter Player für Freunde, steht für sich mit eigener dunkler Oberfläche; bis 13. November 2026 nur per Direktlink, seither öffentlich (10. November 2026, docs/ep-directer.md)", /^listen\//],
   ["Die Stimme im Rahmen des Neubaus (14. November 2026), erzeugt von tools/build-b.mjs; nur per Direktlink, mit Passwort; eigene Tests in tests/voice-php.test.mjs", /^alpha\/voice\/index\.html$/],
   ["Der Zettelkasten «Social Media» im Rahmen des Neubaus (14. November 2026, Kopf und Fuss aus b/rahmen.js); eigene Tests in tests/social-media.test.mjs", /^social-media\/(index\.html|schlagworte\/|autorinnen\/|\d+-)/],
+  ["«Spektralmenü», Referenz für eine Einstiegsseite: das Prisma als Farbwähler und Menü, eigene Oberfläche, nur per Direktlink, noindex (22. November 2026)", /^references\/webdesign\/colorpicker\//],
   ["Der Neubau unter b/ mit eigener Kopfzeile (20. Oktober 2026, docs/superpowers/specs/2026-10-20-b-neubau-design.md); eigene Tests in tests/b.test.mjs", /^b\//],
 ];
 const ueberspringen = new Set(["node_modules", "dist", "vendor", ".git", "404.html"]);   // 404.html: seit 20. November 2026 im Stil des Neubaus (tools/build-b.mjs), absolute Verweise, weil Apache sie unter jeder Adresse ausliefert; tests/hostpoint.test.mjs

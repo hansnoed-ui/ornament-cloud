@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Prisma-Farbwähler</title>
+<meta name="robots" content="noindex">
+<meta name="description" content="Einstiegsseite als Referenz: Ein weisser Strahl fällt auf ein Glasprisma. Die Drehung des Prismas wählt eine Spektralfarbe und mit ihr einen von fünf Menüpunkten.">
+<meta name="theme-color" content="#040507">
+<link rel="stylesheet" href="../../../vendor/fonts/animationen.css">
+<style>
+/* Referenz «Spektralmenü» (22. November 2026). Die Seite ist ein dunkler Raum: ein Strahl, ein Prisma, ein Schirm.
+   Der Ring um das Prisma ist eine Wellenlängentrommel mit fünf Rastpunkten; jede Rast legt eine Spektralfarbe
+   auf den Messpunkt und wählt damit einen Menüpunkt. Text gibt es nur für die Marke und den gewählten Menüpunkt.
+   Einziger Akzent ist die Farbe des gewählten Punktes (--wahl). */
+:root{
+  --raum:#040507;
+  --tinte:#e8ebf1;
+  --leise:rgba(232,235,241,.58);
+  --stumm:rgba(232,235,241,.34);
+  --linie:rgba(232,235,241,.12);
+  --wahl:#ffc400;
+  --auf-wahl:#040507;
+  --sans:"Hanken Grotesk","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --mono:"Geist Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --rand:40px;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{margin:0;background:var(--raum);color:var(--tinte);font-family:var(--sans);overflow:hidden;-webkit-font-smoothing:antialiased;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+::selection{background:var(--wahl);color:var(--auf-wahl)}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--wahl);outline-offset:4px;border-radius:4px}
+
+#buehne{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+#buehne.zieht{cursor:grabbing}
+#buehne:focus-visible{outline:none}
+.schein{position:fixed;inset:0;pointer-events:none;
+  background:radial-gradient(70vmax 50vmax at 0% 100%,color-mix(in srgb,var(--wahl) 16%,transparent),transparent 72%);transition:background .7s}
+
+.marke{position:fixed;left:max(var(--rand),env(safe-area-inset-left,0px));top:calc(30px + env(safe-area-inset-top,0px));
+  font-weight:600;font-size:15px;letter-spacing:-.01em}
+.ton{position:fixed;right:max(var(--rand),env(safe-area-inset-right,0px));top:calc(22px + env(safe-area-inset-top,0px));
+  width:40px;height:40px;display:grid;place-items:center;border-radius:50%;border:1px solid var(--linie);background:rgba(4,5,7,.4);
+  color:var(--stumm);cursor:pointer;padding:0;transition:color .2s,border-color .2s}
+.ton:hover{color:var(--tinte)}
+.ton[aria-pressed="true"]{color:var(--tinte);border-color:var(--wahl)}
+.ton svg{width:18px;height:18px}
+.ton .welle{opacity:0;transition:opacity .2s}
+.ton[aria-pressed="true"] .welle{opacity:1}
+
+/* Menü: ohne Skript eine schlichte Liste, mit Skript fünf Farbpunkte und ein grosses Wort */
+.menue{position:fixed;left:max(var(--rand),env(safe-area-inset-left,0px));bottom:calc(var(--rand) + env(safe-area-inset-bottom,0px));
+  display:grid;gap:18px;max-width:calc(100vw - 2 * var(--rand))}
+.menue ol{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.menue ol a{font-size:28px;font-weight:600;letter-spacing:-.03em}
+.js .menue ol{display:flex;gap:4px;align-items:center}
+.js .menue ol a{display:grid;place-items:center;width:28px;height:28px;font-size:0}
+.js .menue ol a i{display:block;width:9px;height:9px;border-radius:50%;background:var(--c);opacity:.45;transition:transform .25s,opacity .25s,box-shadow .25s}
+.js .menue ol a:hover i{opacity:.9}
+.js .menue ol a[aria-current="true"] i{opacity:1;transform:scale(1.5);box-shadow:0 0 0 3px var(--raum),0 0 0 4px var(--c),0 0 18px var(--c)}
+.nurleser{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.wort{display:none}
+.js .wort{display:inline-flex;align-items:baseline;gap:.18em;font-weight:600;font-size:clamp(46px,7.2vw,116px);line-height:.9;letter-spacing:-.05em;
+  white-space:nowrap;transition:opacity .18s,transform .18s,filter .18s;width:max-content}
+.wort .pfeil{font-weight:300;font-size:.42em;color:var(--wahl);transform:translateY(-.08em);transition:transform .25s,color .5s}
+.wort:hover .pfeil{transform:translate(.2em,-.08em)}
+.wort.wechsel{opacity:0;transform:translateY(.12em);filter:blur(6px)}
+.wort.dunkel{opacity:.18}
+.mass{display:none}
+.js .mass{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--stumm);font-variant-numeric:tabular-nums;min-height:1em}
+
+.flut{position:fixed;inset:0;z-index:20;display:grid;place-content:center;justify-items:center;gap:28px;background:var(--wahl);color:var(--auf-wahl);
+  clip-path:circle(0 at var(--fx,50%) var(--fy,50%));transition:clip-path 1s cubic-bezier(.7,0,.2,1);pointer-events:none;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.flut.an{clip-path:circle(150vmax at var(--fx,50%) var(--fy,50%));pointer-events:auto}
+.flut b{font-size:clamp(48px,10vw,160px);font-weight:600;letter-spacing:-.05em;line-height:.9;text-align:center}
+.flut button{appearance:none;width:44px;height:44px;border-radius:50%;border:1px solid currentColor;background:none;color:inherit;cursor:pointer;font:inherit;font-size:18px}
+
+@media (max-width:760px){
+  :root{--rand:20px}
+  .marke{top:calc(24px + env(safe-area-inset-top,0px))}
+  .ton{top:calc(16px + env(safe-area-inset-top,0px))}
+  .menue{gap:12px}
+}
+@media (prefers-reduced-motion:reduce){ .flut,.wort,.schein,.wort .pfeil{transition:none} }
+</style>
+</head>
+<body>
+<script>document.documentElement.classList.add("js")</script>
+<div class="schein" aria-hidden="true"></div>
+<canvas id="buehne" tabindex="0" aria-label="Prisma und Wellenlängentrommel. Pfeiltasten wählen den Menüpunkt, Eingabe öffnet ihn."></canvas>
+
+<a class="marke" href="/start/">ornament.cloud</a>
+<button type="button" class="ton" id="ton" aria-pressed="false" aria-label="Ton: die Lichtfrequenz 40 Oktaven tiefer hören">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M4 9.5h3l4.5-4v13L7 14.5H4z"/><path class="welle" d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>
+  </svg>
+</button>
+
+<!-- Die fünf Menüpunkte. data-nm ist die Wellenlänge, die den Punkt trägt (420–650 nm); data-start wählt den Punkt beim Öffnen. -->
+<nav class="menue" aria-label="Hauptmenü">
+  <ol id="menue">
+    <li><a href="/atelier/" data-nm="432">Denken</a></li>
+    <li><a href="/sehen/" data-nm="470">Sehen</a></li>
+    <li><a href="/apps/" data-nm="522">Spielen</a></li>
+    <li><a href="/angebot/" data-nm="578" data-start>Beauftragen</a></li>
+    <li><a href="/hoeren/" data-nm="632">Hören</a></li>
+  </ol>
+  <a class="wort" id="wort" href="/angebot/"><span id="wort-text">Beauftragen</span><span class="pfeil" aria-hidden="true">→</span></a>
+  <span class="mass" id="mass" aria-hidden="true"></span>
+</nav>
+
+<div class="flut" id="flut" aria-hidden="true"><b id="flut-wort"></b><button type="button" id="flut-zurueck" aria-label="Zurück">←</button></div>
+
+<script>
+(() => {
+"use strict";
+const DEG = Math.PI / 180, TAU = Math.PI * 2;
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const vorschau = !/(^|\.)ornament\.cloud$|^localhost$|^127\.0\.0\.1$/.test(location.hostname);   // anderswo gezeigt: nicht wegnavigieren
+const $ = id => document.getElementById(id);
+const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+const sm = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+const wickel = a => { a %= TAU; if (a > Math.PI) a -= TAU; if (a < -Math.PI) a += TAU; return a; };
+
+/* ---------- Farbe: Wellenlänge -> CIE 1931 -> Rand des sRGB-Raums ---------- */
+function g(x, m, s1, s2) { const t = (x - m) / (x < m ? s1 : s2); return Math.exp(-.5 * t * t); }
+function cmf(l) {   // Näherung nach Wyman, Sloan, Shirley 2013
+  return [
+    1.056 * g(l, 599.8, 37.9, 31.0) + .362 * g(l, 442.0, 16.0, 26.7) - .065 * g(l, 501.1, 20.4, 26.2),
+    .821 * g(l, 568.8, 46.9, 40.5) + .286 * g(l, 530.9, 16.3, 31.1),
+    1.217 * g(l, 437.0, 11.8, 36.0) + .681 * g(l, 459.0, 26.0, 13.8)];
+}
+const xyz2lin = ([X, Y, Z]) => [3.2404542 * X - 1.5371385 * Y - .4985314 * Z, -.969266 * X + 1.8760108 * Y + .041556 * Z, .0556434 * X - .2040259 * Y + 1.0572252 * Z];
+function oklab([r, g2, b]) {
+  const l = Math.cbrt(.4122214708 * r + .5363325363 * g2 + .0514459929 * b);
+  const m = Math.cbrt(.2119034982 * r + .6806995451 * g2 + .1073969566 * b);
+  const s = Math.cbrt(.0883024619 * r + .2817188376 * g2 + .6299787005 * b);
+  return [.2104542553 * l + .793617785 * m - .0040720468 * s, 1.9779984951 * l - 2.428592205 * m + .4505937099 * s, .0259040371 * l + .7827717662 * m - .808675766 * s];
+}
+const toLin = c => c <= .04045 ? c / 12.92 : Math.pow((c + .055) / 1.055, 2.4);
+function hsv(h, s, v) { const f = n => { const k = (n + h / 60) % 6; return v - v * s * Math.max(0, Math.min(k, 4 - k, 1)); }; return [f(5), f(3), f(1)]; }
+const hex = rgb => "#" + rgb.map(c => Math.round(clamp(c, 0, 1) * 255).toString(16).padStart(2, "0")).join("").toUpperCase();
+const RING = [];
+for (let i = 0; i < 1440; i++) { const lab = oklab(hsv(i / 4, 1, 1).map(toLin)); RING.push({ H: i / 4, h: Math.atan2(lab[2], lab[1]) }); }
+function ringFuer(h) { let best = RING[0], bd = 9; for (const r of RING) { let d = Math.abs(r.h - h); if (d > Math.PI) d = TAU - d; if (d < bd) { bd = d; best = r; } } return best.H; }
+const TAB = [];
+for (let l = 370; l <= 740; l++) { const lab = oklab(xyz2lin(cmf(l))); TAB.push(hsv(ringFuer(Math.atan2(lab[2], lab[1])), 1, 1)); }
+const farbe = l => TAB[clamp(Math.round(l), 370, 740) - 370];
+const HUELLE = l => Math.pow(clamp(cmf(l)[1], 0, 1), .3) * sm(388, 420, l) * (1 - sm(670, 706, l));
+const rgba = (c, a) => `rgba(${Math.round(clamp(c[0], 0, 1) * 255)},${Math.round(clamp(c[1], 0, 1) * 255)},${Math.round(clamp(c[2], 0, 1) * 255)},${clamp(a, 0, 1).toFixed(4)})`;
+
+/* ---------- Schwerflint SF11 nach Sellmeier ---------- */
+const brechzahl = l => { const x = (l / 1000) ** 2; return Math.sqrt(1 + 1.73759695 * x / (x - .013188707) + .313747346 * x / (x - .0623068142) + 1.89878101 * x / (x - 155.23629)); };
+
+/* ---------- Strahlverfolgung ---------- */
+function schnitt(o, d, a, b) {
+  const ex = b[0] - a[0], ey = b[1] - a[1], den = d[0] * ey - d[1] * ex;
+  if (Math.abs(den) < 1e-12) return null;
+  const wx = a[0] - o[0], wy = a[1] - o[1], t = (wx * ey - wy * ex) / den, u = (wx * d[1] - wy * d[0]) / den;
+  return t > 1e-6 && u >= 0 && u <= 1 ? { t, u } : null;
+}
+const st = { W: 0, H: 0, dpr: 1, mobil: false, cx: 0, cy: 0, s: 200, strahlY: 0, theta: 0, schirm: { x: 0, y: 0, a: 0, len: 200 },
+  phi: 0, phiZiel: null, tour: null, intro: reduce ? 1 : 0, t0: 0, revealt: reduce ? 1e9 : 0, dirty: true };
+function kanten(theta) {
+  const R = st.s / Math.sqrt(3), V = [];
+  for (let k = 0; k < 3; k++) { const a = theta + (-90 + 120 * k) * DEG; V.push([st.cx + R * Math.cos(a), st.cy + R * Math.sin(a)]); }
+  return [0, 1, 2].map(k => {
+    const a = V[k], b = V[(k + 1) % 3], ex = b[0] - a[0], ey = b[1] - a[1], L = Math.hypot(ex, ey);
+    let n = [ey / L, -ex / L];
+    if (n[0] * ((a[0] + b[0]) / 2 - st.cx) + n[1] * ((a[1] + b[1]) / 2 - st.cy) < 0) n = [-n[0], -n[1]];
+    return { a, b, n };
+  });
+}
+function schirmEnden(S) { const ux = Math.cos(S.a), uy = Math.sin(S.a), h = S.len / 2; return [[S.x - ux * h, S.y - uy * h], [S.x + ux * h, S.y + uy * h]]; }
+const FERN = 4000;
+/* Ein Strahl durch das Prisma; Teilreflexionen nach Fresnel als eigene Äste (alle = true). Der Schirm schluckt das Licht. */
+function verfolgen(l, theta, alle, S, off = 0) {
+  const E = kanten(theta), [SA, SB] = schirmEnden(S || st.schirm), n = brechzahl(l);
+  const seg = [], info = { hit: null, aus: null };
+  const stapel = [{ o: [-60, st.strahlY + off], d: [1, 0], I: 1, innen: false, id: "", s: 0, tief: 0, haupt: true }];
+  while (stapel.length) {
+    const r = stapel.pop();
+    let best = null;
+    for (let k = 0; k < 3; k++) { const h = schnitt(r.o, r.d, E[k].a, E[k].b); if (h && (!best || h.t < best.t)) best = { t: h.t, k }; }
+    if (!r.innen) { const h = schnitt(r.o, r.d, SA, SB); if (h && (!best || h.t < best.t)) best = { t: h.t, k: -1, u: h.u }; }
+    if (!best) { seg.push({ id: r.id + ">", a: r.o, b: [r.o[0] + r.d[0] * FERN, r.o[1] + r.d[1] * FERN], I: r.I, s0: r.s, s1: r.s + FERN, innen: r.innen }); continue; }
+    const p = [r.o[0] + r.d[0] * best.t, r.o[1] + r.d[1] * best.t];
+    seg.push({ id: r.id + ">" + best.k, a: r.o, b: p, I: r.I, s0: r.s, s1: r.s + best.t, innen: r.innen });
+    if (best.k === -1) { if (r.haupt) info.hit = { u: best.u, p }; continue; }
+    if (r.tief >= (alle ? 6 : 9)) continue;
+    const N = E[best.k].n, dn = r.d[0] * N[0] + r.d[1] * N[1], nf = dn < 0 ? N : [-N[0], -N[1]], ci = Math.abs(dn);
+    const n1 = r.innen ? n : 1, n2 = r.innen ? 1 : n, eta = n1 / n2, k2 = 1 - eta * eta * (1 - ci * ci);
+    const rd = [r.d[0] + 2 * ci * nf[0], r.d[1] + 2 * ci * nf[1]], s = r.s + best.t, ab = dir => [p[0] + dir[0] * 1e-4, p[1] + dir[1] * 1e-4];
+    if (k2 < 0) { stapel.push({ o: ab(rd), d: rd, I: r.I, innen: r.innen, id: r.id + "R" + best.k, s, tief: r.tief + 1, haupt: r.haupt }); continue; }
+    const ct = Math.sqrt(k2), td = [eta * r.d[0] + (eta * ci - ct) * nf[0], eta * r.d[1] + (eta * ci - ct) * nf[1]];
+    const R = (((n1 * ci - n2 * ct) / (n1 * ci + n2 * ct)) ** 2 + ((n1 * ct - n2 * ci) / (n1 * ct + n2 * ci)) ** 2) / 2;
+    if (r.haupt && r.innen) info.aus = { p, d: td };
+    stapel.push({ o: ab(td), d: td, I: r.I * (1 - R), innen: !r.innen, id: r.id + "T" + best.k, s, tief: r.tief + 1, haupt: r.haupt });
+    if (alle && r.I * R > .004) stapel.push({ o: ab(rd), d: rd, I: r.I * R, innen: r.innen, id: r.id + "R" + best.k, s, tief: r.tief + 1, haupt: false });
+  }
+  return { seg, info };
+}
+
+/* ---------- Menü und Trommel ---------- */
+const menueLinks = [...document.querySelectorAll("#menue a")];
+const PUNKTE = menueLinks.map(a => ({ a, name: a.textContent.trim(), href: a.getAttribute("href"), l: +a.dataset.nm })).sort((x, y) => x.l - y.l);
+const NP = PUNKTE.length, SEKTOR = TAU / NP;
+PUNKTE.forEach((p, k) => {
+  p.phi = k * SEKTOR; p.rgb = farbe(p.l); p.hex = hex(p.rgb);
+  p.a.style.setProperty("--c", p.hex);
+  p.a.setAttribute("aria-label", p.name);
+  const i = document.createElement("i"); i.setAttribute("aria-hidden", "true"); p.a.prepend(i);
+});
+/* Trommelwinkel -> Wellenlänge: die Rastpunkte tragen die Wellenlängen der Menüpunkte, dazwischen wird gleichmässig
+   geteilt. Im letzten Sektor schliesst sich der Kreis durch das Dunkel jenseits von Rot und vor Violett. */
+function lambdaAus(phi) {
+  phi = ((phi % TAU) + TAU) % TAU;
+  const k = Math.floor(phi / SEKTOR), f = (phi - k * SEKTOR) / SEKTOR;
+  if (k < NP - 1) return PUNKTE[k].l + (PUNKTE[k + 1].l - PUNKTE[k].l) * f;
+  return f < .5 ? PUNKTE[NP - 1].l + (740 - PUNKTE[NP - 1].l) * f * 2 : 370 + (PUNKTE[0].l - 370) * (f - .5) * 2;
+}
+const naechster = phi => ((Math.round((((phi % TAU) + TAU) % TAU) / SEKTOR)) % NP + NP) % NP;
+
+/* ---------- Aufbau ---------- */
+let THETA = [];   // Drehung des Prismas, die die Wellenlänge 370..740 nm genau auf den Messpunkt legt
+function grundstellung() {
+  const i0 = Math.asin(brechzahl(555) * .5);
+  const th0 = i0 - 30 * DEG + 8 * DEG;   // 8° über der minimalen Ablenkung: dort wandert das Spektrum gleichmässig
+  const { info } = verfolgen(555, th0, false, { x: -1e5, y: -1e5, a: 0, len: 1 });
+  const P = info.aus.p, d = info.aus.d, len = clamp(st.s * 1.05, 110, 240);
+  const b0 = st.mobil ? 16 : 56, mx = b0 + len * .5 * Math.abs(d[1]) + 10, my = b0 + len * .5 * Math.abs(d[0]) + 10;
+  const unten = st.mobil ? st.H - 150 : st.H - 40;
+  let t = 1e5;
+  if (d[0] > 0) t = Math.min(t, (st.W - mx - P[0]) / d[0]);
+  if (d[1] > 0) t = Math.min(t, (unten - my + b0 - P[1]) / d[1]);
+  t = Math.max(st.s * 1.1, t * .92);
+  st.schirm = { x: P[0] + d[0] * t, y: P[1] + d[1] * t, a: Math.atan2(d[1], d[0]) + Math.PI / 2, len };
+  return th0;
+}
+function loese(l, th0) {
+  const f = th => { const { info } = verfolgen(l, th, false); return info.hit ? info.hit.u - .5 : NaN; };
+  let a = null, fa = 0, best = null;
+  for (let th = th0 - 20 * DEG; th <= th0 + 20 * DEG; th += .25 * DEG) {
+    const v = f(th);
+    if (!isNaN(v) && a !== null && !isNaN(fa) && fa * v <= 0) { const m = (a + th) / 2; if (!best || Math.abs(m - th0) < Math.abs(best[0] - th0)) best = [a, th]; }
+    a = th; fa = v;
+  }
+  if (!best) return null;
+  let [lo, hi] = best, flo = f(lo);
+  for (let i = 0; i < 22; i++) { const m = (lo + hi) / 2, fm = f(m); if (isNaN(fm)) break; if (flo * fm <= 0) hi = m; else { lo = m; flo = fm; } }
+  return (lo + hi) / 2;
+}
+function anordnen() {
+  st.W = innerWidth; st.H = innerHeight; st.dpr = Math.min(2, devicePixelRatio || 1); st.mobil = st.W < 760;
+  if (st.mobil) {
+    const oben = 90, unten = st.H - 170;
+    st.s = clamp(Math.min(st.W * .34, (unten - oben) * .34), 92, 160);
+    st.cx = st.W * .42; st.cy = oben + (unten - oben) * .3;
+  } else {
+    st.s = clamp(Math.min(st.W * .18, st.H * .27), 130, 260);
+    st.cx = st.W * .52; st.cy = st.H * .37;
+  }
+  st.strahlY = st.cy - st.s * .25;
+  st.breite = clamp(st.s * .065, 8, 17);
+  const th0 = grundstellung();
+  THETA = [];
+  let vor = th0;
+  for (let l = 370; l <= 740; l++) { const th = loese(l, vor); THETA.push(th == null ? vor : th); if (th != null) vor = th; }
+  for (const c of [cv, strahlCv]) { c.width = Math.round(st.W * st.dpr); c.height = Math.round(st.H * st.dpr); }
+  for (const b of bloom) { b.width = Math.max(1, Math.round(st.W / b.f)); b.height = Math.max(1, Math.round(st.H / b.f)); }
+  st.theta = thetaAus(st.phi); st.dirty = true;
+}
+const thetaAus = phi => { const l = lambdaAus(phi), i = clamp(l - 370, 0, THETA.length - 1), k = Math.floor(i), f = i - k; return THETA[k] + ((THETA[k + 1] ?? THETA[k]) - THETA[k]) * f; };
+
+/* ---------- Zeichnen ---------- */
+const cv = $("buehne"), ctx = cv.getContext("2d");
+const strahlCv = document.createElement("canvas"), sx = strahlCv.getContext("2d");
+const bloom = [2, 4, 8, 16, 32].map(f => { const c = document.createElement("canvas"); return Object.assign(c, { f, x: c.getContext("2d") }); });
+const N_L = 64, LAM = Array.from({ length: N_L }, (_, i) => 392 + 310 * i / (N_L - 1));
+// Weissabgleich: die Farben aller Wellenlängen ergeben zusammen genau Weiss; KERN_MAX hält jede einzelne unter 1, damit nichts abgeschnitten wird
+const KERN = (() => { const S = [0, 0, 0]; LAM.forEach(l => farbe(l).forEach((v, k) => S[k] += v * HUELLE(l))); return LAM.map(l => farbe(l).map((v, k) => v * HUELLE(l) * N_L / S[k])); })();
+const KERN_MAX = Math.max(...KERN.flat()), KERN_N = KERN.map(c => c.map(v => v / KERN_MAX));
+const BAND = LAM.map(l => farbe(l).map(v => v * HUELLE(l)));
+const sicht = I => Math.pow(I, .55);
+let baeume = [], raender = [], fein = [], enden = [];
+function rechnen() {
+  baeume = LAM.map(l => { const { seg, info } = verfolgen(l, st.theta, true); return { seg, m: new Map(seg.map(s => [s.id, s])), info }; });
+  // Die beiden Ränder des Strahls: dazwischen liegt das Band jeder Wellenlänge, so hat der Strahl eine echte Breite
+  raender = LAM.map(l => [-.5, .5].map(f => new Map(verfolgen(l, st.theta, true, null, f * st.breite).seg.map(s => [s.id, s]))));
+  fein = [];
+  for (let l = 392; l <= 704; l += 2) fein.push({ l, info: verfolgen(l, st.theta, false).info });
+  enden = kanten(st.theta);
+}
+function zeichneStrahlen(rev) {
+  const d = st.dpr;
+  sx.setTransform(1, 0, 0, 1, 0, 0); sx.globalCompositeOperation = "source-over"; sx.clearRect(0, 0, strahlCv.width, strahlCv.height);
+  sx.setTransform(d, 0, 0, d, 0, 0); sx.globalCompositeOperation = "lighter";
+  const kurz = s => { if (rev >= s.s1) return s.b; const f = clamp((rev - s.s0) / (s.s1 - s.s0), 0, 1); return [s.a[0] + (s.b[0] - s.a[0]) * f, s.a[1] + (s.b[1] - s.a[1]) * f]; };
+  for (let i = 0; i < N_L; i++) {   // Breite: je Wellenlänge ein Band zwischen den Randstrahlen, zusammen weiss
+    const [T, B] = raender[i];
+    for (const [id, sa] of T) {
+      if (sa.s0 >= rev) continue;
+      const sb = B.get(id); if (!sb) continue;
+      const I = (sa.I + sb.I) / 2, a = Math.pow(I, .85) * .36 * KERN_MAX / N_L * (sa.innen ? .7 : 1); if (a < .0015) continue;
+      const ea = kurz(sa), eb = kurz(sb);
+      sx.fillStyle = rgba(KERN_N[i], a);
+      sx.beginPath(); sx.moveTo(sa.a[0], sa.a[1]); sx.lineTo(ea[0], ea[1]); sx.lineTo(eb[0], eb[1]); sx.lineTo(sb.a[0], sb.a[1]); sx.closePath(); sx.fill();
+    }
+  }
+  for (let i = 0; i < N_L - 1; i++) {   // Bänder zwischen benachbarten Wellenlängen auf derselben Bahn
+    const A = baeume[i], B = baeume[i + 1];
+    for (const sa of A.seg) {
+      if (sa.s0 >= rev) continue;
+      const sb = B.m.get(sa.id); if (!sb) continue;
+      const a = sicht((sa.I + sb.I) / 2) * (sa.innen ? .3 : .62); if (a < .01) continue;
+      const ea = kurz(sa), eb = kurz(sb);
+      sx.fillStyle = rgba(BAND[i], a);
+      sx.beginPath(); sx.moveTo(sa.a[0], sa.a[1]); sx.lineTo(ea[0], ea[1]); sx.lineTo(eb[0], eb[1]); sx.lineTo(sb.a[0], sb.a[1]); sx.closePath(); sx.fill();
+    }
+  }
+  sx.lineCap = "round"; sx.lineWidth = 1.2;   // Kernlinien: zusammen ergeben sie Weiss
+  for (let i = 0; i < N_L; i++) for (const s of baeume[i].seg) {
+    if (s.s0 >= rev) continue;
+    const e = kurz(s);
+    sx.strokeStyle = rgba(KERN_N[i], Math.pow(s.I, .85) * .2 * KERN_MAX / N_L * (s.innen ? .9 : 1));
+    sx.beginPath(); sx.moveTo(s.a[0], s.a[1]); sx.lineTo(e[0], e[1]); sx.stroke();
+  }
+  let q = strahlCv;   // Leuchten über verkleinerte Kopien
+  for (const b of bloom) { b.x.setTransform(1, 0, 0, 1, 0, 0); b.x.globalCompositeOperation = "copy"; b.x.drawImage(q, 0, 0, b.width, b.height); q = b; }
+}
+
+const STAUB = Array.from({ length: reduce ? 0 : 150 }, () => ({ i: Math.floor(Math.random() * N_L), j: -1, t: Math.random(), off: Math.random() - .5, v: (Math.random() * .6 + .2) / 1000, ph: Math.random() * TAU, le: 0 }));
+function zeichneStaub(zeit) {
+  if (!STAUB.length || st.revealt < 1200) return;
+  for (const p of STAUB) {
+    const baum = baeume[p.i]; if (!baum) continue;
+    let s = baum.seg[p.j];
+    if (!s || p.le <= 0) {
+      const kand = baum.seg.filter(x => x.I > .2 && !x.innen); if (!kand.length) continue;
+      p.j = baum.seg.indexOf(kand[Math.floor(Math.random() * kand.length)]); s = baum.seg[p.j]; p.t = Math.random(); p.le = 200 + Math.random() * 400;
+    }
+    p.le--; p.t += p.v * 1000 / Math.min(1500, s.s1 - s.s0); if (p.t > 1) p.t = 0;
+    const t = p.t * Math.min(1, 1400 / (s.s1 - s.s0)), dx = s.b[0] - s.a[0], dy = s.b[1] - s.a[1], len = Math.hypot(dx, dy) || 1;
+    ctx.fillStyle = rgba(farbe(LAM[p.i]), (.35 + .35 * Math.sin(zeit / 400 + p.ph)) * Math.min(1, p.le / 60));
+    const o = p.off * st.breite; ctx.fillRect(s.a[0] + dx * t - dy / len * o - .7, s.a[1] + dy * t + dx / len * o - .7, 1.4, 1.4);
+  }
+}
+
+function zeichneTrommel(zeit) {
+  const { cx, cy } = st, R = st.s * 1.02, akt = naechster(st.phi);
+  ctx.save();
+  ctx.lineWidth = 1; ctx.strokeStyle = "rgba(232,235,241,.13)"; ctx.beginPath();
+  for (let a = 0; a < 360; a += 3) {
+    const L = a % 36 === 0 ? 9 : 4, r = a * DEG - Math.PI / 2;
+    ctx.moveTo(cx + Math.cos(r) * (R - 7), cy + Math.sin(r) * (R - 7)); ctx.lineTo(cx + Math.cos(r) * (R - 7 - L), cy + Math.sin(r) * (R - 7 - L));
+  }
+  ctx.stroke();
+  ctx.strokeStyle = "rgba(232,235,241,.06)"; ctx.beginPath(); ctx.arc(cx, cy, st.s * .34, 0, TAU); ctx.stroke();
+  // Farbring: das Spektrum auf der Trommel, der gewählte Sektor heller
+  ctx.lineWidth = 2.4; ctx.lineCap = "butt";
+  for (let a = 0; a < 360; a += 1.5) {
+    const phi = a * DEG, l = lambdaAus(phi + .75 * DEG), e = .15 + .85 * HUELLE(l), k = naechster(phi + .75 * DEG);
+    const hell = k === akt ? .85 : .22, r0 = phi - Math.PI / 2;
+    ctx.strokeStyle = rgba(farbe(l), e * hell);
+    ctx.beginPath(); ctx.arc(cx, cy, R, r0, r0 + 1.6 * DEG); ctx.stroke();
+  }
+  // Rastpunkte
+  PUNKTE.forEach((p, k) => {
+    const r = p.phi - Math.PI / 2, x = cx + Math.cos(r) * (R + 14), y = cy + Math.sin(r) * (R + 14);
+    ctx.fillStyle = rgba(p.rgb, k === akt ? 1 : .5);
+    ctx.beginPath(); ctx.arc(x, y, k === akt ? 3.2 : 2.2, 0, TAU); ctx.fill();
+  });
+  // Zeiger der Trommel
+  const r1 = st.phi - Math.PI / 2, hx = cx + Math.cos(r1) * R, hy = cy + Math.sin(r1) * R, l = lambdaAus(st.phi), c = farbe(l), an = HUELLE(l) > .08;
+  ctx.strokeStyle = "rgba(232,235,241,.1)"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(cx + Math.cos(r1) * 12, cy + Math.sin(r1) * 12); ctx.lineTo(hx - Math.cos(r1) * 11, hy - Math.sin(r1) * 11); ctx.stroke();
+  const puls = reduce || zug ? 0 : (Math.sin(zeit / 650) * .5 + .5);
+  if (an) { const gr = ctx.createRadialGradient(hx, hy, 0, hx, hy, 26 + puls * 6); gr.addColorStop(0, rgba(c, .45)); gr.addColorStop(1, rgba(c, 0)); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(hx, hy, 34, 0, TAU); ctx.fill(); }
+  ctx.fillStyle = "#040507"; ctx.strokeStyle = "rgba(240,244,252,.9)"; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.arc(hx, hy, 9, 0, TAU); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = an ? rgba(c, 1) : "rgba(232,235,241,.25)"; ctx.beginPath(); ctx.arc(hx, hy, 3.4, 0, TAU); ctx.fill();
+  ctx.strokeStyle = "rgba(232,235,241,.28)"; ctx.beginPath(); ctx.moveTo(cx - 7, cy); ctx.lineTo(cx + 7, cy); ctx.moveTo(cx, cy - 7); ctx.lineTo(cx, cy + 7); ctx.stroke();
+  ctx.restore();
+}
+
+function zeichnePrisma() {
+  const V = enden.map(e => e.a), s = st.s, tief = [-s * .11, -s * .17];
+  const Vb = V.map(v => [st.cx + (v[0] - st.cx) * .94 + tief[0], st.cy + (v[1] - st.cy) * .94 + tief[1]]);
+  ctx.save(); ctx.globalCompositeOperation = "lighter";
+  for (let k = 0; k < 3; k++) {
+    const a = V[k], b = V[(k + 1) % 3], c = Vb[(k + 1) % 3], e = Vb[k], gr = ctx.createLinearGradient(a[0], a[1], c[0], c[1]);
+    gr.addColorStop(0, "rgba(220,228,240,.035)"); gr.addColorStop(1, "rgba(220,228,240,0)");
+    ctx.fillStyle = gr; ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.lineTo(c[0], c[1]); ctx.lineTo(e[0], e[1]); ctx.closePath(); ctx.fill();
+  }
+  const gv = ctx.createLinearGradient(V[0][0], V[0][1], V[1][0], V[1][1]);
+  gv.addColorStop(0, "rgba(230,236,246,.10)"); gv.addColorStop(.55, "rgba(230,236,246,.02)"); gv.addColorStop(1, "rgba(230,236,246,.06)");
+  ctx.fillStyle = gv; ctx.beginPath(); V.forEach((v, i) => i ? ctx.lineTo(v[0], v[1]) : ctx.moveTo(v[0], v[1])); ctx.closePath(); ctx.fill();
+  ctx.lineWidth = 1; ctx.strokeStyle = "rgba(232,238,248,.13)";
+  ctx.beginPath(); Vb.forEach((v, i) => i ? ctx.lineTo(v[0], v[1]) : ctx.moveTo(v[0], v[1])); ctx.closePath(); ctx.stroke();
+  ctx.strokeStyle = "rgba(232,238,248,.2)"; ctx.beginPath(); for (let k = 0; k < 3; k++) { ctx.moveTo(V[k][0], V[k][1]); ctx.lineTo(Vb[k][0], Vb[k][1]); } ctx.stroke();
+  for (let k = 0; k < 3; k++) {
+    const a = V[k], b = V[(k + 1) % 3], gr = ctx.createLinearGradient(a[0], a[1], b[0], b[1]);
+    gr.addColorStop(0, "rgba(240,244,252,.75)"); gr.addColorStop(.5, "rgba(240,244,252,.18)"); gr.addColorStop(1, "rgba(240,244,252,.6)");
+    ctx.strokeStyle = gr; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
+  }
+  ctx.strokeStyle = "rgba(232,238,248,.07)"; ctx.lineWidth = 1;
+  ctx.beginPath(); V.forEach((v, i) => { const q = [st.cx + (v[0] - st.cx) * .86, st.cy + (v[1] - st.cy) * .86]; i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]); }); ctx.closePath(); ctx.stroke();
+  const mitte = baeume[N_L >> 1];
+  if (mitte && st.revealt > 300) {
+    const glanz = (p, r, a) => { const gr = ctx.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); gr.addColorStop(0, `rgba(255,255,255,${a})`); gr.addColorStop(1, "rgba(255,255,255,0)"); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(p[0], p[1], r, 0, TAU); ctx.fill(); };
+    const erst = mitte.seg.find(s => /^>[012]$/.test(s.id)); if (erst) glanz(erst.b, 30, .32);
+    if (mitte.info.aus && st.revealt > 900) glanz(mitte.info.aus.p, 24, .22);
+  }
+  ctx.restore();
+}
+
+function messpunkt() { return [st.schirm.x, st.schirm.y]; }
+function zeichneSchirm(zeit) {
+  const S = st.schirm, [A, B] = schirmEnden(S), ux = Math.cos(S.a), uy = Math.sin(S.a), nx = -uy, ny = ux, dick = 5;
+  ctx.save();
+  ctx.fillStyle = "rgba(232,238,248,.05)"; ctx.strokeStyle = "rgba(232,238,248,.32)"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(A[0] - nx * dick, A[1] - ny * dick); ctx.lineTo(B[0] - nx * dick, B[1] - ny * dick); ctx.lineTo(B[0] + nx * dick, B[1] + ny * dick); ctx.lineTo(A[0] + nx * dick, A[1] + ny * dick); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.strokeStyle = "rgba(232,238,248,.16)"; ctx.beginPath();
+  for (let i = 0; i <= 20; i++) { const f = i / 20, L = i % 5 === 0 ? 7 : 3.5, px = A[0] + (B[0] - A[0]) * f, py = A[1] + (B[1] - A[1]) * f; ctx.moveTo(px + nx * dick, py + ny * dick); ctx.lineTo(px + nx * (dick + L), py + ny * (dick + L)); }
+  ctx.stroke();
+  ctx.globalCompositeOperation = "lighter";
+  if (st.revealt > 1400) for (const f of fein) {
+    if (!f.info.hit) continue;
+    const c = farbe(f.l), e = HUELLE(f.l), p = f.info.hit.p, gr = ctx.createRadialGradient(p[0], p[1], 0, p[0], p[1], 9);
+    gr.addColorStop(0, rgba(c, .32 * e)); gr.addColorStop(1, rgba(c, 0)); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(p[0], p[1], 9, 0, TAU); ctx.fill();
+  }
+  const P = messpunkt(), l = lambdaAus(st.phi), c = farbe(l), an = HUELLE(l) > .08 && st.revealt > 1400;
+  if (an) {
+    const puls = reduce ? 0 : Math.sin(zeit / 500) * .5 + .5, gr = ctx.createRadialGradient(P[0], P[1], 0, P[0], P[1], 50 + puls * 6);
+    gr.addColorStop(0, rgba(c, .5 * HUELLE(l) ** .3)); gr.addColorStop(.35, rgba(c, .13)); gr.addColorStop(1, rgba(c, 0));
+    ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(P[0], P[1], 58, 0, TAU); ctx.fill();
+  }
+  ctx.globalCompositeOperation = "source-over";
+  // Linie vom Messpunkt zum Menüpunkt
+  const w = wortEl.getBoundingClientRect();
+  if (w.width) {
+    const yb = w.top + w.height * .55, rad = 12, xr = w.right + 18;
+    ctx.strokeStyle = an ? rgba(c, .35) : "rgba(232,235,241,.16)"; ctx.lineWidth = 1; ctx.beginPath();
+    const dy = yb - P[1], sg = Math.sign(dy) || 1;
+    if (P[0] > xr + rad && Math.abs(dy) < 14) { ctx.moveTo(P[0] - 16, P[1]); ctx.lineTo(xr, P[1]); }
+    else if (P[0] > xr + rad) { ctx.moveTo(P[0], P[1] + 16 * sg); ctx.lineTo(P[0], yb - rad * sg); ctx.quadraticCurveTo(P[0], yb, P[0] - rad, yb); ctx.lineTo(xr, yb); }
+    else if (P[1] < w.top - 20) { ctx.moveTo(P[0], P[1] + 16); ctx.lineTo(P[0], w.top - 14); }
+    ctx.stroke();
+  }
+  ctx.fillStyle = an ? rgba(c, 1) : "#15171c"; ctx.strokeStyle = "rgba(240,244,252,.95)"; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(P[0], P[1], 8.5, 0, TAU); ctx.fill(); ctx.stroke();
+  ctx.restore();
+}
+
+function komponieren(zeit) {
+  const d = st.dpr;
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalCompositeOperation = "source-over"; ctx.globalAlpha = 1;
+  ctx.fillStyle = "#040507"; ctx.fillRect(0, 0, cv.width, cv.height);
+  ctx.setTransform(d, 0, 0, d, 0, 0);
+  zeichneTrommel(zeit);
+  ctx.globalCompositeOperation = "lighter";
+  [0, .24, .28, .34, .4].forEach((a, k) => { if (a) { ctx.globalAlpha = a; ctx.drawImage(bloom[k], 0, 0, st.W, st.H); } });
+  ctx.globalAlpha = 1;
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(strahlCv, 0, 0); ctx.setTransform(d, 0, 0, d, 0, 0);
+  zeichneStaub(zeit);
+  zeichnePrisma();
+  zeichneSchirm(zeit);
+}
+
+/* ---------- Anzeige ---------- */
+const wortEl = $("wort"), wortText = $("wort-text"), massEl = $("mass");
+let aktiv = -1, wortTimer = 0;
+function zeigen() {
+  const l = lambdaAus(st.phi), an = HUELLE(l) > .08, k = naechster(st.phi), p = PUNKTE[k];
+  wortEl.classList.toggle("dunkel", !an);
+  massEl.textContent = an ? `${Math.round(l)} nm · ${hex(farbe(l))}` : "";
+  if (an) {
+    const h = hex(farbe(l)), root = document.documentElement.style;
+    if (root.getPropertyValue("--wahl") !== h) {
+      root.setProperty("--wahl", h);
+      const c = farbe(l), lum = .2126 * toLin(c[0]) + .7152 * toLin(c[1]) + .0722 * toLin(c[2]);
+      root.setProperty("--auf-wahl", lum > .2 ? "#040507" : "#f4f6fa");
+    }
+  }
+  ton(an ? l : null);
+  if (k === aktiv) return;
+  aktiv = k;
+  PUNKTE.forEach((q, i) => q.a.setAttribute("aria-current", String(i === k)));
+  wortEl.href = p.href;
+  if (reduce || !wortText.textContent) { wortText.textContent = p.name; return; }
+  wortEl.classList.add("wechsel"); clearTimeout(wortTimer);
+  wortTimer = setTimeout(() => { wortText.textContent = p.name; wortEl.classList.remove("wechsel"); }, 160);
+}
+
+/* ---------- Ton: Lichtfrequenz 40 Oktaven tiefer ---------- */
+let ac = null, osz = null, verst = null, tonAn = false;
+function ton(l) {
+  if (!ac) return;
+  const t = ac.currentTime;
+  if (l) osz.frequency.setTargetAtTime(299792458 / (l * 1e-9) / 2 ** 40, t, .04);
+  verst.gain.setTargetAtTime(tonAn && l ? .05 : 0, t, .08);
+}
+$("ton").addEventListener("click", () => {
+  try {
+    if (!ac) { ac = new (window.AudioContext || window.webkitAudioContext)(); osz = ac.createOscillator(); verst = ac.createGain(); verst.gain.value = 0; osz.connect(verst).connect(ac.destination); osz.start(); }
+    ac.resume(); tonAn = !tonAn; $("ton").setAttribute("aria-pressed", String(tonAn)); zeigen();
+  } catch (e) { $("ton").hidden = true; }
+});
+
+/* ---------- Bedienung ---------- */
+let zug = null;
+const stopTour = () => { st.tour = null; };
+const winkel = (x, y) => Math.atan2(y - st.cy, x - st.cx);
+function rasten(k) { stopTour(); const z = PUNKTE[((k % NP) + NP) % NP].phi; st.phiZiel = st.phi + wickel(z - st.phi); if (reduce) { st.phi = st.phiZiel; st.phiZiel = null; } st.dirty = true; }
+const schritt = r => rasten(naechster(st.phiZiel ?? st.phi) + r);
+cv.addEventListener("pointerdown", e => {
+  cv.setPointerCapture(e.pointerId); cv.focus({ preventScroll: true }); stopTour();
+  const P = messpunkt();
+  if (Math.hypot(e.clientX - P[0], e.clientY - P[1]) < 26) { zug = { typ: "punkt" }; return; }
+  zug = { typ: "dreh", a: winkel(e.clientX, e.clientY), weg: 0 }; st.phiZiel = null; cv.classList.add("zieht");
+});
+cv.addEventListener("pointermove", e => {
+  if (!zug || zug.typ !== "dreh") return;
+  const a = winkel(e.clientX, e.clientY), da = wickel(a - zug.a);
+  st.phi += da; zug.a = a; zug.weg += Math.abs(da); st.dirty = true;
+});
+const loslassen = e => {
+  if (!zug) return;
+  if (zug.typ === "punkt") { const P = messpunkt(); if (e && Math.hypot(e.clientX - P[0], e.clientY - P[1]) < 26) eintreten(); }
+  else rasten(naechster(st.phi));
+  zug = null; cv.classList.remove("zieht");
+};
+cv.addEventListener("pointerup", loslassen);
+cv.addEventListener("pointercancel", () => { if (zug && zug.typ === "dreh") rasten(naechster(st.phi)); zug = null; cv.classList.remove("zieht"); });
+let radSumme = 0, radZeit = 0;
+addEventListener("wheel", e => {
+  if (flut.classList.contains("an")) return;
+  e.preventDefault(); radSumme += e.deltaY + e.deltaX;
+  const jetzt = performance.now();
+  if (Math.abs(radSumme) > 40 && jetzt - radZeit > 260) { schritt(Math.sign(radSumme)); radSumme = 0; radZeit = jetzt; }
+}, { passive: false });
+document.addEventListener("keydown", e => {
+  if (flut.classList.contains("an")) { if (e.key === "Escape") zurueck(); return; }
+  if (e.target.closest && e.target.closest("button")) return;
+  if (e.key === "ArrowRight" || e.key === "ArrowDown") { e.preventDefault(); schritt(1); }
+  else if (e.key === "ArrowLeft" || e.key === "ArrowUp") { e.preventDefault(); schritt(-1); }
+  else if (/^[1-9]$/.test(e.key) && +e.key <= NP) rasten(+e.key - 1);
+  else if (e.key === "Enter" && e.target === cv) eintreten();
+});
+PUNKTE.forEach((p, k) => {
+  p.a.addEventListener("click", e => { e.preventDefault(); if (aktiv === k && naechster(st.phi) === k && st.phiZiel == null) eintreten(); else rasten(k); });
+  p.a.addEventListener("focus", () => rasten(k));
+  p.a.addEventListener("pointerenter", e => { if (e.pointerType === "mouse") rasten(k); });
+});
+wortEl.addEventListener("click", e => { e.preventDefault(); eintreten(); });
+
+/* ---------- Eintreten ---------- */
+const flut = $("flut");
+function eintreten() {
+  const p = PUNKTE[naechster(st.phi)];
+  if (HUELLE(lambdaAus(st.phi)) <= .08) return;
+  try { localStorage.setItem("ornament.akzent", hex(farbe(lambdaAus(st.phi)))); } catch (e) {}
+  const P = messpunkt();
+  flut.style.setProperty("--fx", P[0] + "px"); flut.style.setProperty("--fy", P[1] + "px");
+  $("flut-wort").textContent = p.name;
+  flut.setAttribute("aria-hidden", "false"); flut.classList.add("an");
+  if (!vorschau) setTimeout(() => { location.href = p.href; }, reduce ? 0 : 950);
+  else setTimeout(() => $("flut-zurueck").focus(), 600);
+}
+function zurueck() { flut.classList.remove("an"); flut.setAttribute("aria-hidden", "true"); cv.focus({ preventScroll: true }); }
+$("flut-zurueck").addEventListener("click", zurueck);
+addEventListener("pageshow", e => { if (e.persisted) zurueck(); });
+
+/* ---------- Schleife ---------- */
+const start = Math.max(0, PUNKTE.findIndex(p => p.a.hasAttribute("data-start")));
+st.phi = reduce ? PUNKTE[start].phi : 0;
+if (!reduce) st.tour = { von: 0, nach: TAU + PUNKTE[start].phi, t0: null };
+function schleife(zeit) {
+  if (!st.t0) st.t0 = zeit;
+  if (st.intro < 1) { st.intro = clamp((zeit - st.t0) / 2600, 0, 1); st.revealt = st.intro >= 1 ? 1e9 : (1 - (1 - st.intro) ** 3) * 3200; st.dirty = true; }
+  if (st.tour) {   // Einmal durch alle fünf Farben, dann zum Startpunkt
+    const T = st.tour, t = (zeit - st.t0 - 1500) / 3200;
+    if (t > 0) { const f = clamp(t, 0, 1), e = f < .5 ? 4 * f * f * f : 1 - (-2 * f + 2) ** 3 / 2; st.phi = T.von + (T.nach - T.von) * e; st.dirty = true; if (f >= 1) { st.phi = PUNKTE[start].phi; st.tour = null; } }
+  }
+  if (st.phiZiel != null) { const d = st.phiZiel - st.phi; st.phi += d * .14; if (Math.abs(d) < 1e-3) { st.phi = st.phiZiel; st.phiZiel = null; } st.dirty = true; }
+  const thZiel = thetaAus(st.phi), dth = thZiel - st.theta;
+  if (Math.abs(dth) > 1e-6) { st.theta += reduce ? dth : dth * .3; st.dirty = true; }
+  if (st.dirty) { st.dirty = false; rechnen(); zeichneStrahlen(st.revealt); zeigen(); }
+  komponieren(zeit);
+  requestAnimationFrame(schleife);
+}
+let rsTimer = 0;
+addEventListener("resize", () => { clearTimeout(rsTimer); rsTimer = setTimeout(anordnen, 80); });
+anordnen();
+st.theta = thetaAus(st.phi);
+zeigen();
+requestAnimationFrame(schleife);
+})();
+</script>
+</body>
+</html>
