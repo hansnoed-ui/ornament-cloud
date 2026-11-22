@@ -551,6 +551,16 @@
    "adresse": "references/webdesign/colorpicker/",
    "kurz": "Einstiegsseite als Referenz: Die Drehung eines Glasprismas wählt eine Spektralfarbe und mit ihr einen von fünf Menüpunkten.",
    "wartet": "Entscheiden, ob und wo das Spektralmenü als Einstieg eingesetzt wird, und welche fünf Punkte es trägt."
+  },
+  {
+   "id": "prints-referenz",
+   "name": "Prints (Druckbogen)",
+   "tuer": "beauftragen",
+   "art": "Referenz Webdesign",
+   "status": "verlinkt",
+   "adresse": "references/webdesign/prints/",
+   "kurz": "Einstiegsseite für Prints als Referenz: ein Motiv als Vierfarbenraster auf dem Druckbogen, darunter die acht Motive mit Lupe, Raster und Wand.",
+   "wartet": "Prints: Titel, Format, Papier, Auflage und Preis der acht Motive."
   }
  ]
 }

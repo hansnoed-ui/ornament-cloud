@@ -194,6 +194,8 @@ function bau(sprache) {
   const fZettel = (z, klein) => ({ artId: "zettel", href: `${B}zettel/${z.slug}/`, was: `${z.number} · ${z.title}`, klein: klein ?? z.bottom_line });
   const fApp = (a) => a && { artId: "app", href: `${B}apps/${a.slug}/`, was: a.name, klein: a.kurz };
   const fRaster = (r) => RASTER_OEFFENTLICH && r && { artId: "raster", href: `${B}raster/${r.slug}/`, was: r.name, klein: r.kurz };
+  // «Produkte» öffnet in den Angebotslisten zuerst die Prints-Seite (22. November 2026, Christian); sie ist deutsch, englisch bleibt die Leistung
+  const angebotZiel = (a) => istDe && a.slug === "produkte" ? "/references/webdesign/prints/?von=angebot" : `${B}angebot/${a.slug}/`;
   const fAngebot = (a) => a && { artId: "angebot", href: `${B}angebot/${a.slug}/`, was: a.name, klein: a.kurz };
   const fOrma = (k) => k && { artId: "konstellation", href: `/portfolio/nebeneinander-nacheinander/?pair=${k.id}`, was: `${k.kuenstler} × ${k.theoretiker}${T.konstellationDeutsch}`, klein: k.frage, deutsch: true };
 
@@ -431,7 +433,7 @@ ${zaehlen ? '  <script data-goatcounter="https://ornament-cloud.goatcounter.com/
 <section class="abschnitt kapitel kapitel-papier" id="beauftragen" aria-labelledby="beauftragen-titel">
   <div class="spalte">
     <div class="abschnitt-kopf"><h2 id="beauftragen-titel">${zeichen("arbeiten")}${esc(T.start.beauftragen)}</h2><p>${esc(T.start.beauftragenText)}</p><a class="weiter" href="${B}angebot/">${esc(T.start.alleAngebote)}</a></div>
-    <div class="angebote" role="list">${ANGEBOTE.map((a) => `<a class="angebot" role="listitem" href="${B}angebot/${a.slug}/"><span class="zeichen-gross">${zeichen(a.slug)}</span><h3>${esc(a.name)}</h3><p>${esc(a.kurz)}</p><span class="weiter">${esc(T.start.leistung)}</span></a>`).join("")}</div>
+    <div class="angebote" role="list">${ANGEBOTE.map((a) => `<a class="angebot" role="listitem" href="${angebotZiel(a)}"><span class="zeichen-gross">${zeichen(a.slug)}</span><h3>${esc(a.name)}</h3><p>${esc(a.kurz)}</p><span class="weiter">${esc(T.start.leistung)}</span></a>`).join("")}</div>
   </div>
 </section>
 
@@ -761,7 +763,7 @@ ${faeden([...zs.map((z) => fZettel(z)), r.slug === "nebeneinander-nacheinander" 
   <h1 class="titel">${esc(T.angebot.titel)}<small>${esc(T.angebot.small)}</small></h1>
 </div></section>
 <section class="abschnitt"><div class="spalte">
-  <ul class="liste-linien am-ende">${ANGEBOTE.map((a) => `<li><a href="${B}angebot/${a.slug}/"><span class="n">${zeichen(a.slug)}</span><span class="name">${esc(a.name)}</span><span class="pfeil">${esc(T.angebot.briefing)}</span><span class="kurz">${esc(a.kurz)} ${esc(a.fuer)}</span></a></li>`).join("")}</ul>
+  <ul class="liste-linien am-ende">${ANGEBOTE.map((a) => `<li><a href="${angebotZiel(a)}"><span class="n">${zeichen(a.slug)}</span><span class="name">${esc(a.name)}</span><span class="pfeil">${esc(T.angebot.briefing)}</span><span class="kurz">${esc(a.kurz)} ${esc(a.fuer)}</span></a></li>`).join("")}</ul>
 </div></section>`;
     veroeffentliche({ pfad: "angebot/", aktiv: "angebot/", titel: T.angebot.seitenTitel, beschreibung: T.angebot.beschreibung, body, bildAlt: T.angebot.bildAlt });
   }
