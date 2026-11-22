@@ -68,6 +68,8 @@ a{color:inherit;text-decoration:none}
 .wort:hover .pfeil{transform:translate(.2em,-.08em)}
 .wort.wechsel{opacity:0;transform:translateY(.12em);filter:blur(6px)}
 .wort.dunkel{opacity:.18}
+/* Das Wort im Licht des Messpunkts: es trägt die Spektralfarbe, gedämpft mit Weiss, und einen schwachen Schein */
+#wort-text{color:color-mix(in srgb,var(--wahl) 68%,#fff);text-shadow:0 0 48px color-mix(in srgb,var(--wahl) 40%,transparent);transition:color .6s,text-shadow .6s}
 .mass{display:none}
 .js .mass{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--stumm);font-variant-numeric:tabular-nums;min-height:1em}
 
@@ -308,7 +310,7 @@ const KERN_MAX = Math.max(...KERN.flat()), KERN_N = KERN.map(c => c.map(v => v /
 const BAND = LAM.map(l => { const c = farbe(l), y = .2126 * c[0] + .7152 * c[1] + .0722 * c[2], e = .32 + .68 * Math.pow(HUELLE(l), .8);
   return c.map(v => (v * .55 + y * .45) * e * .88); });
 const sicht = I => Math.pow(I, .55);
-let baeume = [], raender = [], fein = [], enden = [];
+let baeume = [], raender = [], fein = [], enden = [], menuTreffer = [];
 function rechnen() {
   baeume = LAM.map(l => { const { seg, info } = verfolgen(l, st.theta, true); return { seg, m: new Map(seg.map(s => [s.id, s])), info }; });
   // Die beiden Ränder des Strahls: dazwischen liegt das Band jeder Wellenlänge, so hat der Strahl eine echte Breite
@@ -317,6 +319,7 @@ function rechnen() {
   fein = [];
   for (let l = 392; l <= 704; l += 4) fein.push({ l, info: verfolgen(l, st.theta, false).info });
   enden = kanten(st.theta);
+  menuTreffer = PUNKTE.map(p => verfolgen(p.l, st.theta, false).info.hit);
 }
 function zeichneStrahlen(rev) {
   const d = st.dpr;
@@ -491,6 +494,22 @@ function zeichneSchirm(zeit) {
   }
   ctx.fillStyle = an ? rgba(c, 1) : "#15171c"; ctx.strokeStyle = "rgba(240,244,252,.95)"; ctx.lineWidth = 2;
   ctx.beginPath(); ctx.arc(P[0], P[1], 8.5, 0, TAU); ctx.fill(); ctx.stroke();
+  // Das Spektrum ist das Menü (22. November 2026, Christian: «es gibt keinen Zusammenhang zwischen spektralfarbe und menupunkt»):
+  // jeder Menüpunkt steht auf dem Schirm dort, wo seine Wellenlänge auftrifft, auf der vom Prisma abgewandten Seite;
+  // beim Drehen wandern die Wörter mit dem Licht, gewählt ist das Wort unter dem Messpunkt.
+  if (st.revealt > 1400) {
+    const seite = ((st.cx - S.x) * nx + (st.cy - S.y) * ny) > 0 ? -1 : 1, ox = nx * seite, oy = ny * seite;
+    let dreh = Math.atan2(oy, ox), rechts = true;
+    if (Math.cos(dreh) < 0) { dreh += Math.PI; rechts = false; }
+    ctx.font = '500 12px "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif'; ctx.textBaseline = "middle";
+    PUNKTE.forEach((q, i) => {
+      const h = menuTreffer[i]; if (!h) return;
+      const gewaehlt = i === aktiv && an, a = gewaehlt ? .95 : .55 * Math.max(.35, HUELLE(q.l) ** .4);
+      const x = h.p[0] + ox * (gewaehlt ? 22 : 15), y = h.p[1] + oy * (gewaehlt ? 22 : 15);
+      ctx.save(); ctx.translate(x, y); ctx.rotate(dreh); ctx.textAlign = rechts ? "left" : "right";
+      ctx.fillStyle = rgba(q.rgb.map(v => v * .62 + .38), a); ctx.fillText(q.name, 0, 0); ctx.restore();
+    });
+  }
   ctx.restore();
 }
 
@@ -632,17 +651,21 @@ addEventListener("pageshow", e => { if (e.persisted) zurueck(); });
 const start = Math.max(0, PUNKTE.findIndex(p => p.a.hasAttribute("data-start")));
 st.phi = reduce ? PUNKTE[start].phi : 0;
 if (!reduce) st.tour = { von: 0, nach: TAU + PUNKTE[start].phi, t0: null };
+let letzte = 0;
+// Nachführen unabhängig von der Bildrate: der Anteil k gilt für ein Bild bei 60 Hz
+const nach = (k, dt) => 1 - Math.pow(1 - k, dt / 16.67);
 function schleife(zeit) {
   if (!st.t0) st.t0 = zeit;
+  const dt = Math.min(100, letzte ? zeit - letzte : 16.67); letzte = zeit;
   if (st.intro < 1) { st.intro = clamp((zeit - st.t0) / 2600, 0, 1); st.revealt = st.intro >= 1 ? 1e9 : (1 - (1 - st.intro) ** 3) * 3200; st.dirty = true; }
   if (st.tour) {   // Einmal durch alle fünf Farben, dann zum Startpunkt
     const T = st.tour, t = (zeit - st.t0 - 1500) / 3200;
     if (t > 0) { const f = clamp(t, 0, 1), e = f < .5 ? 4 * f * f * f : 1 - (-2 * f + 2) ** 3 / 2; st.phi = T.von + (T.nach - T.von) * e; st.dirty = true; if (f >= 1) { st.phi = PUNKTE[start].phi; st.tour = null; } }
   }
-  if (zug && zug.typ === "dreh") { const d = zug.roh - st.phi; if (Math.abs(d) > 1e-4) { st.phi += reduce ? d : d * .14; st.dirty = true; } }
-  else if (st.phiZiel != null) { const d = st.phiZiel - st.phi; st.phi += d * .055; if (Math.abs(d) < 1e-3) { st.phi = st.phiZiel; st.phiZiel = null; } st.dirty = true; }
+  if (zug && zug.typ === "dreh") { const d = zug.roh - st.phi; if (Math.abs(d) > 1e-4) { st.phi += reduce ? d : d * nach(.14, dt); st.dirty = true; } }
+  else if (st.phiZiel != null) { const d = st.phiZiel - st.phi; st.phi += d * nach(.055, dt); if (Math.abs(d) < 1e-3) { st.phi = st.phiZiel; st.phiZiel = null; } st.dirty = true; }
   const thZiel = thetaSicht(st.phi), dth = thZiel - st.theta;
-  if (Math.abs(dth) > 1e-6) { st.theta += reduce ? dth : dth * .1; st.dirty = true; }
+  if (Math.abs(dth) > 1e-6) { st.theta += reduce ? dth : dth * nach(.1, dt); st.dirty = true; }
   if (st.dirty) { st.dirty = false; rechnen(); zeichneStrahlen(st.revealt); zeigen(); }
   komponieren(zeit);
   requestAnimationFrame(schleife);
