@@ -77,6 +77,27 @@ Sitzung wissen muss, damit dieselben Fehler nicht zweimal passieren.
 - `google5f34a117d8e3442e.html` an der Wurzel nie löschen: Damit bestätigt Google die
   Inhaberschaft in der Search Console (16.11.2026); ohne sie geht der Zugang verloren.
 
+## Gemini als Werkzeug (`gemini-api`)
+
+Seit 24.11.2026 darf Claude das Gemini API CLI von Google benutzen, wenn eine Aufgabe es
+braucht: Bild erzeugen oder bearbeiten, Sprache, Musik, Video, Transkription, Analyse von
+PDF/Bild/Ton, Recherche über einen Managed Agent. Beschreibung: README im Repo
+`google-gemini/gemini-api-cli`; Notiz im Wiki: `quelle-google-2026-gemini-api-cli`.
+
+- Installieren: `go install github.com/google-gemini/gemini-api-cli/cmd/gemini-api@<version>`
+  oder `scripts/install.sh` aus dem Repo; Version festhalten (Beta, Breaking Changes angekündigt).
+- Schlüssel `GEMINI_API_KEY` nur als Netzwerk-Secret der Cloud-Umgebung oder als GitHub-Secret –
+  nie ins Repo, ins Frontend oder in den Chat (wie bei jev). Die Website ruft Gemini nie aus dem
+  Browser auf. Hosts: `generativelanguage.googleapis.com`, für grosse Dateien `upload.googleapis.com`.
+- Jeden Aufruf zuerst mit `--dry-run` prüfen. Für maschinenlesbare Antworten
+  `--stream=false --output-format json`.
+- Eigenes, unveröffentlichtes Material nur mit `"store": false` schicken (`--body`); hochgeladene
+  Dateien bleiben 48 Stunden bei Google.
+- Erzeugtes ist ein Vorschlag, kein Werk: im Lab-Protokoll und in Commits als «Gemini» kennzeichnen,
+  getrennt von Mensch, Zufall, Regel und jev, und nie als Christians Arbeit ausgeben. Das Urteil
+  über Bild und Ton liegt bei Christian.
+- Erzeugte Dateien erst nach Christians OK committen und nichts davon ungeprüft live stellen.
+
 ## Prüfen vor dem Abschluss
 
 - Unit-Tests: `node --test tests/<bereich>.test.mjs`
