@@ -100,10 +100,16 @@ PDF/Bild/Ton, Recherche über einen Managed Agent. Beschreibung: README im Repo
 - Stand 25.11.2026: Schlüssel liegt als Netzwerk-Secret (Header `x-goog-api-key`) in der Umgebung «Default»;
   für das CLI genügt `GEMINI_API_KEY=platzhalter`, der Proxy setzt den echten ein. GitHub-Releases
   sind aus dem Container gesperrt: installieren mit `go install …@latest` (0.5.0), dann `~/go/bin` in den PATH.
-- `gemini-4-hydrogen` und `gemini-3.8-flash` antworteten im ersten Test mit 503 (Überlast),
-  `gemini-3.5-flash` lief. Beim Hören einer Composer-Probe (Stil «Ornament», 174 BPM) war die Fehlersuche
-  stimmig (kein Clipping, nachgemessen −0,97 dBFS Spitze), Tempo und Stil aber falsch («House, 120–125 BPM»),
-  die Tabla nicht erkannt. Gemini-Beschreibungen darum gegen Messwerte und Projektdaten prüfen.
+- Hören: Tempo, Stil und Instrumente erkennt Gemini unzuverlässig (Stil «Ornament», 174 BPM, hiess «House,
+  120–125 BPM», Tabla nicht erkannt). Gemini-Beschreibungen gegen Messwerte und Projektdaten prüfen.
+- Eichtest Fehlersuche (25.11.2026, 8 Composer-Loops, 9 eingebaute Fehler, 2 saubere): `gemini-3.5-flash`
+  fand **keinen** Fehler – für Hörprüfung unbrauchbar. `gemini-4-hydrogen` fand 6 von 9 auf ±1 s (Aussetzer,
+  Übersteuern, Stottern), keinen Fehlalarm, verwechselte aber die Art oft und überhörte kurze Knackser.
+  Darum: Knackser und Clipping messen (Spitzenpegel, Sprünge zwischen Abtastwerten), Gemini nur als
+  zusätzliches Ohr für grobe Störungen; «keine Fehler» von Gemini ist kein Beleg.
+- Videos: nur 16:9 oder 9:16 (für 4:5 in 9:16 erzeugen, Inhalt mittig halten lassen, zuschneiden). Verlängern
+  mit `--previous-interaction-id` liefert den ganzen Film neu und endet bei 40 s; danach eine neue Kette mit
+  dem letzten Bild als erstem Eingabebild. Ohne Bezahlkonto: `RESOURCE_EXHAUSTED`.
 
 ## Prüfen vor dem Abschluss
 
