@@ -97,6 +97,13 @@ PDF/Bild/Ton, Recherche über einen Managed Agent. Beschreibung: README im Repo
   getrennt von Mensch, Zufall, Regel und jev, und nie als Christians Arbeit ausgeben. Das Urteil
   über Bild und Ton liegt bei Christian.
 - Erzeugte Dateien erst nach Christians OK committen und nichts davon ungeprüft live stellen.
+- Stand 25.11.2026: Schlüssel liegt als Netzwerk-Secret (Header `x-goog-api-key`) in der Umgebung «Default»;
+  für das CLI genügt `GEMINI_API_KEY=platzhalter`, der Proxy setzt den echten ein. GitHub-Releases
+  sind aus dem Container gesperrt: installieren mit `go install …@latest` (0.5.0), dann `~/go/bin` in den PATH.
+- `gemini-4-hydrogen` und `gemini-3.8-flash` antworteten im ersten Test mit 503 (Überlast),
+  `gemini-3.5-flash` lief. Beim Hören einer Composer-Probe (Stil «Ornament», 174 BPM) war die Fehlersuche
+  stimmig (kein Clipping, nachgemessen −0,97 dBFS Spitze), Tempo und Stil aber falsch («House, 120–125 BPM»),
+  die Tabla nicht erkannt. Gemini-Beschreibungen darum gegen Messwerte und Projektdaten prüfen.
 
 ## Prüfen vor dem Abschluss
 
