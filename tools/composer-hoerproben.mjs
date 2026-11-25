@@ -1,5 +1,6 @@
 // Hörproben des ORNAMENT COMPOSER als WAV (24 Bit, 48 kHz): jeder Stil als Loop über 8 Takte (mit Kanalzug, Raum und Grenze, genau wie
-// im Browser), jede Stimme mit allen Varianten nacheinander (je ein Schlag pro Artikulation, Pause dazwischen).
+// im Browser), jede Stimme mit allen Varianten nacheinander (je ein Schlag pro Artikulation, Pause dazwischen). Flächen (Natur) haben
+// keine Artikulationen: je Variante 2 Takte bei 80 BPM in D-Moll (6 s), wie der Motor sie rechnet; längere Proben im Natur-Skript.
 //   node tools/composer-hoerproben.mjs <ziel-ordner>
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -8,7 +9,7 @@ const root = new URL("../alpha/", import.meta.url);
 const imp = (p) => import(new URL(p, root).href);
 const { ERZEUGER, stimmeVon } = await imp("composer/erzeuger/register.js");
 const { STILE } = await imp("composer/kern/muster.js");
-const { spurRechnen } = await imp("composer/kern/erzeugen.js");
+const { spurRechnen, flaechenSpurRechnen } = await imp("composer/kern/erzeugen.js");
 const { rendern } = await imp("composer/kern/rendern.js");
 const { PLUGINS } = await imp("composer/plugins/register.js");
 const { messen } = await imp("composer/kern/messen.js");
@@ -48,13 +49,17 @@ for (const [n, stil] of STILE.entries()) {
 
 for (const e of Object.values(ERZEUGER)) if (!e.melodisch) for (const st of Object.values(e.stimmen)) {
   const std = Object.fromEntries(st.parameter.map((p) => [p.key, p.std])), teile = [];
-  for (const v of st.varianten) for (const a of st.artikulationen.slice(0, 6)) {
+  if (e.flaeche) for (const v of st.varianten) {   // Flächen: Schleife mit Dauer statt Schläge
+    teile.push(flaechenSpurRechnen({ erzeuger: `${e.id}@${e.version}`, stimme: st.key, werte: v.werte, anzahl: 2, bpm: 80, grundton: 2, leiter: "moll", seed: 7 }, RATE).kanaele);
+    teile.push([new Float32Array(RATE * 0.5), new Float32Array(RATE * 0.5)]);
+  }
+  else for (const v of st.varianten) for (const a of st.artikulationen.slice(0, 6)) {
     teile.push(st.rechne({ ...std, ...v.werte }, RATE, { art: a.key, staerke: 0.9, seed: 7 }));
     teile.push([new Float32Array(RATE * 0.25), new Float32Array(RATE * 0.25)]);
   }
   const n = teile.reduce((s, t) => s + t[0].length, 0), L = new Float32Array(n), R = new Float32Array(n);
   let o = 0; for (const [l, r] of teile) { L.set(l, o); R.set(r, o); o += l.length; }
-  writeFileSync(join(ziel, "stimmen", `${e.id}-${st.key}-alle-varianten.wav`), wavSchreiben([L, R], RATE, { bits: "24" }));
+  writeFileSync(join(ziel, "stimmen", `${e.id}-${e.version}-${st.key}-alle-varianten.wav`), wavSchreiben([L, R], RATE, { bits: "24" }));
 }
 // Bass: jede Variante mit zwei Takten in D (Moll), Saiten als Walking, Synthesizer der Kick folgend
 for (const st of Object.values(ERZEUGER["bass@0.1.0"].stimmen)) {
