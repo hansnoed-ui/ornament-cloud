@@ -7,9 +7,10 @@
 //  · Beobachter (dritte Temporalisierung): ein dritter Rhythmus vergleicht die Ringe; nur dann werden Differenzen markiert.
 // Die Rechnung läuft in festen Schritten (1/120 s), unabhängig von der Bildrate: gleicher Startwert, gleiche Regler, gleicher Verlauf.
 import { T, TAU, rngFrom, pick, neuerStartwert, erzeugeRenderer, studio, materialien, setzeMaterial, MATERIAL, entsorge } from '../gemeinsam.js?v=1';
+import { glb, stl, png, speichere, megabyte } from './export.js?v=1';
 
 const $ = id => document.getElementById(id);
-const P = { start: 2471, ringe: 4, unterschied: 70, koppelung: 50, beobachter: false, tempo: 100, material: 'messing' };
+const P = { start: 2471, ringe: 4, unterschied: 70, koppelung: 50, beobachter: false, tempo: 100, material: 'messing', mm: 120 };
 let laeuft = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const KMAX = 1;            // grösste Koppelung (Zyklen je Sekunde), linear: bei Unterschied 70 etwa bis 30 beziehungslos, 35–75 gekoppelt, ab 80 aufgegangen
@@ -58,7 +59,7 @@ function baue() {
     const R = 0.32 + i * (0.68 / (N - 1));
     const k = pick(r, [6, 7, 8, 9, 10, 12]);
     const bruch = pick(r, [0.382, 0.618, 0.414, 0.586, 0.236, 0.764]);
-    const x = { R, k, bruch, rang: rang[i] + (r() - 0.5) * 0.2, theta: r(), n: 0, rot: 0, rotZeig: 0, y: 0, yZeig: 0 };
+    const x = { R, k, bruch, rang: rang[i] + (r() - 0.5) * 0.2, theta: r(), n: 0, rot: 0, rotZeig: 0, y: 0, yZeig: 0, schichten: [] };
     // der lebende Ring: feiner Reif, Perlen, eine grosse Marke
     x.lebend = new T.Group();
     const reif = new T.Mesh(new T.TorusGeometry(R, 0.007, 6, 140), m.a); reif.rotation.x = Math.PI / 2; x.lebend.add(reif);
@@ -108,6 +109,7 @@ function operation(x) {
   x.rot += (TAU / x.k) * x.bruch;
   if (voll) return;
   x.n++; x.y = x.n * DZ;
+  x.schichten.push(x.rot);
   const basis = x.spur.count;
   for (let j = 1; j < x.k; j++) {
     const a = TAU * j / x.k + x.rot;
@@ -257,6 +259,7 @@ regler('ringe', baue);
 regler('unterschied', setzeTempi);
 regler('koppelung', () => {});
 regler('tempo', () => {}, ' %');
+regler('mm', () => {}, ' mm');
 $('start').addEventListener('change', e => {
   const v = Math.max(1, Math.min(99999, Math.round(+e.target.value) || 1));
   e.target.value = v; P.start = v; baue();
@@ -286,6 +289,36 @@ $('kopieren').addEventListener('click', () => {
   };
   try { navigator.clipboard.writeText($('rezept').textContent).then(fertig, markiere); } catch (err) { markiere(); }
 });
+
+// ---------- Export ----------
+const dateiname = () => `zeitkoerper-${P.start}-r${P.ringe}-u${P.unterschied}-k${P.koppelung}${P.beobachter ? '-b' : ''}`;
+const meldung = t => { $('exportStatus').textContent = t; };
+async function exportiere(knopf, arbeit) {
+  const alle = document.querySelectorAll('#exportKnoepfe button');
+  alle.forEach(b => { b.disabled = true; });
+  const warLauf = laeuft; laeuft = false;
+  meldung('Wird gerechnet …');
+  await new Promise(r => setTimeout(r, 30));
+  try { meldung(await arbeit()); }
+  catch (e) { console.error(e); meldung('Export fehlgeschlagen: ' + (e && e.message ? e.message : e)); }
+  finally { laeuft = warLauf; alle.forEach(b => { b.disabled = false; }); }
+}
+$('exportGlb').addEventListener('click', e => exportiere(e.currentTarget, async () => {
+  const blob = await glb(welt);
+  speichere(blob, dateiname() + '.glb');
+  return `GLB gespeichert: ${dateiname()}.glb, ${megabyte(blob.size)}.`;
+}));
+$('exportStl').addEventListener('click', e => exportiere(e.currentTarget, async () => {
+  if (!ringe.some(x => x.schichten.length)) return 'Noch keine Spur: zuerst ein paar Schritte laufen lassen.';
+  const { blob, dreiecke, durchmesser, hoehe } = stl(ringe, { dz: DZ, mm: P.mm });
+  speichere(blob, `${dateiname()}-${P.mm}mm.stl`);
+  return `STL gespeichert: Ø ${durchmesser} mm, Höhe ${Math.round(hoehe)} mm, ${dreiecke.toLocaleString('de-CH')} Dreiecke, ${megabyte(blob.size)}.`;
+}));
+$('exportPng').addEventListener('click', e => exportiere(e.currentTarget, async () => {
+  const { blob, w, h } = await png(renderer, szene, kamera);
+  speichere(blob, dateiname() + '.png');
+  return `PNG gespeichert: ${w} × ${h} px, ${megabyte(blob.size)}.`;
+}));
 
 // ---------- Lauf ----------
 let zuletzt = performance.now(), rest = 0, anzeigeUhr = 0;

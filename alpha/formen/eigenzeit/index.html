@@ -8,7 +8,7 @@
   <meta name="robots" content="noindex">
   <meta name="description" content="Eigenzeit: Ringe mit eigenem Rhythmus, ohne gemeinsame Uhr. Koppelung erzeugt Zeitdruck, jeder Schritt hinterlässt eine Schicht: Wiederkehr ohne Rückkehr als Körper.">
   <link rel="stylesheet" href="../../../vendor/fonts/fonts.css">
-  <link rel="stylesheet" href="../formen.css?v=2">
+  <link rel="stylesheet" href="../formen.css?v=3">
 </head>
 <body class="koerper-seite">
   <header class="kopf">
@@ -90,6 +90,18 @@
       </div>
 
       <div class="gruppe">
+        <span class="etikett">Export</span>
+        <div class="feld"><label for="mm">Grösse für den Druck</label><output id="mmAus">120 mm</output>
+          <input id="mm" type="range" min="40" max="300" step="10" value="120"></div>
+        <div class="pillen" id="exportKnoepfe">
+          <button id="exportStl" type="button" class="knopf klein leise">STL zum Drucken</button>
+          <button id="exportGlb" type="button" class="knopf klein leise">GLB</button>
+          <button id="exportPng" type="button" class="knopf klein leise">Bild (PNG)</button>
+        </div>
+        <p class="leise-text" id="exportStatus">STL: ein zusammenhängender Körper mit Stegen und Bodenplatte, Durchmesser wie eingestellt, Stege mindestens 1,2 mm. GLB: der Körper wie gesehen, für Blender oder AR. PNG: die Ansicht, 4000 px.</p>
+      </div>
+
+      <div class="gruppe">
         <span class="etikett">Rezept</span>
         <div class="rezept" id="rezept"></div>
         <div class="pillen"><button id="kopieren" type="button" class="knopf klein leise">Rezept kopieren</button></div>
@@ -99,8 +111,8 @@
   </div>
 
   <script type="importmap">
-  { "imports": { "three": "../../../vendor/three-0.185.1/three.module.min.js" } }
+  { "imports": { "three": "../../../vendor/three-0.185.1/three.module.min.js", "three/addons/": "../../../vendor/three-0.185.1/addons/" } }
   </script>
-  <script type="module" src="eigenzeit.js?v=1"></script>
+  <script type="module" src="eigenzeit.js?v=2"></script>
 </body>
 </html>
