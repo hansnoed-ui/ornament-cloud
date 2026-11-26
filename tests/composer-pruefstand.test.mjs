@@ -2,7 +2,7 @@
 // mit der Basis und die Zahlen aus dem Projekt. Den ganzen Lauf durch die App prüft man mit dem Werkzeug selbst (braucht Playwright).
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { knackser, abrisse, clipping, loecher, vergleichen, arrangementZahlen, wavLesen } from "../tools/composer-pruefstand.mjs";
+import { knackser, abrisse, clipping, loecher, vergleichen, arrangementZahlen, wavLesen, effektBereiche, dateiname } from "../tools/composer-pruefstand.mjs";
 
 const RATE = 48000;
 /** zwei Sekunden: leiser Sinus, alle 0,5 s ein Anschlag (Rauschen, das abklingt) – so etwas darf nie als Knackser gelten */
@@ -78,4 +78,12 @@ test("WAV lesen: 24 Bit", () => {
   werte.forEach((v, i) => { const x = Math.max(-8388608, Math.round(v * 8388608)) & 0xffffff; for (const c of [0, 1]) { const o = 44 + (i * 2 + c) * 3; b[o] = x & 255; b[o + 1] = (x >> 8) & 255; b[o + 2] = (x >> 16) & 255; } });
   const r = wavLesen(b);
   assert.equal(r.rate, RATE); assert.deepEqual([...r.kanaele[1]], werte);
+});
+
+test("Effekt-Bereiche: Knarzen und Glitch einer Spur, über den Dateinamen der Einzelspur", () => {
+  const p = { tempo: { bpm: 120 }, abschnitte: [{ von: 0, bis: 16 }], spuren: [
+    { name: "Bass · E-Bass", ereignisse: [{ art: "knarz", takt: 2, schritte: 32 }, { art: "dropout", takt: 1, schritte: 4 }, { art: "glitch", takt: 8, schritte: 8, alle: 4 }] }] };
+  assert.equal(dateiname("Bass · E-Bass"), "bass-e-bass");
+  assert.deepEqual(effektBereiche(p, "bass-e-bass"), [[4, 8], [16, 17], [24, 25]]);
+  assert.deepEqual(effektBereiche(p, "kick"), []);
 });

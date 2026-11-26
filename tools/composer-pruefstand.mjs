@@ -75,7 +75,7 @@ export function knackser(kanaele, rate, { faktor = 12, nachher = 12, mindest = 0
 
 /**
  * Abrisse: Klang fällt in weniger als 1 ms in die Stille (2 ms davor lauter als −35 dBFS, 2 ms danach leiser als −55 dBFS, letzter
- * Abtastwert vor der Stille über 0,02). So klingt ein Dropout oder ein Schnitt ohne Ausblenden; Knackser() sieht das nicht, weil davor
+ * Abtastwert vor der Stille über 0,03; leisere Körner eines Shakers sind kein Abriss). So klingt ein Dropout oder ein Schnitt ohne Ausblenden; Knackser() sieht das nicht, weil davor
  * Musik ist. Ein Ausklingen über einige Millisekunden ist kein Abriss. Gibt [{ zeit (s), wert }].
  */
 export function abrisse(kanaele, rate) {
@@ -85,7 +85,7 @@ export function abrisse(kanaele, rate) {
   let letzte = -Infinity;
   for (let i = f; i + f <= n; i++) {
     const w = Math.max(...kanaele.map((s) => Math.abs(s[i - 1])));
-    if (w < 0.02 || i - letzte < f * 10) continue;
+    if (w < 0.03 || i - letzte < f * 10) continue;
     if (rms(i, i + f) < leise && rms(i - f, i) > laut) { treffer.push({ zeit: runde(i / rate, 3), wert: runde(w, 3) }); letzte = i; }
   }
   return treffer;
@@ -125,6 +125,18 @@ export function arrangementZahlen(projekt) {
   return { spuren: (projekt.spuren ?? []).length, takte, dropouts, stilleTakte, abschnitte: abschn.map((a) => a.name ?? a.typ).join(" → ") };
 }
 
+/** Dateiname wie in der App (dateiname() in app.js): so heissen die Einzelspuren im Export */
+export const dateiname = (s) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "composer";
+/** Zeitbereiche (s) der Ereignisse «Knarzen» und «Glitch» einer Spur, gefunden über den Dateinamen ihrer Einzelspur */
+export function effektBereiche(projekt, stemName, arten = ["knarz", "glitch"]) {
+  const sp = (projekt?.spuren ?? []).find((x) => dateiname(x.name) === stemName), bpm = projekt?.tempo?.bpm;
+  if (!sp || !bpm) return [];
+  const takt = 240 / bpm, ende = Math.max(...(projekt.abschnitte ?? [{ bis: 0 }]).map((a) => a.bis)), out = [];
+  for (const e of sp.ereignisse ?? []) if (arten.includes(e.art) && !e.aus)
+    for (let t = e.takt; t < Math.max(ende, e.takt + 1e-9); t += e.alle > 0 ? e.alle : Infinity) out.push([t * takt, (t + e.schritte / 16) * takt]);
+  return out;
+}
+
 /** alle Messungen eines Tracks */
 export async function messeTrack(wav, projekt = null, stems = null) {
   const { messen } = await import(new URL("../alpha/composer/kern/messen.js", import.meta.url).href);
@@ -134,7 +146,11 @@ export async function messeTrack(wav, projekt = null, stems = null) {
     unter120: runde((m.baender?.unter120 ?? 0) * 100, 1), mitten: runde((m.baender?.mitten ?? 0) * 100, 1), ueber2k: runde((m.baender?.ueber2k ?? 0) * 100, 1),
     knackser: knackser(kanaele, rate), abrisse: abrisse(kanaele, rate), clipping: clipping(kanaele, rate), loecher: loecher(kanaele, rate),
     ...(projekt ? arrangementZahlen(projekt) : {}),
-    ...(stems ? { einzeln: Object.fromEntries(stems.map(({ name, wav: w }) => [name, { abrisse: abrisse(w.kanaele, w.rate), knackser: knackser(w.kanaele, w.rate).length }])) } : {}),
+    ...(stems ? { einzeln: Object.fromEntries(stems.map(({ name, wav: w }) => {
+      // Abrisse in «Knarzen» und «Glitch» derselben Spur sind gewollt (crush rastert leise Ausklänge auf null, Glitch schneidet Stücke)
+      const bereiche = effektBereiche(projekt, name), a = abrisse(w.kanaele, w.rate), drin = (x) => bereiche.some(([v, b]) => x.zeit >= v && x.zeit <= b);
+      return [name, { abrisse: a.filter((x) => !drin(x)), imEffekt: a.filter(drin).length, knackser: knackser(w.kanaele, w.rate).length }];
+    })) } : {}),
   };
 }
 
@@ -274,7 +290,7 @@ async function main() {
     for (const x of v.anders) zeilen.push(`- anders: ${x}`);
     if (m.knackser.length) zeilen.push(`- Knackser bei ${m.knackser.slice(0, 10).map((x) => `${x.zeit.toFixed(2)} s`).join(", ")}${m.knackser.length > 10 ? " …" : ""}`);
     if (m.abrisse.length) zeilen.push(`- Abrisse bei ${m.abrisse.slice(0, 10).map((x) => `${x.zeit.toFixed(2)} s`).join(", ")}${m.abrisse.length > 10 ? " …" : ""}`);
-    for (const [name, e] of Object.entries(m.einzeln ?? {})) if (e.abrisse.length) zeilen.push(`- ${name}: Abrisse bei ${e.abrisse.slice(0, 8).map((x) => `${x.zeit.toFixed(2)} s`).join(", ")}`);
+    for (const [name, e] of Object.entries(m.einzeln ?? {})) if (e.abrisse.length || e.imEffekt) zeilen.push(`- ${name}: ${e.abrisse.length ? `Abrisse bei ${e.abrisse.slice(0, 8).map((x) => `${x.zeit.toFixed(2)} s`).join(", ")}` : "keine Abrisse"}${e.imEffekt ? ` (dazu ${e.imEffekt} in Knarzen/Glitch, gewollt)` : ""}`);
     if (m.loecher.length) zeilen.push(`- Löcher bei ${m.loecher.slice(0, 10).map((x) => `${x.von.toFixed(2)}–${x.bis.toFixed(2)} s`).join(", ")}`);
     for (const g of m.gemini ?? []) zeilen.push(`- Gemini (Hinweis, ungeprüft): ${g.art} bei ${g.zeit} s${g.sicherheit !== undefined ? `, Sicherheit ${g.sicherheit}` : ""}${g.text ? ` – ${g.text}` : ""} – ${g.gemessen ? "Messung zeigt dort etwas" : "Messung zeigt dort nichts"}`);
     if (t.fehler.length) zeilen.push(`- Fehler in der Seite: ${t.fehler.slice(0, 3).join(" · ")}`);
