@@ -92,9 +92,10 @@ Sitzung wissen muss, damit dieselben Fehler nicht zweimal passieren.
   auf jeder Spur (Messer, Hall) überlastet langsame Rechner: der Ton bricht weg (11.11.2026, 18 Spuren, acht Hallräume).
   Last im Browser messen (Worklet meldet `last`), veröffentlichte Plugins nur bitgleich beschleunigen (Fingerabdruck-Test).
 - **Composer-Prüfstand** nach jeder Änderung an Erzeugern, Arrangement, Plugins oder Mischung (26.11.2026):
-  `NODE_PATH=$(npm root -g) node tools/composer-pruefstand.mjs` bedient die echte App im unsichtbaren Browser (alle Stile, 90 s,
-  Zufall fest → bitgleich), misst Lautheit, Spitze, Knackser, Clipping, Löcher, Dropouts, stille Spur-Takte, Rechenzeit und vergleicht
-  mit `tests/composer-pruefstand/basis.json`; Exit 1 bei Verschlechterung, Bericht in `pruefstand/bericht.md`. Gewollte Änderungen mit
+  `NODE_PATH=$(npm root -g) node tools/composer-pruefstand.mjs --spuren` bedient die echte App im unsichtbaren Browser (alle Stile, 90 s,
+  Zufall fest → bitgleich, rund 10 min), misst Lautheit, Spitze, Knackser, Abrisse, Clipping, Löcher, Dropouts, stille Spur-Takte,
+  Rechenzeit, mit `--spuren` auch jede Spur einzeln (ein harter Schnitt einer Spur geht in der Mischung unter), und vergleicht mit
+  `tests/composer-pruefstand/basis.json`; Exit 1 bei Verschlechterung, Bericht in `pruefstand/bericht.md`. Gewollte Änderungen mit
   `--basis-schreiben` festhalten. `--gemini` hört zusätzlich mit `gemini-4-hydrogen` (nur Hinweise, kein Beleg). Browser auf `de-CH`,
   sonst übersetzt die App die Meldungen. «Knackser» zählt auch harte Einsätze von Instrumenten: in der Basis stehen sie als bekannt.
 - Composer ist viersprachig (21.11.2026, `alpha/composer/sprache.js`): der Code schreibt deutsch, die Anzeige übersetzt aus

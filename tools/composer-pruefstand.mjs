@@ -5,11 +5,12 @@
 //   NODE_PATH=$(npm root -g) node tools/composer-pruefstand.mjs                 alle Stile, 90 s, Startwert 1, Vergleich mit der Basis
 //   … --stile ornament,dnb --sekunden 60 --seed 3                              Auswahl
 //   … --basis-schreiben                                                       den heutigen Stand als neue Basis festhalten
+//   … --spuren                                                                auch jede Spur einzeln (über «Exportieren»): harte Schnitte einer Spur
 //   … --gemini                                                                zusätzlich gemini-4-hydrogen hören lassen (Hinweise, ungeprüft)
 //   … --ziel ordner                                                           WAV, Projekte und bericht.md dorthin (sonst ./pruefstand/)
 //
 // Gemessen (Mischung): Lautheit (LUFS), wahrer Spitzenwert, Lautheitsumfang, Bänder, Knackser (Sprünge zwischen Abtastwerten gegen
-// die Umgebung), Clipping (Abtastwerte an der Grenze), Löcher (Stille ≥ 50 ms mitten im Track). Aus dem Projekt: Spuren, Dropouts und
+// die Umgebung), Abrisse (Klang fällt ohne Ausblenden in die Stille), Clipping (Abtastwerte an der Grenze), Löcher (Stille ≥ 50 ms mitten im Track). Aus dem Projekt: Spuren, Dropouts und
 // stille Spur-Takte des Arrangements. Dazu die Rechenzeit der App als grobes Mass für die Last.
 // Gemini allein ist kein Beleg (Eichtest 25.11.2026: 6 von 9 eingebauten Fehlern gefunden, kurze Knackser überhört, «keine Fehler» kein Beleg).
 import { createServer } from "node:http";
@@ -72,6 +73,24 @@ export function knackser(kanaele, rate, { faktor = 12, nachher = 12, mindest = 0
   return treffer.sort((a, b) => a.zeit - b.zeit).filter((t, i, a) => i === 0 || t.zeit - a[i - 1].zeit > 0.02);
 }
 
+/**
+ * Abrisse: Klang fällt in weniger als 1 ms in die Stille (2 ms davor lauter als −35 dBFS, 2 ms danach leiser als −55 dBFS, letzter
+ * Abtastwert vor der Stille über 0,02). So klingt ein Dropout oder ein Schnitt ohne Ausblenden; Knackser() sieht das nicht, weil davor
+ * Musik ist. Ein Ausklingen über einige Millisekunden ist kein Abriss. Gibt [{ zeit (s), wert }].
+ */
+export function abrisse(kanaele, rate) {
+  const f = Math.round(rate * 0.002), n = kanaele[0].length, q = new Float64Array(n + 1), treffer = [], laut = 10 ** (-35 / 20), leise = 10 ** (-55 / 20);
+  for (let i = 0; i < n; i++) { let e = 0; for (const s of kanaele) e += s[i] * s[i]; q[i + 1] = q[i] + e / kanaele.length; }
+  const rms = (a, b) => Math.sqrt((q[b] - q[a]) / (b - a));
+  let letzte = -Infinity;
+  for (let i = f; i + f <= n; i++) {
+    const w = Math.max(...kanaele.map((s) => Math.abs(s[i - 1])));
+    if (w < 0.02 || i - letzte < f * 10) continue;
+    if (rms(i, i + f) < leise && rms(i - f, i) > laut) { treffer.push({ zeit: runde(i / rate, 3), wert: runde(w, 3) }); letzte = i; }
+  }
+  return treffer;
+}
+
 /** Clipping: Folgen von mindestens drei Abtastwerten an der Grenze (|x| ≥ 0,9999). Gibt [{ zeit, laenge (Abtastwerte) }]. */
 export function clipping(kanaele, rate, { grenze = 0.9999, mindest = 3 } = {}) {
   const out = [];
@@ -107,14 +126,15 @@ export function arrangementZahlen(projekt) {
 }
 
 /** alle Messungen eines Tracks */
-export async function messeTrack(wav, projekt = null) {
+export async function messeTrack(wav, projekt = null, stems = null) {
   const { messen } = await import(new URL("../alpha/composer/kern/messen.js", import.meta.url).href);
   const { rate, kanaele } = wav, m = messen(kanaele, rate);
   return {
     dauer: runde(kanaele[0].length / rate, 1), lufs: runde(m.lufs, 1), tp: runde(m.tp, 1), lra: runde(m.lra ?? 0, 1),
     unter120: runde((m.baender?.unter120 ?? 0) * 100, 1), mitten: runde((m.baender?.mitten ?? 0) * 100, 1), ueber2k: runde((m.baender?.ueber2k ?? 0) * 100, 1),
-    knackser: knackser(kanaele, rate), clipping: clipping(kanaele, rate), loecher: loecher(kanaele, rate),
+    knackser: knackser(kanaele, rate), abrisse: abrisse(kanaele, rate), clipping: clipping(kanaele, rate), loecher: loecher(kanaele, rate),
     ...(projekt ? arrangementZahlen(projekt) : {}),
+    ...(stems ? { einzeln: Object.fromEntries(stems.map(({ name, wav: w }) => [name, { abrisse: abrisse(w.kanaele, w.rate), knackser: knackser(w.kanaele, w.rate).length }])) } : {}),
   };
 }
 
@@ -130,6 +150,7 @@ export function vergleichen(neu, alt) {
     if (Math.abs(neu[k] - alt[k]) > 5) anders.push(`${name} ${alt[k]} → ${neu[k]} %`);
   const neueZeiten = (l, la, tol = 0.05) => l.filter((x) => !la.some((y) => Math.abs((y.zeit ?? y.von) - (x.zeit ?? x.von)) < tol));
   const kn = neueZeiten(neu.knackser, alt.knackser ?? [], 0.02); if (kn.length) schlechter.push(`${kn.length} neue Knackser: ${zeiten(kn)}`);
+  const ab = neueZeiten(neu.abrisse ?? [], alt.abrisse ?? [], 0.02); if (ab.length) schlechter.push(`${ab.length} neue Abrisse (Klang bricht hart ab): ${zeiten(ab)}`);
   const cl = neueZeiten(neu.clipping, alt.clipping ?? []); if (cl.length) schlechter.push(`${cl.length} neue Clipping-Stellen: ${zeiten(cl)}`);
   const lo = neueZeiten(neu.loecher, alt.loecher ?? [], 0.1); if (lo.length) schlechter.push(`${lo.length} neue Löcher in der Mischung: ${lo.slice(0, 6).map((x) => `${x.von.toFixed(2)}–${x.bis.toFixed(2)} s`).join(", ")}`);
   if (alt.dropouts !== undefined && neu.dropouts > alt.dropouts) schlechter.push(`Dropouts ${alt.dropouts} → ${neu.dropouts}`);
@@ -137,7 +158,12 @@ export function vergleichen(neu, alt) {
   if (alt.stilleTakte !== undefined && neu.stilleTakte > alt.stilleTakte) schlechter.push(`stille Spur-Takte ${alt.stilleTakte} → ${neu.stilleTakte}`);
   else if (alt.stilleTakte !== undefined && neu.stilleTakte < alt.stilleTakte) anders.push(`stille Spur-Takte ${alt.stilleTakte} → ${neu.stilleTakte}`);
   if (alt.spuren !== undefined && neu.spuren !== alt.spuren) anders.push(`Spuren ${alt.spuren} → ${neu.spuren}`);
-  if (alt.rechenzeit && neu.rechenzeit > alt.rechenzeit * 1.5 && neu.rechenzeit - alt.rechenzeit > 5) schlechter.push(`Rechenzeit ${alt.rechenzeit} → ${neu.rechenzeit} s (mehr Last)`);
+  for (const [name, e] of Object.entries(neu.einzeln ?? {})) {   // Einzelspuren (--spuren): ein harter Schnitt einer Spur geht in der Mischung unter
+    const a = alt.einzeln?.[name]; if (!a) continue;
+    const n = neueZeiten(e.abrisse, a.abrisse, 0.02); if (n.length) schlechter.push(`${name}: ${n.length} neue Abrisse: ${zeiten(n)}`);
+    if (e.knackser > a.knackser * 1.2 + 3) anders.push(`${name}: Knackser ${a.knackser} → ${e.knackser}`);
+  }
+  if (alt.modus === neu.modus && alt.rechenzeit && neu.rechenzeit > alt.rechenzeit * 1.5 && neu.rechenzeit - alt.rechenzeit > 5) schlechter.push(`Rechenzeit ${alt.rechenzeit} → ${neu.rechenzeit} s (mehr Last)`);
   return { schlechter, anders };
 }
 
@@ -154,7 +180,7 @@ export function geminiHoeren(wavDatei, m) {
     try {
       const out = execFileSync("gemini-api", ["analyze", "-m", "gemini-4-hydrogen", "-i", mp3, "--system", "Technical audio QA. JSON only.", FRAGE], { encoding: "utf8", env: { GEMINI_API_KEY: "platzhalter", ...process.env } });
       const json = JSON.parse(out.slice(out.indexOf("{"), out.lastIndexOf("}") + 1));
-      const gemessen = [...m.knackser.map((x) => x.zeit), ...m.clipping.map((x) => x.zeit), ...m.loecher.map((x) => x.von)];
+      const gemessen = [...m.knackser.map((x) => x.zeit), ...(m.abrisse ?? []).map((x) => x.zeit), ...m.clipping.map((x) => x.zeit), ...m.loecher.map((x) => x.von)];
       return (json.defects ?? []).map((d) => ({ art: d.type, zeit: d.time_s, sicherheit: d.confidence, gemessen: gemessen.some((t) => Math.abs(t - d.time_s) <= 1) }));
     } catch (e) { if (v === 2) return [{ art: "fehler", zeit: 0, text: String(e.message ?? e).slice(0, 160) }]; execFileSync("sleep", ["20"]); }
   }
@@ -189,7 +215,7 @@ async function abholen(seite, knopf, ziel) {
   await r.dl.saveAs(ziel);
   await seite.evaluate(() => document.querySelector(".speichern")?.remove());
 }
-async function trackAusApp(browser, url, stil, { sekunden, seed, ziel }) {
+async function trackAusApp(browser, url, stil, { sekunden, seed, ziel, spuren = false }) {
   const ctx = await browser.newContext({ acceptDownloads: true, locale: "de-CH" });   // Meldungen deutsch (sonst übersetzt die App)
   await ctx.addInitScript(festerZufall);
   const seite = await ctx.newPage(), fehler = [];
@@ -203,6 +229,15 @@ async function trackAusApp(browser, url, stil, { sekunden, seed, ziel }) {
   await seite.click("#trackErzeugen", { force: true });
   await seite.waitForFunction(() => /ganzer Track|whole track/i.test(document.getElementById("meldung").textContent), null, { timeout: 900000 });
   const meldung = await seite.$eval("#meldung", (m) => m.textContent);
+  if (spuren) {   // «Exportieren»: ein ZIP mit Summe, Einzelspuren (nach Kette) und Projekt
+    const zip = join(ziel, `${stil}-export.zip`), ordner = join(ziel, `${stil}-export`); await abholen(seite, "#exportieren", zip);
+    const rechenzeit = runde((Date.now() - t0) / 1000, 0);
+    execFileSync("unzip", ["-o", "-q", zip, "-d", ordner]);
+    const { readdirSync } = await import("node:fs"), alle = readdirSync(ordner);
+    await ctx.close();
+    return { wav: join(ordner, alle.find((f) => f.endsWith("-summe.wav"))), json: join(ordner, alle.find((f) => f.endsWith(".composer.json"))),
+      stems: readdirSync(join(ordner, "stems")).filter((f) => f.endsWith(".wav")).map((f) => ({ name: f.replace(/\.wav$/, ""), datei: join(ordner, "stems", f) })), rechenzeit, meldung, fehler };
+  }
   const wav = join(ziel, `${stil}.wav`); await abholen(seite, "#trackLaden", wav);
   const rechenzeit = runde((Date.now() - t0) / 1000, 0);
   const json = join(ziel, `${stil}.composer.json`); await abholen(seite, "#projektSpeichern", json);
@@ -220,23 +255,26 @@ async function main() {
   const browser = await chromium.launch({ args: ["--autoplay-policy=no-user-gesture-required"] });
   const alleStile = await (async () => { const c = await browser.newContext({ locale: "de-CH" }), p = await c.newPage(); await p.goto(url); await p.waitForFunction(() => document.querySelectorAll("#stil option").length > 0); const l = await p.$$eval("#stil option", (o) => o.map((x) => x.value)); await c.close(); return l; })();
   const stile = wert("--stile", null)?.split(",") ?? alleStile;
-  const basis = existsSync(BASIS) ? JSON.parse(readFileSync(BASIS, "utf8")) : {}, schluessel = `${sekunden}s-seed${seed}`, alt = basis[schluessel] ?? {};
+  const basis = existsSync(BASIS) ? JSON.parse(readFileSync(BASIS, "utf8")) : {}, schluessel = `${sekunden}s-seed${seed}${arg.includes("--spuren") ? "-spuren" : ""}`, alt = basis[schluessel] ?? {};
   const ergebnis = {}, zeilen = [`# Composer-Prüfstand`, ``, `${new Date().toISOString().slice(0, 16).replace("T", " ")} · ${sekunden} s · Startwert ${seed} · Basis: ${basis[schluessel] ? "vorhanden" : "keine"}`, ``];
   let schlecht = 0;
   for (const stil of stile) {
     process.stderr.write(`${stil} …`);
-    const t = await trackAusApp(browser, url, stil, { sekunden, seed, ziel });
-    const m = { ...(await messeTrack(wavLesen(await readFile(t.wav)), JSON.parse(await readFile(t.json, "utf8")))), rechenzeit: t.rechenzeit };
+    const t = await trackAusApp(browser, url, stil, { sekunden, seed, ziel, spuren: arg.includes("--spuren") });
+    const stems = t.stems ? await Promise.all(t.stems.map(async (x) => ({ name: x.name, wav: wavLesen(await readFile(x.datei)) }))) : null;
+    const m = { ...(await messeTrack(wavLesen(await readFile(t.wav)), JSON.parse(await readFile(t.json, "utf8")), stems)), rechenzeit: t.rechenzeit, modus: t.stems ? "spuren" : "summe" };
     if (arg.includes("--gemini")) m.gemini = geminiHoeren(t.wav, m);
     ergebnis[stil] = m;
     const v = vergleichen(m, alt[stil]); schlecht += v.schlechter.length;
-    process.stderr.write(` ${m.lufs} LUFS, ${m.tp} dBTP, ${m.knackser.length} Knackser, ${m.loecher.length} Löcher, ${m.dropouts} Dropouts, ${m.rechenzeit} s${v.schlechter.length ? " – SCHLECHTER" : ""}\n`);
+    process.stderr.write(` ${m.lufs} LUFS, ${m.tp} dBTP, ${m.knackser.length} Knackser, ${m.abrisse.length} Abrisse, ${m.loecher.length} Löcher, ${m.dropouts} Dropouts, ${m.rechenzeit} s${v.schlechter.length ? " – SCHLECHTER" : ""}\n`);
     zeilen.push(`## ${stil}${v.schlechter.length ? " – schlechter" : ""}`, ``, t.meldung, ``,
-      `| Lautheit | Spitze | LRA | < 120 Hz | Knackser | Clipping | Löcher | Dropouts | stille Spur-Takte | Rechenzeit |`, `|---|---|---|---|---|---|---|---|---|---|`,
-      `| ${m.lufs} LUFS | ${m.tp} dBTP | ${m.lra} LU | ${m.unter120} % | ${m.knackser.length} | ${m.clipping.length} | ${m.loecher.length} | ${m.dropouts} | ${m.stilleTakte} | ${m.rechenzeit} s |`, ``);
+      `| Lautheit | Spitze | LRA | < 120 Hz | Knackser | Abrisse | Clipping | Löcher | Dropouts | stille Spur-Takte | Rechenzeit |`, `|---|---|---|---|---|---|---|---|---|---|---|`,
+      `| ${m.lufs} LUFS | ${m.tp} dBTP | ${m.lra} LU | ${m.unter120} % | ${m.knackser.length} | ${m.abrisse.length} | ${m.clipping.length} | ${m.loecher.length} | ${m.dropouts} | ${m.stilleTakte} | ${m.rechenzeit} s |`, ``);
     for (const x of v.schlechter) zeilen.push(`- **schlechter:** ${x}`);
     for (const x of v.anders) zeilen.push(`- anders: ${x}`);
     if (m.knackser.length) zeilen.push(`- Knackser bei ${m.knackser.slice(0, 10).map((x) => `${x.zeit.toFixed(2)} s`).join(", ")}${m.knackser.length > 10 ? " …" : ""}`);
+    if (m.abrisse.length) zeilen.push(`- Abrisse bei ${m.abrisse.slice(0, 10).map((x) => `${x.zeit.toFixed(2)} s`).join(", ")}${m.abrisse.length > 10 ? " …" : ""}`);
+    for (const [name, e] of Object.entries(m.einzeln ?? {})) if (e.abrisse.length) zeilen.push(`- ${name}: Abrisse bei ${e.abrisse.slice(0, 8).map((x) => `${x.zeit.toFixed(2)} s`).join(", ")}`);
     if (m.loecher.length) zeilen.push(`- Löcher bei ${m.loecher.slice(0, 10).map((x) => `${x.von.toFixed(2)}–${x.bis.toFixed(2)} s`).join(", ")}`);
     for (const g of m.gemini ?? []) zeilen.push(`- Gemini (Hinweis, ungeprüft): ${g.art} bei ${g.zeit} s${g.sicherheit !== undefined ? `, Sicherheit ${g.sicherheit}` : ""}${g.text ? ` – ${g.text}` : ""} – ${g.gemessen ? "Messung zeigt dort etwas" : "Messung zeigt dort nichts"}`);
     if (t.fehler.length) zeilen.push(`- Fehler in der Seite: ${t.fehler.slice(0, 3).join(" · ")}`);

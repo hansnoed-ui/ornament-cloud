@@ -2,7 +2,7 @@
 // mit der Basis und die Zahlen aus dem Projekt. Den ganzen Lauf durch die App prüft man mit dem Werkzeug selbst (braucht Playwright).
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { knackser, clipping, loecher, vergleichen, arrangementZahlen, wavLesen } from "../tools/composer-pruefstand.mjs";
+import { knackser, abrisse, clipping, loecher, vergleichen, arrangementZahlen, wavLesen } from "../tools/composer-pruefstand.mjs";
 
 const RATE = 48000;
 /** zwei Sekunden: leiser Sinus, alle 0,5 s ein Anschlag (Rauschen, das abklingt) – so etwas darf nie als Knackser gelten */
@@ -20,6 +20,24 @@ test("Knackser: ein eingebauter Sprung wird gefunden, Anschläge nicht", () => {
   const i = Math.round(1.1 * RATE); k[0][i] += 0.7; k[0][i + 1] -= 0.6;
   const t = knackser(k, RATE);
   assert.equal(t.length, 1); assert.ok(Math.abs(t[0].zeit - 1.1) < 0.002, `bei ${t[0].zeit} s`);
+});
+
+test("Abrisse: harter Schnitt in die Stille ja, Ausklingen und Ausblenden über 3 ms nein", () => {
+  const k = musik();
+  let a = Math.round(1.3 * RATE); while (Math.abs(k[0][a - 1]) < 0.15) a++;   // an einer lauten Stelle schneiden (im Nulldurchgang knackt nichts)
+  for (const s of k) s.fill(0, a);
+  const t = abrisse(k, RATE);
+  assert.equal(t.length, 1); assert.ok(Math.abs(t[0].zeit - a / RATE) < 0.001, JSON.stringify(t));
+  const w = musik(), r = Math.round(0.003 * RATE);
+  for (const s of w) { for (let i = 0; i < r; i++) s[a + i] *= 1 - i / r; s.fill(0, a + r); }
+  assert.deepEqual(abrisse(w, RATE), [], "3 ms Kante wie im Arrangement");
+});
+
+test("Vergleich: neue Abrisse einer Einzelspur sind schlechter", () => {
+  const alt = { lufs: -14, tp: -1, lra: 6, unter120: 60, mitten: 30, ueber2k: 10, knackser: [], abrisse: [], clipping: [], loecher: [], einzeln: { bass: { abrisse: [], knackser: 0 }, feuer: { abrisse: [], knackser: 200 } } };
+  const v = vergleichen({ ...alt, einzeln: { bass: { abrisse: [{ zeit: 67.74 }], knackser: 0 }, feuer: { abrisse: [], knackser: 205 } } }, alt);
+  assert.deepEqual(v.schlechter, ["bass: 1 neue Abrisse: 67.74 s"]);
+  assert.deepEqual(v.anders, [], "Feuer knistert ein wenig anders: kein Hinweis");
 });
 
 test("Clipping und Löcher", () => {
