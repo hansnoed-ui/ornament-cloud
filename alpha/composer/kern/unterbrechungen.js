@@ -1,4 +1,4 @@
-// Unterbrechungen 0.1.0 – Ereignisse, die eine Spur an einer Stelle aufbrechen: Stutter, Tape-Stop, Tape-Start, Gate, Dropout, Echo-Wurf,
+// Unterbrechungen 0.1.1 (26.11.2026: Glitch blendet jedes Stück 2 statt 0,5 ms ein und aus, Christian: «ausblenden glitch verlängern») – Ereignisse, die eine Spur an einer Stelle aufbrechen: Stutter, Tape-Stop, Tape-Start, Gate, Dropout, Echo-Wurf,
 // Rückwärts, Filterfahrt, Glitch. Sie wirken auf die Tondaten der Spur, bevor die Plugin-Kette sie bekommt: der Hall einer Spur klingt also
 // über ein Dropout hinweg weiter, wie bei einem Mute vor dem Effektweg. Vorschau und Export sind dadurch gleich.
 //
@@ -203,7 +203,7 @@ const WIRKUNG = {
     }
   },
   glitch(k, a, b, rate, w, { takt, seed }) {
-    const rnd = zufall(seed), st = Math.max(32, Math.round((takt / w.teilung) * rate)), ra = 24, dichte = w.dichte / 100, crush = w.zerkleinern / 100;
+    const rnd = zufall(seed), st = Math.max(32, Math.round((takt / w.teilung) * rate)), ra = Math.round(0.002 * rate), dichte = w.dichte / 100, crush = w.zerkleinern / 100;
     const quelle = k.map((s) => s.slice(a, b));
     let vorig = 0;
     for (let o = 0; o < b - a; o += st) {
