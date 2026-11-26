@@ -285,9 +285,9 @@
   }
 
   // ---------- Ansichten ----------
-  var rand = $("rand"), rr = $("rand-rechts"), vorMenue = "#start";
+  var rand = $("rand"), rr = $("rand-rechts"), vorMenue = "#start", vorY = 0, zurueckY = -1;
   rr.addEventListener("click", function () {
-    if (ansicht === "menue") location.hash = vorMenue; else { vorMenue = location.hash || "#start"; location.hash = "#menue"; }
+    if (ansicht === "menue") { zurueckY = vorY; location.hash = vorMenue; } else { vorMenue = location.hash || "#start"; vorY = window.scrollY; location.hash = "#menue"; }   // «Schliessen» führt an die Lesestelle zurück
   });
   function route() {
     var h = (location.hash || "#start").slice(1), z = h, zid = h.slice(2).replace("-", "/");
@@ -297,13 +297,14 @@
     if (["start", "menue", "kerntext", "bereiche", "bereich", "zettel", "quellen"].indexOf(z) < 0) z = "start";
     ansicht = z;
     document.querySelectorAll(".ansicht").forEach(function (v) { v.hidden = v.id !== "v-" + z; });
-    rand.style.display = z === "zettel" ? "none" : "";
+    rand.classList.toggle("nurmenue", z === "zettel");   // auf dem Zettel steht links der Weg zurück, «Menü» bleibt
     rand.classList.toggle("fliesst", z === "kerntext" || z === "quellen" || z === "bereich");   // auf Leseseiten geht der Kopf mit dem Text weg
     var t = z === "menue" ? "Schliessen" : "Menü";
     $("rr1").textContent = t; $("rr2").textContent = t; rr.setAttribute("aria-expanded", String(z === "menue"));
     window.scrollTo(0, 0); absatz = {}; zeig = null;
     if (z === "bereiche") setzAktiv(aktiv);
     if (z === "kerntext") lies();
+    if (zurueckY >= 0 && z !== "menue") { window.scrollTo(0, zurueckY); zurueckY = -1; if (z === "kerntext") lies(); }
     tief = 0; if (z === "bereich") liesSaetze();
   }
   // ---------- freies Weiterkommen (26.11.2026: «durch klicken, wischen, cursor einfach irgendwohin weiterkommt») ----------
