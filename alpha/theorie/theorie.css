@@ -141,7 +141,10 @@ a:hover .roll > span, button:hover .roll > span, a:focus-visible .roll > span, b
 .aspekt h2 { font-size: clamp(2.3rem, 6.4vw, 4.6rem); font-weight: 600; letter-spacing: -0.055em; line-height: 0.96; text-wrap: balance; }
 .aspekt h2.mittel { font-size: clamp(1.9rem, 4.4vw, 3.2rem); letter-spacing: -0.05em; line-height: 1; }
 .aspekt h2.lang { font-size: clamp(1.6rem, 3.3vw, 2.5rem); letter-spacing: -0.045em; line-height: 1.04; }
-.aspekt .lese { display: grid; gap: 1.1em; max-width: 34em; font-size: 17px; line-height: 1.55; margin-top: 3vh; }
+.aspekt .lese { display: grid; gap: 1.15em; max-width: 31em; font-size: clamp(1.12rem, 1.5vw, 1.3rem); line-height: 1.5; text-wrap: pretty; margin-top: 3vh; }
+/* Lesetext zum Zettel (26.11.2026, «Bring mal alles»): Titel gross, darunter der Leitsatz der Theorie, drei Absätze, am Ende der Satz, der allein stehen kann. */
+.aspekt .leit { font-size: clamp(1.3rem, 2.5vw, 1.8rem); font-weight: 500; letter-spacing: -0.03em; line-height: 1.2; max-width: 20em; text-wrap: pretty; color: var(--grau); }
+.aspekt .schluss { margin: 7vh 0 5vh; font-size: clamp(1.9rem, 4.6vw, 3.4rem); font-weight: 600; letter-spacing: -0.052em; line-height: 0.98; max-width: 13em; text-wrap: balance; mix-blend-mode: difference; color: #fff; }
 .aspekt .lese a, .aspekt .klein a { border-bottom: 1px solid var(--grau); }
 .aspekt .klein { max-width: 46em; font-size: var(--klein); line-height: 1.55; color: var(--grau); }
 .aspekt .hin { margin-top: 9vh; }
