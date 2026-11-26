@@ -1,13 +1,15 @@
-// ORNAMENT FORMEN und Epsilon: Vorschaukarten zum Teilen (Open Graph und X, 1200 × 630), 26. November 2026.
+// ORNAMENT FORMEN, Epsilon und die Theorie-Probeseite: Vorschaukarten zum Teilen (Open Graph und X, 1200 × 630), 26. November 2026.
 // Frage: «Haben wir schon vorschaukarten für die "Formen"», Christian: «ja, so machen, Epsilon auch».
 // Gestaltung wie die Karten des Neubaus (tools/b-kacheln.mjs): weisser Grund, Haarlinie, Kicker, Titel, Satz, Signet mit Adresse.
 // Rechts steht die echte Form: das Skript öffnet die Seiten im unsichtbaren Browser, nimmt die Bühnen auf und setzt sie ein.
-// Für Epsilon rechts die Namen der Projekte.
+// Für Epsilon rechts die Namen der Projekte. Theorie seit 26. November 2026 (Frage: «Hierzu noch keine Vorschaukarte? …/alpha/theorie»):
+// rechts der Körper der Startansicht ohne Sätze und Rand.
 //
 //   NODE_PATH=$(npm root -g) node tools/formen-og.mjs              alle vier
-//   NODE_PATH=$(npm root -g) node tools/formen-og.mjs eigenzeit    nur Karten, deren Name so beginnt (katalog, koerper, eigenzeit, epsilon)
+//   NODE_PATH=$(npm root -g) node tools/formen-og.mjs eigenzeit    nur Karten, deren Name so beginnt (katalog, koerper, eigenzeit, epsilon, theorie)
 //
-// → alpha/formen/og-katalog.png, alpha/formen/koerper/og-koerper.png, alpha/formen/eigenzeit/og-eigenzeit.png, epsilon/og-epsilon.png
+// → alpha/formen/og-katalog.png, alpha/formen/koerper/og-koerper.png, alpha/formen/eigenzeit/og-eigenzeit.png, epsilon/og-epsilon.png,
+//   alpha/theorie/og-theorie.png
 // Gerechnet wird mit SwiftShader (WebGL auf dem Prozessor), damit es auch ohne Grafikkarte läuft; die Eigenzeit braucht dafür rund 40 s.
 import { createServer } from "node:http";
 import { readFileSync } from "node:fs";
@@ -24,7 +26,7 @@ const root = fileURLToPath(ROOT);
 const NUR = process.argv[2] || "";
 const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-const types = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".woff2": "font/woff2", ".svg": "image/svg+xml", ".png": "image/png" };
+const types = { ".json": "application/json", ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".woff2": "font/woff2", ".svg": "image/svg+xml", ".png": "image/png" };
 const server = createServer((req, res) => {
   try { let p = decodeURIComponent(new URL(req.url, "http://x").pathname); if (p.endsWith("/")) p += "index.html"; res.writeHead(200, { "content-type": types[extname(p)] || "application/octet-stream" }).end(readFileSync(join(root, p))); }
   catch { res.writeHead(404).end(); }
@@ -128,6 +130,19 @@ const KARTEN = [
       return `<div class="namen">${["Formen", "Theorie", "Meine Stimme", "Hochrendern"].map((n) => `<div>${esc(n)}<span>→</span></div>`).join("")}</div>`;
     },
     text: { kicker: "ornament.cloud · Epsilon", titel: "Aktuelle Projekte", satz: "Woran gerade gearbeitet wird.", fuss: "ornament.cloud/epsilon" } },
+  { name: "theorie", out: "alpha/theorie/og-theorie.png", alt: "Theorie der Kunst: links Titel und Hauptthese, rechts der Körper der Theorie aus feinen Linien",
+    async rechts() {
+      const page = await browser.newPage({ viewport: { width: 1000, height: 1000 }, deviceScaleFactor: 2, colorScheme: "dark" });
+      page.on("pageerror", (e) => console.error(`alpha/theorie/: ${e.message}`));
+      await page.goto(base + "alpha/theorie/");
+      await page.addStyleTag({ content: ".rand, #v-start { visibility: hidden !important; }" });
+      await warte(8000);
+      const s = 820;
+      const b = await page.screenshot({ clip: { x: (1000 - s) / 2, y: (1000 - s) / 2, width: s, height: s } });
+      await page.close();
+      return `<img src="${bild(b)}" alt="">`;
+    },
+    text: { kicker: "ornament.cloud · Probeseite", titel: "Theorie der Kunst", satz: "Kunst baut Stellen, an denen Wahrnehmung different wiederkehren kann.", fuss: "ornament.cloud/alpha/theorie" } },
 ];
 
 const kartenSeite = await browser.newPage({ viewport: { width: 1200, height: 630 }, deviceScaleFactor: 1 });
