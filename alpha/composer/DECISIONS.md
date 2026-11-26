@@ -248,3 +248,17 @@ Christian zu 0.2.1: «Kürzen und insgesamt nochmals etwas runtergehen.»
 Christian (Screenshot Filterfahrt am Handy): «Hier wird noch viel Platz verspielt». Drehknöpfe stehen jetzt nebeneinander (am Handy vier pro Zeile),
 Wahl, an, hinhören und löschen in einer Zeile, Auswahlfelder (Filter, von, bis) halb breit nebeneinander. Eine Filterfahrt-Karte ist am Handy
 rund 270 statt rund 600 px hoch.
+
+## 26. November 2026: Prüfstand
+
+Christian: «1, mach den Prüfstand». `tools/composer-pruefstand.mjs` bedient die echte App im unsichtbaren Browser («Track erzeugen»,
+«Track (WAV)», «Projekt speichern»), mit festem Zufall, damit gleicher Code bitgleiche Tracks ergibt (die App würfelt sonst die
+Startwerte der Synths). Gemessen werden Lautheit, wahrer Spitzenwert, Lautheitsumfang, Bänder, Knackser, Clipping, Löcher, Dropouts,
+stille Spur-Takte und die Rechenzeit; gemeldet wird nur, was gegenüber `tests/composer-pruefstand/basis.json` schlechter ist.
+
+Erste Basis (90 s, Startwert 1, neun Stile): alle zwischen −14,6 und −14,0 LUFS, Spitze −1 dBTP, kein Clipping, keine Löcher in der
+Mischung, 20–38 Dropouts je Track, Rechenzeit 29–55 s (Indien am längsten). Die Messung «Knackser» zählt auch harte Einsätze von
+Instrumenten (Orient 362, Minimal 322, Persisch 5); sie stehen als bekannt in der Basis, neu gemeldet werden nur zusätzliche.
+`gemini-4-hydrogen` hörte als zusätzliches Ohr vier «Aussetzer»: drei auf dem kurzen Loch im «Stocken» (alle Drums und Bass einen
+Viertel-Takt still, Minimal und House bei 67,5 s, Orient bei 64,4 s), einer im Intro ohne Drums. Alle gewollt, aber offenbar deutlich
+zu hören.

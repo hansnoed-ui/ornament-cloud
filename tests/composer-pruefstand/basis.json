@@ -1,0 +1,5780 @@
+{
+ "90s-seed1": {
+  "ornament": {
+   "dauer": 88.3,
+   "lufs": -14.1,
+   "tp": -1,
+   "lra": 10,
+   "unter120": 67.2,
+   "mitten": 29.7,
+   "ueber2k": 3.1,
+   "knackser": [
+    {
+     "zeit": 11.207,
+     "sprung": 0.362,
+     "verhaeltnis": 109
+    },
+    {
+     "zeit": 11.895,
+     "sprung": 0.37,
+     "verhaeltnis": 38
+    },
+    {
+     "zeit": 12.413,
+     "sprung": 0.487,
+     "verhaeltnis": 51
+    },
+    {
+     "zeit": 12.586,
+     "sprung": 0.294,
+     "verhaeltnis": 42
+    },
+    {
+     "zeit": 13.275,
+     "sprung": 0.39,
+     "verhaeltnis": 41
+    },
+    {
+     "zeit": 13.793,
+     "sprung": 0.503,
+     "verhaeltnis": 262
+    },
+    {
+     "zeit": 13.965,
+     "sprung": 0.392,
+     "verhaeltnis": 129
+    },
+    {
+     "zeit": 14.655,
+     "sprung": 0.378,
+     "verhaeltnis": 29
+    },
+    {
+     "zeit": 15.173,
+     "sprung": 0.513,
+     "verhaeltnis": 49
+    },
+    {
+     "zeit": 15.345,
+     "sprung": 0.358,
+     "verhaeltnis": 95
+    },
+    {
+     "zeit": 15.69,
+     "sprung": 0.384,
+     "verhaeltnis": 29
+    },
+    {
+     "zeit": 16.035,
+     "sprung": 0.355,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 16.553,
+     "sprung": 0.51,
+     "verhaeltnis": 22
+    },
+    {
+     "zeit": 16.724,
+     "sprung": 0.386,
+     "verhaeltnis": 36
+    },
+    {
+     "zeit": 17.414,
+     "sprung": 0.395,
+     "verhaeltnis": 31
+    },
+    {
+     "zeit": 17.932,
+     "sprung": 0.418,
+     "verhaeltnis": 36
+    },
+    {
+     "zeit": 18.105,
+     "sprung": 0.421,
+     "verhaeltnis": 46
+    },
+    {
+     "zeit": 18.795,
+     "sprung": 0.355,
+     "verhaeltnis": 42
+    },
+    {
+     "zeit": 19.31,
+     "sprung": 0.482,
+     "verhaeltnis": 307
+    },
+    {
+     "zeit": 19.483,
+     "sprung": 0.372,
+     "verhaeltnis": 111
+    },
+    {
+     "zeit": 20.172,
+     "sprung": 0.363,
+     "verhaeltnis": 38
+    },
+    {
+     "zeit": 20.689,
+     "sprung": 0.491,
+     "verhaeltnis": 50
+    },
+    {
+     "zeit": 20.863,
+     "sprung": 0.359,
+     "verhaeltnis": 211
+    },
+    {
+     "zeit": 21.207,
+     "sprung": 0.405,
+     "verhaeltnis": 36
+    },
+    {
+     "zeit": 21.552,
+     "sprung": 0.376,
+     "verhaeltnis": 22
+    },
+    {
+     "zeit": 22.068,
+     "sprung": 0.479,
+     "verhaeltnis": 28
+    },
+    {
+     "zeit": 22.241,
+     "sprung": 0.343,
+     "verhaeltnis": 158
+    },
+    {
+     "zeit": 22.931,
+     "sprung": 0.39,
+     "verhaeltnis": 42
+    },
+    {
+     "zeit": 23.447,
+     "sprung": 0.465,
+     "verhaeltnis": 48
+    },
+    {
+     "zeit": 23.619,
+     "sprung": 0.39,
+     "verhaeltnis": 59
+    },
+    {
+     "zeit": 24.311,
+     "sprung": 0.467,
+     "verhaeltnis": 25
+    },
+    {
+     "zeit": 24.828,
+     "sprung": 0.473,
+     "verhaeltnis": 64
+    },
+    {
+     "zeit": 24.999,
+     "sprung": 0.359,
+     "verhaeltnis": 66
+    },
+    {
+     "zeit": 25.688,
+     "sprung": 0.406,
+     "verhaeltnis": 42
+    },
+    {
+     "zeit": 26.208,
+     "sprung": 0.481,
+     "verhaeltnis": 62
+    },
+    {
+     "zeit": 26.381,
+     "sprung": 0.374,
+     "verhaeltnis": 70
+    },
+    {
+     "zeit": 26.723,
+     "sprung": 0.38,
+     "verhaeltnis": 26
+    },
+    {
+     "zeit": 27.069,
+     "sprung": 0.369,
+     "verhaeltnis": 21
+    },
+    {
+     "zeit": 32.007,
+     "sprung": 0.084,
+     "verhaeltnis": 22
+    },
+    {
+     "zeit": 32.029,
+     "sprung": 0.082,
+     "verhaeltnis": 21
+    },
+    {
+     "zeit": 41.173,
+     "sprung": 0.125,
+     "verhaeltnis": 26
+    },
+    {
+     "zeit": 41.207,
+     "sprung": 0.09,
+     "verhaeltnis": 28
+    },
+    {
+     "zeit": 41.379,
+     "sprung": 0.516,
+     "verhaeltnis": 231
+    },
+    {
+     "zeit": 41.897,
+     "sprung": 0.348,
+     "verhaeltnis": 65
+    },
+    {
+     "zeit": 42.24,
+     "sprung": 0.36,
+     "verhaeltnis": 250
+    },
+    {
+     "zeit": 42.758,
+     "sprung": 0.446,
+     "verhaeltnis": 195
+    },
+    {
+     "zeit": 43.276,
+     "sprung": 0.383,
+     "verhaeltnis": 125
+    },
+    {
+     "zeit": 43.361,
+     "sprung": 0.358,
+     "verhaeltnis": 97
+    },
+    {
+     "zeit": 43.621,
+     "sprung": 0.406,
+     "verhaeltnis": 166
+    },
+    {
+     "zeit": 44.138,
+     "sprung": 0.455,
+     "verhaeltnis": 24
+    },
+    {
+     "zeit": 44.398,
+     "sprung": 0.383,
+     "verhaeltnis": 39
+    },
+    {
+     "zeit": 44.999,
+     "sprung": 0.386,
+     "verhaeltnis": 199
+    },
+    {
+     "zeit": 45.518,
+     "sprung": 0.447,
+     "verhaeltnis": 26
+    },
+    {
+     "zeit": 45.776,
+     "sprung": 0.404,
+     "verhaeltnis": 123
+    },
+    {
+     "zeit": 46.38,
+     "sprung": 0.349,
+     "verhaeltnis": 303
+    },
+    {
+     "zeit": 46.637,
+     "sprung": 0.345,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 46.898,
+     "sprung": 0.476,
+     "verhaeltnis": 182
+    },
+    {
+     "zeit": 47.154,
+     "sprung": 0.392,
+     "verhaeltnis": 37
+    },
+    {
+     "zeit": 47.758,
+     "sprung": 0.369,
+     "verhaeltnis": 236
+    },
+    {
+     "zeit": 48.277,
+     "sprung": 0.475,
+     "verhaeltnis": 48
+    },
+    {
+     "zeit": 48.535,
+     "sprung": 0.405,
+     "verhaeltnis": 326
+    },
+    {
+     "zeit": 49.137,
+     "sprung": 0.393,
+     "verhaeltnis": 41
+    },
+    {
+     "zeit": 49.397,
+     "sprung": 0.402,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 49.654,
+     "sprung": 0.456,
+     "verhaeltnis": 237
+    },
+    {
+     "zeit": 49.915,
+     "sprung": 0.366,
+     "verhaeltnis": 39
+    },
+    {
+     "zeit": 50.518,
+     "sprung": 0.374,
+     "verhaeltnis": 271
+    },
+    {
+     "zeit": 51.035,
+     "sprung": 0.575,
+     "verhaeltnis": 57
+    },
+    {
+     "zeit": 51.083,
+     "sprung": 0.094,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 51.294,
+     "sprung": 0.364,
+     "verhaeltnis": 54
+    },
+    {
+     "zeit": 51.897,
+     "sprung": 0.324,
+     "verhaeltnis": 54
+    },
+    {
+     "zeit": 52.154,
+     "sprung": 0.448,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 52.413,
+     "sprung": 0.455,
+     "verhaeltnis": 162
+    },
+    {
+     "zeit": 52.674,
+     "sprung": 0.403,
+     "verhaeltnis": 42
+    },
+    {
+     "zeit": 53.276,
+     "sprung": 0.337,
+     "verhaeltnis": 50
+    },
+    {
+     "zeit": 53.792,
+     "sprung": 0.512,
+     "verhaeltnis": 52
+    },
+    {
+     "zeit": 54.053,
+     "sprung": 0.372,
+     "verhaeltnis": 243
+    },
+    {
+     "zeit": 54.654,
+     "sprung": 0.39,
+     "verhaeltnis": 38
+    },
+    {
+     "zeit": 54.914,
+     "sprung": 0.403,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 55.173,
+     "sprung": 0.632,
+     "verhaeltnis": 195
+    },
+    {
+     "zeit": 55.43,
+     "sprung": 0.365,
+     "verhaeltnis": 37
+    },
+    {
+     "zeit": 56.036,
+     "sprung": 0.366,
+     "verhaeltnis": 39
+    },
+    {
+     "zeit": 56.551,
+     "sprung": 0.396,
+     "verhaeltnis": 41
+    },
+    {
+     "zeit": 56.809,
+     "sprung": 0.414,
+     "verhaeltnis": 97
+    },
+    {
+     "zeit": 57.415,
+     "sprung": 0.38,
+     "verhaeltnis": 153
+    },
+    {
+     "zeit": 57.673,
+     "sprung": 0.358,
+     "verhaeltnis": 12
+    },
+    {
+     "zeit": 57.932,
+     "sprung": 0.577,
+     "verhaeltnis": 202
+    },
+    {
+     "zeit": 58.189,
+     "sprung": 0.394,
+     "verhaeltnis": 41
+    },
+    {
+     "zeit": 58.793,
+     "sprung": 0.42,
+     "verhaeltnis": 70
+    },
+    {
+     "zeit": 59.31,
+     "sprung": 0.51,
+     "verhaeltnis": 51
+    },
+    {
+     "zeit": 59.569,
+     "sprung": 0.405,
+     "verhaeltnis": 190
+    },
+    {
+     "zeit": 60.69,
+     "sprung": 0.457,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 61.207,
+     "sprung": 0.36,
+     "verhaeltnis": 80
+    },
+    {
+     "zeit": 61.551,
+     "sprung": 0.451,
+     "verhaeltnis": 92
+    },
+    {
+     "zeit": 62.069,
+     "sprung": 0.51,
+     "verhaeltnis": 125
+    },
+    {
+     "zeit": 63.448,
+     "sprung": 0.473,
+     "verhaeltnis": 217
+    },
+    {
+     "zeit": 63.964,
+     "sprung": 0.363,
+     "verhaeltnis": 71
+    },
+    {
+     "zeit": 64.31,
+     "sprung": 0.341,
+     "verhaeltnis": 62
+    },
+    {
+     "zeit": 66.724,
+     "sprung": 0.365,
+     "verhaeltnis": 97
+    },
+    {
+     "zeit": 67.07,
+     "sprung": 0.429,
+     "verhaeltnis": 149
+    },
+    {
+     "zeit": 67.586,
+     "sprung": 0.503,
+     "verhaeltnis": 229
+    },
+    {
+     "zeit": 67.837,
+     "sprung": 0.09,
+     "verhaeltnis": 29
+    },
+    {
+     "zeit": 67.863,
+     "sprung": 0.108,
+     "verhaeltnis": 42
+    },
+    {
+     "zeit": 68.312,
+     "sprung": 0.107,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 68.338,
+     "sprung": 0.132,
+     "verhaeltnis": 24
+    },
+    {
+     "zeit": 68.365,
+     "sprung": 0.1,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 68.4,
+     "sprung": 0.095,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 68.449,
+     "sprung": 0.375,
+     "verhaeltnis": 73
+    },
+    {
+     "zeit": 68.967,
+     "sprung": 0.519,
+     "verhaeltnis": 23
+    },
+    {
+     "zeit": 69.012,
+     "sprung": 0.082,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 69.484,
+     "sprung": 0.355,
+     "verhaeltnis": 34
+    },
+    {
+     "zeit": 69.826,
+     "sprung": 0.364,
+     "verhaeltnis": 138
+    },
+    {
+     "zeit": 70.344,
+     "sprung": 0.452,
+     "verhaeltnis": 151
+    },
+    {
+     "zeit": 70.862,
+     "sprung": 0.371,
+     "verhaeltnis": 94
+    },
+    {
+     "zeit": 70.948,
+     "sprung": 0.366,
+     "verhaeltnis": 215
+    },
+    {
+     "zeit": 71.206,
+     "sprung": 0.394,
+     "verhaeltnis": 140
+    },
+    {
+     "zeit": 71.725,
+     "sprung": 0.57,
+     "verhaeltnis": 45
+    },
+    {
+     "zeit": 72.24,
+     "sprung": 0.365,
+     "verhaeltnis": 87
+    },
+    {
+     "zeit": 72.585,
+     "sprung": 0.425,
+     "verhaeltnis": 217
+    },
+    {
+     "zeit": 73.104,
+     "sprung": 0.521,
+     "verhaeltnis": 71
+    },
+    {
+     "zeit": 73.964,
+     "sprung": 0.356,
+     "verhaeltnis": 75
+    },
+    {
+     "zeit": 74.482,
+     "sprung": 0.495,
+     "verhaeltnis": 48
+    },
+    {
+     "zeit": 74.999,
+     "sprung": 0.37,
+     "verhaeltnis": 76
+    },
+    {
+     "zeit": 75.345,
+     "sprung": 0.408,
+     "verhaeltnis": 132
+    },
+    {
+     "zeit": 75.863,
+     "sprung": 0.551,
+     "verhaeltnis": 94
+    },
+    {
+     "zeit": 76.38,
+     "sprung": 0.358,
+     "verhaeltnis": 30
+    },
+    {
+     "zeit": 76.465,
+     "sprung": 0.379,
+     "verhaeltnis": 100
+    },
+    {
+     "zeit": 76.725,
+     "sprung": 0.382,
+     "verhaeltnis": 42
+    },
+    {
+     "zeit": 77.243,
+     "sprung": 0.542,
+     "verhaeltnis": 33
+    },
+    {
+     "zeit": 77.76,
+     "sprung": 0.39,
+     "verhaeltnis": 36
+    },
+    {
+     "zeit": 78.103,
+     "sprung": 0.426,
+     "verhaeltnis": 70
+    },
+    {
+     "zeit": 78.621,
+     "sprung": 0.471,
+     "verhaeltnis": 88
+    },
+    {
+     "zeit": 79.484,
+     "sprung": 0.439,
+     "verhaeltnis": 70
+    },
+    {
+     "zeit": 80,
+     "sprung": 0.544,
+     "verhaeltnis": 57
+    },
+    {
+     "zeit": 80.516,
+     "sprung": 0.357,
+     "verhaeltnis": 63
+    },
+    {
+     "zeit": 80.862,
+     "sprung": 0.38,
+     "verhaeltnis": 131
+    },
+    {
+     "zeit": 81.381,
+     "sprung": 0.515,
+     "verhaeltnis": 201
+    },
+    {
+     "zeit": 81.897,
+     "sprung": 0.389,
+     "verhaeltnis": 75
+    },
+    {
+     "zeit": 81.981,
+     "sprung": 0.408,
+     "verhaeltnis": 148
+    },
+    {
+     "zeit": 83.275,
+     "sprung": 0.401,
+     "verhaeltnis": 115
+    },
+    {
+     "zeit": 83.62,
+     "sprung": 0.36,
+     "verhaeltnis": 154
+    },
+    {
+     "zeit": 84.137,
+     "sprung": 0.577,
+     "verhaeltnis": 213
+    },
+    {
+     "zeit": 85.001,
+     "sprung": 0.373,
+     "verhaeltnis": 119
+    },
+    {
+     "zeit": 85.517,
+     "sprung": 0.455,
+     "verhaeltnis": 40
+    }
+   ],
+   "clipping": [],
+   "loecher": [],
+   "spuren": 10,
+   "takte": 64,
+   "dropouts": 35,
+   "stilleTakte": 128,
+   "abschnitte": "Intro → Aufbau → Gas geben → Sich verlieren → Wiederfinden → Stocken → Hauptteil → Outro",
+   "rechenzeit": 37
+  },
+  "dnb": {
+   "dauer": 88.3,
+   "lufs": -14,
+   "tp": -1,
+   "lra": 10,
+   "unter120": 72.4,
+   "mitten": 25,
+   "ueber2k": 2.6,
+   "knackser": [
+    {
+     "zeit": 11.896,
+     "sprung": 0.364,
+     "verhaeltnis": 42
+    },
+    {
+     "zeit": 12.587,
+     "sprung": 0.414,
+     "verhaeltnis": 36
+    },
+    {
+     "zeit": 13.277,
+     "sprung": 0.465,
+     "verhaeltnis": 29
+    },
+    {
+     "zeit": 13.793,
+     "sprung": 0.459,
+     "verhaeltnis": 276
+    },
+    {
+     "zeit": 13.965,
+     "sprung": 0.358,
+     "verhaeltnis": 82
+    },
+    {
+     "zeit": 14.656,
+     "sprung": 0.329,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 15.174,
+     "sprung": 0.497,
+     "verhaeltnis": 67
+    },
+    {
+     "zeit": 15.346,
+     "sprung": 0.371,
+     "verhaeltnis": 145
+    },
+    {
+     "zeit": 15.689,
+     "sprung": 0.412,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 16.035,
+     "sprung": 0.429,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 16.551,
+     "sprung": 0.485,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 16.724,
+     "sprung": 0.39,
+     "verhaeltnis": 63
+    },
+    {
+     "zeit": 17.414,
+     "sprung": 0.385,
+     "verhaeltnis": 25
+    },
+    {
+     "zeit": 17.931,
+     "sprung": 0.527,
+     "verhaeltnis": 60
+    },
+    {
+     "zeit": 18.104,
+     "sprung": 0.365,
+     "verhaeltnis": 85
+    },
+    {
+     "zeit": 18.792,
+     "sprung": 0.37,
+     "verhaeltnis": 40
+    },
+    {
+     "zeit": 19.31,
+     "sprung": 0.44,
+     "verhaeltnis": 105
+    },
+    {
+     "zeit": 20.171,
+     "sprung": 0.35,
+     "verhaeltnis": 35
+    },
+    {
+     "zeit": 20.688,
+     "sprung": 0.492,
+     "verhaeltnis": 57
+    },
+    {
+     "zeit": 20.863,
+     "sprung": 0.363,
+     "verhaeltnis": 302
+    },
+    {
+     "zeit": 21.207,
+     "sprung": 0.353,
+     "verhaeltnis": 23
+    },
+    {
+     "zeit": 21.55,
+     "sprung": 0.324,
+     "verhaeltnis": 21
+    },
+    {
+     "zeit": 22.067,
+     "sprung": 0.468,
+     "verhaeltnis": 23
+    },
+    {
+     "zeit": 22.932,
+     "sprung": 0.384,
+     "verhaeltnis": 22
+    },
+    {
+     "zeit": 23.448,
+     "sprung": 0.444,
+     "verhaeltnis": 41
+    },
+    {
+     "zeit": 23.621,
+     "sprung": 0.355,
+     "verhaeltnis": 113
+    },
+    {
+     "zeit": 24.31,
+     "sprung": 0.458,
+     "verhaeltnis": 43
+    },
+    {
+     "zeit": 25.69,
+     "sprung": 0.337,
+     "verhaeltnis": 26
+    },
+    {
+     "zeit": 26.206,
+     "sprung": 0.454,
+     "verhaeltnis": 43
+    },
+    {
+     "zeit": 26.378,
+     "sprung": 0.4,
+     "verhaeltnis": 141
+    },
+    {
+     "zeit": 26.725,
+     "sprung": 0.387,
+     "verhaeltnis": 20
+    },
+    {
+     "zeit": 27.069,
+     "sprung": 0.356,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 41.379,
+     "sprung": 0.439,
+     "verhaeltnis": 67
+    },
+    {
+     "zeit": 41.896,
+     "sprung": 0.199,
+     "verhaeltnis": 50
+    },
+    {
+     "zeit": 42.242,
+     "sprung": 0.375,
+     "verhaeltnis": 130
+    },
+    {
+     "zeit": 42.585,
+     "sprung": 0.347,
+     "verhaeltnis": 58
+    },
+    {
+     "zeit": 42.76,
+     "sprung": 0.461,
+     "verhaeltnis": 68
+    },
+    {
+     "zeit": 43.276,
+     "sprung": 0.207,
+     "verhaeltnis": 66
+    },
+    {
+     "zeit": 43.621,
+     "sprung": 0.362,
+     "verhaeltnis": 95
+    },
+    {
+     "zeit": 43.881,
+     "sprung": 0.355,
+     "verhaeltnis": 88
+    },
+    {
+     "zeit": 43.966,
+     "sprung": 0.347,
+     "verhaeltnis": 73
+    },
+    {
+     "zeit": 45.001,
+     "sprung": 0.361,
+     "verhaeltnis": 27
+    },
+    {
+     "zeit": 45.344,
+     "sprung": 0.398,
+     "verhaeltnis": 106
+    },
+    {
+     "zeit": 45.518,
+     "sprung": 0.409,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 45.775,
+     "sprung": 0.393,
+     "verhaeltnis": 41
+    },
+    {
+     "zeit": 46.38,
+     "sprung": 0.394,
+     "verhaeltnis": 261
+    },
+    {
+     "zeit": 46.725,
+     "sprung": 0.387,
+     "verhaeltnis": 60
+    },
+    {
+     "zeit": 46.896,
+     "sprung": 0.431,
+     "verhaeltnis": 45
+    },
+    {
+     "zeit": 47.759,
+     "sprung": 0.403,
+     "verhaeltnis": 30
+    },
+    {
+     "zeit": 48.535,
+     "sprung": 0.374,
+     "verhaeltnis": 44
+    },
+    {
+     "zeit": 49.138,
+     "sprung": 0.401,
+     "verhaeltnis": 247
+    },
+    {
+     "zeit": 49.484,
+     "sprung": 0.432,
+     "verhaeltnis": 60
+    },
+    {
+     "zeit": 49.655,
+     "sprung": 0.464,
+     "verhaeltnis": 55
+    },
+    {
+     "zeit": 50.517,
+     "sprung": 0.38,
+     "verhaeltnis": 115
+    },
+    {
+     "zeit": 50.862,
+     "sprung": 0.35,
+     "verhaeltnis": 61
+    },
+    {
+     "zeit": 51.033,
+     "sprung": 0.426,
+     "verhaeltnis": 46
+    },
+    {
+     "zeit": 51.293,
+     "sprung": 0.36,
+     "verhaeltnis": 38
+    },
+    {
+     "zeit": 51.897,
+     "sprung": 0.357,
+     "verhaeltnis": 47
+    },
+    {
+     "zeit": 52.242,
+     "sprung": 0.364,
+     "verhaeltnis": 53
+    },
+    {
+     "zeit": 52.413,
+     "sprung": 0.495,
+     "verhaeltnis": 50
+    },
+    {
+     "zeit": 53.277,
+     "sprung": 0.425,
+     "verhaeltnis": 222
+    },
+    {
+     "zeit": 53.619,
+     "sprung": 0.363,
+     "verhaeltnis": 92
+    },
+    {
+     "zeit": 54.051,
+     "sprung": 0.365,
+     "verhaeltnis": 42
+    },
+    {
+     "zeit": 54.654,
+     "sprung": 0.362,
+     "verhaeltnis": 132
+    },
+    {
+     "zeit": 54.999,
+     "sprung": 0.371,
+     "verhaeltnis": 86
+    },
+    {
+     "zeit": 55.079,
+     "sprung": 0.082,
+     "verhaeltnis": 26
+    },
+    {
+     "zeit": 55.172,
+     "sprung": 0.475,
+     "verhaeltnis": 55
+    },
+    {
+     "zeit": 56.811,
+     "sprung": 0.349,
+     "verhaeltnis": 37
+    },
+    {
+     "zeit": 57.413,
+     "sprung": 0.363,
+     "verhaeltnis": 134
+    },
+    {
+     "zeit": 57.76,
+     "sprung": 0.41,
+     "verhaeltnis": 36
+    },
+    {
+     "zeit": 57.932,
+     "sprung": 0.497,
+     "verhaeltnis": 37
+    },
+    {
+     "zeit": 59.138,
+     "sprung": 0.387,
+     "verhaeltnis": 118
+    },
+    {
+     "zeit": 59.569,
+     "sprung": 0.361,
+     "verhaeltnis": 128
+    },
+    {
+     "zeit": 60.173,
+     "sprung": 0.393,
+     "verhaeltnis": 110
+    },
+    {
+     "zeit": 61.551,
+     "sprung": 0.344,
+     "verhaeltnis": 97
+    },
+    {
+     "zeit": 61.895,
+     "sprung": 0.377,
+     "verhaeltnis": 66
+    },
+    {
+     "zeit": 62.07,
+     "sprung": 0.531,
+     "verhaeltnis": 329
+    },
+    {
+     "zeit": 63.448,
+     "sprung": 0.451,
+     "verhaeltnis": 130
+    },
+    {
+     "zeit": 64.828,
+     "sprung": 0.113,
+     "verhaeltnis": 36
+    },
+    {
+     "zeit": 67.413,
+     "sprung": 0.399,
+     "verhaeltnis": 100
+    },
+    {
+     "zeit": 68.448,
+     "sprung": 0.387,
+     "verhaeltnis": 266
+    },
+    {
+     "zeit": 68.964,
+     "sprung": 0.483,
+     "verhaeltnis": 50
+    },
+    {
+     "zeit": 69.829,
+     "sprung": 0.372,
+     "verhaeltnis": 37
+    },
+    {
+     "zeit": 70.172,
+     "sprung": 0.349,
+     "verhaeltnis": 101
+    },
+    {
+     "zeit": 70.345,
+     "sprung": 0.442,
+     "verhaeltnis": 21
+    },
+    {
+     "zeit": 71.206,
+     "sprung": 0.356,
+     "verhaeltnis": 36
+    },
+    {
+     "zeit": 71.464,
+     "sprung": 0.354,
+     "verhaeltnis": 12
+    },
+    {
+     "zeit": 72.587,
+     "sprung": 0.306,
+     "verhaeltnis": 20
+    },
+    {
+     "zeit": 72.931,
+     "sprung": 0.361,
+     "verhaeltnis": 29
+    },
+    {
+     "zeit": 73.104,
+     "sprung": 0.497,
+     "verhaeltnis": 28
+    },
+    {
+     "zeit": 73.965,
+     "sprung": 0.382,
+     "verhaeltnis": 131
+    },
+    {
+     "zeit": 74.484,
+     "sprung": 0.441,
+     "verhaeltnis": 23
+    },
+    {
+     "zeit": 75.345,
+     "sprung": 0.329,
+     "verhaeltnis": 29
+    },
+    {
+     "zeit": 75.691,
+     "sprung": 0.37,
+     "verhaeltnis": 56
+    },
+    {
+     "zeit": 75.863,
+     "sprung": 0.483,
+     "verhaeltnis": 24
+    },
+    {
+     "zeit": 76.725,
+     "sprung": 0.412,
+     "verhaeltnis": 41
+    },
+    {
+     "zeit": 78.102,
+     "sprung": 0.363,
+     "verhaeltnis": 40
+    },
+    {
+     "zeit": 78.622,
+     "sprung": 0.434,
+     "verhaeltnis": 33
+    },
+    {
+     "zeit": 79.111,
+     "sprung": 0.123,
+     "verhaeltnis": 22
+    },
+    {
+     "zeit": 79.132,
+     "sprung": 0.111,
+     "verhaeltnis": 26
+    },
+    {
+     "zeit": 79.483,
+     "sprung": 0.484,
+     "verhaeltnis": 76
+    },
+    {
+     "zeit": 79.999,
+     "sprung": 0.45,
+     "verhaeltnis": 51
+    },
+    {
+     "zeit": 81.206,
+     "sprung": 0.361,
+     "verhaeltnis": 85
+    },
+    {
+     "zeit": 81.379,
+     "sprung": 0.434,
+     "verhaeltnis": 43
+    },
+    {
+     "zeit": 83.275,
+     "sprung": 0.193,
+     "verhaeltnis": 42
+    },
+    {
+     "zeit": 83.62,
+     "sprung": 0.384,
+     "verhaeltnis": 39
+    },
+    {
+     "zeit": 83.965,
+     "sprung": 0.37,
+     "verhaeltnis": 67
+    },
+    {
+     "zeit": 84.138,
+     "sprung": 0.473,
+     "verhaeltnis": 48
+    },
+    {
+     "zeit": 84.655,
+     "sprung": 0.183,
+     "verhaeltnis": 26
+    },
+    {
+     "zeit": 85.001,
+     "sprung": 0.357,
+     "verhaeltnis": 55
+    }
+   ],
+   "clipping": [],
+   "loecher": [],
+   "spuren": 10,
+   "takte": 64,
+   "dropouts": 31,
+   "stilleTakte": 144,
+   "abschnitte": "Intro → Aufbau → Gas geben → Sich verlieren → Wiederfinden → Stocken → Hauptteil → Outro",
+   "rechenzeit": 37
+  },
+  "hiphop": {
+   "dauer": 85.3,
+   "lufs": -14.2,
+   "tp": -1,
+   "lra": 6.9,
+   "unter120": 71.4,
+   "mitten": 27.5,
+   "ueber2k": 1.1,
+   "knackser": [
+    {
+     "zeit": 6.782,
+     "sprung": 0.144,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 22.526,
+     "sprung": 0.097,
+     "verhaeltnis": 49
+    },
+    {
+     "zeit": 27.86,
+     "sprung": 0.138,
+     "verhaeltnis": 22
+    },
+    {
+     "zeit": 30.527,
+     "sprung": 0.107,
+     "verhaeltnis": 36
+    },
+    {
+     "zeit": 33.151,
+     "sprung": 0.167,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 33.172,
+     "sprung": 0.139,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 33.193,
+     "sprung": 0.151,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 33.215,
+     "sprung": 0.174,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 33.236,
+     "sprung": 0.157,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 43.859,
+     "sprung": 0.109,
+     "verhaeltnis": 23
+    },
+    {
+     "zeit": 45.957,
+     "sprung": 0.134,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 45.978,
+     "sprung": 0.106,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 49.193,
+     "sprung": 0.104,
+     "verhaeltnis": 44
+    },
+    {
+     "zeit": 51.859,
+     "sprung": 0.134,
+     "verhaeltnis": 21
+    },
+    {
+     "zeit": 54.525,
+     "sprung": 0.101,
+     "verhaeltnis": 29
+    },
+    {
+     "zeit": 57.195,
+     "sprung": 0.115,
+     "verhaeltnis": 35
+    },
+    {
+     "zeit": 59.86,
+     "sprung": 0.115,
+     "verhaeltnis": 66
+    },
+    {
+     "zeit": 61.333,
+     "sprung": 0.172,
+     "verhaeltnis": 42
+    },
+    {
+     "zeit": 62.526,
+     "sprung": 0.151,
+     "verhaeltnis": 23
+    },
+    {
+     "zeit": 64,
+     "sprung": 0.552,
+     "verhaeltnis": 67
+    },
+    {
+     "zeit": 65.194,
+     "sprung": 0.158,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 67.86,
+     "sprung": 0.124,
+     "verhaeltnis": 39
+    },
+    {
+     "zeit": 68.893,
+     "sprung": 0.123,
+     "verhaeltnis": 22
+    },
+    {
+     "zeit": 69.018,
+     "sprung": 0.156,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 69.06,
+     "sprung": 0.12,
+     "verhaeltnis": 28
+    },
+    {
+     "zeit": 70.527,
+     "sprung": 0.127,
+     "verhaeltnis": 21
+    },
+    {
+     "zeit": 78.528,
+     "sprung": 0.115,
+     "verhaeltnis": 23
+    }
+   ],
+   "clipping": [],
+   "loecher": [],
+   "spuren": 9,
+   "takte": 32,
+   "dropouts": 31,
+   "stilleTakte": 88,
+   "abschnitte": "Intro → Aufbau → Gas geben → Sich verlieren → Wiederfinden → Stocken → Hauptteil → Outro",
+   "rechenzeit": 29
+  },
+  "minimal": {
+   "dauer": 92.9,
+   "lufs": -14.6,
+   "tp": -1,
+   "lra": 4,
+   "unter120": 59.5,
+   "mitten": 39.1,
+   "ueber2k": 1.4,
+   "knackser": [
+    {
+     "zeit": 0.007,
+     "sprung": 0.221,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 0.109,
+     "sprung": 0.118,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 0.29,
+     "sprung": 0.119,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 0.587,
+     "sprung": 0.144,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 0.623,
+     "sprung": 0.11,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 0.677,
+     "sprung": 0.297,
+     "verhaeltnis": 27
+    },
+    {
+     "zeit": 0.831,
+     "sprung": 0.258,
+     "verhaeltnis": 29
+    },
+    {
+     "zeit": 0.854,
+     "sprung": 0.379,
+     "verhaeltnis": 46
+    },
+    {
+     "zeit": 0.945,
+     "sprung": 0.104,
+     "verhaeltnis": 12
+    },
+    {
+     "zeit": 1.245,
+     "sprung": 0.185,
+     "verhaeltnis": 22
+    },
+    {
+     "zeit": 1.277,
+     "sprung": 0.193,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 1.496,
+     "sprung": 0.398,
+     "verhaeltnis": 31
+    },
+    {
+     "zeit": 1.525,
+     "sprung": 0.214,
+     "verhaeltnis": 21
+    },
+    {
+     "zeit": 1.658,
+     "sprung": 0.228,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 1.728,
+     "sprung": 0.321,
+     "verhaeltnis": 23
+    },
+    {
+     "zeit": 1.756,
+     "sprung": 0.251,
+     "verhaeltnis": 23
+    },
+    {
+     "zeit": 1.853,
+     "sprung": 0.25,
+     "verhaeltnis": 29
+    },
+    {
+     "zeit": 1.966,
+     "sprung": 0.16,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 2.091,
+     "sprung": 0.238,
+     "verhaeltnis": 25
+    },
+    {
+     "zeit": 2.208,
+     "sprung": 0.171,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 2.355,
+     "sprung": 0.151,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 2.432,
+     "sprung": 0.22,
+     "verhaeltnis": 12
+    },
+    {
+     "zeit": 2.565,
+     "sprung": 0.257,
+     "verhaeltnis": 41
+    },
+    {
+     "zeit": 2.601,
+     "sprung": 0.103,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 3.231,
+     "sprung": 0.132,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 3.26,
+     "sprung": 0.154,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 3.834,
+     "sprung": 0.113,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 4.05,
+     "sprung": 0.171,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 4.262,
+     "sprung": 0.178,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 4.282,
+     "sprung": 0.481,
+     "verhaeltnis": 33
+    },
+    {
+     "zeit": 4.451,
+     "sprung": 0.279,
+     "verhaeltnis": 29
+    },
+    {
+     "zeit": 4.827,
+     "sprung": 0.224,
+     "verhaeltnis": 21
+    },
+    {
+     "zeit": 4.849,
+     "sprung": 0.604,
+     "verhaeltnis": 58
+    },
+    {
+     "zeit": 4.904,
+     "sprung": 0.269,
+     "verhaeltnis": 12
+    },
+    {
+     "zeit": 4.938,
+     "sprung": 0.263,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 5.002,
+     "sprung": 0.201,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 5.09,
+     "sprung": 0.289,
+     "verhaeltnis": 27
+    },
+    {
+     "zeit": 5.152,
+     "sprung": 0.19,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 5.859,
+     "sprung": 0.274,
+     "verhaeltnis": 38
+    },
+    {
+     "zeit": 5.887,
+     "sprung": 0.148,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 6.029,
+     "sprung": 0.372,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 6.058,
+     "sprung": 0.674,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 6.088,
+     "sprung": 0.275,
+     "verhaeltnis": 30
+    },
+    {
+     "zeit": 6.197,
+     "sprung": 0.381,
+     "verhaeltnis": 24
+    },
+    {
+     "zeit": 6.351,
+     "sprung": 0.217,
+     "verhaeltnis": 37
+    },
+    {
+     "zeit": 6.374,
+     "sprung": 0.127,
+     "verhaeltnis": 20
+    },
+    {
+     "zeit": 7.06,
+     "sprung": 0.256,
+     "verhaeltnis": 30
+    },
+    {
+     "zeit": 7.742,
+     "sprung": 0.152,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 8.225,
+     "sprung": 0.158,
+     "verhaeltnis": 54
+    },
+    {
+     "zeit": 9.2,
+     "sprung": 0.166,
+     "verhaeltnis": 20
+    },
+    {
+     "zeit": 10.162,
+     "sprung": 0.183,
+     "verhaeltnis": 46
+    },
+    {
+     "zeit": 11.128,
+     "sprung": 0.145,
+     "verhaeltnis": 98
+    },
+    {
+     "zeit": 12.097,
+     "sprung": 0.138,
+     "verhaeltnis": 53
+    },
+    {
+     "zeit": 15.484,
+     "sprung": 0.333,
+     "verhaeltnis": 141
+    },
+    {
+     "zeit": 15.968,
+     "sprung": 0.245,
+     "verhaeltnis": 33
+    },
+    {
+     "zeit": 16.451,
+     "sprung": 0.257,
+     "verhaeltnis": 48
+    },
+    {
+     "zeit": 16.935,
+     "sprung": 0.431,
+     "verhaeltnis": 176
+    },
+    {
+     "zeit": 17.42,
+     "sprung": 0.38,
+     "verhaeltnis": 92
+    },
+    {
+     "zeit": 17.904,
+     "sprung": 0.275,
+     "verhaeltnis": 58
+    },
+    {
+     "zeit": 18.387,
+     "sprung": 0.282,
+     "verhaeltnis": 68
+    },
+    {
+     "zeit": 18.871,
+     "sprung": 0.344,
+     "verhaeltnis": 171
+    },
+    {
+     "zeit": 19.355,
+     "sprung": 0.367,
+     "verhaeltnis": 198
+    },
+    {
+     "zeit": 19.84,
+     "sprung": 0.374,
+     "verhaeltnis": 231
+    },
+    {
+     "zeit": 20.324,
+     "sprung": 0.268,
+     "verhaeltnis": 69
+    },
+    {
+     "zeit": 20.806,
+     "sprung": 0.394,
+     "verhaeltnis": 109
+    },
+    {
+     "zeit": 21.291,
+     "sprung": 0.385,
+     "verhaeltnis": 160
+    },
+    {
+     "zeit": 21.774,
+     "sprung": 0.272,
+     "verhaeltnis": 54
+    },
+    {
+     "zeit": 22.258,
+     "sprung": 0.299,
+     "verhaeltnis": 75
+    },
+    {
+     "zeit": 22.742,
+     "sprung": 0.262,
+     "verhaeltnis": 62
+    },
+    {
+     "zeit": 23.226,
+     "sprung": 0.387,
+     "verhaeltnis": 76
+    },
+    {
+     "zeit": 23.71,
+     "sprung": 0.327,
+     "verhaeltnis": 53
+    },
+    {
+     "zeit": 24.193,
+     "sprung": 0.269,
+     "verhaeltnis": 199
+    },
+    {
+     "zeit": 24.677,
+     "sprung": 0.359,
+     "verhaeltnis": 151
+    },
+    {
+     "zeit": 25.161,
+     "sprung": 0.371,
+     "verhaeltnis": 133
+    },
+    {
+     "zeit": 25.644,
+     "sprung": 0.374,
+     "verhaeltnis": 97
+    },
+    {
+     "zeit": 26.128,
+     "sprung": 0.294,
+     "verhaeltnis": 68
+    },
+    {
+     "zeit": 26.613,
+     "sprung": 0.394,
+     "verhaeltnis": 100
+    },
+    {
+     "zeit": 27.097,
+     "sprung": 0.357,
+     "verhaeltnis": 81
+    },
+    {
+     "zeit": 27.58,
+     "sprung": 0.362,
+     "verhaeltnis": 128
+    },
+    {
+     "zeit": 28.064,
+     "sprung": 0.299,
+     "verhaeltnis": 175
+    },
+    {
+     "zeit": 28.549,
+     "sprung": 0.308,
+     "verhaeltnis": 77
+    },
+    {
+     "zeit": 29.033,
+     "sprung": 0.361,
+     "verhaeltnis": 173
+    },
+    {
+     "zeit": 29.516,
+     "sprung": 0.262,
+     "verhaeltnis": 77
+    },
+    {
+     "zeit": 30,
+     "sprung": 0.263,
+     "verhaeltnis": 99
+    },
+    {
+     "zeit": 30.484,
+     "sprung": 0.28,
+     "verhaeltnis": 81
+    },
+    {
+     "zeit": 30.967,
+     "sprung": 0.326,
+     "verhaeltnis": 33
+    },
+    {
+     "zeit": 31.281,
+     "sprung": 0.172,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 31.303,
+     "sprung": 0.18,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 31.329,
+     "sprung": 0.5,
+     "verhaeltnis": 20
+    },
+    {
+     "zeit": 31.352,
+     "sprung": 0.44,
+     "verhaeltnis": 32
+    },
+    {
+     "zeit": 32.083,
+     "sprung": 0.452,
+     "verhaeltnis": 61
+    },
+    {
+     "zeit": 32.496,
+     "sprung": 0.156,
+     "verhaeltnis": 21
+    },
+    {
+     "zeit": 32.519,
+     "sprung": 0.55,
+     "verhaeltnis": 74
+    },
+    {
+     "zeit": 32.561,
+     "sprung": 0.226,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 32.589,
+     "sprung": 0.237,
+     "verhaeltnis": 26
+    },
+    {
+     "zeit": 32.996,
+     "sprung": 0.581,
+     "verhaeltnis": 27
+    },
+    {
+     "zeit": 33.022,
+     "sprung": 0.267,
+     "verhaeltnis": 36
+    },
+    {
+     "zeit": 33.082,
+     "sprung": 0.414,
+     "verhaeltnis": 37
+    },
+    {
+     "zeit": 33.186,
+     "sprung": 0.632,
+     "verhaeltnis": 88
+    },
+    {
+     "zeit": 33.342,
+     "sprung": 0.183,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 33.365,
+     "sprung": 0.118,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 33.387,
+     "sprung": 0.101,
+     "verhaeltnis": 12
+    },
+    {
+     "zeit": 33.569,
+     "sprung": 0.299,
+     "verhaeltnis": 45
+    },
+    {
+     "zeit": 33.616,
+     "sprung": 0.114,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 33.685,
+     "sprung": 0.173,
+     "verhaeltnis": 20
+    },
+    {
+     "zeit": 34.253,
+     "sprung": 0.331,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 34.632,
+     "sprung": 0.227,
+     "verhaeltnis": 29
+    },
+    {
+     "zeit": 34.692,
+     "sprung": 0.319,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 34.911,
+     "sprung": 0.31,
+     "verhaeltnis": 24
+    },
+    {
+     "zeit": 35.068,
+     "sprung": 0.661,
+     "verhaeltnis": 73
+    },
+    {
+     "zeit": 35.09,
+     "sprung": 0.658,
+     "verhaeltnis": 72
+    },
+    {
+     "zeit": 35.123,
+     "sprung": 0.266,
+     "verhaeltnis": 20
+    },
+    {
+     "zeit": 35.677,
+     "sprung": 0.126,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 35.752,
+     "sprung": 0.171,
+     "verhaeltnis": 24
+    },
+    {
+     "zeit": 35.787,
+     "sprung": 0.172,
+     "verhaeltnis": 20
+    },
+    {
+     "zeit": 35.839,
+     "sprung": 0.191,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 35.879,
+     "sprung": 0.171,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 36.162,
+     "sprung": 0.411,
+     "verhaeltnis": 44
+    },
+    {
+     "zeit": 36.353,
+     "sprung": 0.226,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 36.381,
+     "sprung": 0.584,
+     "verhaeltnis": 63
+    },
+    {
+     "zeit": 36.402,
+     "sprung": 0.741,
+     "verhaeltnis": 41
+    },
+    {
+     "zeit": 36.67,
+     "sprung": 0.158,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 36.692,
+     "sprung": 0.208,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 36.757,
+     "sprung": 0.32,
+     "verhaeltnis": 35
+    },
+    {
+     "zeit": 36.898,
+     "sprung": 0.403,
+     "verhaeltnis": 53
+    },
+    {
+     "zeit": 37.034,
+     "sprung": 0.178,
+     "verhaeltnis": 23
+    },
+    {
+     "zeit": 37.059,
+     "sprung": 0.23,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 37.151,
+     "sprung": 0.503,
+     "verhaeltnis": 45
+    },
+    {
+     "zeit": 37.298,
+     "sprung": 0.188,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 37.354,
+     "sprung": 0.213,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 37.72,
+     "sprung": 0.193,
+     "verhaeltnis": 29
+    },
+    {
+     "zeit": 37.958,
+     "sprung": 0.101,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 37.982,
+     "sprung": 0.26,
+     "verhaeltnis": 38
+    },
+    {
+     "zeit": 38.527,
+     "sprung": 0.727,
+     "verhaeltnis": 92
+    },
+    {
+     "zeit": 38.65,
+     "sprung": 0.17,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 38.674,
+     "sprung": 0.159,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 38.795,
+     "sprung": 0.7,
+     "verhaeltnis": 20
+    },
+    {
+     "zeit": 38.826,
+     "sprung": 0.264,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 38.916,
+     "sprung": 0.176,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 38.944,
+     "sprung": 0.184,
+     "verhaeltnis": 21
+    },
+    {
+     "zeit": 39.009,
+     "sprung": 0.736,
+     "verhaeltnis": 84
+    },
+    {
+     "zeit": 39.14,
+     "sprung": 0.211,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 39.259,
+     "sprung": 0.239,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 39.279,
+     "sprung": 0.219,
+     "verhaeltnis": 27
+    },
+    {
+     "zeit": 39.497,
+     "sprung": 0.719,
+     "verhaeltnis": 100
+    },
+    {
+     "zeit": 39.518,
+     "sprung": 0.266,
+     "verhaeltnis": 33
+    },
+    {
+     "zeit": 39.67,
+     "sprung": 0.708,
+     "verhaeltnis": 38
+    },
+    {
+     "zeit": 39.695,
+     "sprung": 0.713,
+     "verhaeltnis": 39
+    },
+    {
+     "zeit": 39.727,
+     "sprung": 0.485,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 39.937,
+     "sprung": 0.19,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 40.351,
+     "sprung": 0.213,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 40.396,
+     "sprung": 0.224,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 40.455,
+     "sprung": 0.246,
+     "verhaeltnis": 12
+    },
+    {
+     "zeit": 40.477,
+     "sprung": 0.206,
+     "verhaeltnis": 12
+    },
+    {
+     "zeit": 40.599,
+     "sprung": 0.359,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 40.695,
+     "sprung": 0.198,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 40.722,
+     "sprung": 0.171,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 41.147,
+     "sprung": 0.115,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 41.194,
+     "sprung": 0.1,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 41.237,
+     "sprung": 0.572,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 41.428,
+     "sprung": 0.241,
+     "verhaeltnis": 31
+    },
+    {
+     "zeit": 41.449,
+     "sprung": 0.31,
+     "verhaeltnis": 24
+    },
+    {
+     "zeit": 41.605,
+     "sprung": 0.127,
+     "verhaeltnis": 12
+    },
+    {
+     "zeit": 41.633,
+     "sprung": 0.152,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 41.757,
+     "sprung": 0.259,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 41.793,
+     "sprung": 0.128,
+     "verhaeltnis": 12
+    },
+    {
+     "zeit": 41.89,
+     "sprung": 0.592,
+     "verhaeltnis": 25
+    },
+    {
+     "zeit": 41.924,
+     "sprung": 0.723,
+     "verhaeltnis": 59
+    },
+    {
+     "zeit": 41.946,
+     "sprung": 0.193,
+     "verhaeltnis": 20
+    },
+    {
+     "zeit": 42.035,
+     "sprung": 0.143,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 42.056,
+     "sprung": 0.263,
+     "verhaeltnis": 27
+    },
+    {
+     "zeit": 42.315,
+     "sprung": 0.694,
+     "verhaeltnis": 33
+    },
+    {
+     "zeit": 42.581,
+     "sprung": 0.35,
+     "verhaeltnis": 25
+    },
+    {
+     "zeit": 43.065,
+     "sprung": 0.382,
+     "verhaeltnis": 54
+    },
+    {
+     "zeit": 43.158,
+     "sprung": 0.653,
+     "verhaeltnis": 110
+    },
+    {
+     "zeit": 43.18,
+     "sprung": 0.733,
+     "verhaeltnis": 79
+    },
+    {
+     "zeit": 43.47,
+     "sprung": 0.21,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 43.548,
+     "sprung": 0.448,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 43.787,
+     "sprung": 0.271,
+     "verhaeltnis": 27
+    },
+    {
+     "zeit": 43.81,
+     "sprung": 0.265,
+     "verhaeltnis": 32
+    },
+    {
+     "zeit": 43.919,
+     "sprung": 0.229,
+     "verhaeltnis": 31
+    },
+    {
+     "zeit": 44.033,
+     "sprung": 0.264,
+     "verhaeltnis": 29
+    },
+    {
+     "zeit": 44.205,
+     "sprung": 0.194,
+     "verhaeltnis": 25
+    },
+    {
+     "zeit": 44.341,
+     "sprung": 0.163,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 44.362,
+     "sprung": 0.689,
+     "verhaeltnis": 28
+    },
+    {
+     "zeit": 44.462,
+     "sprung": 0.257,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 44.516,
+     "sprung": 0.4,
+     "verhaeltnis": 28
+    },
+    {
+     "zeit": 44.732,
+     "sprung": 0.605,
+     "verhaeltnis": 46
+    },
+    {
+     "zeit": 44.776,
+     "sprung": 0.206,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 44.799,
+     "sprung": 0.235,
+     "verhaeltnis": 21
+    },
+    {
+     "zeit": 44.82,
+     "sprung": 0.235,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 44.842,
+     "sprung": 0.175,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 45,
+     "sprung": 0.363,
+     "verhaeltnis": 23
+    },
+    {
+     "zeit": 45.054,
+     "sprung": 0.378,
+     "verhaeltnis": 33
+    },
+    {
+     "zeit": 45.076,
+     "sprung": 0.325,
+     "verhaeltnis": 12
+    },
+    {
+     "zeit": 45.43,
+     "sprung": 0.252,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 45.483,
+     "sprung": 0.393,
+     "verhaeltnis": 50
+    },
+    {
+     "zeit": 45.967,
+     "sprung": 0.26,
+     "verhaeltnis": 36
+    },
+    {
+     "zeit": 46.452,
+     "sprung": 0.304,
+     "verhaeltnis": 42
+    },
+    {
+     "zeit": 46.935,
+     "sprung": 0.372,
+     "verhaeltnis": 98
+    },
+    {
+     "zeit": 47.42,
+     "sprung": 0.3,
+     "verhaeltnis": 138
+    },
+    {
+     "zeit": 47.903,
+     "sprung": 0.427,
+     "verhaeltnis": 107
+    },
+    {
+     "zeit": 48.388,
+     "sprung": 0.368,
+     "verhaeltnis": 208
+    },
+    {
+     "zeit": 48.87,
+     "sprung": 0.366,
+     "verhaeltnis": 165
+    },
+    {
+     "zeit": 49.356,
+     "sprung": 0.273,
+     "verhaeltnis": 80
+    },
+    {
+     "zeit": 49.839,
+     "sprung": 0.272,
+     "verhaeltnis": 79
+    },
+    {
+     "zeit": 50.323,
+     "sprung": 0.368,
+     "verhaeltnis": 63
+    },
+    {
+     "zeit": 50.806,
+     "sprung": 0.327,
+     "verhaeltnis": 116
+    },
+    {
+     "zeit": 51.291,
+     "sprung": 0.275,
+     "verhaeltnis": 115
+    },
+    {
+     "zeit": 51.774,
+     "sprung": 0.372,
+     "verhaeltnis": 276
+    },
+    {
+     "zeit": 52.257,
+     "sprung": 0.357,
+     "verhaeltnis": 232
+    },
+    {
+     "zeit": 52.743,
+     "sprung": 0.264,
+     "verhaeltnis": 32
+    },
+    {
+     "zeit": 53.226,
+     "sprung": 0.308,
+     "verhaeltnis": 60
+    },
+    {
+     "zeit": 53.709,
+     "sprung": 0.395,
+     "verhaeltnis": 124
+    },
+    {
+     "zeit": 54.194,
+     "sprung": 0.383,
+     "verhaeltnis": 88
+    },
+    {
+     "zeit": 54.677,
+     "sprung": 0.254,
+     "verhaeltnis": 87
+    },
+    {
+     "zeit": 55.162,
+     "sprung": 0.258,
+     "verhaeltnis": 67
+    },
+    {
+     "zeit": 55.645,
+     "sprung": 0.409,
+     "verhaeltnis": 75
+    },
+    {
+     "zeit": 56.129,
+     "sprung": 0.356,
+     "verhaeltnis": 157
+    },
+    {
+     "zeit": 56.614,
+     "sprung": 0.235,
+     "verhaeltnis": 116
+    },
+    {
+     "zeit": 57.097,
+     "sprung": 0.253,
+     "verhaeltnis": 95
+    },
+    {
+     "zeit": 57.58,
+     "sprung": 0.427,
+     "verhaeltnis": 105
+    },
+    {
+     "zeit": 58.064,
+     "sprung": 0.356,
+     "verhaeltnis": 113
+    },
+    {
+     "zeit": 58.549,
+     "sprung": 0.367,
+     "verhaeltnis": 87
+    },
+    {
+     "zeit": 59.032,
+     "sprung": 0.273,
+     "verhaeltnis": 53
+    },
+    {
+     "zeit": 59.515,
+     "sprung": 0.295,
+     "verhaeltnis": 108
+    },
+    {
+     "zeit": 60.001,
+     "sprung": 0.36,
+     "verhaeltnis": 249
+    },
+    {
+     "zeit": 60.483,
+     "sprung": 0.439,
+     "verhaeltnis": 323
+    },
+    {
+     "zeit": 60.968,
+     "sprung": 0.299,
+     "verhaeltnis": 174
+    },
+    {
+     "zeit": 61.452,
+     "sprung": 0.244,
+     "verhaeltnis": 58
+    },
+    {
+     "zeit": 61.935,
+     "sprung": 0.377,
+     "verhaeltnis": 143
+    },
+    {
+     "zeit": 62.42,
+     "sprung": 0.394,
+     "verhaeltnis": 117
+    },
+    {
+     "zeit": 62.903,
+     "sprung": 0.258,
+     "verhaeltnis": 100
+    },
+    {
+     "zeit": 63.386,
+     "sprung": 0.303,
+     "verhaeltnis": 121
+    },
+    {
+     "zeit": 63.871,
+     "sprung": 0.358,
+     "verhaeltnis": 63
+    },
+    {
+     "zeit": 64.355,
+     "sprung": 0.318,
+     "verhaeltnis": 39
+    },
+    {
+     "zeit": 64.839,
+     "sprung": 0.266,
+     "verhaeltnis": 216
+    },
+    {
+     "zeit": 65.322,
+     "sprung": 0.39,
+     "verhaeltnis": 208
+    },
+    {
+     "zeit": 65.807,
+     "sprung": 0.365,
+     "verhaeltnis": 251
+    },
+    {
+     "zeit": 66.29,
+     "sprung": 0.301,
+     "verhaeltnis": 136
+    },
+    {
+     "zeit": 66.774,
+     "sprung": 0.307,
+     "verhaeltnis": 77
+    },
+    {
+     "zeit": 67.257,
+     "sprung": 0.24,
+     "verhaeltnis": 73
+    },
+    {
+     "zeit": 67.743,
+     "sprung": 0.281,
+     "verhaeltnis": 73
+    },
+    {
+     "zeit": 68.226,
+     "sprung": 0.265,
+     "verhaeltnis": 323
+    },
+    {
+     "zeit": 68.71,
+     "sprung": 0.266,
+     "verhaeltnis": 162
+    },
+    {
+     "zeit": 69.677,
+     "sprung": 0.403,
+     "verhaeltnis": 205
+    },
+    {
+     "zeit": 70.161,
+     "sprung": 0.367,
+     "verhaeltnis": 182
+    },
+    {
+     "zeit": 70.644,
+     "sprung": 0.261,
+     "verhaeltnis": 208
+    },
+    {
+     "zeit": 71.129,
+     "sprung": 0.263,
+     "verhaeltnis": 141
+    },
+    {
+     "zeit": 71.614,
+     "sprung": 0.37,
+     "verhaeltnis": 152
+    },
+    {
+     "zeit": 72.097,
+     "sprung": 0.463,
+     "verhaeltnis": 63
+    },
+    {
+     "zeit": 72.58,
+     "sprung": 0.26,
+     "verhaeltnis": 62
+    },
+    {
+     "zeit": 73.065,
+     "sprung": 0.437,
+     "verhaeltnis": 170
+    },
+    {
+     "zeit": 73.548,
+     "sprung": 0.398,
+     "verhaeltnis": 191
+    },
+    {
+     "zeit": 74.033,
+     "sprung": 0.334,
+     "verhaeltnis": 96
+    },
+    {
+     "zeit": 74.517,
+     "sprung": 0.302,
+     "verhaeltnis": 117
+    },
+    {
+     "zeit": 75.001,
+     "sprung": 0.425,
+     "verhaeltnis": 72
+    },
+    {
+     "zeit": 75.483,
+     "sprung": 0.358,
+     "verhaeltnis": 109
+    },
+    {
+     "zeit": 75.967,
+     "sprung": 0.345,
+     "verhaeltnis": 118
+    },
+    {
+     "zeit": 76.451,
+     "sprung": 0.271,
+     "verhaeltnis": 147
+    },
+    {
+     "zeit": 76.935,
+     "sprung": 0.357,
+     "verhaeltnis": 136
+    },
+    {
+     "zeit": 77.419,
+     "sprung": 0.332,
+     "verhaeltnis": 54
+    },
+    {
+     "zeit": 77.904,
+     "sprung": 0.39,
+     "verhaeltnis": 125
+    },
+    {
+     "zeit": 78.386,
+     "sprung": 0.262,
+     "verhaeltnis": 170
+    },
+    {
+     "zeit": 78.87,
+     "sprung": 0.269,
+     "verhaeltnis": 155
+    },
+    {
+     "zeit": 79.355,
+     "sprung": 0.386,
+     "verhaeltnis": 261
+    },
+    {
+     "zeit": 79.838,
+     "sprung": 0.338,
+     "verhaeltnis": 178
+    },
+    {
+     "zeit": 80.322,
+     "sprung": 0.296,
+     "verhaeltnis": 61
+    },
+    {
+     "zeit": 80.806,
+     "sprung": 0.327,
+     "verhaeltnis": 62
+    },
+    {
+     "zeit": 81.29,
+     "sprung": 0.382,
+     "verhaeltnis": 77
+    },
+    {
+     "zeit": 81.775,
+     "sprung": 0.441,
+     "verhaeltnis": 50
+    },
+    {
+     "zeit": 82.259,
+     "sprung": 0.27,
+     "verhaeltnis": 141
+    },
+    {
+     "zeit": 82.741,
+     "sprung": 0.357,
+     "verhaeltnis": 127
+    },
+    {
+     "zeit": 83.226,
+     "sprung": 0.369,
+     "verhaeltnis": 139
+    },
+    {
+     "zeit": 83.711,
+     "sprung": 0.349,
+     "verhaeltnis": 30
+    },
+    {
+     "zeit": 84.194,
+     "sprung": 0.256,
+     "verhaeltnis": 137
+    },
+    {
+     "zeit": 84.677,
+     "sprung": 0.282,
+     "verhaeltnis": 129
+    },
+    {
+     "zeit": 85.161,
+     "sprung": 0.361,
+     "verhaeltnis": 78
+    },
+    {
+     "zeit": 85.499,
+     "sprung": 0.225,
+     "verhaeltnis": 23
+    },
+    {
+     "zeit": 85.539,
+     "sprung": 0.215,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 85.646,
+     "sprung": 0.402,
+     "verhaeltnis": 43
+    },
+    {
+     "zeit": 85.812,
+     "sprung": 0.212,
+     "verhaeltnis": 25
+    },
+    {
+     "zeit": 85.844,
+     "sprung": 0.148,
+     "verhaeltnis": 21
+    },
+    {
+     "zeit": 85.867,
+     "sprung": 0.335,
+     "verhaeltnis": 32
+    },
+    {
+     "zeit": 86.04,
+     "sprung": 0.175,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 86.129,
+     "sprung": 0.313,
+     "verhaeltnis": 36
+    },
+    {
+     "zeit": 86.217,
+     "sprung": 0.114,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 86.238,
+     "sprung": 0.249,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 86.429,
+     "sprung": 0.236,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 86.612,
+     "sprung": 0.323,
+     "verhaeltnis": 29
+    },
+    {
+     "zeit": 86.909,
+     "sprung": 0.137,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 86.946,
+     "sprung": 0.094,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 87.097,
+     "sprung": 0.361,
+     "verhaeltnis": 38
+    },
+    {
+     "zeit": 87.155,
+     "sprung": 0.245,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 87.278,
+     "sprung": 0.651,
+     "verhaeltnis": 29
+    },
+    {
+     "zeit": 87.309,
+     "sprung": 0.174,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 87.48,
+     "sprung": 0.171,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 87.582,
+     "sprung": 0.352,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 88,
+     "sprung": 0.242,
+     "verhaeltnis": 40
+    },
+    {
+     "zeit": 88.065,
+     "sprung": 0.296,
+     "verhaeltnis": 37
+    },
+    {
+     "zeit": 88.448,
+     "sprung": 0.303,
+     "verhaeltnis": 32
+    },
+    {
+     "zeit": 88.481,
+     "sprung": 0.275,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 88.548,
+     "sprung": 0.449,
+     "verhaeltnis": 32
+    },
+    {
+     "zeit": 89.033,
+     "sprung": 0.351,
+     "verhaeltnis": 39
+    },
+    {
+     "zeit": 89.091,
+     "sprung": 0.316,
+     "verhaeltnis": 29
+    },
+    {
+     "zeit": 89.206,
+     "sprung": 0.424,
+     "verhaeltnis": 33
+    },
+    {
+     "zeit": 89.669,
+     "sprung": 0.281,
+     "verhaeltnis": 34
+    },
+    {
+     "zeit": 90.232,
+     "sprung": 0.26,
+     "verhaeltnis": 37
+    },
+    {
+     "zeit": 90.298,
+     "sprung": 0.213,
+     "verhaeltnis": 25
+    },
+    {
+     "zeit": 90.362,
+     "sprung": 0.239,
+     "verhaeltnis": 22
+    },
+    {
+     "zeit": 90.385,
+     "sprung": 0.21,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 90.755,
+     "sprung": 0.416,
+     "verhaeltnis": 24
+    },
+    {
+     "zeit": 90.886,
+     "sprung": 0.188,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 90.928,
+     "sprung": 0.131,
+     "verhaeltnis": 12
+    },
+    {
+     "zeit": 91.156,
+     "sprung": 0.258,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 91.248,
+     "sprung": 0.529,
+     "verhaeltnis": 37
+    },
+    {
+     "zeit": 91.329,
+     "sprung": 0.258,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 91.834,
+     "sprung": 0.718,
+     "verhaeltnis": 104
+    },
+    {
+     "zeit": 91.98,
+     "sprung": 0.359,
+     "verhaeltnis": 45
+    },
+    {
+     "zeit": 92.086,
+     "sprung": 0.155,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 92.252,
+     "sprung": 0.177,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 92.274,
+     "sprung": 0.169,
+     "verhaeltnis": 19
+    }
+   ],
+   "clipping": [],
+   "loecher": [],
+   "spuren": 10,
+   "takte": 48,
+   "dropouts": 37,
+   "stilleTakte": 166,
+   "abschnitte": "Intro → Aufbau → Gas geben → Sich verlieren → Wiederfinden → Stocken → Hauptteil → Outro",
+   "rechenzeit": 32
+  },
+  "goa": {
+   "dauer": 92.7,
+   "lufs": -14.2,
+   "tp": -1,
+   "lra": 7.6,
+   "unter120": 61.7,
+   "mitten": 36.9,
+   "ueber2k": 1.5,
+   "knackser": [
+    {
+     "zeit": 7.035,
+     "sprung": 0.096,
+     "verhaeltnis": 22
+    },
+    {
+     "zeit": 7.254,
+     "sprung": 0.08,
+     "verhaeltnis": 47
+    },
+    {
+     "zeit": 7.863,
+     "sprung": 0.127,
+     "verhaeltnis": 40
+    },
+    {
+     "zeit": 8.69,
+     "sprung": 0.104,
+     "verhaeltnis": 23
+    },
+    {
+     "zeit": 9.631,
+     "sprung": 0.08,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 10.345,
+     "sprung": 0.122,
+     "verhaeltnis": 51
+    },
+    {
+     "zeit": 14.897,
+     "sprung": 0.615,
+     "verhaeltnis": 86
+    },
+    {
+     "zeit": 16.552,
+     "sprung": 0.641,
+     "verhaeltnis": 107
+    },
+    {
+     "zeit": 18.207,
+     "sprung": 0.66,
+     "verhaeltnis": 120
+    },
+    {
+     "zeit": 18.621,
+     "sprung": 0.511,
+     "verhaeltnis": 164
+    },
+    {
+     "zeit": 19.034,
+     "sprung": 0.534,
+     "verhaeltnis": 23
+    },
+    {
+     "zeit": 22.471,
+     "sprung": 0.086,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 24.828,
+     "sprung": 0.634,
+     "verhaeltnis": 78
+    },
+    {
+     "zeit": 25.241,
+     "sprung": 0.499,
+     "verhaeltnis": 173
+    },
+    {
+     "zeit": 25.655,
+     "sprung": 0.503,
+     "verhaeltnis": 50
+    },
+    {
+     "zeit": 26.069,
+     "sprung": 0.506,
+     "verhaeltnis": 21
+    },
+    {
+     "zeit": 29.493,
+     "sprung": 0.085,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 29.793,
+     "sprung": 0.628,
+     "verhaeltnis": 124
+    },
+    {
+     "zeit": 31.448,
+     "sprung": 0.644,
+     "verhaeltnis": 99
+    },
+    {
+     "zeit": 31.862,
+     "sprung": 0.508,
+     "verhaeltnis": 158
+    },
+    {
+     "zeit": 32.276,
+     "sprung": 0.518,
+     "verhaeltnis": 39
+    },
+    {
+     "zeit": 32.69,
+     "sprung": 0.473,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 40.861,
+     "sprung": 0.083,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 40.886,
+     "sprung": 0.083,
+     "verhaeltnis": 12
+    },
+    {
+     "zeit": 40.908,
+     "sprung": 0.11,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 43.035,
+     "sprung": 0.589,
+     "verhaeltnis": 135
+    },
+    {
+     "zeit": 43.448,
+     "sprung": 0.494,
+     "verhaeltnis": 168
+    },
+    {
+     "zeit": 43.862,
+     "sprung": 0.499,
+     "verhaeltnis": 261
+    },
+    {
+     "zeit": 44.276,
+     "sprung": 0.506,
+     "verhaeltnis": 182
+    },
+    {
+     "zeit": 44.689,
+     "sprung": 0.556,
+     "verhaeltnis": 138
+    },
+    {
+     "zeit": 45.104,
+     "sprung": 0.487,
+     "verhaeltnis": 72
+    },
+    {
+     "zeit": 45.517,
+     "sprung": 0.533,
+     "verhaeltnis": 78
+    },
+    {
+     "zeit": 45.931,
+     "sprung": 0.472,
+     "verhaeltnis": 52
+    },
+    {
+     "zeit": 46.345,
+     "sprung": 0.614,
+     "verhaeltnis": 48
+    },
+    {
+     "zeit": 48,
+     "sprung": 0.715,
+     "verhaeltnis": 105
+    },
+    {
+     "zeit": 49.355,
+     "sprung": 0.082,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 51.311,
+     "sprung": 0.705,
+     "verhaeltnis": 88
+    },
+    {
+     "zeit": 54.321,
+     "sprung": 0.083,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 54.621,
+     "sprung": 0.618,
+     "verhaeltnis": 75
+    },
+    {
+     "zeit": 57.103,
+     "sprung": 0.625,
+     "verhaeltnis": 114
+    },
+    {
+     "zeit": 60.828,
+     "sprung": 0.607,
+     "verhaeltnis": 107
+    },
+    {
+     "zeit": 64.551,
+     "sprung": 0.609,
+     "verhaeltnis": 111
+    },
+    {
+     "zeit": 66.207,
+     "sprung": 0.631,
+     "verhaeltnis": 143
+    },
+    {
+     "zeit": 66.621,
+     "sprung": 0.527,
+     "verhaeltnis": 70
+    },
+    {
+     "zeit": 67.862,
+     "sprung": 0.578,
+     "verhaeltnis": 108
+    },
+    {
+     "zeit": 71.173,
+     "sprung": 0.655,
+     "verhaeltnis": 87
+    },
+    {
+     "zeit": 72.126,
+     "sprung": 0.162,
+     "verhaeltnis": 24
+    },
+    {
+     "zeit": 72.414,
+     "sprung": 0.558,
+     "verhaeltnis": 111
+    },
+    {
+     "zeit": 73.655,
+     "sprung": 0.511,
+     "verhaeltnis": 73
+    },
+    {
+     "zeit": 74.183,
+     "sprung": 0.081,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 76.965,
+     "sprung": 0.562,
+     "verhaeltnis": 105
+    },
+    {
+     "zeit": 77.793,
+     "sprung": 0.654,
+     "verhaeltnis": 78
+    },
+    {
+     "zeit": 79.148,
+     "sprung": 0.132,
+     "verhaeltnis": 12
+    },
+    {
+     "zeit": 81.103,
+     "sprung": 0.679,
+     "verhaeltnis": 91
+    },
+    {
+     "zeit": 81.931,
+     "sprung": 0.573,
+     "verhaeltnis": 91
+    },
+    {
+     "zeit": 82.758,
+     "sprung": 0.659,
+     "verhaeltnis": 120
+    },
+    {
+     "zeit": 83.172,
+     "sprung": 0.567,
+     "verhaeltnis": 106
+    },
+    {
+     "zeit": 84.114,
+     "sprung": 0.083,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 84.414,
+     "sprung": 0.748,
+     "verhaeltnis": 132
+    },
+    {
+     "zeit": 84.828,
+     "sprung": 0.598,
+     "verhaeltnis": 79
+    },
+    {
+     "zeit": 86.069,
+     "sprung": 0.632,
+     "verhaeltnis": 91
+    },
+    {
+     "zeit": 87.31,
+     "sprung": 0.613,
+     "verhaeltnis": 46
+    },
+    {
+     "zeit": 89.38,
+     "sprung": 0.725,
+     "verhaeltnis": 81
+    }
+   ],
+   "clipping": [],
+   "loecher": [],
+   "spuren": 10,
+   "takte": 56,
+   "dropouts": 31,
+   "stilleTakte": 120,
+   "abschnitte": "Intro → Aufbau → Gas geben → Sich verlieren → Wiederfinden → Stocken → Hauptteil → Outro",
+   "rechenzeit": 41
+  },
+  "house": {
+   "dauer": 92.9,
+   "lufs": -14,
+   "tp": -1,
+   "lra": 7.6,
+   "unter120": 49.2,
+   "mitten": 48.7,
+   "ueber2k": 2.1,
+   "knackser": [
+    {
+     "zeit": 15.484,
+     "sprung": 0.38,
+     "verhaeltnis": 25
+    },
+    {
+     "zeit": 17.42,
+     "sprung": 0.467,
+     "verhaeltnis": 26
+    },
+    {
+     "zeit": 19.356,
+     "sprung": 0.464,
+     "verhaeltnis": 46
+    },
+    {
+     "zeit": 20.324,
+     "sprung": 0.377,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 21.291,
+     "sprung": 0.46,
+     "verhaeltnis": 29
+    },
+    {
+     "zeit": 21.774,
+     "sprung": 0.337,
+     "verhaeltnis": 29
+    },
+    {
+     "zeit": 22.258,
+     "sprung": 0.422,
+     "verhaeltnis": 25
+    },
+    {
+     "zeit": 22.742,
+     "sprung": 0.384,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 23.226,
+     "sprung": 0.485,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 23.71,
+     "sprung": 0.426,
+     "verhaeltnis": 33
+    },
+    {
+     "zeit": 24.192,
+     "sprung": 0.366,
+     "verhaeltnis": 44
+    },
+    {
+     "zeit": 25.161,
+     "sprung": 0.469,
+     "verhaeltnis": 60
+    },
+    {
+     "zeit": 26.614,
+     "sprung": 0.389,
+     "verhaeltnis": 29
+    },
+    {
+     "zeit": 28.063,
+     "sprung": 0.353,
+     "verhaeltnis": 28
+    },
+    {
+     "zeit": 29.034,
+     "sprung": 0.462,
+     "verhaeltnis": 45
+    },
+    {
+     "zeit": 29.515,
+     "sprung": 0.403,
+     "verhaeltnis": 33
+    },
+    {
+     "zeit": 30,
+     "sprung": 0.343,
+     "verhaeltnis": 26
+    },
+    {
+     "zeit": 30.484,
+     "sprung": 0.353,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 30.967,
+     "sprung": 0.473,
+     "verhaeltnis": 20
+    },
+    {
+     "zeit": 34.819,
+     "sprung": 0.222,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 36.529,
+     "sprung": 0.186,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 36.568,
+     "sprung": 0.125,
+     "verhaeltnis": 12
+    },
+    {
+     "zeit": 37.325,
+     "sprung": 0.109,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 37.354,
+     "sprung": 0.124,
+     "verhaeltnis": 12
+    },
+    {
+     "zeit": 37.374,
+     "sprung": 0.166,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 37.395,
+     "sprung": 0.101,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 41.959,
+     "sprung": 0.124,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 42.266,
+     "sprung": 0.148,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 42.307,
+     "sprung": 0.101,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 42.581,
+     "sprung": 0.441,
+     "verhaeltnis": 45
+    },
+    {
+     "zeit": 43.066,
+     "sprung": 0.329,
+     "verhaeltnis": 48
+    },
+    {
+     "zeit": 43.548,
+     "sprung": 0.361,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 44.033,
+     "sprung": 0.343,
+     "verhaeltnis": 26
+    },
+    {
+     "zeit": 44.516,
+     "sprung": 0.483,
+     "verhaeltnis": 29
+    },
+    {
+     "zeit": 45,
+     "sprung": 0.334,
+     "verhaeltnis": 27
+    },
+    {
+     "zeit": 45.483,
+     "sprung": 0.329,
+     "verhaeltnis": 33
+    },
+    {
+     "zeit": 45.967,
+     "sprung": 0.327,
+     "verhaeltnis": 26
+    },
+    {
+     "zeit": 46.452,
+     "sprung": 0.396,
+     "verhaeltnis": 34
+    },
+    {
+     "zeit": 47.42,
+     "sprung": 0.388,
+     "verhaeltnis": 33
+    },
+    {
+     "zeit": 48.388,
+     "sprung": 0.494,
+     "verhaeltnis": 25
+    },
+    {
+     "zeit": 49.839,
+     "sprung": 0.429,
+     "verhaeltnis": 22
+    },
+    {
+     "zeit": 50.323,
+     "sprung": 0.466,
+     "verhaeltnis": 34
+    },
+    {
+     "zeit": 51.291,
+     "sprung": 0.36,
+     "verhaeltnis": 25
+    },
+    {
+     "zeit": 52.257,
+     "sprung": 0.436,
+     "verhaeltnis": 47
+    },
+    {
+     "zeit": 53.226,
+     "sprung": 0.374,
+     "verhaeltnis": 45
+    },
+    {
+     "zeit": 53.709,
+     "sprung": 0.439,
+     "verhaeltnis": 34
+    },
+    {
+     "zeit": 54.194,
+     "sprung": 0.468,
+     "verhaeltnis": 52
+    },
+    {
+     "zeit": 55.163,
+     "sprung": 0.341,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 56.129,
+     "sprung": 0.465,
+     "verhaeltnis": 34
+    },
+    {
+     "zeit": 56.614,
+     "sprung": 0.354,
+     "verhaeltnis": 28
+    },
+    {
+     "zeit": 58.064,
+     "sprung": 0.436,
+     "verhaeltnis": 45
+    },
+    {
+     "zeit": 58.55,
+     "sprung": 0.377,
+     "verhaeltnis": 22
+    },
+    {
+     "zeit": 60.001,
+     "sprung": 0.437,
+     "verhaeltnis": 47
+    },
+    {
+     "zeit": 60.483,
+     "sprung": 0.379,
+     "verhaeltnis": 39
+    },
+    {
+     "zeit": 60.968,
+     "sprung": 0.396,
+     "verhaeltnis": 35
+    },
+    {
+     "zeit": 61.452,
+     "sprung": 0.478,
+     "verhaeltnis": 42
+    },
+    {
+     "zeit": 61.935,
+     "sprung": 0.471,
+     "verhaeltnis": 38
+    },
+    {
+     "zeit": 63.386,
+     "sprung": 0.42,
+     "verhaeltnis": 36
+    },
+    {
+     "zeit": 63.872,
+     "sprung": 0.437,
+     "verhaeltnis": 48
+    },
+    {
+     "zeit": 64.355,
+     "sprung": 0.414,
+     "verhaeltnis": 25
+    },
+    {
+     "zeit": 64.839,
+     "sprung": 0.359,
+     "verhaeltnis": 37
+    },
+    {
+     "zeit": 65.322,
+     "sprung": 0.389,
+     "verhaeltnis": 47
+    },
+    {
+     "zeit": 66.29,
+     "sprung": 0.438,
+     "verhaeltnis": 32
+    },
+    {
+     "zeit": 66.774,
+     "sprung": 0.401,
+     "verhaeltnis": 29
+    },
+    {
+     "zeit": 67.257,
+     "sprung": 0.36,
+     "verhaeltnis": 29
+    },
+    {
+     "zeit": 67.743,
+     "sprung": 0.271,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 68.71,
+     "sprung": 0.345,
+     "verhaeltnis": 30
+    },
+    {
+     "zeit": 69.677,
+     "sprung": 0.541,
+     "verhaeltnis": 63
+    },
+    {
+     "zeit": 70.644,
+     "sprung": 0.358,
+     "verhaeltnis": 43
+    },
+    {
+     "zeit": 71.614,
+     "sprung": 0.539,
+     "verhaeltnis": 42
+    },
+    {
+     "zeit": 72.58,
+     "sprung": 0.338,
+     "verhaeltnis": 30
+    },
+    {
+     "zeit": 73.065,
+     "sprung": 0.447,
+     "verhaeltnis": 41
+    },
+    {
+     "zeit": 73.548,
+     "sprung": 0.522,
+     "verhaeltnis": 25
+    },
+    {
+     "zeit": 75.482,
+     "sprung": 0.437,
+     "verhaeltnis": 43
+    },
+    {
+     "zeit": 77.418,
+     "sprung": 0.443,
+     "verhaeltnis": 44
+    },
+    {
+     "zeit": 80.322,
+     "sprung": 0.357,
+     "verhaeltnis": 23
+    },
+    {
+     "zeit": 81.29,
+     "sprung": 0.48,
+     "verhaeltnis": 45
+    },
+    {
+     "zeit": 83.227,
+     "sprung": 0.436,
+     "verhaeltnis": 28
+    },
+    {
+     "zeit": 85.161,
+     "sprung": 0.482,
+     "verhaeltnis": 28
+    },
+    {
+     "zeit": 86.129,
+     "sprung": 0.379,
+     "verhaeltnis": 20
+    },
+    {
+     "zeit": 87.096,
+     "sprung": 0.44,
+     "verhaeltnis": 43
+    },
+    {
+     "zeit": 87.582,
+     "sprung": 0.356,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 89.033,
+     "sprung": 0.425,
+     "verhaeltnis": 49
+    }
+   ],
+   "clipping": [],
+   "loecher": [],
+   "spuren": 10,
+   "takte": 48,
+   "dropouts": 38,
+   "stilleTakte": 140,
+   "abschnitte": "Intro → Aufbau → Gas geben → Sich verlieren → Wiederfinden → Stocken → Hauptteil → Outro",
+   "rechenzeit": 33
+  },
+  "indien": {
+   "dauer": 93.9,
+   "lufs": -14.1,
+   "tp": -1,
+   "lra": 2.9,
+   "unter120": 73,
+   "mitten": 26,
+   "ueber2k": 1.1,
+   "knackser": [
+    {
+     "zeit": 4.817,
+     "sprung": 0.229,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 18.261,
+     "sprung": 0.126,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 47.879,
+     "sprung": 0.224,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 48.04,
+     "sprung": 0.205,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 48.637,
+     "sprung": 0.359,
+     "verhaeltnis": 12
+    },
+    {
+     "zeit": 48.673,
+     "sprung": 0.496,
+     "verhaeltnis": 16
+    }
+   ],
+   "clipping": [],
+   "loecher": [],
+   "spuren": 8,
+   "takte": 36,
+   "dropouts": 24,
+   "stilleTakte": 88,
+   "abschnitte": "Intro → Aufbau → Gas geben → Sich verlieren → Wiederfinden → Stocken → Hauptteil → Outro",
+   "rechenzeit": 55
+  },
+  "orient": {
+   "dauer": 86.4,
+   "lufs": -14.3,
+   "tp": -1,
+   "lra": 3.8,
+   "unter120": 43.4,
+   "mitten": 55,
+   "ueber2k": 1.6,
+   "knackser": [
+    {
+     "zeit": 0.017,
+     "sprung": 0.201,
+     "verhaeltnis": 22
+    },
+    {
+     "zeit": 0.06,
+     "sprung": 0.216,
+     "verhaeltnis": 23
+    },
+    {
+     "zeit": 0.458,
+     "sprung": 0.11,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 0.543,
+     "sprung": 0.224,
+     "verhaeltnis": 26
+    },
+    {
+     "zeit": 0.579,
+     "sprung": 0.366,
+     "verhaeltnis": 28
+    },
+    {
+     "zeit": 0.791,
+     "sprung": 0.146,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 0.856,
+     "sprung": 0.216,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 1.006,
+     "sprung": 0.206,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 1.175,
+     "sprung": 0.146,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 1.295,
+     "sprung": 0.119,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 1.347,
+     "sprung": 0.121,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 1.411,
+     "sprung": 0.179,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 1.435,
+     "sprung": 0.201,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 1.474,
+     "sprung": 0.195,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 1.647,
+     "sprung": 0.297,
+     "verhaeltnis": 26
+    },
+    {
+     "zeit": 1.671,
+     "sprung": 0.175,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 1.696,
+     "sprung": 0.224,
+     "verhaeltnis": 22
+    },
+    {
+     "zeit": 1.79,
+     "sprung": 0.259,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 1.845,
+     "sprung": 0.324,
+     "verhaeltnis": 25
+    },
+    {
+     "zeit": 1.954,
+     "sprung": 0.162,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 1.977,
+     "sprung": 0.151,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 2.066,
+     "sprung": 0.216,
+     "verhaeltnis": 12
+    },
+    {
+     "zeit": 2.167,
+     "sprung": 0.163,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 2.23,
+     "sprung": 0.238,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 2.336,
+     "sprung": 0.189,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 2.388,
+     "sprung": 0.231,
+     "verhaeltnis": 25
+    },
+    {
+     "zeit": 2.41,
+     "sprung": 0.205,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 2.455,
+     "sprung": 0.187,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 2.48,
+     "sprung": 0.229,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 2.567,
+     "sprung": 0.172,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 2.669,
+     "sprung": 0.215,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 2.697,
+     "sprung": 0.168,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 2.755,
+     "sprung": 0.263,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 2.814,
+     "sprung": 0.165,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 2.84,
+     "sprung": 0.298,
+     "verhaeltnis": 28
+    },
+    {
+     "zeit": 2.891,
+     "sprung": 0.322,
+     "verhaeltnis": 27
+    },
+    {
+     "zeit": 2.929,
+     "sprung": 0.205,
+     "verhaeltnis": 20
+    },
+    {
+     "zeit": 2.956,
+     "sprung": 0.17,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 2.98,
+     "sprung": 0.254,
+     "verhaeltnis": 22
+    },
+    {
+     "zeit": 3.002,
+     "sprung": 0.16,
+     "verhaeltnis": 12
+    },
+    {
+     "zeit": 3.026,
+     "sprung": 0.243,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 3.047,
+     "sprung": 0.432,
+     "verhaeltnis": 35
+    },
+    {
+     "zeit": 3.067,
+     "sprung": 0.187,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 3.346,
+     "sprung": 0.165,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 3.439,
+     "sprung": 0.182,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 3.572,
+     "sprung": 0.244,
+     "verhaeltnis": 23
+    },
+    {
+     "zeit": 3.593,
+     "sprung": 0.231,
+     "verhaeltnis": 24
+    },
+    {
+     "zeit": 3.614,
+     "sprung": 0.225,
+     "verhaeltnis": 24
+    },
+    {
+     "zeit": 3.674,
+     "sprung": 0.156,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 3.72,
+     "sprung": 0.16,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 3.758,
+     "sprung": 0.289,
+     "verhaeltnis": 20
+    },
+    {
+     "zeit": 3.778,
+     "sprung": 0.283,
+     "verhaeltnis": 22
+    },
+    {
+     "zeit": 3.83,
+     "sprung": 0.459,
+     "verhaeltnis": 20
+    },
+    {
+     "zeit": 3.862,
+     "sprung": 0.234,
+     "verhaeltnis": 25
+    },
+    {
+     "zeit": 3.973,
+     "sprung": 0.3,
+     "verhaeltnis": 30
+    },
+    {
+     "zeit": 4.005,
+     "sprung": 0.152,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 4.081,
+     "sprung": 0.152,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 4.141,
+     "sprung": 0.173,
+     "verhaeltnis": 21
+    },
+    {
+     "zeit": 4.167,
+     "sprung": 0.14,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 4.206,
+     "sprung": 0.3,
+     "verhaeltnis": 27
+    },
+    {
+     "zeit": 4.232,
+     "sprung": 0.13,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 4.327,
+     "sprung": 0.145,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 4.347,
+     "sprung": 0.107,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 4.397,
+     "sprung": 0.336,
+     "verhaeltnis": 30
+    },
+    {
+     "zeit": 4.491,
+     "sprung": 0.179,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 4.514,
+     "sprung": 0.152,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 4.556,
+     "sprung": 0.166,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 4.594,
+     "sprung": 0.255,
+     "verhaeltnis": 23
+    },
+    {
+     "zeit": 4.668,
+     "sprung": 0.352,
+     "verhaeltnis": 34
+    },
+    {
+     "zeit": 4.799,
+     "sprung": 0.165,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 4.82,
+     "sprung": 0.127,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 4.844,
+     "sprung": 0.158,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 4.886,
+     "sprung": 0.188,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 4.91,
+     "sprung": 0.295,
+     "verhaeltnis": 25
+    },
+    {
+     "zeit": 4.933,
+     "sprung": 0.239,
+     "verhaeltnis": 23
+    },
+    {
+     "zeit": 4.979,
+     "sprung": 0.414,
+     "verhaeltnis": 37
+    },
+    {
+     "zeit": 5.091,
+     "sprung": 0.121,
+     "verhaeltnis": 12
+    },
+    {
+     "zeit": 5.132,
+     "sprung": 0.232,
+     "verhaeltnis": 22
+    },
+    {
+     "zeit": 5.19,
+     "sprung": 0.396,
+     "verhaeltnis": 26
+    },
+    {
+     "zeit": 5.301,
+     "sprung": 0.117,
+     "verhaeltnis": 12
+    },
+    {
+     "zeit": 5.324,
+     "sprung": 0.188,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 5.388,
+     "sprung": 0.108,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 5.468,
+     "sprung": 0.168,
+     "verhaeltnis": 20
+    },
+    {
+     "zeit": 5.795,
+     "sprung": 0.173,
+     "verhaeltnis": 22
+    },
+    {
+     "zeit": 5.832,
+     "sprung": 0.17,
+     "verhaeltnis": 20
+    },
+    {
+     "zeit": 5.854,
+     "sprung": 0.15,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 5.884,
+     "sprung": 0.166,
+     "verhaeltnis": 20
+    },
+    {
+     "zeit": 6.006,
+     "sprung": 0.13,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 6.028,
+     "sprung": 0.241,
+     "verhaeltnis": 34
+    },
+    {
+     "zeit": 6.058,
+     "sprung": 0.105,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 6.353,
+     "sprung": 0.119,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 6.704,
+     "sprung": 0.265,
+     "verhaeltnis": 38
+    },
+    {
+     "zeit": 6.752,
+     "sprung": 0.11,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 6.807,
+     "sprung": 0.126,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 6.852,
+     "sprung": 0.147,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 6.895,
+     "sprung": 0.168,
+     "verhaeltnis": 21
+    },
+    {
+     "zeit": 6.919,
+     "sprung": 0.135,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 7.051,
+     "sprung": 0.103,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 7.106,
+     "sprung": 0.103,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 7.202,
+     "sprung": 0.15,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 7.328,
+     "sprung": 0.153,
+     "verhaeltnis": 25
+    },
+    {
+     "zeit": 7.472,
+     "sprung": 0.225,
+     "verhaeltnis": 32
+    },
+    {
+     "zeit": 7.493,
+     "sprung": 0.088,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 7.52,
+     "sprung": 0.095,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 7.644,
+     "sprung": 0.209,
+     "verhaeltnis": 28
+    },
+    {
+     "zeit": 7.676,
+     "sprung": 0.222,
+     "verhaeltnis": 34
+    },
+    {
+     "zeit": 7.729,
+     "sprung": 0.23,
+     "verhaeltnis": 27
+    },
+    {
+     "zeit": 7.782,
+     "sprung": 0.204,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 7.882,
+     "sprung": 0.113,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 7.924,
+     "sprung": 0.203,
+     "verhaeltnis": 28
+    },
+    {
+     "zeit": 8.297,
+     "sprung": 0.137,
+     "verhaeltnis": 20
+    },
+    {
+     "zeit": 8.325,
+     "sprung": 0.124,
+     "verhaeltnis": 22
+    },
+    {
+     "zeit": 8.346,
+     "sprung": 0.257,
+     "verhaeltnis": 45
+    },
+    {
+     "zeit": 8.394,
+     "sprung": 0.187,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 8.615,
+     "sprung": 0.104,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 8.636,
+     "sprung": 0.267,
+     "verhaeltnis": 30
+    },
+    {
+     "zeit": 8.851,
+     "sprung": 0.354,
+     "verhaeltnis": 50
+    },
+    {
+     "zeit": 8.973,
+     "sprung": 0.158,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 8.999,
+     "sprung": 0.246,
+     "verhaeltnis": 26
+    },
+    {
+     "zeit": 9.088,
+     "sprung": 0.122,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 9.173,
+     "sprung": 0.186,
+     "verhaeltnis": 23
+    },
+    {
+     "zeit": 9.226,
+     "sprung": 0.125,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 9.414,
+     "sprung": 0.143,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 9.573,
+     "sprung": 0.164,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 9.599,
+     "sprung": 0.302,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 16.8,
+     "sprung": 0.543,
+     "verhaeltnis": 42
+    },
+    {
+     "zeit": 19.2,
+     "sprung": 0.418,
+     "verhaeltnis": 27
+    },
+    {
+     "zeit": 38.441,
+     "sprung": 0.165,
+     "verhaeltnis": 12
+    },
+    {
+     "zeit": 38.464,
+     "sprung": 0.148,
+     "verhaeltnis": 12
+    },
+    {
+     "zeit": 38.486,
+     "sprung": 0.327,
+     "verhaeltnis": 33
+    },
+    {
+     "zeit": 38.694,
+     "sprung": 0.276,
+     "verhaeltnis": 23
+    },
+    {
+     "zeit": 38.819,
+     "sprung": 0.191,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 39.176,
+     "sprung": 0.137,
+     "verhaeltnis": 12
+    },
+    {
+     "zeit": 39.213,
+     "sprung": 0.249,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 39.66,
+     "sprung": 0.239,
+     "verhaeltnis": 22
+    },
+    {
+     "zeit": 39.888,
+     "sprung": 0.646,
+     "verhaeltnis": 65
+    },
+    {
+     "zeit": 40.061,
+     "sprung": 0.206,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 40.112,
+     "sprung": 0.219,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 40.147,
+     "sprung": 0.373,
+     "verhaeltnis": 25
+    },
+    {
+     "zeit": 40.231,
+     "sprung": 0.223,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 40.32,
+     "sprung": 0.308,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 40.345,
+     "sprung": 0.322,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 40.509,
+     "sprung": 0.233,
+     "verhaeltnis": 12
+    },
+    {
+     "zeit": 40.538,
+     "sprung": 0.34,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 40.601,
+     "sprung": 0.262,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 40.658,
+     "sprung": 0.214,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 40.71,
+     "sprung": 0.425,
+     "verhaeltnis": 25
+    },
+    {
+     "zeit": 40.794,
+     "sprung": 0.348,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 40.86,
+     "sprung": 0.18,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 40.93,
+     "sprung": 0.296,
+     "verhaeltnis": 23
+    },
+    {
+     "zeit": 40.951,
+     "sprung": 0.154,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 40.984,
+     "sprung": 0.243,
+     "verhaeltnis": 24
+    },
+    {
+     "zeit": 41.029,
+     "sprung": 0.191,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 41.061,
+     "sprung": 0.191,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 41.103,
+     "sprung": 0.178,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 41.134,
+     "sprung": 0.16,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 41.163,
+     "sprung": 0.238,
+     "verhaeltnis": 21
+    },
+    {
+     "zeit": 41.333,
+     "sprung": 0.252,
+     "verhaeltnis": 22
+    },
+    {
+     "zeit": 41.6,
+     "sprung": 0.103,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 41.768,
+     "sprung": 0.242,
+     "verhaeltnis": 20
+    },
+    {
+     "zeit": 41.918,
+     "sprung": 0.208,
+     "verhaeltnis": 22
+    },
+    {
+     "zeit": 42.057,
+     "sprung": 0.131,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 42.152,
+     "sprung": 0.252,
+     "verhaeltnis": 28
+    },
+    {
+     "zeit": 42.178,
+     "sprung": 0.207,
+     "verhaeltnis": 28
+    },
+    {
+     "zeit": 42.259,
+     "sprung": 0.157,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 42.409,
+     "sprung": 0.09,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 42.474,
+     "sprung": 0.204,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 42.507,
+     "sprung": 0.425,
+     "verhaeltnis": 45
+    },
+    {
+     "zeit": 42.527,
+     "sprung": 0.233,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 42.606,
+     "sprung": 0.504,
+     "verhaeltnis": 56
+    },
+    {
+     "zeit": 42.711,
+     "sprung": 0.163,
+     "verhaeltnis": 22
+    },
+    {
+     "zeit": 43.066,
+     "sprung": 0.118,
+     "verhaeltnis": 21
+    },
+    {
+     "zeit": 43.289,
+     "sprung": 0.198,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 43.457,
+     "sprung": 0.202,
+     "verhaeltnis": 25
+    },
+    {
+     "zeit": 43.761,
+     "sprung": 0.099,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 43.783,
+     "sprung": 0.304,
+     "verhaeltnis": 44
+    },
+    {
+     "zeit": 43.868,
+     "sprung": 0.251,
+     "verhaeltnis": 42
+    },
+    {
+     "zeit": 43.894,
+     "sprung": 0.23,
+     "verhaeltnis": 27
+    },
+    {
+     "zeit": 44.053,
+     "sprung": 0.101,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 44.078,
+     "sprung": 0.158,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 44.105,
+     "sprung": 0.169,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 44.13,
+     "sprung": 0.135,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 44.151,
+     "sprung": 0.145,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 44.305,
+     "sprung": 0.165,
+     "verhaeltnis": 23
+    },
+    {
+     "zeit": 44.334,
+     "sprung": 0.159,
+     "verhaeltnis": 24
+    },
+    {
+     "zeit": 44.355,
+     "sprung": 0.091,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 44.388,
+     "sprung": 0.274,
+     "verhaeltnis": 39
+    },
+    {
+     "zeit": 44.446,
+     "sprung": 0.197,
+     "verhaeltnis": 20
+    },
+    {
+     "zeit": 44.56,
+     "sprung": 0.294,
+     "verhaeltnis": 41
+    },
+    {
+     "zeit": 44.728,
+     "sprung": 0.153,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 44.838,
+     "sprung": 0.114,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 44.865,
+     "sprung": 0.178,
+     "verhaeltnis": 28
+    },
+    {
+     "zeit": 44.895,
+     "sprung": 0.106,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 44.922,
+     "sprung": 0.261,
+     "verhaeltnis": 44
+    },
+    {
+     "zeit": 44.967,
+     "sprung": 0.159,
+     "verhaeltnis": 23
+    },
+    {
+     "zeit": 45.001,
+     "sprung": 0.392,
+     "verhaeltnis": 49
+    },
+    {
+     "zeit": 45.056,
+     "sprung": 0.156,
+     "verhaeltnis": 12
+    },
+    {
+     "zeit": 45.077,
+     "sprung": 0.354,
+     "verhaeltnis": 35
+    },
+    {
+     "zeit": 45.144,
+     "sprung": 0.101,
+     "verhaeltnis": 12
+    },
+    {
+     "zeit": 45.17,
+     "sprung": 0.145,
+     "verhaeltnis": 20
+    },
+    {
+     "zeit": 45.253,
+     "sprung": 0.143,
+     "verhaeltnis": 23
+    },
+    {
+     "zeit": 45.46,
+     "sprung": 0.239,
+     "verhaeltnis": 46
+    },
+    {
+     "zeit": 45.656,
+     "sprung": 0.143,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 45.761,
+     "sprung": 0.266,
+     "verhaeltnis": 50
+    },
+    {
+     "zeit": 45.929,
+     "sprung": 0.238,
+     "verhaeltnis": 47
+    },
+    {
+     "zeit": 45.956,
+     "sprung": 0.144,
+     "verhaeltnis": 20
+    },
+    {
+     "zeit": 45.982,
+     "sprung": 0.186,
+     "verhaeltnis": 30
+    },
+    {
+     "zeit": 46.019,
+     "sprung": 0.089,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 46.057,
+     "sprung": 0.12,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 46.184,
+     "sprung": 0.114,
+     "verhaeltnis": 21
+    },
+    {
+     "zeit": 46.213,
+     "sprung": 0.114,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 46.324,
+     "sprung": 0.131,
+     "verhaeltnis": 21
+    },
+    {
+     "zeit": 46.399,
+     "sprung": 0.118,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 46.441,
+     "sprung": 0.325,
+     "verhaeltnis": 41
+    },
+    {
+     "zeit": 46.5,
+     "sprung": 0.116,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 46.535,
+     "sprung": 0.19,
+     "verhaeltnis": 31
+    },
+    {
+     "zeit": 46.556,
+     "sprung": 0.398,
+     "verhaeltnis": 42
+    },
+    {
+     "zeit": 46.641,
+     "sprung": 0.091,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 46.709,
+     "sprung": 0.2,
+     "verhaeltnis": 31
+    },
+    {
+     "zeit": 46.746,
+     "sprung": 0.086,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 46.783,
+     "sprung": 0.244,
+     "verhaeltnis": 37
+    },
+    {
+     "zeit": 46.813,
+     "sprung": 0.149,
+     "verhaeltnis": 20
+    },
+    {
+     "zeit": 46.905,
+     "sprung": 0.203,
+     "verhaeltnis": 36
+    },
+    {
+     "zeit": 46.935,
+     "sprung": 0.186,
+     "verhaeltnis": 33
+    },
+    {
+     "zeit": 47.032,
+     "sprung": 0.104,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 47.088,
+     "sprung": 0.181,
+     "verhaeltnis": 34
+    },
+    {
+     "zeit": 47.121,
+     "sprung": 0.168,
+     "verhaeltnis": 31
+    },
+    {
+     "zeit": 47.302,
+     "sprung": 0.272,
+     "verhaeltnis": 39
+    },
+    {
+     "zeit": 47.325,
+     "sprung": 0.131,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 47.376,
+     "sprung": 0.133,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 47.572,
+     "sprung": 0.081,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 47.601,
+     "sprung": 0.122,
+     "verhaeltnis": 21
+    },
+    {
+     "zeit": 47.632,
+     "sprung": 0.215,
+     "verhaeltnis": 21
+    },
+    {
+     "zeit": 47.663,
+     "sprung": 0.216,
+     "verhaeltnis": 25
+    },
+    {
+     "zeit": 47.69,
+     "sprung": 0.204,
+     "verhaeltnis": 21
+    },
+    {
+     "zeit": 47.811,
+     "sprung": 0.188,
+     "verhaeltnis": 33
+    },
+    {
+     "zeit": 47.848,
+     "sprung": 0.087,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 47.869,
+     "sprung": 0.192,
+     "verhaeltnis": 22
+    },
+    {
+     "zeit": 54.158,
+     "sprung": 0.193,
+     "verhaeltnis": 24
+    },
+    {
+     "zeit": 72.085,
+     "sprung": 0.114,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 72.113,
+     "sprung": 0.095,
+     "verhaeltnis": 21
+    },
+    {
+     "zeit": 72.141,
+     "sprung": 0.109,
+     "verhaeltnis": 21
+    },
+    {
+     "zeit": 75.758,
+     "sprung": 0.135,
+     "verhaeltnis": 33
+    },
+    {
+     "zeit": 76.813,
+     "sprung": 0.216,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 76.835,
+     "sprung": 0.259,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 77.001,
+     "sprung": 0.098,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 77.022,
+     "sprung": 0.081,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 77.147,
+     "sprung": 0.219,
+     "verhaeltnis": 27
+    },
+    {
+     "zeit": 77.17,
+     "sprung": 0.109,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 77.224,
+     "sprung": 0.122,
+     "verhaeltnis": 12
+    },
+    {
+     "zeit": 77.247,
+     "sprung": 0.164,
+     "verhaeltnis": 26
+    },
+    {
+     "zeit": 77.32,
+     "sprung": 0.207,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 77.357,
+     "sprung": 0.106,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 77.387,
+     "sprung": 0.175,
+     "verhaeltnis": 23
+    },
+    {
+     "zeit": 77.538,
+     "sprung": 0.101,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 77.707,
+     "sprung": 0.612,
+     "verhaeltnis": 27
+    },
+    {
+     "zeit": 77.743,
+     "sprung": 0.083,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 77.856,
+     "sprung": 0.121,
+     "verhaeltnis": 22
+    },
+    {
+     "zeit": 77.908,
+     "sprung": 0.134,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 78.137,
+     "sprung": 0.147,
+     "verhaeltnis": 34
+    },
+    {
+     "zeit": 78.161,
+     "sprung": 0.08,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 78.251,
+     "sprung": 0.234,
+     "verhaeltnis": 57
+    },
+    {
+     "zeit": 78.277,
+     "sprung": 0.144,
+     "verhaeltnis": 29
+    },
+    {
+     "zeit": 78.447,
+     "sprung": 0.083,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 78.482,
+     "sprung": 0.107,
+     "verhaeltnis": 20
+    },
+    {
+     "zeit": 78.505,
+     "sprung": 0.143,
+     "verhaeltnis": 22
+    },
+    {
+     "zeit": 78.632,
+     "sprung": 0.241,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 78.664,
+     "sprung": 0.248,
+     "verhaeltnis": 38
+    },
+    {
+     "zeit": 78.69,
+     "sprung": 0.108,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 78.783,
+     "sprung": 0.099,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 78.869,
+     "sprung": 0.082,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 78.898,
+     "sprung": 0.657,
+     "verhaeltnis": 49
+    },
+    {
+     "zeit": 79.106,
+     "sprung": 0.146,
+     "verhaeltnis": 36
+    },
+    {
+     "zeit": 79.129,
+     "sprung": 0.215,
+     "verhaeltnis": 57
+    },
+    {
+     "zeit": 79.162,
+     "sprung": 0.123,
+     "verhaeltnis": 24
+    },
+    {
+     "zeit": 79.438,
+     "sprung": 0.17,
+     "verhaeltnis": 32
+    },
+    {
+     "zeit": 79.477,
+     "sprung": 0.135,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 79.586,
+     "sprung": 0.224,
+     "verhaeltnis": 50
+    },
+    {
+     "zeit": 79.623,
+     "sprung": 0.082,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 79.675,
+     "sprung": 0.126,
+     "verhaeltnis": 21
+    },
+    {
+     "zeit": 79.701,
+     "sprung": 0.21,
+     "verhaeltnis": 34
+    },
+    {
+     "zeit": 79.733,
+     "sprung": 0.522,
+     "verhaeltnis": 76
+    },
+    {
+     "zeit": 79.929,
+     "sprung": 0.103,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 79.985,
+     "sprung": 0.087,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 80.035,
+     "sprung": 0.095,
+     "verhaeltnis": 21
+    },
+    {
+     "zeit": 80.104,
+     "sprung": 0.352,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 80.127,
+     "sprung": 0.137,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 80.153,
+     "sprung": 0.117,
+     "verhaeltnis": 23
+    },
+    {
+     "zeit": 80.225,
+     "sprung": 0.166,
+     "verhaeltnis": 33
+    },
+    {
+     "zeit": 80.249,
+     "sprung": 0.235,
+     "verhaeltnis": 45
+    },
+    {
+     "zeit": 80.325,
+     "sprung": 0.13,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 80.523,
+     "sprung": 0.127,
+     "verhaeltnis": 23
+    },
+    {
+     "zeit": 80.576,
+     "sprung": 0.198,
+     "verhaeltnis": 40
+    },
+    {
+     "zeit": 80.61,
+     "sprung": 0.177,
+     "verhaeltnis": 31
+    },
+    {
+     "zeit": 80.634,
+     "sprung": 0.165,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 80.818,
+     "sprung": 0.089,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 80.887,
+     "sprung": 0.244,
+     "verhaeltnis": 42
+    },
+    {
+     "zeit": 80.938,
+     "sprung": 0.089,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 81.222,
+     "sprung": 0.093,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 81.274,
+     "sprung": 0.254,
+     "verhaeltnis": 61
+    },
+    {
+     "zeit": 81.3,
+     "sprung": 0.365,
+     "verhaeltnis": 38
+    },
+    {
+     "zeit": 81.327,
+     "sprung": 0.108,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 81.359,
+     "sprung": 0.201,
+     "verhaeltnis": 12
+    },
+    {
+     "zeit": 81.47,
+     "sprung": 0.094,
+     "verhaeltnis": 12
+    },
+    {
+     "zeit": 81.518,
+     "sprung": 0.206,
+     "verhaeltnis": 34
+    },
+    {
+     "zeit": 81.646,
+     "sprung": 0.18,
+     "verhaeltnis": 12
+    },
+    {
+     "zeit": 81.739,
+     "sprung": 0.122,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 81.761,
+     "sprung": 0.126,
+     "verhaeltnis": 20
+    },
+    {
+     "zeit": 81.881,
+     "sprung": 0.371,
+     "verhaeltnis": 54
+    },
+    {
+     "zeit": 81.907,
+     "sprung": 0.118,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 81.964,
+     "sprung": 0.23,
+     "verhaeltnis": 27
+    },
+    {
+     "zeit": 81.985,
+     "sprung": 0.108,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 82.046,
+     "sprung": 0.102,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 82.069,
+     "sprung": 0.114,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 82.189,
+     "sprung": 0.176,
+     "verhaeltnis": 28
+    },
+    {
+     "zeit": 82.306,
+     "sprung": 0.134,
+     "verhaeltnis": 21
+    },
+    {
+     "zeit": 82.471,
+     "sprung": 0.11,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 82.51,
+     "sprung": 0.209,
+     "verhaeltnis": 16
+    },
+    {
+     "zeit": 82.534,
+     "sprung": 0.137,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 82.576,
+     "sprung": 0.137,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 82.832,
+     "sprung": 0.144,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 82.862,
+     "sprung": 0.162,
+     "verhaeltnis": 27
+    },
+    {
+     "zeit": 82.912,
+     "sprung": 0.107,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 82.994,
+     "sprung": 0.206,
+     "verhaeltnis": 24
+    },
+    {
+     "zeit": 83.053,
+     "sprung": 0.191,
+     "verhaeltnis": 26
+    },
+    {
+     "zeit": 83.075,
+     "sprung": 0.136,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 83.101,
+     "sprung": 0.22,
+     "verhaeltnis": 26
+    },
+    {
+     "zeit": 83.127,
+     "sprung": 0.199,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 83.205,
+     "sprung": 0.131,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 83.36,
+     "sprung": 0.212,
+     "verhaeltnis": 29
+    },
+    {
+     "zeit": 83.462,
+     "sprung": 0.177,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 83.486,
+     "sprung": 0.135,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 83.715,
+     "sprung": 0.119,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 83.746,
+     "sprung": 0.152,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 83.936,
+     "sprung": 0.16,
+     "verhaeltnis": 18
+    },
+    {
+     "zeit": 83.961,
+     "sprung": 0.126,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 84.017,
+     "sprung": 0.321,
+     "verhaeltnis": 23
+    },
+    {
+     "zeit": 84.039,
+     "sprung": 0.254,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 84.115,
+     "sprung": 0.219,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 84.169,
+     "sprung": 0.165,
+     "verhaeltnis": 12
+    },
+    {
+     "zeit": 84.244,
+     "sprung": 0.212,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 84.43,
+     "sprung": 0.243,
+     "verhaeltnis": 22
+    },
+    {
+     "zeit": 84.457,
+     "sprung": 0.684,
+     "verhaeltnis": 69
+    },
+    {
+     "zeit": 84.507,
+     "sprung": 0.183,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 84.625,
+     "sprung": 0.175,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 84.755,
+     "sprung": 0.174,
+     "verhaeltnis": 26
+    },
+    {
+     "zeit": 84.778,
+     "sprung": 0.187,
+     "verhaeltnis": 21
+    },
+    {
+     "zeit": 84.816,
+     "sprung": 0.173,
+     "verhaeltnis": 15
+    },
+    {
+     "zeit": 84.979,
+     "sprung": 0.249,
+     "verhaeltnis": 25
+    },
+    {
+     "zeit": 85.134,
+     "sprung": 0.157,
+     "verhaeltnis": 21
+    },
+    {
+     "zeit": 85.221,
+     "sprung": 0.288,
+     "verhaeltnis": 20
+    },
+    {
+     "zeit": 85.246,
+     "sprung": 0.256,
+     "verhaeltnis": 22
+    },
+    {
+     "zeit": 85.267,
+     "sprung": 0.234,
+     "verhaeltnis": 20
+    },
+    {
+     "zeit": 85.331,
+     "sprung": 0.228,
+     "verhaeltnis": 24
+    },
+    {
+     "zeit": 85.354,
+     "sprung": 0.196,
+     "verhaeltnis": 21
+    },
+    {
+     "zeit": 85.389,
+     "sprung": 0.306,
+     "verhaeltnis": 24
+    },
+    {
+     "zeit": 85.409,
+     "sprung": 0.195,
+     "verhaeltnis": 17
+    },
+    {
+     "zeit": 85.457,
+     "sprung": 0.326,
+     "verhaeltnis": 29
+    },
+    {
+     "zeit": 85.535,
+     "sprung": 0.171,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 85.565,
+     "sprung": 0.136,
+     "verhaeltnis": 13
+    },
+    {
+     "zeit": 85.646,
+     "sprung": 0.133,
+     "verhaeltnis": 14
+    },
+    {
+     "zeit": 85.78,
+     "sprung": 0.197,
+     "verhaeltnis": 26
+    }
+   ],
+   "clipping": [],
+   "loecher": [],
+   "spuren": 7,
+   "takte": 36,
+   "dropouts": 20,
+   "stilleTakte": 60,
+   "abschnitte": "Intro → Aufbau → Gas geben → Sich verlieren → Wiederfinden → Stocken → Hauptteil → Outro",
+   "rechenzeit": 38
+  },
+  "persisch": {
+   "dauer": 90,
+   "lufs": -14.2,
+   "tp": -1,
+   "lra": 4.7,
+   "unter120": 83.9,
+   "mitten": 15.5,
+   "ueber2k": 0.6,
+   "knackser": [
+    {
+     "zeit": 20,
+     "sprung": 0.101,
+     "verhaeltnis": 22
+    },
+    {
+     "zeit": 40,
+     "sprung": 0.352,
+     "verhaeltnis": 64
+    },
+    {
+     "zeit": 40.399,
+     "sprung": 0.13,
+     "verhaeltnis": 12
+    },
+    {
+     "zeit": 46.25,
+     "sprung": 0.152,
+     "verhaeltnis": 19
+    },
+    {
+     "zeit": 70,
+     "sprung": 0.271,
+     "verhaeltnis": 61
+    }
+   ],
+   "clipping": [],
+   "loecher": [],
+   "spuren": 7,
+   "takte": 36,
+   "dropouts": 22,
+   "stilleTakte": 84,
+   "abschnitte": "Intro → Aufbau → Gas geben → Sich verlieren → Wiederfinden → Stocken → Hauptteil → Outro",
+   "rechenzeit": 39
+  }
+ }
+}
