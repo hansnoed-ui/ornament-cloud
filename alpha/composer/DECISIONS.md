@@ -262,3 +262,10 @@ Instrumenten (Orient 362, Minimal 322, Persisch 5); sie stehen als bekannt in de
 `gemini-4-hydrogen` hörte als zusätzliches Ohr vier «Aussetzer»: drei auf dem kurzen Loch im «Stocken» (alle Drums und Bass einen
 Viertel-Takt still, Minimal und House bei 67,5 s, Orient bei 64,4 s), einer im Intro ohne Drums. Alle gewollt, aber offenbar deutlich
 zu hören.
+
+Nachtrag (26.11.2026): Mit `--spuren` misst der Prüfstand jede Spur einzeln (über «Exportieren») und erkennt **Abrisse**, also Klang,
+der ohne Ausblenden in die Stille fällt. Gegenprobe: Ein harter Schnitt im «Stocken» (Rampe 1 statt 8 Abtastwerte) ging in der Mischung
+unter; mit `--spuren` meldete der Prüfstand «bass-sub: 1 neue Abrisse: 67.74 s» und brach mit Exit 1 ab. Die vielen «Knackser» der
+Mischung stammen grösstenteils vom gewollten Knistern des Naturklangs Feuer (Orient 468, Minimal 265) und von den Einsätzen der Kick.
+Abrisse in der heutigen Basis, nicht an Dropouts, also im Klang der Instrumente selbst (zum Hinhören): House E-Bass bei 50,3 s, 74,1 s,
+78,8 s; Indien Shaker bei 19,6 s, 32,6 s, 35,2 s, 61,3 s, 71,8 s, 82,2 s; Indien Tabla bei 43,0 s (90 s, Startwert 1).
