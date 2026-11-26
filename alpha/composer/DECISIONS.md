@@ -269,3 +269,10 @@ unter; mit `--spuren` meldete der Prüfstand «bass-sub: 1 neue Abrisse: 67.74 s
 Mischung stammen grösstenteils vom gewollten Knistern des Naturklangs Feuer (Orient 468, Minimal 265) und von den Einsätzen der Kick.
 Abrisse in der heutigen Basis, nicht an Dropouts, also im Klang der Instrumente selbst (zum Hinhören): House E-Bass bei 50,3 s, 74,1 s,
 78,8 s; Indien Shaker bei 19,6 s, 32,6 s, 35,2 s, 61,3 s, 71,8 s, 82,2 s; Indien Tabla bei 43,0 s (90 s, Startwert 1).
+
+## 26. November 2026: Glitch weicher geschnitten (Unterbrechungen 0.1.1)
+
+Christian: «ausblenden glitch verlängern». Der Prüfstand fand in Indien bei 42,96 s einen Klick der Tabla: ein Glitch-Stück endete mitten
+in einem Schlag, und jedes Stück wurde nur 0,5 ms (24 Abtastwerte) ein- und ausgeblendet. Jetzt sind es 2 ms (`ra = 0,002 · rate`).
+Wiederholen, Umdrehen, Weglassen und Oktave bleiben, nur die Kanten der Stücke sind weicher. Gespeicherte Projekte mit Glitch klingen
+an den Kanten leicht anders.
