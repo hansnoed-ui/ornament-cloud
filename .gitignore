@@ -24,3 +24,6 @@ listen/directer/audio/
 docs/social/
 # Videoseite «the i – curiosity» (listen/curiosity/): die MP4 sind zu gross für Git und werden von Hand auf den Webspace geladen (docs/video-curiosity.md)
 listen/curiosity/video/
+
+# Ausgaben des Composer-Prüfstands (tools/composer-pruefstand.mjs)
+pruefstand/
