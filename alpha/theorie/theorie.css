@@ -1,153 +1,111 @@
-/* ornament.cloud/alpha/theorie/ – Probeseite der neuen Kunsttheorie (26. November 2026, Christians OK zum Entwurf «Theorie in der Mitte»).
-   Richtung: shanzhy.io als Anregung (ein Körper in der Mitte, zwei kleine Wörter am Rand, Menü als Wortsäule), Schrift «Grotesk»
-   (Hanken Grotesk allein, aus vendor/fonts/animationen.css). Texte sind Platzhalter aus dem Archiv, bis das Gerüst der Theorie steht. */
-/* Aufbau: alles hängt an der Mittelachse. Ein Körper in der Mitte, zwei kleine Wörter am Rand, ein grosses Menü.
-   Angeregt von shanzhy.io (Reduktion, Rand statt Kopf, Menü als Wortsäule), Inhalt und Figur aus der Theorie. */
+/* ornament.cloud/alpha/theorie/ – Probeseite der neuen Kunsttheorie (26. November 2026).
+   Richtung: shanzhy.io als Anregung, Schrift «Grotesk» (Hanken Grotesk allein, aus vendor/fonts/animationen.css).
+   Texte sind Platzhalter aus dem Archiv, bis das Gerüst der Theorie steht. */
+/* Aufbau, zweite Stufe (26.11.2026, «könnte noch etwas ambitionierter sein»): EINE Leinwand hinter allem.
+   Der Körper aus zwölf Schlaufen verschwindet nie, er entfaltet sich: Körper (Start), Reihe (Aspekte), einzelne Figur (Aspekt),
+   Hintergrund, der mitliest (Kerntext). Eine Schrift, gross gesetzt. Eine einzige dunkle Welt, bewusst ohne helle Fassung. */
 :root {
-  color-scheme: light dark;
-  --papier: #ffffff;
-  --tinte: #0b0b0b;
-  --grau: #8a8a8a;
-  --linie: #e2e2e2;
-  --faden: #1d3fd6;
-  --buehne: #1b1c1e;          /* die dunkle Bühne bleibt in beiden Modi dunkel */
-  --buehne-tinte: #e9e9e6;
-  --buehne-grau: #8b8c8f;
+  color-scheme: dark;
+  --grund: #121315;
+  --tinte: #efefec;
+  --grau: #85878b;
+  --linie: #2a2b2e;
   --blau: #8fb0ff;
   --rosa: #ffa3d1;
-  --sans: "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --serif: "Newsreader", "Iowan Old Style", Georgia, serif;
-  --klein: 13px;
+  --sans: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --klein: 14px;
+  --rand: max(24px, env(safe-area-inset-left, 0px));
 }
-/* Dunkel ist der Standard wie im Neubau; data-theme="light" auf <html> holt Papier und Tinte hell zurück. */
-:root:not([data-theme="light"]) { --papier: #000000; --tinte: #eeeeeb; --grau: #8f8f8f; --linie: #262626; --faden: #8fb0ff; color-scheme: dark; }
-
 *, *::before, *::after { box-sizing: border-box; }
 html, body { height: 100%; }
-body { margin: 0; background: var(--papier); color: var(--tinte); font-family: var(--sans); font-size: 15px; line-height: 1.45; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+body { margin: 0; background: var(--grund); color: var(--tinte); font-family: var(--sans); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; overflow-x: hidden; }
 h1, h2, h3, p, ul { margin: 0; }
 ul { padding: 0; list-style: none; }
 a { color: inherit; text-decoration: none; }
 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
-:focus-visible { outline: 1px solid var(--faden); outline-offset: 4px; }
+:focus-visible { outline: 1px solid var(--blau); outline-offset: 4px; }
 .ansicht[hidden] { display: none !important; }
 
-/* rollender Text: beim Zeigen rollt das Wort eine Zeile weiter */
-.roll { display: inline-block; height: 1.45em; overflow: hidden; vertical-align: bottom; }
-.roll > span { display: block; transition: transform 0.45s cubic-bezier(.7, 0, .2, 1); }
-.roll > span > span { display: block; height: 1.45em; }
-a:hover .roll > span, button:hover .roll > span, a:focus-visible .roll > span, button:focus-visible .roll > span { transform: translateY(-1.45em); }
+#welt { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; }
+.ansicht { position: relative; z-index: 1; }
 
-/* Rand: zwei kleine Wörter auf halber Höhe, am Handy oben und unten */
+/* rollender Text */
+.roll { display: inline-block; height: 1.5em; line-height: 1.5; overflow: hidden; vertical-align: bottom; }
+.roll > span { display: block; transition: transform 0.45s cubic-bezier(.7, 0, .2, 1); }
+.roll > span > span { display: block; height: 1.5em; }
+a:hover .roll > span, button:hover .roll > span, a:focus-visible .roll > span, button:focus-visible .roll > span { transform: translateY(-1.5em); }
+
+/* Rand */
 .rand { position: fixed; z-index: 5; font-size: var(--klein); pointer-events: none; inset: 0; padding-left: max(24px, env(safe-area-inset-left, 0px)); padding-right: max(24px, env(safe-area-inset-right, 0px)); display: flex; align-items: center; justify-content: space-between; }
 .rand > * { pointer-events: auto; }
 .rand .links { color: var(--grau); }
-.rand.dunkel { color: var(--buehne-tinte); }
-.rand.dunkel .links { color: var(--buehne-grau); }
-@media (max-width: 640px) {
-  .rand { flex-direction: column; justify-content: space-between; align-items: center; padding-top: calc(env(safe-area-inset-top, 0px) + 18px); padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 22px); }
+@media (min-width: 701px) { .rand.lesen .links { visibility: hidden; } }
+@media (max-width: 700px) {
+  .rand { flex-direction: column; padding-top: calc(env(safe-area-inset-top, 0px) + 18px); padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); }
+  .rand.lesen > * { background: var(--grund); padding: 6px 12px; border-radius: 999px; }
 }
 
-/* ---------- Start: der Körper ---------- */
-.start { position: fixed; inset: 0; background: var(--buehne); }
-.start canvas { width: 100%; height: 100%; display: block; cursor: grab; touch-action: none; }
-.start .satz { position: absolute; left: 0; right: 0; bottom: 12vh; text-align: center; color: var(--buehne-grau); font-family: var(--serif); font-style: italic; font-size: 15px; padding-inline: 24px; transition: opacity 0.6s; }
-@media (max-width: 640px) { .start .satz { bottom: 70px; } }
+/* ---------- Start ---------- */
+.start { position: fixed; inset: 0; cursor: grab; touch-action: none; }
+.start .satz { position: absolute; left: 0; right: 0; bottom: 13vh; margin-inline: auto; max-width: 22em; padding-inline: 24px; text-align: center; font-size: clamp(1.25rem, 2.6vw, 1.9rem); font-weight: 500; letter-spacing: -0.03em; line-height: 1.15; text-wrap: balance; transition: opacity 0.6s, transform 0.6s; }
+.start .satz small { display: block; margin-top: 10px; font-size: var(--klein); font-weight: 400; letter-spacing: 0; color: var(--grau); }
+@media (max-width: 700px) { .start .satz { bottom: 76px; } }
 
-/* ---------- Menü: Wortsäule ---------- */
-.menue { position: fixed; inset: 0; z-index: 8; background: var(--papier); display: grid; place-items: center; animation: auf 0.4s ease-out; }
-@keyframes auf { from { opacity: 0; } to { opacity: 1; } }
-.menue ul { display: grid; gap: 0; }
-.menue a { display: block; font-size: clamp(2.6rem, 9vw, 4.4rem); font-weight: 500; letter-spacing: -0.035em; line-height: 1.02; }
-.menue a:hover { color: var(--faden); }
-.menue .nr { font-size: var(--klein); font-weight: 400; letter-spacing: 0; color: var(--grau); vertical-align: top; margin-left: 6px; font-variant-numeric: tabular-nums; }
+/* ---------- Menü ---------- */
+.menue { position: fixed; inset: 0; z-index: 4; display: grid; place-items: center; animation: auf 0.5s ease-out; }
+@keyframes auf { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.menue a { display: block; font-size: clamp(3.6rem, 15vw, 8rem); font-weight: 600; letter-spacing: -0.055em; line-height: 0.95; }
+.menue .roll, .menue .roll > span > span { height: 1.02em; line-height: 1.02; }
+.menue a:hover .roll > span, .menue a:focus-visible .roll > span { transform: translateY(-1.02em); }
+.menue a:hover { color: var(--blau); }
+.menue .nr { font-size: var(--klein); font-weight: 400; letter-spacing: 0; color: var(--grau); vertical-align: top; margin-left: 8px; font-variant-numeric: tabular-nums; }
 
-/* ---------- Kerntext ---------- */
-.seite { min-height: 100%; padding: 22vh max(24px, env(safe-area-inset-right, 0px)) 18vh max(24px, env(safe-area-inset-left, 0px)); display: grid; justify-items: center; }
-.seite .inn { width: 100%; max-width: 560px; }
-.gross { font-size: clamp(2rem, 6vw, 3.3rem); font-weight: 500; letter-spacing: -0.03em; line-height: 1.04; text-wrap: balance; }
-.kern p { margin-top: 22px; font-size: 15px; max-width: 46ch; }
-.kern p:first-of-type { margin-top: 44px; }
-.kern a { border-bottom: 1px solid var(--linie); }
-.kern a:hover { color: var(--faden); border-color: var(--faden); }
-.kern .lab { margin-top: 44px; font-size: var(--klein); color: var(--grau); }
-
-/* ---------- Aspekte: kleine Tafeln in der Mitte ---------- */
-.aspekte { position: fixed; inset: 0; display: grid; place-items: center; }
-.reihe { display: flex; gap: 8px; align-items: center; overflow-x: auto; scroll-snap-type: x mandatory; max-width: 100vw; padding: 40px max(24px, calc(50vw - 40px)); scrollbar-width: none; }
-@media (min-width: 1100px) { .reihe { padding: 40px 12px; max-width: calc(100vw - 460px); } .reihe .tafel { width: 56px; height: 84px; } .reihe .tafel.an, .reihe .tafel:hover { width: 82px; height: 116px; } }
-.reihe::-webkit-scrollbar { display: none; }
-.tafel { flex: 0 0 auto; width: 76px; height: 112px; background: var(--buehne); scroll-snap-align: center; position: relative; transition: width 0.4s cubic-bezier(.7, 0, .2, 1), height 0.4s cubic-bezier(.7, 0, .2, 1), filter 0.4s; filter: grayscale(1) brightness(0.9); }
-.tafel canvas { width: 100%; height: 100%; display: block; }
-.tafel.an, .tafel:hover { width: 102px; height: 140px; filter: none; }
-.unter { position: absolute; left: 0; right: 0; top: calc(50% + 96px); text-align: center; font-size: var(--klein); }
-.unter b { font-weight: 500; }
-.unter span { color: var(--grau); }
-.balken { position: absolute; left: 0; right: 0; top: calc(50% + 140px); display: flex; gap: 4px; justify-content: center; }
-.balken i { width: 18px; height: 2px; background: var(--linie); }
-.balken i.an { background: var(--tinte); height: 3px; }
-
-/* ---------- ein Aspekt: Text links, Bühne rechts ---------- */
-.aspekt { min-height: 100%; display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; padding: calc(env(safe-area-inset-top, 0px) + 64px) max(24px, env(safe-area-inset-right, 0px)) 40px max(24px, env(safe-area-inset-left, 0px)); }
-@media (min-width: 820px) { .aspekt { grid-template-columns: minmax(0, 320px) minmax(0, 1fr); gap: 48px; padding-top: 40px; align-items: stretch; height: 100%; } }
-.aspekt .text { display: flex; flex-direction: column; gap: 18px; font-size: 15px; min-width: 0; }
-.aspekt .zurueck { font-size: var(--klein); align-self: flex-start; }
-.aspekt .mitte { margin-block: auto; display: grid; gap: 14px; }
-.aspekt .zn { font-size: var(--klein); color: var(--grau); font-variant-numeric: tabular-nums; }
-.aspekt h2 { font-size: 1.7rem; font-weight: 500; letter-spacing: -0.025em; line-height: 1.08; }
-.aspekt blockquote { margin: 0; font-family: var(--serif); font-size: 1.2rem; line-height: 1.4; }
-.aspekt .beleg { font-size: var(--klein); color: var(--grau); }
-.aspekt .weiter { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: var(--klein); }
-.aspekt .weiter a { color: var(--faden); }
-.aspekt .feld { background: var(--buehne); min-height: 52vh; position: relative; }
-.aspekt .feld canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.aspekt .feld .achsen { position: absolute; left: 14px; bottom: 12px; right: 14px; display: flex; justify-content: space-between; color: var(--buehne-grau); font-size: 11px; font-variant-numeric: tabular-nums; }
-
-/* ---------- Quellen und Entwurf ---------- */
-.liste { margin-top: 44px; display: grid; }
-.liste li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; padding: 11px 0; border-top: 1px solid var(--linie); font-size: 15px; }
+/* ---------- Kerntext und Quellen ---------- */
+.seite { min-height: 100%; padding: 24vh max(24px, env(safe-area-inset-right, 0px)) 30vh max(24px, 9vw); }
+@media (max-width: 700px) { .seite { padding: 150px 24px 140px; } }
+.gross { font-size: clamp(2.9rem, 12.5vw, 8.5rem); font-weight: 600; letter-spacing: -0.058em; line-height: 0.92; max-width: 9.5em; text-wrap: balance; }
+.gross .z { display: block; overflow: hidden; padding-bottom: 0.08em; }
+.gross .z > span { display: block; animation: hoch 0.9s cubic-bezier(.2, .7, .1, 1) both; }
+.gross .z:nth-child(2) > span { animation-delay: 0.09s; }
+.gross .z:nth-child(3) > span { animation-delay: 0.18s; }
+@keyframes hoch { from { transform: translateY(105%); } to { transform: none; } }
+.kern p { margin-top: 30vh; font-size: clamp(1.35rem, 3.2vw, 2.1rem); font-weight: 500; letter-spacing: -0.03em; line-height: 1.2; max-width: 19em; text-wrap: pretty; color: var(--grau); transition: color 0.5s; }
+.kern p:first-of-type { margin-top: 16vh; }
+.kern p.an { color: var(--tinte); }
+.kern p a { color: inherit; border-bottom: 1px solid currentColor; transition: color 0.3s; }
+.kern p.an a { color: var(--blau); }
+.kern p a:hover { color: var(--rosa); }
+.kern .lab { margin-top: 30vh; font-size: var(--klein); font-weight: 400; letter-spacing: 0; line-height: 1.5; color: var(--grau); max-width: 34em; }
+.liste { margin-top: 12vh; max-width: 780px; }
+.liste li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: baseline; padding: 18px 0; border-top: 1px solid var(--linie); font-size: clamp(1.25rem, 3vw, 1.9rem); font-weight: 500; letter-spacing: -0.03em; line-height: 1.15; }
 .liste li:last-child { border-bottom: 1px solid var(--linie); }
-.liste span { color: var(--grau); font-variant-numeric: tabular-nums; font-size: var(--klein); }
-.notiz { margin-top: 30px; display: grid; gap: 14px; max-width: 48ch; }
-.notiz h3 { margin-top: 18px; font-size: var(--klein); font-weight: 500; color: var(--grau); }
+.liste span { color: var(--grau); font-size: var(--klein); font-weight: 400; letter-spacing: 0; font-variant-numeric: tabular-nums; }
 
-/* ---------- Schrift: Fassung «Grotesk», von Christian am 26.11.2026 gewählt ----------
-   Alle Grade grösser als im ersten Entwurf (Lesetext 17 bis 19 px statt 15), Titel enger und kräftiger,
-   Silbentrennung und ruhiger Umbruch, Zahlen und Belege als eigene Stimme. */
-body { --titel: var(--sans); --titel-gew: 600; --titel-ls: -0.045em; --titel-stil: normal; --ts: 1; --titel-zh: 0.98;
-  --lese: var(--sans); --lese-gr: 17px; --lese-zh: 1.5; --lese-ls: -0.006em;
-  --zitat: var(--sans); --zitat-stil: normal; --zitat-gr: 1.45rem; --zitat-ls: -0.02em; --zitat-zh: 1.25;
-  --mono: var(--sans); --mono-gr: 14px; --mono-ls: 0; --klein: 14px;
-  --sans: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  font-size: 16px; font-feature-settings: "ss01", "kern"; text-rendering: optimizeLegibility; }
+/* ---------- Aspekte: die Reihe ---------- */
+.aspekte { position: fixed; inset: 0; touch-action: pan-y; cursor: grab; }
+.aspekte .unten { position: absolute; left: 0; right: 0; top: 66%; padding-inline: 24px; text-align: center; display: grid; justify-items: center; gap: 10px; }
+.aspekte .zn { font-size: var(--klein); color: var(--grau); font-variant-numeric: tabular-nums; }
+.aspekte h2 { font-size: clamp(2rem, 7vw, 4rem); font-weight: 600; letter-spacing: -0.05em; line-height: 0.98; text-wrap: balance; max-width: 12em; }
+.aspekte .tun { display: flex; gap: 26px; font-size: var(--klein); margin-top: 6px; }
+.aspekte .tun .haupt { color: var(--blau); }
+.balken { display: flex; gap: 4px; margin-top: 12px; }
+.balken i { width: 16px; height: 2px; background: var(--linie); transition: background 0.3s; }
+.balken i.an { background: var(--tinte); }
 
-.gross, .menue a, .aspekt h2 { font-family: var(--titel); font-weight: var(--titel-gew); letter-spacing: var(--titel-ls); font-style: var(--titel-stil); line-height: var(--titel-zh); }
-.gross { font-size: calc(clamp(2.3rem, 8.6vw, 4rem) * var(--ts)); }
-.menue a { font-size: calc(clamp(3rem, 12vw, 5rem) * var(--ts)); }
-.aspekt h2 { font-size: calc(clamp(1.9rem, 6vw, 2.5rem) * var(--ts)); text-wrap: balance; }
-.kern p, .notiz p { font-family: var(--lese); font-size: var(--lese-gr); line-height: var(--lese-zh); letter-spacing: var(--lese-ls); max-width: 34em; hyphens: auto; text-wrap: pretty; }
-.kern p:first-of-type { margin-top: 48px; }
-.kern .lab, .notiz h3 { font-family: var(--mono); font-size: var(--mono-gr); letter-spacing: var(--mono-ls); line-height: 1.5; hyphens: manual; }
-.aspekt blockquote { font-family: var(--zitat); font-style: var(--zitat-stil); font-size: var(--zitat-gr); letter-spacing: var(--zitat-ls); line-height: var(--zitat-zh); hyphens: auto; text-wrap: pretty; }
-.start .satz { font-family: var(--zitat); font-style: var(--zitat-stil); font-size: calc(var(--zitat-gr) * 0.72); letter-spacing: var(--zitat-ls); line-height: 1.3; max-width: 26em; margin-inline: auto; text-wrap: balance; }
-.start .satz.satz { font-size: 16px; letter-spacing: -0.01em; }
-.aspekt .zn, .aspekt .beleg, .menue .nr, .liste span, .aspekt .feld .achsen, .unter span { font-family: var(--mono); font-size: var(--mono-gr); letter-spacing: var(--mono-ls); font-style: normal; font-weight: 400; }
-.aspekt .feld .achsen { font-size: calc(var(--mono-gr) - 1px); }
-.aspekt .weiter { font-size: 15px; gap: 6px 18px; }
-.aspekt .weiter a { border-bottom: 1px solid currentColor; padding-bottom: 1px; }
-.aspekt .text { font-size: 16px; }
-.liste li { font-size: var(--lese-gr); font-family: var(--lese); padding: 14px 0; align-items: baseline; }
-.unter { font-size: 15px; }
-.rand { letter-spacing: 0.005em; }
-.roll, .roll > span > span { height: 1.5em; line-height: 1.5; }
-a:hover .roll > span, button:hover .roll > span, a:focus-visible .roll > span, button:focus-visible .roll > span { transform: translateY(-1.5em); }
-.menue .roll, .menue .roll > span > span { height: 1.06em; line-height: 1.06; }
-.menue a:hover .roll > span, .menue a:focus-visible .roll > span { transform: translateY(-1.06em); }
-
-@media (max-width: 640px) {
-  .rand:not(.dunkel) > * { background: var(--papier); padding: 6px 12px; border-radius: 999px; }
-  .seite { padding-top: 150px; padding-bottom: 130px; }
-}
-.kern p, .notiz p, .aspekt blockquote { hyphenate-limit-chars: 9 4 4; }
+/* ---------- ein Aspekt ---------- */
+.aspekt { min-height: 100%; display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; padding: calc(env(safe-area-inset-top, 0px) + 28px) max(24px, env(safe-area-inset-right, 0px)) 40px max(24px, env(safe-area-inset-left, 0px)); }
+@media (min-width: 820px) { .aspekt { grid-template-columns: minmax(0, 46%) minmax(0, 1fr); gap: 0; height: 100%; padding-left: max(24px, 5vw); } }
+.aspekt .text { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.aspekt .zurueck { font-size: var(--klein); align-self: flex-start; }
+.aspekt .mitte { margin-block: auto; display: grid; gap: 18px; padding-block: 18px; }
+.aspekt .zn { font-size: var(--klein); color: var(--grau); font-variant-numeric: tabular-nums; }
+.aspekt h2 { font-size: clamp(2.5rem, 8vw, 5.4rem); font-weight: 600; letter-spacing: -0.055em; line-height: 0.94; text-wrap: balance; }
+.aspekt blockquote { margin: 0; font-size: clamp(1.3rem, 2.5vw, 1.8rem); font-weight: 500; letter-spacing: -0.03em; line-height: 1.2; max-width: 20em; text-wrap: pretty; }
+.aspekt .beleg { font-size: var(--klein); color: var(--grau); }
+.aspekt .weiter { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 15px; }
+.aspekt .weiter a { color: var(--blau); border-bottom: 1px solid currentColor; padding-bottom: 1px; }
+.aspekt .weiter a:hover { color: var(--rosa); }
+.aspekt .feld { min-height: 46vh; position: relative; }
+.aspekt .achsen { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; color: var(--grau); font-size: 13px; font-variant-numeric: tabular-nums; }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }

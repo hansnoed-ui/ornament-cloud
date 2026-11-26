@@ -8,6 +8,7 @@
   Alpha-Bereich: öffentlich erreichbar, nur per Direktlink, noindex, nicht in der Sitemap (26. November 2026).
   Probeseite für die neue Kunsttheorie (Projekt «Kunst Theorie»): Gestaltung nach dem Entwurf «Theorie in der Mitte», Christians OK vom 26. November 2026
   («sieht gut aus vom design», Schrift «grotesk»). Die Texte sind Platzhalter aus dem X- und Facebook-Archiv; das Gerüst der Theorie entsteht noch.
+  Zweite Stufe am selben Tag («könnte noch etwas ambitionierter sein», dann «live»): eine Leinwand hinter allen Ansichten, der Körper entfaltet sich.
   Die Montage unter alpha/kunsttheorie/ ist eine andere, ältere Seite und bleibt unberührt.
 -->
 <meta name="robots" content="noindex">
@@ -18,19 +19,20 @@
 <meta property="og:url" content="https://ornament.cloud/alpha/theorie/">
 <meta property="og:title" content="Theorie der Kunst · Probeseite">
 <meta property="og:description" content="Probeseite der neuen Kunsttheorie von Christian Strickler: ein Kerntext und zwölf verknüpfte Aspekte, als Ornament in der Mitte.">
-<meta name="theme-color" content="#1b1c1e">
+<meta name="theme-color" content="#121315">
 <link rel="stylesheet" href="../../vendor/fonts/animationen.css">
-<link rel="stylesheet" href="theorie.css?v=1">
+<link rel="stylesheet" href="theorie.css?v=2">
 </head>
 <body>
+<canvas id="welt" aria-hidden="true"></canvas>
+
 <div class="rand" id="rand">
-  <a class="links" href="#start" id="rand-links">Christian Strickler · Theorie der Kunst</a>
+  <a class="links" href="#start">Christian Strickler · Theorie der Kunst</a>
   <button type="button" id="rand-rechts" aria-expanded="false"><span class="roll"><span><span id="rr1">Antippen zum Lesen</span><span id="rr2">Antippen zum Lesen</span></span></span></button>
 </div>
 
-<section class="ansicht start" id="v-start" aria-label="Start">
-  <canvas id="koerper" aria-label="Der Körper der Theorie: zwölf Aspekte als Ornament, langsam drehend. Ziehen dreht ihn."></canvas>
-  <p class="satz" id="start-satz">Die Sprache der Kunst ist das Ornamentale.</p>
+<section class="ansicht start" id="v-start" aria-label="Start: der Körper der Theorie, zwölf Aspekte als Ornament. Ziehen dreht ihn, Antippen öffnet die Aspekte.">
+  <p class="satz" id="start-satz"><span id="ss-text">Die Sprache der Kunst ist das Ornamentale.</span><small id="ss-klein">2 · Das Ornamentale</small></p>
 </section>
 
 <nav class="ansicht menue" id="v-menue" hidden aria-label="Menü">
@@ -41,20 +43,26 @@
   </ul>
 </nav>
 
-<main class="ansicht seite" id="v-kerntext" lang="de-CH" hidden>
-  <div class="inn kern">
-    <h1 class="gross">Die Sprache der Kunst<br>ist das Ornamentale.</h1>
-    <p>Kunst bringt Wahrnehmung in Kommunikation, ohne sie in Sprache zu übersetzen. Sie schliesst an, was sich nicht sagen lässt: <a href="#a-1">Sprache ohne Sprache</a>, das <a href="#a-1a">Inkommunikable</a>.</p>
-    <p>Das Mittel dafür ist das Ornament. Es spielt für die Kunst die Rolle, die die <a href="#a-2a">Schrift für die Gesellschaft</a> spielt: Wiederholung mit Abweichung, aus der sich <a href="#a-2c">Werke</a> bilden und in die sie wieder zerfallen.</p>
-    <p>Ordnung ist dabei kein Ziel. Sie entsteht, sobald unterschieden wird, und die Kunst ist ihr <a href="#a-3">Beweisraum</a>. Am Ende läuft alles auf die <a href="#a-4">Zeit</a> hinaus: Ein Werk baut eine <a href="#a-4a">Stelle</a>, an der Wahrnehmung anders wiederkehren kann.</p>
-    <p class="lab">Probeseite vom 26. November 2026. Der Kerntext ist ein Platzhalter, verdichtet aus Beiträgen 2017 bis 2026. Unterstrichene Wörter öffnen den Aspekt.</p>
-  </div>
+<main class="ansicht seite kern" id="v-kerntext" lang="de-CH" hidden>
+  <h1 class="gross"><span class="z"><span>Die Sprache</span></span><span class="z"><span>der Kunst ist das</span></span><span class="z"><span>Ornamentale.</span></span></h1>
+  <p data-a="1,1a,1b">Kunst bringt Wahrnehmung in Kommunikation, ohne sie in Sprache zu übersetzen. Sie schliesst an, was sich nicht sagen lässt: <a href="#a-1">Sprache ohne Sprache</a>, das <a href="#a-1a">Inkommunikable</a>.</p>
+  <p data-a="2,2a,2b,2c">Das Mittel dafür ist das Ornament. Es spielt für die Kunst die Rolle, die die <a href="#a-2a">Schrift für die Gesellschaft</a> spielt: Wiederholung mit Abweichung, aus der sich <a href="#a-2c">Werke</a> bilden und in die sie wieder zerfallen.</p>
+  <p data-a="3,5,5a">Ordnung ist dabei kein Ziel. Sie entsteht, sobald unterschieden wird, und die Kunst ist ihr <a href="#a-3">Beweisraum</a>.</p>
+  <p data-a="4,4a">Am Ende läuft alles auf die <a href="#a-4">Zeit</a> hinaus: Ein Werk baut eine <a href="#a-4a">Stelle</a>, an der Wahrnehmung anders wiederkehren kann.</p>
+  <p class="lab">Probeseite vom 26. November 2026. Der Kerntext ist ein Platzhalter, verdichtet aus Beiträgen 2017 bis 2026. Beim Lesen leuchten im Körper die Aspekte des Absatzes. Unterstrichene Wörter öffnen den Aspekt.</p>
 </main>
 
 <section class="ansicht aspekte" id="v-aspekte" hidden aria-label="Aspekte">
-  <div class="reihe" id="reihe"></div>
-  <p class="unter" id="unter"></p>
-  <div class="balken" id="balken" aria-hidden="true"></div>
+  <div class="unten">
+    <p class="zn" id="r-zn"></p>
+    <h2 id="r-titel"></h2>
+    <div class="tun">
+      <button type="button" id="r-vor"><span class="roll"><span><span>Vorher</span><span>Vorher</span></span></span></button>
+      <a class="haupt" id="r-lesen" href="#a-2"><span class="roll"><span><span>Lesen</span><span>Lesen</span></span></span></a>
+      <button type="button" id="r-nach"><span class="roll"><span><span>Weiter</span><span>Weiter</span></span></span></button>
+    </div>
+    <div class="balken" id="balken" aria-hidden="true"></div>
+  </div>
 </section>
 
 <article class="ansicht aspekt" id="v-aspekt" lang="de-CH" hidden>
@@ -68,23 +76,20 @@
       <div class="weiter" id="a-weiter"></div>
     </div>
   </div>
-  <div class="feld"><canvas id="a-figur" aria-label="Figur des Aspekts"></canvas><div class="achsen"><span id="a-x"></span><span id="a-y"></span></div></div>
+  <div class="feld" id="a-feld"><div class="achsen"><span id="a-x"></span><span id="a-y"></span></div></div>
 </article>
 
 <main class="ansicht seite" id="v-quellen" lang="de-CH" hidden>
-  <div class="inn">
-    <h1 class="gross">Woraus die<br>Theorie gemacht ist.</h1>
-    <ul class="liste">
-      <li>Eigene Beiträge auf X <span>47'667</span></li>
-      <li>Eigene Beiträge auf Facebook <span>23'267</span></li>
-      <li>ORNA, Nebeneinander, Nacheinander <span>326 Konstellationen</span></li>
-      <li>Zettelkasten «Zu seiner Zeit» <span>49 Zettel</span></li>
-      <li>Niklas Luhmanns Zettelkasten <span>Lektüre</span></li>
-    </ul>
-  </div>
+  <h1 class="gross"><span class="z"><span>Woraus die</span></span><span class="z"><span>Theorie</span></span><span class="z"><span>gemacht ist.</span></span></h1>
+  <ul class="liste">
+    <li>Eigene Beiträge auf X <span>47'667</span></li>
+    <li>Eigene Beiträge auf Facebook <span>23'267</span></li>
+    <li>ORNA, Nebeneinander, Nacheinander <span>326 Konstellationen</span></li>
+    <li>Zettelkasten «Zu seiner Zeit» <span>49 Zettel</span></li>
+    <li>Niklas Luhmanns Zettelkasten <span>Lektüre</span></li>
+  </ul>
 </main>
 
-
-<script src="theorie.js?v=1"></script>
+<script src="theorie.js?v=2"></script>
 </body>
 </html>
