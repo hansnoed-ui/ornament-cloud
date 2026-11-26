@@ -1,7 +1,8 @@
-// ornament.cloud/alpha/theorie/ – Probeseite der neuen Kunsttheorie, zweite Stufe (26. November 2026).
+// ornament.cloud/alpha/theorie/ – Probeseite der neuen Kunsttheorie, dritte Stufe (26. November 2026).
 // Zwölf Aspekte als Platzhalter (Sätze aus dem X- und Facebook-Archiv, mit Datum und Plattform); Lage x = Verräumlichung,
-// y = Verzeitlichung (0 bis 1, geschätzt). Jede Schlaufe folgt aus dieser Lage. Eine einzige 2D-Leinwand hinter allen Ansichten
-// (kein WebGL); Ansichten laufen über den Anker (#kerntext, #aspekte, #a-2a, #quellen).
+// y = Verzeitlichung (0 bis 1, geschätzt). Jede Schlaufe folgt aus dieser Lage. Eine einzige Leinwand hinter allen Ansichten:
+// WebGL ohne Bibliothek (Bänder im Vertex-Shader gerechnet, additiv gemischt), sonst 2D als Rückfall.
+// Ansichten laufen über den Anker (#kerntext, #aspekte, #a-2a, #quellen); die Lesespur liegt in localStorage («theorie-gelesen»).
 (function () {
   "use strict";
   var A = [
@@ -24,12 +25,56 @@
   function $(id) { return document.getElementById(id); }
 
   // ---------- die Leinwand: eine Welt für alle Ansichten ----------
-  var cv = $("welt"), c = cv.getContext("2d"), W = 0, H = 0;
+  // WebGL: jede Schlaufe ist ein gläsernes Band, in vier Dimensionen im Shader gerechnet. Ohne WebGL zeichnet die 2D-Fassung Linien.
+  var cv = $("welt"), W = 0, H = 0, DPR = 1, gl = null, c = null, U = {}, ZAHL = 0;
+  try { gl = cv.getContext("webgl", { antialias: true, alpha: false, powerPreference: "low-power" }); } catch (e) { gl = null; }
+  if (gl) {
+    var abl = !!gl.getExtension("OES_standard_derivatives");
+    var VS = "attribute vec2 a;uniform float k,amp,ph,ax,sk,S,sp;uniform vec3 rot;uniform vec2 mi,res;varying vec3 vN;varying vec2 vA;" +
+      "vec3 P(float t,float v){float rr=1.+amp*.45*cos(k*t);float x=cos(t+ph)*rr*sk;float y=sin(t+ph)*rr*sk;" +
+      "float z=amp*sin(k*t+v)*sk*.9;float w=(.4+ax*.5)*cos(k*t+ph+v*2.)*sk;" +
+      "float c1=cos(rot.x),s1=sin(rot.x);float x1=x*c1-w*s1;w=x*s1+w*c1;x=x1;" +
+      "float c2=cos(rot.y),s2=sin(rot.y);float y1=y*c2-z*s2;z=y*s2+z*c2;y=y1;" +
+      "float c3=cos(rot.z),s3=sin(rot.z);float x2=x*c3-y*s3;y=x*s3+y*c3;x=x2;" +
+      "float f4=1./(1.-w*.2);return vec3(x*f4,y*f4,z*f4);}" +
+      "void main(){float t=a.x*6.2831853;float v=a.y*sp;vec3 p=P(t,v);vN=cross(P(t+.012,v)-p,P(t,v+.012)-p);vA=a;" +
+      "float f3=1./(1.-p.z*.14);vec2 px=mi+p.xy*f3*S;gl_Position=vec4(px.x/res.x*2.-1.,1.-px.y/res.y*2.,0.,1.);}";
+    var FS = (abl ? "#extension GL_OES_standard_derivatives : enable\n" : "") + "precision mediump float;uniform float al,yy,ant,br;varying vec3 vN;varying vec2 vA;" +
+      "void main(){if(vA.x>ant)discard;vec3 n=normalize(vN);float fr=pow(1.-abs(n.z),3.);" +
+      (abl ? "float ka=1.-smoothstep(0.,1.6*br,(1.-abs(vA.y))/fwidth(vA.y));" : "float ka=smoothstep(.8,1.,abs(vA.y));") +
+      "vec3 co=mix(vec3(.56,.69,1.),vec3(1.,.64,.82),clamp(yy+vA.y*.3,0.,1.));" +
+      "float i=al*(.03+.34*fr+.85*ka);gl_FragColor=vec4(co*i,1.);}";
+    var bau = function (art, q) { var sh = gl.createShader(art); gl.shaderSource(sh, q); gl.compileShader(sh); if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh)); return sh; };
+    try {
+      var pr = gl.createProgram(); gl.attachShader(pr, bau(gl.VERTEX_SHADER, VS)); gl.attachShader(pr, bau(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(pr); gl.useProgram(pr);
+      ["k", "amp", "ph", "ax", "sk", "S", "sp", "rot", "mi", "res", "al", "yy", "ant", "br"].forEach(function (n) { U[n] = gl.getUniformLocation(pr, n); });
+      var TT = 360, VV = 8, pkt = [], idx = [];
+      for (var ti = 0; ti <= TT; ti++) for (var vi = 0; vi <= VV; vi++) pkt.push(ti / TT, vi / VV * 2 - 1);
+      for (ti = 0; ti < TT; ti++) for (vi = 0; vi < VV; vi++) { var o = ti * (VV + 1) + vi; idx.push(o, o + 1, o + VV + 1, o + 1, o + VV + 2, o + VV + 1); }
+      gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer()); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(pkt), gl.STATIC_DRAW);
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.createBuffer()); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(idx), gl.STATIC_DRAW);
+      var loc = gl.getAttribLocation(pr, "a"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+      ZAHL = idx.length; gl.disable(gl.DEPTH_TEST); gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE); gl.clearColor(0.0706, 0.0745, 0.0824, 1);
+    } catch (e) { gl = null; }
+  }
+  if (!gl) { var neu = cv.cloneNode(false); cv.replaceWith(neu); cv = neu; c = cv.getContext("2d"); }
   function mass() {
-    var d = Math.min(2, window.devicePixelRatio || 1); W = window.innerWidth; H = window.innerHeight;
-    cv.width = Math.round(W * d); cv.height = Math.round(H * d); c.setTransform(d, 0, 0, d, 0, 0);
+    DPR = Math.min(2, window.devicePixelRatio || 1); W = window.innerWidth; H = window.innerHeight;
+    cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+    if (gl) gl.viewport(0, 0, cv.width, cv.height); else c.setTransform(DPR, 0, 0, DPR, 0, 0);
   }
   window.addEventListener("resize", mass); mass();
+  function anfang() {
+    if (gl) { gl.clear(gl.COLOR_BUFFER_BIT); gl.uniform2f(U.res, W, H); return; }
+    c.globalCompositeOperation = "source-over"; c.fillStyle = "#121315"; c.fillRect(0, 0, W, H); c.globalCompositeOperation = "lighter";
+  }
+  function band(a, cx, cy, S, r1, r2, r3, skala, al, breite, anteil) {
+    if (!gl) return schlaufe(a, cx, cy, S, r1, r2, r3, skala, al, breite, anteil);
+    gl.uniform1f(U.k, 2 + Math.round(a.x * 5)); gl.uniform1f(U.amp, 0.25 + a.y * 0.5); gl.uniform1f(U.ph, a.i * 0.52); gl.uniform1f(U.ax, a.x);
+    gl.uniform1f(U.sk, skala); gl.uniform1f(U.S, S); gl.uniform1f(U.sp, 0.2 + 0.16 * (breite - 1)); gl.uniform3f(U.rot, r1, r2, r3); gl.uniform2f(U.mi, cx, cy);
+    gl.uniform1f(U.al, al); gl.uniform1f(U.yy, a.y); gl.uniform1f(U.ant, anteil); gl.uniform1f(U.br, breite * DPR * 0.6);
+    gl.drawElements(gl.TRIANGLES, ZAHL, gl.UNSIGNED_SHORT, 0);
+  }
 
   function farbe(y, al) { // Verzeitlichung färbt: Blaupause (Raum) bis Rosa (Zeit)
     return "rgba(" + Math.round(143 + 112 * y) + "," + Math.round(176 - 13 * y) + "," + Math.round(255 - 46 * y) + "," + al + ")";
@@ -67,15 +112,17 @@
   var zug = { x: 0, y: 0, vx: 0, vy: 0, an: false, lx: 0, ly: 0, weg: 0 };
   var hell = "2", absatz = {}, zeig = null;       // Start: hervorgehobene Schlaufe; Kerntext: Aspekte des Absatzes; Link unter dem Zeiger
   var aktiv = 3, pos = 3, wisch = 0, akt = A[3];  // Reihe und offener Aspekt
+  var gelesen = {};
+  try { (JSON.parse(localStorage.getItem("theorie-gelesen")) || []).forEach(function (id) { if (NACH[id]) gelesen[id] = true; }); } catch (e) {}
   var ist = A.map(function () { return { x: W / 2, y: H / 2, S: 10, al: 0, eb: 0, br: 1 }; });
 
   function ziel(a) {
     var mob = W < 700, m = Math.min(W, H), i = a.i;
-    if (ansicht === "menue") return { x: W / 2, y: H / 2, S: m * 0.55, al: 0.1, eb: 0, br: 1 };
+    if (ansicht === "menue") return { x: W / 2, y: H / 2, S: m * 0.62, al: 0.34, eb: 0, br: 1 };
     if (ansicht === "kerntext" || ansicht === "quellen") {
       var drin = zeig ? zeig === a.id : absatz[a.id], irgend = zeig || Object.keys(absatz).length;
-      return { x: mob ? W * 1.02 : W * 0.83, y: mob ? H * 0.5 : H * 0.52, S: mob ? W * 0.7 : m * 0.5,
-        al: ansicht === "quellen" ? 0.2 : drin ? (mob ? 0.75 : 1) : irgend ? 0.09 : 0.3, eb: 0, br: drin && ansicht === "kerntext" ? 1.4 : 1 };
+      return { x: mob ? W * 0.92 : W * 0.7, y: mob ? H * 0.46 : H * 0.5, S: mob ? W * 0.66 : m * 0.52,
+        al: ansicht === "quellen" ? 0.2 : drin ? (mob ? 0.6 : 1) : irgend ? 0.1 : 0.34, eb: 0, br: drin && ansicht === "kerntext" ? 1.4 : 1 };
     }
     if (ansicht === "aspekte") {
       var d = i - pos, g = mob ? W * 0.5 : Math.max(190, W * 0.17), ad = Math.abs(d);
@@ -87,7 +134,7 @@
       if (akt.v.indexOf(a.id) > -1) return { x: fx, y: fy, S: fs * 1.45, al: 0.2, eb: 1, br: 1 };
       return { x: fx, y: fy, S: fs * 2.4, al: 0, eb: 1, br: 1 };
     }
-    return { x: W / 2, y: H * (mob ? 0.44 : 0.47), S: m * (mob ? 0.33 : 0.3), al: hell ? (hell === a.id ? 1 : 0.3) : 0.6, eb: 0, br: hell === a.id ? 1.5 : 1 };
+    return { x: W / 2, y: H * 0.5, S: m * (mob ? 0.42 : 0.4), al: hell === a.id ? 1 : gelesen[a.id] ? 0.55 : 0.26, eb: 0, br: hell === a.id ? 1.6 : 1 };
   }
 
   var letzt = performance.now();
@@ -96,8 +143,7 @@
     zeit += ruhig ? 0 : dt;
     if (!zug.an) { zug.x += zug.vx; zug.y += zug.vy; zug.vx *= 0.95; zug.vy *= 0.95; }
     pos += ((aktiv - wisch) - pos) * (ruhig ? 1 : 0.14);
-    c.globalCompositeOperation = "source-over"; c.fillStyle = "#121315"; c.fillRect(0, 0, W, H);
-    c.globalCompositeOperation = "lighter";
+    anfang();
     var blättern = window.scrollY * 0.0016, k = ruhig ? 1 : 0.085, alter = t - geburt;
     for (var i = 0; i < N; i++) {
       var a = A[i], z = ziel(a), s = ist[i];
@@ -109,7 +155,7 @@
       var r2 = 0.45 + 0.25 * Math.sin(zeit * 0.00011) + zug.y * 0.006 + blättern;
       var r3 = zeit * 0.00006 * (1 - s.eb * 0.6) + i * Math.PI / 12 * (1 - s.eb) + blättern * 0.6;
       var skala = (0.45 + 0.55 * i / (N - 1)) * (1 - s.eb) + s.eb;
-      schlaufe(a, s.x, s.y, s.S, r1, r2, r3, skala, s.al, s.br, anteil);
+      band(a, s.x, s.y, s.S, r1, r2, r3, skala, s.al, s.br, anteil);
     }
     requestAnimationFrame(bild);
   }
@@ -123,16 +169,16 @@
     zug.x += dx; zug.y += dy; zug.vx = dx; zug.vy = dy; zug.weg += Math.abs(dx) + Math.abs(dy);
   });
   st.addEventListener("pointerup", function () { zug.an = false; if (zug.weg < 6) { aktiv = NACH[hell] ? NACH[hell].i : aktiv; location.hash = "#aspekte"; } });
-  var satz = $("start-satz"), si = 3;
+  var satz = $("start-satz"), kl = $("ss-klein"), si = 3;
+  function setzSatz(x) {
+    satz.textContent = x.q; kl.textContent = x.id + " · " + x.t; hell = x.id;
+    satz.classList.toggle("mittel", x.q.length >= 45 && x.q.length < 85); satz.classList.toggle("lang", x.q.length >= 85);
+  }
   setInterval(function () {
     if (ansicht !== "start" || ruhig) return;
-    satz.style.opacity = 0; satz.style.transform = "translateY(8px)";
-    setTimeout(function () {
-      si = (si + 5) % N; hell = A[si].id;
-      $("ss-text").textContent = A[si].q; $("ss-klein").textContent = A[si].id + " · " + A[si].t;
-      satz.style.opacity = 1; satz.style.transform = "none";
-    }, 600);
-  }, 6000);
+    satz.style.opacity = 0; kl.style.opacity = 0;
+    setTimeout(function () { si = (si + 5) % N; setzSatz(A[si]); satz.style.opacity = 1; kl.style.opacity = 1; }, 700);
+  }, 6500);
 
   // ---------- Kerntext: der Körper liest mit ----------
   var abs = [].slice.call(document.querySelectorAll("#v-kerntext p[data-a]"));
@@ -157,7 +203,8 @@
     aktiv = Math.max(0, Math.min(N - 1, i)); var a = A[aktiv];
     $("r-zn").textContent = a.id + " · " + a.b.split(" · ")[0];
     $("r-titel").textContent = a.t; $("r-lesen").href = "#a-" + a.id;
-    [].forEach.call(balken.children, function (b, k) { b.classList.toggle("an", k === aktiv); });
+    [].forEach.call(balken.children, function (b, k) { b.classList.toggle("an", k === aktiv); b.classList.toggle("war", !!gelesen[A[k].id]); });
+    var n = Object.keys(gelesen).length; $("r-spur").textContent = n ? n + " von 12 gelesen. Was du liest, bleibt im Körper heller." : "";
   }
   $("r-vor").addEventListener("click", function (e) { e.stopPropagation(); setzAktiv(aktiv - 1); });
   $("r-nach").addEventListener("click", function (e) { e.stopPropagation(); setzAktiv(aktiv + 1); });
@@ -181,7 +228,8 @@
 
   // ---------- ein Aspekt ----------
   function zeigAspekt(a) {
-    akt = a; aktiv = a.i;
+    akt = a; aktiv = a.i; gelesen[a.id] = true;
+    try { localStorage.setItem("theorie-gelesen", JSON.stringify(Object.keys(gelesen))); } catch (e) {}
     $("a-zn").textContent = "Aspekt " + a.id + " von 12";
     $("a-titel").textContent = a.t; $("a-zitat").textContent = "«" + a.q + "»"; $("a-beleg").textContent = a.b;
     var w = $("a-weiter"); w.textContent = "";

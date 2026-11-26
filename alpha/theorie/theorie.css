@@ -4,6 +4,9 @@
 /* Aufbau, zweite Stufe (26.11.2026, «könnte noch etwas ambitionierter sein»): EINE Leinwand hinter allem.
    Der Körper aus zwölf Schlaufen verschwindet nie, er entfaltet sich: Körper (Start), Reihe (Aspekte), einzelne Figur (Aspekt),
    Hintergrund, der mitliest (Kerntext). Eine Schrift, gross gesetzt. Eine einzige dunkle Welt, bewusst ohne helle Fassung. */
+/* Dritte Stufe (26.11.2026, «es darf noch weitergehen», dann «live»): Körper als gläserne Bänder in WebGL (ohne Bibliothek,
+   mit 2D-Rückfall), grosse Schrift mischt sich mit dem Körper (mix-blend-mode: difference; darum haben die Ansichten keinen eigenen
+   Stapelkontext), Startsatz gross in der Mitte, Lesespur. */
 :root {
   color-scheme: dark;
   --grund: #121315;
@@ -27,7 +30,8 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .ansicht[hidden] { display: none !important; }
 
 #welt { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; }
-.ansicht { position: relative; z-index: 1; }
+.ansicht { position: relative; }   /* ohne eigene Ebene: nur so mischt sich die Schrift mit der Leinwand */
+.gross, .menue a, .aspekte h2, .aspekt h2, .start .satz { mix-blend-mode: difference; color: #fff; }
 
 /* rollender Text */
 .roll { display: inline-block; height: 1.5em; line-height: 1.5; overflow: hidden; vertical-align: bottom; }
@@ -46,18 +50,21 @@ a:hover .roll > span, button:hover .roll > span, a:focus-visible .roll > span, b
 }
 
 /* ---------- Start ---------- */
-.start { position: fixed; inset: 0; cursor: grab; touch-action: none; }
-.start .satz { position: absolute; left: 0; right: 0; bottom: 13vh; margin-inline: auto; max-width: 22em; padding-inline: 24px; text-align: center; font-size: clamp(1.25rem, 2.6vw, 1.9rem); font-weight: 500; letter-spacing: -0.03em; line-height: 1.15; text-wrap: balance; transition: opacity 0.6s, transform 0.6s; }
-.start .satz small { display: block; margin-top: 10px; font-size: var(--klein); font-weight: 400; letter-spacing: 0; color: var(--grau); }
-@media (max-width: 700px) { .start .satz { bottom: 76px; } }
+.start { position: absolute; inset: 0; cursor: grab; touch-action: none; overflow: hidden; }
+.start .satz { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-52%); margin-inline: auto; padding-inline: 20px; text-align: center; font-weight: 600; letter-spacing: -0.055em; line-height: 0.94; text-wrap: balance; transition: opacity 0.7s; font-size: clamp(2.7rem, 10vw, 8rem); max-width: 9.5em; }
+.start .satz.mittel { font-size: clamp(2.1rem, 6.6vw, 5.2rem); max-width: 13em; }
+.start .satz.lang { font-size: clamp(1.7rem, 4.8vw, 3.8rem); max-width: 17em; }
+.start .kl { position: absolute; left: 0; right: 0; bottom: 12vh; text-align: center; font-size: var(--klein); color: var(--grau); transition: opacity 0.7s; }
+@media (max-width: 700px) { .start .kl { bottom: 64px; } }
 
 /* ---------- Menü ---------- */
-.menue { position: fixed; inset: 0; z-index: 4; display: grid; place-items: center; animation: auf 0.5s ease-out; }
+.menue { position: absolute; inset: 0; display: grid; place-items: center; animation: auf 0.5s ease-out; }
 @keyframes auf { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 .menue a { display: block; font-size: clamp(3.6rem, 15vw, 8rem); font-weight: 600; letter-spacing: -0.055em; line-height: 0.95; }
 .menue .roll, .menue .roll > span > span { height: 1.02em; line-height: 1.02; }
 .menue a:hover .roll > span, .menue a:focus-visible .roll > span { transform: translateY(-1.02em); }
-.menue a:hover { color: var(--blau); }
+.menue a { transition: opacity 0.3s; }
+.menue ul:hover a:not(:hover) { opacity: 0.35; }
 .menue .nr { font-size: var(--klein); font-weight: 400; letter-spacing: 0; color: var(--grau); vertical-align: top; margin-left: 8px; font-variant-numeric: tabular-nums; }
 
 /* ---------- Kerntext und Quellen ---------- */
@@ -82,7 +89,7 @@ a:hover .roll > span, button:hover .roll > span, a:focus-visible .roll > span, b
 .liste span { color: var(--grau); font-size: var(--klein); font-weight: 400; letter-spacing: 0; font-variant-numeric: tabular-nums; }
 
 /* ---------- Aspekte: die Reihe ---------- */
-.aspekte { position: fixed; inset: 0; touch-action: pan-y; cursor: grab; }
+.aspekte { position: absolute; inset: 0; touch-action: pan-y; cursor: grab; overflow: hidden; }
 .aspekte .unten { position: absolute; left: 0; right: 0; top: 66%; padding-inline: 24px; text-align: center; display: grid; justify-items: center; gap: 10px; }
 .aspekte .zn { font-size: var(--klein); color: var(--grau); font-variant-numeric: tabular-nums; }
 .aspekte h2 { font-size: clamp(2rem, 7vw, 4rem); font-weight: 600; letter-spacing: -0.05em; line-height: 0.98; text-wrap: balance; max-width: 12em; }
@@ -90,7 +97,9 @@ a:hover .roll > span, button:hover .roll > span, a:focus-visible .roll > span, b
 .aspekte .tun .haupt { color: var(--blau); }
 .balken { display: flex; gap: 4px; margin-top: 12px; }
 .balken i { width: 16px; height: 2px; background: var(--linie); transition: background 0.3s; }
-.balken i.an { background: var(--tinte); }
+.balken i.war { background: var(--blau); }
+.balken i.an { background: var(--tinte); height: 3px; }
+.aspekte .spur { font-size: var(--klein); color: var(--grau); font-variant-numeric: tabular-nums; }
 
 /* ---------- ein Aspekt ---------- */
 .aspekt { min-height: 100%; display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; padding: calc(env(safe-area-inset-top, 0px) + 28px) max(24px, env(safe-area-inset-right, 0px)) 40px max(24px, env(safe-area-inset-left, 0px)); }
@@ -109,7 +118,3 @@ a:hover .roll > span, button:hover .roll > span, a:focus-visible .roll > span, b
 .aspekt .achsen { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; color: var(--grau); font-size: 13px; font-variant-numeric: tabular-nums; }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
-
-/* kleine Beschriftungen in Geist Mono (Christians Wahl «A», 26.11.2026) */
-:root { --mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, monospace; }
-.aspekte .zn, .aspekt .zn, .aspekt .beleg, .aspekt .achsen, .menue .nr, .liste span, .kern .lab, .start .satz small { font-family: var(--mono); font-size: 13px; letter-spacing: -0.01em; font-weight: 400; }
