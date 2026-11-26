@@ -214,6 +214,15 @@
    "kurz": "Montage aus 99 eigenen Beiträgen, 2017 bis 2026: Malerei, Literatur, und wie Luhmann und Deleuze zusammenkommen."
   },
   {
+   "id": "theorie",
+   "name": "Theorie der Kunst (Probeseite)",
+   "tuer": "spielen-denken",
+   "art": "Theorie",
+   "status": "direktlink",
+   "adresse": "alpha/theorie/",
+   "kurz": "Probeseite der neuen Kunsttheorie (26.11.2026): ein Ornament-Körper aus zwölf Aspekten in der Mitte, Kerntext, Aspekte, Quellen; Texte noch Platzhalter aus dem Archiv."
+  },
+  {
    "id": "the-fictory",
    "name": "The Fictory",
    "tuer": "spielen-denken",
