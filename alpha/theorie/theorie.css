@@ -39,15 +39,16 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .roll > span > span { display: block; height: 1.5em; }
 a:hover .roll > span, button:hover .roll > span, a:focus-visible .roll > span, button:focus-visible .roll > span { transform: translateY(-1.5em); }
 
-/* Rand */
-.rand { position: fixed; z-index: 5; font-size: var(--klein); pointer-events: none; inset: 0; padding-left: max(24px, env(safe-area-inset-left, 0px)); padding-right: max(24px, env(safe-area-inset-right, 0px)); display: flex; align-items: center; justify-content: space-between; }
+/* Rand: Schriftzug oben links, Menü oben rechts (26.11.2026: «falsch platziert, nicht schöner schrifttyp» zur kleinen grauen Zeile auf halber Höhe) */
+.rand { position: fixed; z-index: 5; pointer-events: none; inset: 0 0 auto 0; padding: calc(env(safe-area-inset-top, 0px) + 22px) max(24px, env(safe-area-inset-right, 0px)) 0 max(24px, env(safe-area-inset-left, 0px)); display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .rand > * { pointer-events: auto; }
-.rand .links { color: var(--grau); }
-@media (min-width: 701px) { .rand.lesen .links { visibility: hidden; } }
-@media (max-width: 700px) {
-  .rand { flex-direction: column; padding-top: calc(env(safe-area-inset-top, 0px) + 18px); padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); }
-  .rand.lesen > * { background: var(--grund); padding: 6px 12px; border-radius: 999px; }
-}
+.rand.fliesst { position: absolute; }   /* auf Leseseiten geht der Kopf mit dem Text weg, sonst läuft der Text unter ihm durch */
+.rand .links { display: grid; gap: 5px; mix-blend-mode: difference; color: #fff; }
+.rand .links b { font-size: clamp(1.25rem, 2.2vw, 1.6rem); font-weight: 600; letter-spacing: -0.05em; line-height: 0.95; }
+.rand .links small { font-size: 13px; font-weight: 400; letter-spacing: 0; line-height: 1.2; opacity: 0.6; }
+.rand button { font-size: clamp(1.25rem, 2.2vw, 1.6rem); font-weight: 600; letter-spacing: -0.05em; line-height: 0.95; mix-blend-mode: difference; color: #fff; }
+.rand .roll, .rand .roll > span > span { height: 1.02em; line-height: 1.02; }
+.rand button:hover .roll > span, .rand button:focus-visible .roll > span { transform: translateY(-1.02em); }
 
 /* ---------- Start ---------- */
 .start { position: absolute; inset: 0; cursor: grab; touch-action: none; overflow: hidden; }

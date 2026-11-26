@@ -171,7 +171,7 @@
   st.addEventListener("pointerup", function () { zug.an = false; if (zug.weg < 6) { aktiv = NACH[hell] ? NACH[hell].i : aktiv; location.hash = "#aspekte"; } });
   var satz = $("start-satz"), kl = $("ss-klein"), si = 3;
   function setzSatz(x) {
-    satz.textContent = x.q; kl.textContent = x.id + " · " + x.t; hell = x.id;
+    satz.textContent = x.q; kl.textContent = x.id + " · " + x.t + " · Antippen zum Lesen"; hell = x.id;
     satz.classList.toggle("mittel", x.q.length >= 45 && x.q.length < 85); satz.classList.toggle("lang", x.q.length >= 85);
   }
   setInterval(function () {
@@ -250,8 +250,8 @@
     ansicht = z;
     document.querySelectorAll(".ansicht").forEach(function (v) { v.hidden = v.id !== "v-" + z; });
     rand.style.display = z === "aspekt" ? "none" : "";
-    rand.classList.toggle("lesen", z === "kerntext" || z === "quellen");
-    var t = z === "menue" ? "Schliessen" : z === "start" ? "Antippen zum Lesen" : "Menü";
+    rand.classList.toggle("fliesst", z === "kerntext" || z === "quellen");
+    var t = z === "menue" ? "Schliessen" : "Menü";
     $("rr1").textContent = t; $("rr2").textContent = t; rr.setAttribute("aria-expanded", String(z === "menue"));
     window.scrollTo(0, 0); absatz = {}; zeig = null;
     if (z === "aspekte") setzAktiv(aktiv);
