@@ -545,6 +545,15 @@
    "kurz": "Die Inhalte des Neubaus in technischer Rasteroptik."
   },
   {
+   "id": "epsilon",
+   "name": "Epsilon",
+   "tuer": "atelier",
+   "art": "Übersicht",
+   "status": "direktlink",
+   "adresse": "epsilon/",
+   "kurz": "Aktuelle Projekte: Formen, Theorie und Stimme."
+  },
+  {
    "id": "bisher",
    "name": "Bisherige Website",
    "tuer": "atelier",

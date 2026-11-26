@@ -124,3 +124,5 @@ h1, h2, h3 { font-weight: 500; letter-spacing: -0.015em; margin: 0; }
 .zustaende span { border: 1px solid var(--border); border-radius: 999px; padding: 4px 12px; font-size: 0.9rem; color: var(--muted); }
 .zustaende span.an { border-color: var(--text); background: var(--text); color: var(--bg); }
 .ringliste { display: grid; gap: 2px; }
+
+.knopf:disabled { opacity: .4; cursor: default; }
