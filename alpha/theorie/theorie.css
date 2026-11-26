@@ -4,7 +4,7 @@
    ins Skript). Ebenen: Körper (Start), Reihe der neun Bereiche, Bereich (Einleitung und Zettel), Zettel. Die Form einer Schlaufe folgt
    aus ihrer Stelle im Gerüst: Bereich = Zahl der Bögen und Farbe, Platz im Bereich = Ausschlag.
    Aufbau, zweite Stufe (26.11.2026, «könnte noch etwas ambitionierter sein»): EINE Leinwand hinter allem.
-   Der Körper aus Schlaufen verschwindet nie, er entfaltet sich: Körper (Start), Reihe (Aspekte), einzelne Figur (Aspekt),
+   Der Körper aus zwölf Schlaufen verschwindet nie, er entfaltet sich: Körper (Start), Reihe (Aspekte), einzelne Figur (Aspekt),
    Hintergrund, der mitliest (Kerntext). Eine Schrift, gross gesetzt. Eine einzige dunkle Welt, bewusst ohne helle Fassung. */
 :root {
   color-scheme: dark;
@@ -99,7 +99,16 @@ a:hover .roll > span, button:hover .roll > span, a:focus-visible .roll > span, b
 .fuss a:hover { color: var(--rosa); }
 .bereich .unter { margin-top: 18px; font-size: clamp(1.3rem, 2.9vw, 1.9rem); font-weight: 500; letter-spacing: -0.03em; line-height: 1.2; color: var(--grau); }
 .bereich .einl { margin-top: 10vh; display: grid; gap: 1.1em; max-width: 34em; font-size: 17px; line-height: 1.55; }
-.bereich .liste { margin-top: 10vh; }
+.bereich .liste { margin-top: 14px; }
+/* Lesetext und Sätze (26.11.2026, erste Runde): der kleine Text gross zu lesen, die Sätze einzeln und sehr gross; der Satz in der Mitte ist hell. */
+.bereich .lt { margin-top: 20vh; font-size: clamp(1.9rem, 5.4vw, 3.6rem); font-weight: 600; letter-spacing: -0.05em; line-height: 0.98; max-width: 12em; text-wrap: balance; mix-blend-mode: difference; color: #fff; }
+.bereich .lese { margin-top: 5vh; display: grid; gap: 1.15em; max-width: 31em; font-size: clamp(1.12rem, 1.5vw, 1.3rem); line-height: 1.5; text-wrap: pretty; }
+.bereich .lese p:first-child { font-size: clamp(1.3rem, 2.9vw, 1.9rem); font-weight: 500; letter-spacing: -0.03em; line-height: 1.2; max-width: 19em; margin-bottom: 0.5em; }
+.bereich .saetze { margin-top: 22vh; display: grid; gap: 20vh; }
+.bereich .saetze p { font-size: clamp(1.9rem, 6.2vw, 4.6rem); font-weight: 600; letter-spacing: -0.052em; line-height: 0.98; max-width: 13em; text-wrap: balance; color: #5d6068; mix-blend-mode: difference; transition: color 0.6s; }
+.bereich .saetze p.an { color: #fff; }
+.bereich .zl { margin-top: 26vh; font-size: var(--klein); color: var(--grau); }
+@media (prefers-reduced-motion: reduce) { .bereich .saetze p { color: #fff; } }
 .liste span { color: var(--grau); font-size: var(--klein); font-weight: 400; letter-spacing: 0; font-variant-numeric: tabular-nums; }
 
 /* ---------- Aspekte: die Reihe ---------- */

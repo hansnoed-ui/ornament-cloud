@@ -12,6 +12,7 @@
   Dritte Stufe am selben Tag («es darf noch weitergehen», dann «live»): gläserne Bänder in WebGL, Schrift und Körper mischen sich, Lesespur.
   Schriftzug oben links statt der kleinen Zeile auf halber Höhe (Christian: «falsch platziert, nicht schöner schrifttyp», dann «live neues design»).
   Echte Texte am selben Tag («texte», dann «live»): Kerntext, neun Bereiche, 46 Zettel aus dem Gerüst, für die Leserin gefasst, ohne Belege und Verweise.
+  Lesetexte am selben Tag (Christian: «Schon jetzt»): je Bereich ein kleiner Text und einzelne Sätze, gross gesetzt, vor den Zetteln.
   Die Montage unter alpha/kunsttheorie/ ist eine andere, ältere Seite und bleibt unberührt.
 -->
 <meta name="robots" content="noindex">
@@ -24,7 +25,7 @@
 <meta property="og:description" content="Probeseite der neuen Kunsttheorie von Christian Strickler: ein Kerntext, neun Bereiche und 46 verknüpfte Zettel, als Ornament in der Mitte.">
 <meta name="theme-color" content="#121315">
 <link rel="stylesheet" href="../../vendor/fonts/animationen.css">
-<link rel="stylesheet" href="theorie.css?v=5">
+<link rel="stylesheet" href="theorie.css?v=7">
 </head>
 <body>
 <canvas id="welt" aria-hidden="true"></canvas>
@@ -79,7 +80,10 @@
   <p class="zn" id="b-zn" style="font-size:var(--klein);color:var(--grau);margin-bottom:14px"></p>
   <h1 class="gross these" id="b-titel"></h1>
   <p class="unter" id="b-unter"></p>
-  <div class="einl" id="b-einl"></div>
+  <h2 class="lt" id="b-lt"></h2>
+  <div class="lese" id="b-lese"></div>
+  <div class="saetze" id="b-saetze"></div>
+  <p class="zl">Die Zettel dieses Bereichs</p>
   <ul class="liste" id="b-liste"></ul>
   <p class="fuss" id="b-fuss"></p>
 </main>
@@ -109,6 +113,6 @@
   </ul>
   <p class="fuss"><a href="#kerntext">Kerntext</a><a href="#bereiche">Die neun Bereiche</a></p>
 </main>
-<script src="theorie.js?v=6"></script>
+<script src="theorie.js?v=7"></script>
 </body>
 </html>
