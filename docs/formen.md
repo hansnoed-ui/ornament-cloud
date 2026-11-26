@@ -77,10 +77,32 @@ Linie, Band, Volumen, Punkte · Wachstum, Reaktion–Diffusion, Verflechtung, Fe
 Gesamtfigur kehrt alle 2 min 31 s genau zurück (Grundtempo 0,5 rad/s, kgV der Nenner 12). Ohne laufen sie
 1 : φ : √2 : √3; jeder Ring kehrt wieder, die Gesamtfigur nie.
 
+## Eigenzeit (`alpha/formen/eigenzeit/`, seit 26. November 2026)
+
+Christian: «bau die Eigenzeit-Idee aus». Claude schlug vier Teile vor, Christian: «ja, so machen».
+Die Begriffe sind Christians (Zeittheorie aus *Zu seiner Zeit* und *Formen der Zeit*), die Umsetzung ins Bild ist Claudes Vorschlag.
+
+- **Eigenzeit statt Uhr:** Jeder Ring hat einen eigenen Rhythmus und schreitet in Operationen (ruckartiger Schritt), nicht gleichmässig.
+  Es gibt keine gemeinsame Uhr und keine Zeitanzeige; sichtbar ist nur, was gleichzeitig da ist.
+- **Koppelung und Zeitdruck:** Phasenkoppelung nach Kuramoto. Fäden zwischen benachbarten Ringen leuchten mit der Kraft zwischen ihnen.
+  Zustand, gemessen über die letzten 8 s: *aufgegangen* (wirkliche Tempi gleich, Gleichtakt), *gekoppelt* (Tempi ziehen sich an,
+  bleiben verschieden), *beziehungslos* (kaum Zug). Die Grenze hängt vom Unterschied der Eigenzeiten ab: bei Unterschied 70 etwa
+  bis Koppelung 30 beziehungslos, 35–75 gekoppelt, ab 80 aufgegangen – die Koppelungsschwelle als Verhältnis, nicht als Abstand.
+  Im Gleichtakt bleibt eine feste Spannung stehen: Synchronisation ist nicht produktive Koppelung.
+- **Spur als Körper:** Jede Operation legt eine Schicht ab, jeder Ring wächst so hoch, wie er Schritte macht. Der Schritt ist ein
+  irrationaler Bruchteil des Perlenabstands, darum deckt sich keine Schicht mit einer früheren (Wiederkehr ohne Rückkehr).
+  Höchstens 260 Schichten je Ring, danach laufen die Ringe weiter ohne Spur.
+- **Beobachter (dritte Temporalisierung):** ein dritter Rhythmus (1,7 s), ungekoppelt. Nur wenn er mitläuft, werden die Differenzen
+  benachbarter Ringe festgestellt und als blaue Linien in der Spur festgehalten.
+- Gerechnet wird in festen Schritten von 1/120 s, unabhängig von der Bildrate: Startwert und Regler bestimmen den Verlauf.
+  Wer unterwegs einen Regler verschiebt, schreibt die Geschichte weiter.
+
+Offen: Export des Zeitkörpers (STL/GLB für Druck oder Guss), Koppelung nicht nur zwischen Nachbarn, ein Körper als
+«multitemporale Verdichtungsfigur» mit Schichten verschiedener Eigenzeit.
+
 ## Ideen (Vorschläge von Claude, noch nicht entschieden)
 
-- **Eigenzeiten als Objekt:** die Gekoppelten Tempi ausbauen – «Wiederkehr ohne Rückkehr, keine gemeinsame Uhr»
-  nicht als Beispiel, sondern als Form. Von Claude als stärkste Idee eingeschätzt.
+- **Eigenzeiten als Objekt:** umgesetzt als `alpha/formen/eigenzeit/` (siehe oben).
 - **Beobachter:** ein Körper, der von vorne Rosette, von der Seite Welle oder Schrift ist.
 - **Identität:** der Startwert als Identität des Werks, jede Ausführung (Druck, Guss, Film) eine nichtidentische
   Wiederholung.
