@@ -53,6 +53,13 @@
     } catch (e) { gl = null; }
   }
   if (!gl) { var neu = cv.cloneNode(false); cv.replaceWith(neu); cv = neu; c = cv.getContext("2d"); }
+  // WebGL kann am Handy verloren gehen (Speicher knapp, Tab im Hintergrund, Grafiktreiber). Chrome zeigt dann eine weisse Fläche mit
+  // traurigem Symbol, und die Schrift mit mix-blend-mode: difference kippt ins Unlesbare (Christian, 26. November 2026, Bildschirmfoto
+  // vom Bereich 9). Darum beim Verlust sofort auf die 2D-Fassung wechseln: neue Leinwand, dunkler Grund, Linien statt Bänder.
+  if (gl) cv.addEventListener("webglcontextlost", function (e) {
+    e.preventDefault();
+    var ersatz = cv.cloneNode(false); cv.replaceWith(ersatz); cv = ersatz; gl = null; c = cv.getContext("2d"); mass();
+  });
   function mass() {
     DPR = Math.min(2, window.devicePixelRatio || 1); W = window.innerWidth; H = window.innerHeight;
     cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
