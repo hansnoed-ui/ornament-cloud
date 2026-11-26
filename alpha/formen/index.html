@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>ORNAMENT FORMEN 0.1 · Katalog</title>
+  <!-- Online unter /alpha/formen/ nur per Direktlink, wie Lab und AV Studio: nicht verlinkt, nicht in der Suche (26. November 2026). -->
+  <meta name="robots" content="noindex">
+  <meta name="description" content="ORNAMENT FORMEN: 16 Formfamilien für generative Ornamente in 3D, nach Ordnung, Element und Verfahren; jede über Startwerte wiederholbar.">
+  <link rel="stylesheet" href="../../vendor/fonts/fonts.css">
+  <link rel="stylesheet" href="formen.css?v=1">
+</head>
+<body>
+  <canvas id="gl" aria-hidden="true"></canvas>
+  <header class="kopf">
+    <p class="heimzeile"><a class="heim" href="../../">← ornament.cloud</a></p>
+    <div class="marke">
+      <h1>ORNAMENT FORMEN <span class="version">0.1</span></h1>
+      <p class="leitsatz">Ordnung · Element · Verfahren</p>
+    </div>
+    <nav class="seiten" aria-label="Seiten">
+      <a class="knopf klein" aria-current="page" href="./">Katalog</a>
+      <a class="knopf klein leise" href="koerper/">Ornamentkörper</a>
+    </nav>
+  </header>
+
+  <main class="katalog">
+    <div class="einleitung">
+      <p>16 Formfamilien für generative Ornamente. Jede Form rechnet auf deinem Gerät. Ziehen dreht sie, «Neu» zieht einen anderen Startwert; derselbe Startwert ergibt immer dieselbe Form.</p>
+      <div class="werkbank">
+        <span class="etikett">Material</span>
+        <div class="pillen" id="material" role="group" aria-label="Material">
+          <button type="button" class="knopf klein leise" data-material="messing" aria-pressed="true">Messing</button>
+          <button type="button" class="knopf klein leise" data-material="kreide" aria-pressed="false">Kreide</button>
+          <button type="button" class="knopf klein leise" data-material="kobalt" aria-pressed="false">Kobalt</button>
+          <button type="button" class="knopf klein leise" data-material="ton" aria-pressed="false">Ton</button>
+        </div>
+        <div class="pillen">
+          <button type="button" class="knopf klein leise" id="lauf">Anhalten</button>
+          <button type="button" class="knopf klein leise" id="alle">Alle neu</button>
+        </div>
+      </div>
+    </div>
+    <div id="abschnitte" class="katalog-abschnitte"></div>
+  </main>
+
+  <script type="importmap">
+  { "imports": { "three": "../../vendor/three-0.185.1/three.module.min.js" } }
+  </script>
+  <script type="module" src="katalog.js?v=1"></script>
+</body>
+</html>
