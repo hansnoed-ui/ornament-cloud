@@ -69,13 +69,33 @@ a:hover .roll > span, button:hover .roll > span, a:focus-visible .roll > span, b
 .gross .z:nth-child(2) > span { animation-delay: 0.09s; }
 .gross .z:nth-child(3) > span { animation-delay: 0.18s; }
 @keyframes hoch { from { transform: translateY(105%); } to { transform: none; } }
-.kern p { margin-top: 30vh; font-size: clamp(1.35rem, 3.2vw, 2.1rem); font-weight: 500; letter-spacing: -0.03em; line-height: 1.2; max-width: 19em; text-wrap: pretty; color: var(--grau); transition: color 0.5s; }
-.kern p:first-of-type { margin-top: 16vh; }
-.kern p.an { color: var(--tinte); }
-.kern p a { color: inherit; border-bottom: 1px solid currentColor; transition: color 0.3s; }
-.kern p.an a { color: var(--blau); }
-.kern p a:hover { color: var(--rosa); }
+/* Gerüst (dritte Stufe): fünf Stränge; gross Christians Satz, klein der gekennzeichnete Vorschlag, grau die Lektüre */
+.kern .kopf { margin-top: 10vh; }
+.strang { margin-top: 30vh; max-width: 21em; color: var(--grau); transition: color 0.5s; }
+.kern .kopf + .strang { margin-top: 16vh; }
+.strang.an { color: var(--tinte); }
+.strang .zn { font-size: 13px; margin-bottom: 14px; }
+.strang .leit { font-size: clamp(1.45rem, 3.4vw, 2.3rem); font-weight: 500; letter-spacing: -0.03em; line-height: 1.16; text-wrap: pretty; }
+.strang .leit a { color: inherit; }
+.strang .leit a:hover { color: var(--rosa); }
+.strang .leit small { display: block; margin-top: 10px; font-size: 13px; color: var(--grau); }
+.strang .vorschlag { margin-top: 22px; max-width: 34em; font-size: 16px; line-height: 1.55; border-left: 1px solid var(--linie); padding-left: 14px; }
+.strang .vorschlag a { color: inherit; border-bottom: 1px solid currentColor; transition: color 0.3s; }
+.strang.an .vorschlag a { color: var(--blau); }
+.strang .vorschlag a:hover { color: var(--rosa); }
+.etikett { display: block; margin-bottom: 4px; font-size: 12px; color: var(--grau); text-transform: uppercase; letter-spacing: 0.04em; }
+.strang .frage { margin-top: 18px; font-size: 16px; }
 .kern .lab { margin-top: 30vh; font-size: var(--klein); font-weight: 400; letter-spacing: 0; line-height: 1.5; color: var(--grau); max-width: 34em; }
+.kern .lab.kopf { margin-top: 10vh; }
+/* Lektüre und ORNA: grau hinterlegt wie in der Montage; Zettelkasten: eigener Text, nur mit Randstrich */
+.lektuere, .zettel { margin: 18px 0 0; padding: 14px 16px; max-width: 36em; border-radius: 4px; }
+.lektuere { background: rgba(255, 255, 255, 0.055); color: #b4b6ba; }
+.zettel { border-left: 1px solid var(--blau); }
+.lektuere figcaption, .zettel figcaption { font-size: 12px; color: var(--grau); margin-bottom: 6px; }
+.lektuere blockquote, .zettel blockquote { margin: 0; font-size: 15px; line-height: 1.5; letter-spacing: 0; font-weight: 400; max-width: none; }
+.lektuere a, .zettel a { display: inline-block; margin-top: 8px; font-size: 13px; color: var(--blau); border-bottom: 1px solid currentColor; }
+.liste a { border-bottom: 1px solid var(--linie); }
+.liste a:hover { color: var(--blau); }
 .liste { margin-top: 12vh; max-width: 780px; }
 .liste li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: baseline; padding: 18px 0; border-top: 1px solid var(--linie); font-size: clamp(1.25rem, 3vw, 1.9rem); font-weight: 500; letter-spacing: -0.03em; line-height: 1.15; }
 .liste li:last-child { border-bottom: 1px solid var(--linie); }
@@ -89,19 +109,27 @@ a:hover .roll > span, button:hover .roll > span, a:focus-visible .roll > span, b
 .aspekte .tun { display: flex; gap: 26px; font-size: var(--klein); margin-top: 6px; }
 .aspekte .tun .haupt { color: var(--blau); }
 .balken { display: flex; gap: 4px; margin-top: 12px; }
-.balken i { width: 16px; height: 2px; background: var(--linie); transition: background 0.3s; }
+.balken i { width: 12px; height: 2px; background: var(--linie); transition: background 0.3s; }
 .balken i.an { background: var(--tinte); }
 
 /* ---------- ein Aspekt ---------- */
 .aspekt { min-height: 100%; display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; padding: calc(env(safe-area-inset-top, 0px) + 28px) max(24px, env(safe-area-inset-right, 0px)) 40px max(24px, env(safe-area-inset-left, 0px)); }
-@media (min-width: 820px) { .aspekt { grid-template-columns: minmax(0, 46%) minmax(0, 1fr); gap: 0; height: 100%; padding-left: max(24px, 5vw); } }
+@media (min-width: 820px) {
+  .aspekt { grid-template-columns: minmax(0, 46%) minmax(0, 1fr); gap: 0; padding-left: max(24px, 5vw); align-items: start; }
+  .aspekt .text { min-height: calc(100vh - 68px); }
+  .aspekt .feld { position: sticky; top: 0; height: 100vh; }
+}
 .aspekt .text { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
 .aspekt .zurueck { font-size: var(--klein); align-self: flex-start; }
 .aspekt .mitte { margin-block: auto; display: grid; gap: 18px; padding-block: 18px; }
 .aspekt .zn { font-size: var(--klein); color: var(--grau); font-variant-numeric: tabular-nums; }
 .aspekt h2 { font-size: clamp(2.5rem, 8vw, 5.4rem); font-weight: 600; letter-spacing: -0.055em; line-height: 0.94; text-wrap: balance; }
-.aspekt blockquote { margin: 0; font-size: clamp(1.3rem, 2.5vw, 1.8rem); font-weight: 500; letter-spacing: -0.03em; line-height: 1.2; max-width: 20em; text-wrap: pretty; }
+.aspekt .mitte > blockquote { white-space: pre-line; margin: 0; font-size: clamp(1.3rem, 2.5vw, 1.8rem); font-weight: 500; letter-spacing: -0.03em; line-height: 1.2; max-width: 20em; text-wrap: pretty; }
 .aspekt .beleg { font-size: var(--klein); color: var(--grau); }
+.aspekt .neben { display: grid; gap: 0; }
+.aspekt .neben figure:first-child { margin-top: 0; }
+.aspekt .offen { max-width: 36em; padding: 14px 16px; border: 1px solid var(--rosa); border-radius: 4px; font-size: 15px; line-height: 1.5; }
+.aspekt .offen b { display: block; font-family: var(--mono); font-weight: 400; font-size: 12px; color: var(--rosa); margin-bottom: 4px; }
 .aspekt .weiter { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 15px; }
 .aspekt .weiter a { color: var(--blau); border-bottom: 1px solid currentColor; padding-bottom: 1px; }
 .aspekt .weiter a:hover { color: var(--rosa); }
@@ -112,4 +140,4 @@ a:hover .roll > span, button:hover .roll > span, a:focus-visible .roll > span, b
 
 /* kleine Beschriftungen in Geist Mono (Christians Wahl «A», 26.11.2026) */
 :root { --mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, monospace; }
-.aspekte .zn, .aspekt .zn, .aspekt .beleg, .aspekt .achsen, .menue .nr, .liste span, .kern .lab, .start .satz small { font-family: var(--mono); font-size: 13px; letter-spacing: -0.01em; font-weight: 400; }
+.aspekte .zn, .aspekt .zn, .aspekt .beleg, .strang .zn, .strang .leit small, .etikett, .lektuere figcaption, .zettel figcaption, .aspekt .achsen, .menue .nr, .liste span, .kern .lab, .start .satz small { font-family: var(--mono); font-size: 13px; letter-spacing: -0.01em; font-weight: 400; }
