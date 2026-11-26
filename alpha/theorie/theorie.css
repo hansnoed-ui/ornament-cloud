@@ -1,12 +1,11 @@
 /* ornament.cloud/alpha/theorie/ – Probeseite der neuen Kunsttheorie (26. November 2026).
-   Richtung: shanzhy.io als Anregung, Schrift «Grotesk» (Hanken Grotesk allein, aus vendor/fonts/animationen.css).
-   Texte sind Platzhalter aus dem Archiv, bis das Gerüst der Theorie steht. */
-/* Aufbau, zweite Stufe (26.11.2026, «könnte noch etwas ambitionierter sein»): EINE Leinwand hinter allem.
-   Der Körper aus zwölf Schlaufen verschwindet nie, er entfaltet sich: Körper (Start), Reihe (Aspekte), einzelne Figur (Aspekt),
+   Richtung: shanzhy.io als Anregung, Schrift «Grotesk» (Hanken Grotesk allein, aus vendor/fonts/animationen.css). */
+/* Texte (26.11.2026, «texte»): Kerntext, neun Bereiche und 46 Zettel kommen aus dem Gerüst (texte-einsetzen.py schreibt sie als Daten
+   ins Skript). Ebenen: Körper (Start), Reihe der neun Bereiche, Bereich (Einleitung und Zettel), Zettel. Die Form einer Schlaufe folgt
+   aus ihrer Stelle im Gerüst: Bereich = Zahl der Bögen und Farbe, Platz im Bereich = Ausschlag.
+   Aufbau, zweite Stufe (26.11.2026, «könnte noch etwas ambitionierter sein»): EINE Leinwand hinter allem.
+   Der Körper aus Schlaufen verschwindet nie, er entfaltet sich: Körper (Start), Reihe (Aspekte), einzelne Figur (Aspekt),
    Hintergrund, der mitliest (Kerntext). Eine Schrift, gross gesetzt. Eine einzige dunkle Welt, bewusst ohne helle Fassung. */
-/* Dritte Stufe (26.11.2026, «es darf noch weitergehen», dann «live»): Körper als gläserne Bänder in WebGL (ohne Bibliothek,
-   mit 2D-Rückfall), grosse Schrift mischt sich mit dem Körper (mix-blend-mode: difference; darum haben die Ansichten keinen eigenen
-   Stapelkontext), Startsatz gross in der Mitte, Lesespur. */
 :root {
   color-scheme: dark;
   --grund: #121315;
@@ -32,6 +31,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 #welt { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; }
 .ansicht { position: relative; }   /* ohne eigene Ebene: nur so mischt sich die Schrift mit der Leinwand */
 .gross, .menue a, .aspekte h2, .aspekt h2, .start .satz { mix-blend-mode: difference; color: #fff; }
+.rand.fliesst { position: absolute; }
 
 /* rollender Text */
 .roll { display: inline-block; height: 1.5em; line-height: 1.5; overflow: hidden; vertical-align: bottom; }
@@ -42,7 +42,6 @@ a:hover .roll > span, button:hover .roll > span, a:focus-visible .roll > span, b
 /* Rand: Schriftzug oben links, Menü oben rechts (26.11.2026: «falsch platziert, nicht schöner schrifttyp» zur kleinen grauen Zeile auf halber Höhe) */
 .rand { position: fixed; z-index: 5; pointer-events: none; inset: 0 0 auto 0; padding: calc(env(safe-area-inset-top, 0px) + 22px) max(24px, env(safe-area-inset-right, 0px)) 0 max(24px, env(safe-area-inset-left, 0px)); display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .rand > * { pointer-events: auto; }
-.rand.fliesst { position: absolute; }   /* auf Leseseiten geht der Kopf mit dem Text weg, sonst läuft der Text unter ihm durch */
 .rand .links { display: grid; gap: 5px; mix-blend-mode: difference; color: #fff; }
 .rand .links b { font-size: clamp(1.25rem, 2.2vw, 1.6rem); font-weight: 600; letter-spacing: -0.05em; line-height: 0.95; }
 .rand .links small { font-size: 13px; font-weight: 400; letter-spacing: 0; line-height: 1.2; opacity: 0.6; }
@@ -76,22 +75,37 @@ a:hover .roll > span, button:hover .roll > span, a:focus-visible .roll > span, b
 .gross .z > span { display: block; animation: hoch 0.9s cubic-bezier(.2, .7, .1, 1) both; }
 .gross .z:nth-child(2) > span { animation-delay: 0.09s; }
 .gross .z:nth-child(3) > span { animation-delay: 0.18s; }
+.gross .z:nth-child(4) > span { animation-delay: 0.27s; }
+.gross.these { font-size: clamp(2.1rem, 7.6vw, 5.6rem); max-width: 13em; letter-spacing: -0.052em; line-height: 0.96; }
 @keyframes hoch { from { transform: translateY(105%); } to { transform: none; } }
-.kern p { margin-top: 30vh; font-size: clamp(1.35rem, 3.2vw, 2.1rem); font-weight: 500; letter-spacing: -0.03em; line-height: 1.2; max-width: 19em; text-wrap: pretty; color: var(--grau); transition: color 0.5s; }
+.kern p { margin-top: 26vh; font-size: clamp(1.3rem, 2.9vw, 1.9rem); font-weight: 500; letter-spacing: -0.03em; line-height: 1.2; max-width: 19em; text-wrap: pretty; color: var(--grau); transition: color 0.5s; }
 .kern p:first-of-type { margin-top: 16vh; }
 .kern p.an { color: var(--tinte); }
 .kern p a { color: inherit; border-bottom: 1px solid currentColor; transition: color 0.3s; }
 .kern p.an a { color: var(--blau); }
 .kern p a:hover { color: var(--rosa); }
-.kern .lab { margin-top: 30vh; font-size: var(--klein); font-weight: 400; letter-spacing: 0; line-height: 1.5; color: var(--grau); max-width: 34em; }
+.kern p .nr { display: block; font-size: var(--klein); font-weight: 400; letter-spacing: 0; line-height: 1.5; margin-bottom: 10px; }
+.kern p .nr a { border-bottom: 0; }
+.kern .lab, .fuss { margin-top: 30vh; font-size: var(--klein); font-weight: 400; letter-spacing: 0; line-height: 1.5; color: var(--grau); max-width: 34em; }
 .liste { margin-top: 12vh; max-width: 780px; }
 .liste li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: baseline; padding: 18px 0; border-top: 1px solid var(--linie); font-size: clamp(1.25rem, 3vw, 1.9rem); font-weight: 500; letter-spacing: -0.03em; line-height: 1.15; }
 .liste li:last-child { border-bottom: 1px solid var(--linie); }
+.liste a { display: block; transition: color 0.3s; }
+.liste a:hover { color: var(--blau); }
+.liste li.war a { color: var(--grau); }
+.liste li.offen a::after { content: " (noch nicht ausgearbeitet)"; font-size: var(--klein); font-weight: 400; letter-spacing: 0; color: var(--grau); }
+.fuss { display: flex; flex-wrap: wrap; gap: 8px 26px; font-size: 15px; margin-top: 12vh; }
+.fuss a { color: var(--blau); border-bottom: 1px solid currentColor; padding-bottom: 1px; }
+.fuss a:hover { color: var(--rosa); }
+.bereich .unter { margin-top: 18px; font-size: clamp(1.3rem, 2.9vw, 1.9rem); font-weight: 500; letter-spacing: -0.03em; line-height: 1.2; color: var(--grau); }
+.bereich .einl { margin-top: 10vh; display: grid; gap: 1.1em; max-width: 34em; font-size: 17px; line-height: 1.55; }
+.bereich .liste { margin-top: 10vh; }
 .liste span { color: var(--grau); font-size: var(--klein); font-weight: 400; letter-spacing: 0; font-variant-numeric: tabular-nums; }
 
 /* ---------- Aspekte: die Reihe ---------- */
 .aspekte { position: absolute; inset: 0; touch-action: pan-y; cursor: grab; overflow: hidden; }
 .aspekte .unten { position: absolute; left: 0; right: 0; top: 66%; padding-inline: 24px; text-align: center; display: grid; justify-items: center; gap: 10px; }
+.aspekte .unter { font-size: clamp(1rem, 2.2vw, 1.25rem); color: var(--grau); margin-top: -2px; }
 .aspekte .zn { font-size: var(--klein); color: var(--grau); font-variant-numeric: tabular-nums; }
 .aspekte h2 { font-size: clamp(2rem, 7vw, 4rem); font-weight: 600; letter-spacing: -0.05em; line-height: 0.98; text-wrap: balance; max-width: 12em; }
 .aspekte .tun { display: flex; gap: 26px; font-size: var(--klein); margin-top: 6px; }
@@ -102,20 +116,33 @@ a:hover .roll > span, button:hover .roll > span, a:focus-visible .roll > span, b
 .balken i.an { background: var(--tinte); height: 3px; }
 .aspekte .spur { font-size: var(--klein); color: var(--grau); font-variant-numeric: tabular-nums; }
 
-/* ---------- ein Aspekt ---------- */
-.aspekt { min-height: 100%; display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; padding: calc(env(safe-area-inset-top, 0px) + 28px) max(24px, env(safe-area-inset-right, 0px)) 40px max(24px, env(safe-area-inset-left, 0px)); }
-@media (min-width: 820px) { .aspekt { grid-template-columns: minmax(0, 46%) minmax(0, 1fr); gap: 0; height: 100%; padding-left: max(24px, 5vw); } }
+/* ---------- ein Zettel ---------- */
+.aspekt { min-height: 100%; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; padding: calc(env(safe-area-inset-top, 0px) + 28px) max(24px, env(safe-area-inset-right, 0px)) 80px max(24px, env(safe-area-inset-left, 0px)); }
+.aspekt .feld { height: 34vh; position: relative; order: -1; pointer-events: none; }
+@media (min-width: 820px) {
+  .aspekt { grid-template-columns: minmax(0, 54%) minmax(0, 1fr); gap: 0; padding-left: max(24px, 5vw); }
+  .aspekt .feld { order: 0; position: sticky; top: 0; height: 100vh; margin-block: -28px -80px; }
+}
 .aspekt .text { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
-.aspekt .zurueck { font-size: var(--klein); align-self: flex-start; }
-.aspekt .mitte { margin-block: auto; display: grid; gap: 18px; padding-block: 18px; }
+.aspekt .zurueck { font-size: clamp(1.25rem, 2.2vw, 1.6rem); font-weight: 600; letter-spacing: -0.05em; line-height: 1.02; align-self: flex-start; }
+.aspekt .zurueck .roll, .aspekt .zurueck .roll > span > span { height: 1.02em; line-height: 1.02; }
+.aspekt .zurueck:hover .roll > span { transform: translateY(-1.02em); }
+.aspekt .mitte { display: grid; gap: 22px; padding-block: 9vh 0; }
 .aspekt .zn { font-size: var(--klein); color: var(--grau); font-variant-numeric: tabular-nums; }
-.aspekt h2 { font-size: clamp(2.5rem, 8vw, 5.4rem); font-weight: 600; letter-spacing: -0.055em; line-height: 0.94; text-wrap: balance; }
-.aspekt blockquote { margin: 0; font-size: clamp(1.3rem, 2.5vw, 1.8rem); font-weight: 500; letter-spacing: -0.03em; line-height: 1.2; max-width: 20em; text-wrap: pretty; }
-.aspekt .beleg { font-size: var(--klein); color: var(--grau); }
-.aspekt .weiter { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 15px; }
+.aspekt h2 { font-size: clamp(2.3rem, 6.4vw, 4.6rem); font-weight: 600; letter-spacing: -0.055em; line-height: 0.96; text-wrap: balance; }
+.aspekt h2.mittel { font-size: clamp(1.9rem, 4.4vw, 3.2rem); letter-spacing: -0.05em; line-height: 1; }
+.aspekt h2.lang { font-size: clamp(1.6rem, 3.3vw, 2.5rem); letter-spacing: -0.045em; line-height: 1.04; }
+.aspekt .lese { display: grid; gap: 1.1em; max-width: 34em; font-size: 17px; line-height: 1.55; margin-top: 3vh; }
+.aspekt .lese a, .aspekt .klein a { border-bottom: 1px solid var(--grau); }
+.aspekt .klein { max-width: 46em; font-size: var(--klein); line-height: 1.55; color: var(--grau); }
+.aspekt .klein b { display: block; font-weight: 500; color: var(--tinte); margin-bottom: 3px; }
+.aspekt .frage { margin: 4vh 0 0; font-size: clamp(1.3rem, 2.5vw, 1.8rem); font-weight: 500; letter-spacing: -0.03em; line-height: 1.2; max-width: 20em; text-wrap: pretty; }
+.aspekt .frage small { display: block; font-size: var(--klein); font-weight: 400; letter-spacing: 0; line-height: 1.5; color: var(--grau); margin-bottom: 8px; }
+.aspekt .weiter { display: flex; flex-wrap: wrap; gap: 10px 22px; font-size: 15px; margin-top: 2vh; }
 .aspekt .weiter a { color: var(--blau); border-bottom: 1px solid currentColor; padding-bottom: 1px; }
 .aspekt .weiter a:hover { color: var(--rosa); }
-.aspekt .feld { min-height: 46vh; position: relative; }
-.aspekt .achsen { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; color: var(--grau); font-size: 13px; font-variant-numeric: tabular-nums; }
+.aspekt .weiter a.war { color: var(--grau); }
+.aspekt .ort { position: absolute; left: 0; right: 0; bottom: 18px; text-align: center; color: var(--grau); font-size: 13px; font-variant-numeric: tabular-nums; }
+@media (max-width: 819px) { .aspekt .ort { display: none; } }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }

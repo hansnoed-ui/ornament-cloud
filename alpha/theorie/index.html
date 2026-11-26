@@ -7,23 +7,24 @@
 <!--
   Alpha-Bereich: öffentlich erreichbar, nur per Direktlink, noindex, nicht in der Sitemap (26. November 2026).
   Probeseite für die neue Kunsttheorie (Projekt «Kunst Theorie»): Gestaltung nach dem Entwurf «Theorie in der Mitte», Christians OK vom 26. November 2026
-  («sieht gut aus vom design», Schrift «grotesk»). Die Texte sind Platzhalter aus dem X- und Facebook-Archiv; das Gerüst der Theorie entsteht noch.
+  («sieht gut aus vom design», Schrift «grotesk»).
   Zweite Stufe am selben Tag («könnte noch etwas ambitionierter sein», dann «live»): eine Leinwand hinter allen Ansichten, der Körper entfaltet sich.
   Dritte Stufe am selben Tag («es darf noch weitergehen», dann «live»): gläserne Bänder in WebGL, Schrift und Körper mischen sich, Lesespur.
   Schriftzug oben links statt der kleinen Zeile auf halber Höhe (Christian: «falsch platziert, nicht schöner schrifttyp», dann «live neues design»).
+  Echte Texte am selben Tag («texte», dann «live»): Kerntext, neun Bereiche, 46 Zettel aus dem Gerüst, für die Leserin gefasst, ohne Belege und Verweise.
   Die Montage unter alpha/kunsttheorie/ ist eine andere, ältere Seite und bleibt unberührt.
 -->
 <meta name="robots" content="noindex">
-<meta name="description" content="Probeseite der neuen Kunsttheorie von Christian Strickler: ein Kerntext und zwölf verknüpfte Aspekte, als Ornament in der Mitte.">
+<meta name="description" content="Probeseite der neuen Kunsttheorie von Christian Strickler: ein Kerntext, neun Bereiche und 46 verknüpfte Zettel, als Ornament in der Mitte.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="ornament.cloud">
 <meta property="og:locale" content="de_CH">
 <meta property="og:url" content="https://ornament.cloud/alpha/theorie/">
 <meta property="og:title" content="Theorie der Kunst · Probeseite">
-<meta property="og:description" content="Probeseite der neuen Kunsttheorie von Christian Strickler: ein Kerntext und zwölf verknüpfte Aspekte, als Ornament in der Mitte.">
+<meta property="og:description" content="Probeseite der neuen Kunsttheorie von Christian Strickler: ein Kerntext, neun Bereiche und 46 verknüpfte Zettel, als Ornament in der Mitte.">
 <meta name="theme-color" content="#121315">
 <link rel="stylesheet" href="../../vendor/fonts/animationen.css">
-<link rel="stylesheet" href="theorie.css?v=4">
+<link rel="stylesheet" href="theorie.css?v=5">
 </head>
 <body>
 <canvas id="welt" aria-hidden="true"></canvas>
@@ -33,35 +34,40 @@
   <button type="button" id="rand-rechts" aria-expanded="false"><span class="roll"><span><span id="rr1">Menü</span><span id="rr2">Menü</span></span></span></button>
 </div>
 
-<section class="ansicht start" id="v-start" aria-label="Start: der Körper der Theorie, zwölf Aspekte als Ornament. Ziehen dreht ihn, Antippen öffnet die Aspekte.">
-  <p class="satz" id="start-satz">Die Sprache der Kunst ist das Ornamentale.</p>
-  <p class="kl" id="ss-klein">2 · Das Ornamentale · Antippen zum Lesen</p>
+<section class="ansicht start" id="v-start" aria-label="Start: der Körper der Theorie, 46 Zettel als Ornament. Ziehen dreht ihn, Antippen öffnet den Satz.">
+  <p class="satz mittel" id="start-satz">Kunst baut Stellen, an denen Wahrnehmung different wiederkehren kann.</p>
+  <p class="kl" id="ss-klein">Hauptthese · Antippen zum Lesen</p>
 </section>
 
 <nav class="ansicht menue" id="v-menue" hidden aria-label="Menü">
   <ul>
     <li><a href="#kerntext"><span class="roll"><span><span>Kerntext</span><span>Kerntext</span></span></span></a></li>
-    <li><a href="#aspekte"><span class="roll"><span><span>Aspekte</span><span>Aspekte</span></span></span><span class="nr">12</span></a></li>
+    <li><a href="#bereiche"><span class="roll"><span><span>Bereiche</span><span>Bereiche</span></span></span><span class="nr">9</span></a></li>
     <li><a href="#quellen"><span class="roll"><span><span>Quellen</span><span>Quellen</span></span></span></a></li>
   </ul>
 </nav>
 
 <main class="ansicht seite kern" id="v-kerntext" lang="de-CH" hidden>
-  <h1 class="gross"><span class="z"><span>Die Sprache</span></span><span class="z"><span>der Kunst ist das</span></span><span class="z"><span>Ornamentale.</span></span></h1>
-  <p data-a="1,1a,1b">Kunst bringt Wahrnehmung in Kommunikation, ohne sie in Sprache zu übersetzen. Sie schliesst an, was sich nicht sagen lässt: <a href="#a-1">Sprache ohne Sprache</a>, das <a href="#a-1a">Inkommunikable</a>.</p>
-  <p data-a="2,2a,2b,2c">Das Mittel dafür ist das Ornament. Es spielt für die Kunst die Rolle, die die <a href="#a-2a">Schrift für die Gesellschaft</a> spielt: Wiederholung mit Abweichung, aus der sich <a href="#a-2c">Werke</a> bilden und in die sie wieder zerfallen.</p>
-  <p data-a="3,5,5a">Ordnung ist dabei kein Ziel. Sie entsteht, sobald unterschieden wird, und die Kunst ist ihr <a href="#a-3">Beweisraum</a>.</p>
-  <p data-a="4,4a">Am Ende läuft alles auf die <a href="#a-4">Zeit</a> hinaus: Ein Werk baut eine <a href="#a-4a">Stelle</a>, an der Wahrnehmung anders wiederkehren kann.</p>
-  <p class="lab">Probeseite vom 26. November 2026. Der Kerntext ist ein Platzhalter, verdichtet aus Beiträgen 2017 bis 2026. Beim Lesen leuchten im Körper die Aspekte des Absatzes; der Körper zieht durch die Schrift. Unterstrichene Wörter öffnen den Aspekt.</p>
+  <h1 class="gross these"><span class="z"><span>Kunst baut Stellen,</span></span><span class="z"><span>an denen Wahrnehmung</span></span><span class="z"><span>different wiederkehren</span></span><span class="z"><span>kann.</span></span></h1>
+  <p data-b="3,4">Ihr Mittel ist das Ornament, also variierte Wiederholung, die Raum und Zeit ordnet, bevor sie etwas bedeutet. Weil Form unvermeidlich ist und Sinn optional, ist Kunst der Ort, an dem man dieser Unvermeidlichkeit zusehen kann. Und weil sie Verzögerung schützt, hält sie offen, was erst später Information wird.</p>
+  <p data-b="1"><span class="nr"><a href="#b-1">1 · Ausgangspunkt</a></span>Bei Luhmann ist Kunst das Funktionssystem, das Wahrnehmung für Kommunikation verwendet. Die Theorie setzt dort an und geht weiter, in zwei Schritten: <a href="#z-1-1">«Sprache ohne Sprache»</a>, dann <a href="#z-1-4">«Vergesellschaftet werden Formen, die Wahrnehmung ersetzen und gerade dadurch neue Wahrnehmung ermöglichen»</a>. Mitgeteilt wird also nicht Wahrnehmung, sondern eine Form, die sie wiederholbar macht.</p>
+  <p data-b="3"><span class="nr"><a href="#b-3">2 · Ornament</a></span>Wiederholbar wird Wahrnehmung durch das Ornament: <a href="#z-3-1">«Das Ornament ist/war für die Kunst etwas ähnliches wie die Schrift für die Gesellschaft»</a>. Die Theorie zieht daraus die stärkere Folgerung: Das Ornament ist nicht Schmuck am Werk, sondern seine Infrastruktur. Ein Werk ist Ornament, das sich einer <a href="#z-6-2">Adresse</a> zurechnen lässt. «Der Rest ist Material – und wartet auf eine Adresse.»</p>
+  <p data-b="2"><span class="nr"><a href="#b-2">3 · Ordnung</a></span><a href="#z-2-3">«Form ist unvermeidlich. Sinn ist optional.»</a> Ordnung entsteht, sobald unterschieden wird. Kunst ist darum kein Freiraum jenseits von Ordnung, sondern ihr <a href="#z-2-2">Beweisraum</a>: Sie darf die Entscheidung über Sinn verweigern und produziert trotzdem Form.</p>
+  <p data-b="4"><span class="nr"><a href="#b-4">4 · Zeit</a></span>«Die Überraschung war, dass alles auf die Zeit hinauslief.» Ein Werk ist eine <a href="#z-4-1">Stelle</a> mit Zeitindex. Was zunächst folgenlos bleibt, kann später Information werden (<a href="#z-4-4">Ribordo</a>). Der Feed arbeitet dagegen: «Indem er alles sofort relevant macht, macht er nichts später relevant.» Daraus folgt die Gegenwartsaufgabe der Kunst: Nachträglichkeit herstellen, wo Plattformen und KI-Bilder keine Zeit mehr kosten.</p>
+  <p data-b="5"><span class="nr"><a href="#b-5">5 · Methode</a></span>Die Theorie vergleicht nicht, sie <a href="#z-5-4">stellt nebeneinander</a>: Künstler:in und Theoretiker:in, Raum und Zeit, Luhmann und Deleuze. Luhmann ist das Rückgrat, Deleuze der Gegenspieler, und beide treffen sich nur über ein Drittes (Spencer-Brown, Duchamp, das Ornament, den Doppelspalt).</p>
+  <p data-b="9"><span class="nr"><a href="#b-9">Was daran neu ist</a></span>Gegenüber Luhmann wird das Ornament zum Grundbegriff und die Zeit zum Fluchtpunkt, nicht der Code. Gegenüber Deleuze kommt die Selektion zurück: «Auch Differenz ist nicht einfach da. Sie muss unterschieden werden.» Gegenüber der Ornament-Tradition von Riegl bis Kracauer wird das Ornament nicht als Stil oder Symptom gelesen, sondern als Zeitform.</p>
+  <p class="lab">Probeseite vom 26. November 2026. Beim Lesen leuchten im Körper die Zettel des Bereichs, zu dem der Absatz gehört. Unterstrichenes öffnet den Zettel, die kleine Zeile über dem Absatz den Bereich.</p>
+  <p class="fuss"><a href="#bereiche">Die neun Bereiche</a><a href="#quellen">Quellen</a><a href="#start">Zum Körper</a></p>
 </main>
 
-<section class="ansicht aspekte" id="v-aspekte" hidden aria-label="Aspekte">
+<section class="ansicht aspekte" id="v-bereiche" hidden aria-label="Die neun Bereiche">
   <div class="unten">
     <p class="zn" id="r-zn"></p>
     <h2 id="r-titel"></h2>
+    <p class="unter" id="r-unter"></p>
     <div class="tun">
       <button type="button" id="r-vor"><span class="roll"><span><span>Vorher</span><span>Vorher</span></span></span></button>
-      <a class="haupt" id="r-lesen" href="#a-2"><span class="roll"><span><span>Lesen</span><span>Lesen</span></span></span></a>
+      <a class="haupt" id="r-lesen" href="#b-1"><span class="roll"><span><span>Öffnen</span><span>Öffnen</span></span></span></a>
       <button type="button" id="r-nach"><span class="roll"><span><span>Weiter</span><span>Weiter</span></span></span></button>
     </div>
     <div class="balken" id="balken" aria-hidden="true"></div>
@@ -69,18 +75,27 @@
   </div>
 </section>
 
-<article class="ansicht aspekt" id="v-aspekt" lang="de-CH" hidden>
+<main class="ansicht seite bereich" id="v-bereich" lang="de-CH" hidden>
+  <p class="zn" id="b-zn" style="font-size:var(--klein);color:var(--grau);margin-bottom:14px"></p>
+  <h1 class="gross these" id="b-titel"></h1>
+  <p class="unter" id="b-unter"></p>
+  <div class="einl" id="b-einl"></div>
+  <ul class="liste" id="b-liste"></ul>
+  <p class="fuss" id="b-fuss"></p>
+</main>
+
+<article class="ansicht aspekt" id="v-zettel" lang="de-CH" hidden>
   <div class="text">
-    <a class="zurueck" href="#aspekte"><span class="roll"><span><span>Zurück</span><span>Zurück</span></span></span></a>
+    <a class="zurueck" id="a-zurueck" href="#bereiche"><span class="roll"><span><span id="a-z1">Zurück</span><span id="a-z2">Zurück</span></span></span></a>
     <div class="mitte">
       <p class="zn" id="a-zn"></p>
       <h2 id="a-titel"></h2>
-      <blockquote id="a-zitat"></blockquote>
-      <p class="beleg" id="a-beleg"></p>
+      <div class="lese" id="a-text"></div>
+      <p class="frage" id="a-frage"></p>
       <div class="weiter" id="a-weiter"></div>
     </div>
   </div>
-  <div class="feld" id="a-feld"><div class="achsen"><span id="a-x"></span><span id="a-y"></span></div></div>
+  <div class="feld" id="a-feld"><p class="ort" id="a-ort"></p></div>
 </article>
 
 <main class="ansicht seite" id="v-quellen" lang="de-CH" hidden>
@@ -92,7 +107,8 @@
     <li>Zettelkasten «Zu seiner Zeit» <span>49 Zettel</span></li>
     <li>Niklas Luhmanns Zettelkasten <span>Lektüre</span></li>
   </ul>
+  <p class="fuss"><a href="#kerntext">Kerntext</a><a href="#bereiche">Die neun Bereiche</a></p>
 </main>
-<script src="theorie.js?v=4"></script>
+<script src="theorie.js?v=5"></script>
 </body>
 </html>
