@@ -37,6 +37,7 @@ const AUSNAHMEN = [
   ["ORNAMENT AV STUDIO 0.1 (Probe), Visualisierung des Composers, eigene Oberfläche wie Lab und Composer, nur per Direktlink, noindex (9. November 2026)", /^alpha\/av\//],
   ["ORNAMENT COMPOSER 0.1, Spuren und Plugins, mit eigener Oberfläche wie das Lab, steht für sich, nur per Direktlink, noindex (9. November 2026)", /^alpha\/composer\//],
   ["ORNAMENT FORMEN 0.1 (Katalog und Ornamentkörper) mit eigener Oberfläche wie das Lab, nur per Direktlink, noindex (26. November 2026; docs/formen.md)", /^alpha\/formen\//],
+  ["Epsilon, Übersicht der aktuellen Projekte mit eigenem Kopf wie das Lab, nur per Direktlink, noindex (26. November 2026)", /^epsilon\//],
   ["ORNAMENT LAB 0.1 mit eigener Oberfläche, steht für sich, nur per Direktlink (23. Oktober 2026; alpha/lab/README.md)", /^alpha\/lab\//],
   ["Die Website für das Maltherapie-Angebot, eigenständig und in sich geschlossen; zieht später auf eine eigene Adresse bei Hostpoint (24. Oktober 2026, maltherapie/DESIGN.md)", /^maltherapie\//],
   ["«Brillante Ideen», Titelsequenz als Beispiel-Website mit dem Brillanten aus dem Kristallbild, eigene Oberfläche, nur per Direktlink, noindex (20. November 2026)", /^alpha\/brillant\//],
