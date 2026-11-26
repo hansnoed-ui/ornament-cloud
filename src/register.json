@@ -525,6 +525,15 @@
    "kurz": "Texte in Christians Stimme."
   },
   {
+   "id": "hochrendern",
+   "name": "Hochrendern",
+   "tuer": "atelier",
+   "art": "Werkzeug",
+   "status": "direktlink",
+   "adresse": "alpha/hochrendern/",
+   "kurz": "Videos mit Real-ESRGAN auf der eigenen Grafikkarte hochrechnen, als MP4 mit Ton."
+  },
+  {
    "id": "gamma",
    "name": "Gamma",
    "tuer": "atelier",
@@ -551,7 +560,7 @@
    "art": "Übersicht",
    "status": "direktlink",
    "adresse": "epsilon/",
-   "kurz": "Aktuelle Projekte: Formen, Theorie und Stimme."
+   "kurz": "Aktuelle Projekte: Formen, Theorie, Stimme und Hochrendern."
   },
   {
    "id": "bisher",
