@@ -100,6 +100,13 @@ Die Begriffe sind Christians (Zeittheorie aus *Zu seiner Zeit* und *Formen der Z
 Offen: Export des Zeitkörpers (STL/GLB für Druck oder Guss), Koppelung nicht nur zwischen Nachbarn, ein Körper als
 «multitemporale Verdichtungsfigur» mit Schichten verschiedener Eigenzeit.
 
+## Vorschaukarten (26. November 2026)
+
+Christian: «Haben wir schon vorschaukarten für die "Formen"» – «ja, so machen, Epsilon auch». `tools/formen-og.mjs` öffnet
+Katalog, Ornamentkörper und Eigenzeit im unsichtbaren Browser (SwiftShader), nimmt die Bühnen auf und setzt sie rechts in
+eine Karte im Stil des Neubaus (`tools/b-kacheln.mjs`); Epsilon zeigt rechts die Projektnamen. Die Eigenzeit wird ohne
+Beobachter und etwas weiter weg aufgenommen, damit die unterschiedlich hohen Türme sichtbar sind.
+
 ## Ideen (Vorschläge von Claude, noch nicht entschieden)
 
 - **Eigenzeiten als Objekt:** umgesetzt als `alpha/formen/eigenzeit/` (siehe oben).
