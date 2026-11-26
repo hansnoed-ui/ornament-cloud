@@ -118,3 +118,9 @@ h1, h2, h3 { font-weight: 500; letter-spacing: -0.015em; margin: 0; }
   }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+/* Eigenzeit: Zustand als drei stille Pillen, der aktuelle in Tinte */
+.zustaende { display: flex; flex-wrap: wrap; gap: 6px; }
+.zustaende span { border: 1px solid var(--border); border-radius: 999px; padding: 4px 12px; font-size: 0.9rem; color: var(--muted); }
+.zustaende span.an { border-color: var(--text); background: var(--text); color: var(--bg); }
+.ringliste { display: grid; gap: 2px; }

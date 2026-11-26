@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>ORNAMENT FORMEN 0.1 · Eigenzeit</title>
+  <!-- Teil von /alpha/formen/, nur per Direktlink (26. November 2026). Begriffe aus Christians Zeittheorie (Zu seiner Zeit, Formen der Zeit). -->
+  <meta name="robots" content="noindex">
+  <meta name="description" content="Eigenzeit: Ringe mit eigenem Rhythmus, ohne gemeinsame Uhr. Koppelung erzeugt Zeitdruck, jeder Schritt hinterlässt eine Schicht: Wiederkehr ohne Rückkehr als Körper.">
+  <link rel="stylesheet" href="../../../vendor/fonts/fonts.css">
+  <link rel="stylesheet" href="../formen.css?v=2">
+</head>
+<body class="koerper-seite">
+  <header class="kopf">
+    <p class="heimzeile"><a class="heim" href="../../../">← ornament.cloud</a></p>
+    <div class="marke">
+      <h1>ORNAMENT FORMEN <span class="version">0.1</span></h1>
+      <p class="leitsatz">Eigenzeit · Wiederkehr ohne Rückkehr</p>
+    </div>
+    <nav class="seiten" aria-label="Seiten">
+      <a class="knopf klein leise" href="../">Katalog</a>
+      <a class="knopf klein leise" href="../koerper/">Ornamentkörper</a>
+      <a class="knopf klein" aria-current="page" href="./">Eigenzeit</a>
+    </nav>
+  </header>
+
+  <div class="werkstatt">
+    <div class="buehne" id="buehne" role="img" aria-label="Ringe mit Eigenzeit und ihre Spur, dreidimensional">
+      <div class="hinweis">Ziehen dreht<span class="nur-maus"> · Mausrad zoomt</span></div>
+    </div>
+
+    <aside class="regler">
+      <p class="leise-text">Jeder Ring schreitet in seinem eigenen Rhythmus, Operation für Operation. Es gibt keine gemeinsame Uhr. Jeder Schritt hinterlässt eine Schicht; so wächst jeder Ring so hoch, wie seine Eigenzeit es zulässt.</p>
+
+      <div class="gruppe">
+        <span class="etikett">Zustand</span>
+        <div class="zustaende" id="zustaende" aria-live="polite">
+          <span data-zustand="aufgegangen">aufgegangen</span>
+          <span data-zustand="gekoppelt">gekoppelt</span>
+          <span data-zustand="beziehungslos">beziehungslos</span>
+        </div>
+        <p class="leise-text" id="zustandText">Die Ringe laufen an …</p>
+        <div class="angabe" id="druck"></div>
+      </div>
+
+      <div class="gruppe">
+        <span class="etikett">Startwert</span>
+        <div class="startzeile">
+          <input id="start" type="number" min="1" max="99999" value="2471" aria-label="Startwert">
+          <button id="wuerfeln" type="button" class="knopf klein voll">Neu würfeln</button>
+        </div>
+      </div>
+
+      <div class="gruppe">
+        <span class="etikett">Eigenzeiten</span>
+        <div class="feld"><label for="ringe">Ringe</label><output id="ringeAus">4</output>
+          <input id="ringe" type="range" min="2" max="6" step="1" value="4"></div>
+        <div class="feld"><label for="unterschied">Unterschied</label><output id="unterschiedAus">70</output>
+          <input id="unterschied" type="range" min="0" max="100" step="1" value="70"></div>
+        <div class="ringliste angabe" id="ringliste"></div>
+      </div>
+
+      <div class="gruppe">
+        <span class="etikett">Koppelung</span>
+        <div class="feld"><label for="koppelung">Koppelung</label><output id="koppelungAus">50</output>
+          <input id="koppelung" type="range" min="0" max="100" step="1" value="50"></div>
+        <div class="pillen"><button id="beobachter" type="button" class="knopf klein leise" aria-pressed="false">Beobachter</button></div>
+        <p class="leise-text">Der Beobachter ist ein dritter Rhythmus, der die Ringe vergleicht. Nur wenn er mitläuft, werden ihre Differenzen festgestellt und als feine blaue Linien in der Spur markiert.</p>
+      </div>
+
+      <div class="gruppe">
+        <span class="etikett">Material</span>
+        <div class="pillen" id="material" role="group" aria-label="Material">
+          <button type="button" class="knopf klein leise" data-material="messing" aria-pressed="true">Messing</button>
+          <button type="button" class="knopf klein leise" data-material="kreide" aria-pressed="false">Kreide</button>
+          <button type="button" class="knopf klein leise" data-material="kobalt" aria-pressed="false">Kobalt</button>
+          <button type="button" class="knopf klein leise" data-material="ton" aria-pressed="false">Ton</button>
+        </div>
+      </div>
+
+      <div class="gruppe">
+        <span class="etikett">Ablauf</span>
+        <div class="feld"><label for="tempo">Tempo der Ansicht</label><output id="tempoAus">100 %</output>
+          <input id="tempo" type="range" min="25" max="300" step="5" value="100"></div>
+        <div class="pillen">
+          <button id="lauf" type="button" class="knopf klein leise">Anhalten</button>
+          <button id="neu" type="button" class="knopf klein leise">Spur neu beginnen</button>
+        </div>
+        <p class="leise-text" id="voll" hidden>Die Spur ist voll. Die Ringe laufen weiter, legen aber keine Schichten mehr ab. «Spur neu beginnen» setzt sie zurück.</p>
+      </div>
+
+      <div class="gruppe">
+        <span class="etikett">Rezept</span>
+        <div class="rezept" id="rezept"></div>
+        <div class="pillen"><button id="kopieren" type="button" class="knopf klein leise">Rezept kopieren</button></div>
+        <p class="leise-text">Startwert und Regler legen den Verlauf fest. Wer unterwegs einen Regler verschiebt, schreibt die Geschichte weiter, nicht neu.</p>
+      </div>
+    </aside>
+  </div>
+
+  <script type="importmap">
+  { "imports": { "three": "../../../vendor/three-0.185.1/three.module.min.js" } }
+  </script>
+  <script type="module" src="eigenzeit.js?v=1"></script>
+</body>
+</html>
