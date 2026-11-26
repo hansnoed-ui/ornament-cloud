@@ -306,6 +306,48 @@
     if (z === "kerntext") lies();
     tief = 0; if (z === "bereich") liesSaetze();
   }
+  // ---------- freies Weiterkommen (26.11.2026: «durch klicken, wischen, cursor einfach irgendwohin weiterkommt») ----------
+  // Pfeiltasten und Wischen blättern auf dem Weg durch alles (Start, Kerntext, je Bereich seine Zettel, Quellen);
+  // ein Tipp ins Leere geht irgendwohin weiter: vom Zettel über einen Querverweis zu einem noch nicht gelesenen Zettel.
+  var WEG = ["#start", "#kerntext"];
+  B.forEach(function (b) { WEG.push("#b-" + b.n); b.z.forEach(function (id) { WEG.push(anker(id)); }); });
+  WEG.push("#quellen");
+  function gehe(d) {
+    var h = ansicht === "bereiche" ? "#b-" + B[aktiv].n : (location.hash || "#start"), i = WEG.indexOf(h);
+    if (i < 0) i = 0;
+    location.hash = WEG[(i + d + WEG.length) % WEG.length];
+  }
+  function einer(l) { return l[Math.floor(Math.random() * l.length)]; }
+  function neu(id) { return !gelesen[id]; }
+  function irgendwohin(e) {
+    if (ansicht === "zettel") {
+      var q = akt.quer.map(function (x) { return x[0]; }), l = q.filter(neu);
+      if (!l.length) l = B[akt.b - 1].z.filter(neu);
+      if (!l.length) l = A.map(function (a) { return a.id; }).filter(neu);
+      if (!l.length) l = q.length ? q : B[akt.b - 1].z.filter(function (id) { return id !== akt.id; });
+      return anker(einer(l));
+    }
+    if (ansicht === "bereich") { var b = B[aktB - 1], u = b.z.filter(neu); return u.length ? anker(u[0]) : "#b-" + (b.n % NB + 1); }
+    if (ansicht === "kerntext") { var p = e.target.closest("p[data-b]"); return p ? "#b-" + p.dataset.b.split(",")[0] : "#bereiche"; }
+    return "#start";
+  }
+  var LESE = { kerntext: 1, bereich: 1, zettel: 1, quellen: 1 }, ws = null, gewischt = 0;
+  document.addEventListener("click", function (e) {
+    if (!LESE[ansicht] || e.target.closest("a,button,.rand") || Date.now() - gewischt < 500) return;
+    if (String(window.getSelection && window.getSelection() || "")) return;   // wer Text markiert, will nicht weiter
+    location.hash = irgendwohin(e);
+  });
+  document.addEventListener("touchstart", function (e) { ws = e.touches.length === 1 ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : null; }, { passive: true });
+  document.addEventListener("touchend", function (e) {
+    if (!ws || !LESE[ansicht]) return;
+    var t = e.changedTouches[0], dx = t.clientX - ws.x, dy = t.clientY - ws.y; ws = null;
+    if (Math.abs(dx) > 70 && Math.abs(dx) > 2.5 * Math.abs(dy)) { gewischt = Date.now(); gehe(dx < 0 ? 1 : -1); }
+  }, { passive: true });
+  window.addEventListener("keydown", function (e) {
+    if (ansicht === "bereiche" || ansicht === "menue" || e.altKey || e.ctrlKey || e.metaKey) return;
+    if (e.key === "ArrowRight") gehe(1); if (e.key === "ArrowLeft") gehe(-1);
+  });
+
   window.addEventListener("hashchange", route);
   route();
   requestAnimationFrame(bild);
