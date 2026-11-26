@@ -1,0 +1,120 @@
+/* ORNAMENT FORMEN 0.1 – in der Sprache des ORNAMENT LAB: Papier und Tinte, die Blaupause als einziger Akzent,
+   Instrument Sans für die Oberfläche, Newsreader für Leitsätze, Geist Mono für kleine Angaben, Haarlinien statt Kisten,
+   keine Schatten, Rundung nur an Pillen. Die Bühnen sind dunkel (NACHT), damit die Formen vor ruhigem Grund stehen. */
+@font-face {
+  font-family: 'Geist Mono'; font-style: normal; font-weight: 300 700; font-display: swap;
+  src: url(../../vendor/fonts/geist-mono-latin.woff2) format('woff2');
+}
+:root {
+  --bg: #ffffff; --text: #000000; --muted: #6f6f6f; --border: #dadada; --accent: #1d3fd6;
+  --nacht: #151412; --nacht-leise: rgba(244, 241, 234, .55);
+  --font: "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --serif: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #000000; --text: #ffffff; --muted: #9a9a9a; --border: #2e2e2e; --accent: #8fb0ff; }
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font); font-size: 15px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+button, input, select { font: inherit; color: inherit; }
+h1, h2, h3 { font-weight: 500; letter-spacing: -0.015em; margin: 0; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Kopf */
+.kopf {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px;
+  padding-block: 16px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  border-bottom: 1px solid var(--border);
+}
+.heimzeile { flex-basis: 100%; margin: -4px 0 0; }
+.heim { display: inline-flex; align-items: center; min-height: 30px; padding: 4px 14px; border: 1px solid var(--accent); border-radius: 999px; color: var(--accent); font-weight: 500; text-decoration: none; white-space: nowrap; }
+.heim:hover { background: var(--accent); color: #fff; }
+.marke h1 { font-size: 1.5rem; letter-spacing: -0.03em; }
+.marke .version { color: var(--accent); font-size: 0.9rem; margin-left: 4px; }
+.leitsatz { margin: 2px 0 0; font-family: var(--serif); color: var(--muted); }
+.seiten { display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto; }
+
+/* Pillen */
+.knopf { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--text); border-radius: 999px; padding: 6px 14px; background: none; cursor: pointer; white-space: nowrap; min-height: 34px; text-decoration: none; color: var(--text); }
+.knopf:hover { background: var(--text); color: var(--bg); }
+.knopf.leise { border-color: var(--border); }
+.knopf.leise:hover { border-color: var(--text); }
+.knopf[aria-pressed="true"], .knopf[aria-current="page"] { background: var(--text); color: var(--bg); border-color: var(--text); }
+.knopf.voll { background: var(--text); border-color: var(--text); color: var(--bg); }
+.knopf.voll:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+.knopf.klein { min-height: 30px; padding: 4px 12px; font-size: 0.9rem; }
+.pillen { display: flex; flex-wrap: wrap; gap: 6px; }
+.etikett { font-size: 0.75rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+
+/* Katalog */
+#gl { position: fixed; left: 0; top: 0; pointer-events: none; z-index: 2; display: block; }
+.katalog {
+  max-width: 1280px; margin: 0 auto;
+  padding-block: 24px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 40px;
+}
+.einleitung { display: flex; flex-direction: column; gap: 14px; }
+.einleitung p { margin: 0; max-width: 62ch; color: var(--muted); }
+.werkbank { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+.katalog-abschnitte { display: flex; flex-direction: column; gap: 44px; }
+.abschnitt { display: flex; flex-direction: column; gap: 18px; }
+.abschnitt-kopf { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+.abschnitt-kopf h2 { font-size: 1.35rem; letter-spacing: -0.025em; }
+.abschnitt-kopf p { margin: 0; font-family: var(--serif); color: var(--muted); }
+.raster { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 28px 20px; }
+.karte { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.ansicht { aspect-ratio: 1 / 1; max-width: 100%; background: var(--nacht); touch-action: pan-y; cursor: grab; }
+.ansicht.zieht { cursor: grabbing; }
+.karte h3 { font-size: 1.05rem; }
+.karte p { margin: 0; color: var(--muted); font-size: 0.92rem; }
+.angabe { font-family: var(--mono); font-size: 12.5px; letter-spacing: -0.01em; color: var(--muted); font-variant-numeric: tabular-nums; }
+.angabe b { font-weight: 500; color: var(--text); }
+.karte .pillen { margin-top: 2px; }
+.fehler { padding: 16px; border: 1px solid var(--border); color: var(--muted); }
+
+/* Ornamentkörper */
+.koerper-seite { min-height: 100dvh; display: flex; flex-direction: column; }
+.werkstatt { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 320px; }
+.buehne { position: relative; min-width: 0; min-height: 0; background: var(--nacht); touch-action: none; cursor: grab; }
+.buehne.zieht { cursor: grabbing; }
+.buehne canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+@media (hover: none) { .nur-maus { display: none; } }
+.buehne .hinweis { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); bottom: 14px; font-family: var(--mono); font-size: 12px; color: var(--nacht-leise); pointer-events: none; }
+.regler {
+  min-width: 0; overflow-y: auto; border-left: 1px solid var(--border);
+  padding-block: 20px 28px; padding-left: 20px;
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 22px;
+}
+.gruppe { display: flex; flex-direction: column; gap: 12px; }
+.feld { display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 4px 12px; }
+.feld label { font-weight: 500; }
+.feld output { font-family: var(--mono); font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.feld input[type="range"] { grid-column: 1 / -1; width: 100%; accent-color: var(--accent); margin: 0; }
+.startzeile { display: flex; gap: 8px; align-items: center; }
+.startzeile input { flex: 1; min-width: 0; font-family: var(--mono); font-size: 14px; background: none; border: 0; border-bottom: 1px solid var(--border); padding: 6px 2px; }
+.startzeile input:focus { outline: none; border-color: var(--accent); }
+.rezept { font-family: var(--mono); font-size: 12.5px; line-height: 1.6; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 10px 0; word-break: break-word; user-select: all; }
+.leise-text { color: var(--muted); font-size: 0.85rem; margin: 0; }
+
+@media (min-width: 761px) {
+  .koerper-seite { height: 100dvh; }
+}
+@media (max-width: 760px) {
+  .werkstatt { grid-template-columns: minmax(0, 1fr); }
+  .buehne { height: 58vh; }
+  .regler {
+    border-left: 0; border-top: 1px solid var(--border); overflow: visible;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }

@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>ORNAMENT FORMEN 0.1 · Ornamentkörper</title>
+  <!-- Teil von /alpha/formen/, nur per Direktlink (26. November 2026). -->
+  <meta name="robots" content="noindex">
+  <meta name="description" content="Ornamentkörper: Ringe aus einer Regel, jede mit eigenem Tempo, um einen gedrechselten Kern; über den Startwert wiederholbar.">
+  <link rel="stylesheet" href="../../../vendor/fonts/fonts.css">
+  <link rel="stylesheet" href="../formen.css?v=1">
+</head>
+<body class="koerper-seite">
+  <header class="kopf">
+    <p class="heimzeile"><a class="heim" href="../../../">← ornament.cloud</a></p>
+    <div class="marke">
+      <h1>ORNAMENT FORMEN <span class="version">0.1</span></h1>
+      <p class="leitsatz">Ornamentkörper</p>
+    </div>
+    <nav class="seiten" aria-label="Seiten">
+      <a class="knopf klein leise" href="../">Katalog</a>
+      <a class="knopf klein" aria-current="page" href="./">Ornamentkörper</a>
+    </nav>
+  </header>
+
+  <div class="werkstatt">
+    <div class="buehne" id="buehne" role="img" aria-label="Ornamentkörper, dreidimensional">
+      <div class="hinweis">Ziehen dreht<span class="nur-maus"> · Mausrad zoomt</span></div>
+    </div>
+
+    <aside class="regler">
+      <p class="leise-text">Ringe aus einer Regel, jeder mit eigenem Tempo. Derselbe Startwert ergibt immer denselben Körper.</p>
+
+      <div class="gruppe">
+        <span class="etikett">Startwert</span>
+        <div class="startzeile">
+          <input id="start" type="number" min="1" max="99999" value="2471" aria-label="Startwert">
+          <button id="wuerfeln" type="button" class="knopf klein voll">Neu würfeln</button>
+        </div>
+      </div>
+
+      <div class="gruppe">
+        <span class="etikett">Form</span>
+        <div class="feld"><label for="sym">Symmetrie</label><output id="symAus">8</output>
+          <input id="sym" type="range" min="3" max="16" step="1" value="8"></div>
+        <div class="feld"><label for="ringe">Ringe</label><output id="ringeAus">4</output>
+          <input id="ringe" type="range" min="1" max="6" step="1" value="4"></div>
+        <div class="feld"><label for="tiefe">Tiefe</label><output id="tiefeAus">60</output>
+          <input id="tiefe" type="range" min="0" max="100" step="1" value="60"></div>
+        <div class="feld"><label for="staerke">Stärke</label><output id="staerkeAus">6</output>
+          <input id="staerke" type="range" min="2" max="14" step="1" value="6"></div>
+      </div>
+
+      <div class="gruppe">
+        <span class="etikett">Material</span>
+        <div class="pillen" id="material" role="group" aria-label="Material">
+          <button type="button" class="knopf klein leise" data-material="messing" aria-pressed="true">Messing</button>
+          <button type="button" class="knopf klein leise" data-material="kreide" aria-pressed="false">Kreide</button>
+          <button type="button" class="knopf klein leise" data-material="kobalt" aria-pressed="false">Kobalt</button>
+          <button type="button" class="knopf klein leise" data-material="ton" aria-pressed="false">Ton</button>
+        </div>
+      </div>
+
+      <div class="gruppe">
+        <span class="etikett">Bewegung</span>
+        <div class="feld"><label for="tempo">Tempo</label><output id="tempoAus">100 %</output>
+          <input id="tempo" type="range" min="0" max="200" step="5" value="100"></div>
+        <div class="pillen"><button id="lauf" type="button" class="knopf klein leise">Anhalten</button></div>
+      </div>
+
+      <div class="gruppe">
+        <span class="etikett">Rezept</span>
+        <div class="rezept" id="rezept"></div>
+        <div class="pillen"><button id="kopieren" type="button" class="knopf klein leise">Rezept kopieren</button></div>
+        <p class="leise-text">Mit dem Rezept lässt sich jeder Zustand genau wieder herstellen.</p>
+      </div>
+    </aside>
+  </div>
+
+  <script type="importmap">
+  { "imports": { "three": "../../../vendor/three-0.185.1/three.module.min.js" } }
+  </script>
+  <script type="module" src="koerper.js?v=1"></script>
+</body>
+</html>

@@ -507,6 +507,15 @@
    "kurz": "Film mit Ton aus Composer und Animationen."
   },
   {
+   "id": "formen",
+   "name": "ORNAMENT FORMEN",
+   "tuer": "atelier",
+   "art": "Werkzeug",
+   "status": "direktlink",
+   "adresse": "alpha/formen/",
+   "kurz": "16 Formfamilien für generative Ornamente in 3D und der Ornamentkörper; über Startwerte wiederholbar."
+  },
+  {
    "id": "voice",
    "name": "Stimme",
    "tuer": "atelier",
