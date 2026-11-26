@@ -109,3 +109,7 @@ a:hover .roll > span, button:hover .roll > span, a:focus-visible .roll > span, b
 .aspekt .achsen { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; color: var(--grau); font-size: 13px; font-variant-numeric: tabular-nums; }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+/* kleine Beschriftungen in Geist Mono (Christians Wahl «A», 26.11.2026) */
+:root { --mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, monospace; }
+.aspekte .zn, .aspekt .zn, .aspekt .beleg, .aspekt .achsen, .menue .nr, .liste span, .kern .lab, .start .satz small { font-family: var(--mono); font-size: 13px; letter-spacing: -0.01em; font-weight: 400; }
