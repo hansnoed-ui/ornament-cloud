@@ -123,7 +123,9 @@ das visuell Ornamentale via (Wahrnehmungs-?)Krise zum körperlich-multioperation
 sich vom Auge emanzipiert, zum Tanz, zum Unbewussten.»
 
 Christian danach: «Ich gebe deiner Analyse der gotischen Linie recht, vertiefe das.» Die Vertiefung steht in
-`docs/gotische-linie.md` (These: Ornament als Koppelung von Hand und Auge; fünf Schwellen; drei Begriffe des Unbewussten).
+`docs/gotische-linie.md` (fünf Schwellen; Koppelung von Hand und Auge). Entscheide dazu: die Koppelung ist «nur ein
+Bild/Aspekt dieser Arbeit», die Zuordnung zu den Zuständen der Eigenzeit-Seite «möglich, aber nicht zwingend», und es
+heisst «nicht reflexiv» statt unbewusst.
 
 Was dazu vorliegt (aus dem Gedächtnis, in Stufe 1 zu prüfen):
 
@@ -153,8 +155,7 @@ Drei Lesarten, die sich nicht decken (Vorschlag von Claude, zur Entscheidung):
 
 Zur Frage in der Klammer: Bei Deleuze ist es weniger eine Krise der Wahrnehmung als eine Katastrophe der optischen
 Koordinaten (das Diagramm); in Christians Begriffen läge ein Wechsel des Beobachtungsschemas näher als ein Ausfall.
-Offen ist, wie «Unbewusstes» hier gemeint ist: psychoanalytisch (Pollock und Jung), als Automatismus der Hand oder als
-das, was der Körper kann, ohne dass ein Bewusstsein es führt.
+Entschieden (27. November 2026): gemeint ist das Nichtreflexive, ein Vollzug, der sich nicht selbst beobachtet.
 
 Folgen für das Vorhaben:
 
@@ -354,4 +355,4 @@ Nach den 16 Schleifen klein und an der Sonnenblume beginnen, in dieser Reihenfol
 3. Wohin soll es zuerst führen: spielbare Seite, Filmreihe, Prints und Objekte oder Text?
 4. Welche Quellen liegen schon vor (Luhmann, Riegl, Gombrich), und welche Formen ausser Sonnenblume und Schnecke
    liegen ihm am nächsten?
-5. Gotische Linie: Kipppunkt, Kernfall oder Rückkehr der Hand (Abschnitt 2.6)? Und wie ist das Unbewusste gemeint?
+5. Gotische Linie: beantwortet, siehe `docs/gotische-linie.md`, Abschnitt 9.

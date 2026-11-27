@@ -84,7 +84,9 @@ geschlossene Figur, aber eine Periode). Sind alle fünf überschritten, ist nich
 ausser der Spur einer Bewegung. Für die Arbeit heisst das: Der Kipppunkt ist kein Schalter, er ist eine Strecke mit
 fünf Reglern.
 
-## 5. Die These: Ornament ist die Koppelung von Hand und Auge
+## 5. Das Arbeitsbild: Ornament als Koppelung von Hand und Auge
+
+*Nach Christians Entscheid (Abschnitt 9) ein Bild für diese Arbeit, kein Satz der Theorie.*
 
 Die drei Lesarten aus dem Konzept (Kipppunkt, Kernfall, Rückkehr der Hand) widersprechen sich nicht mehr, wenn man zwei
 Ebenen trennt, wie Christians Theorie es ohnehin tut:
@@ -145,7 +147,9 @@ und nachzuschlagen: Harold Rosenberg, der die Leinwand eine Arena nennt, in der 
 Film über Pollock (1950); Allan Kaprow, der aus Pollock den Schritt in den Raum und zum Happening zieht (1958);
 William Forsythe und Trisha Brown, die mit dem Körper Linien schreiben.
 
-## 7. Das Unbewusste: drei Begriffe, die man trennen sollte
+## 7. Nichtreflexiv statt unbewusst: drei Begriffe, die man trennen sollte
+
+*Entscheid (Abschnitt 9): Die Arbeit spricht vom Nichtreflexiven. Die drei Begriffe des Unbewussten bleiben als Hintergrund.*
 
 1. **Psychoanalytisch.** Pollock in Jungscher Analyse, der Automatismus der Surrealisten (aus dem Gedächtnis). Die
    Linie drückt etwas Verborgenes aus. Schwäche: Sie wird wieder zum Zeichen für etwas, also gelesen statt getan.
@@ -196,15 +200,22 @@ erwähnen.
   beziehungslos. Die drei Zustände werden zu etwas, das im Raum geschieht;
 - der Wechsel der Führung als Erfahrung: zuerst sieht man ein Ornament an, am Ende schreibt man eines, ohne es zu sehen.
 
-## 9. Offen
+## 9. Entscheide und Offenes
 
-1. Trägt die These «Koppelung von Hand und Auge» als Begriff in der Theorie, oder ist sie nur ein Bild für diese Arbeit?
-2. Was ist die «Hand» eines gerechneten Ornaments (Gegenprobe in Abschnitt 5)?
-3. Ist die Zuordnung zu den drei Zuständen der Eigenzeit-Seite haltbar, oder überdehnt sie diese?
-4. «Unbewusst» oder «nichtreflexiv»?
-5. Nachzuschlagen: Worringer zu Addition und Multiplikation; Deleuze, Kapitel 12, 14 und 15 im Wortlaut;
-   *Mille Plateaux*, Kapitel über das Glatte und das Gekerbte; Riegl zum Haptischen; Laban, *Choreutik*;
-   Rosenberg, Kaprow, Krauss (*The Optical Unconscious*) als Gegenstimme.
+Christians Antworten vom 27. November 2026 auf die fünf Fragen dieses Dokuments:
+
+1. **«Koppelung von Hand und Auge»: Begriff der Theorie oder Bild?** «Es ist nur ein Bild/Aspekt dieser Arbeit.» Die
+   Formel bleibt also Arbeitsbild für Formen, Filme und Galerie und wird nicht als Theoriesatz geführt.
+2. **Was ist die «Hand» eines gerechneten Ornaments?** «Keine Ahnung.» Bleibt offen; der Vorschlag in Abschnitt 5
+   (die Regel als Hand, die Lesart des Betrachters als Auge) ist ungeprüft.
+3. **Zuordnung zu den drei Zuständen der Eigenzeit-Seite?** «Zuordnung ist möglich, aber nicht zwingend.» Sie wird
+   darum als eine mögliche Lesart gezeigt, nicht als Bau der Arbeit vorausgesetzt.
+4. **«Unbewusst» oder «nichtreflexiv»?** «Nicht reflexiv.» Ab hier heisst es in Texten und auf Seiten nichtreflexiv:
+   ein Vollzug, der sich nicht selbst beobachtet. Vom Unbewussten ist nur noch die Rede, wo fremde Positionen
+   wiedergegeben werden (Jung, Surrealisten, Deleuze und Guattari).
+5. Zur Liste des Nachzuschlagenden kam keine Antwort; sie bleibt Aufgabe von Stufe 1: Worringer zu Addition und
+   Multiplikation; Deleuze, Kapitel 12, 14 und 15 im Wortlaut; *Mille Plateaux*, Kapitel über das Glatte und das
+   Gekerbte; Riegl zum Haptischen; Laban, *Choreutik*; Rosenberg, Kaprow, Krauss (*The Optical Unconscious*) als Gegenstimme.
 
 ## Verweise der Prüfung
 
