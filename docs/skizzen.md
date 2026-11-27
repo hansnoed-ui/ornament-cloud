@@ -279,6 +279,28 @@ Nicolai («Milch»), Ryoji Ikeda · Tauba Auerbach, Julie Mehretu, Tomás Sarace
 | 38 | `lochkarte` | Karton, Licht von hinten | Kontingenz | Gelocht ist jede Primzahl; niemand hat das Muster gelegt, und doch stehen die Löcher in acht Spalten. (Zweite Fassung von 24.) | Jacquard, Lovelace, Darboven, Horwitz | 2/6, 2/3 | offen |
 | 39 | `myzel` | Schleimpilz auf Rinde | Anschluss | Kein Plan, nur Spuren, denen Spuren folgen; das Netz findet die Flocken. (Zweite Fassung von 26.) | Nakagaki, Saraceno, Barnett | 3/2, 7/2 | offen |
 | 40 | `moire` | Organza über Seide | Koppelung | Zwei Gewebe, fast gleich fein; man sieht ein drittes. Im Standbild die schwächste der Runde, sie wirkt erst in der Bewegung. (Zweite Fassung von 22.) | Moiré-Seide, Soto, von Graevenitz, Albers | 4/7, 4/5 | offen |
+| 41 | `holz` | ein Brett, Schicht um Schicht abgehobelt | Eigenzeit | Jeder Jahresring ist ein Jahr; schräg geschnitten werden die Ringe zu Bögen, die niemand entworfen hat. | Penone, Intarsie | 4/1, 3/2 | offen |
+| 42 | `achat` | ein Stein, immer weiter aufgesägt | Schrift | Bänder, Schicht um Schicht gewachsen; eine Schrift, die niemand geschrieben hat. | Caillois, Kunstkammer, Pietra paesina | 3/1, 3/9 | offen |
+
+## Richtung Material (27. November 2026, nachts)
+
+Christian: «Von der Materialität will ich auch in Richtung Stein, Holz, Papier, Flüssigkeit, Textil und so weiter.»
+
+Stand der Stoffe in den Skizzen mit höherem Anspruch, und was naheliegt:
+
+| Stoff | Schon da | Naheliegend als Nächstes (Bezug) |
+|---|---|---|
+| **Stein** | `pigment` (Staub auf Schiefer), `achat` | Marmoräderung, die sich beim Polieren öffnet; Pietra dura (Einlegearbeit); Kieselmosaik; Steinschnitt (Caillois, Kunstkammer) |
+| **Holz** | `holz`, `myzel` (auf Rinde) | Intarsie, die sich aus Furnieren zusammensetzt; Brandspur; Holzschnitt, Druck für Druck (Penone, japanischer Holzschnitt) |
+| **Papier** | `tuschezug`, `millimeter`, `ringe`, `ebru` | Faltung (Origami, Josef Albers' Vorkurs); Scherenschnitt; Prägung im Streiflicht; Papier, das sich im Wasser wellt |
+| **Flüssigkeit** | `ringe`, `ebru` | Tropfen auf Wachs; Öl auf Wasser (Schlieren); Kristallisation einer Salzlösung; Tusche, die in Wasser sinkt |
+| **Textil** | `moire`, `lochkarte` (Karton) | Weben Schuss für Schuss (Albers, Bauhaus-Weberei); Ikat, dessen Muster vor dem Weben gefärbt wird und verschwimmt; Stickerei; Knoten (Quipu) |
+| **Metall** | die 18 Formschleifen | Guilloche (das Muster im Zifferblatt); Ätzung; Patina, die wächst; Damaszener Stahl |
+| weiter | | Glas (Schlieren, Craquelé); Keramik (Glasur, die reisst); Wachs (Enkaustik); Eis (Eisblumen); Sand (Kolam, Mandala, das verweht) |
+
+Zwei Stoffe tragen eigene Begriffe aus der Theorie besonders gut: **Ikat** (das Muster wird vor dem Weben auf die Fäden
+gefärbt und verschiebt sich beim Weben: Abweichung, die aus dem Verfahren selbst kommt, zu 3/9) und **Kolam** (täglich neu
+gestreut, am Abend verweht: Wiederkehr ohne Rückkehr im Alltag, zu 3/4 und 4/1).
 
 ## Skizze, Text und Begriff verbinden, auch im Bild (27. November 2026, Vorschlag)
 
