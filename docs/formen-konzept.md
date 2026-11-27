@@ -20,6 +20,12 @@ Seiten, die vier Ansichten) → **Galerie** (interaktive Arbeit im Raum). Die St
 Reihenfolge angegangen: 0, dann 4 und 2 nebeneinander, 3, dann 5 und 6; Stufe 1 (Quellen) läuft in Portionen mit.
 Claude arbeitet selbständig weiter; live geht weiterhin nur, was Christian ausdrücklich freigibt.
 
+Ergänzung zur Installation (Christian, 27. November 2026): «ich möchte auch Video-Animationen der prozesshaften
+Weiterentwicklung, Aspekte, die vielleicht verfolgt werden oder auch nicht, visualisieren. Es ist eine spielerische
+Suche und eine Entwicklung einer neuen Erfahrung. Was textlich passt, kommt jeweils auch auf die Theorieseite.»
+Dafür gibt es das Logbuch `docs/skizzen.md`: jede Skizze eine kurze Animation mit einer Frage, behalten auch wenn der
+Weg nicht weiterverfolgt wird; dazu Textkandidaten für die Theorieseite, die erst nach Christians OK dorthin kommen.
+
 ## 1. Der Gedanke
 
 Die Sonnenblume ist ein Modellfall, weil in ihr vier Dinge zusammenfallen, die sonst getrennt verhandelt werden:
@@ -57,8 +63,10 @@ Anknüpfungspunkte aus dem Zettelkasten und dem Wiki (`wiki/konzepte/tragende-be
 | Eigenzeit | das Gehäuse der Schnecke ist die Aufzeichnung seiner eigenen Zeit (wie der Zeitkörper) |
 | Beobachter | die Spiralfamilie, die man sieht, ist eine Unterscheidung des Betrachters |
 
-Offen und Christians Sache: ob «Ornament» in der Theorie ein eigener Begriff wird oder ein Anwendungsfall bleibt, und
-wie er zu Luhmanns Gebrauch steht (Abschnitt 2.2).
+Berichtigung (27. November 2026): Die Theorieseite (`alpha/theorie/`) führt das Ornament bereits als Leitbegriff
+(Bereich 3, «womit sie es tut»; Hauptthese: «Kunst baut Stellen, an denen Wahrnehmung different wiederkehren kann»).
+Die Formen schliessen dort an bestehende Zettel an, vor allem 3/2 (variierte Redundanz), 3/4 (nie fertig gesehen) und
+7/3 (der Körper geht voraus). Zuordnung im Logbuch `docs/skizzen.md`.
 
 ### 2.2 Geschichte und Kunstgeschichte
 
@@ -349,8 +357,7 @@ Nach den 16 Schleifen klein und an der Sonnenblume beginnen, in dieser Reihenfol
 
 ## 7. Offene Fragen an Christian
 
-1. Soll «Ornament» in der Theorie ein eigener, tragender Begriff werden, oder bleibt es der Ort, an dem Anschluss,
-   Wiederaufnahme und Kontingenz anschaulich werden?
+1. (Erledigt: Das Ornament ist auf der Theorieseite bereits Leitbegriff, siehe 2.1.)
 2. Wie viel Wissenschaft soll sichtbar sein: als Text und Quelle neben der Form, oder nur als Bau der Form selbst?
 3. Wohin soll es zuerst führen: spielbare Seite, Filmreihe, Prints und Objekte oder Text?
 4. Welche Quellen liegen schon vor (Luhmann, Riegl, Gombrich), und welche Formen ausser Sonnenblume und Schnecke
