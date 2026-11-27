@@ -258,6 +258,9 @@ Wunsch: «mach noch ein anderes, flüssigeres video mit einer fahrt durch versch
   Quasiperiodisch aus `alpha/formen/familien.js` (Startwerte des Katalogs) in einer Reihe, am Schluss die Spur der Eigenzeit (vorab gerechnet,
   Koppelung 0,5). Die Kamera bleibt auf einer Seite der Reihe und fährt auf einer Catmull-Rom-Kurve nach Bogenlänge (gleichmässiges Tempo,
   sanfter Anfang und Schluss); das Ziel gleitet von Form zu Form. Nebel lässt die Formen in der Tiefe verschwinden.
+- **Zweite Fassung** («mach die reaktion-diffusion feiner und die formen wachsend und bewegend»): jede Form baut sich auf, während die
+  Kamera kommt (Zeichenbereich der Röhren und Flächen, Instanzen der Reihe nach, die Spur von unten), und bewegt sich in sich (Friesbänder in
+  eigenen Tempi, atmende Scheibe, Schweben); Reaktion–Diffusion mit `fein: 2` (doppelt feines Raster, Option in `familien.js`).
 - **Intro und Outro**: das Signet auf dem dunklen Grund, Punkt in Messing; im Intro «Ornament Formen» in Messing.
 
 ```bash

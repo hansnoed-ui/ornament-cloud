@@ -1,7 +1,7 @@
 // ORNAMENT FORMEN 0.1 – Katalog. Eine einzige WebGL-Fläche liegt fest über der Seite und zeichnet jede Familie in das
 // Bildfeld ihrer Karte (Scissor). So bleibt es bei einem WebGL-Kontext, auch am Handy, das nur wenige erlaubt.
 import { T, rngFrom, neuerStartwert, erzeugeRenderer, studio, materialien, setzeMaterial, radius, entsorge } from './gemeinsam.js?v=1';
-import { ABSCHNITTE, familien } from './familien.js?v=1';
+import { ABSCHNITTE, familien } from './familien.js?v=2';
 
 const ruhig = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 let laeuft = !ruhig;

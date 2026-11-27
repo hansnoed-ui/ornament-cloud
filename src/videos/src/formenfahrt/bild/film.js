@@ -3,9 +3,12 @@
 // durch verschiedene formen, ohne text (mit intro und outro), ca 45 sekunden»; Plan von Christian freigegeben («ja, so machen»).
 // Die Formen baut alpha/formen/familien.js mit den Startwerten des Katalogs. Die Kamera fährt auf einer Catmull-Rom-Kurve nach Bogenlänge,
 // also mit gleichmässigem Tempo, am Anfang und Ende sanft beschleunigt und gebremst. Nebel lässt die Formen in der Tiefe verschwinden.
+// Zweite Fassung («mach die reaktion-diffusion feiner und die formen wachsend und bewegend»): jede Form baut sich auf, während die Kamera
+// näherkommt (Röhren und Flächen über den Zeichenbereich entlang ihrer Bahn, Stäbe und Perlen der Reihe nach, die Spur Schicht für Schicht),
+// und bewegt sich in sich (Friesbänder in eigenen Tempi, atmende Scheibe, schwebende Formen); Reaktion–Diffusion im doppelt feinen Raster.
 // globalThis.film.bild(n) rechnet bis Bild n (30 fps, 36 s Fahrt) und liefert ein JPG.
 import { T, TAU, rngFrom, pick, erzeugeRenderer, studio, materialien, setzeMaterial, radius } from '/alpha/formen/gemeinsam.js?v=1';
-import { familien } from '/alpha/formen/familien.js?v=1';
+import { familien } from '/alpha/formen/familien.js?v=2';
 
 const q = new globalThis.URLSearchParams(globalThis.location.search);
 const BREITE = Number(q.get('b') || 1080), HOEHE = Number(q.get('h') || 1350), DICHTE = Number(q.get('d') || 2);
@@ -32,20 +35,39 @@ const STATIONEN = [
   { name: 'Fries', ort: [5.6, -2.2], gross: 1.35 },
   { name: 'Körper', ort: [11.2, 0.4], gross: 1.2 },
   { name: 'Verflechtung', ort: [16.8, -1.9], gross: 1.25 },
-  { name: 'Wachstum', ort: [22.4, 0.6], gross: 1.3, zeit: t => Math.min(9, Math.max(0, (t - 17.5) * 1.5)) },   // wächst, während die Kamera vorbeifährt
-  { name: 'Reaktion–Diffusion', ort: [28, -1.6], gross: 1.25, ab: 19.5 },                                         // das Muster bildet sich ab 19,5 s, fertig wenn die Kamera ankommt
+  { name: 'Wachstum', ort: [22.4, 0.6], gross: 1.3, eigenesWachstum: true },   // wächst mit seiner eigenen Rechnung (Äste der Reihe nach)
+  { name: 'Reaktion–Diffusion', ort: [28, -1.6], gross: 1.0, fein: 2 },         // doppelt feines Raster; das Muster bildet sich, während die Kamera kommt
   { name: 'Quasiperiodisch', ort: [33.6, 0.5], gross: 1.05 },
 ];
 const formen = [];
 for (const [i, st] of STATIONEN.entries()) {
   const fam = FAM[st.name];
-  const form = fam.bau(rngFrom(fam.start), { gemeinsam: false });
+  const form = fam.bau(rngFrom(fam.start), { gemeinsam: false, fein: st.fein || 1 });
   const huelle = new T.Group(); huelle.add(form.obj);
   huelle.scale.setScalar(st.gross / (form.radius || radius(huelle)));
   const kipp = new T.Group(); kipp.rotation.x = (fam.neigung ?? -0.4) * 0.6; kipp.add(huelle);
   const halter = new T.Group(); halter.position.set(st.ort[0], 0, st.ort[1]); halter.add(kipp);
   szene.add(halter);
-  formen.push({ st, form, halter, phase: i * 1.3 });
+  formen.push({ st, form, halter, kipp, huelle, basis: huelle.scale.x, teile: teile(form.obj), phase: i * 1.3 });
+}
+
+// ---------- Wachsen: Zeichenbereiche und Anzahl der Instanzen ----------
+function teile(obj) {
+  const liste = [];
+  obj.traverse(o => {
+    if (o.isInstancedMesh) liste.push({ o, inst: true, n: o.count });
+    else if (o.isMesh || o.isPoints) {
+      const g = o.geometry, n = g.index ? g.index.count : g.attributes.position.count;
+      liste.push({ o, inst: false, n, schritt: o.isPoints ? 1 : 3 });
+    }
+  });
+  return liste;
+}
+function wachse(liste, p, ohneInstanzen = false) {
+  for (const x of liste) {
+    if (x.inst) { if (!ohneInstanzen) x.o.count = Math.floor(x.n * p); }
+    else x.o.geometry.setDrawRange(0, Math.floor(x.n * p / x.schritt) * x.schritt);
+  }
 }
 
 // ---------- die Spur der Eigenzeit als Schlussbild (Rechnung wie alpha/formen/eigenzeit/eigenzeit.js, vorab 90 s bei Koppelung 0,5) ----------
@@ -77,11 +99,11 @@ const ZK = (() => {
     });
   }
   let hoch = 0;
-  for (const x of ringe) { x.reif.position.y = x.n * DZ; hoch = Math.max(hoch, x.n * DZ); x.spur.instanceMatrix.needsUpdate = true; x.marken.instanceMatrix.needsUpdate = true; }
+  for (const x of ringe) { x.gesamt = [x.spur.count, x.marken.count]; x.reif.position.y = x.n * DZ; hoch = Math.max(hoch, x.n * DZ); x.spur.instanceMatrix.needsUpdate = true; x.marken.instanceMatrix.needsUpdate = true; }
   g.position.y = -hoch / 2;
   const huelle = new T.Group(); huelle.add(g); huelle.scale.setScalar(1.35);
   const halter = new T.Group(); halter.position.set(39.4, 0, -1.4); halter.add(huelle); szene.add(halter);
-  return { halter, ringe };
+  return { halter, ringe, DZ };
 })();
 
 // ---------- Kamerafahrt ----------
@@ -103,25 +125,55 @@ kp.push(new T.Vector3(44.5, 2.6, 4.2)); zp.push(new T.Vector3(39.4, 0.1, -1.4));
 const kurve = new T.CatmullRomCurve3(kp, false, 'centripetal');
 kurve.arcLengthDivisions = 4000;
 const ziel = new T.Vector3();
+const weg = t => { const x = t / DAUER; return Math.min(1, Math.max(0, 0.55 * x + 0.45 * glatt(x))); };
+/** Zeitpunkt, an dem die Kamera einem Ort am nächsten ist */
+function ankunft(x, z) {
+  let best = 0, d = Infinity; const v = new T.Vector3();
+  for (let t = 0; t <= DAUER; t += 0.05) { kurve.getPointAt(weg(t), v); const e = Math.hypot(v.x - x, v.z - z); if (e < d) { d = e; best = t; } }
+  return best;
+}
+for (const f of formen) f.ankunft = ankunft(f.st.ort[0], f.st.ort[1]);
+formen[0].ankunft = Math.min(formen[0].ankunft, 3.6);   // die erste Form wächst gleich ab Beginn, kein leerer Anfang
+ZK.ankunft = ankunft(39.4, -1.4);
+/** Wachstum 0–1: beginnt 3,6 s vor der Ankunft, fertig kurz davor */
+const reife = (t, a) => glatt((t - (a - 3.6)) / 3.2);
 
 let bildNr = -1;
 function stelle(t) {
   // Weg 0–1: gleichmässig nach Bogenlänge, am Anfang und Ende sanft
-  const x = t / DAUER, u = Math.min(1, Math.max(0, 0.55 * x + 0.45 * glatt(x)));
+  const u = weg(t);
   kurve.getPointAt(u, kamera.position);
   // das Ziel gleitet von Punkt zu Punkt der Zielliste, im selben Takt wie die Kamera durch ihre Punkte (je Form dreimal dieselbe Mitte)
   const k = kurve.getUtoTmapping(u) * (zp.length - 1), i = Math.min(zp.length - 2, Math.floor(k));
   ziel.lerpVectors(zp[i], zp[i + 1], glatt(k - i));
   kamera.lookAt(ziel);
-  for (const f of formen) {
+  for (const [i, f] of formen.entries()) {
+    const p = reife(t, f.ankunft), name = f.st.name;
+    // wachsen: Zeichenbereich und Instanzen, dazu die Form selbst von 70 auf 100 %
+    wachse(f.teile, p, f.st.eigenesWachstum);
+    f.huelle.scale.setScalar(f.basis * (0.7 + 0.3 * p));
+    f.halter.visible = p > 0.001;
+    // bewegen: alle drehen und schweben, dazu je Form eine eigene Bewegung
     f.halter.rotation.y = f.phase + t * 0.16;
-    if (f.form.update) {
-      if (f.st.ab !== undefined) { if (t >= f.st.ab) f.form.update(t); }
-      else f.form.update(f.st.zeit ? f.st.zeit(t) : t);
-    }
+    f.halter.position.y = Math.sin(t * 0.8 + i) * 0.08;
+    const obj = f.form.obj;
+    if (name === 'Rosette') f.form.update(t);
+    if (name === 'Fries') obj.children.forEach((c, k) => { if (c.geometry && c.geometry.type === 'TubeGeometry') c.rotation.y = t * (0.22 + 0.13 * k) * (k % 2 ? -1 : 1); });
+    if (name === 'Körper') f.kipp.rotation.z = Math.sin(t * 0.5) * 0.35;
+    if (name === 'Verflechtung') obj.rotation.z = t * 0.3;
+    if (name === 'Wachstum') { f.form.update(Math.min(9, Math.max(0, (t - (f.ankunft - 3.6)) * 2.2))); obj.rotation.z = Math.sin(t * 0.6) * 0.08; }
+    if (name === 'Reaktion–Diffusion') { if (t >= f.ankunft - 6.5) f.form.update(); obj.rotation.y = t * 0.3; }
+    if (name === 'Quasiperiodisch') { const fl = obj.children[0]; if (fl) fl.scale.z = 1 + 0.75 * Math.sin(t * 1.4); }
   }
+  // die Spur der Eigenzeit wächst Schicht für Schicht von unten, die Reife steigen mit
+  const pz = reife(t, ZK.ankunft + 1.2);
+  ZK.halter.visible = pz > 0.001;
   ZK.halter.rotation.y = t * 0.12;
-  ZK.ringe.forEach((x, i) => { x.reif.rotation.z = Math.sin(t * (0.7 + i * 0.23)) * 0.04; });
+  ZK.ringe.forEach((x, i) => {
+    x.spur.count = Math.floor(x.gesamt[0] * pz); x.marken.count = Math.floor(x.gesamt[1] * pz);
+    x.reif.position.y = Math.floor(x.n * pz) * ZK.DZ;
+    x.reif.rotation.z = Math.sin(t * (0.7 + i * 0.23)) * 0.04;
+  });
 }
 const klein = globalThis.document.createElement('canvas'); klein.width = BREITE; klein.height = HOEHE;
 const k2 = klein.getContext('2d'); k2.imageSmoothingQuality = 'high';
