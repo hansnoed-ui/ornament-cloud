@@ -245,6 +245,32 @@ Darum ein zweiter, leichter Renderer ohne Metall und ohne 3D-Studio: `src/videos
 | 31 | `obertoene` | Darmsaiten auf Ebenholz | Reihe | Sechzehn Saiten, jede in ganzen Teilen; alle kehren gemeinsam zurück. | 4/5 | offen |
 | 32 | `sonnenblume-ruhig` | Messing | Anschluss | Zweite Fassung: jeder Kern bleibt auf seinem Winkel und wandert nach aussen. | 3/2 | offen |
 
+### Höherer Anspruch (ab 27. November 2026, abends)
+
+Christian zu den ersten sechs Skizzen: «interessant, aber noch viiiiel zu wenig künstlerisch anspruchsvoll. Bediene dich
+auch an Referenzen der Kunstgeschichte und der zeitgenössischen Kunst.»
+
+Befund (Claude): Die ersten Runden führen ein Prinzip vor; sie sind Schaubilder. Was fehlt, sind Entscheidungen, die
+sich nicht aus dem Prinzip ergeben. Regeln für die nächsten Versuche:
+
+- **Ausschnitt statt Figur:** kein Motiv in der Bildmitte; ein Feld, das über den Rand hinausgeht.
+- **Stoff zuerst:** Papier, Tusche, Pigment, Wachs sollen sich wie Stoff verhalten (Rand, Korn, Verlauf, Zufall).
+- **Eine Entscheidung, die nicht erklärt wird:** ein einzelner Farbton, eine Leerstelle, eine Störung.
+- **Die Hand ist mitgerechnet:** nichts ist exakt gleich; Grösse, Ort und Tempo schwanken.
+- **Zeit mit Gewicht:** langsam; etwas darf fast stillstehen.
+- **Bezüge als Haltung, nie als Nachbildung** eines Werks.
+
+Bezüge, aus denen geschöpft wird: Suminagashi, Ebru, Katagami, Girih · Emma Kunz (Pendelzeichnungen auf Millimeterpapier),
+Hilma af Klint, Anna Atkins (Cyanotypien), Karl Blossfeldt · Agnes Martin, Lee Ufan («From Line», «From Point»), Brice
+Marden («Cold Mountain»), Cy Twombly, Mark Tobey, Henri Michaux · Anni Albers, Gego, Ruth Asawa · Vera Molnár, Georg Nees
+(«Schotter»), Manfred Mohr, John Whitney und James Whitney, Oskar Fischinger, Len Lye · Channa Horwitz, Hanne Darboven,
+Jorinde Voigt, Mario Merz (Fibonacci) · Giuseppe Penone, Wolfgang Laib (Blütenstaub), Roman Signer, Zimoun · Carsten
+Nicolai («Milch»), Ryoji Ikeda · Tauba Auerbach, Julie Mehretu, Tomás Saraceno, Monir Farmanfarmaian.
+
+| Nr. | Skizze | Stoff | Begriff | Ein Satz | Bezüge | Zettel | Stand |
+|---|---|---|---|---|---|---|---|
+| 33 | `ringe` | Tusche auf Wasser | Stelle | Jeder Tropfen schiebt alle früheren nach aussen; was Mitte war, wird Ring. | Suminagashi, Penone, Lee Ufan, Auerbach | 4/1, 4/8 | offen |
+
 Weitere Stoffe und Reihen, die sich anbieten: Eisblumen und Schneekristall, Rauch und Schlieren, Risse in trocknendem
 Ton, Seifenhaut, Obertonreihe einer Saite, Farey-Brüche und Ford-Kreise, Collatz-Bäume, Kettenbrüche, Zellteilung,
 Jahresringe, Flechten auf Stein.

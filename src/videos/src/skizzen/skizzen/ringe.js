@@ -16,13 +16,21 @@ void main(){
   vec2 x = (gl_FragCoord.xy - 0.5*res) / res.x * 2.0;
   // die Wasserfläche atmet: eine langsame, weite Verzerrung
   vec2 w = x + 0.045*vec2(sin(2.3*x.y + 6.2832*p) + 0.6*sin(5.1*x.y - 1.3), cos(1.9*x.x - 6.2832*p) + 0.6*cos(4.3*x.x + 0.7));
+  // und zittert im Kleinen, wie unter dem Atem dessen, der tropft
+  w += 0.022*vec2(fbm(x*2.6 + vec2(1.7, 0.3) + 0.35*vec2(cos(6.2832*p), sin(6.2832*p))) - 0.5, fbm(x*2.6 + vec2(8.1, 4.4) + 0.35*vec2(sin(6.2832*p), cos(6.2832*p))) - 0.5);
   float ton = 0.0, rand = 0.0, rot = 0.0, alter = 150.0;
   for (int i = 0; i < 150; i++) {
     float st = mod(schritt - float(i) + 240.0, 12.0), m = mod(st, 3.0), tinte = 1.0 - mod(st, 2.0);
-    float a = tinte > 0.5 ? 0.1 : 0.2; if (i == 0) a *= sqrt(teil);
-    vec2 v = w - mitte(m); float l2 = dot(v, v), a2 = a*a;
-    if (l2 < a2) { ton = tinte; rand = sqrt(l2 / a2); rot = (tinte > 0.5 && st < 0.5) ? 1.0 : 0.0; alter = float(i); break; }
-    w = mitte(m) + v*sqrt(1.0 - a2 / l2);
+    // kein Tropfen gleicht dem vorigen: Grösse und Ort schwanken von Schritt zu Schritt (je Schleife dieselbe Folge)
+    float a = (tinte > 0.5 ? 0.1 : 0.2) * (0.72 + 0.56*h(vec2(st, 3.7))); if (i == 0) a *= sqrt(teil);
+    vec2 c0 = mitte(m) + 0.035*(vec2(h(vec2(st, 9.1)), h(vec2(st, 5.3))) - 0.5);
+    vec2 v = w - c0; float l2 = dot(v, v), a2 = a*a;
+    if (l2 < a2) {
+      ton = tinte * smoothstep(1.0, 0.985, sqrt(l2 / a2)); rand = sqrt(l2 / a2); alter = float(i);
+      rot = (tinte > 0.5 && st < 0.5) ? clamp(1.0 - alter/40.0, 0.0, 1.0) : 0.0;     // ein einziger Tropfen Zinnober, der mit dem Alter schwarz wird
+      break;
+    }
+    w = c0 + v*sqrt(1.0 - a2 / l2);
   }
   // Papier: warmes Weiss mit Fasern; Tusche: dichter am Rand des Tropfens, körnig, mit dem Alter etwas blasser
   float faser = fbm(x*vec2(26.0, 150.0)) * 0.6 + fbm(x*vec2(160.0, 22.0) + 3.0) * 0.4;
