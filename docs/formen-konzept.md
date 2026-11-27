@@ -122,6 +122,9 @@ klar bleiben, was gemessen ist und was Analogie ist.
 das visuell Ornamentale via (Wahrnehmungs-?)Krise zum körperlich-multioperational-Ornamentalen bringe, zur Hand, die
 sich vom Auge emanzipiert, zum Tanz, zum Unbewussten.»
 
+Christian danach: «Ich gebe deiner Analyse der gotischen Linie recht, vertiefe das.» Die Vertiefung steht in
+`docs/gotische-linie.md` (These: Ornament als Koppelung von Hand und Auge; fünf Schwellen; drei Begriffe des Unbewussten).
+
 Was dazu vorliegt (aus dem Gedächtnis, in Stufe 1 zu prüfen):
 
 - **Worringer, *Formprobleme der Gotik* (1911):** die «nordische Linie» des Bandgeflechts, rastlos, ohne organisches
