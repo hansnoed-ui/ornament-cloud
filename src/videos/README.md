@@ -324,6 +324,10 @@ Siebzehnte Schleife `gotische-linie` (zu `docs/gotische-linie.md`): eine einzige
 Takt, Zähne, Mitte und Massstab und läuft über das Feld hinaus; die Schablone bleibt als Kreidelinie; drei Federn laufen nach dem
 Zwei-Drittel-Gesetz (in der Kurve langsamer), die Linie schwillt in der Kurve an; die Kamera geht vom Überblick in die Nähe einer Feder.
 
+**Skizzen** (`src/skizzen/`, Logbuch `docs/skizzen.md`): wilde Versuche in wechselnden Stoffen, je 20 s, 4:5, ohne Text. Eigener
+leichter Renderer (2D-Leinwand, auf Wunsch ein Vollbild-Shader in doppelter Auflösung): `NODE_PATH=$(npm root -g) node render.mjs
+<name> probe|film`, Ausgabe `out/skizzen/<name>.mp4`. Erste Runde: `chladni`, `schwebung`, `harmonograph`, `primzahlen`, `marmor`, `geflecht`.
+
 Vorgemerkt (27. November 2026, Christian: «für später merken und mich nach diesen 16 videos daran erinnern»): nach dem vierten Paket an
 cinecode (github.com/sarpstar/cinecode, MIT) erinnern. Drei Möglichkeiten: `scripts/qc.py` zum Prüfen (Schleifennaht, Aufblitzer,
 Standbilder; ausführen braucht seine Erlaubnis), Bildveredelung nach ihrem Finish (Bloom, Lichthof, Filmkorn) selbst nachgebaut, leiser

@@ -82,6 +82,28 @@ Anschlüsse, die schon auf der Seite stehen:
 | 19 | Seite `alpha/formen/sehrinde/` | Dieselbe Form im Gesichtsfeld und auf der Sehrinde: Wo liegt das Ornament, im Bild oder im Sehen? | 3/4, 7/3 | offen |
 | 20 | Video «Die Mitte» | Monotonie, Rauschen, Mitte, Mäander, Rapport, Rhythmus, Streifen | 3/2 | fertig |
 
+## Wilde Versuche (ab 27. November 2026)
+
+Christian: «Ob wir bei dieser Metall-Optik bleiben bei den Skizzen, weiss ich noch nicht, deshalb der Hinweis auf weitere
+organische Verbindungen und Elemente, allenfalls auch Schwingungen, Frequenzen, mathematische Reihen etc. Wilde
+Versuche, nicht ausführlich erklärt, sondern verbunden mit Aspekten, Begriffen, Konzepten.»
+
+Darum ein zweiter, leichter Renderer ohne Metall und ohne 3D-Studio: `src/videos/src/skizzen/` (`render.mjs <name> film`,
+20 s, 4:5, ohne Text). Jede Skizze hat einen Stoff und einen Begriff, mehr nicht.
+
+| Nr. | Skizze | Stoff | Begriff | Ein Satz | Zettel | Stand |
+|---|---|---|---|---|---|---|
+| 21 | `chladni` | Sand auf schwingender Platte | Stelle | Der Sand sammelt sich, wo nichts schwingt. | 4/1 | offen |
+| 22 | `schwebung` | Tusche auf Papier | Koppelung | Zwei Rhythmen, fast gleich; man sieht einen dritten, den keiner enthält. | 4/5 | offen |
+| 23 | `harmonograph` | Grafit auf Papier | Wiederkehr ohne Rückkehr | Zwei Pendel, fast 2 : 3; die Figur schliesst sich nie ganz. | 3/2 | offen |
+| 24 | `primzahlen` | Kreide auf Kobalt | Kontingenz | Niemand hat diese Ordnung gelegt; jede Anordnung zeigt eine andere. | 2/3 | offen |
+| 25 | `marmor` | Farbe auf Wasser | Spur | Jede Störung bleibt im Bild. | 7/2 | offen |
+| 26 | `geflecht` | Schleimpilz, Myzel | Anschluss | Kein Plan, nur Spuren, denen Spuren folgen. | 3/2 | offen |
+
+Weitere Stoffe und Reihen, die sich anbieten: Eisblumen und Schneekristall, Rauch und Schlieren, Risse in trocknendem
+Ton, Seifenhaut, Obertonreihe einer Saite, Farey-Brüche und Ford-Kreise, Collatz-Bäume, Kettenbrüche, Zellteilung,
+Jahresringe, Flechten auf Stein.
+
 ## Nächste Skizzen (Vorschlag)
 
 - **Fünf Schwellen:** dieselbe Linie, fünfmal; je eine Schwelle aus `docs/gotische-linie.md` wird überschritten
