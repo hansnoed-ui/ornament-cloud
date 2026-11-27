@@ -57,14 +57,16 @@ Anschlüsse, die schon auf der Seite stehen:
 - **Belege** (bleiben wie auf der Seite üblich im Hintergrund): `docs/gotische-linie.md`, Verweise der Prüfung.
   Noch am Original nachzulesen: Worringer, Deleuze Kapitel 12 und 14.
 
-### Textkandidaten 2 bis 7 (27. November 2026, nicht freigegeben)
+### Textkandidaten 2 bis 7 (27. November 2026; Christian: «Texte alle ok»; auf der Seite als 3/8, 4/7, 3/9, 4/8, 7/6, 2/6)
 
 Christian: «Wenn es weitere theoretische Ausführungen und Verweise zu dem gibt, was du grad baust, und diese zur
 Kunsttheorie passen, formuliere sie aus. Kann auch Theater, Performance, Musik sein.»
 
 Sechs Vorschläge in der Form der Seite. Zu jedem steht, was an Quellen gestützt ist (Suche vom 27. November 2026;
 gestützt heisst: durch eine zugängliche Quelle bestätigt, nicht am Original nachgelesen) und was aus dem Gedächtnis des
-Modells stammt. Auf die Seite kommt jeder erst nach Christians OK zum Wortlaut.
+Modells stammt. Freigegeben am 27. November 2026 und als Zettel eingesetzt: Kandidat 2 → 3/8, Kandidat 3 → 4/7,
+Kandidat 4 → 3/9, Kandidat 5 → 4/8, Kandidat 6 → 7/6, Kandidat 7 → 2/6. Was unten als «aus dem Gedächtnis» oder
+«nachzulesen» steht, bleibt zu prüfen, auch wenn der Text schon auf der Seite steht.
 
 #### Kandidat 2 · Was nichts bedeuten muss (Musik; zu 3/2 und 2/3; Skizzen `harmonograph`, `chladni`, «Die Mitte»)
 
