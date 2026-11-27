@@ -169,3 +169,12 @@ a:hover .roll > span, button:hover .roll > span, a:focus-visible .roll > span, b
   .menue ul:hover a:not(:hover) { opacity: 1; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+/* der Weg zu ornament.cloud (27. November 2026, Wunsch: «noch dezent auf ornament.cloud verlinken»):
+   in den Fusszeilen von Kerntext und Quellen grau statt blau, im Menü eine kleine Zeile unten */
+.fuss a.heim { color: var(--grau); }
+.fuss a.heim:hover { color: var(--tinte); }
+.menue .heim-zeile { position: absolute; left: 0; right: 0; bottom: 12vh; margin: 0; text-align: center; font-size: var(--klein); }
+.menue .heim-zeile a { display: inline; font-size: inherit; font-weight: 400; letter-spacing: 0; line-height: 1.5; color: var(--grau); mix-blend-mode: normal; }
+.menue .heim-zeile a:hover { color: var(--tinte); }
+@media (max-width: 700px) { .menue .heim-zeile { bottom: 64px; } }

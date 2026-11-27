@@ -85,6 +85,9 @@ Sitzung wissen muss, damit dieselben Fehler nicht zweimal passieren.
 - Nach Änderungen an Kopf, Menü oder neuen Seiten: `tests/struktur.test.mjs`,
   `tests/navigation.test.mjs`; nach Änderungen am Deploy: `tests/hostpoint.test.mjs`.
 - Sichtbares mit Playwright als Bild prüfen, auch in Handybreite (390 px) und dunkel.
+- WebGL kann am Handy jederzeit verloren gehen (Speicher, Tab im Hintergrund): Chrome zeigt dann eine weisse Fläche mit
+  traurigem Symbol. Liegt Schrift mit `mix-blend-mode: difference` darüber, wird sie unlesbar (Theorie-Probeseite, 26.11.2026).
+  Auf `webglcontextlost` reagieren: `preventDefault()` und auf eine 2D-Fassung wechseln oder die Leinwand ausblenden.
 - Keine deckenden festen Elemente über WebGL-Leinwand oder Bühne legen
   (Edge unter Windows schnitt sonst unten einen Streifen in Kopfhöhe ab; Kopf
   darum `rgba(0,0,0,.99)` statt `#000`).
