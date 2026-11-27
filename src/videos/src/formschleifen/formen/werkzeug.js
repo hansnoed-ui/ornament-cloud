@@ -68,3 +68,24 @@ export function kugeln(n, mat, fein = 20) {
   m.fertig = () => { m.instanceMatrix.needsUpdate = true; };
   return m;
 }
+
+/** Stäbe als Instanzen; setze(i, a, b, rad) */
+export function stabwerk(n, mat, rund = 8) {
+  const m = new T.InstancedMesh(new T.CylinderGeometry(1, 1, 1, rund), mat, n);
+  m.frustumCulled = false;
+  const M = new T.Matrix4(), Q = new T.Quaternion(), S = new T.Vector3(), P = new T.Vector3(), D = new T.Vector3(), OBEN = new T.Vector3(0, 1, 0);
+  m.setze = (i, a, b, rad) => {
+    D.subVectors(b, a); const len = D.length() || 1e-5;
+    P.addVectors(a, b).multiplyScalar(0.5); Q.setFromUnitVectors(OBEN, D.multiplyScalar(1 / len));
+    M.compose(P, Q, S.set(Math.max(1e-5, rad), len, Math.max(1e-5, rad))); m.setMatrixAt(i, M);
+  };
+  m.fertig = () => { m.instanceMatrix.needsUpdate = true; };
+  return m;
+}
+
+/** Gewichte für n Zustände im Kreis: bei p = i/n ist Zustand i rein, dazwischen gleiten sie ineinander */
+export function kreisGewichte(p, n, schaerfe = 3) {
+  const w = Array.from({ length: n }, (_, i) => Math.pow(0.5 + 0.5 * Math.cos(TAU * (p - i / n)), schaerfe));
+  const s = w.reduce((a, b) => a + b, 0);
+  return w.map(x => x / s);
+}

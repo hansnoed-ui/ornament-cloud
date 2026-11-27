@@ -304,6 +304,11 @@ Erstes Paket: `rosette` (fünf Ringe, Blätter, Kordel und Welle treiben aus und
 Messing und Kreide, rollt in sich eine halbe Drehung), `wachstum` (sechsarmige Ranke mit Voluten wächst und zieht sich zurück),
 `reaktion-diffusion` (Gray-Scott auf dem Torus: Flecken, Würmer, Labyrinth, Zerfall).
 
+Zweites Paket: `fries` (kannelierte Säule, fünf Bänder gleiten durch Welle, Zinnen, Zickzack, Schlaufen, ein Kreidestrang flicht sich ein),
+`flaeche` (Fliesenmuster auf dem Torus von Quadrat über Raute zum Sechseck, Kamerafahrt dicht um den Ring), `koerper` (Ikosaeder in
+geodätischem Netz, Stacheln in zwei wandernden Kronen), `raumgitter` (Fahrt um einen Gittervektor durch ein Kristallgitter, das
+raumzentriert wird und wieder kubisch; was der Kamera zu nahe kommt, verschwindet).
+
 ```bash
 cd src/formschleifen
 NODE_PATH=$(npm root -g) node render.mjs rosette probe   # neun Bilder nach out/formschleifen/probe-rosette/
