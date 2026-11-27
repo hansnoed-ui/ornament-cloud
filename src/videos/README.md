@@ -313,6 +313,10 @@ Vorgemerkt (27. November 2026, Christian: «für später merken und mich nach di
 cinecode (github.com/sarpstar/cinecode, MIT) erinnern. Drei Möglichkeiten: `scripts/qc.py` zum Prüfen (Schleifennaht, Aufblitzer,
 Standbilder; ausführen braucht seine Erlaubnis), Bildveredelung nach ihrem Finish (Bloom, Lichthof, Filmkorn) selbst nachgebaut, leiser
 Ton je Form mit Web Audio. Empfehlung: die Bildveredelung.
+Ebenfalls vorgemerkt: every-frame-is-code («motion-kit», github.com/kiselas/every-frame-is-code, MIT), eine Wissenssammlung für
+Grafik in Code (jedes Bild eine reine Funktion der Zeit): Bewegung und Easing, Übergänge, Montage, Effektrezepte, three.js mit Bloom,
+Prüfen mit Kontaktbogen, Ton im selben Takt, Pixel/Retro und Demoszene; dazu `render/analyze.mjs`, das Schnitte und Tempo eines fremden
+Videos misst. Für uns am ehesten: Übergänge, Effektrezepte, Analyse von Vorbildern.
 
 ```bash
 cd src/formschleifen
