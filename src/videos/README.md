@@ -324,6 +324,13 @@ Siebzehnte Schleife `gotische-linie` (zu `docs/gotische-linie.md`): eine einzige
 Takt, Zähne, Mitte und Massstab und läuft über das Feld hinaus; die Schablone bleibt als Kreidelinie; drei Federn laufen nach dem
 Zwei-Drittel-Gesetz (in der Kurve langsamer), die Linie schwillt in der Kurve an; die Kamera geht vom Überblick in die Nähe einer Feder.
 
+**Prüfen** (seit 27. November 2026): `node render.mjs <name> naht` (in `src/formschleifen/` und `src/skizzen/`) vergleicht den Schritt vom
+letzten Bild zum ersten mit den Schritten daneben und meldet «SPRUNG». Die Probebilder taugen dafür nicht (Bild 900 ist Bild 0). Für
+fertige Videos das Prüfskript von cinecode, das Christian erlaubt hat («Erlaubnis für cinecode erteilt»; das Skript ruft nur ffmpeg und
+ffprobe auf): `QC_OUT=<ordner> python3 -I <cinecode>/scripts/qc.py loop|pops|freeze <video>`. Erste Funde: Sprung in `verflechtung` (innere
+Stränge fünfzählig, drehten im Achteltakt mit; behoben) und Flackern in `sonnenblume` (die Scheibe dreht je Bild starr um 41°; die zweite
+Fassung `sonnenblume-ruhig` lässt jeden Kern auf seinem Winkel nach aussen wandern, die erste bleibt, weil sie Christian gefällt).
+
 **Skizzen** (`src/skizzen/`, Logbuch `docs/skizzen.md`): wilde Versuche in wechselnden Stoffen, je 20 s, 4:5, ohne Text. Eigener
 leichter Renderer (2D-Leinwand, auf Wunsch ein Vollbild-Shader in doppelter Auflösung): `NODE_PATH=$(npm root -g) node render.mjs
 <name> probe|film`, Ausgabe `out/skizzen/<name>.mp4`. Erste Runde: `chladni`, `schwebung`, `harmonograph`, `primzahlen`, `marmor`, `geflecht`.

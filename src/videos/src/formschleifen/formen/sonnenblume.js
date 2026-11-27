@@ -6,8 +6,15 @@
 import { T, TAU, welle, mix, sanft, stelleKamera } from './werkzeug.js';
 
 const K = 273, M = 1500, C = 0.026, GOLD = Math.PI * (3 - Math.sqrt(5));
+/** nach einer Schleife sind 273 Kerne nachgewachsen; das Bild ist dann um 273 goldene Winkel gedreht (rund 100°). Die langsame Gegendrehung schliesst die Schleife. */
+const DREH = (K * GOLD) % (Math.PI * 2);
 
-export function baue({ szene, kamera }) {
+/** abw: grösste Abweichung vom goldenen Winkel in Grad. Mit 0,45 kippen die Spiralen bis zu Speichen, die Kerne am Rand drehen dabei
+ *  aber schneller, als 30 Bilder je Sekunde zeigen können (Flackern; gemessen mit qc.py pops: 98 Einzelbilder). Mit 0,07 bleibt es ruhig. */
+/** fluss: jeder Kern behält den Winkel seiner Entstehung und wandert nur nach aussen (so wächst ein Blütenstand wirklich). Ohne fluss
+ *  dreht die ganze Scheibe je Bild starr um rund 41°; im Standbild fällt das nicht auf, weil das Muster fast symmetrisch ist, in der
+ *  Bewegung springen aber die hellen Kerne (gefunden beim Nachmessen der Schrittweite je Bild, 27. November 2026). */
+export const macher = (abw, fluss = false) => function baue({ szene, kamera }) {
   const halter = new T.Group(); szene.add(halter);
   const stoff = new T.MeshStandardMaterial({ color: 0xffffff, metalness: 0.88, roughness: 0.28 });
   const kegel = new T.ConeGeometry(1, 1, 14); kegel.translate(0, 0.5, 0);
@@ -21,12 +28,12 @@ export function baue({ szene, kamera }) {
 
   function stelle(p) {
     const tau = K * p, fr = tau - Math.floor(tau);
-    const phi = GOLD + (0.45 * Math.PI / 180) * Math.sin(TAU * p) * welle(p, 0.25);   // Abweichung vom goldenen Winkel
+    const phi = GOLD + (abw * Math.PI / 180) * Math.sin(TAU * p) * welle(p, 0.25);   // Abweichung vom goldenen Winkel
     const kuppel = mix(0.04, 0.62, welle(p)), stachel = mix(0.25, 2.6, welle(p, 0.22));
     const w13 = 0.5 + 0.5 * Math.cos(TAU * p), w21 = 1 - w13;                       // welche Spiralfamilie leuchtet
     for (let j = 0; j < M; j++) {
       const n = j + fr, k = Math.floor(tau) - j;                                        // Alter n, Nummer k (fest je Kern)
-      const r = C * Math.sqrt(n), a = -n * phi;
+      const r = C * Math.sqrt(n), a = -n * phi + (fluss ? tau * GOLD - DREH * p : 0);
       const z = kuppel * R * (1 - (r / R) * (r / R));
       P.set(r * Math.cos(a), z, r * Math.sin(a));
       // Normale der Kuppel: die Kerne stehen senkrecht auf der Fläche
@@ -47,4 +54,5 @@ export function baue({ szene, kamera }) {
     stelleKamera(kamera, ziel.set(0, kuppel * R * 0.35, 0), mix(4.3, 4.5, welle(p)), mix(1.35, 0.55, welle(p, 0.08)), 0.4 * Math.sin(TAU * p));
   }
   return { stelle };
-}
+};
+export const baue = macher(0.45);

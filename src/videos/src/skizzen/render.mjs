@@ -1,4 +1,5 @@
 // rendert eine Skizze Bild für Bild mit film.html in Chromium (Playwright, ohne Grafikkarte über SwiftShader)
+//   node render.mjs <skizze> naht    → prüft die Naht der Schleife (letztes Bild → erstes) gegen die Schritte daneben
 //   node render.mjs <skizze> probe   → neun Bilder (p = 0, 1/8 … 1) nach ../../out/skizzen/probe-<skizze>/
 //   node render.mjs <skizze> film    → 600 Bilder (20 s, 30 fps, 1080 × 1350) nach ../../public/skizzen/<skizze>/,
 //                                      dann mit ffmpeg nach ../../out/skizzen/<skizze>.mp4 (H.264, yuv420p, faststart)
@@ -21,7 +22,7 @@ const server = createServer((req, res) => {
 }).listen(0);
 
 const [form = "chladni", art = "probe"] = globalThis.process.argv.slice(2);
-const ziel = art === "probe" ? join(videos, "out", "skizzen", `probe-${form}`) : join(videos, "public", "skizzen", form);
+const ziel = art !== "film" ? join(videos, "out", "skizzen", `probe-${form}`) : join(videos, "public", "skizzen", form);
 mkdirSync(ziel, { recursive: true });
 const b = await chromium.launch({ args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"] });
 const p = await b.newPage({ viewport: { width: 1080, height: 1350 } });
@@ -35,7 +36,21 @@ const speichern = async (name, n) => {
   writeFileSync(join(ziel, name), globalThis.Buffer.from(url.split(",")[1], "base64"));
 };
 const zeit = Date.now();
-if (art === "probe") {
+if (art === "naht") {
+  // die Naht der Schleife: Schritt vom letzten Bild zum ersten, verglichen mit den Schritten davor und danach (mittlere Abweichung, 0–255)
+  const diff = (a, b) => p.evaluate(async ([x, y]) => {
+    const lade = (u) => new Promise((ok) => { const i = new globalThis.Image(); i.onload = () => ok(i); i.src = u; });
+    const [i1, i2] = [await lade(x), await lade(y)], c = globalThis.document.createElement("canvas"); c.width = 270; c.height = 338;
+    const g = c.getContext("2d", { willReadFrequently: true });
+    g.drawImage(i1, 0, 0, 270, 338); const d1 = g.getImageData(0, 0, 270, 338).data; g.drawImage(i2, 0, 0, 270, 338); const d2 = g.getImageData(0, 0, 270, 338).data;
+    let s = 0; for (let k = 0; k < d1.length; k += 4) s += Math.abs(d1[k] - d2[k]); return s / (d1.length / 4);
+  }, [a, b]);
+  const b0 = await p.evaluate(() => globalThis.film.bild(0)), b1 = await p.evaluate(() => globalThis.film.bild(1));
+  const y = await p.evaluate((n) => globalThis.film.bild(n), BILDER - 2), z = await p.evaluate((n) => globalThis.film.bild(n), BILDER - 1);
+  const [davor, naht, danach] = [await diff(y, z), await diff(z, b0), await diff(b0, b1)];
+  const gut = naht <= Math.max(0.6, 2.5 * Math.max(davor, danach));
+  console.log(form, "Naht", naht.toFixed(2), "· Schritt davor", davor.toFixed(2), "· danach", danach.toFixed(2), gut ? "· in Ordnung" : "· SPRUNG");
+} else if (art === "probe") {
   for (let k = 0; k <= 8; k++) await speichern(`p${k}.jpg`, Math.round((k / 8) * BILDER));
 } else {
   for (let i = 0; i < BILDER; i++) { await speichern(`f${String(i).padStart(4, "0")}.jpg`, i); if (i % 90 === 0) console.log(form, i, Math.round((Date.now() - zeit) / 1000), "s"); }

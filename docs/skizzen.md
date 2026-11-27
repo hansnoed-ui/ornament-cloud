@@ -236,6 +236,13 @@ Darum ein zweiter, leichter Renderer ohne Metall und ohne 3D-Studio: `src/videos
 | 25 | `marmor` | Farbe auf Wasser | Spur | Jede Störung bleibt im Bild. | 7/2 | offen |
 | 26 | `geflecht` | Schleimpilz, Myzel | Anschluss | Kein Plan, nur Spuren, denen Spuren folgen. | 3/2 | offen |
 
+| 27 | `feder` | Tusche auf Papier | nichtreflexiv | Dieselbe Linie gerechnet und gezogen; die Hand wird in der Kurve langsam. | 7/3, 3/7 | offen |
+| 28 | `spirale-fries` | Kreide auf Schiefer | Beobachter | Im Gesichtsfeld eine Schnecke, auf der Sehrinde ein Fries. | 3/4 | offen |
+| 29 | `kippfigur` | Samen auf Samt | Unterscheidung | Nichts bewegt sich ausser der Hervorhebung, und jedes Mal ist es eine andere Sonnenblume. | 3/4 | offen |
+| 30 | `steigerung` | Tusche auf Papier | Wiederholung | Dasselbe Zeichen als Addition und als Steigerung. | 3/2, 3/7 | offen |
+| 31 | `obertoene` | Darmsaiten auf Ebenholz | Reihe | Sechzehn Saiten, jede in ganzen Teilen; alle kehren gemeinsam zurück. | 4/5 | offen |
+| 32 | `sonnenblume-ruhig` | Messing | Anschluss | Zweite Fassung: jeder Kern bleibt auf seinem Winkel und wandert nach aussen. | 3/2 | offen |
+
 Weitere Stoffe und Reihen, die sich anbieten: Eisblumen und Schneekristall, Rauch und Schlieren, Risse in trocknendem
 Ton, Seifenhaut, Obertonreihe einer Saite, Farey-Brüche und Ford-Kreise, Collatz-Bäume, Kettenbrüche, Zellteilung,
 Jahresringe, Flechten auf Stein.
