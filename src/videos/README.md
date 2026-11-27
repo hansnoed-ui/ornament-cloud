@@ -292,6 +292,24 @@ Alles im Takt von 96 Schlägen pro Minute (`SCHLAG`).
 cd src/videos && npx remotion render MitteVideo out/die-mitte.mp4 --codec=h264 --crf=18
 ```
 
+## Formschleifen – je Formfamilie eine Schleife von 30 s (27. November 2026)
+
+Wunsch: zu jeder der 16 Formfamilien aus ORNAMENT FORMEN ein Video, «lose, intuitiv, künstlerisch und ohne texte», 30 s, «in sich
+geschlossen», das sich «aus sich heraus» verwandelt; Thema die ornamentale Kunst allgemein. Freigegeben: 4:5, ohne Signet, nahtlose Schleife,
+alle 16 in Paketen zu vier. Kein Remotion: `src/formschleifen/render.mjs` rechnet die Bilder mit `film.html` (three.js, SwiftShader) und setzt
+sie mit ffmpeg zusammen. Jedes Formmodul `formen/<form>.js` rechnet aus der Phase p (0 bis 1) statt aus der Zeit, Bild 900 gleicht Bild 0.
+Vignette und Korn macht `film.js` im 2D-Bild.
+
+Erstes Paket: `rosette` (fünf Ringe, Blätter, Kordel und Welle treiben aus und legen sich wieder), `band` (Möbiusband aus fünf Streifen in
+Messing und Kreide, rollt in sich eine halbe Drehung), `wachstum` (sechsarmige Ranke mit Voluten wächst und zieht sich zurück),
+`reaktion-diffusion` (Gray-Scott auf dem Torus: Flecken, Würmer, Labyrinth, Zerfall).
+
+```bash
+cd src/formschleifen
+NODE_PATH=$(npm root -g) node render.mjs rosette probe   # neun Bilder nach out/formschleifen/probe-rosette/
+NODE_PATH=$(npm root -g) node render.mjs rosette film    # 900 Bilder, dann out/formschleifen/rosette.mp4 (rund 10 min)
+```
+
 ## «Reise» – durch den Zettelkasten und ORNA (28. Oktober 2026)
 
 Wunsch: «eine weitere obsidian animation als video: diesmal eine reise durch orna und den zettelkasten: mit begriffen, verweise, quellen und namen»,
