@@ -20,6 +20,10 @@ Seiten, die vier Ansichten) → **Galerie** (interaktive Arbeit im Raum). Die St
 Reihenfolge angegangen: 0, dann 4 und 2 nebeneinander, 3, dann 5 und 6; Stufe 1 (Quellen) läuft in Portionen mit.
 Claude arbeitet selbständig weiter; live geht weiterhin nur, was Christian ausdrücklich freigibt.
 
+Vorgehen (Christian, 27. November 2026): «Wie gesagt, wir gehen all in, aber Stufe um Stufe.» Eine Stufe wird
+abgeschlossen und gezeigt, bevor die nächste beginnt. Stand: Stufe 0 (Formschleifen) abgeschlossen; in Arbeit ist die
+Animation als Skizzen mit höherem Anspruch (`docs/skizzen.md`). Die Stufe Web beginnt erst nach Christians OK.
+
 Ergänzung zur Installation (Christian, 27. November 2026): «ich möchte auch Video-Animationen der prozesshaften
 Weiterentwicklung, Aspekte, die vielleicht verfolgt werden oder auch nicht, visualisieren. Es ist eine spielerische
 Suche und eine Entwicklung einer neuen Erfahrung. Was textlich passt, kommt jeweils auch auf die Theorieseite.»

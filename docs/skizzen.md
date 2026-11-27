@@ -250,6 +250,8 @@ Darum ein zweiter, leichter Renderer ohne Metall und ohne 3D-Studio: `src/videos
 Christian zu den ersten sechs Skizzen: «interessant, aber noch viiiiel zu wenig künstlerisch anspruchsvoll. Bediene dich
 auch an Referenzen der Kunstgeschichte und der zeitgenössischen Kunst.»
 
+Christian zum Standbild von «Ringe»: «ja, so weiter». Und zum Vorgehen: «Wie gesagt, wir gehen all in, aber Stufe um Stufe.»
+
 Befund (Claude): Die ersten Runden führen ein Prinzip vor; sie sind Schaubilder. Was fehlt, sind Entscheidungen, die
 sich nicht aus dem Prinzip ergeben. Regeln für die nächsten Versuche:
 
@@ -270,6 +272,8 @@ Nicolai («Milch»), Ryoji Ikeda · Tauba Auerbach, Julie Mehretu, Tomás Sarace
 | Nr. | Skizze | Stoff | Begriff | Ein Satz | Bezüge | Zettel | Stand |
 |---|---|---|---|---|---|---|---|
 | 33 | `ringe` | Tusche auf Wasser | Stelle | Jeder Tropfen schiebt alle früheren nach aussen; was Mitte war, wird Ring. | Suminagashi, Penone, Lee Ufan, Auerbach | 4/1, 4/8 | offen |
+| 34 | `pigment` | Blütenstaub auf Stein | Stelle | Der Staub liegt, wo nichts schwingt; man sieht nur einen Ausschnitt der Platte. (Zweite Fassung von 21.) | Laib, Chladni, Nicolai, Kunz | 4/8 | offen |
+| 35 | `tuschezug` | Tusche auf Papier, ein Pinsel | nichtreflexiv | Eine Linie, die nichts umreisst und über das Blatt hinausgeht. (Zweite Fassung von 18.) | Marden, Michaux, Twombly, Grasschrift | 3/7, 7/6 | offen |
 
 Weitere Stoffe und Reihen, die sich anbieten: Eisblumen und Schneekristall, Rauch und Schlieren, Risse in trocknendem
 Ton, Seifenhaut, Obertonreihe einer Saite, Farey-Brüche und Ford-Kreise, Collatz-Bäume, Kettenbrüche, Zellteilung,
