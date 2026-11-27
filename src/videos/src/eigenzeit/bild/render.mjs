@@ -1,7 +1,6 @@
 // rendert den Eigenzeit-Film Bild für Bild mit film.html in Chromium (Playwright, ohne Grafikkarte über SwiftShader) und schreibt JPGs
 //   node render.mjs probe          → einzelne Bilder (je Szene eines) nach ../data/probe/
-//   node render.mjs film           → 90 Bilder Intro in voller Auflösung (i0000.jpg …) und 990 Bilder Film (f0000.jpg …, 33 s, 30 fps)
-//                                    nach public/eigenzeit/, rund 10 min
+//   node render.mjs film           → 1080 Bilder (Intro 3 s und Film 33 s, 30 fps, 1080 × 1350) nach public/eigenzeit/ (f0000.jpg …), rund 15 min
 // Umgebung: NODE_PATH mit playwright. three.js und die Bausteine kommen aus dem Repository (vendor/, alpha/formen/gemeinsam.js).
 import { createServer } from "node:http";
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
@@ -24,12 +23,12 @@ const [art = "probe"] = globalThis.process.argv.slice(2);
 const ziel = art === "probe" ? join(daten, "probe") : join(hier, "..", "..", "..", "public", "eigenzeit");
 mkdirSync(ziel, { recursive: true });
 const b = await chromium.launch({ args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"] });
-const p = await b.newPage({ viewport: { width: 1800, height: 1700 } });
+const p = await b.newPage({ viewport: { width: 2160, height: 2700 } });
 p.on("pageerror", (e) => console.log("pageerror", e.message));
-await p.goto(`http://localhost:${server.address().port}/film/film.html?b=900&h=850&d=2`);
+await p.goto(`http://localhost:${server.address().port}/film/film.html?b=1080&h=1350&d=2`);
 await p.waitForFunction(() => globalThis.bereit, null, { timeout: 120000 });
 const speichern = async (name, n) => {
-  const url = await p.evaluate(([i, g]) => globalThis.film.bild(i, g), [n, name.startsWith("i")]);
+  const url = await p.evaluate((i) => globalThis.film.bild(i), n);
   writeFileSync(join(ziel, name), globalThis.Buffer.from(url.split(",")[1], "base64"));
 };
 const zeit = Date.now();
@@ -37,8 +36,7 @@ if (art === "probe") {
   // je Szene ein Bild: 3 s, 8 s, 16 s, 22 s, 29 s, 32,5 s
   for (const s of [-2.5, -1.5, -0.5, 3, 8, 16, 22, 29, 32.5]) { const n = Math.round(s * 30) + INTRO; await speichern(`probe-${String(n).padStart(4, "0")}.jpg`, n); console.log(s, "s", JSON.stringify(await p.evaluate(() => globalThis.film.zustand()))); }
 } else {
-  for (let i = 0; i < INTRO; i++) await speichern(`i${String(i).padStart(4, "0")}.jpg`, i);
-  for (let i = 0; i < BILDER; i++) { await speichern(`f${String(i).padStart(4, "0")}.jpg`, i + INTRO); if (i % 60 === 0) console.log(i, Math.round((Date.now() - zeit) / 1000), "s"); }
+  for (let i = 0; i < INTRO + BILDER; i++) { await speichern(`f${String(i).padStart(4, "0")}.jpg`, i); if (i % 60 === 0) console.log(i, Math.round((Date.now() - zeit) / 1000), "s"); }
 }
 console.log("fertig in", Math.round((Date.now() - zeit) / 1000), "s");
 await b.close();

@@ -2,13 +2,15 @@
 // Wunsch: «eine animation, 42 sekunden mit der zeitfigur bei den formen. genug bewegung und entwicklung». Szenenplan von Christian freigegeben.
 // Startwert 2471, vier Ringe, Unterschied 70. Die Koppelung, der Beobachter und die Kamera folgen dem Zeitplan PLAN unten.
 // Ändert sich die Rechnung der Seite, hier nachziehen (Konstanten und rechne/operation/beobachte sind übernommen).
-// globalThis.film.bild(n) rechnet bis Bild n (30 fps) und liefert ein JPG, verkleinert auf die Zielgrösse (gross: in voller Auflösung).
+// globalThis.film.bild(n) rechnet bis Bild n (30 fps) und liefert ein JPG, verkleinert auf die Zielgrösse (doppelt gerechnet, glatter).
 // Bild 0–89 ist das Intro (s = −3 … 0, Christian: «nicht dieses intro, das ist zu lasch. ein neues bauen im stile der animation»):
 // die Ringe tauchen nacheinander auf und schreiten schon, noch ohne Spur; die Kamera kippt von oben in die Seitenansicht des Films.
 import { T, TAU, rngFrom, pick, erzeugeRenderer, studio, materialien, setzeMaterial } from '/alpha/formen/gemeinsam.js?v=1';
 
 const q = new globalThis.URLSearchParams(globalThis.location.search);
-const BREITE = Number(q.get('b') || 900), HOEHE = Number(q.get('h') || 850), DICHTE = Number(q.get('d') || 2);
+const BREITE = Number(q.get('b') || 1080), HOEHE = Number(q.get('h') || 1350), DICHTE = Number(q.get('d') || 2);
+// seit «bitte alles ohne weissen rahmen»: die Figur füllt das ganze Bild und sitzt etwas tiefer, oben steht der Text (Anteil der Bildhöhe)
+const TIEFER = Number(q.get('tiefer') || 0.08);
 
 // ---------- wie auf der Seite ----------
 const KMAX = 1, DT = 1 / 120, TAU0 = 0.9, BEOBACHTER_TAKT = 1.7, LMAX = 260, DZ = 0.011, FAEDEN = 18;
@@ -175,17 +177,17 @@ function zeichne(s) {
   zeichneFaeden();
   welt.position.y = -mitteY;
   drehpunkt.rotation.set(PLAN.neigung(s), PLAN.drehung(s), 0);
-  kamera.position.set(0, 0, abstand * PLAN.naehe(s)); kamera.lookAt(0, 0, 0);
+  const a = abstand * PLAN.naehe(s) * 1.1, dy = TIEFER * 2 * Math.tan(T.MathUtils.degToRad(kamera.fov / 2)) * a;
+  kamera.position.set(0, dy, a); kamera.lookAt(0, dy, 0);
   renderer.render(szene, kamera);
 }
 const klein = globalThis.document.createElement('canvas'); klein.width = BREITE; klein.height = HOEHE;
 const k2 = klein.getContext('2d'); k2.imageSmoothingQuality = 'high';
 
 globalThis.film = {
-  bild(n, gross = false) {
+  bild(n) {
     while (bildNr < n) { bildNr++; schritt((bildNr - INTRO) / FPS); }
     zeichne((n - INTRO) / FPS);
-    if (gross) return leinwand.toDataURL('image/jpeg', 0.92);
     k2.drawImage(leinwand, 0, 0, BREITE, HOEHE);
     return klein.toDataURL('image/jpeg', 0.93);
   },

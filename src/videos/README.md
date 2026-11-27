@@ -231,19 +231,21 @@ cd ../../.. && npx remotion render FahrtVideo out/fahrt.mp4 --props='{"ordner":"
 
 Wunsch: «eine animation, 42 sekunden mit der zeitfigur bei den formen. genug bewegung und entwicklung, damit es interessant zum anschauen ist».
 4:5 (1080 × 1350), 42 s, ohne Ton, nur als Datei. Composition `EigenzeitVideo`, Quellcode `src/eigenzeit/`. Szenenplan freigegeben («ja, so machen»).
-Das helle Signet-Intro war «zu lasch»: das Intro ist die Figur selbst, randlos dunkel, «EIGENZEIT» darüber, dann zieht sich das Bild in die Bühne.
+Das helle Signet-Intro war «zu lasch», dann «bitte alles ohne weissen rahmen. wenn text dann wie die neuen videos von ornament.cloud.
+passendes outro»: die Figur füllt das ganze Bild (1080 × 1350) von Anfang an, Schrift wie «Zettel 33 · Das Publikum» (Kennzeile gesperrt im Akzent,
+Satz in der Serife, Leitsatz kursiv), Farben Grund #151412, Kreide, Messing; Outro das Signet dunkel mit Messing-Punkt.
 
 - **Figur** (`bild/film.js` mit `bild/film.html`, gerendert von `bild/render.mjs`): dieselbe Rechnung wie `alpha/formen/eigenzeit/eigenzeit.js`
   (Startwert 2471, vier Ringe, Unterschied 70), Bild für Bild nach einem festen Zeitplan (`PLAN`): Koppelung 0 → 0,55 → 1 → 0,4, Beobachter ab 24,5 s,
   Kamera kippt und dreht. Die Rechnung läuft 3,2-mal so schnell wie die Bilder. Fäden und Feststellungen als dünne Stäbe statt Linien (fürs Telefon).
   Ändert sich die Rechnung der Seite, `film.js` nachziehen. three.js und die Bausteine kommen aus `vendor/` und `alpha/formen/gemeinsam.js`.
 - **Texte** (`daten.mjs`): unverändert aus der Eigenzeit-Seite, geprüft; der Beobachter-Satz als Auszug mit «[…]».
-- **Szenen**: Intro (3 s) · Eigene Rhythmen · Keine Uhr · gekoppelt · aufgegangen · Beobachter · «Wiederkehr ohne Rückkehr» · Outro (Signet, 6 s).
+- **Szenen**: Intro (3 s, die Ringe tauchen auf) · Eigene Rhythmen · Keine Uhr · gekoppelt · aufgegangen · Beobachter · Leitsatz «Wiederkehr ohne Rückkehr» · Outro (Signet dunkel, 6 s).
 
 ```bash
 cd src/videos/src/eigenzeit/bild
 NODE_PATH="$(npm root -g)" node render.mjs probe   # je Szene ein Bild nach ../data/probe/
-NODE_PATH="$(npm root -g)" node render.mjs film    # 90 Intro- und 990 Filmbilder nach public/eigenzeit/ (rund 10 min)
+NODE_PATH="$(npm root -g)" node render.mjs film    # 1080 Bilder (Intro und Film, 1080 × 1350) nach public/eigenzeit/ (rund 15 min)
 cd ../../.. && node vorbereiten.mjs && npx remotion render EigenzeitVideo out/eigenzeit.mp4 --codec=h264 --crf=18
 ```
 
