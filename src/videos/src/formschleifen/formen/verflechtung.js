@@ -23,7 +23,8 @@ export function baue({ szene, kamera, mat }) {
         return out.set(rr * Math.cos(th), rr * Math.sin(th), b * Math.sin(2 * s));
       };
       x.geometry.dispose(); x.geometry = new T.TubeGeometry(new Kurve(fn), K * 70, dick, 12, true);
-      schiff.setze(i, fn(((i / 3 - p) % 1 + 1) % 1, v), dick * 1.9);
+      // die Schiffchen laufen so, dass sie nach einer Schleife samt der Drehung des Ganzen wieder an ihrem Ort sind
+      schiff.setze(i, fn(((i / 3 - p * (1 - 1 / K)) % 1 + 1) % 1, v), dick * 1.9);
     });
     schiff.fertig();
     innen.forEach((x, j) => {
@@ -32,6 +33,9 @@ export function baue({ szene, kamera, mat }) {
         return out.set(rr * Math.cos(th), rr * Math.sin(th), 0.06 * e2 * Math.sin(s));
       };
       x.geometry.dispose(); x.geometry = new T.TubeGeometry(new Kurve(fn), K2 * 70, 0.022, 10, true);
+      // das Ganze dreht je Schleife um eine Achtelteilung; die inneren Stränge sind fünfzählig und drehen darum um eine Fünftelteilung
+      // (gefunden mit der Nahtprüfung von cinecode: ohne das sprang die Schleife am Ende)
+      x.rotation.z = (TAU / K - TAU / K2) * p;
     });
     rand.forEach((x, j) => {
       const rr = R + (j ? 1 : -1) * mix(0.16, 0.26, e);
