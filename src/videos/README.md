@@ -317,6 +317,10 @@ Ebenfalls vorgemerkt: every-frame-is-code («motion-kit», github.com/kiselas/ev
 Grafik in Code (jedes Bild eine reine Funktion der Zeit): Bewegung und Easing, Übergänge, Montage, Effektrezepte, three.js mit Bloom,
 Prüfen mit Kontaktbogen, Ton im selben Takt, Pixel/Retro und Demoszene; dazu `render/analyze.mjs`, das Schnitte und Tempo eines fremden
 Videos misst. Für uns am ehesten: Übergänge, Effektrezepte, Analyse von Vorbildern.
+Ebenfalls vorgemerkt: cinematic-video-skill (github.com/mylxsw/cinematic-video-skill, MIT), ein Claude-Code-Skill für erzählende
+Motion-Graphics-Filme mit Remotion (wie unsere Vorlage): Ablauf Brief → Recherche → Akte → Szenen → Musik → Prüfen → Rendern; eine
+`timeline.json` steuert Bild und Musik zugleich, Musik mit numpy synthetisiert, eine Prüfung im Browser meldet abgeschnittenen oder
+überlappenden Text. Für uns am ehesten: die Textprüfung für die Zettel-Videos und die Musik aus derselben Zeitleiste.
 
 ```bash
 cd src/formschleifen
