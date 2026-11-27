@@ -320,6 +320,10 @@ Viertes Paket: `punkte` (70 000 Staubpunkte auf der Superformel, drei Gestalten,
 gegenläufig, die Feldlinien werden je Bild neu gezogen), `gekoppelte-tempi` (Epizykel mit Tempi 1, −3, 5, −7; die Spitze zeichnet eine
 Spur, die Radien atmen).
 
+Siebzehnte Schleife `gotische-linie` (zu `docs/gotische-linie.md`): eine einzige Linie löst sich vom Mäander auf dem Ring, verliert
+Takt, Zähne, Mitte und Massstab und läuft über das Feld hinaus; die Schablone bleibt als Kreidelinie; drei Federn laufen nach dem
+Zwei-Drittel-Gesetz (in der Kurve langsamer), die Linie schwillt in der Kurve an; die Kamera geht vom Überblick in die Nähe einer Feder.
+
 Vorgemerkt (27. November 2026, Christian: «für später merken und mich nach diesen 16 videos daran erinnern»): nach dem vierten Paket an
 cinecode (github.com/sarpstar/cinecode, MIT) erinnern. Drei Möglichkeiten: `scripts/qc.py` zum Prüfen (Schleifennaht, Aufblitzer,
 Standbilder; ausführen braucht seine Erlaubnis), Bildveredelung nach ihrem Finish (Bloom, Lichthof, Filmkorn) selbst nachgebaut, leiser
