@@ -10,6 +10,16 @@ Alles Folgende ist ein Vorschlag von Claude, nichts davon ist entschieden. Die A
 Wahrnehmung und Hirnforschung stammen aus dem Gedächtnis des Modells und sind **noch nicht an Quellen geprüft**;
 das ist die Aufgabe von Stufe 1. Die Lesart der Theorie ist ein Angebot und ersetzt Christians eigene Formulierung nicht.
 
+## 0. Ziel und Reihenfolge (Christian, 27. November 2026)
+
+«Arbeite ruhig weiter und weiter an der Sache. Ich möchte eine ornamental-philosophische Kunsterfahrung bauen, zuerst
+Animation, Web, später Galerie (interaktiv).»
+
+Daraus die Reihenfolge der Arbeit: **Animation** (Formschleifen, dann Filme mit den vier Linsen) → **Web** (spielbare
+Seiten, die vier Ansichten) → **Galerie** (interaktive Arbeit im Raum). Die Stufen unten bleiben, werden aber in dieser
+Reihenfolge angegangen: 0, dann 4 und 2 nebeneinander, 3, dann 5 und 6; Stufe 1 (Quellen) läuft in Portionen mit.
+Claude arbeitet selbständig weiter; live geht weiterhin nur, was Christian ausdrücklich freigibt.
+
 ## 1. Der Gedanke
 
 Die Sonnenblume ist ein Modellfall, weil in ihr vier Dinge zusammenfallen, die sonst getrennt verhandelt werden:
@@ -105,6 +115,56 @@ Leitfrage: Was im Sehsystem entspricht dem Ornament?
 
 Vorsicht bei dieser Linse: Hier ist der Abstand zwischen Befund und Deutung am grössten. In Texten und Bildern muss
 klar bleiben, was gemessen ist und was Analogie ist.
+
+### 2.6 Der Kipppunkt: die gotische Linie (Christians Gedanke, 27. November 2026)
+
+«Ein spannender Kipppunkt des Ornamentalen ist ja vielleicht auch die sogenannte gotische Linie (Deleuze – Pollock), die
+das visuell Ornamentale via (Wahrnehmungs-?)Krise zum körperlich-multioperational-Ornamentalen bringe, zur Hand, die
+sich vom Auge emanzipiert, zum Tanz, zum Unbewussten.»
+
+Was dazu vorliegt (aus dem Gedächtnis, in Stufe 1 zu prüfen):
+
+- **Worringer, *Formprobleme der Gotik* (1911):** die «nordische Linie» des Bandgeflechts, rastlos, ohne organisches
+  Vorbild, ohne Ruhepunkt.
+- **Deleuze und Guattari, *Mille Plateaux* (1980), Deleuze, *Logique de la sensation* (1981):** die gotische oder
+  nördliche Linie umreisst nichts, hat kein Innen und Aussen, wechselt ständig die Richtung, läuft zwischen den Punkten
+  statt von Punkt zu Punkt. Bei Pollock breitet sie sich über das ganze Bild aus; die Hand löst sich aus der
+  Unterordnung unter das Auge. Deleuze widerspricht damit der Lesart, Pollocks Raum sei rein optisch (Greenberg, Fried).
+- **Im eigenen Werk schon da:** der Operator «Diagramm» (`alpha/deleuze/diagramm/`) mit dem Modus «Fäden» und der
+  Physik des Fliessens.
+- **Brücken zu 2.3 und 2.4:** Richard Taylors Messungen der fraktalen Dimension in Pollocks Bildern, die er auf die
+  Bewegung des Körpers zurückführt; die These, dass Betrachter gemalte Gesten motorisch mitvollziehen (Freedberg und
+  Gallese 2007). Beides ist umstritten und wäre als These zu zeigen, nicht als Befund.
+
+Drei Lesarten, die sich nicht decken (Vorschlag von Claude, zur Entscheidung):
+
+1. **Kipppunkt (Christians Fassung):** Das Ornament bildet Erwartung durch Wiederholung. Die gotische Linie wiederholt
+   nichts mehr, das Auge kann nicht mehr gruppieren, die Ordnung des Sehens bricht. An ihre Stelle tritt eine Ordnung
+   des Tuns: Rhythmus, Schwung, Gewicht. Das Ornament wandert vom Bild in den Körper.
+2. **Kernfall statt Rand:** Wenn Ornament «Form schliesst an Form an» heisst, dann ist die gotische Linie sein reinster
+   Fall: nur Anschluss, keine Figur, kein Plan. Sie wäre dann nicht der Ausgang aus dem Ornament, sondern das, was in
+   Rosette und Fries immer schon arbeitet und dort nur von der Symmetrie gebändigt wird.
+3. **Rückkehr der Hand:** Bei Semper kommt das Ornament aus dem Flechten und Knüpfen, bei Riegl steht das Haptische
+   vor dem Optischen. Dann emanzipiert sich die Hand nicht erst bei Pollock; das Auge hatte sie nur zeitweise
+   überdeckt. Die «Krise» wäre die eines Sehens, das sich für das Ganze hielt.
+
+Zur Frage in der Klammer: Bei Deleuze ist es weniger eine Krise der Wahrnehmung als eine Katastrophe der optischen
+Koordinaten (das Diagramm); in Christians Begriffen läge ein Wechsel des Beobachtungsschemas näher als ein Ausfall.
+Offen ist, wie «Unbewusstes» hier gemeint ist: psychoanalytisch (Pollock und Jung), als Automatismus der Hand oder als
+das, was der Körper kann, ohne dass ein Bewusstsein es führt.
+
+Folgen für das Vorhaben:
+
+- **Eine fünfte Linse «Hand»** neben Regel, Geschichte, Wahrnehmung, Sehrinde: dieselbe Form, aber vom Betrachter
+  gezogen statt gerechnet. Im Web mit dem Finger, mit Trägheit und Schwung, so dass die Linie der Hand folgt und nicht
+  dem Auge (zum Beispiel: die Spur erscheint verzögert oder erst beim Loslassen).
+- **Eine Formfamilie «Gotische Linie»:** eine Linie ohne Umriss, die das ganze Feld füllt, aus Schwung und Richtungswechsel
+  statt aus Symmetrie; als Gegenpol zur Sonnenblume und als Übergang von ihr: die Abweichung wird so gross, dass die
+  Spiralen reissen und zur Linie werden.
+- **Dramaturgie über alle Arbeiten:** vom Sehen der Ordnung (Sonnenblume) über ihr Kippen (Abweichung, Kippfigur) zur
+  Linie, die nur noch getan werden kann. Das gibt Animation, Web und Galerie eine Richtung.
+- **Galerie:** hier wird der Gedanke wörtlich. Der Körper des Besuchers schreibt das Ornament (Bewegung im Raum, Hand,
+  Tanz), mehrere Besucher zugleich; das Bild antwortet, statt vorgeführt zu werden.
 
 ### 2.5 Biologie und Mathematik als Unterbau
 
@@ -291,3 +351,4 @@ Nach den 16 Schleifen klein und an der Sonnenblume beginnen, in dieser Reihenfol
 3. Wohin soll es zuerst führen: spielbare Seite, Filmreihe, Prints und Objekte oder Text?
 4. Welche Quellen liegen schon vor (Luhmann, Riegl, Gombrich), und welche Formen ausser Sonnenblume und Schnecke
    liegen ihm am nächsten?
+5. Gotische Linie: Kipppunkt, Kernfall oder Rückkehr der Hand (Abschnitt 2.6)? Und wie ist das Unbewusste gemeint?

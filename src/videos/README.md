@@ -315,6 +315,11 @@ vom Faden zum Gehäuse, vom Wirbel zum Kegel), `sonnenblume` (zusätzlich, weil 
 Phyllotaxis, je Schleife 273 = 13 · 21 neue Kerne, Kuppel, Stacheln, Divergenzwinkel schwankt um den goldenen), `linie` (Lissajousknoten
 als Schwellzug, zeichnet sich und löst sich), `volumen` (gedrechselter Körper wächst aus dem Keim, Wülste steigen, Schaft windet sich).
 
+Viertes Paket: `punkte` (70 000 Staubpunkte auf der Superformel, drei Gestalten, dazwischen löst sich der Staub im Wirbel), `verflechtung`
+(drei Reife schlagen zum Zopf und lösen sich, innen zwei Kreidestränge gegenläufig), `feld` (drei Quellen und drei Senken kreisen
+gegenläufig, die Feldlinien werden je Bild neu gezogen), `gekoppelte-tempi` (Epizykel mit Tempi 1, −3, 5, −7; die Spitze zeichnet eine
+Spur, die Radien atmen).
+
 Vorgemerkt (27. November 2026, Christian: «für später merken und mich nach diesen 16 videos daran erinnern»): nach dem vierten Paket an
 cinecode (github.com/sarpstar/cinecode, MIT) erinnern. Drei Möglichkeiten: `scripts/qc.py` zum Prüfen (Schleifennaht, Aufblitzer,
 Standbilder; ausführen braucht seine Erlaubnis), Bildveredelung nach ihrem Finish (Bloom, Lichthof, Filmkorn) selbst nachgebaut, leiser
