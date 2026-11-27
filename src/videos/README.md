@@ -309,6 +309,11 @@ Zweites Paket: `fries` (kannelierte Säule, fünf Bänder gleiten durch Welle, Z
 geodätischem Netz, Stacheln in zwei wandernden Kronen), `raumgitter` (Fahrt um einen Gittervektor durch ein Kristallgitter, das
 raumzentriert wird und wieder kubisch; was der Kamera zu nahe kommt, verschwindet).
 
+Vorgemerkt (27. November 2026, Christian: «für später merken und mich nach diesen 16 videos daran erinnern»): nach dem vierten Paket an
+cinecode (github.com/sarpstar/cinecode, MIT) erinnern. Drei Möglichkeiten: `scripts/qc.py` zum Prüfen (Schleifennaht, Aufblitzer,
+Standbilder; ausführen braucht seine Erlaubnis), Bildveredelung nach ihrem Finish (Bloom, Lichthof, Filmkorn) selbst nachgebaut, leiser
+Ton je Form mit Web Audio. Empfehlung: die Bildveredelung.
+
 ```bash
 cd src/formschleifen
 NODE_PATH=$(npm root -g) node render.mjs rosette probe   # neun Bilder nach out/formschleifen/probe-rosette/
