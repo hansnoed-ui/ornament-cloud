@@ -227,6 +227,26 @@ THREE=…/node_modules/three NODE_PATH="$(npm root -g)" node render.mjs fahrt tr
 cd ../../.. && npx remotion render FahrtVideo out/fahrt.mp4 --props='{"ordner":"fahrt-trellis"}'
 ```
 
+## «Eigenzeit» – die Zeitfigur aus ORNAMENT FORMEN (27. November 2026)
+
+Wunsch: «eine animation, 42 sekunden mit der zeitfigur bei den formen. genug bewegung und entwicklung, damit es interessant zum anschauen ist».
+4:5 (1080 × 1350), 42 s, ohne Ton, nur als Datei. Composition `EigenzeitVideo`, Quellcode `src/eigenzeit/`. Szenenplan freigegeben («ja, so machen»).
+Das helle Signet-Intro war «zu lasch»: das Intro ist die Figur selbst, randlos dunkel, «EIGENZEIT» darüber, dann zieht sich das Bild in die Bühne.
+
+- **Figur** (`bild/film.js` mit `bild/film.html`, gerendert von `bild/render.mjs`): dieselbe Rechnung wie `alpha/formen/eigenzeit/eigenzeit.js`
+  (Startwert 2471, vier Ringe, Unterschied 70), Bild für Bild nach einem festen Zeitplan (`PLAN`): Koppelung 0 → 0,55 → 1 → 0,4, Beobachter ab 24,5 s,
+  Kamera kippt und dreht. Die Rechnung läuft 3,2-mal so schnell wie die Bilder. Fäden und Feststellungen als dünne Stäbe statt Linien (fürs Telefon).
+  Ändert sich die Rechnung der Seite, `film.js` nachziehen. three.js und die Bausteine kommen aus `vendor/` und `alpha/formen/gemeinsam.js`.
+- **Texte** (`daten.mjs`): unverändert aus der Eigenzeit-Seite, geprüft; der Beobachter-Satz als Auszug mit «[…]».
+- **Szenen**: Intro (3 s) · Eigene Rhythmen · Keine Uhr · gekoppelt · aufgegangen · Beobachter · «Wiederkehr ohne Rückkehr» · Outro (Signet, 6 s).
+
+```bash
+cd src/videos/src/eigenzeit/bild
+NODE_PATH="$(npm root -g)" node render.mjs probe   # je Szene ein Bild nach ../data/probe/
+NODE_PATH="$(npm root -g)" node render.mjs film    # 90 Intro- und 990 Filmbilder nach public/eigenzeit/ (rund 10 min)
+cd ../../.. && node vorbereiten.mjs && npx remotion render EigenzeitVideo out/eigenzeit.mp4 --codec=h264 --crf=18
+```
+
 ## «Reise» – durch den Zettelkasten und ORNA (28. Oktober 2026)
 
 Wunsch: «eine weitere obsidian animation als video: diesmal eine reise durch orna und den zettelkasten: mit begriffen, verweise, quellen und namen»,
