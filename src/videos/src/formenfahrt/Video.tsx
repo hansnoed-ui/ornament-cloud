@@ -28,7 +28,7 @@ const Anfang: React.FC = () => {
   return (
     <AbsoluteFill style={{ opacity: interpolate(f, [INTRO - 14, INTRO], [1, 0], klemm) }}>
       <Mitte><Signet tempo={2} stil={SIGNET} /></Mitte>
-      <div style={{ position: "absolute", left: 0, right: 0, top: 236, textAlign: "center", fontFamily: SANS, fontWeight: 600, fontSize: 44,
+      <div style={{ position: "absolute", left: 0, right: 0, top: 150, textAlign: "center", fontFamily: SANS, fontWeight: 600, fontSize: 44,
         letterSpacing: "0.22em", marginRight: "-0.22em", textTransform: "uppercase", color: C.akzent,
         opacity: interpolate(f, [8, 30], [0, 1], klemm), translate: `0 ${interpolate(f, [8, 30], [16, 0], { ...klemm, easing: weich })}px` }}>
         Ornament Formen
