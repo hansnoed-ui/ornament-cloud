@@ -13,6 +13,7 @@ import { ReiseVideo, MASSE as MReise, T as TReise, zeitplan as zeitplanReise } f
 import { PublikumVideo, T as TPublikum } from "./publikum/Video";
 import { EigenzeitVideo, HOEHE as HEigenzeit, T as TEigenzeit } from "./eigenzeit/Video";
 import { FormenfahrtVideo, HOEHE as HFormenfahrt, T as TFormenfahrt } from "./formenfahrt/Video";
+import { MitteVideo, HOEHE as HMitte, T as TMitte } from "./mitte/Video";
 // neue Videos: Import
 
 export const RemotionRoot: React.FC = () => (
@@ -59,6 +60,8 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="EigenzeitVideo" component={EigenzeitVideo} durationInFrames={TEigenzeit.ende} fps={FPS} width={BREITE} height={HEigenzeit} />
     {/* «Formenfahrt»: Kamerafahrt durch Formen aus ORNAMENT FORMEN, 4:5, 45 s, ohne Text und Ton (27. November 2026) */}
     <Composition id="FormenfahrtVideo" component={FormenfahrtVideo} durationInFrames={TFormenfahrt.ende} fps={FPS} width={BREITE} height={HFormenfahrt} />
+    {/* «Die Mitte»: Wiederholung und Abweichung, zu Christians Text, 4:5, 45 s, ohne Text und Ton (27. November 2026) */}
+    <Composition id="MitteVideo" component={MitteVideo} durationInFrames={TMitte.ende} fps={FPS} width={BREITE} height={HMitte} />
     {/* neue Videos: Composition */}
   </>
 );

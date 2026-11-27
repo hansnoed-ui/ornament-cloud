@@ -270,6 +270,22 @@ NODE_PATH="$(npm root -g)" node render.mjs film    # 1080 Bilder nach public/for
 cd ../../.. && npx remotion render FormenfahrtVideo out/formenfahrt.mp4 --codec=h264 --crf=18
 ```
 
+## «Die Mitte» – Wiederholung und Abweichung (27. November 2026)
+
+Zu Christians Text «Reine Wiederholung ist Monotonie und sagt nichts. Reine Abweichung ist Rauschen. Das Ornament hält die Mitte […]» (bis zu
+Bridget Riley). Wunsch: ohne Text, mit Intro und Outro; Szenenplan freigegeben. 4:5 (1080 × 1350), 45 s, ohne Ton, nur als Datei.
+Composition `MitteVideo`, Quellcode `src/mitte/Video.tsx`, ganz in 2D (SVG), Bild für Bild aus der Bildnummer gerechnet, keine Einzelbilder nötig.
+
+Szenen: Monotonie (starres Raster eines Mäanderhakens) · Rauschen (jedes Motiv springt für sich) · die Mitte (ein Band mit kleinen Abweichungen
+im Takt, ein Motiv bricht in Messing aus und fängt sich) · Mäander (die Linie zeichnet sich) · Raum (Rapport als Fries, die Kamera fährt
+entlang) · Zeit (das Motiv im Takt, dann ein Triller zweier Zustände) · Streifen und Wellen (eine kleinste Abweichung in Messing setzt das
+Feld in Bewegung; nur das Prinzip aus dem Text, kein Werk von Riley nachgebildet). Kreide auf dem dunklen Grund, Abweichungen in Messing,
+Intro und Outro das dunkle Signet.
+
+```bash
+cd src/videos && npx remotion render MitteVideo out/die-mitte.mp4 --codec=h264 --crf=18
+```
+
 ## «Reise» – durch den Zettelkasten und ORNA (28. Oktober 2026)
 
 Wunsch: «eine weitere obsidian animation als video: diesmal eine reise durch orna und den zettelkasten: mit begriffen, verweise, quellen und namen»,
