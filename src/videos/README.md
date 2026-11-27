@@ -309,6 +309,12 @@ Zweites Paket: `fries` (kannelierte Säule, fünf Bänder gleiten durch Welle, Z
 geodätischem Netz, Stacheln in zwei wandernden Kronen), `raumgitter` (Fahrt um einen Gittervektor durch ein Kristallgitter, das
 raumzentriert wird und wieder kubisch; was der Kamera zu nahe kommt, verschwindet).
 
+Drittes Paket (Christian: «etwas mehr bewegung und wachstum/transformation»): `quasiperiodisch` (Relief aus 5, 7, 8, 12 Richtungen wächst
+aus der Mitte über die Platte, die sich wölbt und dreht), `aehnlichkeit` (Schnecke als logarithmische Spirale, Zoom um zwei Windungen,
+vom Faden zum Gehäuse, vom Wirbel zum Kegel), `sonnenblume` (zusätzlich, weil Christian sich von Schnecke und Sonnenblume viel verspricht:
+Phyllotaxis, je Schleife 273 = 13 · 21 neue Kerne, Kuppel, Stacheln, Divergenzwinkel schwankt um den goldenen), `linie` (Lissajousknoten
+als Schwellzug, zeichnet sich und löst sich), `volumen` (gedrechselter Körper wächst aus dem Keim, Wülste steigen, Schaft windet sich).
+
 Vorgemerkt (27. November 2026, Christian: «für später merken und mich nach diesen 16 videos daran erinnern»): nach dem vierten Paket an
 cinecode (github.com/sarpstar/cinecode, MIT) erinnern. Drei Möglichkeiten: `scripts/qc.py` zum Prüfen (Schleifennaht, Aufblitzer,
 Standbilder; ausführen braucht seine Erlaubnis), Bildveredelung nach ihrem Finish (Bloom, Lichthof, Filmkorn) selbst nachgebaut, leiser
