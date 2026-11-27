@@ -33,7 +33,7 @@ Anschlüsse, die schon auf der Seite stehen:
   dort: «Wer beobachtet bei Werken, die ohne Hand entstehen?» Das ist die offene Frage 2 aus `docs/gotische-linie.md`.
 - **Bereich 9, Das Dritte** (Luhmann, Deleuze): die gotische Linie als ein Ort, an dem beide dasselbe Ding anders lesen.
 
-### Textkandidat 1: Die gotische Linie (Vorschlag für einen neuen Zettel 3/7, nicht freigegeben)
+### Textkandidat 1: Die gotische Linie (Zettel 3/7; Christian am 27. November 2026: «Text ok, live»; steht auf der Seite)
 
 - **Satz:** An der gotischen Linie wechselt die Führung vom Auge zur Hand
 - **Kurz:** Gotische Linie · **Titel des Lesetexts:** Wenn die Hand davonläuft
@@ -52,8 +52,8 @@ Anschlüsse, die schon auf der Seite stehen:
 - **Schlusssatz:** Im Rapport kehrt eine Figur wieder, in der gotischen Linie eine Art, sich zu bewegen.
 - **Frage:** Ist die gotische Linie die Grenze des Ornaments oder sein reinster Fall: nur noch Anschluss, keine Figur?
 - **Querverweise:** 3/2 (variierte Redundanz), 7/3 (der Körper geht voraus), 9/1 (Luhmann und Deleuze)
-- **Sätze für den Bereich:** «Im Rapport kehrt eine Figur wieder, in der Linie ein Schwung.» · «Man wartet nicht mehr
-  auf das Motiv, man wartet darauf, dass es weitergeht.»
+- **Sätze für den Bereich** (noch nicht auf der Seite, Christian hat sie nicht gesehen): «Im Rapport kehrt eine Figur
+  wieder, in der Linie ein Schwung.» · «Man wartet nicht mehr auf das Motiv, man wartet darauf, dass es weitergeht.»
 - **Belege** (bleiben wie auf der Seite üblich im Hintergrund): `docs/gotische-linie.md`, Verweise der Prüfung.
   Noch am Original nachzulesen: Worringer, Deleuze Kapitel 12 und 14.
 

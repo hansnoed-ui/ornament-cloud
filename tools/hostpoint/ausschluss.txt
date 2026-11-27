@@ -29,3 +29,5 @@ alpha/lab/README.md
 listen/directer/audio/
 # Videoseite «the i – curiosity»: die MP4 (4K und HD) sind nicht in Git, sie werden von Hand hochgeladen und dürfen von rsync --delete nicht gelöscht werden (docs/video-curiosity.md).
 listen/curiosity/video/
+# Versuch «Sehrinde» (27.11.2026): liegt im Repository, geht aber erst online, wenn Christian die Seite gesehen und freigegeben hat; dann diese Zeile streichen.
+alpha/formen/sehrinde/
