@@ -275,6 +275,58 @@ Nicolai («Milch»), Ryoji Ikeda · Tauba Auerbach, Julie Mehretu, Tomás Sarace
 | 34 | `pigment` | Blütenstaub auf Stein | Stelle | Der Staub liegt, wo nichts schwingt; man sieht nur einen Ausschnitt der Platte. (Zweite Fassung von 21.) | Laib, Chladni, Nicolai, Kunz | 4/8 | offen |
 | 35 | `tuschezug` | Tusche auf Papier, ein Pinsel | nichtreflexiv | Eine Linie, die nichts umreisst und über das Blatt hinausgeht. (Zweite Fassung von 18.) | Marden, Michaux, Twombly, Grasschrift | 3/7, 7/6 | offen |
 | 36 | `millimeter` | Bleistift und Farbstift auf Millimeterpapier | Wiederkehr ohne Rückkehr | Keine Linie ist gekrümmt, und doch entstehen Kurven, die niemand zeichnet. (Zweite Fassung von 23.) | Emma Kunz, af Klint, Horwitz | 3/2, 2/6 | offen |
+| 37 | `ebru` | Pigment auf Tragant, abgezogen | Spur | Jeder Tropfen verdrängt alle früheren; am Ende wird abgezogen, und das Bad ist leer. (Zweite Fassung von 25.) | Ebru, Türkisch Papier, Suminagashi, Frankenthaler | 7/2, 4/2 | offen |
+| 38 | `lochkarte` | Karton, Licht von hinten | Kontingenz | Gelocht ist jede Primzahl; niemand hat das Muster gelegt, und doch stehen die Löcher in acht Spalten. (Zweite Fassung von 24.) | Jacquard, Lovelace, Darboven, Horwitz | 2/6, 2/3 | offen |
+| 39 | `myzel` | Schleimpilz auf Rinde | Anschluss | Kein Plan, nur Spuren, denen Spuren folgen; das Netz findet die Flocken. (Zweite Fassung von 26.) | Nakagaki, Saraceno, Barnett | 3/2, 7/2 | offen |
+| 40 | `moire` | Organza über Seide | Koppelung | Zwei Gewebe, fast gleich fein; man sieht ein drittes. Im Standbild die schwächste der Runde, sie wirkt erst in der Bewegung. (Zweite Fassung von 22.) | Moiré-Seide, Soto, von Graevenitz, Albers | 4/7, 4/5 | offen |
+
+## Skizze, Text und Begriff verbinden, auch im Bild (27. November 2026, Vorschlag)
+
+Christian: «Überprüfe auch, inwiefern wir sie mit Texten und Konzepten verbinden könnten, auch visuell.»
+
+### Was schon trägt
+
+Jede Skizze hat einen Begriff aus der Theorie und mindestens einen Zettel. Beim Nachsehen fällt auf, dass sich die
+Skizzen um wenige Zettel sammeln: **3/2** (variierte Redundanz, 9 Skizzen), **3/4** (nie fertig gesehen, 6), **4/7** und
+**4/5** (Phase, Taktkollision, 5), **4/8** (die leere Mitte, 3), **7/2** und **7/6** (Herstellen, der Körper schreibt, 5),
+**2/6** (was nie aufgeht, 3). Gar keine Skizze haben bisher die Bereiche 1 (Wahrnehmung und Kommunikation), 6 (Werk,
+Adresse, System) und 8 (Plattform, KI, Entzug). Das ist ein Befund, kein Fehler: Die Skizzen zeigen Ordnung und Zeit; was
+Kunst gesellschaftlich tut, zeigen sie noch nicht. Eine Skizze zu 3/6 («Der Feed ist Ornament ohne Stelle») oder zu 8/5
+(Entzug) wäre die nächste Lücke.
+
+Drei Skizzen tragen ihren Zettel fast wörtlich: «Ringe» und «Pigment» zu 4/8 (die Stelle, die alle umgehen), «Lochkarte»
+zu 2/6 (eine Ordnung, die niemand gelegt hat), «Tuschezug» zu 3/7 und 7/6 (die Hand, die dem Auge davonläuft). Bei ihnen
+lohnt die Verbindung zuerst.
+
+### Sieben Formen der Verbindung, von leise zu stark
+
+1. **Nur der Begriff.** Im Abspann oder als Dateiname ein Wort: «Stelle», «Spur». Am Bild ändert sich nichts.
+2. **Die Kennzeile.** Unten im Bild, klein, in der Schrift der Zettel-Videos (Zettel 33): Zettelnummer und Begriff,
+   «4/8 · Stelle». Für Instagram geeignet; die Schleife bleibt ohne Satz.
+3. **Das Diptychon.** Links die Skizze, rechts der Schlusssatz des Zettels, gross, in Newsreader, auf dem Papierton der
+   Skizze. Für Ausstellung und Druck; ein Satz, kein Text.
+4. **Die Skizze im Zettel.** Auf der Theorieseite steht beim Zettel statt oder neben der Schlaufe die stille Skizze (ein
+   Standbild, das sich erst beim Antippen bewegt). So wird die Seite zu einem Ort, an dem Satz und Bild sich gegenseitig
+   lesen. Technisch einfach: ein Video je Zettel, ohne Ton, `preload="none"`.
+5. **Der Text als Stoff.** Der Satz wird selbst zum Material der Skizze, ohne dass man ihn als Schrift liest:
+   - Lochkarte: die Lochung ist der Schlusssatz von 2/6 in Bits statt der Primzahlen (eine zweite Fassung, in der Ordnung
+     und Bedeutung die Rollen tauschen);
+   - Moiré: ein Wort ist so in das Organza gewoben, dass es nur erscheint, wenn die zwei Gewebe in Phase sind. Das Dritte,
+     das keinem der beiden Gewebe gehört, ist dann wörtlich ein Wort (Zettel 4/7: «Was zwischen zwei Takten entsteht,
+     gehört keinem von beiden»);
+   - Tuschezug: der Pinsel schreibt in Grasschrift den Schlusssatz von 3/7, so schnell, dass er nicht lesbar ist;
+   - Ebru: der Abzug zeigt auf dem Papier für einen Augenblick eine Zeile, dann ist das Bad leer.
+6. **Die Konstellation.** Zwei Skizzen nebeneinander, die denselben Begriff verschieden zeigen («Ringe» und «Pigment» zu
+   *Stelle*; «Millimeter» und «Harmonograph» zu *Wiederkehr ohne Rückkehr*), dazwischen der Zettel. Das schliesst an 5/4
+   an: «Nicht vergleichen. Nebeneinanderstellen und sehen, was die Nachbarschaft tut.»
+7. **Der Raum.** In der Galerie laufen die Skizzen als Wand oder Strom; die Zettel liegen als Karten aus oder werden
+   gesprochen (Christians Stimme). Wer vor einer Skizze stehen bleibt, bekommt den Satz dazu, wer weitergeht, nicht.
+
+### Empfehlung
+
+Für die Stufe Animation zuerst **2** (Kennzeile) für Instagram und **5** an einer einzigen Skizze als Versuch: das Moiré
+mit dem eingewobenen Wort, weil dort Begriff, Text und Bild zusammenfallen und die Skizze nebenbei stärker wird. **4**
+gehört in die Stufe Web, **6** und **7** in die Galerie.
 
 Weitere Stoffe und Reihen, die sich anbieten: Eisblumen und Schneekristall, Rauch und Schlieren, Risse in trocknendem
 Ton, Seifenhaut, Obertonreihe einer Saite, Farey-Brüche und Ford-Kreise, Collatz-Bäume, Kettenbrüche, Zellteilung,
