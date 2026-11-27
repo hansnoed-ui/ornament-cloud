@@ -326,6 +326,11 @@ Bewegungsgestaltung mit Remotion und Schnitt echter Aufnahmen mit FFmpeg und Whi
 («langsamer, länger stehen lassen», keine gleichzeitigen Auftritte, kein reines Ein- und Ausblenden), 157 benannte Techniken, Schnitt auf
 Musik bis auf drei Bilder genau, Tongestaltung und eine Abnahmeliste mit Bildnummern. Für uns am ehesten: die Bewegungsregeln und die
 Abnahmeliste für die Zettel-Videos, der Musikschnitt für Videos mit Christians Tracks.
+Ebenfalls vorgemerkt: escapement (github.com/Leonxlnx/escapement, MIT), kein Werkzeug, sondern ein Beispielfilm von 36 s: Claude Code
+steuert Blender 5.2 ohne Oberfläche aus Python, alles (Zahnräder, Auto, Schlucht, Tempel) in Code erzeugt, ein Agent je Akt und ein
+Regie-Agent, der kritisiert. Lehrreich: `tools/exposure_check.py` (misst ausgefressene Lichter, flaue Schwärzen, matte Farben),
+`tools/edit.py` (Übergänge, Farbkorrektur, Lichthof, Korn mit numpy und ffmpeg), Schnitt auf 120 BPM. Für uns am ehesten: Blender als
+zweiter Weg für Bilder mit echtem Licht (Pfadverfolgung statt WebGL) und die Belichtungsmessung.
 
 ```bash
 cd src/formschleifen
