@@ -249,6 +249,24 @@ NODE_PATH="$(npm root -g)" node render.mjs film    # 1080 Bilder (Intro und Film
 cd ../../.. && node vorbereiten.mjs && npx remotion render EigenzeitVideo out/eigenzeit.mp4 --codec=h264 --crf=18
 ```
 
+## «Formenfahrt» – durch die Formen von ORNAMENT FORMEN (27. November 2026)
+
+Wunsch: «mach noch ein anderes, flüssigeres video mit einer fahrt durch verschiedene formen, ohne text (mit intro und outro), ca 45 sekunden».
+4:5 (1080 × 1350), 45 s, ohne Text und Ton, nur als Datei. Composition `FormenfahrtVideo`, Quellcode `src/formenfahrt/`. Plan freigegeben.
+
+- **Fahrt** (`bild/film.js`, gerendert von `bild/render.mjs`): Rosette, Fries, Körper, Verflechtung, Wachstum, Reaktion–Diffusion und
+  Quasiperiodisch aus `alpha/formen/familien.js` (Startwerte des Katalogs) in einer Reihe, am Schluss die Spur der Eigenzeit (vorab gerechnet,
+  Koppelung 0,5). Die Kamera bleibt auf einer Seite der Reihe und fährt auf einer Catmull-Rom-Kurve nach Bogenlänge (gleichmässiges Tempo,
+  sanfter Anfang und Schluss); das Ziel gleitet von Form zu Form. Nebel lässt die Formen in der Tiefe verschwinden.
+- **Intro und Outro**: das Signet auf dem dunklen Grund, Punkt in Messing; im Intro «Ornament Formen» in Messing.
+
+```bash
+cd src/videos/src/formenfahrt/bild
+NODE_PATH="$(npm root -g)" node render.mjs probe   # je Station ein Bild nach ../data/probe/
+NODE_PATH="$(npm root -g)" node render.mjs film    # 1080 Bilder nach public/formenfahrt/
+cd ../../.. && npx remotion render FormenfahrtVideo out/formenfahrt.mp4 --codec=h264 --crf=18
+```
+
 ## «Reise» – durch den Zettelkasten und ORNA (28. Oktober 2026)
 
 Wunsch: «eine weitere obsidian animation als video: diesmal eine reise durch orna und den zettelkasten: mit begriffen, verweise, quellen und namen»,

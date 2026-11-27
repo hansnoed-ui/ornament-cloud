@@ -12,6 +12,7 @@ import { FahrtVideo, T as TFahrt } from "./fahrt/Video";
 import { ReiseVideo, MASSE as MReise, T as TReise, zeitplan as zeitplanReise } from "./reise/Video";
 import { PublikumVideo, T as TPublikum } from "./publikum/Video";
 import { EigenzeitVideo, HOEHE as HEigenzeit, T as TEigenzeit } from "./eigenzeit/Video";
+import { FormenfahrtVideo, HOEHE as HFormenfahrt, T as TFormenfahrt } from "./formenfahrt/Video";
 // neue Videos: Import
 
 export const RemotionRoot: React.FC = () => (
@@ -56,6 +57,8 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="PublikumVideo" component={PublikumVideo} durationInFrames={TPublikum.ende} fps={FPS} width={BREITE} height={1350} />
     {/* «Eigenzeit»: die Zeitfigur aus ORNAMENT FORMEN, 4:5, 42 s, stumm (27. November 2026) */}
     <Composition id="EigenzeitVideo" component={EigenzeitVideo} durationInFrames={TEigenzeit.ende} fps={FPS} width={BREITE} height={HEigenzeit} />
+    {/* «Formenfahrt»: Kamerafahrt durch Formen aus ORNAMENT FORMEN, 4:5, 45 s, ohne Text und Ton (27. November 2026) */}
+    <Composition id="FormenfahrtVideo" component={FormenfahrtVideo} durationInFrames={TFormenfahrt.ende} fps={FPS} width={BREITE} height={HFormenfahrt} />
     {/* neue Videos: Composition */}
   </>
 );
