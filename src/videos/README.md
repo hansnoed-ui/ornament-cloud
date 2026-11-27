@@ -321,6 +321,11 @@ Ebenfalls vorgemerkt: cinematic-video-skill (github.com/mylxsw/cinematic-video-s
 Motion-Graphics-Filme mit Remotion (wie unsere Vorlage): Ablauf Brief → Recherche → Akte → Szenen → Musik → Prüfen → Rendern; eine
 `timeline.json` steuert Bild und Musik zugleich, Musik mit numpy synthetisiert, eine Prüfung im Browser meldet abgeschnittenen oder
 überlappenden Text. Für uns am ehesten: die Textprüfung für die Zettel-Videos und die Musik aus derselben Zeitleiste.
+Ebenfalls vorgemerkt: video-motion-craft (github.com/vibegameengine/video-motion-craft, MIT/Apache-2.0), ein Claude-Code-Skill für
+Bewegungsgestaltung mit Remotion und Schnitt echter Aufnahmen mit FFmpeg und Whisper. Kern sind Regeln aus echten Überarbeitungen
+(«langsamer, länger stehen lassen», keine gleichzeitigen Auftritte, kein reines Ein- und Ausblenden), 157 benannte Techniken, Schnitt auf
+Musik bis auf drei Bilder genau, Tongestaltung und eine Abnahmeliste mit Bildnummern. Für uns am ehesten: die Bewegungsregeln und die
+Abnahmeliste für die Zettel-Videos, der Musikschnitt für Videos mit Christians Tracks.
 
 ```bash
 cd src/formschleifen
