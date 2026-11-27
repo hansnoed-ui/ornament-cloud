@@ -23,7 +23,9 @@ void main(){
   // Abzug: links von der Kante ist das Bad schon wieder leer
   float kante = mix(-1.6, 1.6, abzug);
   vec3 bad = vec3(0.86, 0.83, 0.74) - 0.03*rau(x*6.0);
-  if (abzug > 0.0 && x.x < kante - 0.02) { gl_FragColor = vec4(bad * (1.0 - 0.18*exp(-(kante - x.x)*14.0)), 1.0); return; }
+  // dasselbe Korn wie unten, sonst springt das leere Bad am Ende gegen das leere Bad am Anfang (gefunden mit der Nahtprüfung)
+  float korn0 = rau(gl_FragCoord.xy * 0.35) * 0.5 + rau(gl_FragCoord.xy * 1.3) * 0.5;
+  if (abzug > 0.0 && x.x < kante - 0.02) { gl_FragColor = vec4(bad * (0.9 + 0.16*korn0) * (1.0 - 0.18*exp(-(kante - x.x)*14.0)), 1.0); return; }
   // rückwärts: dritter Zug (eine Welle), zweiter (feiner Kamm quer), erster (Hin und Her längs)
   x.x -= zug3 * 0.045 * sin(x.y * 23.0);
   float k2 = x.y * 26.0, d2 = abs(fract(k2) - 0.5) / 26.0; x.x -= zug2 * 0.09 * exp(-d2 * 140.0);
