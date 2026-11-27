@@ -46,6 +46,10 @@ a:hover .roll > span, button:hover .roll > span, a:focus-visible .roll > span, b
 .rand .links b { font-size: clamp(1.25rem, 2.2vw, 1.6rem); font-weight: 600; letter-spacing: -0.05em; line-height: 0.95; }
 .rand .links small { font-size: 13px; font-weight: 400; letter-spacing: 0; line-height: 1.2; opacity: 0.6; }
 .rand button { font-size: clamp(1.25rem, 2.2vw, 1.6rem); font-weight: 600; letter-spacing: -0.05em; line-height: 0.95; mix-blend-mode: difference; color: #fff; }
+/* «Menü» bleibt auf jeder Seite oben rechts stehen, auch wenn der Schriftzug mit dem Text wegläuft oder (Zettel) fehlt
+   (26.11.2026: «Beim durchwischen der texte kommt man nicht mehr zum menu»). */
+.rand button { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 22px); right: max(24px, env(safe-area-inset-right, 0px)); padding: 10px 0 14px 18px; margin: -10px 0 0; }
+.rand.nurmenue .links { display: none; }
 .rand .roll, .rand .roll > span > span { height: 1.02em; line-height: 1.02; }
 .rand button:hover .roll > span, .rand button:focus-visible .roll > span { transform: translateY(-1.02em); }
 
@@ -158,6 +162,12 @@ a:hover .roll > span, button:hover .roll > span, a:focus-visible .roll > span, b
 .aspekt .ort { position: absolute; left: 0; right: 0; bottom: 18px; text-align: center; color: var(--grau); font-size: 13px; font-variant-numeric: tabular-nums; }
 @media (max-width: 819px) { .aspekt .ort { display: none; } }
 
+/* Am Telefon gibt es keinen Zeiger: dort blieb das Rollen der Wörter nach dem Tippen hängen und liess das Menü zappeln
+   (26.11.2026: «Das menu ist etwas nerves»). Ohne Zeiger stehen die Wörter still und das Menü blendet nur ein. */
+@media (hover: none) {
+  .roll > span { transition: none; transform: none !important; }
+  .menue ul:hover a:not(:hover) { opacity: 1; }
+}
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 
 /* der Weg zu ornament.cloud (27. November 2026, Wunsch: «noch dezent auf ornament.cloud verlinken»):
