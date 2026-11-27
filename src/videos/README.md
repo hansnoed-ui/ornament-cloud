@@ -282,6 +282,12 @@ entlang) · Zeit (das Motiv im Takt, dann ein Triller zweier Zustände) · Strei
 Feld in Bewegung; nur das Prinzip aus dem Text, kein Werk von Riley nachgebildet). Kreide auf dem dunklen Grund, Abweichungen in Messing,
 Intro und Outro das dunkle Signet.
 
+Zweite Fassung («ästhetisch anspruchsvoller»): Linien als Stich (Doppellinie, feste Breite in Bildpunkten), Messing mit Verlauf und Glanz,
+warmes Schwarz mit Vignette und Korn über allem. Eine Kamera wechselt die Massstäbe (vom einzelnen Haken zum Feld, ins Fries, hinein in
+einen Haken), und die Szenen verwandeln sich ineinander: das Rauschen treibt wie eine Strömung und sinkt zum Band, das Band entrollt sich
+zum Mäander, der Mäander öffnet sich Reihe um Reihe zum Fries. Streifen dichter und in wechselnder Breite, zwei Wellen mit Interferenz.
+Alles im Takt von 96 Schlägen pro Minute (`SCHLAG`).
+
 ```bash
 cd src/videos && npx remotion render MitteVideo out/die-mitte.mp4 --codec=h264 --crf=18
 ```
