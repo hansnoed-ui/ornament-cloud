@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>ORNAMENT FORMEN 0.1 · Sehrinde</title>
+  <!-- Versuch zu docs/formen-konzept.md (27. November 2026): dieselbe Form im Gesichtsfeld und in der Karte der Sehrinde. Nur per Direktlink. -->
+  <meta name="robots" content="noindex">
+  <meta name="description" content="Sehrinde: eine Sonnenblume im Gesichtsfeld und dieselbe Form in der Karte der Sehrinde. Ein Versuch zu Ornament und Wahrnehmung.">
+  <link rel="stylesheet" href="../../../vendor/fonts/fonts.css">
+  <link rel="stylesheet" href="../formen.css?v=3">
+  <link rel="stylesheet" href="sehrinde.css?v=1">
+</head>
+<body class="koerper-seite">
+  <header class="kopf">
+    <p class="heimzeile"><a class="heim" href="../../../">← ornament.cloud</a></p>
+    <div class="marke">
+      <h1>ORNAMENT FORMEN <span class="version">0.1</span></h1>
+      <p class="leitsatz">Sehrinde · dieselbe Form, zweimal gesehen</p>
+    </div>
+    <nav class="seiten" aria-label="Seiten">
+      <a class="knopf klein leise" href="../">Katalog</a>
+      <a class="knopf klein leise" href="../koerper/">Ornamentkörper</a>
+      <a class="knopf klein leise" href="../eigenzeit/">Eigenzeit</a>
+      <a class="knopf klein" aria-current="page" href="./">Sehrinde</a>
+    </nav>
+  </header>
+
+  <div class="werkstatt">
+    <div class="zwei" id="zwei">
+      <figure class="feldbild">
+        <canvas id="auge" role="img" aria-label="Gesichtsfeld: die Form, wie sie vor dem Auge liegt"></canvas>
+        <figcaption><b>Gesichtsfeld</b> <span>was vor dem Auge liegt</span></figcaption>
+      </figure>
+      <figure class="feldbild rinde">
+        <canvas id="rinde" role="img" aria-label="Sehrinde: dieselbe Form in der log-polaren Karte"></canvas>
+        <figcaption><b>Sehrinde</b> <span>Winkel → · nach aussen ↑</span></figcaption>
+      </figure>
+      <div class="feld hell" id="winkelFeld">
+        <label for="winkel">Winkel zwischen zwei Kernen</label><output id="winkelAus">137,51°</output>
+        <input id="winkel" type="range" min="134.5" max="140.5" step="0.01" value="137.51">
+      </div>
+    </div>
+
+    <aside class="regler">
+      <p class="leise-text" id="erklaerung"></p>
+      <div class="angabe" id="arme" aria-live="polite"></div>
+
+      <div class="gruppe">
+        <span class="etikett">Richtung</span>
+        <div class="pillen" id="richtung" role="group" aria-label="Richtung">
+          <button type="button" class="knopf klein leise" data-wert="auge" aria-pressed="true">Vom Auge zur Rinde</button>
+          <button type="button" class="knopf klein leise" data-wert="rinde" aria-pressed="false">Von der Rinde zum Auge</button>
+        </div>
+      </div>
+
+      <div class="gruppe" id="gruppeForm">
+        <span class="etikett">Form</span>
+        <div class="pillen"><button id="gold" type="button" class="knopf klein voll">Goldener Winkel</button></div>
+        <div class="pillen" id="wachstum" role="group" aria-label="Wachstum">
+          <button type="button" class="knopf klein leise" data-wert="scheibe" aria-pressed="true">Sonnenblume</button>
+          <button type="button" class="knopf klein leise" data-wert="spirale" aria-pressed="false">Schnecke, Zapfen</button>
+        </div>
+        <div class="feld"><label for="kerne">Kerne</label><output id="kerneAus">900</output>
+          <input id="kerne" type="range" min="150" max="2400" step="50" value="900"></div>
+      </div>
+
+      <div class="gruppe" id="gruppeFamilie">
+        <span class="etikett">Spiralfamilie hervorheben</span>
+        <div class="pillen" id="familie" role="group" aria-label="Spiralfamilie">
+          <button type="button" class="knopf klein leise" data-wert="0" aria-pressed="true">keine</button>
+          <button type="button" class="knopf klein leise" data-wert="8" aria-pressed="false">8</button>
+          <button type="button" class="knopf klein leise" data-wert="13" aria-pressed="false">13</button>
+          <button type="button" class="knopf klein leise" data-wert="21" aria-pressed="false">21</button>
+          <button type="button" class="knopf klein leise" data-wert="34" aria-pressed="false">34</button>
+        </div>
+        <p class="leise-text">In der Scheibe liegen nur Punkte. Welche Arme du siehst, entscheidet dein Auge. Jeder 8., 13., 21. oder 34. Kern hell gefärbt zeigt eine der möglichen Lesarten.</p>
+      </div>
+
+      <div class="gruppe" id="gruppeMuster" hidden>
+        <span class="etikett">Muster auf der Rinde</span>
+        <div class="pillen" id="muster" role="group" aria-label="Muster">
+          <button type="button" class="knopf klein leise" data-wert="quer" aria-pressed="true">Streifen quer</button>
+          <button type="button" class="knopf klein leise" data-wert="laengs" aria-pressed="false">Streifen längs</button>
+          <button type="button" class="knopf klein leise" data-wert="schraeg" aria-pressed="false">Streifen schräg</button>
+          <button type="button" class="knopf klein leise" data-wert="waben" aria-pressed="false">Waben</button>
+        </div>
+      </div>
+
+      <div class="gruppe">
+        <span class="etikett">Ablauf</span>
+        <div class="pillen"><button id="lauf" type="button" class="knopf klein leise">Anhalten</button></div>
+      </div>
+
+      <p class="leise-text">Ein Modell, kein Befund über dein Sehen. Die Karte vom Auge zur Sehrinde ist hier stark vereinfacht als log-polare Abbildung gerechnet (nach Schwartz, 1977), für das ganze Gesichtsfeld auf einmal. Die Muster folgen der Erklärung der Formkonstanten von Ermentrout und Cowan (1979).</p>
+    </aside>
+  </div>
+
+  <script type="module" src="sehrinde.js?v=1"></script>
+</body>
+</html>
