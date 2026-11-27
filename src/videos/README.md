@@ -227,6 +227,132 @@ THREE=…/node_modules/three NODE_PATH="$(npm root -g)" node render.mjs fahrt tr
 cd ../../.. && npx remotion render FahrtVideo out/fahrt.mp4 --props='{"ordner":"fahrt-trellis"}'
 ```
 
+## «Eigenzeit» – die Zeitfigur aus ORNAMENT FORMEN (27. November 2026)
+
+Wunsch: «eine animation, 42 sekunden mit der zeitfigur bei den formen. genug bewegung und entwicklung, damit es interessant zum anschauen ist».
+4:5 (1080 × 1350), 42 s, ohne Ton, nur als Datei. Composition `EigenzeitVideo`, Quellcode `src/eigenzeit/`. Szenenplan freigegeben («ja, so machen»).
+Das helle Signet-Intro war «zu lasch», dann «bitte alles ohne weissen rahmen. wenn text dann wie die neuen videos von ornament.cloud.
+passendes outro»: die Figur füllt das ganze Bild (1080 × 1350) von Anfang an, Schrift wie «Zettel 33 · Das Publikum» (Kennzeile gesperrt im Akzent,
+Satz in der Serife, Leitsatz kursiv), Farben Grund #151412, Kreide, Messing; Outro das Signet dunkel mit Messing-Punkt.
+
+- **Figur** (`bild/film.js` mit `bild/film.html`, gerendert von `bild/render.mjs`): dieselbe Rechnung wie `alpha/formen/eigenzeit/eigenzeit.js`
+  (Startwert 2471, vier Ringe, Unterschied 70), Bild für Bild nach einem festen Zeitplan (`PLAN`): Koppelung 0 → 0,55 → 1 → 0,4, Beobachter ab 24,5 s,
+  Kamera kippt und dreht. Die Rechnung läuft 3,2-mal so schnell wie die Bilder. Fäden und Feststellungen als dünne Stäbe statt Linien (fürs Telefon).
+  Ändert sich die Rechnung der Seite, `film.js` nachziehen. three.js und die Bausteine kommen aus `vendor/` und `alpha/formen/gemeinsam.js`.
+- **Texte** (`daten.mjs`): unverändert aus der Eigenzeit-Seite, geprüft; der Beobachter-Satz als Auszug mit «[…]».
+- **Szenen**: Intro (3 s, die Ringe tauchen auf) · Eigene Rhythmen · Keine Uhr · gekoppelt · aufgegangen · Beobachter · Leitsatz «Wiederkehr ohne Rückkehr» · Outro (Signet dunkel, 6 s).
+
+```bash
+cd src/videos/src/eigenzeit/bild
+NODE_PATH="$(npm root -g)" node render.mjs probe   # je Szene ein Bild nach ../data/probe/
+NODE_PATH="$(npm root -g)" node render.mjs film    # 1080 Bilder (Intro und Film, 1080 × 1350) nach public/eigenzeit/ (rund 15 min)
+cd ../../.. && node vorbereiten.mjs && npx remotion render EigenzeitVideo out/eigenzeit.mp4 --codec=h264 --crf=18
+```
+
+## «Formenfahrt» – durch die Formen von ORNAMENT FORMEN (27. November 2026)
+
+Wunsch: «mach noch ein anderes, flüssigeres video mit einer fahrt durch verschiedene formen, ohne text (mit intro und outro), ca 45 sekunden».
+4:5 (1080 × 1350), 45 s, ohne Text und Ton, nur als Datei. Composition `FormenfahrtVideo`, Quellcode `src/formenfahrt/`. Plan freigegeben.
+
+- **Fahrt** (`bild/film.js`, gerendert von `bild/render.mjs`): Rosette, Fries, Körper, Verflechtung, Wachstum, Reaktion–Diffusion und
+  Quasiperiodisch aus `alpha/formen/familien.js` (Startwerte des Katalogs) in einer Reihe, am Schluss die Spur der Eigenzeit (vorab gerechnet,
+  Koppelung 0,5). Die Kamera bleibt auf einer Seite der Reihe und fährt auf einer Catmull-Rom-Kurve nach Bogenlänge (gleichmässiges Tempo,
+  sanfter Anfang und Schluss); das Ziel gleitet von Form zu Form. Nebel lässt die Formen in der Tiefe verschwinden.
+- **Zweite Fassung** («mach die reaktion-diffusion feiner und die formen wachsend und bewegend»): jede Form baut sich auf, während die
+  Kamera kommt (Zeichenbereich der Röhren und Flächen, Instanzen der Reihe nach, die Spur von unten), und bewegt sich in sich (Friesbänder in
+  eigenen Tempi, atmende Scheibe, Schweben); Reaktion–Diffusion mit `fein: 2` (doppelt feines Raster, Option in `familien.js`).
+- **Intro und Outro**: das Signet auf dem dunklen Grund, Punkt in Messing; im Intro «Ornament Formen» in Messing.
+
+```bash
+cd src/videos/src/formenfahrt/bild
+NODE_PATH="$(npm root -g)" node render.mjs probe   # je Station ein Bild nach ../data/probe/
+NODE_PATH="$(npm root -g)" node render.mjs film    # 1080 Bilder nach public/formenfahrt/
+cd ../../.. && npx remotion render FormenfahrtVideo out/formenfahrt.mp4 --codec=h264 --crf=18
+```
+
+## «Die Mitte» – Wiederholung und Abweichung (27. November 2026)
+
+Zu Christians Text «Reine Wiederholung ist Monotonie und sagt nichts. Reine Abweichung ist Rauschen. Das Ornament hält die Mitte […]» (bis zu
+Bridget Riley). Wunsch: ohne Text, mit Intro und Outro; Szenenplan freigegeben. 4:5 (1080 × 1350), 45 s, ohne Ton, nur als Datei.
+Composition `MitteVideo`, Quellcode `src/mitte/Video.tsx`, ganz in 2D (SVG), Bild für Bild aus der Bildnummer gerechnet, keine Einzelbilder nötig.
+
+Szenen: Monotonie (starres Raster eines Mäanderhakens) · Rauschen (jedes Motiv springt für sich) · die Mitte (ein Band mit kleinen Abweichungen
+im Takt, ein Motiv bricht in Messing aus und fängt sich) · Mäander (die Linie zeichnet sich) · Raum (Rapport als Fries, die Kamera fährt
+entlang) · Zeit (das Motiv im Takt, dann ein Triller zweier Zustände) · Streifen und Wellen (eine kleinste Abweichung in Messing setzt das
+Feld in Bewegung; nur das Prinzip aus dem Text, kein Werk von Riley nachgebildet). Kreide auf dem dunklen Grund, Abweichungen in Messing,
+Intro und Outro das dunkle Signet.
+
+Zweite Fassung («ästhetisch anspruchsvoller»): Linien als Stich (Doppellinie, feste Breite in Bildpunkten), Messing mit Verlauf und Glanz,
+warmes Schwarz mit Vignette und Korn über allem. Eine Kamera wechselt die Massstäbe (vom einzelnen Haken zum Feld, ins Fries, hinein in
+einen Haken), und die Szenen verwandeln sich ineinander: das Rauschen treibt wie eine Strömung und sinkt zum Band, das Band entrollt sich
+zum Mäander, der Mäander öffnet sich Reihe um Reihe zum Fries. Streifen dichter und in wechselnder Breite, zwei Wellen mit Interferenz.
+Alles im Takt von 96 Schlägen pro Minute (`SCHLAG`).
+
+```bash
+cd src/videos && npx remotion render MitteVideo out/die-mitte.mp4 --codec=h264 --crf=18
+```
+
+## Formschleifen – je Formfamilie eine Schleife von 30 s (27. November 2026)
+
+Wunsch: zu jeder der 16 Formfamilien aus ORNAMENT FORMEN ein Video, «lose, intuitiv, künstlerisch und ohne texte», 30 s, «in sich
+geschlossen», das sich «aus sich heraus» verwandelt; Thema die ornamentale Kunst allgemein. Freigegeben: 4:5, ohne Signet, nahtlose Schleife,
+alle 16 in Paketen zu vier. Kein Remotion: `src/formschleifen/render.mjs` rechnet die Bilder mit `film.html` (three.js, SwiftShader) und setzt
+sie mit ffmpeg zusammen. Jedes Formmodul `formen/<form>.js` rechnet aus der Phase p (0 bis 1) statt aus der Zeit, Bild 900 gleicht Bild 0.
+Vignette und Korn macht `film.js` im 2D-Bild.
+
+Erstes Paket: `rosette` (fünf Ringe, Blätter, Kordel und Welle treiben aus und legen sich wieder), `band` (Möbiusband aus fünf Streifen in
+Messing und Kreide, rollt in sich eine halbe Drehung), `wachstum` (sechsarmige Ranke mit Voluten wächst und zieht sich zurück),
+`reaktion-diffusion` (Gray-Scott auf dem Torus: Flecken, Würmer, Labyrinth, Zerfall).
+
+Zweites Paket: `fries` (kannelierte Säule, fünf Bänder gleiten durch Welle, Zinnen, Zickzack, Schlaufen, ein Kreidestrang flicht sich ein),
+`flaeche` (Fliesenmuster auf dem Torus von Quadrat über Raute zum Sechseck, Kamerafahrt dicht um den Ring), `koerper` (Ikosaeder in
+geodätischem Netz, Stacheln in zwei wandernden Kronen), `raumgitter` (Fahrt um einen Gittervektor durch ein Kristallgitter, das
+raumzentriert wird und wieder kubisch; was der Kamera zu nahe kommt, verschwindet).
+
+Drittes Paket (Christian: «etwas mehr bewegung und wachstum/transformation»): `quasiperiodisch` (Relief aus 5, 7, 8, 12 Richtungen wächst
+aus der Mitte über die Platte, die sich wölbt und dreht), `aehnlichkeit` (Schnecke als logarithmische Spirale, Zoom um zwei Windungen,
+vom Faden zum Gehäuse, vom Wirbel zum Kegel), `sonnenblume` (zusätzlich, weil Christian sich von Schnecke und Sonnenblume viel verspricht:
+Phyllotaxis, je Schleife 273 = 13 · 21 neue Kerne, Kuppel, Stacheln, Divergenzwinkel schwankt um den goldenen), `linie` (Lissajousknoten
+als Schwellzug, zeichnet sich und löst sich), `volumen` (gedrechselter Körper wächst aus dem Keim, Wülste steigen, Schaft windet sich).
+
+Viertes Paket: `punkte` (70 000 Staubpunkte auf der Superformel, drei Gestalten, dazwischen löst sich der Staub im Wirbel), `verflechtung`
+(drei Reife schlagen zum Zopf und lösen sich, innen zwei Kreidestränge gegenläufig), `feld` (drei Quellen und drei Senken kreisen
+gegenläufig, die Feldlinien werden je Bild neu gezogen), `gekoppelte-tempi` (Epizykel mit Tempi 1, −3, 5, −7; die Spitze zeichnet eine
+Spur, die Radien atmen).
+
+Siebzehnte Schleife `gotische-linie` (zu `docs/gotische-linie.md`): eine einzige Linie löst sich vom Mäander auf dem Ring, verliert
+Takt, Zähne, Mitte und Massstab und läuft über das Feld hinaus; die Schablone bleibt als Kreidelinie; drei Federn laufen nach dem
+Zwei-Drittel-Gesetz (in der Kurve langsamer), die Linie schwillt in der Kurve an; die Kamera geht vom Überblick in die Nähe einer Feder.
+
+Vorgemerkt (27. November 2026, Christian: «für später merken und mich nach diesen 16 videos daran erinnern»): nach dem vierten Paket an
+cinecode (github.com/sarpstar/cinecode, MIT) erinnern. Drei Möglichkeiten: `scripts/qc.py` zum Prüfen (Schleifennaht, Aufblitzer,
+Standbilder; ausführen braucht seine Erlaubnis), Bildveredelung nach ihrem Finish (Bloom, Lichthof, Filmkorn) selbst nachgebaut, leiser
+Ton je Form mit Web Audio. Empfehlung: die Bildveredelung.
+Ebenfalls vorgemerkt: every-frame-is-code («motion-kit», github.com/kiselas/every-frame-is-code, MIT), eine Wissenssammlung für
+Grafik in Code (jedes Bild eine reine Funktion der Zeit): Bewegung und Easing, Übergänge, Montage, Effektrezepte, three.js mit Bloom,
+Prüfen mit Kontaktbogen, Ton im selben Takt, Pixel/Retro und Demoszene; dazu `render/analyze.mjs`, das Schnitte und Tempo eines fremden
+Videos misst. Für uns am ehesten: Übergänge, Effektrezepte, Analyse von Vorbildern.
+Ebenfalls vorgemerkt: cinematic-video-skill (github.com/mylxsw/cinematic-video-skill, MIT), ein Claude-Code-Skill für erzählende
+Motion-Graphics-Filme mit Remotion (wie unsere Vorlage): Ablauf Brief → Recherche → Akte → Szenen → Musik → Prüfen → Rendern; eine
+`timeline.json` steuert Bild und Musik zugleich, Musik mit numpy synthetisiert, eine Prüfung im Browser meldet abgeschnittenen oder
+überlappenden Text. Für uns am ehesten: die Textprüfung für die Zettel-Videos und die Musik aus derselben Zeitleiste.
+Ebenfalls vorgemerkt: video-motion-craft (github.com/vibegameengine/video-motion-craft, MIT/Apache-2.0), ein Claude-Code-Skill für
+Bewegungsgestaltung mit Remotion und Schnitt echter Aufnahmen mit FFmpeg und Whisper. Kern sind Regeln aus echten Überarbeitungen
+(«langsamer, länger stehen lassen», keine gleichzeitigen Auftritte, kein reines Ein- und Ausblenden), 157 benannte Techniken, Schnitt auf
+Musik bis auf drei Bilder genau, Tongestaltung und eine Abnahmeliste mit Bildnummern. Für uns am ehesten: die Bewegungsregeln und die
+Abnahmeliste für die Zettel-Videos, der Musikschnitt für Videos mit Christians Tracks.
+Ebenfalls vorgemerkt: escapement (github.com/Leonxlnx/escapement, MIT), kein Werkzeug, sondern ein Beispielfilm von 36 s: Claude Code
+steuert Blender 5.2 ohne Oberfläche aus Python, alles (Zahnräder, Auto, Schlucht, Tempel) in Code erzeugt, ein Agent je Akt und ein
+Regie-Agent, der kritisiert. Lehrreich: `tools/exposure_check.py` (misst ausgefressene Lichter, flaue Schwärzen, matte Farben),
+`tools/edit.py` (Übergänge, Farbkorrektur, Lichthof, Korn mit numpy und ffmpeg), Schnitt auf 120 BPM. Für uns am ehesten: Blender als
+zweiter Weg für Bilder mit echtem Licht (Pfadverfolgung statt WebGL) und die Belichtungsmessung.
+
+```bash
+cd src/formschleifen
+NODE_PATH=$(npm root -g) node render.mjs rosette probe   # neun Bilder nach out/formschleifen/probe-rosette/
+NODE_PATH=$(npm root -g) node render.mjs rosette film    # 900 Bilder, dann out/formschleifen/rosette.mp4 (rund 10 min)
+```
+
 ## «Reise» – durch den Zettelkasten und ORNA (28. Oktober 2026)
 
 Wunsch: «eine weitere obsidian animation als video: diesmal eine reise durch orna und den zettelkasten: mit begriffen, verweise, quellen und namen»,

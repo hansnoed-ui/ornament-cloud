@@ -271,17 +271,18 @@ export function familien(m) {
       } },
 
     { abschnitt: 'verfahren', name: 'Reaktion–Diffusion', text: 'Zwei Stoffe reagieren und breiten sich aus. Daraus entstehen Fell-, Korallen- und Labyrinthmuster.', neigung: -0.55, start: 3388,
-      bau(r) {
+      bau(r, karte = {}) {
+        const fein = karte.fein || 1;   // feineres Raster (mehr Zellen, mehr Keime) für den Film «Formenfahrt»; im Katalog 1
         const P = pick(r, [
           { n: 'Korallen', F: 0.0545, k: 0.062 }, { n: 'Flecken', F: 0.0367, k: 0.0649 },
           { n: 'Labyrinth', F: 0.029, k: 0.057 }, { n: 'Würmer', F: 0.046, k: 0.063 }]);
-        const W = 192, H = 72, N = W * H;
+        const W = 192 * fein, H = 72 * fein, N = W * H;
         let A = new Float32Array(N).fill(1), B = new Float32Array(N), A2 = new Float32Array(N), B2 = new Float32Array(N);
-        for (let s = 0; s < 14; s++) {
+        for (let s = 0; s < 14 * fein * fein; s++) {
           const cx = Math.floor(r() * W), cy = Math.floor(r() * H);
           for (let dx = -2; dx <= 2; dx++) for (let dy = -2; dy <= 2; dy++) B[((cy + dy + H) % H) * W + (cx + dx + W) % W] = 1;
         }
-        const R0 = 0.6, rr = 0.3, amp = 0.07;
+        const R0 = 0.6, rr = 0.3, amp = 0.07 / Math.sqrt(fein);
         const geo = flaeche(W, H, true, true, (u, v, out) => {
           const U = TAU * u, V = TAU * v;
           return out.set((R0 + rr * Math.cos(V)) * Math.cos(U), rr * Math.sin(V), (R0 + rr * Math.cos(V)) * Math.sin(U));
@@ -291,7 +292,7 @@ export function familien(m) {
           const U = TAU * i / W, V = TAU * j / H, k = (i * H + j) * 3;
           nrm[k] = Math.cos(U) * Math.cos(V); nrm[k + 1] = Math.sin(V); nrm[k + 2] = Math.sin(U) * Math.cos(V);
         }
-        const SCHRITTE = 5200; let fertig = 0, bild = 0;
+        const SCHRITTE = 5200 * fein; let fertig = 0, bild = 0;
         function rechne(n) {
           for (let s = 0; s < n; s++) {
             for (let y = 0; y < H; y++) {
@@ -322,7 +323,7 @@ export function familien(m) {
           obj: new T.Mesh(geo, m.a), info: P.n, radius: R0 + rr + amp,
           update: () => {
             if (fertig >= SCHRITTE) return;
-            rechne(50); bild++;
+            rechne(50 * fein); bild++;
             if (bild % 3 === 0 || fertig >= SCHRITTE) schreibe();
           }
         };

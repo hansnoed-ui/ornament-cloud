@@ -1,6 +1,6 @@
 # ORNAMENT FORMEN – Hintergrund, Formen, Ideen
 
-Arbeitsdokument zu `alpha/formen/` (seit 26. November 2026). Entstanden in einem Chat mit Claude am
+Arbeitsdokument zu `alpha/formen/` (seit 26. November 2026). Das Stufenkonzept für die Weiterarbeit (Ornament als Wachstum, vier Blickwinkel) steht in `docs/formen-konzept.md`. Entstanden in einem Chat mit Claude am
 26. November 2026. Was Christian gesagt oder entschieden hat, steht als Zitat; der Rest sind Vorschläge von Claude.
 
 ## Verlauf und Entscheide
