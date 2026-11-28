@@ -377,6 +377,8 @@ der Umgebung freigegeben (api.polyhaven.com, dl.polyhaven.org, ambientcg.com). D
 | 43 | `stein-sonnenblume` (Formschleifen) | Marmorfels (Poly Haven, marble_rock_02), Messing | Anschluss | Die Sonnenblume in Messing, eingelegt in einen Stein, über den eine flache Sonne einmal herumgeht. | 3/2, 4/1 | verworfen (Christian: «was die Sonnenblume da drauf macht, erschliesst sich mir nicht») |
 | 44 | `stein-bohrung` | Marmorfels, gebohrt | Anschluss, nie fertig gesehen | Kern für Kern wird eine Mulde gebohrt; die Spiralen erscheinen nur im Streiflicht. | 3/2, 3/4, 4/1 | **verfolgt** (Christian: «Ja, dies») |
 | 45 | `stein-schleifen` | Marmorfels, geschliffen | nie fertig gesehen | Eine Rosette wird in den rohen Stein geschliffen; die Adern kommen zum Vorschein, am Ende verwittert der Glanz. | 3/4, 3/5, 7/1 | offen |
+| 46 | `stein-schneiden` | Marmorstreifen, gesägt, mit Messing vergossen | Rapport | Ein Mäander wird gesägt, eine Stelle weiter hinten mit Messing vergossen; der Stein gleitet unter der Säge durch. | 3/2, 7/1 | offen |
+| 47 | `stein-meisseln` | Marmorfels, Kerbschnitt | Rhythmus | Schlag um Schlag wird ein dreieckiger Span gehoben, bis eine Rosette aus Dreiecken dasteht. | 3/2, 7/2, 7/3 | offen |
 
 **Stein als Verfahren** (Christian: «Zusätzlich verbinde ich mit Stein: meisseln, schneiden, schleifen etc.»). Jedes Verfahren
 lässt das Ornament anders im Stein entstehen; das Ereignis ist die Arbeit selbst, nicht ein Wert, der sich ändert:
@@ -385,8 +387,8 @@ lässt das Ornament anders im Stein entstehen; das Ereignis ist die Arbeit selbs
 |---|---|---|
 | Bohren | Mulde um Mulde, im goldenen Winkel; erscheint im Streiflicht | `stein-bohrung` |
 | Schleifen | eine Rosette wird eben und glänzend; die Adern zeigen sich | `stein-schleifen` |
-| Schneiden | Sägeschnitte ziehen einen Mäander oder ein Flechtband in den Stein; die Kanten sind scharf, der Schnitt ist dunkel | nächstes |
-| Meisseln | Schlag um Schlag mit dem Zahneisen: die Fläche wird zu einem Feld aus Spuren der Hand, Kerbschnitt, Relief | danach |
+| Schneiden | ein Mäander wird gesägt und mit Messing vergossen | `stein-schneiden` |
+| Meisseln | Kerbschnitt, Span um Span im Takt | `stein-meisseln` |
 | weiter | Spalten entlang der Ader; Einlegen (Pietra dura); Verwittern; Säure | später |
 
 ### Verbindungskarten (ab 28. November 2026)
@@ -417,6 +419,27 @@ Fünf Felder je Skizze (siehe `docs/formen-konzept.md`, «Konzeptionelles Vorgeh
 - *Materialeigenschaft:* Polierter Marmor wird tiefer im Ton und spiegelt; rauher Marmor streut das Licht.
 - *Darstellung:* Ob eine Fläche matt oder glänzend erscheint, entscheidet der Winkel zwischen Licht, Fläche und Auge. Die
   Rosette ist also in jedem Bild anders da, ohne sich zu verändern.
+
+**46 · Schneiden** (`stein-schneiden`)
+- *Theorie:* Rapport, dasselbe Motiv nebeneinander (3/2); hier wörtlich: der Stein gleitet, die Säge bleibt, das Motiv
+  entsteht durch Wiederholung einer einzigen Bewegung. Material als Widerstand (7/1): die Säge folgt der Linie, nicht der Ader.
+- *Kulturgeschichte:* Opus sectile und Cosmatenarbeit (geschnittener Stein zu Mustern) *(G)*; Steinfugen, die mit Blei oder
+  Metall vergossen werden *(G)*; der Mäander als ältestes Friesmotiv Griechenlands *(G)*.
+- *Kunstpraxis:* Carl Andre, Platten aus Stein und Metall, nebeneinander auf den Boden gelegt; die Wiederholung ist die Form *(G)*.
+  Richard Serra, Schnitte in Stahl *(G)*.
+- *Materialeigenschaft:* Säge und Wasserstrahl schneiden gerade; der Stein bestimmt nur, wie die Kante bricht. Messing ist weicher
+  als die Säge und härter als Blei, es lässt sich bündig schleifen.
+- *Darstellung:* Der kachelbare Scan erlaubt einen Fries ohne Ende: Die Schleife ist selbst ein Rapport.
+
+**47 · Meisseln** (`stein-meisseln`)
+- *Theorie:* Rhythmus, dasselbe Motiv nacheinander (3/2); Herstellen heisst, sich vom Werk zeigen zu lassen, was geschehen ist
+  (7/2); der Schlag kommt vor dem Blick (7/3; vgl. 3/7, die Hand führt).
+- *Kulturgeschichte:* Kerbschnitt auf Truhen, Löffeln und Grabsteinen im Alpenraum und in Skandinavien *(G)*; Steinmetzzeichen
+  als Signatur der Hand *(G)*.
+- *Kunstpraxis:* Constantin Brâncuşi und die «taille directe», das direkte Schlagen in den Stein ohne Modell *(G)*; Ulrich
+  Rückriem *(G)*.
+- *Materialeigenschaft:* Marmor bricht unter dem Schlag in Spänen, die Bruchfläche ist frisch heller und rauer.
+- *Darstellung:* Jeder Span ist ein Ereignis in der Zeit; die Rosette ist das Protokoll von 300 Schlägen.
 
 Weitere Stoffe und Reihen, die sich anbieten: Eisblumen und Schneekristall, Rauch und Schlieren, Risse in trocknendem
 Ton, Seifenhaut, Obertonreihe einer Saite, Farey-Brüche und Ford-Kreise, Collatz-Bäume, Kettenbrüche, Zellteilung,

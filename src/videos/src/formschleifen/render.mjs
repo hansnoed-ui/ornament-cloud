@@ -3,7 +3,7 @@
 //   node render.mjs <form> probe   → neun Bilder (p = 0, 1/8 … 1) nach ../../out/formschleifen/probe-<form>/
 //   node render.mjs <form> film    → 900 Bilder (30 s, 30 fps, 1080 × 1350) nach ../../public/formschleifen/<form>/,
 //                                    dann mit ffmpeg nach ../../out/formschleifen/<form>.mp4 (H.264, yuv420p, faststart)
-// Umgebung: NODE_PATH mit playwright. three.js und die Bausteine kommen aus dem Repository (vendor/, alpha/formen/).
+// Umgebung: NODE_PATH mit playwright; DICHTE=1 rechnet ohne Überabtastung (viermal schneller, für die schweren Stein-Verfahren). three.js und die Bausteine kommen aus dem Repository (vendor/, alpha/formen/).
 import { createServer } from "node:http";
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { createRequire } from "node:module";
@@ -29,7 +29,7 @@ const b = await chromium.launch({ args: ["--use-gl=angle", "--use-angle=swiftsha
 const p = await b.newPage({ viewport: { width: 1080, height: 1350 } });
 p.on("pageerror", (e) => console.log("pageerror", e.message));
 p.on("console", (m) => { if (m.type() === "error") console.log("konsole", m.text()); });
-await p.goto(`http://localhost:${server.address().port}/film/film.html?b=1080&h=1350&d=2&form=${form}`);
+await p.goto(`http://localhost:${server.address().port}/film/film.html?b=1080&h=1350&d=${globalThis.process.env.DICHTE ?? 2}&form=${form}`);
 await p.waitForFunction(() => globalThis.bereit, null, { timeout: 300000 });
 const BILDER = await p.evaluate(() => globalThis.film.BILDER);
 const speichern = async (name, n) => {
