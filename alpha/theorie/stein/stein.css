@@ -1,0 +1,14 @@
+/* In Stein: der Stein füllt das Bild; der Satz steht für Lesehilfen im Text, sichtbar ist er nur im Stein (oder, ohne WebGL, als Schrift). */
+:root { --grund: #121315; --tinte: #efefec; --grau: #85878b; --sans: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+html, body { margin: 0; height: 100%; background: var(--grund); color: var(--tinte); font-family: var(--sans); overflow: hidden; -webkit-font-smoothing: antialiased; }
+#stein { position: fixed; inset: 0; width: 100vw; height: 100dvh; display: block; touch-action: none; cursor: crosshair; }
+main { position: fixed; inset: 0; pointer-events: none; }
+.zn, .satz { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }       /* nur für Lesehilfen */
+.hinweis { position: absolute; left: 0; right: 0; bottom: max(18px, env(safe-area-inset-bottom, 0px)); margin: 0; text-align: center; font-size: 13px; color: rgba(239,239,236,.62); text-shadow: 0 1px 6px rgba(0,0,0,.6); transition: opacity 1.2s; }
+.heim { position: fixed; top: max(14px, env(safe-area-inset-top, 0px)); left: max(18px, env(safe-area-inset-left, 0px)); margin: 0; font-size: 14px; }
+.heim a { color: rgba(239,239,236,.8); text-decoration: none; text-shadow: 0 1px 6px rgba(0,0,0,.6); }
+.heim a:hover { color: #fff; }
+/* Rückfall ohne WebGL: der Satz als Schrift */
+body.ohne #stein { display: none; }
+body.ohne .satz { position: static; width: auto; height: auto; clip-path: none; margin: 30vh 24px 0; font-size: clamp(1.6rem, 6vw, 2.6rem); font-weight: 500; letter-spacing: -0.03em; line-height: 1.15; }
+body.ohne main { position: static; pointer-events: auto; }

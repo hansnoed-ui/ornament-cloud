@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Theorie der Kunst · In Stein</title>
+<!-- Versuch (28. November 2026): ein Satz der Theorie, in Marmor graviert, nur im Streiflicht lesbar; das Licht folgt Finger oder Neigung.
+     Christian: «eine Verbindung, die sich materiell darstellen lässt. Bau also auch weiter am Webdesign der Theorie (die jetzige Version
+     bleibt natürlich auch).» Die Probeseite /alpha/theorie/ bleibt unverändert. Nur per Direktlink, noindex; geht erst nach Freigabe online.
+     Stein: Scan von Poly Haven (marble_rock_02, CC0). -->
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="../../../vendor/fonts/animationen.css">
+<link rel="stylesheet" href="stein.css?v=1">
+</head>
+<body>
+<canvas id="stein" aria-hidden="true"></canvas>
+<main>
+  <p class="zn" id="zn"></p>
+  <p class="satz" id="satz" aria-live="polite"></p>
+  <p class="hinweis" id="hinweis">Mit dem Finger das Licht führen · Antippen für den nächsten Satz</p>
+</main>
+<p class="heim"><a href="../">Theorie der Kunst</a></p>
+<script type="importmap">{ "imports": { "three": "../../../vendor/three-0.185.1/three.module.min.js" } }</script>
+<script type="module" src="stein.js?v=1"></script>
+</body>
+</html>
