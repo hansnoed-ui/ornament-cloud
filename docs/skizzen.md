@@ -271,9 +271,9 @@ Nicolai («Milch»), Ryoji Ikeda · Tauba Auerbach, Julie Mehretu, Tomás Sarace
 
 | Nr. | Skizze | Stoff | Begriff | Ein Satz | Bezüge | Zettel | Stand |
 |---|---|---|---|---|---|---|---|
-| 33 | `ringe` | Tusche auf Wasser | Stelle | Jeder Tropfen schiebt alle früheren nach aussen; was Mitte war, wird Ring. | Suminagashi, Penone, Lee Ufan, Auerbach | 4/1, 4/8 | verworfen |
+| 33 | `ringe` | Tusche auf Wasser | Stelle | Jeder Tropfen schiebt alle früheren nach aussen; was Mitte war, wird Ring. | Suminagashi, Penone, Lee Ufan, Auerbach | 4/1, 4/8 | ruht (Bild trägt) |
 | 34 | `pigment` | Blütenstaub auf Stein | Stelle | Der Staub liegt, wo nichts schwingt; man sieht nur einen Ausschnitt der Platte. (Zweite Fassung von 21.) | Laib, Chladni, Nicolai, Kunz | 4/8 | verworfen |
-| 35 | `tuschezug` | Tusche auf Papier, ein Pinsel | nichtreflexiv | Eine Linie, die nichts umreisst und über das Blatt hinausgeht. (Zweite Fassung von 18.) | Marden, Michaux, Twombly, Grasschrift | 3/7, 7/6 | verworfen |
+| 35 | `tuschezug` | Tusche auf Papier, ein Pinsel | nichtreflexiv | Eine Linie, die nichts umreisst und über das Blatt hinausgeht. (Zweite Fassung von 18.) | Marden, Michaux, Twombly, Grasschrift | 3/7, 7/6 | ruht (Bild trägt) |
 | 36 | `millimeter` | Bleistift und Farbstift auf Millimeterpapier | Wiederkehr ohne Rückkehr | Keine Linie ist gekrümmt, und doch entstehen Kurven, die niemand zeichnet. (Zweite Fassung von 23.) | Emma Kunz, af Klint, Horwitz | 3/2, 2/6 | verworfen |
 | 37 | `ebru` | Pigment auf Tragant, abgezogen | Spur | Jeder Tropfen verdrängt alle früheren; am Ende wird abgezogen, und das Bad ist leer. (Zweite Fassung von 25.) | Ebru, Türkisch Papier, Suminagashi, Frankenthaler | 7/2, 4/2 | verworfen |
 | 38 | `lochkarte` | Karton, Licht von hinten | Kontingenz | Gelocht ist jede Primzahl; niemand hat das Muster gelegt, und doch stehen die Löcher in acht Spalten. (Zweite Fassung von 24.) | Jacquard, Lovelace, Darboven, Horwitz | 2/6, 2/3 | verworfen |
@@ -311,6 +311,10 @@ Befund (Claude), warum: Die Stoffe sind in 2D gemalt. Es fehlt alles, woran man 
 Oberfläche fällt und von ihr zurückkommt, Tiefe, Massstab und ein Ereignis. Bewegt wird ein Wert, nicht ein Körper;
 darum sieht es aus wie eine Zeichnung, die sich verändert. Was bisher am besten trug, war dreidimensional und im Licht
 (die Formschleifen, die Sonnenblume). Die Nummern 33 bis 42 stehen darum auf «verworfen»; der Quellcode bleibt.
+
+Genauer, kurz danach: «Tuschezug, Kreise und die Metall-Sachen waren rein visuell in Ordnung. Die Kreise leider in der
+Bewegung hoch langweilig.» Also: Das Bild von `tuschezug` und `ringe` trägt, die Bewegung von `ringe` nicht; die Metallformen
+(Formschleifen) tragen. `tuschezug` und `ringe` stehen darum auf «ruht» statt «verworfen».
 
 ## Skizze, Text und Begriff verbinden, auch im Bild (27. November 2026, Vorschlag)
 
@@ -359,6 +363,18 @@ lohnt die Verbindung zuerst.
 Für die Stufe Animation zuerst **2** (Kennzeile) für Instagram und **5** an einer einzigen Skizze als Versuch: das Moiré
 mit dem eingewobenen Wort, weil dort Begriff, Text und Bild zusammenfallen und die Skizze nebenbei stärker wird. **4**
 gehört in die Stufe Web, **6** und **7** in die Galerie.
+
+### Echte Stoffe: Materialscans statt gemalter Stoffe (28. November 2026)
+
+Christian zu Fotos als Stoff: «auch das Internet kennt zig Millionen solche Bilder.» Genommen werden nur Bilder mit freier
+Lizenz: Poly Haven und ambientCG (beide CC0) liefern Materialscans mit Farbe, Oberflächenrichtung und Höhenkarte. Die
+Höhenkarte wird zu echtem Relief, das im Licht Schatten wirft; das fehlte den gemalten Stoffen. Die Adressen sind dafür in
+der Umgebung freigegeben (api.polyhaven.com, dl.polyhaven.org, ambientcg.com). Die Scans liegen in
+`src/videos/public/stoffe/` und werden nicht eingecheckt.
+
+| Nr. | Skizze | Stoff | Begriff | Ein Satz | Zettel | Stand |
+|---|---|---|---|---|---|---|
+| 43 | `stein-sonnenblume` (Formschleifen) | Marmorfels (Poly Haven, marble_rock_02), Messing | Anschluss | Die Sonnenblume in Messing, eingelegt in einen Stein, über den eine flache Sonne einmal herumgeht. | 3/2, 4/1 | offen |
 
 Weitere Stoffe und Reihen, die sich anbieten: Eisblumen und Schneekristall, Rauch und Schlieren, Risse in trocknendem
 Ton, Seifenhaut, Obertonreihe einer Saite, Farey-Brüche und Ford-Kreise, Collatz-Bäume, Kettenbrüche, Zellteilung,

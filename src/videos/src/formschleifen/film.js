@@ -29,7 +29,7 @@ const mat = {
 };
 
 const modul = await import(`./formen/${FORM}.js`);
-const form = modul.baue({ szene, kamera, mat, grund: GRUND });
+const form = await modul.baue({ szene, kamera, mat, grund: GRUND, renderer });
 
 // ---------- Nachbearbeitung im 2D-Bild: Vignette und Korn ----------
 const klein = globalThis.document.createElement('canvas'); klein.width = BREITE; klein.height = HOEHE;
