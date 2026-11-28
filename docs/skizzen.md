@@ -381,6 +381,8 @@ der Umgebung freigegeben (api.polyhaven.com, dl.polyhaven.org, ambientcg.com). D
 | 47 | `stein-meisseln` | Marmorfels, Kerbschnitt | Rhythmus | Schlag um Schlag wird ein dreieckiger Span gehoben; jeder Schlag auf ein ganzes Bild, mit Staubblitz und Erschütterung (zweite Fassung nach Christian: «Meisseln scheint mehr überblenden»). | 3/2, 7/2, 7/3 | offen |
 | 48 | `stein-furche` | Marmor mit gehauener Inschrift | vom Lesen zum Begehen | Die Kamera sinkt von der Inschrift bis in die Furchen; Schrift wird Landschaft. Übersicht und Sinkflug tragen, der Tiefflug braucht feinere Scans (8k) und mehr Rechenleistung. | 3/1, 3/7, 7/3 | Versuch, für später |
 | 49 | `stein-ogham` | Fels mit Flechten (Poly Haven, lichen_rock), gekerbt | Rhythmus, Schrift | ORNAMENT in Ogham, Kerbe um Kerbe an der Kante eines stehenden Steins, von unten nach oben; die Flechten wachsen zurück. | 3/2, 3/1, 7/6 | ruht; **Material vorgemerkt** (Christian: «Der Stein selber sieht gut aus, die Kerben nicht. Macht nichts. Wir merken uns mal das Material.») |
+| 50 | `stein-onyx` | Onyx im Gegenlicht (ambientCG Onyx010, CC0) | Material als Widerstand | Eine Onyxplatte als Fenster in dunkler Wand; ein Licht wandert hinter ihr vorbei, die hellen Lagen leuchten. | 7/1, 3/4 | Probe, trägt |
+| 51 | `stein-granit` | Granit, poliert (ambientCG Granite002A, CC0) | Beobachter | Polieren bis zum Spiegel. Probe zeigt noch keine Spiegelung (heller Granit spiegelt wenig; der Glanzweg im Baustein ist zu prüfen). | 3/4, 2/1 | Probe, trägt nicht |
 
 **Stein als Verfahren** (Christian: «Zusätzlich verbinde ich mit Stein: meisseln, schneiden, schleifen etc.»). Jedes Verfahren
 lässt das Ornament anders im Stein entstehen; das Ereignis ist die Arbeit selbst, nicht ein Wert, der sich ändert:
@@ -473,6 +475,25 @@ für später (inhaltlich am reichsten, braucht feinere Scans).
 - *Darstellung:* Die Schrift ist nur im Streiflicht lesbar, und die Kamera muss an ihr entlangsteigen wie ein Leser, der den
   Kopf hebt. Lesen als Bewegung des Körpers (3/7).
 - *Umschrift:* ORNAMENT, Buchstabe für Buchstabe nach der üblichen Zuordnung der vier Gruppen *(G)*, keine Übersetzung.
+
+### Was Christian behalten hat (28. November 2026)
+
+Christian: «Ich zeig dir mal zwischendurch, was ich gedownloaded habe, weil's mir visuell gefällt: Punkte, Harmonograph, Schwebung,
+Ähnlichkeit, Spirale-Fries, Tuschezug, Pigment. Daran kann man sich mal aufbauen.»
+
+Was diese sieben gemeinsam haben (Befund Claude):
+
+- **Viele feine Elemente statt einer Fläche:** Punkte, Linien, Körner, Fäden, Kerne. Die Form entsteht aus Dichte und Ordnung
+  vieler kleiner Dinge, nicht aus einer Kontur.
+- **Ordnung, die man erst sieht, wenn sie sich bewegt:** Schwebung (Moiré), Spirale-Fries (Spirale wird Streifen), Harmonograph
+  (zwei Pendel), Ähnlichkeit (Zoom ohne Ende), Punkte (Staub sammelt sich und löst sich).
+- **Wenig Farbe:** Tusche, Grafit, Kreide, Messing, ein Gelb; nie bunt.
+- **Ein Prinzip, kein Abbild:** keine nachgemachten Stoffe; was überzeugt, ist eine Regel, die man sieht (Pendel, Interferenz,
+  goldener Winkel, Selbstähnlichkeit, Zwei-Drittel-Gesetz).
+- Ausnahme Pigment: dort trägt der Stoff (Korn auf Stein im Streiflicht).
+
+Folgerung für die nächsten Arbeiten: von diesen sieben ausgehen und sie verbinden (z. B. Harmonograph aus Messingkernen,
+Schwebung im Streiflicht auf Stein, Spirale-Fries mit dem Zoom der Schnecke), statt neue Stoffe nachzubilden.
 
 ### Vorgemerkte Materialien
 
