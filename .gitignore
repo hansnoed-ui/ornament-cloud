@@ -27,3 +27,4 @@ listen/curiosity/video/
 
 # Ausgaben des Composer-Prüfstands (tools/composer-pruefstand.mjs)
 pruefstand/
+src/videos/src/gpu/pod.id
