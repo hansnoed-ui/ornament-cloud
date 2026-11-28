@@ -243,7 +243,7 @@ Darum ein zweiter, leichter Renderer ohne Metall und ohne 3D-Studio: `src/videos
 | 29 | `kippfigur` | Samen auf Samt | Unterscheidung | Nichts bewegt sich ausser der Hervorhebung, und jedes Mal ist es eine andere Sonnenblume. | 3/4 | offen |
 | 30 | `steigerung` | Tusche auf Papier | Wiederholung | Dasselbe Zeichen als Addition und als Steigerung. | 3/2, 3/7 | offen |
 | 31 | `obertoene` | Darmsaiten auf Ebenholz | Reihe | Sechzehn Saiten, jede in ganzen Teilen; alle kehren gemeinsam zurück. | 4/5 | offen |
-| 32 | `sonnenblume-ruhig` | Messing | Anschluss | Zweite Fassung: jeder Kern bleibt auf seinem Winkel und wandert nach aussen. | 3/2 | offen |
+| 32 | `sonnenblume-ruhig` | Messing | Anschluss | Zweite Fassung: jeder Kern bleibt auf seinem Winkel und wandert nach aussen. | 3/2 | **verfolgt** (Christian: «2. Fassung Sonnenblume») |
 
 ### Höherer Anspruch (ab 27. November 2026, abends)
 
@@ -271,16 +271,16 @@ Nicolai («Milch»), Ryoji Ikeda · Tauba Auerbach, Julie Mehretu, Tomás Sarace
 
 | Nr. | Skizze | Stoff | Begriff | Ein Satz | Bezüge | Zettel | Stand |
 |---|---|---|---|---|---|---|---|
-| 33 | `ringe` | Tusche auf Wasser | Stelle | Jeder Tropfen schiebt alle früheren nach aussen; was Mitte war, wird Ring. | Suminagashi, Penone, Lee Ufan, Auerbach | 4/1, 4/8 | offen |
-| 34 | `pigment` | Blütenstaub auf Stein | Stelle | Der Staub liegt, wo nichts schwingt; man sieht nur einen Ausschnitt der Platte. (Zweite Fassung von 21.) | Laib, Chladni, Nicolai, Kunz | 4/8 | offen |
-| 35 | `tuschezug` | Tusche auf Papier, ein Pinsel | nichtreflexiv | Eine Linie, die nichts umreisst und über das Blatt hinausgeht. (Zweite Fassung von 18.) | Marden, Michaux, Twombly, Grasschrift | 3/7, 7/6 | offen |
-| 36 | `millimeter` | Bleistift und Farbstift auf Millimeterpapier | Wiederkehr ohne Rückkehr | Keine Linie ist gekrümmt, und doch entstehen Kurven, die niemand zeichnet. (Zweite Fassung von 23.) | Emma Kunz, af Klint, Horwitz | 3/2, 2/6 | offen |
-| 37 | `ebru` | Pigment auf Tragant, abgezogen | Spur | Jeder Tropfen verdrängt alle früheren; am Ende wird abgezogen, und das Bad ist leer. (Zweite Fassung von 25.) | Ebru, Türkisch Papier, Suminagashi, Frankenthaler | 7/2, 4/2 | offen |
-| 38 | `lochkarte` | Karton, Licht von hinten | Kontingenz | Gelocht ist jede Primzahl; niemand hat das Muster gelegt, und doch stehen die Löcher in acht Spalten. (Zweite Fassung von 24.) | Jacquard, Lovelace, Darboven, Horwitz | 2/6, 2/3 | offen |
-| 39 | `myzel` | Schleimpilz auf Rinde | Anschluss | Kein Plan, nur Spuren, denen Spuren folgen; das Netz findet die Flocken. (Zweite Fassung von 26.) | Nakagaki, Saraceno, Barnett | 3/2, 7/2 | offen |
-| 40 | `moire` | Organza über Seide | Koppelung | Zwei Gewebe, fast gleich fein; man sieht ein drittes. Im Standbild die schwächste der Runde, sie wirkt erst in der Bewegung. (Zweite Fassung von 22.) | Moiré-Seide, Soto, von Graevenitz, Albers | 4/7, 4/5 | offen |
-| 41 | `holz` | ein Brett, Schicht um Schicht abgehobelt | Eigenzeit | Jeder Jahresring ist ein Jahr; schräg geschnitten werden die Ringe zu Bögen, die niemand entworfen hat. | Penone, Intarsie | 4/1, 3/2 | offen |
-| 42 | `achat` | ein Stein, immer weiter aufgesägt | Schrift | Bänder, Schicht um Schicht gewachsen; eine Schrift, die niemand geschrieben hat. | Caillois, Kunstkammer, Pietra paesina | 3/1, 3/9 | offen |
+| 33 | `ringe` | Tusche auf Wasser | Stelle | Jeder Tropfen schiebt alle früheren nach aussen; was Mitte war, wird Ring. | Suminagashi, Penone, Lee Ufan, Auerbach | 4/1, 4/8 | verworfen |
+| 34 | `pigment` | Blütenstaub auf Stein | Stelle | Der Staub liegt, wo nichts schwingt; man sieht nur einen Ausschnitt der Platte. (Zweite Fassung von 21.) | Laib, Chladni, Nicolai, Kunz | 4/8 | verworfen |
+| 35 | `tuschezug` | Tusche auf Papier, ein Pinsel | nichtreflexiv | Eine Linie, die nichts umreisst und über das Blatt hinausgeht. (Zweite Fassung von 18.) | Marden, Michaux, Twombly, Grasschrift | 3/7, 7/6 | verworfen |
+| 36 | `millimeter` | Bleistift und Farbstift auf Millimeterpapier | Wiederkehr ohne Rückkehr | Keine Linie ist gekrümmt, und doch entstehen Kurven, die niemand zeichnet. (Zweite Fassung von 23.) | Emma Kunz, af Klint, Horwitz | 3/2, 2/6 | verworfen |
+| 37 | `ebru` | Pigment auf Tragant, abgezogen | Spur | Jeder Tropfen verdrängt alle früheren; am Ende wird abgezogen, und das Bad ist leer. (Zweite Fassung von 25.) | Ebru, Türkisch Papier, Suminagashi, Frankenthaler | 7/2, 4/2 | verworfen |
+| 38 | `lochkarte` | Karton, Licht von hinten | Kontingenz | Gelocht ist jede Primzahl; niemand hat das Muster gelegt, und doch stehen die Löcher in acht Spalten. (Zweite Fassung von 24.) | Jacquard, Lovelace, Darboven, Horwitz | 2/6, 2/3 | verworfen |
+| 39 | `myzel` | Schleimpilz auf Rinde | Anschluss | Kein Plan, nur Spuren, denen Spuren folgen; das Netz findet die Flocken. (Zweite Fassung von 26.) | Nakagaki, Saraceno, Barnett | 3/2, 7/2 | verworfen |
+| 40 | `moire` | Organza über Seide | Koppelung | Zwei Gewebe, fast gleich fein; man sieht ein drittes. Im Standbild die schwächste der Runde, sie wirkt erst in der Bewegung. (Zweite Fassung von 22.) | Moiré-Seide, Soto, von Graevenitz, Albers | 4/7, 4/5 | verworfen |
+| 41 | `holz` | ein Brett, Schicht um Schicht abgehobelt | Eigenzeit | Jeder Jahresring ist ein Jahr; schräg geschnitten werden die Ringe zu Bögen, die niemand entworfen hat. | Penone, Intarsie | 4/1, 3/2 | verworfen |
+| 42 | `achat` | ein Stein, immer weiter aufgesägt | Schrift | Bänder, Schicht um Schicht gewachsen; eine Schrift, die niemand geschrieben hat. | Caillois, Kunstkammer, Pietra paesina | 3/1, 3/9 | verworfen |
 
 ## Richtung Material (27. November 2026, nachts)
 
@@ -301,6 +301,16 @@ Stand der Stoffe in den Skizzen mit höherem Anspruch, und was naheliegt:
 Zwei Stoffe tragen eigene Begriffe aus der Theorie besonders gut: **Ikat** (das Muster wird vor dem Weben auf die Fäden
 gefärbt und verschiebt sich beim Weben: Abweichung, die aus dem Verfahren selbst kommt, zu 3/9) und **Kolam** (täglich neu
 gestreut, am Abend verweht: Wiederkehr ohne Rückkehr im Alltag, zu 3/4 und 4/1).
+
+## Urteil zu den Stoff-Skizzen (28. November 2026)
+
+Christian: «2. Fassung Sonnenblume. Die neuen Materialien sind meines Erachtens nicht gelungen. Vielleicht bringen wir das
+gar nicht hin. Es scheinen mir vor allem flache Zeichnungen, die sich unspektakulär bewegen.»
+
+Befund (Claude), warum: Die Stoffe sind in 2D gemalt. Es fehlt alles, woran man Material erkennt: Licht, das auf eine
+Oberfläche fällt und von ihr zurückkommt, Tiefe, Massstab und ein Ereignis. Bewegt wird ein Wert, nicht ein Körper;
+darum sieht es aus wie eine Zeichnung, die sich verändert. Was bisher am besten trug, war dreidimensional und im Licht
+(die Formschleifen, die Sonnenblume). Die Nummern 33 bis 42 stehen darum auf «verworfen»; der Quellcode bleibt.
 
 ## Skizze, Text und Begriff verbinden, auch im Bild (27. November 2026, Vorschlag)
 
