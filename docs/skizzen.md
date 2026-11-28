@@ -377,8 +377,12 @@ der Umgebung freigegeben (api.polyhaven.com, dl.polyhaven.org, ambientcg.com). D
 | 43 | `stein-sonnenblume` (Formschleifen) | Marmorfels (Poly Haven, marble_rock_02), Messing | Anschluss | Die Sonnenblume in Messing, eingelegt in einen Stein, über den eine flache Sonne einmal herumgeht. | 3/2, 4/1 | verworfen (Christian: «was die Sonnenblume da drauf macht, erschliesst sich mir nicht») |
 | 44 | `stein-bohrung` | Marmorfels, gebohrt | Anschluss, nie fertig gesehen | Kern für Kern wird eine Mulde gebohrt; die Spiralen erscheinen nur im Streiflicht. | 3/2, 3/4, 4/1 | **verfolgt** (Christian: «Ja, dies») |
 | 45 | `stein-schleifen` | Marmorfels, geschliffen | nie fertig gesehen | Eine Rosette wird in den rohen Stein geschliffen; die Adern kommen zum Vorschein, am Ende verwittert der Glanz. | 3/4, 3/5, 7/1 | offen |
-| 46 | `stein-schneiden` | Marmorstreifen, gesägt, mit Messing vergossen | Rapport | Ein Mäander wird gesägt, eine Stelle weiter hinten mit Messing vergossen; der Stein gleitet unter der Säge durch. | 3/2, 7/1 | offen |
-| 47 | `stein-meisseln` | Marmorfels, Kerbschnitt | Rhythmus | Schlag um Schlag wird ein dreieckiger Span gehoben, bis eine Rosette aus Dreiecken dasteht. | 3/2, 7/2, 7/3 | offen |
+| 46 | `stein-schneiden` | Marmorstreifen, gesägt, mit Messing vergossen | Rapport | Ein Mäander wird gesägt, eine Stelle weiter hinten mit Messing vergossen; der Stein gleitet, der Schneidkopf folgt dem Weg des Mäanders (zweite Fassung nach Christian: «vertikal ist kein Prozess sichtbar»). | 3/2, 7/1 | offen |
+| 47 | `stein-meisseln` | Marmorfels, Kerbschnitt | Rhythmus | Schlag um Schlag wird ein dreieckiger Span gehoben; jeder Schlag auf ein ganzes Bild, mit Staubblitz und Erschütterung (zweite Fassung nach Christian: «Meisseln scheint mehr überblenden»). | 3/2, 7/2, 7/3 | offen |
+| 48 | `stein-furche` | Marmor mit gehauener Inschrift | vom Lesen zum Begehen | Die Kamera sinkt von der Inschrift bis in die Furchen; Schrift wird Landschaft. Übersicht und Sinkflug tragen, der Tiefflug braucht feinere Scans (8k) und mehr Rechenleistung. | 3/1, 3/7, 7/3 | Versuch, für später |
+| 49 | `stein-ogham` | Fels mit Flechten (Poly Haven, lichen_rock), gekerbt | Rhythmus, Schrift | ORNAMENT in Ogham, Kerbe um Kerbe an der Kante eines stehenden Steins, von unten nach oben; die Flechten wachsen zurück. | 3/2, 3/1, 7/6 | ruht; **Material vorgemerkt** (Christian: «Der Stein selber sieht gut aus, die Kerben nicht. Macht nichts. Wir merken uns mal das Material.») |
+| 50 | `stein-onyx` | Onyx im Gegenlicht (ambientCG Onyx010, CC0) | Material als Widerstand | Eine Onyxplatte als Fenster in dunkler Wand; ein Licht wandert hinter ihr vorbei, die hellen Lagen leuchten. | 7/1, 3/4 | Probe, trägt |
+| 51 | `stein-granit` | Granit, poliert (ambientCG Granite002A, CC0) | Beobachter | Polieren bis zum Spiegel. Probe zeigt noch keine Spiegelung (heller Granit spiegelt wenig; der Glanzweg im Baustein ist zu prüfen). | 3/4, 2/1 | Probe, trägt nicht |
 
 **Stein als Verfahren** (Christian: «Zusätzlich verbinde ich mit Stein: meisseln, schneiden, schleifen etc.»). Jedes Verfahren
 lässt das Ornament anders im Stein entstehen; das Ereignis ist die Arbeit selbst, nicht ein Wert, der sich ändert:
@@ -441,9 +445,76 @@ Fünf Felder je Skizze (siehe `docs/formen-konzept.md`, «Konzeptionelles Vorgeh
 - *Materialeigenschaft:* Marmor bricht unter dem Schlag in Spänen, die Bruchfläche ist frisch heller und rauer.
 - *Darstellung:* Jeder Span ist ein Ereignis in der Zeit; die Rosette ist das Protokoll von 300 Schlägen.
 
+### Fahrt durch die Furchen: wo sie inhaltlich passt (28. November 2026)
+
+Christian: «Vielleicht sind ja auch gemeisselte Effekte möglich, Fahrt durch die Furchen etc. Schauen, wo eine solche Darstellung
+inhaltlich passt. Hieroglyphen etc.?» Der Kern ist ein Massstabswechsel: von weitem liest man, von nah begeht man. Das passt
+überall dort, wo Schrift und Ornament ineinander übergehen. *(G)* = aus dem Gedächtnis, nachzuschlagen.
+
+| Schrift im Stein | Was die Fahrt zeigt | Theorie | Bemerkung |
+|---|---|---|---|
+| **Hieroglyphen** | Zeichen, die zugleich Bild, Laut und Ornament sind; von nah werden Vögel, Schilf, Wasserlinien zur Landschaft | 3/1 (Ornament als Schrift der Kunst), 1/1 (Sprache ohne Sprache) | gute Schrift: Noto Sans Egyptian Hieroglyphs (OFL) *(G)*; nur zeigen, nichts «übersetzen» |
+| **Stein von Rosette** | derselbe Erlass in drei Schriften (Hieroglyphen, Demotisch, Griechisch); die Fahrt geht von einer Schrift in die nächste | 5/3 («Es wird nur übersetzt, nie übertragen») | die überraschende Verbindung: Übersetzung als Materialbefund |
+| **Keilschrift** | Zeichen, die in Ton gedrückt statt gehauen sind; jede Furche ist ein Abdruck des Griffels | 7/2 (Herstellen), 7/3 (der Körper geht voraus) | Stoff Ton statt Stein |
+| **Ogham** | Kerben entlang einer Steinkante; Schrift als reiner Rhythmus | 3/2 (Rhythmus), Leroi-Gourhan (Zettel 7/6) | sehr einfach darzustellen, sehr stark |
+| **Quadratisches Kufi** | Schrift, die als geometrisches Muster eine ganze Wand füllt; man sieht ein Ornament und weiss nicht, dass es ein Satz ist | 3/1, 3/4 (nie fertig gesehen) | die Fahrt kann es umkehren: von nah ein Labyrinth, von weit ein Name |
+| **Trajanssäule** | ein Relieffries, der sich in einer Spirale um eine Säule windet; dazu die Inschrift, aus der unsere Versalien stammen | 3/2 (Fries), 4/1 (Stelle) | die Fahrt als Spirale nach oben |
+| **Christians Sätze** | die Theorie selbst, in Stein; vom Satz in die Furche, wo er unlesbar wird | 3/7, 7/3 | Versuch 48 |
+
+Empfehlung: **Ogham** als Nächstes (in dieser Umgebung gut machbar, inhaltlich stark: Schrift als Rhythmus) und **Rosette**
+für später (inhaltlich am reichsten, braucht feinere Scans).
+
+**49 · Ogham** (`stein-ogham`)
+- *Theorie:* Schrift als reiner Rhythmus (3/2): ein Zeichen ist eine Anzahl von Kerben, nichts sonst; Ornament als Schrift der
+  Kunst (3/1), hier umgekehrt: eine Schrift, die aussieht wie ein Ornament. Leroi-Gourhan: Zeichnen beginnt mit Kerben (7/6).
+- *Kulturgeschichte:* Ogham-Steine in Irland, Wales und Schottland, meist Namen, oft Grabsteine; die Kante des Steins ist die
+  Schriftlinie, gelesen von unten nach oben *(G)*. Kerbhölzer (Zählstöcke) als Verwandte *(G)*.
+- *Kunstpraxis:* Hanne Darbovens Schreibzeit, Roman Opalkas Zahlen: Schrift als Zählen und Takt (Zettel 3/4, 4/5).
+- *Materialeigenschaft:* Die Kante ist die stabilste Stelle eines Steins und die, an der jede Kerbe am deutlichsten Schatten
+  wirft; frisch gekerbt ist der Stein hell, mit den Jahren wachsen die Flechten wieder darüber.
+- *Darstellung:* Die Schrift ist nur im Streiflicht lesbar, und die Kamera muss an ihr entlangsteigen wie ein Leser, der den
+  Kopf hebt. Lesen als Bewegung des Körpers (3/7).
+- *Umschrift:* ORNAMENT, Buchstabe für Buchstabe nach der üblichen Zuordnung der vier Gruppen *(G)*, keine Übersetzung.
+
+### Was Christian behalten hat (28. November 2026)
+
+Christian: «Ich zeig dir mal zwischendurch, was ich gedownloaded habe, weil's mir visuell gefällt: Punkte, Harmonograph, Schwebung,
+Ähnlichkeit, Spirale-Fries, Tuschezug, Pigment. Daran kann man sich mal aufbauen.»
+
+Was diese sieben gemeinsam haben (Befund Claude):
+
+- **Viele feine Elemente statt einer Fläche:** Punkte, Linien, Körner, Fäden, Kerne. Die Form entsteht aus Dichte und Ordnung
+  vieler kleiner Dinge, nicht aus einer Kontur.
+- **Ordnung, die man erst sieht, wenn sie sich bewegt:** Schwebung (Moiré), Spirale-Fries (Spirale wird Streifen), Harmonograph
+  (zwei Pendel), Ähnlichkeit (Zoom ohne Ende), Punkte (Staub sammelt sich und löst sich).
+- **Wenig Farbe:** Tusche, Grafit, Kreide, Messing, ein Gelb; nie bunt.
+- **Ein Prinzip, kein Abbild:** keine nachgemachten Stoffe; was überzeugt, ist eine Regel, die man sieht (Pendel, Interferenz,
+  goldener Winkel, Selbstähnlichkeit, Zwei-Drittel-Gesetz).
+- Ausnahme Pigment: dort trägt der Stoff (Korn auf Stein im Streiflicht).
+
+Folgerung für die nächsten Arbeiten: von diesen sieben ausgehen und sie verbinden (z. B. Harmonograph aus Messingkernen,
+Schwebung im Streiflicht auf Stein, Spirale-Fries mit dem Zoom der Schnecke), statt neue Stoffe nachzubilden.
+
+### Vorgemerkte Materialien
+
+| Scan (Poly Haven, CC0) | Wofür | Urteil |
+|---|---|---|
+| `marble_rock_02` (Marmorfels, hell, Adern) | Bohren, Schleifen, Schneiden, Meisseln, «In Stein» | trägt (Christian: «Die neuen Marmor-Sachen sehen gut aus») |
+| `lichen_rock` (dunkler Fels mit Flechten) | Ogham | der Stein trägt, die Kerben darin nicht; vorgemerkt für später |
+
 Weitere Stoffe und Reihen, die sich anbieten: Eisblumen und Schneekristall, Rauch und Schlieren, Risse in trocknendem
 Ton, Seifenhaut, Obertonreihe einer Saite, Farey-Brüche und Ford-Kreise, Collatz-Bäume, Kettenbrüche, Zellteilung,
 Jahresringe, Flechten auf Stein.
+
+### Stand nach Schneiden und Meisseln v2 (28. November 2026)
+
+- Christian: «Mir gefällt der Stein. Ihn zu bearbeiten scheint so nicht zu klappen.» Die Verfahren im Stein (bohren, schneiden,
+  meisseln, Ogham-Kerben) ruhen; der Stein selbst bleibt als Material. Grund vermutlich: Kerben und Schnitte brauchen echte Geometrie
+  in feiner Auflösung und Licht, das hier ohne Grafikkarte nicht zu haben ist. Mit gemieteter Grafikkarte erneut prüfen.
+- Christian: «Die Kreise waren auch schön, wenn auch recht statisch.» Behalten, aber mit Ereignis: Ringe, die sich stören, brechen
+  und neu ansetzen.
+- Spiegelkugel auf *In Stein* (`?kugel`): Christian: «Eine Spiegelkugel könnte auch über eine Website rollen.» Probe gebaut: rollt
+  beim Neigen, spiegelt die Rotunde (Poly Haven, CC0) und die Gravur. Bezug: Beobachter (3/4, 6/1).
 
 ## Nächste Skizzen (Vorschlag)
 
