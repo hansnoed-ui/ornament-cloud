@@ -20,13 +20,38 @@ Seiten, die vier Ansichten) → **Galerie** (interaktive Arbeit im Raum). Die St
 Reihenfolge angegangen: 0, dann 4 und 2 nebeneinander, 3, dann 5 und 6; Stufe 1 (Quellen) läuft in Portionen mit.
 Claude arbeitet selbständig weiter; live geht weiterhin nur, was Christian ausdrücklich freigibt.
 
+Vorgehen (Christian, 27. November 2026): «Wie gesagt, wir gehen all in, aber Stufe um Stufe.» Eine Stufe wird
+abgeschlossen und gezeigt, bevor die nächste beginnt. Stand: Stufe 0 (Formschleifen) abgeschlossen; in Arbeit ist die
+Animation als Skizzen mit höherem Anspruch (`docs/skizzen.md`). Die Stufe Web beginnt erst nach Christians OK.
+
 Ergänzung zur Installation (Christian, 27. November 2026): «ich möchte auch Video-Animationen der prozesshaften
 Weiterentwicklung, Aspekte, die vielleicht verfolgt werden oder auch nicht, visualisieren. Es ist eine spielerische
 Suche und eine Entwicklung einer neuen Erfahrung. Was textlich passt, kommt jeweils auch auf die Theorieseite.»
 Dafür gibt es das Logbuch `docs/skizzen.md`: jede Skizze eine kurze Animation mit einer Frage, behalten auch wenn der
 Weg nicht weiterverfolgt wird; dazu Textkandidaten für die Theorieseite, die erst nach Christians OK dorthin kommen.
 
-## 1. Der Gedanke
+### Konzeptionelles Vorgehen (Christian, 28. November 2026)
+
+«Vielleicht noch ein paar Worte zum konzeptionellen Vorgehen: Wir entwickeln hier meine Kunsttheorie und die visuelle
+Darstellung derselben für Web und Ausstellung. Diese Arbeiten an der Materialität dienen also auch dazu, Theorie,
+Kulturgeschichte, zeitgenössische bzw. moderne Kunstpraxis mit Materialeigenschaften und Darstellungsmöglichkeiten in
+Verbindung zu bringen. Das geht, so gut es geht. Was wir sicher können: sinnhafte und überraschende Verbindungen
+entwickeln. Die Qualität der Animationen ist interessant, aber da, wo wir in dieser Umgebung begrenzt sind, ist das halt
+so. Alles, was man kaufen kann (Rechenleistung, GPU etc.), kaufen wir dann später.»
+
+Folgen für die Arbeit:
+
+- **Die Verbindung ist das Ergebnis, das Video ihr Entwurf.** Jede Skizze bekommt eine Verbindungskarte mit fünf Feldern:
+  Theorie (Zettel), Kulturgeschichte, Kunstpraxis (modern und zeitgenössisch), Materialeigenschaft, Darstellung. Eine Skizze
+  ohne tragende Verbindung wird nicht weiterverfolgt, auch wenn sie gut aussieht.
+- **Überraschend heisst:** eine Verbindung, die nicht schon im Motiv liegt (nicht «Stein, also Steinmetz»), sondern quer
+  läuft, etwa vom Verfahren der Darstellung zu einer Methode der Archäologie oder von einer Materialeigenschaft zu einem
+  Begriff der Theorie.
+- **Belege:** Was aus dem Gedächtnis stammt, wird als solches markiert und später nachgeschlagen, wie bei den Zetteln.
+- **Qualität später:** Die Skripte bleiben so gebaut, dass sie mit mehr Rechenleistung neu gerechnet werden können (feineres
+  Raster, höhere Dichte, echtes Licht; Skill `video-hochrendern`). Hier wird nicht gegen die Grenzen der Umgebung angerannt.
+
+## 1. Der Gedanke## 1. Der Gedanke
 
 Die Sonnenblume ist ein Modellfall, weil in ihr vier Dinge zusammenfallen, die sonst getrennt verhandelt werden:
 

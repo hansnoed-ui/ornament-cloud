@@ -243,7 +243,180 @@ Darum ein zweiter, leichter Renderer ohne Metall und ohne 3D-Studio: `src/videos
 | 29 | `kippfigur` | Samen auf Samt | Unterscheidung | Nichts bewegt sich ausser der Hervorhebung, und jedes Mal ist es eine andere Sonnenblume. | 3/4 | offen |
 | 30 | `steigerung` | Tusche auf Papier | Wiederholung | Dasselbe Zeichen als Addition und als Steigerung. | 3/2, 3/7 | offen |
 | 31 | `obertoene` | Darmsaiten auf Ebenholz | Reihe | Sechzehn Saiten, jede in ganzen Teilen; alle kehren gemeinsam zurück. | 4/5 | offen |
-| 32 | `sonnenblume-ruhig` | Messing | Anschluss | Zweite Fassung: jeder Kern bleibt auf seinem Winkel und wandert nach aussen. | 3/2 | offen |
+| 32 | `sonnenblume-ruhig` | Messing | Anschluss | Zweite Fassung: jeder Kern bleibt auf seinem Winkel und wandert nach aussen. | 3/2 | **verfolgt** (Christian: «2. Fassung Sonnenblume») |
+
+### Höherer Anspruch (ab 27. November 2026, abends)
+
+Christian zu den ersten sechs Skizzen: «interessant, aber noch viiiiel zu wenig künstlerisch anspruchsvoll. Bediene dich
+auch an Referenzen der Kunstgeschichte und der zeitgenössischen Kunst.»
+
+Christian zum Standbild von «Ringe»: «ja, so weiter»; zu «Tuschezug» und «Pigment»: «Gut so». Und zum Vorgehen: «Wie gesagt, wir gehen all in, aber Stufe um Stufe.»
+
+Befund (Claude): Die ersten Runden führen ein Prinzip vor; sie sind Schaubilder. Was fehlt, sind Entscheidungen, die
+sich nicht aus dem Prinzip ergeben. Regeln für die nächsten Versuche:
+
+- **Ausschnitt statt Figur:** kein Motiv in der Bildmitte; ein Feld, das über den Rand hinausgeht.
+- **Stoff zuerst:** Papier, Tusche, Pigment, Wachs sollen sich wie Stoff verhalten (Rand, Korn, Verlauf, Zufall).
+- **Eine Entscheidung, die nicht erklärt wird:** ein einzelner Farbton, eine Leerstelle, eine Störung.
+- **Die Hand ist mitgerechnet:** nichts ist exakt gleich; Grösse, Ort und Tempo schwanken.
+- **Zeit mit Gewicht:** langsam; etwas darf fast stillstehen.
+- **Bezüge als Haltung, nie als Nachbildung** eines Werks.
+
+Bezüge, aus denen geschöpft wird: Suminagashi, Ebru, Katagami, Girih · Emma Kunz (Pendelzeichnungen auf Millimeterpapier),
+Hilma af Klint, Anna Atkins (Cyanotypien), Karl Blossfeldt · Agnes Martin, Lee Ufan («From Line», «From Point»), Brice
+Marden («Cold Mountain»), Cy Twombly, Mark Tobey, Henri Michaux · Anni Albers, Gego, Ruth Asawa · Vera Molnár, Georg Nees
+(«Schotter»), Manfred Mohr, John Whitney und James Whitney, Oskar Fischinger, Len Lye · Channa Horwitz, Hanne Darboven,
+Jorinde Voigt, Mario Merz (Fibonacci) · Giuseppe Penone, Wolfgang Laib (Blütenstaub), Roman Signer, Zimoun · Carsten
+Nicolai («Milch»), Ryoji Ikeda · Tauba Auerbach, Julie Mehretu, Tomás Saraceno, Monir Farmanfarmaian.
+
+| Nr. | Skizze | Stoff | Begriff | Ein Satz | Bezüge | Zettel | Stand |
+|---|---|---|---|---|---|---|---|
+| 33 | `ringe` | Tusche auf Wasser | Stelle | Jeder Tropfen schiebt alle früheren nach aussen; was Mitte war, wird Ring. | Suminagashi, Penone, Lee Ufan, Auerbach | 4/1, 4/8 | ruht (Bild trägt) |
+| 34 | `pigment` | Blütenstaub auf Stein | Stelle | Der Staub liegt, wo nichts schwingt; man sieht nur einen Ausschnitt der Platte. (Zweite Fassung von 21.) | Laib, Chladni, Nicolai, Kunz | 4/8 | verworfen |
+| 35 | `tuschezug` | Tusche auf Papier, ein Pinsel | nichtreflexiv | Eine Linie, die nichts umreisst und über das Blatt hinausgeht. (Zweite Fassung von 18.) | Marden, Michaux, Twombly, Grasschrift | 3/7, 7/6 | ruht (Bild trägt) |
+| 36 | `millimeter` | Bleistift und Farbstift auf Millimeterpapier | Wiederkehr ohne Rückkehr | Keine Linie ist gekrümmt, und doch entstehen Kurven, die niemand zeichnet. (Zweite Fassung von 23.) | Emma Kunz, af Klint, Horwitz | 3/2, 2/6 | verworfen |
+| 37 | `ebru` | Pigment auf Tragant, abgezogen | Spur | Jeder Tropfen verdrängt alle früheren; am Ende wird abgezogen, und das Bad ist leer. (Zweite Fassung von 25.) | Ebru, Türkisch Papier, Suminagashi, Frankenthaler | 7/2, 4/2 | verworfen |
+| 38 | `lochkarte` | Karton, Licht von hinten | Kontingenz | Gelocht ist jede Primzahl; niemand hat das Muster gelegt, und doch stehen die Löcher in acht Spalten. (Zweite Fassung von 24.) | Jacquard, Lovelace, Darboven, Horwitz | 2/6, 2/3 | verworfen |
+| 39 | `myzel` | Schleimpilz auf Rinde | Anschluss | Kein Plan, nur Spuren, denen Spuren folgen; das Netz findet die Flocken. (Zweite Fassung von 26.) | Nakagaki, Saraceno, Barnett | 3/2, 7/2 | verworfen |
+| 40 | `moire` | Organza über Seide | Koppelung | Zwei Gewebe, fast gleich fein; man sieht ein drittes. Im Standbild die schwächste der Runde, sie wirkt erst in der Bewegung. (Zweite Fassung von 22.) | Moiré-Seide, Soto, von Graevenitz, Albers | 4/7, 4/5 | verworfen |
+| 41 | `holz` | ein Brett, Schicht um Schicht abgehobelt | Eigenzeit | Jeder Jahresring ist ein Jahr; schräg geschnitten werden die Ringe zu Bögen, die niemand entworfen hat. | Penone, Intarsie | 4/1, 3/2 | verworfen |
+| 42 | `achat` | ein Stein, immer weiter aufgesägt | Schrift | Bänder, Schicht um Schicht gewachsen; eine Schrift, die niemand geschrieben hat. | Caillois, Kunstkammer, Pietra paesina | 3/1, 3/9 | verworfen |
+
+## Richtung Material (27. November 2026, nachts)
+
+Christian: «Von der Materialität will ich auch in Richtung Stein, Holz, Papier, Flüssigkeit, Textil und so weiter.»
+
+Stand der Stoffe in den Skizzen mit höherem Anspruch, und was naheliegt:
+
+| Stoff | Schon da | Naheliegend als Nächstes (Bezug) |
+|---|---|---|
+| **Stein** | `pigment` (Staub auf Schiefer), `achat` | Marmoräderung, die sich beim Polieren öffnet; Pietra dura (Einlegearbeit); Kieselmosaik; Steinschnitt (Caillois, Kunstkammer) |
+| **Holz** | `holz`, `myzel` (auf Rinde) | Intarsie, die sich aus Furnieren zusammensetzt; Brandspur; Holzschnitt, Druck für Druck (Penone, japanischer Holzschnitt) |
+| **Papier** | `tuschezug`, `millimeter`, `ringe`, `ebru` | Faltung (Origami, Josef Albers' Vorkurs); Scherenschnitt; Prägung im Streiflicht; Papier, das sich im Wasser wellt |
+| **Flüssigkeit** | `ringe`, `ebru` | Tropfen auf Wachs; Öl auf Wasser (Schlieren); Kristallisation einer Salzlösung; Tusche, die in Wasser sinkt |
+| **Textil** | `moire`, `lochkarte` (Karton) | Weben Schuss für Schuss (Albers, Bauhaus-Weberei); Ikat, dessen Muster vor dem Weben gefärbt wird und verschwimmt; Stickerei; Knoten (Quipu) |
+| **Metall** | die 18 Formschleifen | Guilloche (das Muster im Zifferblatt); Ätzung; Patina, die wächst; Damaszener Stahl |
+| weiter | | Glas (Schlieren, Craquelé); Keramik (Glasur, die reisst); Wachs (Enkaustik); Eis (Eisblumen); Sand (Kolam, Mandala, das verweht) |
+
+Zwei Stoffe tragen eigene Begriffe aus der Theorie besonders gut: **Ikat** (das Muster wird vor dem Weben auf die Fäden
+gefärbt und verschiebt sich beim Weben: Abweichung, die aus dem Verfahren selbst kommt, zu 3/9) und **Kolam** (täglich neu
+gestreut, am Abend verweht: Wiederkehr ohne Rückkehr im Alltag, zu 3/4 und 4/1).
+
+## Urteil zu den Stoff-Skizzen (28. November 2026)
+
+Christian: «2. Fassung Sonnenblume. Die neuen Materialien sind meines Erachtens nicht gelungen. Vielleicht bringen wir das
+gar nicht hin. Es scheinen mir vor allem flache Zeichnungen, die sich unspektakulär bewegen.»
+
+Befund (Claude), warum: Die Stoffe sind in 2D gemalt. Es fehlt alles, woran man Material erkennt: Licht, das auf eine
+Oberfläche fällt und von ihr zurückkommt, Tiefe, Massstab und ein Ereignis. Bewegt wird ein Wert, nicht ein Körper;
+darum sieht es aus wie eine Zeichnung, die sich verändert. Was bisher am besten trug, war dreidimensional und im Licht
+(die Formschleifen, die Sonnenblume). Die Nummern 33 bis 42 stehen darum auf «verworfen»; der Quellcode bleibt.
+
+Genauer, kurz danach: «Tuschezug, Kreise und die Metall-Sachen waren rein visuell in Ordnung. Die Kreise leider in der
+Bewegung hoch langweilig.» Also: Das Bild von `tuschezug` und `ringe` trägt, die Bewegung von `ringe` nicht; die Metallformen
+(Formschleifen) tragen. `tuschezug` und `ringe` stehen darum auf «ruht» statt «verworfen».
+
+## Skizze, Text und Begriff verbinden, auch im Bild (27. November 2026, Vorschlag)
+
+Christian: «Überprüfe auch, inwiefern wir sie mit Texten und Konzepten verbinden könnten, auch visuell.»
+
+### Was schon trägt
+
+Jede Skizze hat einen Begriff aus der Theorie und mindestens einen Zettel. Beim Nachsehen fällt auf, dass sich die
+Skizzen um wenige Zettel sammeln: **3/2** (variierte Redundanz, 9 Skizzen), **3/4** (nie fertig gesehen, 6), **4/7** und
+**4/5** (Phase, Taktkollision, 5), **4/8** (die leere Mitte, 3), **7/2** und **7/6** (Herstellen, der Körper schreibt, 5),
+**2/6** (was nie aufgeht, 3). Gar keine Skizze haben bisher die Bereiche 1 (Wahrnehmung und Kommunikation), 6 (Werk,
+Adresse, System) und 8 (Plattform, KI, Entzug). Das ist ein Befund, kein Fehler: Die Skizzen zeigen Ordnung und Zeit; was
+Kunst gesellschaftlich tut, zeigen sie noch nicht. Eine Skizze zu 3/6 («Der Feed ist Ornament ohne Stelle») oder zu 8/5
+(Entzug) wäre die nächste Lücke.
+
+Drei Skizzen tragen ihren Zettel fast wörtlich: «Ringe» und «Pigment» zu 4/8 (die Stelle, die alle umgehen), «Lochkarte»
+zu 2/6 (eine Ordnung, die niemand gelegt hat), «Tuschezug» zu 3/7 und 7/6 (die Hand, die dem Auge davonläuft). Bei ihnen
+lohnt die Verbindung zuerst.
+
+### Sieben Formen der Verbindung, von leise zu stark
+
+1. **Nur der Begriff.** Im Abspann oder als Dateiname ein Wort: «Stelle», «Spur». Am Bild ändert sich nichts.
+2. **Die Kennzeile.** Unten im Bild, klein, in der Schrift der Zettel-Videos (Zettel 33): Zettelnummer und Begriff,
+   «4/8 · Stelle». Für Instagram geeignet; die Schleife bleibt ohne Satz.
+3. **Das Diptychon.** Links die Skizze, rechts der Schlusssatz des Zettels, gross, in Newsreader, auf dem Papierton der
+   Skizze. Für Ausstellung und Druck; ein Satz, kein Text.
+4. **Die Skizze im Zettel.** Auf der Theorieseite steht beim Zettel statt oder neben der Schlaufe die stille Skizze (ein
+   Standbild, das sich erst beim Antippen bewegt). So wird die Seite zu einem Ort, an dem Satz und Bild sich gegenseitig
+   lesen. Technisch einfach: ein Video je Zettel, ohne Ton, `preload="none"`.
+5. **Der Text als Stoff.** Der Satz wird selbst zum Material der Skizze, ohne dass man ihn als Schrift liest:
+   - Lochkarte: die Lochung ist der Schlusssatz von 2/6 in Bits statt der Primzahlen (eine zweite Fassung, in der Ordnung
+     und Bedeutung die Rollen tauschen);
+   - Moiré: ein Wort ist so in das Organza gewoben, dass es nur erscheint, wenn die zwei Gewebe in Phase sind. Das Dritte,
+     das keinem der beiden Gewebe gehört, ist dann wörtlich ein Wort (Zettel 4/7: «Was zwischen zwei Takten entsteht,
+     gehört keinem von beiden»);
+   - Tuschezug: der Pinsel schreibt in Grasschrift den Schlusssatz von 3/7, so schnell, dass er nicht lesbar ist;
+   - Ebru: der Abzug zeigt auf dem Papier für einen Augenblick eine Zeile, dann ist das Bad leer.
+6. **Die Konstellation.** Zwei Skizzen nebeneinander, die denselben Begriff verschieden zeigen («Ringe» und «Pigment» zu
+   *Stelle*; «Millimeter» und «Harmonograph» zu *Wiederkehr ohne Rückkehr*), dazwischen der Zettel. Das schliesst an 5/4
+   an: «Nicht vergleichen. Nebeneinanderstellen und sehen, was die Nachbarschaft tut.»
+7. **Der Raum.** In der Galerie laufen die Skizzen als Wand oder Strom; die Zettel liegen als Karten aus oder werden
+   gesprochen (Christians Stimme). Wer vor einer Skizze stehen bleibt, bekommt den Satz dazu, wer weitergeht, nicht.
+
+### Empfehlung
+
+Für die Stufe Animation zuerst **2** (Kennzeile) für Instagram und **5** an einer einzigen Skizze als Versuch: das Moiré
+mit dem eingewobenen Wort, weil dort Begriff, Text und Bild zusammenfallen und die Skizze nebenbei stärker wird. **4**
+gehört in die Stufe Web, **6** und **7** in die Galerie.
+
+### Echte Stoffe: Materialscans statt gemalter Stoffe (28. November 2026)
+
+Christian zu Fotos als Stoff: «auch das Internet kennt zig Millionen solche Bilder.» Genommen werden nur Bilder mit freier
+Lizenz: Poly Haven und ambientCG (beide CC0) liefern Materialscans mit Farbe, Oberflächenrichtung und Höhenkarte. Die
+Höhenkarte wird zu echtem Relief, das im Licht Schatten wirft; das fehlte den gemalten Stoffen. Die Adressen sind dafür in
+der Umgebung freigegeben (api.polyhaven.com, dl.polyhaven.org, ambientcg.com). Die Scans liegen in
+`src/videos/public/stoffe/` und werden nicht eingecheckt.
+
+| Nr. | Skizze | Stoff | Begriff | Ein Satz | Zettel | Stand |
+|---|---|---|---|---|---|---|
+| 43 | `stein-sonnenblume` (Formschleifen) | Marmorfels (Poly Haven, marble_rock_02), Messing | Anschluss | Die Sonnenblume in Messing, eingelegt in einen Stein, über den eine flache Sonne einmal herumgeht. | 3/2, 4/1 | verworfen (Christian: «was die Sonnenblume da drauf macht, erschliesst sich mir nicht») |
+| 44 | `stein-bohrung` | Marmorfels, gebohrt | Anschluss, nie fertig gesehen | Kern für Kern wird eine Mulde gebohrt; die Spiralen erscheinen nur im Streiflicht. | 3/2, 3/4, 4/1 | **verfolgt** (Christian: «Ja, dies») |
+| 45 | `stein-schleifen` | Marmorfels, geschliffen | nie fertig gesehen | Eine Rosette wird in den rohen Stein geschliffen; die Adern kommen zum Vorschein, am Ende verwittert der Glanz. | 3/4, 3/5, 7/1 | offen |
+
+**Stein als Verfahren** (Christian: «Zusätzlich verbinde ich mit Stein: meisseln, schneiden, schleifen etc.»). Jedes Verfahren
+lässt das Ornament anders im Stein entstehen; das Ereignis ist die Arbeit selbst, nicht ein Wert, der sich ändert:
+
+| Verfahren | Wie das Ornament entsteht | Stand |
+|---|---|---|
+| Bohren | Mulde um Mulde, im goldenen Winkel; erscheint im Streiflicht | `stein-bohrung` |
+| Schleifen | eine Rosette wird eben und glänzend; die Adern zeigen sich | `stein-schleifen` |
+| Schneiden | Sägeschnitte ziehen einen Mäander oder ein Flechtband in den Stein; die Kanten sind scharf, der Schnitt ist dunkel | nächstes |
+| Meisseln | Schlag um Schlag mit dem Zahneisen: die Fläche wird zu einem Feld aus Spuren der Hand, Kerbschnitt, Relief | danach |
+| weiter | Spalten entlang der Ader; Einlegen (Pietra dura); Verwittern; Säure | später |
+
+### Verbindungskarten (ab 28. November 2026)
+
+Fünf Felder je Skizze (siehe `docs/formen-konzept.md`, «Konzeptionelles Vorgehen»). *(G)* = aus dem Gedächtnis, nachzuschlagen.
+
+**44 · Bohren** (`stein-bohrung`)
+- *Theorie:* jede Bohrung schliesst an die vorige an (3/2, Anschluss); die Spiralen sind nur im Streiflicht da (3/4, nie fertig
+  gesehen); eine Mulde ist eine Stelle, die bleibt, wenn der Moment vorbei ist (4/1).
+- *Kulturgeschichte:* Schalensteine, Felsen mit eingeriebenen Mulden, gehören zu den ältesten Zeichen überhaupt, ohne
+  Bild, nur Wiederholung *(G)*; auch in der Schweiz, etwa im Wallis *(G)*. Das passt zu Leroi-Gourhan: Zeichnen beginnt mit
+  Rhythmus, nicht mit Abbild (Zettel 7/6, geprüft).
+- *Kunstpraxis:* Ulrich Rückriem bohrt Reihen von Löchern in Granit, um ihn zu spalten; die Bohrspur bleibt sichtbar und wird
+  zur Form *(G)*.
+- *Materialeigenschaft:* Marmor ist weich genug für die Bohrung; frisch gebohrt ist er heller als die verwitterte Haut.
+- *Darstellung:* Das wandernde Streiflicht ist genau das Verfahren, mit dem Archäologen verblasste Ritzungen und Inschriften
+  lesbar machen: Fotos desselben Steins unter vielen Lichtrichtungen (Reflectance Transformation Imaging) *(G)*. Das Video
+  zeigt also nicht nur ein Ornament, es zeigt, wie man ein unsichtbares Ornament findet. **Die überraschende Verbindung.**
+
+**45 · Schleifen** (`stein-schleifen`)
+- *Theorie:* Schleifen fügt nichts hinzu, es nimmt weg, und was erscheint, war schon im Stein (die Adern): Form als
+  Unterscheidung im Material (2/1, 7/1); der Glanz ist nur von bestimmten Standpunkten aus zu sehen (3/4, Beobachter).
+- *Kulturgeschichte:* Cosmatenböden in Rom (12. und 13. Jahrhundert), Rosetten und Flechtbänder aus geschnittenem und
+  geschliffenem Marmor, oft aus antiken Resten *(G)*; Roger Caillois über die Bilder im geschliffenen Stein (Zettel 3/1
+  verwandt).
+- *Kunstpraxis:* Wolfgang Laib, «Milchstein» (seit 1975): eine Marmorplatte mit einer kaum sichtbar geschliffenen Vertiefung,
+  die täglich mit Milch gefüllt wird; das Werk existiert nur im Vollzug *(G)*.
+- *Materialeigenschaft:* Polierter Marmor wird tiefer im Ton und spiegelt; rauher Marmor streut das Licht.
+- *Darstellung:* Ob eine Fläche matt oder glänzend erscheint, entscheidet der Winkel zwischen Licht, Fläche und Auge. Die
+  Rosette ist also in jedem Bild anders da, ohne sich zu verändern.
 
 Weitere Stoffe und Reihen, die sich anbieten: Eisblumen und Schneekristall, Rauch und Schlieren, Risse in trocknendem
 Ton, Seifenhaut, Obertonreihe einer Saite, Farey-Brüche und Ford-Kreise, Collatz-Bäume, Kettenbrüche, Zellteilung,

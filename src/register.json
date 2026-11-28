@@ -223,6 +223,15 @@
    "kurz": "Probeseite der neuen Kunsttheorie (26.11.2026): ein Ornament-Körper aus 53 Zetteln in neun Bereichen, der sich durch alle Ansichten entfaltet (Körper, Reihe, Figur), Kerntext, Bereiche, Zettel, Quellen; Texte aus dem Gerüst der Theorie."
   },
   {
+   "id": "theorie-stein",
+   "name": "Theorie der Kunst · In Stein",
+   "tuer": "spielen-denken",
+   "art": "Versuch",
+   "status": "direktlink",
+   "adresse": "alpha/theorie/stein/",
+   "kurz": "Versuch (28.11.2026): ein Satz der Theorie als Gravur in Marmor, nur im Streiflicht lesbar; das Licht folgt dem Finger."
+  },
+  {
    "id": "the-fictory",
    "name": "The Fictory",
    "tuer": "spielen-denken",
