@@ -54,7 +54,11 @@ if (art === "naht") {
 } else if (art === "probe") {
   for (let k = 0; k <= 8; k++) await speichern(`p${k}.jpg`, Math.round((k / 8) * BILDER));
 } else {
-  for (let i = 0; i < BILDER; i++) { await speichern(`f${String(i).padStart(4, "0")}.jpg`, i); if (i % 90 === 0) console.log(form, i, Math.round((Date.now() - zeit) / 1000), "s"); }
+  // fortsetzen nach einem Abbruch (WEITER=1): vorhandene Bilder überspringen, das letzte vorhandene neu rechnen (es kann halb geschrieben sein).
+  // Nur für Formen, die jedes Bild aus der Phase rechnen (die Stein-Verfahren), nicht für Simulationen wie Reaktion–Diffusion.
+  const weiter = globalThis.process.env.WEITER === "1", da = (i) => existsSync(join(ziel, `f${String(i).padStart(4, "0")}.jpg`));
+  let ab = 0; if (weiter) { while (ab < BILDER && da(ab)) ab++; ab = Math.max(0, ab - 1); console.log(form, "weiter ab Bild", ab); }
+  for (let i = ab; i < BILDER; i++) { await speichern(`f${String(i).padStart(4, "0")}.jpg`, i); if (i % 90 === 0) console.log(form, i, Math.round((Date.now() - zeit) / 1000), "s"); }
   const mp4 = join(videos, "out", "formschleifen", `${form}.mp4`);
   mkdirSync(join(videos, "out", "formschleifen"), { recursive: true });
   execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-framerate", "30", "-i", join(ziel, "f%04d.jpg"), "-c:v", "libx264", "-crf", "17", "-preset", "slow",
