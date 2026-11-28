@@ -6,7 +6,8 @@ const font = readFileSync(new URL('../../../../alpha/theorie/stein/schrift/marce
 const b = await chromium.launch(); const p = await b.newPage();
 await p.setContent(`<style>@font-face{font-family:M;src:url(data:font/woff2;base64,${font})}</style><div style="font-family:M">x</div>`);
 const F = Number(process.argv[3] ?? 1);
-const url = await p.evaluate(async (F) => {
+const LOGO = Number(process.argv[4] ?? 1);
+const url = await p.evaluate(async ([F, LOGO]) => {
   await document.fonts.load('400 100px M');
   const W = Math.round(4096 * F), H = Math.round(5120 * F), c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
   g.fillStyle = '#000'; g.fillRect(0, 0, W, H); g.fillStyle = '#fff'; g.textAlign = 'center'; g.textBaseline = 'middle';
@@ -15,16 +16,18 @@ const url = await p.evaluate(async (F) => {
   Z.forEach((z, i) => g.fillText(z, W / 2, H * 0.5 + (i - (Z.length - 1) / 2) * gr * 1.25));
   // Steinmetzzeichen: das Signet von ornament.cloud, die Re-entry-Schlaufe r = 0,45 + cos t (wie src/videos/src/vorlage/Signet.tsx),
   // als eine gehauene Linie unter dem Satz, darunter klein der Name
+  // LOGO: Grösse von Signet und Name (kugel.py: 1.5, Christian: «Mit Logo unten»)
   if (F >= 1.5) {
     const pkt = (t) => { const r = 0.45 + Math.cos(t); return [1.2 * r * Math.cos(t), 1.2 * r * Math.sin(t)]; };
     const P = Array.from({ length: 721 }, (_, i) => pkt(i / 720 * Math.PI * 2));
     const xs = P.map(q => q[0]), ys = P.map(q => q[1]);
     const mx = (Math.min(...xs) + Math.max(...xs)) / 2, my = (Math.min(...ys) + Math.max(...ys)) / 2, sp = Math.max(...xs) - Math.min(...xs);
-    const M = W * 0.075 / sp, cx = W / 2, cy = H * 0.5 + 4.7 * gr * 1.25;
-    g.strokeStyle = '#fff'; g.lineWidth = gr * 0.075; g.lineJoin = g.lineCap = 'round'; g.beginPath();
+    const M = W * 0.075 * LOGO / sp, cx = W / 2, cy = H * 0.5 + (4.7 + 1.2 * (LOGO - 1)) * gr * 1.25;
+    g.strokeStyle = '#fff'; g.lineWidth = gr * 0.075 * Math.sqrt(LOGO); g.lineJoin = g.lineCap = 'round'; g.beginPath();
     P.forEach(([x, y], i) => (i ? g.lineTo : g.moveTo).call(g, cx + (x - mx) * M, cy + (y - my) * M)); g.closePath(); g.stroke();
-    g.font = `400 ${gr * 0.32}px M`; g.letterSpacing = `${gr * 0.32 * 0.18}px`;
-    g.fillText('ORNAMENT.CLOUD', W / 2, cy + (Math.max(...ys) - my) * M + gr * 0.55);
+    g.font = `400 ${gr * 0.32 * LOGO}px M`; g.letterSpacing = `${gr * 0.32 * LOGO * 0.18}px`;
+    const ny = cy + (Math.max(...ys) - my) * M + gr * 0.55 * LOGO; g.fillText('ORNAMENT.CLOUD', W / 2, ny);
+    g.lineWidth = gr * 0.025 * LOGO; g.strokeText('ORNAMENT.CLOUD', W / 2, ny);   // kräftiger, damit der Name eine lesbare Kerbe bekommt
   }
   const bl = document.createElement('canvas'); bl.width = W; bl.height = H; const bg = bl.getContext('2d');
   bg.filter = `blur(${7 * F}px)`; bg.drawImage(c, 0, 0);
@@ -34,5 +37,5 @@ const url = await p.evaluate(async (F) => {
   // weiche Kante, damit die Kerbe nicht senkrecht abfällt
   bg.filter = `blur(${1.5 * F}px)`; bg.clearRect(0, 0, W, H); bg.drawImage(c, 0, 0);
   return bl.toDataURL('image/png');
-}, F);
+}, [F, LOGO]);
 writeFileSync(process.argv[2], Buffer.from(url.split(',')[1], 'base64')); await b.close();

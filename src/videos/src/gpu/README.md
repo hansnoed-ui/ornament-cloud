@@ -15,6 +15,8 @@ Seit 28. November 2026. Christian: «Ok lass uns mal etwas GPU mieten für diese
 - `kugeln.py`: Spiegelkugeln auf Stein (Blender Cycles, OptiX). Fünf Kugeln rollen auf einer Acht über den gravierten Hauptsatz,
   in der Rotunde (HDRI). 900 Bilder, 4:5, 30 s, rund 1,6 s pro Bild auf der RTX 4090 (192 Proben, OptiX-Entrauschung).
   Gravur: `gravur.mjs` (Marcellus, Keilschnitt) → `gravur.png`. Film: `film.sh`.
+- `kugel.py`: eine grosse Spiegelkugel um den Hauptsatz (zweite Fassung; Christian: «lesen kann man es so nicht. Eine grosse
+  Kugel», «Mit Logo unten»). Keilschnitt rot gefasst (Rubrizierung), Signet und Name gross darunter (`gravur.mjs … 1.5 1.5`).
 - `furchen.py`: Fahrt durch die Furchen, echte Geometrie. Der Hauptsatz als Keilschnitt (Tiefe aus dem Abstand zum Strichrand,
   `keil.py`) in Marmor, darunter das Signet als Steinmetzzeichen; Cycles unterteilt beim Rechnen (adaptive Unterteilung).
 - `meisseln.py`: Kerbschnitt in Marmor. Wolfszahn-Fries aus dreiseitigen Pyramiden, je zwei Schläge, Splitter; darüber läuft
