@@ -506,6 +506,16 @@ Weitere Stoffe und Reihen, die sich anbieten: Eisblumen und Schneekristall, Rauc
 Ton, Seifenhaut, Obertonreihe einer Saite, Farey-Brüche und Ford-Kreise, Collatz-Bäume, Kettenbrüche, Zellteilung,
 Jahresringe, Flechten auf Stein.
 
+### Stand nach Schneiden und Meisseln v2 (28. November 2026)
+
+- Christian: «Mir gefällt der Stein. Ihn zu bearbeiten scheint so nicht zu klappen.» Die Verfahren im Stein (bohren, schneiden,
+  meisseln, Ogham-Kerben) ruhen; der Stein selbst bleibt als Material. Grund vermutlich: Kerben und Schnitte brauchen echte Geometrie
+  in feiner Auflösung und Licht, das hier ohne Grafikkarte nicht zu haben ist. Mit gemieteter Grafikkarte erneut prüfen.
+- Christian: «Die Kreise waren auch schön, wenn auch recht statisch.» Behalten, aber mit Ereignis: Ringe, die sich stören, brechen
+  und neu ansetzen.
+- Spiegelkugel auf *In Stein* (`?kugel`): Christian: «Eine Spiegelkugel könnte auch über eine Website rollen.» Probe gebaut: rollt
+  beim Neigen, spiegelt die Rotunde (Poly Haven, CC0) und die Gravur. Bezug: Beobachter (3/4, 6/1).
+
 ## Nächste Skizzen (Vorschlag)
 
 - **Fünf Schwellen:** dieselbe Linie, fünfmal; je eine Schwelle aus `docs/gotische-linie.md` wird überschritten
