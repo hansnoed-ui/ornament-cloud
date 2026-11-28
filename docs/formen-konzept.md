@@ -30,7 +30,28 @@ Suche und eine Entwicklung einer neuen Erfahrung. Was textlich passt, kommt jewe
 Dafür gibt es das Logbuch `docs/skizzen.md`: jede Skizze eine kurze Animation mit einer Frage, behalten auch wenn der
 Weg nicht weiterverfolgt wird; dazu Textkandidaten für die Theorieseite, die erst nach Christians OK dorthin kommen.
 
-## 1. Der Gedanke
+### Konzeptionelles Vorgehen (Christian, 28. November 2026)
+
+«Vielleicht noch ein paar Worte zum konzeptionellen Vorgehen: Wir entwickeln hier meine Kunsttheorie und die visuelle
+Darstellung derselben für Web und Ausstellung. Diese Arbeiten an der Materialität dienen also auch dazu, Theorie,
+Kulturgeschichte, zeitgenössische bzw. moderne Kunstpraxis mit Materialeigenschaften und Darstellungsmöglichkeiten in
+Verbindung zu bringen. Das geht, so gut es geht. Was wir sicher können: sinnhafte und überraschende Verbindungen
+entwickeln. Die Qualität der Animationen ist interessant, aber da, wo wir in dieser Umgebung begrenzt sind, ist das halt
+so. Alles, was man kaufen kann (Rechenleistung, GPU etc.), kaufen wir dann später.»
+
+Folgen für die Arbeit:
+
+- **Die Verbindung ist das Ergebnis, das Video ihr Entwurf.** Jede Skizze bekommt eine Verbindungskarte mit fünf Feldern:
+  Theorie (Zettel), Kulturgeschichte, Kunstpraxis (modern und zeitgenössisch), Materialeigenschaft, Darstellung. Eine Skizze
+  ohne tragende Verbindung wird nicht weiterverfolgt, auch wenn sie gut aussieht.
+- **Überraschend heisst:** eine Verbindung, die nicht schon im Motiv liegt (nicht «Stein, also Steinmetz»), sondern quer
+  läuft, etwa vom Verfahren der Darstellung zu einer Methode der Archäologie oder von einer Materialeigenschaft zu einem
+  Begriff der Theorie.
+- **Belege:** Was aus dem Gedächtnis stammt, wird als solches markiert und später nachgeschlagen, wie bei den Zetteln.
+- **Qualität später:** Die Skripte bleiben so gebaut, dass sie mit mehr Rechenleistung neu gerechnet werden können (feineres
+  Raster, höhere Dichte, echtes Licht; Skill `video-hochrendern`). Hier wird nicht gegen die Grenzen der Umgebung angerannt.
+
+## 1. Der Gedanke## 1. Der Gedanke
 
 Die Sonnenblume ist ein Modellfall, weil in ihr vier Dinge zusammenfallen, die sonst getrennt verhandelt werden:
 

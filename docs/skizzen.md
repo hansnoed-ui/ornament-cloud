@@ -389,6 +389,35 @@ lässt das Ornament anders im Stein entstehen; das Ereignis ist die Arbeit selbs
 | Meisseln | Schlag um Schlag mit dem Zahneisen: die Fläche wird zu einem Feld aus Spuren der Hand, Kerbschnitt, Relief | danach |
 | weiter | Spalten entlang der Ader; Einlegen (Pietra dura); Verwittern; Säure | später |
 
+### Verbindungskarten (ab 28. November 2026)
+
+Fünf Felder je Skizze (siehe `docs/formen-konzept.md`, «Konzeptionelles Vorgehen»). *(G)* = aus dem Gedächtnis, nachzuschlagen.
+
+**44 · Bohren** (`stein-bohrung`)
+- *Theorie:* jede Bohrung schliesst an die vorige an (3/2, Anschluss); die Spiralen sind nur im Streiflicht da (3/4, nie fertig
+  gesehen); eine Mulde ist eine Stelle, die bleibt, wenn der Moment vorbei ist (4/1).
+- *Kulturgeschichte:* Schalensteine, Felsen mit eingeriebenen Mulden, gehören zu den ältesten Zeichen überhaupt, ohne
+  Bild, nur Wiederholung *(G)*; auch in der Schweiz, etwa im Wallis *(G)*. Das passt zu Leroi-Gourhan: Zeichnen beginnt mit
+  Rhythmus, nicht mit Abbild (Zettel 7/6, geprüft).
+- *Kunstpraxis:* Ulrich Rückriem bohrt Reihen von Löchern in Granit, um ihn zu spalten; die Bohrspur bleibt sichtbar und wird
+  zur Form *(G)*.
+- *Materialeigenschaft:* Marmor ist weich genug für die Bohrung; frisch gebohrt ist er heller als die verwitterte Haut.
+- *Darstellung:* Das wandernde Streiflicht ist genau das Verfahren, mit dem Archäologen verblasste Ritzungen und Inschriften
+  lesbar machen: Fotos desselben Steins unter vielen Lichtrichtungen (Reflectance Transformation Imaging) *(G)*. Das Video
+  zeigt also nicht nur ein Ornament, es zeigt, wie man ein unsichtbares Ornament findet. **Die überraschende Verbindung.**
+
+**45 · Schleifen** (`stein-schleifen`)
+- *Theorie:* Schleifen fügt nichts hinzu, es nimmt weg, und was erscheint, war schon im Stein (die Adern): Form als
+  Unterscheidung im Material (2/1, 7/1); der Glanz ist nur von bestimmten Standpunkten aus zu sehen (3/4, Beobachter).
+- *Kulturgeschichte:* Cosmatenböden in Rom (12. und 13. Jahrhundert), Rosetten und Flechtbänder aus geschnittenem und
+  geschliffenem Marmor, oft aus antiken Resten *(G)*; Roger Caillois über die Bilder im geschliffenen Stein (Zettel 3/1
+  verwandt).
+- *Kunstpraxis:* Wolfgang Laib, «Milchstein» (seit 1975): eine Marmorplatte mit einer kaum sichtbar geschliffenen Vertiefung,
+  die täglich mit Milch gefüllt wird; das Werk existiert nur im Vollzug *(G)*.
+- *Materialeigenschaft:* Polierter Marmor wird tiefer im Ton und spiegelt; rauher Marmor streut das Licht.
+- *Darstellung:* Ob eine Fläche matt oder glänzend erscheint, entscheidet der Winkel zwischen Licht, Fläche und Auge. Die
+  Rosette ist also in jedem Bild anders da, ohne sich zu verändern.
+
 Weitere Stoffe und Reihen, die sich anbieten: Eisblumen und Schneekristall, Rauch und Schlieren, Risse in trocknendem
 Ton, Seifenhaut, Obertonreihe einer Saite, Farey-Brüche und Ford-Kreise, Collatz-Bäume, Kettenbrüche, Zellteilung,
 Jahresringe, Flechten auf Stein.
