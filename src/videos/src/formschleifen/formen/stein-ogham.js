@@ -92,7 +92,7 @@ export async function baue({ szene, kamera, renderer }) {
   function stelle(p) {
     kerben.forEach((k, j) => {
       const ein = sanft((p - k.zeit) / 0.006), aus = sanft((p - (0.8 + 0.15 * k.h0 / oben)) / 0.05);
-      anteil[j] = ein; frisch[j] = ein * (1 - aus);
+      anteil[j] = ein * (1 - 0.999 * aus); frisch[j] = ein * (1 - aus);   // Flechten und Erde füllen die Kerben wieder (sonst schliesst die Schleife nicht)
     });
     for (const f of flaechen) {
       for (let i = 0; i < f.N; i++) {
