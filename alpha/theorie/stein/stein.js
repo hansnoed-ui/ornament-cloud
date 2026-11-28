@@ -15,6 +15,14 @@ const SAETZE = [
   ['7/1', 'Material ist, was Widerstand leistet. Was nachgibt, ist Vorrat.'],
 ];
 const $ = id => document.getElementById(id);
+// Schrift der Gravur; ?schrift=… für die Vorschau (Christian: «Die Schriftart passt nicht dazu»)
+const SCHRIFTEN = {
+  cinzel: { css: '500 {g}px "Cinzel", serif', gross: true, sperren: 0.06 },
+  marcellus: { css: '400 {g}px "Marcellus", serif', gross: true, sperren: 0.08 },
+  cormorant: { css: '500 {g}px "Cormorant Garamond", serif', gross: false, sperren: 0.01 },
+  grotesk: { css: '600 {g}px "Hanken Grotesk", system-ui, sans-serif', gross: false, sperren: 0 },
+};
+const SCHRIFT = SCHRIFTEN[new URLSearchParams(location.search).get('schrift')] || SCHRIFTEN.cinzel;
 const ruhig = matchMedia('(prefers-reduced-motion: reduce)').matches;
 let nr = 0;
 function zeigeText() { $('zn').textContent = SAETZE[nr][0]; $('satz').textContent = SAETZE[nr][1]; }
@@ -59,13 +67,13 @@ async function start() {
 
   function graviere() {
     // Schrift auf die Fläche setzen, so gross wie sie passt; schmale Bildschirme bekommen mehr Zeilen
-    const satz = SAETZE[nr][1];
+    const satz = SCHRIFT.gross ? SAETZE[nr][1].toLocaleUpperCase('de-CH') : SAETZE[nr][1];
     hg.fillStyle = '#000'; hg.fillRect(0, 0, NW, NH);
     hg.fillStyle = '#fff'; hg.textAlign = 'center'; hg.textBaseline = 'middle';
     const breite = NW * 0.8;
     let gr = 120, zeilen = [];
     for (; gr > 30; gr -= 4) {
-      hg.font = `600 ${gr}px "Hanken Grotesk", system-ui, sans-serif`;
+      hg.font = SCHRIFT.css.replace('{g}', gr); hg.letterSpacing = `${(SCHRIFT.sperren * gr).toFixed(1)}px`;
       zeilen = []; let z = '';
       for (const w of satz.split(' ')) { const t = z ? z + ' ' + w : w; if (hg.measureText(t).width > breite && z) { zeilen.push(z); z = w; } else z = t; }
       zeilen.push(z);
@@ -91,7 +99,8 @@ async function start() {
     const w = cv.clientWidth, h = cv.clientHeight; renderer.setSize(w, h, false);
     zuschneiden(); graviere();
   }
-  addEventListener('resize', groesse); await document.fonts.ready; groesse();
+  addEventListener('resize', groesse);
+  await Promise.all(['500 40px Cinzel', '400 40px Marcellus', '500 40px "Cormorant Garamond"'].map(f => document.fonts.load(f))); await document.fonts.ready; groesse();
 
   // Licht führen: Finger, Maus oder Neigung; sonst wandert es langsam
   let ziel = null, letzte = 0;
