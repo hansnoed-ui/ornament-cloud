@@ -374,7 +374,20 @@ der Umgebung freigegeben (api.polyhaven.com, dl.polyhaven.org, ambientcg.com). D
 
 | Nr. | Skizze | Stoff | Begriff | Ein Satz | Zettel | Stand |
 |---|---|---|---|---|---|---|
-| 43 | `stein-sonnenblume` (Formschleifen) | Marmorfels (Poly Haven, marble_rock_02), Messing | Anschluss | Die Sonnenblume in Messing, eingelegt in einen Stein, über den eine flache Sonne einmal herumgeht. | 3/2, 4/1 | offen |
+| 43 | `stein-sonnenblume` (Formschleifen) | Marmorfels (Poly Haven, marble_rock_02), Messing | Anschluss | Die Sonnenblume in Messing, eingelegt in einen Stein, über den eine flache Sonne einmal herumgeht. | 3/2, 4/1 | verworfen (Christian: «was die Sonnenblume da drauf macht, erschliesst sich mir nicht») |
+| 44 | `stein-bohrung` | Marmorfels, gebohrt | Anschluss, nie fertig gesehen | Kern für Kern wird eine Mulde gebohrt; die Spiralen erscheinen nur im Streiflicht. | 3/2, 3/4, 4/1 | **verfolgt** (Christian: «Ja, dies») |
+| 45 | `stein-schleifen` | Marmorfels, geschliffen | nie fertig gesehen | Eine Rosette wird in den rohen Stein geschliffen; die Adern kommen zum Vorschein, am Ende verwittert der Glanz. | 3/4, 3/5, 7/1 | offen |
+
+**Stein als Verfahren** (Christian: «Zusätzlich verbinde ich mit Stein: meisseln, schneiden, schleifen etc.»). Jedes Verfahren
+lässt das Ornament anders im Stein entstehen; das Ereignis ist die Arbeit selbst, nicht ein Wert, der sich ändert:
+
+| Verfahren | Wie das Ornament entsteht | Stand |
+|---|---|---|
+| Bohren | Mulde um Mulde, im goldenen Winkel; erscheint im Streiflicht | `stein-bohrung` |
+| Schleifen | eine Rosette wird eben und glänzend; die Adern zeigen sich | `stein-schleifen` |
+| Schneiden | Sägeschnitte ziehen einen Mäander oder ein Flechtband in den Stein; die Kanten sind scharf, der Schnitt ist dunkel | nächstes |
+| Meisseln | Schlag um Schlag mit dem Zahneisen: die Fläche wird zu einem Feld aus Spuren der Hand, Kerbschnitt, Relief | danach |
+| weiter | Spalten entlang der Ader; Einlegen (Pietra dura); Verwittern; Säure | später |
 
 Weitere Stoffe und Reihen, die sich anbieten: Eisblumen und Schneekristall, Rauch und Schlieren, Risse in trocknendem
 Ton, Seifenhaut, Obertonreihe einer Saite, Farey-Brüche und Ford-Kreise, Collatz-Bäume, Kettenbrüche, Zellteilung,
