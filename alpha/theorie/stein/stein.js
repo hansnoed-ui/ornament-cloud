@@ -6,7 +6,7 @@
 import * as T from 'three';
 
 const SAETZE = [
-  ['Hauptthese', 'Kunst baut Stellen, an denen Wahrnehmung different wiederkehren kann.'],
+  ['Hauptthese', 'Kunst baut|Stellen, an denen|Wahrnehmung|different|wiederkehren|kann.'],   // | = Zeilenbruch der Gravur
   ['3/4', 'Man kehrt zurück, wo man nicht fertig geworden ist.'],
   ['3/2', 'Ornament ist Wiederholung, die sich nicht ganz wiederholt.'],
   ['4/1', 'Im Raum verlassen die Dinge ihre Stelle. In der Zeit verlässt die Stelle ihre Dinge.'],
@@ -15,9 +15,17 @@ const SAETZE = [
   ['7/1', 'Material ist, was Widerstand leistet. Was nachgibt, ist Vorrat.'],
 ];
 const $ = id => document.getElementById(id);
+// Schrift der Gravur; ?schrift=… für die Vorschau (Christian: «Die Schriftart passt nicht dazu»)
+const SCHRIFTEN = {
+  cinzel: { css: '500 {g}px "Cinzel", serif', gross: true, sperren: 0.06 },
+  marcellus: { css: '400 {g}px "Marcellus", serif', gross: true, sperren: 0.08 },
+  cormorant: { css: '500 {g}px "Cormorant Garamond", serif', gross: false, sperren: 0.01 },
+  grotesk: { css: '600 {g}px "Hanken Grotesk", system-ui, sans-serif', gross: false, sperren: 0 },
+};
+const SCHRIFT = SCHRIFTEN[new URLSearchParams(location.search).get('schrift')] || SCHRIFTEN.marcellus;   // Christian: «2 live»
 const ruhig = matchMedia('(prefers-reduced-motion: reduce)').matches;
 let nr = 0;
-function zeigeText() { $('zn').textContent = SAETZE[nr][0]; $('satz').textContent = SAETZE[nr][1]; }
+function zeigeText() { $('zn').textContent = SAETZE[nr][0]; $('satz').textContent = SAETZE[nr][1].replaceAll('|', ' '); }
 zeigeText();
 
 const lade = (url) => new Promise((ok, nein) => { const b = new Image(); b.onload = () => ok(b); b.onerror = nein; b.src = url; });
@@ -57,19 +65,31 @@ async function start() {
   const licht = new T.DirectionalLight(0xffe6c4, 3.2); szene.add(licht);
   szene.add(new T.AmbientLight(0x8090a8, 0.18));
 
+  // ausgeglichener Umbruch: so wenige Zeilen wie nötig, und dann so gleich lang wie möglich (keine einzelnen Wörter am Ende)
+  function umbrechen(satz, breite) {
+    const woerter = satz.split(' ');
+    const brich = (b) => { const z = []; let l = ''; for (const w of woerter) { const t = l ? l + ' ' + w : w; if (hg.measureText(t).width > b && l) { z.push(l); l = w; } else l = t; } z.push(l); return z; };
+    const n = brich(breite).length; let lo = 0, hi = breite;
+    for (let k = 0; k < 18; k++) { const m = (lo + hi) / 2; if (brich(m).length <= n) hi = m; else lo = m; }
+    return brich(hi);
+  }
+
   function graviere() {
     // Schrift auf die Fläche setzen, so gross wie sie passt; schmale Bildschirme bekommen mehr Zeilen
-    const satz = SAETZE[nr][1];
+    const satz = SCHRIFT.gross ? SAETZE[nr][1].toLocaleUpperCase('de-CH') : SAETZE[nr][1];
     hg.fillStyle = '#000'; hg.fillRect(0, 0, NW, NH);
     hg.fillStyle = '#fff'; hg.textAlign = 'center'; hg.textBaseline = 'middle';
     const breite = NW * 0.8;
     let gr = 120, zeilen = [];
     for (; gr > 30; gr -= 4) {
-      hg.font = `600 ${gr}px "Hanken Grotesk", system-ui, sans-serif`;
-      zeilen = []; let z = '';
-      for (const w of satz.split(' ')) { const t = z ? z + ' ' + w : w; if (hg.measureText(t).width > breite && z) { zeilen.push(z); z = w; } else z = t; }
-      zeilen.push(z);
-      if (zeilen.length * gr * 1.12 < Math.min(NH * 0.4, NW * 0.62)) break;
+      hg.font = SCHRIFT.css.replace('{g}', gr); hg.letterSpacing = `${(SCHRIFT.sperren * gr).toFixed(1)}px`;
+      // das längste Wort darf höchstens zwei Drittel der Breite füllen, sonst stehen daneben nur Einzelwörter
+      if (satz.includes('|')) { zeilen = satz.split('|'); if (Math.max(...zeilen.map(z => hg.measureText(z).width)) > breite) continue; }
+      else {
+        if (Math.max(...satz.split(' ').map(w => hg.measureText(w).width)) > breite * 0.75) continue;
+        zeilen = umbrechen(satz, breite);
+      }
+      if (zeilen.length * gr * 1.12 < Math.min(NH * 0.46, NW * 0.8)) break;
     }
     zeilen.forEach((z, i) => hg.fillText(z, NW / 2, NH * 0.47 + (i - (zeilen.length - 1) / 2) * gr * 1.12));
     // weiche Kante: eine gravierte Kerbe ist nicht senkrecht
@@ -91,7 +111,8 @@ async function start() {
     const w = cv.clientWidth, h = cv.clientHeight; renderer.setSize(w, h, false);
     zuschneiden(); graviere();
   }
-  addEventListener('resize', groesse); await document.fonts.ready; groesse();
+  addEventListener('resize', groesse);
+  await Promise.all(['500 40px Cinzel', '400 40px Marcellus', '500 40px "Cormorant Garamond"'].map(f => document.fonts.load(f))); await document.fonts.ready; groesse();
 
   // Licht führen: Finger, Maus oder Neigung; sonst wandert es langsam
   let ziel = null, letzte = 0;

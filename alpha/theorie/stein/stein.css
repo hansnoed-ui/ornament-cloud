@@ -1,3 +1,7 @@
+/* Schriften für die Gravur (Vorschau 28.11.2026, je OFL-1.1): Cinzel und Marcellus nach römischen Inschriften, Cormorant Garamond als Antiqua. */
+@font-face { font-family: 'Cinzel'; font-weight: 500; font-display: block; src: url(schrift/cinzel-latin-500-normal.woff2) format('woff2'); }
+@font-face { font-family: 'Cormorant Garamond'; font-weight: 500; font-display: block; src: url(schrift/cormorant-garamond-latin-500-normal.woff2) format('woff2'); }
+@font-face { font-family: 'Marcellus'; font-weight: 400; font-display: block; src: url(schrift/marcellus-latin-400-normal.woff2) format('woff2'); }
 /* In Stein: der Stein füllt das Bild; der Satz steht für Lesehilfen im Text, sichtbar ist er nur im Stein (oder, ohne WebGL, als Schrift). */
 :root { --grund: #121315; --tinte: #efefec; --grau: #85878b; --sans: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
 html, body { margin: 0; height: 100%; background: var(--grund); color: var(--tinte); font-family: var(--sans); overflow: hidden; -webkit-font-smoothing: antialiased; }
