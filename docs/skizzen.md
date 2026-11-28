@@ -380,7 +380,7 @@ der Umgebung freigegeben (api.polyhaven.com, dl.polyhaven.org, ambientcg.com). D
 | 46 | `stein-schneiden` | Marmorstreifen, gesägt, mit Messing vergossen | Rapport | Ein Mäander wird gesägt, eine Stelle weiter hinten mit Messing vergossen; der Stein gleitet, der Schneidkopf folgt dem Weg des Mäanders (zweite Fassung nach Christian: «vertikal ist kein Prozess sichtbar»). | 3/2, 7/1 | offen |
 | 47 | `stein-meisseln` | Marmorfels, Kerbschnitt | Rhythmus | Schlag um Schlag wird ein dreieckiger Span gehoben; jeder Schlag auf ein ganzes Bild, mit Staubblitz und Erschütterung (zweite Fassung nach Christian: «Meisseln scheint mehr überblenden»). | 3/2, 7/2, 7/3 | offen |
 | 48 | `stein-furche` | Marmor mit gehauener Inschrift | vom Lesen zum Begehen | Die Kamera sinkt von der Inschrift bis in die Furchen; Schrift wird Landschaft. Übersicht und Sinkflug tragen, der Tiefflug braucht feinere Scans (8k) und mehr Rechenleistung. | 3/1, 3/7, 7/3 | Versuch, für später |
-| 49 | `stein-ogham` | Fels mit Flechten (Poly Haven, lichen_rock), gekerbt | Rhythmus, Schrift | ORNAMENT in Ogham, Kerbe um Kerbe an der Kante eines stehenden Steins, von unten nach oben; die Flechten wachsen zurück. | 3/2, 3/1, 7/6 | offen |
+| 49 | `stein-ogham` | Fels mit Flechten (Poly Haven, lichen_rock), gekerbt | Rhythmus, Schrift | ORNAMENT in Ogham, Kerbe um Kerbe an der Kante eines stehenden Steins, von unten nach oben; die Flechten wachsen zurück. | 3/2, 3/1, 7/6 | ruht; **Material vorgemerkt** (Christian: «Der Stein selber sieht gut aus, die Kerben nicht. Macht nichts. Wir merken uns mal das Material.») |
 
 **Stein als Verfahren** (Christian: «Zusätzlich verbinde ich mit Stein: meisseln, schneiden, schleifen etc.»). Jedes Verfahren
 lässt das Ornament anders im Stein entstehen; das Ereignis ist die Arbeit selbst, nicht ein Wert, der sich ändert:
@@ -473,6 +473,13 @@ für später (inhaltlich am reichsten, braucht feinere Scans).
 - *Darstellung:* Die Schrift ist nur im Streiflicht lesbar, und die Kamera muss an ihr entlangsteigen wie ein Leser, der den
   Kopf hebt. Lesen als Bewegung des Körpers (3/7).
 - *Umschrift:* ORNAMENT, Buchstabe für Buchstabe nach der üblichen Zuordnung der vier Gruppen *(G)*, keine Übersetzung.
+
+### Vorgemerkte Materialien
+
+| Scan (Poly Haven, CC0) | Wofür | Urteil |
+|---|---|---|
+| `marble_rock_02` (Marmorfels, hell, Adern) | Bohren, Schleifen, Schneiden, Meisseln, «In Stein» | trägt (Christian: «Die neuen Marmor-Sachen sehen gut aus») |
+| `lichen_rock` (dunkler Fels mit Flechten) | Ogham | der Stein trägt, die Kerben darin nicht; vorgemerkt für später |
 
 Weitere Stoffe und Reihen, die sich anbieten: Eisblumen und Schneekristall, Rauch und Schlieren, Risse in trocknendem
 Ton, Seifenhaut, Obertonreihe einer Saite, Farey-Brüche und Ford-Kreise, Collatz-Bäume, Kettenbrüche, Zellteilung,
