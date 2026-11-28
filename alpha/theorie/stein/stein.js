@@ -23,6 +23,8 @@ const SCHRIFTEN = {
   grotesk: { css: '600 {g}px "Hanken Grotesk", system-ui, sans-serif', gross: false, sperren: 0 },
 };
 const SCHRIFT = SCHRIFTEN[new URLSearchParams(location.search).get('schrift')] || SCHRIFTEN.marcellus;   // Christian: «2 live»
+// ?kugel: eine Spiegelkugel rollt über den Stein (Probe, kugel.js)
+const KUGEL = new URLSearchParams(location.search).has('kugel');
 const ruhig = matchMedia('(prefers-reduced-motion: reduce)').matches;
 let nr = 0;
 function zeigeText() { $('zn').textContent = SAETZE[nr][0]; $('satz').textContent = SAETZE[nr][1].replaceAll('|', ' '); }
@@ -64,6 +66,8 @@ async function start() {
   const platte = new T.Mesh(new T.PlaneGeometry(2, 2), stoff); szene.add(platte);
   const licht = new T.DirectionalLight(0xffe6c4, 3.2); szene.add(licht);
   szene.add(new T.AmbientLight(0x8090a8, 0.18));
+  const ball = KUGEL ? await (await import('./kugel.js?v=3')).kugel({ T, szene, renderer, licht, platte, lade }) : null;
+  if (ball) $('hinweis').textContent = 'Telefon neigen, die Kugel rollt · Finger führt das Licht · Antippen: nächster Satz';
 
   // ausgeglichener Umbruch: so wenige Zeilen wie nötig, und dann so gleich lang wie möglich (keine einzelnen Wörter am Ende)
   function umbrechen(satz, breite) {
@@ -109,6 +113,8 @@ async function start() {
 
   function groesse() {
     const w = cv.clientWidth, h = cv.clientHeight; renderer.setSize(w, h, false);
+    // die Platte hat das Format des Bildschirms, die Kamera auch (sonst würde die Kugel zum Oval)
+    const A = h / w; kamera.top = A; kamera.bottom = -A; kamera.updateProjectionMatrix(); platte.scale.y = A; ball?.groesse(A);
     zuschneiden(); graviere();
   }
   addEventListener('resize', groesse);
@@ -117,12 +123,18 @@ async function start() {
   // Licht führen: Finger, Maus oder Neigung; sonst wandert es langsam
   let ziel = null, letzte = 0;
   const setze = (x, y) => { ziel = [x * 2 - 1, -(y * 2 - 1)]; letzte = performance.now(); $('hinweis').style.opacity = 0; };
-  cv.addEventListener('pointermove', e => setze(e.clientX / cv.clientWidth, e.clientY / cv.clientHeight));
-  cv.addEventListener('pointerdown', e => setze(e.clientX / cv.clientWidth, e.clientY / cv.clientHeight));
-  addEventListener('deviceorientation', e => { if (e.gamma == null) return; setze(0.5 + e.gamma / 60, 0.5 + (e.beta - 40) / 60); });
+  // Bildschirmpunkt in Koordinaten der Platte (für die Kugel)
+  const welt = (e) => [e.clientX / cv.clientWidth * 2 - 1, -(e.clientY / cv.clientHeight * 2 - 1) * cv.clientHeight / cv.clientWidth];
+  cv.addEventListener('pointermove', e => { if (ball?.ziehe(...welt(e))) return; setze(e.clientX / cv.clientWidth, e.clientY / cv.clientHeight); });
   let tipp = null;
-  cv.addEventListener('pointerdown', e => { tipp = [e.clientX, e.clientY, performance.now()]; });
-  cv.addEventListener('pointerup', e => { if (tipp && Math.hypot(e.clientX - tipp[0], e.clientY - tipp[1]) < 8 && performance.now() - tipp[2] < 300) { nr = (nr + 1) % SAETZE.length; zeigeText(); graviere(); } tipp = null; });
+  cv.addEventListener('pointerdown', e => {
+    // iOS fragt nach der Erlaubnis für die Neigung; Android nicht
+    if (ball && globalThis.DeviceOrientationEvent?.requestPermission) DeviceOrientationEvent.requestPermission().catch(() => {});
+    if (ball?.fasse(...welt(e))) { cv.setPointerCapture?.(e.pointerId); $('hinweis').style.opacity = 0; tipp = null; return; }
+    setze(e.clientX / cv.clientWidth, e.clientY / cv.clientHeight); tipp = [e.clientX, e.clientY, performance.now()];
+  });
+  addEventListener('deviceorientation', e => { if (e.gamma == null) return; if (ball) { ball.neigung(e); return; } setze(0.5 + e.gamma / 60, 0.5 + (e.beta - 40) / 60); });
+  cv.addEventListener('pointerup', e => { if (ball?.lass()) return; if (tipp && Math.hypot(e.clientX - tipp[0], e.clientY - tipp[1]) < 8 && performance.now() - tipp[2] < 300) { nr = (nr + 1) % SAETZE.length; zeigeText(); graviere(); } tipp = null; });
 
   const jetzt = new T.Vector2(0.7, 0.2);
   function bild(t) {
@@ -130,7 +142,8 @@ async function start() {
     else jetzt.lerp(new T.Vector2(ziel[0], ziel[1]), 0.12);
     // Licht kommt von der Seite, auf die der Finger zeigt, und immer flach: je weiter aussen, desto flacher
     const r = Math.min(1, jetzt.length()), hoeheL = 0.55 - 0.47 * r;
-    licht.position.set(jetzt.x, jetzt.y, Math.max(0.06, hoeheL) * 1.4).normalize();
+    licht.position.set(jetzt.x, jetzt.y, Math.max(0.06, hoeheL) * 1.4).normalize().multiplyScalar(4);
+    ball?.schritt(t);
     renderer.render(szene, kamera);
     requestAnimationFrame(bild);
   }
