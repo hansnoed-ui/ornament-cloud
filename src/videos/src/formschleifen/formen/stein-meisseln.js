@@ -7,7 +7,7 @@
 import { welle, sanft, mix } from './werkzeug.js';
 import { steinplatte } from './stein-gemeinsam.js';
 
-const MITTE = [0.1, -0.3], S = 0.1, R = 0.95, TIEF = 0.045, TAKT = 0.62;   // TAKT: Anteil der Schleife, in dem gemeisselt wird
+const MITTE = [0.1, -0.3], S = 0.16, R = 0.95, TIEF = 0.055, TAKT = 0.62, BILD = 1 / 900;   // TAKT: Anteil der Schleife, in dem gemeisselt wird
 const W3 = Math.sqrt(3);
 
 export async function baue({ szene, kamera, renderer }) {
@@ -31,24 +31,29 @@ export async function baue({ szene, kamera, renderer }) {
   }
   // Reihenfolge der Schläge: von innen nach aussen, im Kreis herum
   const reihe = liste.map((d, k) => [d.r * 6 + ((d.w + Math.PI) / (2 * Math.PI)), k]).sort((a, b) => a[0] - b[0]);
-  const zeit = new Float32Array(liste.length); reihe.forEach(([, k], j) => { zeit[k] = 0.04 + TAKT * j / liste.length; });
+  // jeder Span ist ein Schlag; die Schläge fallen auf ganze Bilder, damit nichts weich überblendet
+  const zeit = new Float32Array(liste.length); reihe.forEach(([, k], j) => { zeit[k] = Math.round((0.04 + TAKT * j / liste.length) * 900) / 900; });
+  const schlaege = [...zeit].sort((a, b) => a - b);
   const anteil = new Float32Array(liste.length), frisch = new Float32Array(liste.length);
 
   function stelle(p) {
     for (let k = 0; k < liste.length; k++) {
-      const ein = sanft((p - zeit[k]) / 0.004), aus = sanft((p - (0.74 + 0.22 * Math.min(1, liste[k].r / R))) / 0.03);   // ein Schlag ist kurz; Verwittern von aussen
-      anteil[k] = ein * (1 - aus); frisch[k] = ein * Math.exp(-Math.max(0, p - zeit[k]) * 40);
+      const ein = p >= zeit[k] - BILD / 2 ? 1 : 0, aus = sanft((p - (0.74 + 0.22 * Math.min(1, liste[k].r / R))) / 0.03);   // ein Schlag, dann ist der Span weg; Verwittern von aussen
+      anteil[k] = ein * (1 - aus); frisch[k] = ein * Math.exp(-Math.max(0, p - zeit[k]) * 140);
     }
     for (let i = 0; i < s.N; i++) {
       const k = nr[i]; if (k < 0) continue;
       const t = anteil[k] * prof[i];
       s.pos.setZ(i, s.grund[i] - TIEF * t);
-      const hell = 1 + 0.18 * t + 0.35 * frisch[k] * prof[i];
+      const hell = 1 + 0.18 * t + 1.1 * frisch[k] * Math.min(1, prof[i] * 2.5);   // Staubblitz im frischen Span
       s.farbeV[i * 3] = hell; s.farbeV[i * 3 + 1] = hell; s.farbeV[i * 3 + 2] = hell * 0.98;
     }
     s.fertig();
     s.licht(p, mix(0.06, 0.3, Math.pow(welle(2 * p, 0.15), 2)), 1.9);
     s.kamera(kamera, p, MITTE);
+    // jeder Schlag erschüttert die Kamera ein wenig
+    let stoss = 0; for (const z of schlaege) { const d = p - z; if (d >= -BILD / 2 && d < 0.02) stoss += Math.exp(-d * 260) * Math.cos(d * 900 * 2.2); }
+    kamera.position.y += 0.006 * stoss; kamera.position.x += 0.003 * stoss;
   }
   return { stelle };
 }
