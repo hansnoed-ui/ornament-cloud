@@ -31,5 +31,3 @@ listen/directer/audio/
 listen/curiosity/video/
 # Versuch «Sehrinde» (27.11.2026): liegt im Repository, geht aber erst online, wenn Christian die Seite gesehen und freigegeben hat; dann diese Zeile streichen.
 alpha/formen/sehrinde/
-# Versuch «In Stein» (28.11.2026): Theorie als Gravur im Streiflicht; erst nach Christians Freigabe online, dann diese Zeile streichen.
-alpha/theorie/stein/
