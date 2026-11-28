@@ -13,10 +13,10 @@ import { fileURLToPath } from "node:url";
 const require = createRequire(import.meta.url);
 const { chromium } = require(join(globalThis.process.env.NODE_PATH ?? "", "playwright"));
 const hier = fileURLToPath(new URL(".", import.meta.url)), videos = join(hier, "..", ".."), wurzel = join(videos, "..", "..");
-const TYP = { ".html": "text/html", ".js": "text/javascript", ".png": "image/png", ".jpg": "image/jpeg" };
+const TYP = { ".html": "text/html", ".js": "text/javascript", ".png": "image/png", ".jpg": "image/jpeg", ".woff2": "font/woff2" };
 const server = createServer((req, res) => {
   const p = decodeURIComponent(new URL(req.url, "http://x").pathname);
-  const datei = p.startsWith("/film/") ? join(hier, p.slice(6)) : p.startsWith("/vendor/") || p.startsWith("/alpha/formen/") ? join(wurzel, p)
+  const datei = p.startsWith("/film/") ? join(hier, p.slice(6)) : p.startsWith("/vendor/") || p.startsWith("/alpha/formen/") || p.startsWith("/alpha/theorie/stein/schrift/") ? join(wurzel, p)
     : p.startsWith("/stoffe/") ? join(videos, "public", p) : null;   // Materialscans (CC0), nicht eingecheckt
   if (!datei || !existsSync(datei)) { res.writeHead(404); res.end(); return; }
   res.writeHead(200, { "content-type": TYP[extname(datei)] ?? "application/octet-stream" }); res.end(readFileSync(datei));

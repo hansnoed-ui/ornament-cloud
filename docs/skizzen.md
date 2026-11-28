@@ -379,6 +379,7 @@ der Umgebung freigegeben (api.polyhaven.com, dl.polyhaven.org, ambientcg.com). D
 | 45 | `stein-schleifen` | Marmorfels, geschliffen | nie fertig gesehen | Eine Rosette wird in den rohen Stein geschliffen; die Adern kommen zum Vorschein, am Ende verwittert der Glanz. | 3/4, 3/5, 7/1 | offen |
 | 46 | `stein-schneiden` | Marmorstreifen, gesägt, mit Messing vergossen | Rapport | Ein Mäander wird gesägt, eine Stelle weiter hinten mit Messing vergossen; der Stein gleitet unter der Säge durch. | 3/2, 7/1 | offen |
 | 47 | `stein-meisseln` | Marmorfels, Kerbschnitt | Rhythmus | Schlag um Schlag wird ein dreieckiger Span gehoben, bis eine Rosette aus Dreiecken dasteht. | 3/2, 7/2, 7/3 | offen |
+| 48 | `stein-furche` | Marmor mit gehauener Inschrift | vom Lesen zum Begehen | Die Kamera sinkt von der Inschrift bis in die Furchen; Schrift wird Landschaft. Übersicht und Sinkflug tragen, der Tiefflug braucht feinere Scans (8k) und mehr Rechenleistung. | 3/1, 3/7, 7/3 | Versuch, für später |
 
 **Stein als Verfahren** (Christian: «Zusätzlich verbinde ich mit Stein: meisseln, schneiden, schleifen etc.»). Jedes Verfahren
 lässt das Ornament anders im Stein entstehen; das Ereignis ist die Arbeit selbst, nicht ein Wert, der sich ändert:
@@ -440,6 +441,25 @@ Fünf Felder je Skizze (siehe `docs/formen-konzept.md`, «Konzeptionelles Vorgeh
   Rückriem *(G)*.
 - *Materialeigenschaft:* Marmor bricht unter dem Schlag in Spänen, die Bruchfläche ist frisch heller und rauer.
 - *Darstellung:* Jeder Span ist ein Ereignis in der Zeit; die Rosette ist das Protokoll von 300 Schlägen.
+
+### Fahrt durch die Furchen: wo sie inhaltlich passt (28. November 2026)
+
+Christian: «Vielleicht sind ja auch gemeisselte Effekte möglich, Fahrt durch die Furchen etc. Schauen, wo eine solche Darstellung
+inhaltlich passt. Hieroglyphen etc.?» Der Kern ist ein Massstabswechsel: von weitem liest man, von nah begeht man. Das passt
+überall dort, wo Schrift und Ornament ineinander übergehen. *(G)* = aus dem Gedächtnis, nachzuschlagen.
+
+| Schrift im Stein | Was die Fahrt zeigt | Theorie | Bemerkung |
+|---|---|---|---|
+| **Hieroglyphen** | Zeichen, die zugleich Bild, Laut und Ornament sind; von nah werden Vögel, Schilf, Wasserlinien zur Landschaft | 3/1 (Ornament als Schrift der Kunst), 1/1 (Sprache ohne Sprache) | gute Schrift: Noto Sans Egyptian Hieroglyphs (OFL) *(G)*; nur zeigen, nichts «übersetzen» |
+| **Stein von Rosette** | derselbe Erlass in drei Schriften (Hieroglyphen, Demotisch, Griechisch); die Fahrt geht von einer Schrift in die nächste | 5/3 («Es wird nur übersetzt, nie übertragen») | die überraschende Verbindung: Übersetzung als Materialbefund |
+| **Keilschrift** | Zeichen, die in Ton gedrückt statt gehauen sind; jede Furche ist ein Abdruck des Griffels | 7/2 (Herstellen), 7/3 (der Körper geht voraus) | Stoff Ton statt Stein |
+| **Ogham** | Kerben entlang einer Steinkante; Schrift als reiner Rhythmus | 3/2 (Rhythmus), Leroi-Gourhan (Zettel 7/6) | sehr einfach darzustellen, sehr stark |
+| **Quadratisches Kufi** | Schrift, die als geometrisches Muster eine ganze Wand füllt; man sieht ein Ornament und weiss nicht, dass es ein Satz ist | 3/1, 3/4 (nie fertig gesehen) | die Fahrt kann es umkehren: von nah ein Labyrinth, von weit ein Name |
+| **Trajanssäule** | ein Relieffries, der sich in einer Spirale um eine Säule windet; dazu die Inschrift, aus der unsere Versalien stammen | 3/2 (Fries), 4/1 (Stelle) | die Fahrt als Spirale nach oben |
+| **Christians Sätze** | die Theorie selbst, in Stein; vom Satz in die Furche, wo er unlesbar wird | 3/7, 7/3 | Versuch 48 |
+
+Empfehlung: **Ogham** als Nächstes (in dieser Umgebung gut machbar, inhaltlich stark: Schrift als Rhythmus) und **Rosette**
+für später (inhaltlich am reichsten, braucht feinere Scans).
 
 Weitere Stoffe und Reihen, die sich anbieten: Eisblumen und Schneekristall, Rauch und Schlieren, Risse in trocknendem
 Ton, Seifenhaut, Obertonreihe einer Saite, Farey-Brüche und Ford-Kreise, Collatz-Bäume, Kettenbrüche, Zellteilung,
